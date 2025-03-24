@@ -7,7 +7,13 @@ error_reporting(E_ALL);
 session_start();
 
 // Cargar las variables del archivo .env manualmente
-$dotenv = parse_ini_file('.env');
+$env_path = __DIR__ . '/.env';
+
+if (file_exists($env_path)) {
+    $dotenv = parse_ini_file($env_path);
+} else {
+    die("❌ Error: El archivo .env no se encuentra en la carpeta del proyecto.");
+}
 
 // Conexión a la base de datos
 $host = $dotenv['DB_HOST'];
@@ -31,10 +37,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             fgetcsv($handle, 1000, ","); // Salta la primera línea (encabezado)
 
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                $id_productor = $data[0];
-                $nombre = $data[1];
-                $rol = $data[2];
-                $id_finca_asociada = $data[3];
+                // Validar que todas las columnas existan
+                if (count($data) < 4) {
+                    continue; // Si falta alguna columna, salta la línea
+                }
+                
+                $id_productor = trim($data[0]);
+                $nombre = trim($data[1]);
+                $rol = trim($data[2]);
+                $id_finca_asociada = trim($data[3]);
+
+                // Si el campo id_finca_asociada está vacío, lo ponemos como NULL
+                $id_finca_asociada = empty($id_finca_asociada) ? NULL : $id_finca_asociada;
+
+                // Validar que no haya datos vacíos en campos obligatorios
+                if (empty($id_productor) || empty($nombre) || empty($rol)) {
+                    continue; // Si algún dato importante está vacío, salta la línea
+                }
 
                 // Insertar datos en la base de datos
                 $stmt = $conn->prepare("INSERT INTO usuarios (id_productor, nombre, rol, id_finca_asociada, permiso_ingreso, contraseña) 
@@ -43,9 +62,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->bindParam(':id_productor', $id_productor);
                 $stmt->bindParam(':nombre', $nombre);
                 $stmt->bindParam(':rol', $rol);
-                $stmt->bindParam(':id_finca_asociada', $id_finca_asociada);
+                $stmt->bindParam(':id_finca_asociada', $id_finca_asociada, PDO::PARAM_NULL);
 
-                $stmt->execute();
+                try {
+                    $stmt->execute();
+                } catch (PDOException $e) {
+                    echo "❌ Error al insertar el productor con ID {$id_productor}: " . $e->getMessage() . "<br>";
+                }
             }
 
             fclose($handle);
