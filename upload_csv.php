@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $lineNumber = 0;  // Número de línea que se está procesando
             $inserts = 0; // Contador de registros insertados
             $errors = 0;  // Contador de errores
-
+            
             while (($data = fgetcsv($handle, 1000, ';')) !== FALSE) {
                 $lineNumber++;
 
@@ -65,8 +65,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 foreach ($id_fincas_array as $id_finca_asociada) {
                     $id_finca_asociada = trim($id_finca_asociada);
+
                     if ($id_finca_asociada === '') {
                         $id_finca_asociada = NULL;
+                    } else {
+                        // Verificar si la finca existe en la base de datos
+                        $stmtCheck = $conn->prepare("SELECT COUNT(*) FROM fincas WHERE id = :id_finca_asociada");
+                        $stmtCheck->bindParam(':id_finca_asociada', $id_finca_asociada, PDO::PARAM_INT);
+                        $stmtCheck->execute();
+                        $fincaExists = $stmtCheck->fetchColumn();
+
+                        if (!$fincaExists) {
+                            $errors++;
+                            echo "❌ Línea {$lineNumber}: La finca asociada con ID {$id_finca_asociada} no existe en la base de datos.<br>";
+                            continue; // Saltar esta inserción y pasar al siguiente registro
+                        }
                     }
 
                     // Insertar datos en la base de datos
