@@ -26,4 +26,4 @@ include('../../partials/sidebar.php');
 </div>
 
 <!-- Enlace al JavaScript -->
-<script src="/assets/js/script.js"></script>
+<script src="/assets/js/sidebar.js"></script>
