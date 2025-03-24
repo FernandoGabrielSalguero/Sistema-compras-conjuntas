@@ -17,7 +17,8 @@ $pages = [
         'Alta Usuarios' => ['url' => 'alta_usuarios.php', 'icon' => 'fa fa-user-plus'],
         'Alta Fincas' => ['url' => 'alta_fincas.php', 'icon' => 'fa fa-leaf'],
         'Productos' => ['url' => 'productos.php', 'icon' => 'fa fa-box'],
-        'Solicitudes de Modificación' => ['url' => 'solicitudes_modificaciones.php', 'icon' => 'fa fa-edit']
+        'Solicitudes de Modificación' => ['url' => 'solicitudes_modificaciones.php', 'icon' => 'fa fa-edit'],
+        'Salir' => ['url' => 'logout.php', 'icon' => 'fa fa-exit']
     ],
     'Cooperativa' => [
         'Dashboard' => ['url' => 'dashboard.php', 'icon' => 'fa fa-tachometer-alt'],
