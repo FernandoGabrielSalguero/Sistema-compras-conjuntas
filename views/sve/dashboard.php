@@ -52,8 +52,6 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard SVE</title>
-    <link rel="stylesheet" href="../../assets/css/sidebar.css">
-    <link rel="stylesheet" href="../../assets/css/header.css">
     <style>
         body {
             margin: 0;
@@ -61,16 +59,14 @@ try {
             font-family: 'Roboto', sans-serif;
             background-color: #f4f4f4;
             display: flex;
-            flex-direction: column;
             height: 100vh;
             overflow: hidden;
         }
         .content {
-            margin-left: 250px;
+            flex-grow: 1;
             padding: 20px;
             overflow-y: auto;
-            height: calc(100vh - 60px);
-            margin-top: 60px; /* Para no superponerse con el header */
+            margin-top: 60px;
         }
         .kpi-container {
             display: grid;
@@ -84,18 +80,14 @@ try {
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
-            transition: transform 0.2s;
-        }
-        .kpi-card:hover {
-            transform: translateY(-5px);
         }
         .kpi-card h3 {
             margin: 0;
             color: #6C63FF;
-            font-size: 20px;
+            font-size: 18px;
         }
         .kpi-card p {
-            font-size: 28px;
+            font-size: 24px;
             margin: 10px 0;
             color: #333;
         }
