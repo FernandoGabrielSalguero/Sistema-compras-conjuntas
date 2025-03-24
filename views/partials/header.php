@@ -53,6 +53,7 @@ $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
             cursor: pointer;
             font-size: 18px;
             color: #6b6b6b;
+            transition: color 0.3s;
         }
 
         .left-section button:hover, .right-section button:hover {
@@ -92,6 +93,7 @@ $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
         .user-info span {
             font-size: 14px;
             color: #424242;
+            font-weight: 600;
         }
 
     </style>
@@ -106,7 +108,7 @@ $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
     </div>
 
     <div class="right-section">
-        <div class="date-display"><?php echo date('d F Y'); ?></div>
+        <div class="date-display">📅 <?php echo date('d F Y'); ?></div>
         <div class="user-info">
             <span><?php echo $user_role . ' - ' . $user_name; ?></span>
         </div>
