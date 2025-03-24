@@ -42,7 +42,7 @@ $user_pages = $pages[$user_role] ?? [];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Header Modificado</title>
+    <title>Sidebar Fijo</title>
     <style>
         body {
             margin: 0;
@@ -51,16 +51,15 @@ $user_pages = $pages[$user_role] ?? [];
             background-color: #f4f4f4;
             display: flex;
             min-height: 100vh;
-            transition: margin-left 0.3s;
         }
 
         #header {
             background-color: white;
-            width: 100%;
+            width: calc(100% - 260px);
             padding: 10px 20px;
             position: fixed;
             top: 0;
-            left: 0;
+            left: 260px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -70,18 +69,14 @@ $user_pages = $pages[$user_role] ?? [];
 
         #sidebar {
             background-color: white;
-            width: 250px;
+            width: 250px; /* Puedes cambiar este ancho aquí */
             position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            padding-top: 60px;
+            top: 30px; /* Controla el espacio superior del sidebar */
+            bottom: 30px; /* Controla el espacio inferior del sidebar */
+            left: 10px;
+            padding-top: 30px;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
-
-        #sidebar.closed {
-            transform: translateX(-250px);
+            border-radius: 10px;
         }
 
         .sidebar-content a {
@@ -100,9 +95,8 @@ $user_pages = $pages[$user_role] ?? [];
         }
 
         .content {
-            margin-left: 250px;
+            margin-left: 260px;
             padding: 80px 20px;
-            transition: margin-left 0.3s;
             width: 100%;
         }
     </style>
@@ -121,8 +115,7 @@ $user_pages = $pages[$user_role] ?? [];
 <!-- Header -->
 <div id="header">
     <div class="left-section">
-        <button onclick="toggleSidebar()">☰</button>
-        <button onclick="toggleModal()">⬒</button>
+        <button>⬒</button>
     </div>
 
     <div class="right-section">
@@ -137,23 +130,6 @@ $user_pages = $pages[$user_role] ?? [];
 <div class="content">
     <!-- Aquí va el contenido principal de cada página -->
 </div>
-
-<script>
-    let sidebarOpen = true;
-
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const content = document.querySelector('.content');
-        if (sidebarOpen) {
-            sidebar.classList.add('closed');
-            content.style.marginLeft = '0';
-        } else {
-            sidebar.classList.remove('closed');
-            content.style.marginLeft = '250px';
-        }
-        sidebarOpen = !sidebarOpen;
-    }
-</script>
 
 </body>
 </html>

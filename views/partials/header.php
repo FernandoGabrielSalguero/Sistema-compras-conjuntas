@@ -103,7 +103,6 @@ $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
 <!-- Header -->
 <div id="header">
     <div class="left-section">
-        <button onclick="toggleSidebar()">☰</button>
         <button onclick="toggleModal()">⬒</button>
     </div>
 
