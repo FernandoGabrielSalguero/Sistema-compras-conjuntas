@@ -34,14 +34,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $csvFile = $_FILES['csv_file']['tmp_name'];
 
         if (($handle = fopen($csvFile, 'r')) !== FALSE) {
-            fgetcsv($handle, 1000, ","); // Salta la primera línea (encabezado)
-
+            $lineNumber = 0;  // Número de línea que se está procesando
             $inserts = 0; // Contador de registros insertados
             $errors = 0;  // Contador de errores
             
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                $lineNumber++;
+
+                // Mostrar los datos de cada línea para asegurarnos que están correctamente cargados
+                echo "<pre>Línea {$lineNumber}: ";
+                print_r($data);
+                echo "</pre>";
+
                 // Validar que todas las columnas existan
                 if (count($data) < 4) {
+                    $errors++;
+                    echo "❌ Línea {$lineNumber} ignorada. Faltan columnas.<br>";
                     continue; // Si falta alguna columna, salta la línea
                 }
                 
@@ -56,8 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Validar que no haya datos vacíos en campos obligatorios
                 if (empty($id_productor) || empty($nombre) || empty($rol)) {
                     $errors++;
-                    echo "❌ Registro con ID Productor {$id_productor} tiene datos incompletos. <br>";
-                    continue;
+                    echo "❌ Línea {$lineNumber} tiene datos incompletos. <br>";
+                    continue; 
                 }
 
                 // Insertar datos en la base de datos
@@ -84,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             fclose($handle);
-            echo "✅ Archivo CSV cargado exitosamente. Registros insertados: {$inserts}. Errores: {$errors}.";
+            echo "<br>✅ Archivo CSV cargado exitosamente. Registros insertados: {$inserts}. Errores: {$errors}.";
         } else {
             echo "❌ No se pudo abrir el archivo CSV.";
         }
