@@ -48,7 +48,7 @@ $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
         top: 0;
         left: 15;
         display: flex;
-        justify-content: space-around;
+        justify-content: space-between;
         align-items: center;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         z-index: 10;
