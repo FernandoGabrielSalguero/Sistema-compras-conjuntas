@@ -36,6 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (($handle = fopen($csvFile, 'r')) !== FALSE) {
             fgetcsv($handle, 1000, ","); // Salta la primera línea (encabezado)
 
+            $inserts = 0; // Contador de registros insertados
+            $errors = 0;  // Contador de errores
+            
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 // Validar que todas las columnas existan
                 if (count($data) < 4) {
@@ -52,7 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Validar que no haya datos vacíos en campos obligatorios
                 if (empty($id_productor) || empty($nombre) || empty($rol)) {
-                    continue; // Si algún dato importante está vacío, salta la línea
+                    $errors++;
+                    echo "❌ Registro con ID Productor {$id_productor} tiene datos incompletos. <br>";
+                    continue;
                 }
 
                 // Insertar datos en la base de datos
@@ -62,17 +67,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->bindParam(':id_productor', $id_productor);
                 $stmt->bindParam(':nombre', $nombre);
                 $stmt->bindParam(':rol', $rol);
-                $stmt->bindParam(':id_finca_asociada', $id_finca_asociada, PDO::PARAM_NULL);
+                
+                if ($id_finca_asociada === NULL) {
+                    $stmt->bindValue(':id_finca_asociada', null, PDO::PARAM_NULL);
+                } else {
+                    $stmt->bindParam(':id_finca_asociada', $id_finca_asociada);
+                }
 
                 try {
                     $stmt->execute();
+                    $inserts++;
                 } catch (PDOException $e) {
+                    $errors++;
                     echo "❌ Error al insertar el productor con ID {$id_productor}: " . $e->getMessage() . "<br>";
                 }
             }
 
             fclose($handle);
-            echo "✅ Archivo CSV cargado exitosamente.";
+            echo "✅ Archivo CSV cargado exitosamente. Registros insertados: {$inserts}. Errores: {$errors}.";
         } else {
             echo "❌ No se pudo abrir el archivo CSV.";
         }
