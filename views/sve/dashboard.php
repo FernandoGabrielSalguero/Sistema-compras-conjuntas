@@ -26,6 +26,21 @@ try {
     $totalCooperativas = $conn->query("SELECT COUNT(*) FROM usuarios WHERE rol = 'Cooperativa'")->fetchColumn();
     $totalProductores = $conn->query("SELECT COUNT(*) FROM usuarios WHERE rol = 'Productor'")->fetchColumn();
     $totalFincas = $conn->query("SELECT COUNT(*) FROM fincas")->fetchColumn();
+
+    // Obtener la cantidad de pedidos por estado
+    $estados = [
+        'Pedido recibido', 'Pedido cancelado', 'Pedido OK pendiente de factura', 'Pedido OK FACTURADO', 'Pedido pendiente de retito',
+        'Pedido en camino al productor', 'Pedido en camino a la cooperativa.'
+    ];
+
+    $conteoEstados = [];
+    foreach ($estados as $estado) {
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM pedidos WHERE estado_compra = :estado");
+        $stmt->bindParam(':estado', $estado);
+        $stmt->execute();
+        $conteoEstados[$estado] = $stmt->fetchColumn();
+    }
+
 } catch (PDOException $e) {
     die("Error de conexión a la base de datos: " . $e->getMessage());
 }
@@ -51,10 +66,10 @@ try {
             overflow: hidden;
         }
         .content {
-            margin-left: 250px; /* Este margen se ajusta según el ancho del sidebar */
+            margin-left: 250px;
             padding: 20px;
             overflow-y: auto;
-            height: calc(100vh - 60px); /* Ajustar la altura según el header */
+            height: calc(100vh - 60px);
         }
         .kpi-container {
             display: grid;
@@ -68,7 +83,6 @@ try {
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
-            transition: transform 0.3s;
         }
         .kpi-card h3 {
             margin: 0;
@@ -88,22 +102,16 @@ try {
 
     <div class="content">
         <div class="kpi-container">
-            <div class="kpi-card">
-                <h3>Total de Pedidos</h3>
-                <p><?php echo $totalPedidos; ?></p>
-            </div>
-            <div class="kpi-card">
-                <h3>Total de Cooperativas</h3>
-                <p><?php echo $totalCooperativas; ?></p>
-            </div>
-            <div class="kpi-card">
-                <h3>Total de Productores</h3>
-                <p><?php echo $totalProductores; ?></p>
-            </div>
-            <div class="kpi-card">
-                <h3>Total de Fincas</h3>
-                <p><?php echo $totalFincas; ?></p>
-            </div>
+            <div class="kpi-card"><h3>Total de Pedidos</h3><p><?php echo $totalPedidos; ?></p></div>
+            <div class="kpi-card"><h3>Total de Cooperativas</h3><p><?php echo $totalCooperativas; ?></p></div>
+            <div class="kpi-card"><h3>Total de Productores</h3><p><?php echo $totalProductores; ?></p></div>
+            <div class="kpi-card"><h3>Total de Fincas</h3><p><?php echo $totalFincas; ?></p></div>
+            <?php foreach ($conteoEstados as $estado => $conteo) { ?>
+                <div class="kpi-card">
+                    <h3><?php echo $estado; ?></h3>
+                    <p><?php echo $conteo; ?></p>
+                </div>
+            <?php } ?>
         </div>
     </div>
 </body>
