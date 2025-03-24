@@ -22,7 +22,8 @@ $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
         }
 
         #header {
@@ -35,20 +36,27 @@ $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             z-index: 10;
+            border-bottom: 1px solid #e0e0e0;
         }
 
-        .left-section {
+        .left-section, .right-section {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
 
-        .right-section {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+        .left-section button, .right-section button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: #6b6b6b;
+        }
+
+        .left-section button:hover, .right-section button:hover {
+            color: #673ab7;
         }
 
         .modal {
@@ -66,9 +74,26 @@ $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
             margin: auto;
             padding: 20px;
             border-radius: 8px;
-            width: 300px;
+            width: 400px;
             text-align: center;
         }
+
+        .date-display {
+            font-size: 14px;
+            color: #757575;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info span {
+            font-size: 14px;
+            color: #424242;
+        }
+
     </style>
 </head>
 <body>
@@ -77,12 +102,14 @@ $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
 <div id="header">
     <div class="left-section">
         <button onclick="toggleSidebar()">☰</button>
-        <button onclick="toggleModal()">⍈</button>
+        <button onclick="toggleModal()">⬒</button>
     </div>
 
     <div class="right-section">
-        <div><?php echo date('d F Y'); ?></div>
-        <div><?php echo $user_role . ' - ' . $user_name; ?></div>
+        <div class="date-display"><?php echo date('d F Y'); ?></div>
+        <div class="user-info">
+            <span><?php echo $user_role . ' - ' . $user_name; ?></span>
+        </div>
     </div>
 </div>
 
