@@ -11,9 +11,10 @@ verificarAcceso(['Productor']);
     <link rel="stylesheet" href="../../assets/css/style.css">
 </head>
 <body>
+    <?php include '../../views/partials/sidebar.php'; ?>
+    <?php include '../../views/partials/header.php'; ?>
+    
     <div class="container">
-        <h1>Bienvenido, <?= $_SESSION["user_name"]; ?> (Productor)</h1>
-        
         <div class="card">
             <h2>Historial de Pedidos</h2>
             <p>Aquí podrás ver un listado de tus pedidos realizados.</p>

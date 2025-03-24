@@ -50,3 +50,8 @@ body {
 h1, h2 {
     color: #673ab7;
 }
+
+body {
+    margin-left: 200px;
+    background-color: #F0F0F0;
+}
