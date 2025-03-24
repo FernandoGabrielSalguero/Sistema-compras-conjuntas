@@ -37,57 +37,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $lineNumber = 0;  // Número de línea que se está procesando
             $inserts = 0; // Contador de registros insertados
             $errors = 0;  // Contador de errores
-            
-            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                $lineNumber++;
 
-                // Mostrar los datos de cada línea para asegurarnos que están correctamente cargados
-                echo "<pre>Línea {$lineNumber}: ";
-                print_r($data);
-                echo "</pre>";
+            while (($data = fgetcsv($handle, 1000, ';')) !== FALSE) {
+                $lineNumber++;
 
                 // Validar que todas las columnas existan
                 if (count($data) < 4) {
                     $errors++;
                     echo "❌ Línea {$lineNumber} ignorada. Faltan columnas.<br>";
-                    continue; // Si falta alguna columna, salta la línea
+                    continue;
                 }
-                
+
                 $id_productor = trim($data[0]);
                 $nombre = trim($data[1]);
-                $rol = trim($data[2]);
-                $id_finca_asociada = trim($data[3]);
-
-                // Si el campo id_finca_asociada está vacío, lo ponemos como NULL
-                $id_finca_asociada = empty($id_finca_asociada) ? NULL : $id_finca_asociada;
+                $id_fincas_asociadas = trim($data[2]);
+                $rol = trim($data[3]);
 
                 // Validar que no haya datos vacíos en campos obligatorios
                 if (empty($id_productor) || empty($nombre) || empty($rol)) {
                     $errors++;
                     echo "❌ Línea {$lineNumber} tiene datos incompletos. <br>";
-                    continue; 
+                    continue;
                 }
 
-                // Insertar datos en la base de datos
-                $stmt = $conn->prepare("INSERT INTO usuarios (id_productor, nombre, rol, id_finca_asociada, permiso_ingreso, contraseña) 
-                                       VALUES (:id_productor, :nombre, :rol, :id_finca_asociada, 'Habilitado', 'default123')");
+                // Separar múltiples IDs de finca asociados
+                $id_fincas_array = explode(';', $id_fincas_asociadas);
 
-                $stmt->bindParam(':id_productor', $id_productor);
-                $stmt->bindParam(':nombre', $nombre);
-                $stmt->bindParam(':rol', $rol);
-                
-                if ($id_finca_asociada === NULL) {
-                    $stmt->bindValue(':id_finca_asociada', null, PDO::PARAM_NULL);
-                } else {
-                    $stmt->bindParam(':id_finca_asociada', $id_finca_asociada);
-                }
+                foreach ($id_fincas_array as $id_finca_asociada) {
+                    $id_finca_asociada = trim($id_finca_asociada);
+                    if ($id_finca_asociada === '') {
+                        $id_finca_asociada = NULL;
+                    }
 
-                try {
-                    $stmt->execute();
-                    $inserts++;
-                } catch (PDOException $e) {
-                    $errors++;
-                    echo "❌ Error al insertar el productor con ID {$id_productor}: " . $e->getMessage() . "<br>";
+                    // Insertar datos en la base de datos
+                    $stmt = $conn->prepare("INSERT INTO usuarios (id_productor, nombre, rol, id_finca_asociada, permiso_ingreso, contraseña) 
+                                           VALUES (:id_productor, :nombre, :rol, :id_finca_asociada, 'Habilitado', 'default123')");
+
+                    $stmt->bindParam(':id_productor', $id_productor);
+                    $stmt->bindParam(':nombre', $nombre);
+                    $stmt->bindParam(':rol', $rol);
+
+                    if ($id_finca_asociada === NULL) {
+                        $stmt->bindValue(':id_finca_asociada', null, PDO::PARAM_NULL);
+                    } else {
+                        $stmt->bindParam(':id_finca_asociada', $id_finca_asociada);
+                    }
+
+                    try {
+                        $stmt->execute();
+                        $inserts++;
+                    } catch (PDOException $e) {
+                        $errors++;
+                        echo "❌ Error al insertar el productor con ID {$id_productor}: " . $e->getMessage() . "<br>";
+                    }
                 }
             }
 
