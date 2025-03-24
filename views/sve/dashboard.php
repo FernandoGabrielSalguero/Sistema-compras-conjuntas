@@ -29,9 +29,13 @@ try {
 
     // Obtener la cantidad de pedidos por estado
     $estados = [
-        'Pedido recibido', 'Pedido cancelado', 'Pedido OK pendiente de factura', 
-        'Pedido OK FACTURADO', 'Pedido pendiente de retito',
-        'Pedido en camino al productor', 'Pedido en camino a la cooperativa.'
+        'Pedido recibido',
+        'Pedido cancelado',
+        'Pedido OK pendiente de factura',
+        'Pedido OK FACTURADO',
+        'Pedido pendiente de retito',
+        'Pedido en camino al productor',
+        'Pedido en camino a la cooperativa.'
     ];
 
     $conteoEstados = [];
@@ -41,7 +45,6 @@ try {
         $stmt->execute();
         $conteoEstados[$estado] = $stmt->fetchColumn();
     }
-
 } catch (PDOException $e) {
     die("Error de conexión a la base de datos: " . $e->getMessage());
 }
@@ -49,63 +52,69 @@ try {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard SVE</title>
     <style>
-    body {
-        margin: 0;
-        padding: 0;
-        font-family: 'Roboto', sans-serif;
-        background-color: #f4f4f4;
-        display: flex;
-        height: 100vh;
-        overflow: hidden;
-    }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-    #content-wrapper {
-        display: flex;
-        width: 100%;
-    }
+        #content-wrapper {
+            display: flex;
+            width: 100%;
+        }
 
-    .content {
-        flex-grow: 1;
-        padding: 20px;
-        overflow-y: auto;
-        margin-left: 260px; /* Este margen asegura que el contenido no quede debajo del sidebar */
-        transition: margin-left 0.3s;
-    }
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            margin-top: 70px;
+            /* Agregamos margen para que no quede oculto por el header */
+            margin-left: 260px;
+            /* Este margen asegura que el contenido no quede debajo del sidebar */
+            transition: margin-left 0.3s;
+        }
 
-    .kpi-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-        padding: 20px;
-    }
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
 
-    .kpi-card {
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
+        .kpi-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
 
-    .kpi-card h3 {
-        margin: 0;
-        color: #6C63FF;
-        font-size: 18px;
-    }
+        .kpi-card h3 {
+            margin: 0;
+            color: #6C63FF;
+            font-size: 18px;
+        }
 
-    .kpi-card p {
-        font-size: 24px;
-        margin: 10px 0;
-        color: #333;
-    }
-</style>
+        .kpi-card p {
+            font-size: 24px;
+            margin: 10px 0;
+            color: #333;
+        }
+    </style>
+
 
 </head>
+
 <body>
     <?php include '../../views/partials/header.php'; ?>
     <?php include '../../views/partials/sidebar.php'; ?>
@@ -113,10 +122,22 @@ try {
     <div id="content-wrapper">
         <div class="content">
             <div class="kpi-container">
-                <div class="kpi-card"><h3>Total de Pedidos</h3><p><?php echo $totalPedidos; ?></p></div>
-                <div class="kpi-card"><h3>Total de Cooperativas</h3><p><?php echo $totalCooperativas; ?></p></div>
-                <div class="kpi-card"><h3>Total de Productores</h3><p><?php echo $totalProductores; ?></p></div>
-                <div class="kpi-card"><h3>Total de Fincas</h3><p><?php echo $totalFincas; ?></p></div>
+                <div class="kpi-card">
+                    <h3>Total de Pedidos</h3>
+                    <p><?php echo $totalPedidos; ?></p>
+                </div>
+                <div class="kpi-card">
+                    <h3>Total de Cooperativas</h3>
+                    <p><?php echo $totalCooperativas; ?></p>
+                </div>
+                <div class="kpi-card">
+                    <h3>Total de Productores</h3>
+                    <p><?php echo $totalProductores; ?></p>
+                </div>
+                <div class="kpi-card">
+                    <h3>Total de Fincas</h3>
+                    <p><?php echo $totalFincas; ?></p>
+                </div>
                 <?php foreach ($conteoEstados as $estado => $conteo) { ?>
                     <div class="kpi-card">
                         <h3><?php echo $estado; ?></h3>
