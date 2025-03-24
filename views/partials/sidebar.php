@@ -71,7 +71,7 @@ $user_pages = $pages[$user_role] ?? [];
             background-color: white;
             width: 250px; /* Puedes cambiar este ancho aquí */
             position: fixed;
-            top: 30px; /* Controla el espacio superior del sidebar */
+            top: 100px; /* Controla el espacio superior del sidebar */
             bottom: 30px; /* Controla el espacio inferior del sidebar */
             left: 10px;
             padding-top: 30px;
