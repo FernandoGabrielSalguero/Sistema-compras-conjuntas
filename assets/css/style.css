@@ -55,3 +55,13 @@ body {
     margin-left: 200px;
     background-color: #F0F0F0;
 }
+
+body.collapsed .container {
+    margin-left: 80px;
+}
+
+.container {
+    margin-left: 250px;
+    padding: 20px;
+    transition: margin-left 0.3s;
+}
