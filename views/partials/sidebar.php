@@ -72,7 +72,7 @@ $user_pages = $pages[$user_role] ?? [];
             width: 250px;
             position: fixed;
             top: 30px; 
-            bottom: 30px;
+            bottom: 60px;
             left: 10px;
             padding-top: 30px;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
