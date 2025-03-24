@@ -1,67 +1,96 @@
-/* Estilos generales */
 body {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
     font-family: 'Arial', sans-serif;
-    background-color: #F0F0F0;
+    background-color: #F3F4F6;
 }
 
-/* Contenedor principal */
-.container {
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 250px;
+    background-color: #673ab7;
+    transition: all 0.3s;
+    overflow-y: auto;
+}
+
+.sidebar.collapsed {
+    width: 80px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar ul li a {
+    padding: 15px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    padding: 20px;
+    color: white;
+    text-decoration: none;
 }
 
-/* Tarjetas */
-.card {
+.sidebar ul li a:hover {
+    background-color: #5e35b1;
+}
+
+.sidebar ul li a i {
+    margin-right: 10px;
+}
+
+/* Header */
+.header {
+    height: 60px;
     background-color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.header .toggle-btn {
+    cursor: pointer;
+}
+
+.header .user-info {
+    display: flex;
+    align-items: center;
+}
+
+.header .user-info img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-left: 10px;
+}
+
+/* Content */
+.content {
+    margin-left: 250px;
+    padding: 20px;
+    transition: margin-left 0.3s;
+}
+
+.content.collapsed {
+    margin-left: 80px;
+}
+
+/* Cards */
+.card {
+    background: white;
     border-radius: 12px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
     margin-bottom: 20px;
-    width: 80%;
-    max-width: 1200px;
-    transition: transform 0.3s;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
 }
 
 .card:hover {
     transform: scale(1.02);
-}
-
-/* Botón */
-.button {
-    background-color: #673ab7;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.button:hover {
-    background-color: #5e35b1;
-}
-
-/* Encabezados */
-h1, h2 {
-    color: #673ab7;
-}
-
-body {
-    margin-left: 200px;
-    background-color: #F0F0F0;
-}
-
-body.collapsed .container {
-    margin-left: 80px;
-}
-
-.container {
-    margin-left: 250px;
-    padding: 20px;
-    transition: margin-left 0.3s;
 }
