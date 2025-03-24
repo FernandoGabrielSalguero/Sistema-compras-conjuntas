@@ -29,8 +29,8 @@ $pages = [
     'Productor' => [
         'Dashboard' => ['url' => 'dashboard.php', 'icon' => 'fa fa-tachometer-alt'],
         'Mercado Digital' => ['url' => 'mercado_digital.php', 'icon' => 'fa fa-shopping-cart'],
-        'Salir' => ['url' => '../../logout.php', 'icon' => 'fa fa-sign-out-alt'],
-        'Perfil' => ['url' => 'perfil.php', 'icon' => 'fa fa-user']
+        'Perfil' => ['url' => 'perfil.php', 'icon' => 'fa fa-user'],
+        'Salir' => ['url' => '../../logout.php', 'icon' => 'fa fa-sign-out-alt']
     ]
 ];
 
