@@ -42,11 +42,11 @@ $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
 <style>
     #header {
         background-color: white;
-        width: 100%;
+        width: 95%;
         padding: 10px 20px;
         position: fixed;
         top: 0;
-        left: 0;
+        left: 15;
         display: flex;
         justify-content: space-around;
         align-items: center;
