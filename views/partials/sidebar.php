@@ -1,6 +1,8 @@
 <?php
-session_start();
-$rol = $_SESSION['user_role'] ?? 'Productor'; // Por defecto, Productor
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$rol = $_SESSION['user_role'] ?? 'Productor';
 ?>
 
 <div id="sidebar" class="sidebar">

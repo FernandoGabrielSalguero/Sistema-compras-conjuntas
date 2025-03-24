@@ -81,16 +81,11 @@ body {
     margin-left: 80px;
 }
 
-/* Cards */
+/* Cards - Sin animación */
 .card {
     background: white;
     border-radius: 12px;
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s;
-}
-
-.card:hover {
-    transform: scale(1.02);
 }
