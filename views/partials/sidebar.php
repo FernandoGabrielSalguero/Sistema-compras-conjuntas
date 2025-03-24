@@ -18,7 +18,7 @@ $pages = [
         'Alta Fincas' => ['url' => 'alta_fincas.php', 'icon' => 'fa fa-leaf'],
         'Productos' => ['url' => 'productos.php', 'icon' => 'fa fa-box'],
         'Solicitudes de Modificación' => ['url' => 'solicitudes_modificaciones.php', 'icon' => 'fa fa-edit'],
-        'Salir' => ['url' => '../../logout.php', 'icon' => 'fa fa-sign-out']
+        'Salir' => ['url' => '../../logout.php', 'icon' => 'fa-sign-out']
     ],
     'Cooperativa' => [
         'Dashboard' => ['url' => 'dashboard.php', 'icon' => 'fa fa-tachometer-alt'],
