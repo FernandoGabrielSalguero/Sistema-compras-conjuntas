@@ -50,62 +50,67 @@ $user_pages = $pages[$user_role] ?? [];
             font-family: 'Roboto', sans-serif;
             background-color: #f4f4f4;
             display: flex;
+            min-height: 100vh;
+            transition: margin-left 0.3s;
         }
 
         #header {
             background-color: white;
-            width: calc(100% - 250px);
+            width: 100%;
             padding: 10px 20px;
             position: fixed;
             top: 0;
-            left: 250px;
+            left: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             z-index: 10;
-            transition: left 0.3s;
         }
 
         #sidebar {
             background-color: white;
             width: 250px;
-            min-height: 100vh;
             position: fixed;
             top: 0;
             left: 0;
-            transition: transform 0.3s;
+            height: 100vh;
+            padding-top: 60px;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
         }
 
         #sidebar.closed {
             transform: translateX(-250px);
         }
 
-        .sidebar-content {
-            padding: 20px;
-        }
-
         .sidebar-content a {
             display: flex;
             align-items: center;
-            padding: 10px;
+            padding: 15px;
             text-decoration: none;
             color: #424242;
-            font-size: 16px;
             transition: background-color 0.3s;
+            font-size: 15px;
+            margin-bottom: 5px;
         }
 
         .sidebar-content a:hover {
             background-color: #e0e0e0;
         }
 
+        .content {
+            margin-left: 250px;
+            padding: 80px 20px;
+            transition: margin-left 0.3s;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
 
 <!-- Sidebar -->
-<div id="sidebar" class="">
+<div id="sidebar">
     <div class="sidebar-content">
         <?php foreach ($user_pages as $page_name => $page_url): ?>
             <a href="<?php echo $page_url; ?>">🏠 <?php echo $page_name; ?></a>
@@ -128,20 +133,23 @@ $user_pages = $pages[$user_role] ?? [];
     </div>
 </div>
 
+<!-- Contenido principal -->
+<div class="content">
+    <!-- Aquí va el contenido principal de cada página -->
+</div>
+
 <script>
     let sidebarOpen = true;
 
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
-        const header = document.getElementById('header');
+        const content = document.querySelector('.content');
         if (sidebarOpen) {
             sidebar.classList.add('closed');
-            header.style.left = '0';
-            header.style.width = '100%';
+            content.style.marginLeft = '0';
         } else {
             sidebar.classList.remove('closed');
-            header.style.left = '250px';
-            header.style.width = 'calc(100% - 250px)';
+            content.style.marginLeft = '250px';
         }
         sidebarOpen = !sidebarOpen;
     }
