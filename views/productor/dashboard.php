@@ -8,9 +8,17 @@ verificarAcceso(['Productor']);
 <head>
     <meta charset="UTF-8">
     <title>Dashboard Productor</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
 </head>
 <body>
-    <h1>Bienvenido, <?= $_SESSION["user_name"]; ?> (Productor)</h1>
-    <p>Este es el dashboard principal para los productores.</p>
+    <div class="container">
+        <h1>Bienvenido, <?= $_SESSION["user_name"]; ?> (Productor)</h1>
+        
+        <div class="card">
+            <h2>Historial de Pedidos</h2>
+            <p>Aquí podrás ver un listado de tus pedidos realizados.</p>
+            <button class="button">Ver Pedidos</button>
+        </div>
+    </div>
 </body>
 </html>
