@@ -11,35 +11,39 @@ $user_role = $_SESSION['user_role'] ?? '';
 // Páginas permitidas por rol
 $pages = [
     'SVE' => [
-        'Dashboard' => ['url' => 'dashboard.php', 'icon' => '📊'],
-        'Pedidos' => ['url' => 'pedidos.php', 'icon' => '📋'],
-        'Mercado Digital' => ['url' => 'mercado_digital.php', 'icon' => '🛒'],
-        'Alta Usuarios' => ['url' => 'alta_usuarios.php', 'icon' => '👤'],
-        'Alta Fincas' => ['url' => 'alta_fincas.php', 'icon' => '🏡'],
-        'Productos' => ['url' => 'productos.php', 'icon' => '📦'],
-        'Solicitudes de Modificación' => ['url' => 'solicitudes_modificaciones.php', 'icon' => '📝']
+        'Dashboard' => ['url' => 'dashboard.php', 'icon' => 'fa fa-tachometer-alt'],
+        'Pedidos' => ['url' => 'pedidos.php', 'icon' => 'fa fa-clipboard-list'],
+        'Mercado Digital' => ['url' => 'mercado_digital.php', 'icon' => 'fa fa-shopping-cart'],
+        'Alta Usuarios' => ['url' => 'alta_usuarios.php', 'icon' => 'fa fa-user-plus'],
+        'Alta Fincas' => ['url' => 'alta_fincas.php', 'icon' => 'fa fa-leaf'],
+        'Productos' => ['url' => 'productos.php', 'icon' => 'fa fa-box'],
+        'Solicitudes de Modificación' => ['url' => 'solicitudes_modificaciones.php', 'icon' => 'fa fa-edit']
     ],
     'Cooperativa' => [
-        'Dashboard' => ['url' => 'dashboard.php', 'icon' => '📊'],
-        'Mercado Digital' => ['url' => 'mercado_digital.php', 'icon' => '🛒'],
-        'Alta Usuarios' => ['url' => 'alta_usuarios.php', 'icon' => '👥']
+        'Dashboard' => ['url' => 'dashboard.php', 'icon' => 'fa fa-tachometer-alt'],
+        'Mercado Digital' => ['url' => 'mercado_digital.php', 'icon' => 'fa fa-shopping-cart'],
+        'Alta Usuarios' => ['url' => 'alta_usuarios.php', 'icon' => 'fa fa-users']
     ],
     'Productor' => [
-        'Dashboard' => ['url' => 'dashboard.php', 'icon' => '📊'],
-        'Mercado Digital' => ['url' => 'mercado_digital.php', 'icon' => '🛒'],
-        'Perfil' => ['url' => 'perfil.php', 'icon' => '👤']
+        'Dashboard' => ['url' => 'dashboard.php', 'icon' => 'fa fa-tachometer-alt'],
+        'Mercado Digital' => ['url' => 'mercado_digital.php', 'icon' => 'fa fa-shopping-cart'],
+        'Perfil' => ['url' => 'perfil.php', 'icon' => 'fa fa-user']
     ]
 ];
 
 $user_pages = $pages[$user_role] ?? [];
 ?>
 
+<!-- Incluir Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
 <!-- Sidebar -->
 <div id="sidebar">
     <div class="sidebar-content">
         <?php foreach ($user_pages as $page_name => $page_data): ?>
             <a href="<?php echo $page_data['url']; ?>">
-                <?php echo $page_data['icon'] . ' ' . $page_name; ?>
+                <i class="<?php echo $page_data['icon']; ?>"></i>
+                <span><?php echo $page_name; ?></span>
             </a>
         <?php endforeach; ?>
     </div>
@@ -71,5 +75,10 @@ $user_pages = $pages[$user_role] ?? [];
 
     .sidebar-content a:hover {
         background-color: #f0f0f0;
+    }
+
+    .sidebar-content i {
+        margin-right: 10px;
+        font-size: 16px;
     }
 </style>
