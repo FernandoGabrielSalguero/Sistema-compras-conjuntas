@@ -11,16 +11,20 @@ $user_name = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : '';
 $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
 ?>
 
+<!-- Incluir Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
 <!-- Header -->
 <div id="header">
     <div class="left-section">
-        <button onclick="toggleModal()">⬒</button>
+        <button onclick="toggleModal()"><i class="fas fa-th"></i></button>
     </div>
 
     <div class="right-section">
-        <div class="date-display">📅 <?php echo date('d F Y'); ?></div>
+        <div class="date-display"><i class="fas fa-calendar-day"></i> <?php echo date('d F Y'); ?></div>
         <div class="user-info">
-            <span><?php echo $user_role . ' - ' . $user_name; ?></span>
+            <div class="user-role"><?php echo $user_role; ?></div>
+            <div class="user-name"><?php echo $user_name; ?></div>
         </div>
     </div>
 </div>
@@ -28,7 +32,7 @@ $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
 <!-- Modal de Aplicaciones -->
 <div id="appModal" class="modal">
     <div class="modal-content">
-        <h2>Aplicaciones</h2>
+        <h2><i class="fas fa-cogs"></i> Aplicaciones</h2>
         <p>Sin aplicaciones asignadas</p>
         <button onclick="toggleModal()">Cerrar</button>
     </div>
@@ -56,6 +60,23 @@ $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
         gap: 20px;
     }
 
+    .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .user-role {
+        font-size: 12px;
+        color: gray;
+    }
+
+    .user-name {
+        font-size: 14px;
+        color: #333;
+        font-weight: bold;
+    }
+
     .modal {
         display: none;
         position: fixed;
@@ -74,6 +95,17 @@ $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
         border-radius: 8px;
         width: 300px;
         text-align: center;
+    }
+
+    .modal-content h2 {
+        margin-bottom: 10px;
+    }
+
+    button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
     }
 </style>
 
