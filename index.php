@@ -60,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     } elseif ($user["rol"] === "Cooperativa") {
                         header("Location: cooperativa/dashboard.php");
                     } elseif ($user["rol"] === "SVE") {
-                        header("Location: sve/dashboard.php");
+                        header("Location: views/sve/dashboard.php");
                     }
                     exit();
                 } else {
