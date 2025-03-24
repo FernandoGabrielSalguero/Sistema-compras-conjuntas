@@ -56,9 +56,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     
                     // Redirigir al dashboard correspondiente
                     if ($user["rol"] === "Productor") {
-                        header("Location: productor/dashboard.php");
+                        header("Location: views/productor/dashboard.php");
                     } elseif ($user["rol"] === "Cooperativa") {
-                        header("Location: cooperativa/dashboard.php");
+                        header("Location: views/cooperativa/dashboard.php");
                     } elseif ($user["rol"] === "SVE") {
                         header("Location: views/sve/dashboard.php");
                     }
