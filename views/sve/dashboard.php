@@ -77,7 +77,7 @@ try {
             flex-grow: 1;
             padding: 20px;
             overflow-y: auto;
-            margin-top: 70px;
+            margin-top: 21px;
             /* Agregamos margen para que no quede oculto por el header */
             margin-left: 260px;
             /* Este margen asegura que el contenido no quede debajo del sidebar */
