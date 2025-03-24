@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $error = "❌ Todos los campos son obligatorios.";
     } else {
         // Consultar el usuario en la base de datos
-        $stmt = $conn->prepare("SELECT * FROM usuarios WHERE id_productor = :cuit");
+        $stmt = $conn->prepare("SELECT * FROM usuarios WHERE cuit = :cuit");
         $stmt->bindParam(':cuit', $cuit);
         $stmt->execute();
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -141,6 +141,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             margin-bottom: 10px;
             text-align: center;
         }
+        .password-container {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -154,14 +164,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <label for="cuit">CUIT:</label>
                 <input type="text" name="cuit" id="cuit" required>
             </div>
-            <div class="form-group">
+            <div class="form-group password-container">
                 <label for="password">Contraseña:</label>
                 <input type="password" name="password" id="password" required>
+                <span class="toggle-password">👁️</span>
             </div>
             <div class="form-group">
                 <button type="submit">Iniciar Sesión</button>
             </div>
         </form>
     </div>
+
+    <script>
+        const togglePassword = document.querySelector('.toggle-password');
+        const passwordField = document.getElementById('password');
+
+        togglePassword.addEventListener('click', () => {
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+            togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+    </script>
 </body>
 </html>
