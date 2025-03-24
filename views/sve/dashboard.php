@@ -1,41 +1,102 @@
 <?php
-require_once '../../controllers/auth.php';
-verificarAcceso(['SVE']);
+session_start();
+
+// Proteger la sesión
+if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'SVE') {
+    header("Location: ../../index.php");
+    exit();
+}
+
+$user_name = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : '';
+$user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
+
+// Conexión a la base de datos
+$dotenv = parse_ini_file("../../.env");
+$host = $dotenv['DB_HOST'];
+$dbname = $dotenv['DB_NAME'];
+$username = $dotenv['DB_USER'];
+$password = $dotenv['DB_PASS'];
+
+try {
+    $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Obtener los KPI
+    $totalPedidos = $conn->query("SELECT COUNT(*) FROM pedidos")->fetchColumn();
+    $totalCooperativas = $conn->query("SELECT COUNT(*) FROM usuarios WHERE rol = 'Cooperativa'")->fetchColumn();
+    $totalProductores = $conn->query("SELECT COUNT(*) FROM usuarios WHERE rol = 'Productor'")->fetchColumn();
+    $totalFincas = $conn->query("SELECT COUNT(*) FROM fincas")->fetchColumn();
+} catch (PDOException $e) {
+    die("Error de conexión a la base de datos: " . $e->getMessage());
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard SVE</title>
-    <link rel="stylesheet" href="../../assets/css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+        }
+        
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            text-align: center;
+        }
+
+        .kpi-card:hover {
+            transform: scale(1.02);
+        }
+
+        .kpi-card h3 {
+            margin: 0;
+            color: #6C63FF;
+            font-size: 20px;
+        }
+
+        .kpi-card p {
+            font-size: 28px;
+            margin: 10px 0;
+            color: #333;
+        }
+
+    </style>
 </head>
 <body>
-    <?php include '../../views/partials/sidebar.php'; ?>
-    <?php include '../../views/partials/header.php'; ?>
-
-    <div class="container">
-        <h1>Bienvenido, <?= $_SESSION["user_name"]; ?> (SVE)</h1>
-
-        <div class="card">
-            <h2>Bienvenido, <?= $_SESSION["user_name"]; ?> (Productor)</h2>
-            <div class="dashboard-grid">
-                <div class="card">
-                    <h2>Total de Pedidos</h2>
-                    <p>25 Pedidos realizados</p>
-                </div>
-                <div class="card">
-                    <h2>Compras Pendientes</h2>
-                    <p>5 Compras en proceso</p>
-                </div>
-                <div class="card">
-                    <h2>Historial de Compras</h2>
-                    <p>Revisa todas tus compras pasadas</p>
-                </div>
-            </div>
+    <div class="kpi-container">
+        <div class="kpi-card">
+            <h3>Total de Pedidos</h3>
+            <p><?php echo $totalPedidos; ?></p>
+        </div>
+        <div class="kpi-card">
+            <h3>Total de Cooperativas</h3>
+            <p><?php echo $totalCooperativas; ?></p>
+        </div>
+        <div class="kpi-card">
+            <h3>Total de Productores</h3>
+            <p><?php echo $totalProductores; ?></p>
+        </div>
+        <div class="kpi-card">
+            <h3>Total de Fincas</h3>
+            <p><?php echo $totalFincas; ?></p>
         </div>
     </div>
 </body>
-
 </html>
