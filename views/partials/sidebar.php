@@ -23,11 +23,13 @@ $pages = [
     'Cooperativa' => [
         'Dashboard' => ['url' => 'dashboard.php', 'icon' => 'fa fa-tachometer-alt'],
         'Mercado Digital' => ['url' => 'mercado_digital.php', 'icon' => 'fa fa-shopping-cart'],
-        'Alta Usuarios' => ['url' => 'alta_usuarios.php', 'icon' => 'fa fa-users']
+        'Alta Usuarios' => ['url' => 'alta_usuarios.php', 'icon' => 'fa fa-users'],
+        'Salir' => ['url' => '../../logout.php', 'icon' => 'fa fa-sign-out-alt']
     ],
     'Productor' => [
         'Dashboard' => ['url' => 'dashboard.php', 'icon' => 'fa fa-tachometer-alt'],
         'Mercado Digital' => ['url' => 'mercado_digital.php', 'icon' => 'fa fa-shopping-cart'],
+        'Salir' => ['url' => '../../logout.php', 'icon' => 'fa fa-sign-out-alt'],
         'Perfil' => ['url' => 'perfil.php', 'icon' => 'fa fa-user']
     ]
 ];
