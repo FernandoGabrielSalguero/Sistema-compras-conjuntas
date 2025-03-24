@@ -70,6 +70,7 @@ try {
             padding: 20px;
             overflow-y: auto;
             height: calc(100vh - 60px);
+            margin-top: 60px; /* Para no superponerse con el header */
         }
         .kpi-container {
             display: grid;
@@ -83,6 +84,10 @@ try {
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
+            transition: transform 0.2s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
         }
         .kpi-card h3 {
             margin: 0;
