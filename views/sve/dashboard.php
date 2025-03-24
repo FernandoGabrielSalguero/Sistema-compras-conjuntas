@@ -54,107 +54,78 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard SVE</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Roboto', sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Roboto', sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+    }
 
-        .main-container {
-            display: flex;
-            flex-grow: 1;
-            margin-top: 60px;
-        }
+    #content-wrapper {
+        display: flex;
+        width: 100%;
+    }
 
-        .content {
-            padding: 20px;
-            flex-grow: 1;
-            overflow-y: auto;
-        }
+    .content {
+        flex-grow: 1;
+        padding: 20px;
+        overflow-y: auto;
+        margin-left: 260px; /* Este margen asegura que el contenido no quede debajo del sidebar */
+        transition: margin-left 0.3s;
+    }
 
-        .kpi-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 20px;
-        }
+    .kpi-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
 
-        .kpi-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
+    .kpi-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
 
-        .kpi-card h3 {
-            margin: 0;
-            color: #6C63FF;
-            font-size: 18px;
-        }
+    .kpi-card h3 {
+        margin: 0;
+        color: #6C63FF;
+        font-size: 18px;
+    }
 
-        .kpi-card p {
-            font-size: 24px;
-            margin: 10px 0;
-            color: #333;
-        }
+    .kpi-card p {
+        font-size: 24px;
+        margin: 10px 0;
+        color: #333;
+    }
+</style>
 
-        /* Aseguramos que el sidebar no afecte el contenido */
-        #sidebar {
-            position: fixed;
-            top: 60px; 
-            left: 0;
-            width: 250px;
-            height: calc(100vh - 60px);
-            background: white;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            overflow-y: auto;
-            padding-top: 20px;
-        }
-
-        #header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: white;
-            padding: 10px 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-        }
-    </style>
 </head>
 <body>
-
-    <!-- Incluir el header y sidebar como componentes -->
     <?php include '../../views/partials/header.php'; ?>
+    <?php include '../../views/partials/sidebar.php'; ?>
 
-    <div class="main-container">
-        <?php include '../../views/partials/sidebar.php'; ?>
-
-        <!-- Contenido principal -->
+    <div id="content-wrapper">
         <div class="content">
             <div class="kpi-container">
                 <div class="kpi-card"><h3>Total de Pedidos</h3><p><?php echo $totalPedidos; ?></p></div>
                 <div class="kpi-card"><h3>Total de Cooperativas</h3><p><?php echo $totalCooperativas; ?></p></div>
                 <div class="kpi-card"><h3>Total de Productores</h3><p><?php echo $totalProductores; ?></p></div>
                 <div class="kpi-card"><h3>Total de Fincas</h3><p><?php echo $totalFincas; ?></p></div>
-                
-                <!-- Mostrar los estados de pedidos -->
-                <?php foreach ($conteoEstados as $estado => $conteo): ?>
+                <?php foreach ($conteoEstados as $estado => $conteo) { ?>
                     <div class="kpi-card">
                         <h3><?php echo $estado; ?></h3>
                         <p><?php echo $conteo; ?></p>
                     </div>
-                <?php endforeach; ?>
+                <?php } ?>
             </div>
         </div>
     </div>
-    
 </body>
+
 </html>
