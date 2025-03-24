@@ -1,7 +1,7 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Arial', sans-serif;
+    font-family: Arial, sans-serif;
     background-color: #F3F4F6;
 }
 
@@ -12,15 +12,16 @@ body {
     left: 0;
     height: 100%;
     width: 250px;
-    background-color: #673ab7;
+    background-color: white;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     transition: all 0.3s;
-    overflow-y: auto;
 }
 
 .sidebar.collapsed {
     width: 80px;
 }
 
+/* Sidebar Links */
 .sidebar ul {
     list-style: none;
     padding: 0;
@@ -29,29 +30,34 @@ body {
 
 .sidebar ul li a {
     padding: 15px;
-    display: flex;
-    align-items: center;
-    color: white;
+    display: block;
+    color: #4B5563;
     text-decoration: none;
 }
 
 .sidebar ul li a:hover {
-    background-color: #5e35b1;
+    background-color: #E5E7EB;
 }
 
-.sidebar ul li a i {
-    margin-right: 10px;
+/* Content */
+.content {
+    margin-left: 250px;
+    padding: 20px;
+    transition: margin-left 0.3s;
+}
+
+.content.collapsed {
+    margin-left: 80px;
 }
 
 /* Header */
 .header {
-    height: 60px;
     background-color: white;
+    padding: 10px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 20px;
-    border-bottom: 1px solid #E5E7EB;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .header .toggle-btn {
@@ -68,24 +74,4 @@ body {
     height: 40px;
     border-radius: 50%;
     margin-left: 10px;
-}
-
-/* Content */
-.content {
-    margin-left: 250px;
-    padding: 20px;
-    transition: margin-left 0.3s;
-}
-
-.content.collapsed {
-    margin-left: 80px;
-}
-
-/* Cards - Sin animación */
-.card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
 }
