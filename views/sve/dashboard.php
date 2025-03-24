@@ -37,65 +37,73 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard SVE</title>
+    <link rel="stylesheet" href="../../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../../assets/css/header.css">
     <style>
         body {
             margin: 0;
             padding: 0;
             font-family: 'Roboto', sans-serif;
             background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
         }
-        
+        .content {
+            margin-left: 250px; /* Este margen se ajusta según el ancho del sidebar */
+            padding: 20px;
+            overflow-y: auto;
+            height: calc(100vh - 60px); /* Ajustar la altura según el header */
+        }
         .kpi-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             padding: 20px;
         }
-
         .kpi-card {
             background: white;
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
             text-align: center;
+            transition: transform 0.3s;
         }
-
-        .kpi-card:hover {
-            transform: scale(1.02);
-        }
-
         .kpi-card h3 {
             margin: 0;
             color: #6C63FF;
             font-size: 20px;
         }
-
         .kpi-card p {
             font-size: 28px;
             margin: 10px 0;
             color: #333;
         }
-
     </style>
 </head>
 <body>
-    <div class="kpi-container">
-        <div class="kpi-card">
-            <h3>Total de Pedidos</h3>
-            <p><?php echo $totalPedidos; ?></p>
-        </div>
-        <div class="kpi-card">
-            <h3>Total de Cooperativas</h3>
-            <p><?php echo $totalCooperativas; ?></p>
-        </div>
-        <div class="kpi-card">
-            <h3>Total de Productores</h3>
-            <p><?php echo $totalProductores; ?></p>
-        </div>
-        <div class="kpi-card">
-            <h3>Total de Fincas</h3>
-            <p><?php echo $totalFincas; ?></p>
+    <?php include '../../views/partials/header.php'; ?>
+    <?php include '../../views/partials/sidebar.php'; ?>
+
+    <div class="content">
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <h3>Total de Pedidos</h3>
+                <p><?php echo $totalPedidos; ?></p>
+            </div>
+            <div class="kpi-card">
+                <h3>Total de Cooperativas</h3>
+                <p><?php echo $totalCooperativas; ?></p>
+            </div>
+            <div class="kpi-card">
+                <h3>Total de Productores</h3>
+                <p><?php echo $totalProductores; ?></p>
+            </div>
+            <div class="kpi-card">
+                <h3>Total de Fincas</h3>
+                <p><?php echo $totalFincas; ?></p>
+            </div>
         </div>
     </div>
 </body>
