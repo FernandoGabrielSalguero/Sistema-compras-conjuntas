@@ -64,17 +64,16 @@ try {
             min-height: 100vh;
         }
 
-        .main-content {
+        .main-container {
             display: flex;
             flex-grow: 1;
+            margin-top: 60px;
         }
 
         .content {
-            margin-left: 260px;
             padding: 20px;
             flex-grow: 1;
             overflow-y: auto;
-            margin-top: 60px;
         }
 
         .kpi-container {
@@ -103,6 +102,31 @@ try {
             margin: 10px 0;
             color: #333;
         }
+
+        /* Aseguramos que el sidebar no afecte el contenido */
+        #sidebar {
+            position: fixed;
+            top: 60px; 
+            left: 0;
+            width: 250px;
+            height: calc(100vh - 60px);
+            background: white;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow-y: auto;
+            padding-top: 20px;
+        }
+
+        #header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            padding: 10px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
@@ -110,7 +134,7 @@ try {
     <!-- Incluir el header y sidebar como componentes -->
     <?php include '../../views/partials/header.php'; ?>
 
-    <div class="main-content">
+    <div class="main-container">
         <?php include '../../views/partials/sidebar.php'; ?>
 
         <!-- Contenido principal -->
