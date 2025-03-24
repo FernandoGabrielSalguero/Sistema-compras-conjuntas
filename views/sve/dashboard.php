@@ -10,6 +10,13 @@ include '../../views/partials/header.php';
 include '../../views/partials/sidebar.php';
 ?>
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard SVE</title>
+    <link rel="stylesheet" href="../../assets/css/style.css"> <!-- Llamada al archivo CSS -->
+</head>
+
 <div class="content">
     <div class="kpi-container">
         <div class="kpi-card"><h3>Total de Pedidos</h3><p>0</p></div>

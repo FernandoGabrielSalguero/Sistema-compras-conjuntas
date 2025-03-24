@@ -23,6 +23,13 @@ $pages = [
 $user_pages = $pages[$user_role] ?? [];
 ?>
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar Fijo</title>
+    <link rel="stylesheet" href="../../assets/css/style.css"> <!-- Llamada al archivo CSS -->
+</head>
+
 <div class="sidebar">
     <ul>
         <?php foreach ($user_pages as $page_name => $icon): ?>

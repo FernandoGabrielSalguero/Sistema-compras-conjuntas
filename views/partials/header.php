@@ -9,6 +9,12 @@ if (!isset($_SESSION['user_role'])) {
 $user_name = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : '';
 $user_role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
 ?>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Header Modificado</title>
+    <link rel="stylesheet" href="../../assets/css/style.css"> <!-- Llamada al archivo CSS -->
+</head>
 
 <div class="header">
     <div class="left-section">
