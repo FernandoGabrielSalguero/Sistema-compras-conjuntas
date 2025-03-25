@@ -22,6 +22,7 @@ try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    // Obtener datos de pedidos
     $query = "SELECT p.id, u.nombre AS productor, c.nombre AS cooperativa, u.rol, p.fecha_compra, p.valor_total, p.estado_compra, p.factura 
               FROM pedidos p 
               JOIN usuarios u ON p.id_usuario = u.id 
@@ -40,10 +41,77 @@ try {
     <meta charset="UTF-8">
     <title>Pedidos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #F3F4F6;
+            font-family: Arial, sans-serif;
+        }
+        .content {
+            padding: 20px;
+            margin-left: 260px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #4A90E2;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #F5F5F5;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .actions button {
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+        .form-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .form-container input, select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 <div class="content">
     <h2>Pedidos</h2>
+
+    <div class="form-container">
+        <input type="text" id="buscarProductor" placeholder="Buscar por Productor">
+        <input type="text" id="buscarCooperativa" placeholder="Buscar por Cooperativa">
+        <input type="date" id="fechaPedido">
+        <button class="btn" onclick="buscarPedidos()">Buscar</button>
+    </div>
 
     <table>
         <thead>
@@ -60,14 +128,14 @@ try {
         </thead>
         <tbody>
         <?php foreach ($pedidos as $pedido): ?>
-            <tr id="row-<?php echo $pedido['id']; ?>">
+            <tr>
                 <td><?php echo $pedido['productor']; ?></td>
                 <td><?php echo $pedido['cooperativa']; ?></td>
                 <td><?php echo $pedido['rol']; ?></td>
                 <td><?php echo $pedido['fecha_compra']; ?></td>
                 <td>$<?php echo number_format($pedido['valor_total'], 2); ?></td>
                 <td>
-                    <select onchange="updateStatus(<?php echo $pedido['id']; ?>, this.value)">
+                    <select>
                         <?php
                         $estados = ['Pedido recibido', 'Pedido cancelado', 'Pedido OK pendiente de factura',
                             'Pedido OK FACTURADO', 'Pedido pendiente de retito', 'Pedido en camino al productor',
@@ -86,8 +154,10 @@ try {
                         Pendiente de factura
                     <?php endif; ?>
                 </td>
-                <td>
-                    <button onclick="deleteOrder(<?php echo $pedido['id']; ?>)"><i class="fas fa-trash"></i></button>
+                <td class="actions">
+                    <button><i class="fas fa-eye"></i></button>
+                    <button><i class="fas fa-upload"></i></button>
+                    <button><i class="fas fa-trash"></i></button>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -96,24 +166,28 @@ try {
 </div>
 
 <script>
-    function updateStatus(idPedido, nuevoEstado) {
-        fetch('actualizar_estado.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: `idPedido=${idPedido}&nuevoEstado=${nuevoEstado}`
-        }).then(response => response.text())
-          .then(data => alert(data));
-    }
+    function buscarPedidos() {
+        const productor = document.getElementById('buscarProductor').value.toLowerCase();
+        const cooperativa = document.getElementById('buscarCooperativa').value.toLowerCase();
+        const fecha = document.getElementById('fechaPedido').value;
 
-    function deleteOrder(idPedido) {
-        if (confirm("¿Estás seguro de eliminar este pedido?")) {
-            fetch('eliminar_pedido.php', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: `idPedido=${idPedido}`
-            }).then(response => response.text())
-              .then(data => alert(data));
-        }
+        const rows = document.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const productorText = row.cells[0].textContent.toLowerCase();
+            const cooperativaText = row.cells[1].textContent.toLowerCase();
+            const fechaText = row.cells[3].textContent.toLowerCase();
+
+            if (
+                (productor === '' || productorText.includes(productor)) &&
+                (cooperativa === '' || cooperativaText.includes(cooperativa)) &&
+                (fecha === '' || fechaText.includes(fecha))
+            ) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
     }
 </script>
 </body>
