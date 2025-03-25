@@ -33,6 +33,115 @@ try {
 } catch (PDOException $e) {
     die("Error de conexión: " . $e->getMessage());
 }
+
+$idPedido = $_POST['idPedido'];
+$nuevoEstado = $_POST['nuevoEstado'];
+
+try {
+    $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $stmt = $conn->prepare("UPDATE pedidos SET estado_compra = :nuevoEstado WHERE id = :idPedido");
+    $stmt->bindParam(':nuevoEstado', $nuevoEstado);
+    $stmt->bindParam(':idPedido', $idPedido);
+    $stmt->execute();
+
+    echo "Estado actualizado correctamente.";
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+}
+
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $idPedido = $_POST['idPedido'];
+    $factura = $_FILES['factura'];
+
+    $targetDir = "../../uploads/facturas/";
+    $targetFile = $targetDir . basename($factura["name"]);
+    $uploadOk = true;
+
+    if (strtolower(pathinfo($targetFile, PATHINFO_EXTENSION)) != "pdf") {
+        echo "Solo se permiten archivos PDF.";
+        $uploadOk = false;
+    }
+
+    if ($uploadOk && move_uploaded_file($factura["tmp_name"], $targetFile)) {
+        $dotenv = parse_ini_file("../../.env");
+        $host = $dotenv['DB_HOST'];
+        $dbname = $dotenv['DB_NAME'];
+        $username = $dotenv['DB_USER'];
+        $password = $dotenv['DB_PASS'];
+
+        try {
+            $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            $stmt = $conn->prepare("UPDATE pedidos SET factura = :factura WHERE id = :idPedido");
+            $stmt->bindParam(':factura', $factura["name"]);
+            $stmt->bindParam(':idPedido', $idPedido);
+            $stmt->execute();
+
+            echo "Factura subida y registrada correctamente.";
+        } catch (PDOException $e) {
+            echo "Error: " . $e->getMessage();
+        }
+    }
+}
+
+
+// eliminar_pedido.php
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $idPedido = $_POST['idPedido'];
+
+    $dotenv = parse_ini_file("../../.env");
+    $host = $dotenv['DB_HOST'];
+    $dbname = $dotenv['DB_NAME'];
+    $username = $dotenv['DB_USER'];
+    $password = $dotenv['DB_PASS'];
+
+    try {
+        $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $stmt = $conn->prepare("DELETE FROM pedidos WHERE id = :idPedido");
+        $stmt->bindParam(':idPedido', $idPedido);
+        $stmt->execute();
+
+        echo "Pedido eliminado correctamente.";
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+    }
+}
+
+
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $idPedido = $_POST['idPedido'];
+
+    $dotenv = parse_ini_file("../../.env");
+    $host = $dotenv['DB_HOST'];
+    $dbname = $dotenv['DB_NAME'];
+    $username = $dotenv['DB_USER'];
+    $password = $dotenv['DB_PASS'];
+
+    try {
+        $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $stmt = $conn->prepare("SELECT * FROM pedidos_detalle WHERE id_pedido = :idPedido");
+        $stmt->bindParam(':idPedido', $idPedido);
+        $stmt->execute();
+
+        $detalle = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($detalle);
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+    }
+
+
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -163,6 +272,15 @@ try {
         <?php endforeach; ?>
         </tbody>
     </table>
+
+
+    <form action="subir_factura.php" method="POST" enctype="multipart/form-data">
+    <input type="file" name="factura" accept="application/pdf">
+    <input type="hidden" name="idPedido" value="ID_DEL_PEDIDO_AQUI">
+    <button type="submit">Subir Factura</button>
+</form>
+
+
 </div>
 
 <script>
@@ -191,6 +309,40 @@ try {
             // Aquí va la lógica para eliminar en la base de datos
         }
     }
+
+    function confirmStateChange(idPedido, nuevoEstado) {
+    fetch('actualizar_estado.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `idPedido=${idPedido}&nuevoEstado=${nuevoEstado}`
+    }).then(response => response.text())
+    .then(data => alert(data));
+}
+
+function deleteOrder(idPedido) {
+    if (confirm("¿Estás seguro de eliminar este pedido?")) {
+        fetch('eliminar_pedido.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `idPedido=${idPedido}`
+        }).then(response => response.text())
+        .then(data => alert(data));
+    }
+}
+
+function viewDetail(idPedido) {
+    fetch('ver_detalle.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `idPedido=${idPedido}`
+    }).then(response => response.json())
+    .then(data => {
+        console.log(data);
+        alert("Detalle mostrado en la consola.");
+    });
+}
+
+
 </script>
 </body>
 </html>
