@@ -128,14 +128,14 @@ try {
         </thead>
         <tbody>
         <?php foreach ($pedidos as $pedido): ?>
-            <tr>
+            <tr id="row-<?php echo $pedido['id']; ?>">
                 <td><?php echo $pedido['productor']; ?></td>
                 <td><?php echo $pedido['cooperativa']; ?></td>
                 <td><?php echo $pedido['rol']; ?></td>
                 <td><?php echo $pedido['fecha_compra']; ?></td>
                 <td>$<?php echo number_format($pedido['valor_total'], 2); ?></td>
                 <td>
-                    <select>
+                    <select onchange="confirmStateChange(<?php echo $pedido['id']; ?>, this.value)">
                         <?php
                         $estados = ['Pedido recibido', 'Pedido cancelado', 'Pedido OK pendiente de factura',
                             'Pedido OK FACTURADO', 'Pedido pendiente de retito', 'Pedido en camino al productor',
@@ -155,9 +155,9 @@ try {
                     <?php endif; ?>
                 </td>
                 <td class="actions">
-                    <button><i class="fas fa-eye"></i></button>
-                    <button><i class="fas fa-upload"></i></button>
-                    <button><i class="fas fa-trash"></i></button>
+                    <button onclick="viewDetail(<?php echo $pedido['id']; ?>)"><i class="fas fa-eye"></i></button>
+                    <button onclick="uploadInvoice(<?php echo $pedido['id']; ?>)"><i class="fas fa-upload"></i></button>
+                    <button onclick="deleteOrder(<?php echo $pedido['id']; ?>)"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -167,27 +167,29 @@ try {
 
 <script>
     function buscarPedidos() {
-        const productor = document.getElementById('buscarProductor').value.toLowerCase();
-        const cooperativa = document.getElementById('buscarCooperativa').value.toLowerCase();
-        const fecha = document.getElementById('fechaPedido').value;
+        alert("Función de búsqueda en desarrollo.");
+    }
 
-        const rows = document.querySelectorAll('tbody tr');
+    function confirmStateChange(idPedido, nuevoEstado) {
+        if (confirm("¿Estás seguro de cambiar el estado del pedido?")) {
+            alert("Se actualizará el estado a: " + nuevoEstado);
+            // Aquí va la lógica para enviar a la base de datos
+        }
+    }
 
-        rows.forEach(row => {
-            const productorText = row.cells[0].textContent.toLowerCase();
-            const cooperativaText = row.cells[1].textContent.toLowerCase();
-            const fechaText = row.cells[3].textContent.toLowerCase();
+    function viewDetail(idPedido) {
+        alert("Función de ver detalle para el pedido ID: " + idPedido);
+    }
 
-            if (
-                (productor === '' || productorText.includes(productor)) &&
-                (cooperativa === '' || cooperativaText.includes(cooperativa)) &&
-                (fecha === '' || fechaText.includes(fecha))
-            ) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
+    function uploadInvoice(idPedido) {
+        alert("Función de cargar factura para el pedido ID: " + idPedido);
+    }
+
+    function deleteOrder(idPedido) {
+        if (confirm("¿Estás seguro que deseas eliminar este pedido?")) {
+            alert("Eliminando pedido con ID: " + idPedido);
+            // Aquí va la lógica para eliminar en la base de datos
+        }
     }
 </script>
 </body>
