@@ -41,63 +41,123 @@ try {
     <meta charset="UTF-8">
     <title>Pedidos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/5.3.45/css/materialdesignicons.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <style>
-        body { background-color: #F3F4F6; font-family: Arial, sans-serif; }
-        .content { padding: 20px; margin-left: 260px; }
-        table { width: 100%; margin-top: 20px; background: white; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 10px; text-align: left; }
-        th { background-color: #4A90E2; color: white; }
-        tr:nth-child(even) { background-color: #F5F5F5; }
-        .actions { display: flex; gap: 10px; justify-content: center; }
-        .actions button { background: none; cursor: pointer; font-size: 1.2em; padding: 5px; color: #4A90E2; }
-        .actions button:hover { transform: scale(1.1); color: #673AB7; }
-        .btn { padding: 10px 20px; background-color: #4A90E2; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #F3F4F6;
+            font-family: Arial, sans-serif;
+        }
+        .content {
+            padding: 20px;
+            margin-left: 260px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #4A90E2;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #F5F5F5;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .actions button {
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+        .form-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .form-container input, select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 <div class="content">
     <h2>Pedidos</h2>
 
+    <div class="form-container">
+        <input type="text" id="buscarProductor" placeholder="Buscar por Productor">
+        <input type="text" id="buscarCooperativa" placeholder="Buscar por Cooperativa">
+        <input type="date" id="fechaPedido">
+        <button class="btn" onclick="buscarPedidos()">Buscar</button>
+    </div>
+
     <table>
         <thead>
-            <tr>
-                <th>Productor</th>
-                <th>Cooperativa</th>
-                <th>Rol</th>
-                <th>Fecha de Compra</th>
-                <th>Valor Total</th>
-                <th>Estado</th>
-                <th>Factura</th>
-                <th>Acciones</th>
-            </tr>
+        <tr>
+            <th>Productor</th>
+            <th>Cooperativa</th>
+            <th>Rol</th>
+            <th>Fecha de Compra</th>
+            <th>Valor Total</th>
+            <th>Estado</th>
+            <th>Factura</th>
+            <th>Acciones</th>
+        </tr>
         </thead>
         <tbody>
         <?php foreach ($pedidos as $pedido): ?>
-            <tr>
+            <tr id="row-<?php echo $pedido['id']; ?>">
                 <td><?php echo $pedido['productor']; ?></td>
                 <td><?php echo $pedido['cooperativa']; ?></td>
                 <td><?php echo $pedido['rol']; ?></td>
                 <td><?php echo $pedido['fecha_compra']; ?></td>
                 <td>$<?php echo number_format($pedido['valor_total'], 2); ?></td>
                 <td>
-                    <select>
-                        <option>Pedido recibido</option>
-                        <option>Pedido cancelado</option>
-                        <option>Pedido OK pendiente de factura</option>
-                        <option>Pedido OK FACTURADO</option>
-                        <option>Pedido pendiente de retito</option>
-                        <option>Pedido en camino al productor</option>
-                        <option>Pedido en camino a la cooperativa.</option>
+                    <select onchange="confirmStateChange(<?php echo $pedido['id']; ?>, this.value)">
+                        <?php
+                        $estados = ['Pedido recibido', 'Pedido cancelado', 'Pedido OK pendiente de factura',
+                            'Pedido OK FACTURADO', 'Pedido pendiente de retito', 'Pedido en camino al productor',
+                            'Pedido en camino a la cooperativa.'];
+                        foreach ($estados as $estado) {
+                            $selected = ($pedido['estado_compra'] === $estado) ? 'selected' : '';
+                            echo "<option value='$estado' $selected>$estado</option>";
+                        }
+                        ?>
                     </select>
                 </td>
-                <td><?php echo $pedido['factura'] ?? 'Pendiente de factura'; ?></td>
+                <td>
+                    <?php if ($pedido['factura']): ?>
+                        <a href="../../uploads/facturas/<?php echo $pedido['factura']; ?>" target="_blank">📄 Ver</a>
+                    <?php else: ?>
+                        Pendiente de factura
+                    <?php endif; ?>
+                </td>
                 <td class="actions">
-                    <button><i class="mdi mdi-eye"></i></button>
-                    <button><i class="mdi mdi-upload"></i></button>
-                    <button><i class="mdi mdi-delete"></i></button>
+                    <button onclick="viewDetail(<?php echo $pedido['id']; ?>)"><i class="fas fa-eye"></i></button>
+                    <button onclick="uploadInvoice(<?php echo $pedido['id']; ?>)"><i class="fas fa-upload"></i></button>
+                    <button onclick="deleteOrder(<?php echo $pedido['id']; ?>)"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -106,14 +166,31 @@ try {
 </div>
 
 <script>
-    function showSnackbar(message) {
-        const snackbar = document.createElement('div');
-        snackbar.className = 'snackbar show';
-        snackbar.innerText = message;
-        document.body.appendChild(snackbar);
-        setTimeout(() => snackbar.remove(), 10000);
+    function buscarPedidos() {
+        alert("Función de búsqueda en desarrollo.");
+    }
+
+    function confirmStateChange(idPedido, nuevoEstado) {
+        if (confirm("¿Estás seguro de cambiar el estado del pedido?")) {
+            alert("Se actualizará el estado a: " + nuevoEstado);
+            // Aquí va la lógica para enviar a la base de datos
+        }
+    }
+
+    function viewDetail(idPedido) {
+        alert("Función de ver detalle para el pedido ID: " + idPedido);
+    }
+
+    function uploadInvoice(idPedido) {
+        alert("Función de cargar factura para el pedido ID: " + idPedido);
+    }
+
+    function deleteOrder(idPedido) {
+        if (confirm("¿Estás seguro que deseas eliminar este pedido?")) {
+            alert("Eliminando pedido con ID: " + idPedido);
+            // Aquí va la lógica para eliminar en la base de datos
+        }
     }
 </script>
-
 </body>
 </html>
