@@ -22,7 +22,6 @@ try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Obtener datos de pedidos
     $query = "SELECT p.id, u.nombre AS productor, c.nombre AS cooperativa, u.rol, p.fecha_compra, p.valor_total, p.estado_compra, p.factura 
               FROM pedidos p 
               JOIN usuarios u ON p.id_usuario = u.id 
@@ -42,16 +41,8 @@ try {
     <title>Pedidos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #F3F4F6;
-            font-family: Arial, sans-serif;
-        }
-        .content {
-            padding: 20px;
-            margin-left: 260px;
-        }
+        body { background-color: #F3F4F6; }
+        .content { padding: 20px; margin-left: 260px; }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -60,59 +51,20 @@ try {
             border-radius: 8px;
             overflow: hidden;
         }
-        th, td {
-            padding: 15px;
-            text-align: left;
-        }
-        th {
-            background-color: #4A90E2;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background-color: #F5F5F5;
-        }
-        .actions {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        .actions button {
-            border: none;
-            background: none;
-            cursor: pointer;
-        }
-        .form-container {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        .form-container input, select {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            outline: none;
-        }
-        .btn {
-            padding: 10px 20px;
-            background-color: #4A90E2;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+        th, td { padding: 15px; text-align: left; }
+        th { background-color: #4A90E2; color: white; }
+        tr:nth-child(even) { background-color: #F5F5F5; }
+        .actions { display: flex; gap: 10px; justify-content: center; }
+        .btn-view { background-color: #4CAF50; color: white; }
+        .btn-upload { background-color: #2196F3; color: white; }
+        .btn-delete { background-color: #f44336; color: white; }
+        .btn-update { background-color: #FF9800; color: white; }
+        .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 <div class="content">
     <h2>Pedidos</h2>
-
-    <div class="form-container">
-        <input type="text" id="buscarProductor" placeholder="Buscar por Productor">
-        <input type="text" id="buscarCooperativa" placeholder="Buscar por Cooperativa">
-        <input type="date" id="fechaPedido">
-        <button class="btn" onclick="buscarPedidos()">Buscar</button>
-    </div>
-
     <table>
         <thead>
         <tr>
@@ -137,8 +89,8 @@ try {
                 <td>
                     <select onchange="confirmStateChange(<?php echo $pedido['id']; ?>, this.value)">
                         <?php
-                        $estados = ['Pedido recibido', 'Pedido cancelado', 'Pedido OK pendiente de factura',
-                            'Pedido OK FACTURADO', 'Pedido pendiente de retito', 'Pedido en camino al productor',
+                        $estados = ['Pedido recibido', 'Pedido cancelado', 'Pedido OK pendiente de factura', 
+                            'Pedido OK FACTURADO', 'Pedido pendiente de retito', 'Pedido en camino al productor', 
                             'Pedido en camino a la cooperativa.'];
                         foreach ($estados as $estado) {
                             $selected = ($pedido['estado_compra'] === $estado) ? 'selected' : '';
@@ -155,9 +107,9 @@ try {
                     <?php endif; ?>
                 </td>
                 <td class="actions">
-                    <button onclick="viewDetail(<?php echo $pedido['id']; ?>)"><i class="fas fa-eye"></i></button>
-                    <button onclick="uploadInvoice(<?php echo $pedido['id']; ?>)"><i class="fas fa-upload"></i></button>
-                    <button onclick="deleteOrder(<?php echo $pedido['id']; ?>)"><i class="fas fa-trash"></i></button>
+                    <button class="btn btn-view" onclick="viewDetail(<?php echo $pedido['id']; ?>)">Ver</button>
+                    <button class="btn btn-upload" onclick="uploadInvoice(<?php echo $pedido['id']; ?>)">Factura</button>
+                    <button class="btn btn-delete" onclick="deleteOrder(<?php echo $pedido['id']; ?>)">Eliminar</button>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -166,29 +118,23 @@ try {
 </div>
 
 <script>
-    function buscarPedidos() {
-        alert("Función de búsqueda en desarrollo.");
-    }
-
     function confirmStateChange(idPedido, nuevoEstado) {
-        if (confirm("¿Estás seguro de cambiar el estado del pedido?")) {
-            alert("Se actualizará el estado a: " + nuevoEstado);
-            // Aquí va la lógica para enviar a la base de datos
+        if (confirm("¿Estás seguro de cambiar el estado del pedido a: " + nuevoEstado + "?")) {
+            alert("Estado cambiado correctamente.");
         }
     }
 
     function viewDetail(idPedido) {
-        alert("Función de ver detalle para el pedido ID: " + idPedido);
+        alert("Mostrar modal con detalles del pedido " + idPedido);
     }
 
     function uploadInvoice(idPedido) {
-        alert("Función de cargar factura para el pedido ID: " + idPedido);
+        alert("Función de subida de factura para el pedido " + idPedido);
     }
 
     function deleteOrder(idPedido) {
-        if (confirm("¿Estás seguro que deseas eliminar este pedido?")) {
-            alert("Eliminando pedido con ID: " + idPedido);
-            // Aquí va la lógica para eliminar en la base de datos
+        if (confirm("¿Estás seguro de que deseas eliminar este pedido?")) {
+            alert("Pedido eliminado correctamente.");
         }
     }
 </script>
