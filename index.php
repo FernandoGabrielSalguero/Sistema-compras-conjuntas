@@ -44,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if ($user) {
             // Validar contraseña
-            if ($user["contraseña"] === $password) {
+            if ($user["contrasena"] === $password) {
                 // Verificar si tiene permisos para ingresar
                 if ($user["permiso_ingreso"] === "Habilitado") {
                     // Crear variables de sesión
