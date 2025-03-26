@@ -1,6 +1,5 @@
 <?php
 require_once '../../controllers/auth.php';
-verificarAcceso(['Cooperativa']);
 ?>
 
 <!DOCTYPE html>
