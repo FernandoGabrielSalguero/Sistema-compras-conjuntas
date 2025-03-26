@@ -48,8 +48,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 // Verificar si tiene permisos para ingresar
                 if ($user["permiso_ingreso"] === "Habilitado") {
                     // Crear variables de sesión
-                    $_SESSION["user_id"] = $user["id_productor"];
-                    $_SESSION["user_name"] = $user["nombre"];
+                    $_SESSION["user_id"] = $user["id"];
+                    $_SESSION["user_name"] = $user["cuit"];
                     $_SESSION["user_role"] = $user["rol"];
 
                     // Redirigir al dashboard correspondiente
