@@ -1,11 +1,6 @@
 <?php
-session_start();
 
-// Verificación del rol del usuario
-if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'SVE_USER') {
-    header('Location: login.php');  // Redirige al login si no hay sesión válida
-    exit();
-}
+
 ?>
 
 <!DOCTYPE html>
