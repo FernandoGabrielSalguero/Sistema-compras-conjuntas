@@ -20,6 +20,8 @@ $dbname = $dotenv['DB_NAME'];
 $username = $dotenv['DB_USER'];
 $password = $dotenv['DB_PASS'];
 
+$error = "";
+
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -32,38 +34,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $contrasena = $_POST['contrasena'] ?? '';
 
     if (empty($cuit) || empty($contrasena)) {
-        die("❌ CUIT y/o contraseña no proporcionados.");
-    }
-
-    $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE cuit = :cuit AND contrasena = :contrasena");
-    $stmt->execute([':cuit' => $cuit, ':contrasena' => $contrasena]);
-
-    $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($usuario) {
-        if ($usuario['permiso_ingreso'] !== 'Habilitado') {
-            die("❌ Su acceso está restringido. Contacte con soporte.");
-        }
-
-        $_SESSION['usuario'] = $usuario;
-
-        switch ($usuario['rol']) {
-            case 'productor':
-                header('Location: productor_dashboard.php');
-                break;
-            case 'cooperativa':
-                header('Location: cooperativa_dashboard.php');
-                break;
-            case 'SVE':
-                header('Location: sve_dashboard.php');
-                break;
-            default:
-                die("❌ Rol desconocido. Contacte con soporte.");
-        }
-
-        exit();
+        $error = "❌ CUIT y/o contraseña no proporcionados.";
     } else {
-        die("❌ CUIT o contraseña incorrectos.");
+        $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE cuit = :cuit AND contrasena = :contrasena");
+        $stmt->execute([':cuit' => $cuit, ':contrasena' => $contrasena]);
+
+        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($usuario) {
+            if ($usuario['permiso_ingreso'] !== 'Habilitado') {
+                $error = "❌ Su acceso está restringido. Contacte con soporte.";
+            } else {
+                $_SESSION['usuario'] = $usuario;
+
+                switch ($usuario['rol']) {
+                    case 'productor':
+                        header('Location: productor_dashboard.php');
+                        break;
+                    case 'cooperativa':
+                        header('Location: cooperativa_dashboard.php');
+                        break;
+                    case 'SVE':
+                        header('Location: sve_dashboard.php');
+                        break;
+                    default:
+                        $error = "❌ Rol desconocido. Contacte con soporte.";
+                }
+
+                exit();
+            }
+        } else {
+            $error = "❌ CUIT o contraseña incorrectos.";
+        }
     }
 }
 ?>
