@@ -1,0 +1,1 @@
+este archivo va a manejar la lógica de autenticación de la aplicación. Aquí es donde se va a manejarinicio de sesión y cierre de sesión de los usuarios.
