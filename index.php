@@ -12,6 +12,11 @@
 <div style="width: 300px; margin: auto; padding-top: 50px;">
     <mat-card>
         <mat-card-title>Iniciar Sesión</mat-card-title>
+        <?php if (isset($_GET['error'])): ?>
+            <div style="color: red; margin-bottom: 10px;">
+                <?= htmlspecialchars($_GET['error']) ?>
+            </div>
+        <?php endif; ?>
         <form method="POST" action="controllers/auth.php">
             <mat-form-field style="width: 100%;">
                 <mat-label>CUIT</mat-label>
