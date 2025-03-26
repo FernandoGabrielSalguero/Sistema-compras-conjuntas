@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = $_POST['password'];
 
     // Consultar la base de datos
-    $query = "SELECT cuit, contraseña, rol, permiso_ingreso FROM usuarios WHERE cuit = ? LIMIT 1";
+    $query = "SELECT cuit, contrasena, rol, permiso_ingreso FROM usuarios WHERE cuit = ? LIMIT 1";
     $stmt = $conn->prepare($query);
     $stmt->bind_param('s', $cuit);
     $stmt->execute();
@@ -16,8 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
 
-        // Verificar si la contraseña y el permiso de ingreso son válidos
-        if (password_verify($password, $user['contraseña']) && $user['permiso_ingreso'] === 'Habilitado') {
+        // Verificar si la contrasena y el permiso de ingreso son válidos
+        if (password_verify($password, $user['contrasena']) && $user['permiso_ingreso'] === 'Habilitado') {
             $_SESSION['cuit'] = $user['cuit'];
             $_SESSION['rol'] = $user['rol'];
 
