@@ -1,12 +1,4 @@
 <?php
-
-// Iniciar la sesión y verificar el rol
-session_start();
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'sve') {
-    header('Location: ../login.php');
-    exit();
-}
-
 // Manejo de errores
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
