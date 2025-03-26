@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     case 'cooperativa':
                         header('Location: views/cooperativa/cooperativa_dashboard.php');
                         exit();
-                    case 'SVE':
+                    case 'sve':
                         header('Location: views/sve/sve_dashboard.php');
                         exit();
                     default:

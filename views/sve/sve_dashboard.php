@@ -1,15 +1,7 @@
 <?php
-require_once '../../controllers/auth.php';
-?>
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard SVE</title>
-</head>
-<body>
-    <h1>Bienvenido, <?= $_SESSION["user_name"]; ?> (SVE)</h1>
-    <p>Este es el dashboard principal para el usuario administrador SVE.</p>
-</body>
-</html>
+echo "El archivo sve_dashboard.php se ha cargado correctamente.";
+?>
