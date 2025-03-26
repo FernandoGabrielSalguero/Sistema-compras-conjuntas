@@ -21,7 +21,8 @@ try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Error de conexión: " . $e->getMessage());
+    header('Location: ../index.php?error=Error de conexión a la base de datos.');
+    exit();
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -50,15 +51,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     header('Location: ../views/cooperativa/dashboard.php');
                     break;
                 default:
-                    echo "Rol no reconocido.";
+                    header('Location: ../index.php?error=Rol no reconocido.');
                     break;
             }
             exit();
         } else {
-            echo "Acceso denegado: el usuario no está habilitado.";
+            header('Location: ../index.php?error=Acceso denegado: el usuario no está habilitado.');
+            exit();
         }
     } else {
-        echo "Credenciales inválidas.";
+        header('Location: ../index.php?error=Credenciales inválidas.');
+        exit();
     }
 }
 
