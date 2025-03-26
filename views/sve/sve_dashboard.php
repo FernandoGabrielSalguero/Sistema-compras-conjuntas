@@ -167,7 +167,7 @@
         /* Ajuste para que el sidebar no se superponga al header en móviles */
         @media (max-width: 768px) {
             #sidebar {
-                top: 33PX;
+                top: 55PX;
                 /* Para que ocupe todo el alto de la pantalla */
                 height: 100vh;
             }
