@@ -176,7 +176,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         togglePassword.addEventListener('click', () => {
             const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordField.setAttribute('type', type);
-            // togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
         });
     </script>
 </body>

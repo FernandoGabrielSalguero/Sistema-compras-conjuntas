@@ -1,6 +1,11 @@
 <?php
+session_start();
 
-
+// Verificación del rol del usuario
+if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'SVE_USER') {
+    header('Location: login.php');  // Redirige al login si no hay sesión válida
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -17,7 +22,7 @@
         * { box-sizing: border-box; font-family: Arial, sans-serif; }
         a { text-decoration: none; color: inherit; }
 
-        /* Layout Styles */
+        /* Header */
         #header {
             background-color: #ffffff;
             color: #333;
@@ -26,32 +31,38 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 10;
         }
-        #menu-icon {
-            cursor: pointer;
-            font-size: 24px;
-        }
+
+        /* Sidebar */
         #sidebar {
             background-color: #ffffff;
             color: #333;
             padding: 1rem;
             width: 250px;
-            height: 100vh;
+            height: calc(100vh - 60px);
             position: fixed;
-            top: 0;
+            top: 60px;
             left: 0;
             overflow-y: auto;
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
             transition: all 0.3s;
         }
+
+        /* Body */
         #body {
             margin-left: 250px;
             padding: 2rem;
             background-color: #F0F2F5;
             height: 100vh;
             overflow-y: auto;
+            padding-top: 60px;
         }
-        /* Card Styles */
+
+        /* Card */
         .card {
             background: white;
             padding: 1rem;
@@ -59,32 +70,22 @@
             margin-bottom: 1rem;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
+
         /* Mobile Adjustments */
         @media (max-width: 768px) {
             #sidebar {
                 transform: translateX(-100%);
                 position: fixed;
-            }
-            #body {
-                margin-left: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 9;
             }
             #sidebar.show {
                 transform: translateX(0);
             }
-        }
-        /* Modal Styles */
-        #modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        #modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
+            #body {
+                margin-left: 0;
+            }
         }
     </style>
 </head>
@@ -105,7 +106,9 @@
         <a href="alta_productos.php">Alta Productos</a><br>
         <a href="mercado_digital.php">Mercado Digital</a><br>
         <a href="pedidos.php">Pedidos</a><br>
+        <a href="logout.php">Salir</a><br>
     </nav>
+    <button onclick="toggleSidebar()" style="margin-top: 20px;">Cerrar Menú</button>
 </div>
 
 <!-- Body -->
@@ -114,21 +117,8 @@
     <div class="card">Tarjeta 2 - Estadísticas</div>
 </div>
 
-<!-- Modal -->
-<div id="modal">
-    <div id="modal-content">
-        <p>Sin aplicaciones disponibles por el momento</p>
-        <button onclick="toggleModal()">Cerrar</button>
-    </div>
-</div>
-
 <!-- JavaScript -->
 <script>
-    function toggleModal() {
-        const modal = document.getElementById('modal');
-        modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
-    }
-
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('show');
