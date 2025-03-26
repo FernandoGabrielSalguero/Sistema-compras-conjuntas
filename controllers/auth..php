@@ -1,5 +1,8 @@
 <?php
-
+// Habilitar la muestra de errores impresos en pantalla
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 // Cargar variables de entorno manualmente desde .env
 $envPath = __DIR__ . '/../.env';
 
@@ -64,5 +67,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 }
-
-?>
