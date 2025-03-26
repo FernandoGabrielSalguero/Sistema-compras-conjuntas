@@ -51,13 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 switch ($usuario['rol']) {
                     case 'productor':
-                        header('Location: productor/productor_dashboard.php');
+                        header('Location: views/productor/productor_dashboard.php');
                         exit();
                     case 'cooperativa':
-                        header('cooperativa/cooperativa_dashboard.php');
+                        header('Location: cooperativa/cooperativa_dashboard.php');
                         exit();
                     case 'SVE':
-                        header('sve/sve_dashboard.php');
+                        header('Location: sve/sve_dashboard.php');
                         exit();
                     default:
                         $error = "❌ Rol desconocido. Contacte con soporte.";
