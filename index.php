@@ -162,6 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group password-container">
                 <label for="password">Contraseña:</label>
                 <input type="password" name="contrasena" id="contrasena" required>
+                <!-- <span class="toggle-password">👁️</span> -->
             </div>
             <div class="form-group">
                 <button type="submit">Iniciar Sesión</button>
@@ -176,6 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         togglePassword.addEventListener('click', () => {
             const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordField.setAttribute('type', type);
+            // togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
         });
     </script>
 </body>
