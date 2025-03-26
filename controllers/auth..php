@@ -1,6 +1,27 @@
 <?php
 session_start();
-require '../database/connection.php';  // Ajusta esta ruta según tu estructura de carpetas
+
+// Cargar las variables de entorno desde el archivo .env
+function loadEnv() {
+    $lines = file('../.env');
+    $env = [];
+    foreach ($lines as $line) {
+        if (trim($line) === '' || str_starts_with(trim($line), '#')) continue;
+        [$key, $value] = explode('=', trim($line), 2);
+        $env[$key] = trim($value, '"');
+    }
+    return $env;
+}
+
+$env = loadEnv();
+
+// Crear conexión a la base de datos usando los datos del archivo .env
+$conn = new mysqli($env['DB_HOST'], $env['DB_USER'], $env['DB_PASS'], $env['DB_NAME']);
+
+// Verificar la conexión
+if ($conn->connect_error) {
+    die('Conexión fallida: ' . $conn->connect_error);
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $cuit = $_POST['cuit'];
@@ -16,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
 
-        // Verificar si la contrasena y el permiso de ingreso son válidos
+        // Verificar si la contraseña y el permiso de ingreso son válidos
         if (password_verify($password, $user['contrasena']) && $user['permiso_ingreso'] === 'Habilitado') {
             $_SESSION['cuit'] = $user['cuit'];
             $_SESSION['rol'] = $user['rol'];
@@ -24,13 +45,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Redirigir al usuario según su rol
             switch ($user['rol']) {
                 case 'Admin':
-                    header('Location: ../dashboard_admin.php');
+                    header('Location: ../../../views/sve/dashboard.php');
                     break;
                 case 'Usuario':
-                    header('Location: ../dashboard_usuario.php');
+                    header('Location: ../../../views/cooperativa/dashboard.php');
                     break;
                 default:
-                    header('Location: ../dashboard_general.php');
+                    header('Location: ../../../views/productor/dashboard.php');
                     break;
             }
             exit();
