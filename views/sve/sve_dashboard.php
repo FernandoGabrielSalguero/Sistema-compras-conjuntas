@@ -115,7 +115,66 @@
                 display: none;
             }
         }
+
+        /* Estilo de botones del menú */
+        #sidebar nav a {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: white;
+            color: #333;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        #sidebar nav a:hover {
+            background-color: #E0E0E0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Iconos */
+        #sidebar nav a i {
+            margin-right: 8px;
+        }
+
+        /* Estilo del botón de cerrar menú */
+        #close-menu-button {
+            display: block;
+            /* Visible por defecto */
+            padding: 10px;
+            margin-top: 20px;
+            border: none;
+            background-color: #ff5e57;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #close-menu-button:hover {
+            background-color: #ff3d3d;
+        }
+
+        /* Ocultar el botón de cerrar menú en pantallas grandes */
+        @media (min-width: 769px) {
+            #close-menu-button {
+                display: none;
+            }
+        }
+
+        /* Ajuste para que el sidebar no se superponga al header en móviles */
+        @media (max-width: 768px) {
+            #sidebar {
+                top: 0;
+                /* Para que ocupe todo el alto de la pantalla */
+                height: 100vh;
+            }
+        }
     </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 
 <body>
@@ -129,15 +188,15 @@
     <!-- Sidebar -->
     <div id="sidebar">
         <nav>
-            <a href="dashboard.php">Dashboard</a><br>
-            <a href="alta_usuarios.php">Alta Usuarios</a><br>
-            <a href="alta_fincas.php">Alta Fincas</a><br>
-            <a href="alta_productos.php">Alta Productos</a><br>
-            <a href="mercado_digital.php">Mercado Digital</a><br>
-            <a href="pedidos.php">Pedidos</a><br>
-            <a href="logout.php">Salir</a><br>
+            <a href="dashboard.php"><i class="fa fa-home"></i> Dashboard</a><br>
+            <a href="alta_usuarios.php"><i class="fa fa-user-plus"></i> Alta Usuarios</a><br>
+            <a href="alta_fincas.php"><i class="fa fa-tree"></i> Alta Fincas</a><br>
+            <a href="alta_productos.php"><i class="fa fa-box"></i> Alta Productos</a><br>
+            <a href="mercado_digital.php"><i class="fa fa-shopping-cart"></i> Mercado Digital</a><br>
+            <a href="pedidos.php"><i class="fa fa-list"></i> Pedidos</a><br>
+            <a href="logout.php"><i class="fa fa-sign-out-alt"></i> Salir</a><br>
         </nav>
-        <button id="close-menu-button" onclick="toggleSidebar()" style="margin-top: 20px;">Cerrar Menú</button>
+        <button id="close-menu-button" onclick="toggleSidebar()">Cerrar Menú</button>
     </div>
 
     <!-- Body -->
