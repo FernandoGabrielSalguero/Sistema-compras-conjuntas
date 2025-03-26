@@ -36,13 +36,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($cuit) || empty($contrasena)) {
         $error = "❌ CUIT y/o contraseña no proporcionados.";
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE cuit = :cuit AND contrasena = :contrasena");
-        $stmt->execute([':cuit' => $cuit, ':contrasena' => $contrasena]);
+        $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE cuit = :cuit");
+        $stmt->execute([':cuit' => $cuit]);
 
         $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($usuario) {
-            if ($usuario['permiso_ingreso'] !== 'Habilitado') {
+            // Verificar que la contraseña coincida exactamente
+            if ($usuario['contrasena'] !== $contrasena) {
+                $error = "❌ CUIT o contraseña incorrectos.";
+            } elseif ($usuario['permiso_ingreso'] !== 'Habilitado') {
                 $error = "❌ Su acceso está restringido. Contacte con soporte.";
             } else {
                 $_SESSION['usuario'] = $usuario;
