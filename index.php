@@ -21,60 +21,53 @@ $username = $dotenv['DB_USER'];
 $password = $dotenv['DB_PASS'];
 
 try {
-    $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Error de conexión a la base de datos: " . $e->getMessage());
+    die("❌ Error de conexión a la base de datos: " . $e->getMessage());
 }
 
-$error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $cuit = $_POST['cuit'] ?? '';
+    $contrasena = $_POST['contrasena'] ?? '';
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $cuit = trim($_POST["cuit"]);
-    $password = trim($_POST["password"]);
+    if (empty($cuit) || empty($contrasena)) {
+        die("❌ CUIT y/o contraseña no proporcionados.");
+    }
 
-    if (empty($cuit) || empty($password)) {
-        $error = "❌ Todos los campos son obligatorios.";
-    } else {
-        // Consultar el usuario en la base de datos
-        $stmt = $conn->prepare("SELECT * FROM usuarios WHERE cuit = :cuit");
-        $stmt->bindParam(':cuit', $cuit);
-        $stmt->execute();
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE cuit = :cuit AND contrasena = :contrasena");
+    $stmt->execute([':cuit' => $cuit, ':contrasena' => $contrasena]);
 
-        if ($user) {
-            // Validar contraseña
-            if ($user["contraseña"] === $password) {
+    $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                // Verificar si tiene permisos para ingresar
-                if ($user["permiso_ingreso"] === "Habilitado") {
-                    
-                    // Crear variables de sesión
-                    $_SESSION["user_id"] = $user["id_productor"];
-                    $_SESSION["user_name"] = $user["nombre"];
-                    $_SESSION["user_role"] = $user["rol"];
-                    
-                    // Redirigir al dashboard correspondiente
-                    if ($user["rol"] === "Productor") {
-                        header("Location: views/productor/dashboard.php");
-                    } elseif ($user["rol"] === "Cooperativa") {
-                        header("Location: views/cooperativa/dashboard.php");
-                    } elseif ($user["rol"] === "SVE") {
-                        header("Location: views/sve/dashboard.php");
-                    }
-                    exit();
-                } else {
-                    $error = "❌ No tienes permisos para ingresar. Comunícate al siguiente celular: 2616686062.";
-                }
-            } else {
-                $error = "❌ Contraseña incorrecta.";
-            }
-        } else {
-            $error = "❌ CUIT no encontrado.";
+    if ($usuario) {
+        if ($usuario['permiso_ingreso'] !== 'Habilitado') {
+            die("❌ Su acceso está restringido. Contacte con soporte.");
         }
+
+        $_SESSION['usuario'] = $usuario;
+
+        switch ($usuario['rol']) {
+            case 'productor':
+                header('Location: productor_dashboard.php');
+                break;
+            case 'cooperativa':
+                header('Location: cooperativa_dashboard.php');
+                break;
+            case 'SVE':
+                header('Location: sve_dashboard.php');
+                break;
+            default:
+                die("❌ Rol desconocido. Contacte con soporte.");
+        }
+
+        exit();
+    } else {
+        die("❌ CUIT o contraseña incorrectos.");
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">
