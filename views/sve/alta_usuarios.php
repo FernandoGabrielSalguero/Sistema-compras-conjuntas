@@ -49,7 +49,6 @@ if (isset($_POST['agregar_usuario'])) {
     }
 }
 
-// Función para actualizar registros
 if (isset($_POST['actualizar_usuario'])) {
     $id = $_POST['id'];
     $cuit = $_POST['cuit'];
@@ -70,14 +69,22 @@ if (isset($_POST['actualizar_usuario'])) {
     $id_finca_asociada = $_POST['id_finca_asociada'];
     $observaciones = $_POST['observaciones'];
 
-    $sql = "UPDATE usuarios SET cuit='$cuit', contrasena='$contrasena', rol='$rol', permiso_ingreso='$permiso_ingreso', nombre='$nombre', correo='$correo', telefono='$telefono', nombre_responsable='$nombre_responsable', id_cooperativa='$id_cooperativa', id_productor='$id_productor', direccion='$direccion', dir_latitud='$dir_latitud', dir_longitud='$dir_longitud', id_productor_asociados='$id_productor_asociados', id_cooperativa_asociada='$id_cooperativa_asociada', id_finca_asociada='$id_finca_asociada', observaciones='$observaciones' WHERE id='$id'";
+    $sql = "UPDATE usuarios SET cuit='$cuit', contrasena='$contrasena', rol='$rol', permiso_ingreso='$permiso_ingreso', 
+            nombre='$nombre', correo='$correo', telefono='$telefono', nombre_responsable='$nombre_responsable', 
+            id_cooperativa='$id_cooperativa', id_productor='$id_productor', direccion='$direccion', 
+            dir_latitud='$dir_latitud', dir_longitud='$dir_longitud', id_productor_asociados='$id_productor_asociados', 
+            id_cooperativa_asociada='$id_cooperativa_asociada', id_finca_asociada='$id_finca_asociada', 
+            observaciones='$observaciones' WHERE id='$id'";
 
     if (mysqli_query($conn, $sql)) {
         echo "<div id='snackbar' class='success'>Usuario actualizado con éxito.</div>";
+        echo "<script>window.onload = showSnackbar;</script>";
     } else {
         echo "<div id='snackbar' class='error'>Error al actualizar usuario: " . mysqli_error($conn) . "</div>";
+        echo "<script>window.onload = showSnackbar;</script>";
     }
 }
+
 
 // Función para eliminar registros
 if (isset($_POST['eliminar_usuario'])) {
@@ -661,11 +668,6 @@ $total_pages = ceil($total_records / $limit);
                                     <button type="submit" name="actualizar_usuario" onclick="showSnackbar();"><i class="fas fa-save"></i></button>
                                 </form>
 
-                                <!-- Botón de eliminar -->
-                                <form method="post" style="display: inline;">
-                                    <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-                                    <button type="submit" name="eliminar_usuario" onclick="showSnackbar();"><i class="fas fa-trash"></i></button>
-                                </form>
                                 <!-- Botón de eliminar -->
                                 <form method="post" style="display: inline;">
                                     <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
