@@ -629,10 +629,17 @@ $total_pages = ceil($total_records / $limit);
                                 <!-- Identificador del registro -->
                                 <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
 
-                                <!-- Campos del registro -->
+                                <!-- Campos en el orden correcto -->
+                                <td><?php echo $row['id']; ?></td>
                                 <td><input type="text" name="cuit" value="<?php echo $row['cuit']; ?>"></td>
-                                <td><input type="text" name="contrasena" value="<?php echo $row['contrasena']; ?>"></td>
-                                <td><input type="text" name="rol" value="<?php echo $row['rol']; ?>"></td>
+                                <td><input type="password" name="contrasena" value="<?php echo $row['contrasena']; ?>"></td>
+                                <td>
+                                    <select name="rol">
+                                        <option value="cooperativa" <?php if ($row['rol'] == 'cooperativa') echo 'selected'; ?>>Cooperativa</option>
+                                        <option value="productor" <?php if ($row['rol'] == 'productor') echo 'selected'; ?>>Productor</option>
+                                        <option value="sve" <?php if ($row['rol'] == 'sve') echo 'selected'; ?>>SVE</option>
+                                    </select>
+                                </td>
                                 <td>
                                     <select name="permiso_ingreso">
                                         <option value="1" <?php if ($row['permiso_ingreso'] == 1) echo 'selected'; ?>>Permitido</option>
@@ -655,13 +662,12 @@ $total_pages = ceil($total_records / $limit);
 
                                 <!-- Botón de actualización -->
                                 <td>
-                                    <button type="submit" name="actualizar_usuario" onclick="showSnackbar();">
-                                        Actualizar
-                                    </button>
+                                    <button type="submit" name="actualizar_usuario" onclick="showSnackbar();">Actualizar</button>
                                 </td>
                             </form>
                         </tr>
                     <?php } ?>
+
 
                 </tbody>
             </table>
