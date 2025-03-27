@@ -194,6 +194,7 @@
             <a href="alta_productos.php"><i class="fa fa-box"></i> Alta Productos</a><br>
             <a href="mercado_digital.php"><i class="fa fa-shopping-cart"></i> Mercado Digital</a><br>
             <a href="pedidos.php"><i class="fa fa-list"></i> Pedidos</a><br>
+            <a href="CargaMasivaUsuarios.php"><i class="fa fa-list"></i> Carga masiva de datos</a><br>
             <a href="logout.php"><i class="fa fa-sign-out-alt"></i> Salir</a><br>
         </nav>
         <button id="close-menu-button" onclick="toggleSidebar()">Cerrar Menú</button>
