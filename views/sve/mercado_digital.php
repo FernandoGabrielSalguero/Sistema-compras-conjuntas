@@ -182,7 +182,7 @@
     <!-- Header -->
     <div id="header">
         <div id="menu-icon" onclick="toggleSidebar()">☰</div>
-        <div>Dashboard SVE</div>
+        <div>Mercado Digital</div>
     </div>
 
     <!-- Sidebar -->
