@@ -460,10 +460,8 @@ $total_pages = ceil($total_records / $limit);
             padding: 10px;
             text-align: left;
             border-bottom: 1px solid #ddd;
-            min-width: 120px;
-            /* Ajusta el ancho mínimo de cada columna */
-            word-wrap: break-word;
-            /* Permite que el texto se divida en varias líneas si es necesario */
+            min-width: 190px; /* Ajusta el ancho mínimo de cada columna */
+            word-wrap: break-word; /* Permite que el texto se divida en varias líneas si es necesario */
         }
 
         /* Cabecera de la tabla */
