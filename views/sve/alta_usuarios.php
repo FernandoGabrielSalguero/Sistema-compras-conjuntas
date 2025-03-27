@@ -554,7 +554,6 @@ $total_pages = ceil($total_records / $limit);
                 <input type="password" name="contrasena" placeholder="Contraseña" required>
 
                 <div class="form-group">
-                    <label for="rol">Rol:</label>
                     <div class="custom-select">
                         <select name="rol" id="rol" required>
                             <option value="" disabled selected>Seleccione un rol</option>
@@ -566,7 +565,6 @@ $total_pages = ceil($total_records / $limit);
                 </div>
 
                 <div class="form-group">
-                    <label for="permiso_ingreso">Permiso de Ingreso:</label>
                     <div class="custom-select">
                         <select name="permiso_ingreso" id="permiso_ingreso" required>
                             <option value="" disabled selected>Seleccione permiso</option>
