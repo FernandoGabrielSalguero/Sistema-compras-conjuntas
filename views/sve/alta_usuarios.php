@@ -614,8 +614,6 @@ $total_pages = ceil($total_records / $limit);
                         <th>ID Cooperativa</th>
                         <th>ID Productor</th>
                         <th>Dirección</th>
-                        <th>Latitud</th>
-                        <th>Longitud</th>
                         <th>ID Productores Asociados</th>
                         <th>ID Cooperativa Asociada</th>
                         <th>ID Finca Asociada</th>
