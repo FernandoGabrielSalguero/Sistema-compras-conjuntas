@@ -455,6 +455,17 @@ $total_pages = ceil($total_records / $limit);
             border-collapse: collapse;
         }
 
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            min-width: 120px;
+            /* Ajusta el ancho mínimo de cada columna */
+            word-wrap: break-word;
+            /* Permite que el texto se divida en varias líneas si es necesario */
+        }
+
         /* Cabecera de la tabla */
         th {
             background-color: #f0f0f0;
