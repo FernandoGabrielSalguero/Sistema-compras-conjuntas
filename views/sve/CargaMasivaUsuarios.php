@@ -70,7 +70,7 @@ if (isset($_POST['upload'])) {
             $id_finca_asociada = ($result_finca_id->fetch_assoc())['id'];
 
             // Insertar en la tabla 'usuarios'
-            $query_usuario = "INSERT INTO usuarios (id_productor, nombre, id_finca_asociada, password, rol) 
+            $query_usuario = "INSERT INTO usuarios (id_productor, nombre, id_finca_asociada, contrasena, rol) 
                             VALUES ('$id_productor', '$nombre', '$id_finca_asociada', '$id_productor', 'productor')";
             if (!$conn->query($query_usuario)) {
                 echo "Error al insertar en la tabla usuarios: " . $conn->error . "<br>";
