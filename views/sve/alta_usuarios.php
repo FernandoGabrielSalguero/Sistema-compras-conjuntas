@@ -296,14 +296,41 @@ $total_pages = ceil($total_records / $limit);
             }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 500px) {
             form {
                 grid-template-columns: 1fr;
             }
         }
+
+        /* estilo del buscador */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 5px;
+            border-radius: 30px;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            padding: 10px;
+            width: 100%;
+            outline: none;
+        }
+
+        .search-bar button {
+            background-color: #5a67d8;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
 </head>
 
 <body>
@@ -336,7 +363,11 @@ $total_pages = ceil($total_records / $limit);
                 <input type="text" name="cuit" placeholder="CUIT" required>
                 <input type="password" name="contrasena" placeholder="Contraseña" required>
                 <input type="text" name="rol" placeholder="Rol" required>
-                <label><input type="checkbox" name="permiso_ingreso"> Permiso de Ingreso</label>
+                <label>Permiso de Ingreso:</label>
+                <select name="permiso_ingreso" required>
+                    <option value="1">Permitido</option>
+                    <option value="0">Denegado</option>
+                </select>
                 <input type="text" name="nombre" placeholder="Nombre" required>
                 <input type="email" name="correo" placeholder="Correo" required>
                 <input type="text" name="telefono" placeholder="Teléfono">
@@ -353,13 +384,16 @@ $total_pages = ceil($total_records / $limit);
                 <button type="submit" name="agregar_usuario">Agregar Nuevo Usuario</button>
             </form>
         </div>
-        <div class="card">
-            <h3>Filtrar Usuarios por CUIT</h3>
+
+
+        <div class="search-bar">
             <form method="post">
                 <input type="text" name="cuit_filter" placeholder="Ingrese CUIT">
-                <button type="submit">Filtrar</button>
+                <button type="submit"><i class="fas fa-search"></i></button>
             </form>
         </div>
+
+
         <div class="card">
             <h3>Lista de Usuarios</h3>
             <table>
@@ -369,29 +403,58 @@ $total_pages = ceil($total_records / $limit);
                         <th>CUIT</th>
                         <th>Contraseña</th>
                         <th>Rol</th>
-                        <th>Permiso</th>
+                        <th>Permiso de Ingreso</th>
                         <th>Nombre</th>
                         <th>Correo</th>
                         <th>Teléfono</th>
-                        <th>Responsable</th>
+                        <th>Nombre Responsable</th>
+                        <th>ID Cooperativa</th>
+                        <th>ID Productor</th>
+                        <th>Dirección</th>
+                        <th>Latitud</th>
+                        <th>Longitud</th>
+                        <th>ID Productores Asociados</th>
+                        <th>ID Cooperativa Asociada</th>
+                        <th>ID Finca Asociada</th>
+                        <th>Observaciones</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php while ($row = mysqli_fetch_assoc($result)) { ?>
                         <tr>
                             <td><?php echo $row['id']; ?></td>
-                            <td><?php echo $row['cuit']; ?></td>
-                            <td><?php echo $row['contrasena']; ?></td>
-                            <td><?php echo $row['rol']; ?></td>
-                            <td><?php echo ($row['permiso_ingreso'] ? 'Sí' : 'No'); ?></td>
-                            <td><?php echo $row['nombre']; ?></td>
-                            <td><?php echo $row['correo']; ?></td>
-                            <td><?php echo $row['telefono']; ?></td>
-                            <td><?php echo $row['nombre_responsable']; ?></td>
+                            <td><input type="text" value="<?php echo $row['cuit']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['contrasena']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['rol']; ?>"></td>
+                            <td>
+                                <select>
+                                    <option value="1" <?php echo ($row['permiso_ingreso'] == 1 ? 'selected' : ''); ?>>Permitido</option>
+                                    <option value="0" <?php echo ($row['permiso_ingreso'] == 0 ? 'selected' : ''); ?>>Denegado</option>
+                                </select>
+                            </td>
+                            <td><input type="text" value="<?php echo $row['nombre']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['correo']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['telefono']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['nombre_responsable']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['id_cooperativa']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['id_productor']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['direccion']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['dir_latitud']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['dir_longitud']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['id_productor_asociados']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['id_cooperativa_asociada']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['id_finca_asociada']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['observaciones']; ?>"></td>
+                            <td>
+                                <button><i class="fas fa-save"></i></button>
+                                <button><i class="fas fa-trash"></i></button>
+                            </td>
                         </tr>
                     <?php } ?>
                 </tbody>
             </table>
+
         </div>
     </div>
 
