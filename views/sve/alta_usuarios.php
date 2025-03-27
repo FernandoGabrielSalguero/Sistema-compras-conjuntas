@@ -296,7 +296,7 @@ $total_pages = ceil($total_records / $limit);
             }
         }
 
-        @media (max-width: 500px) {
+        @media (max-width: 200px) {
             form {
                 grid-template-columns: 1fr;
             }
