@@ -1,6 +1,6 @@
 <?php
 // Cargar las variables del archivo .env manualmente
-$env_path = __DIR__ . '../../.env';
+$env_path = __DIR__ . '.env';
 if (file_exists($env_path)) {
     $dotenv = parse_ini_file($env_path);
 } else {
