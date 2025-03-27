@@ -49,6 +49,50 @@ if (isset($_POST['agregar_usuario'])) {
     }
 }
 
+// Función para actualizar registros
+if (isset($_POST['actualizar_usuario'])) {
+    $id = $_POST['id'];
+    $cuit = $_POST['cuit'];
+    $contrasena = $_POST['contrasena'];
+    $rol = $_POST['rol'];
+    $permiso_ingreso = $_POST['permiso_ingreso'];
+    $nombre = $_POST['nombre'];
+    $correo = $_POST['correo'];
+    $telefono = $_POST['telefono'];
+    $nombre_responsable = $_POST['nombre_responsable'];
+    $id_cooperativa = $_POST['id_cooperativa'];
+    $id_productor = $_POST['id_productor'];
+    $direccion = $_POST['direccion'];
+    $dir_latitud = $_POST['dir_latitud'];
+    $dir_longitud = $_POST['dir_longitud'];
+    $id_productor_asociados = $_POST['id_productor_asociados'];
+    $id_cooperativa_asociada = $_POST['id_cooperativa_asociada'];
+    $id_finca_asociada = $_POST['id_finca_asociada'];
+    $observaciones = $_POST['observaciones'];
+
+    $sql = "UPDATE usuarios SET cuit='$cuit', contrasena='$contrasena', rol='$rol', permiso_ingreso='$permiso_ingreso', nombre='$nombre', correo='$correo', telefono='$telefono', nombre_responsable='$nombre_responsable', id_cooperativa='$id_cooperativa', id_productor='$id_productor', direccion='$direccion', dir_latitud='$dir_latitud', dir_longitud='$dir_longitud', id_productor_asociados='$id_productor_asociados', id_cooperativa_asociada='$id_cooperativa_asociada', id_finca_asociada='$id_finca_asociada', observaciones='$observaciones' WHERE id='$id'";
+
+    if (mysqli_query($conn, $sql)) {
+        echo "<div id='snackbar' class='success'>Usuario actualizado con éxito.</div>";
+    } else {
+        echo "<div id='snackbar' class='error'>Error al actualizar usuario: " . mysqli_error($conn) . "</div>";
+    }
+}
+
+// Función para eliminar registros
+if (isset($_POST['eliminar_usuario'])) {
+    $id = $_POST['id'];
+
+    $sql = "DELETE FROM usuarios WHERE id='$id'";
+
+    if (mysqli_query($conn, $sql)) {
+        echo "<div id='snackbar' class='success'>Usuario eliminado con éxito.</div>";
+    } else {
+        echo "<div id='snackbar' class='error'>Error al eliminar usuario: " . mysqli_error($conn) . "</div>";
+    }
+}
+
+
 // Función para obtener usuarios con paginación
 $limit = 15;
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
@@ -418,6 +462,41 @@ $total_pages = ceil($total_records / $limit);
             padding: 5px 10px;
             margin: 2px;
         }
+
+        /* ========================= */
+        /* ===== Snackbar CSS ====== */
+        /* ========================= */
+        #snackbar {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            font-size: 17px;
+            transition: visibility 0s, opacity 0.5s;
+        }
+
+        #snackbar.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Snackbar de éxito */
+        #snackbar.success {
+            background-color: #4CAF50;
+        }
+
+        /* Snackbar de error */
+        #snackbar.error {
+            background-color: #f44336;
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -559,8 +638,39 @@ $total_pages = ceil($total_records / $limit);
                             <td><input type="text" value="<?php echo $row['id_finca_asociada']; ?>"></td>
                             <td><input type="text" value="<?php echo $row['observaciones']; ?>"></td>
                             <td>
-                                <button><i class="fas fa-save"></i></button>
-                                <button><i class="fas fa-trash"></i></button>
+                                <!-- Botón de actualizar -->
+                                <form method="post" style="display: inline;">
+                                    <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                                    <input type="hidden" name="cuit" value="<?php echo $row['cuit']; ?>">
+                                    <input type="hidden" name="contrasena" value="<?php echo $row['contrasena']; ?>">
+                                    <input type="hidden" name="rol" value="<?php echo $row['rol']; ?>">
+                                    <input type="hidden" name="permiso_ingreso" value="<?php echo $row['permiso_ingreso']; ?>">
+                                    <input type="hidden" name="nombre" value="<?php echo $row['nombre']; ?>">
+                                    <input type="hidden" name="correo" value="<?php echo $row['correo']; ?>">
+                                    <input type="hidden" name="telefono" value="<?php echo $row['telefono']; ?>">
+                                    <input type="hidden" name="nombre_responsable" value="<?php echo $row['nombre_responsable']; ?>">
+                                    <input type="hidden" name="id_cooperativa" value="<?php echo $row['id_cooperativa']; ?>">
+                                    <input type="hidden" name="id_productor" value="<?php echo $row['id_productor']; ?>">
+                                    <input type="hidden" name="direccion" value="<?php echo $row['direccion']; ?>">
+                                    <input type="hidden" name="dir_latitud" value="<?php echo $row['dir_latitud']; ?>">
+                                    <input type="hidden" name="dir_longitud" value="<?php echo $row['dir_longitud']; ?>">
+                                    <input type="hidden" name="id_productor_asociados" value="<?php echo $row['id_productor_asociados']; ?>">
+                                    <input type="hidden" name="id_cooperativa_asociada" value="<?php echo $row['id_cooperativa_asociada']; ?>">
+                                    <input type="hidden" name="id_finca_asociada" value="<?php echo $row['id_finca_asociada']; ?>">
+                                    <input type="hidden" name="observaciones" value="<?php echo $row['observaciones']; ?>">
+                                    <button type="submit" name="actualizar_usuario" onclick="showSnackbar();"><i class="fas fa-save"></i></button>
+                                </form>
+
+                                <!-- Botón de eliminar -->
+                                <form method="post" style="display: inline;">
+                                    <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                                    <button type="submit" name="eliminar_usuario" onclick="showSnackbar();"><i class="fas fa-trash"></i></button>
+                                </form>
+                                <!-- Botón de eliminar -->
+                                <form method="post" style="display: inline;">
+                                    <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                                    <button type="submit" name="eliminar_usuario" onclick="showSnackbar();"><i class="fas fa-trash"></i></button>
+                                </form>
                             </td>
                         </tr>
                     <?php } ?>
@@ -581,3 +691,19 @@ $total_pages = ceil($total_records / $limit);
 </body>
 
 </html>
+
+<script>
+    function showSnackbar() {
+        var snackbar = document.getElementById("snackbar");
+        snackbar.className = "show";
+        setTimeout(function() {
+            snackbar.className = snackbar.className.replace("show", "");
+        }, 3000);
+    }
+
+    window.onload = function() {
+        if (document.getElementById('snackbar')) {
+            showSnackbar();
+        }
+    }
+</script>
