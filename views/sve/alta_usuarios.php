@@ -32,15 +32,13 @@ if (isset($_POST['agregar_usuario'])) {
     $id_cooperativa = $_POST['id_cooperativa'];
     $id_productor = $_POST['id_productor'];
     $direccion = $_POST['direccion'];
-    $dir_latitud = $_POST['dir_latitud'];
-    $dir_longitud = $_POST['dir_longitud'];
     $id_productor_asociados = $_POST['id_productor_asociados'];
     $id_cooperativa_asociada = $_POST['id_cooperativa_asociada'];
     $id_finca_asociada = $_POST['id_finca_asociada'];
     $observaciones = $_POST['observaciones'];
 
-    $sql = "INSERT INTO usuarios (cuit, contrasena, rol, permiso_ingreso, nombre, correo, telefono, nombre_responsable, id_cooperativa, id_productor, direccion, dir_latitud, dir_longitud, id_productor_asociados, id_cooperativa_asociada, id_finca_asociada, observaciones)
-            VALUES ('$cuit', '$contrasena', '$rol', '$permiso_ingreso', '$nombre', '$correo', '$telefono', '$nombre_responsable', '$id_cooperativa', '$id_productor', '$direccion', '$dir_latitud', '$dir_longitud', '$id_productor_asociados', '$id_cooperativa_asociada', '$id_finca_asociada', '$observaciones')";
+    $sql = "INSERT INTO usuarios (cuit, contrasena, rol, permiso_ingreso, nombre, correo, telefono, nombre_responsable, id_cooperativa, id_productor, direccion, id_productor_asociados, id_cooperativa_asociada, id_finca_asociada, observaciones)
+            VALUES ('$cuit', '$contrasena', '$rol', '$permiso_ingreso', '$nombre', '$correo', '$telefono', '$nombre_responsable', '$id_cooperativa', '$id_productor', '$direccion', '$id_productor_asociados', '$id_cooperativa_asociada', '$id_finca_asociada', '$observaciones')";
 
     if (mysqli_query($conn, $sql)) {
         echo "<div id='snackbar' class='success'>Usuario agregado con éxito.</div>";
@@ -64,8 +62,6 @@ if (isset($_POST['actualizar_usuario'])) {
     $id_cooperativa = $_POST['id_cooperativa'];
     $id_productor = $_POST['id_productor'];
     $direccion = $_POST['direccion'];
-    $dir_latitud = $_POST['dir_latitud'];
-    $dir_longitud = $_POST['dir_longitud'];
     $id_productor_asociados = $_POST['id_productor_asociados'];
     $id_cooperativa_asociada = $_POST['id_cooperativa_asociada'];
     $id_finca_asociada = $_POST['id_finca_asociada'];
@@ -75,7 +71,7 @@ if (isset($_POST['actualizar_usuario'])) {
             cuit='$cuit', contrasena='$contrasena', rol='$rol', permiso_ingreso='$permiso_ingreso', 
             nombre='$nombre', correo='$correo', telefono='$telefono', nombre_responsable='$nombre_responsable', 
             id_cooperativa='$id_cooperativa', id_productor='$id_productor', direccion='$direccion', 
-            dir_latitud='$dir_latitud', dir_longitud='$dir_longitud', id_productor_asociados='$id_productor_asociados', 
+            id_productor_asociados='$id_productor_asociados', 
             id_cooperativa_asociada='$id_cooperativa_asociada', id_finca_asociada='$id_finca_asociada', 
             observaciones='$observaciones' WHERE id='$id'";
 
@@ -581,8 +577,6 @@ $total_pages = ceil($total_records / $limit);
                 <input type="text" name="id_cooperativa" placeholder="ID Cooperativa">
                 <input type="text" name="id_productor" placeholder="ID Productor">
                 <input type="text" name="direccion" placeholder="Dirección">
-                <input type="text" name="dir_latitud" placeholder="Latitud">
-                <input type="text" name="dir_longitud" placeholder="Longitud">
                 <input type="text" name="id_productor_asociados" placeholder="ID Productores Asociados">
                 <input type="text" name="id_cooperativa_asociada" placeholder="ID Cooperativa Asociada">
                 <input type="text" name="id_finca_asociada" placeholder="ID Finca Asociada">
@@ -660,8 +654,6 @@ $total_pages = ceil($total_records / $limit);
                                 <td><input type="text" name="id_cooperativa" value="<?php echo $row['id_cooperativa']; ?>"></td>
                                 <td><input type="text" name="id_productor" value="<?php echo $row['id_productor']; ?>"></td>
                                 <td><input type="text" name="direccion" value="<?php echo $row['direccion']; ?>"></td>
-                                <td><input type="text" name="dir_latitud" value="<?php echo $row['dir_latitud']; ?>"></td>
-                                <td><input type="text" name="dir_longitud" value="<?php echo $row['dir_longitud']; ?>"></td>
                                 <td><input type="text" name="id_productor_asociados" value="<?php echo $row['id_productor_asociados']; ?>"></td>
                                 <td><input type="text" name="id_cooperativa_asociada" value="<?php echo $row['id_cooperativa_asociada']; ?>"></td>
                                 <td><input type="text" name="id_finca_asociada" value="<?php echo $row['id_finca_asociada']; ?>"></td>
