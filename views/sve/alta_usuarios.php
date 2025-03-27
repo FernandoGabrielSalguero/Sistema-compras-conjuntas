@@ -37,9 +37,10 @@ if (isset($_POST['agregar_usuario'])) {
     $id_productor_asociados = $_POST['id_productor_asociados'];
     $id_cooperativa_asociada = $_POST['id_cooperativa_asociada'];
     $id_finca_asociada = $_POST['id_finca_asociada'];
+    $observaciones = $_POST['observaciones'];
 
-    $sql = "INSERT INTO usuarios (cuit, contrasena, rol, permiso_ingreso, nombre, correo, telefono, nombre_responsable, id_cooperativa, id_productor, direccion, dir_latitud, dir_longitud, id_productor_asociados, id_cooperativa_asociada, id_finca_asociada)
-            VALUES ('$cuit', '$contrasena', '$rol', '$permiso_ingreso', '$nombre', '$correo', '$telefono', '$nombre_responsable', '$id_cooperativa', '$id_productor', '$direccion', '$dir_latitud', '$dir_longitud', '$id_productor_asociados', '$id_cooperativa_asociada', '$id_finca_asociada')";
+    $sql = "INSERT INTO usuarios (cuit, contrasena, rol, permiso_ingreso, nombre, correo, telefono, nombre_responsable, id_cooperativa, id_productor, direccion, dir_latitud, dir_longitud, id_productor_asociados, id_cooperativa_asociada, id_finca_asociada, observaciones)
+            VALUES ('$cuit', '$contrasena', '$rol', '$permiso_ingreso', '$nombre', '$correo', '$telefono', '$nombre_responsable', '$id_cooperativa', '$id_productor', '$direccion', '$dir_latitud', '$dir_longitud', '$id_productor_asociados', '$id_cooperativa_asociada', '$id_finca_asociada', '$observaciones')";
 
     if (mysqli_query($conn, $sql)) {
         echo "Usuario agregado con éxito.";
@@ -232,6 +233,63 @@ $total_pages = ceil($total_records / $limit);
                 height: 100vh;
             }
         }
+
+
+
+        /* Nuevos estilos */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        input,
+        select,
+        button,
+        textarea {
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -280,6 +338,7 @@ $total_pages = ceil($total_records / $limit);
                 <input type="text" name="id_productor_asociados" placeholder="ID Productores Asociados">
                 <input type="text" name="id_cooperativa_asociada" placeholder="ID Cooperativa Asociada">
                 <input type="text" name="id_finca_asociada" placeholder="ID Finca Asociada">
+                <input type="text" name="observaciones" placeholder="observaciones">
                 <button type="submit" name="agregar_usuario">Agregar Nuevo Usuario</button>
             </form>
         </div>
