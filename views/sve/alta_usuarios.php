@@ -627,41 +627,60 @@ $total_pages = ceil($total_records / $limit);
                     
                     while ($row = mysqli_fetch_assoc($result)) { ?>
                         <tr>
-                            <form method="post">
-                                <!-- ID que será usado para identificar el registro -->
-                                <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-                    
-                                <!-- Campos que se pueden modificar -->
-                                <td><input type="text" name="cuit" value="<?php echo $row['cuit']; ?>"></td>
-                                <td><input type="text" name="contrasena" value="<?php echo $row['contrasena']; ?>"></td>
-                                <td><input type="text" name="rol" value="<?php echo $row['rol']; ?>"></td>
-                                <td>
+                            <td><?php echo $row['id']; ?></td>
+                            <td><input type="text" value="<?php echo $row['cuit']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['contrasena']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['rol']; ?>"></td>
+                            <td>
+                                <select>
+                                    <option value="1" <?php echo ($row['permiso_ingreso'] == 1 ? 'selected' : ''); ?>>Permitido</option>
+                                    <option value="0" <?php echo ($row['permiso_ingreso'] == 0 ? 'selected' : ''); ?>>Denegado</option>
+                                </select>
+                            </td>
+                            <td><input type="text" value="<?php echo $row['nombre']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['correo']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['telefono']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['nombre_responsable']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['id_cooperativa']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['id_productor']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['direccion']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['dir_latitud']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['dir_longitud']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['id_productor_asociados']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['id_cooperativa_asociada']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['id_finca_asociada']; ?>"></td>
+                            <td><input type="text" value="<?php echo $row['observaciones']; ?>"></td>
+                            <td>
+                                <form method="post" style="display: inline;">
+                                    <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                                    <input type="text" name="cuit" value="<?php echo $row['cuit']; ?>">
+                                    <input type="password" name="contrasena" value="<?php echo $row['contrasena']; ?>">
+                                    <input type="text" name="rol" value="<?php echo $row['rol']; ?>">
                                     <select name="permiso_ingreso">
                                         <option value="1" <?php if ($row['permiso_ingreso'] == 1) echo 'selected'; ?>>Permitido</option>
                                         <option value="0" <?php if ($row['permiso_ingreso'] == 0) echo 'selected'; ?>>Denegado</option>
                                     </select>
-                                </td>
-                                <td><input type="text" name="nombre" value="<?php echo $row['nombre']; ?>"></td>
-                                <td><input type="text" name="correo" value="<?php echo $row['correo']; ?>"></td>
-                                <td><input type="text" name="telefono" value="<?php echo $row['telefono']; ?>"></td>
-                                <td><input type="text" name="nombre_responsable" value="<?php echo $row['nombre_responsable']; ?>"></td>
-                                <td><input type="text" name="id_cooperativa" value="<?php echo $row['id_cooperativa']; ?>"></td>
-                                <td><input type="text" name="id_productor" value="<?php echo $row['id_productor']; ?>"></td>
-                                <td><input type="text" name="direccion" value="<?php echo $row['direccion']; ?>"></td>
-                                <td><input type="text" name="dir_latitud" value="<?php echo $row['dir_latitud']; ?>"></td>
-                                <td><input type="text" name="dir_longitud" value="<?php echo $row['dir_longitud']; ?>"></td>
-                                <td><input type="text" name="id_productor_asociados" value="<?php echo $row['id_productor_asociados']; ?>"></td>
-                                <td><input type="text" name="id_cooperativa_asociada" value="<?php echo $row['id_cooperativa_asociada']; ?>"></td>
-                                <td><input type="text" name="id_finca_asociada" value="<?php echo $row['id_finca_asociada']; ?>"></td>
-                                <td><input type="text" name="observaciones" value="<?php echo $row['observaciones']; ?>"></td>
-                    
-                                <!-- Botón de actualización -->
-                                <td>
-                                    <button type="submit" name="actualizar_usuario" onclick="showSnackbar();">
-                                        Actualizar
-                                    </button>
-                                </td>
-                            </form>
+                                    <input type="text" name="nombre" value="<?php echo $row['nombre']; ?>">
+                                    <input type="text" name="correo" value="<?php echo $row['correo']; ?>">
+                                    <input type="text" name="telefono" value="<?php echo $row['telefono']; ?>">
+                                    <input type="text" name="nombre_responsable" value="<?php echo $row['nombre_responsable']; ?>">
+                                    <input type="text" name="id_cooperativa" value="<?php echo $row['id_cooperativa']; ?>">
+                                    <input type="text" name="id_productor" value="<?php echo $row['id_productor']; ?>">
+                                    <input type="text" name="direccion" value="<?php echo $row['direccion']; ?>">
+                                    <input type="text" name="dir_latitud" value="<?php echo $row['dir_latitud']; ?>">
+                                    <input type="text" name="dir_longitud" value="<?php echo $row['dir_longitud']; ?>">
+                                    <input type="text" name="id_productor_asociados" value="<?php echo $row['id_productor_asociados']; ?>">
+                                    <input type="text" name="id_cooperativa_asociada" value="<?php echo $row['id_cooperativa_asociada']; ?>">
+                                    <input type="text" name="id_finca_asociada" value="<?php echo $row['id_finca_asociada']; ?>">
+                                    <input type="text" name="observaciones" value="<?php echo $row['observaciones']; ?>">
+                                    <button type="submit" name="actualizar_usuario" onclick="showSnackbar();"><i class="fas fa-save"></i></button>
+                                </form>
+                                <!-- Botón de eliminar -->
+                                <form method="post" style="display: inline;">
+                                    <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                                    <button type="submit" name="eliminar_usuario" onclick="showSnackbar();"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
                         </tr>
                     <?php } ?>
                 </tbody>
