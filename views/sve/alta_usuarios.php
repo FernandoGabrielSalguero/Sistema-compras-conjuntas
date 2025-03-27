@@ -43,9 +43,11 @@ if (isset($_POST['agregar_usuario'])) {
             VALUES ('$cuit', '$contrasena', '$rol', '$permiso_ingreso', '$nombre', '$correo', '$telefono', '$nombre_responsable', '$id_cooperativa', '$id_productor', '$direccion', '$dir_latitud', '$dir_longitud', '$id_productor_asociados', '$id_cooperativa_asociada', '$id_finca_asociada', '$observaciones')";
 
     if (mysqli_query($conn, $sql)) {
-        echo "Usuario agregado con éxito.";
+        echo "<div id='snackbar' class='success'>Usuario agregado con éxito.</div>";
+        echo "<script>document.addEventListener('DOMContentLoaded', function() { showSnackbar(); });</script>";
     } else {
-        echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+        echo "<div id='snackbar' class='error'>Error al agregar usuario: " . mysqli_error($conn) . "</div>";
+        echo "<script>document.addEventListener('DOMContentLoaded', function() { showSnackbar(); });</script>";
     }
 }
 
@@ -667,6 +669,7 @@ $total_pages = ceil($total_records / $limit);
                                     <input type="hidden" name="observaciones" value="<?php echo $row['observaciones']; ?>">
                                     <button type="submit" name="actualizar_usuario" onclick="showSnackbar();"><i class="fas fa-save"></i></button>
                                 </form>
+
 
                                 <!-- Botón de eliminar -->
                                 <form method="post" style="display: inline;">
