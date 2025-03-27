@@ -368,6 +368,74 @@ $total_pages = ceil($total_records / $limit);
             padding: 5px 10px;
             margin: 2px;
         }
+
+        .custom-select {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .custom-select select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            appearance: none;
+            background-color: #fff;
+            cursor: pointer;
+        }
+
+        .custom-select select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 5px;
+            border-radius: 30px;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            padding: 10px;
+            width: 100%;
+            outline: none;
+            border-radius: 30px;
+        }
+
+        .search-btn,
+        .clear-btn {
+            background-color: #5a67d8;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            padding: 8px;
+            margin-left: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            transition: background-color 0.3s;
+        }
+
+        .clear-btn {
+            background-color: red;
+        }
+
+        .search-btn:hover {
+            background-color: #3b49df;
+        }
+
+        .clear-btn:hover {
+            background-color: darkred;
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -403,18 +471,30 @@ $total_pages = ceil($total_records / $limit);
             <form method="post">
                 <input type="text" name="cuit" placeholder="CUIT" required>
                 <input type="password" name="contrasena" placeholder="Contraseña" required>
-                <label>Rol:</label>
-                <select name="rol" required>
-                    <option value="productor">Productor</option>
-                    <option value="cooperativa">Cooperativa</option>
-                    <option value="administrador">Administrador</option>
-                </select>
 
-                <label>Permiso de Ingreso:</label>
-                <select name="permiso_ingreso" required>
-                    <option value="1">Permitido</option>
-                    <option value="0">Denegado</option>
-                </select>
+                <div class="form-group">
+                    <label for="rol">Rol:</label>
+                    <div class="custom-select">
+                        <select name="rol" id="rol" required>
+                            <option value="" disabled selected>Seleccione un rol</option>
+                            <option value="productor">Productor</option>
+                            <option value="cooperativa">Cooperativa</option>
+                            <option value="administrador">Administrador</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="permiso_ingreso">Permiso de Ingreso:</label>
+                    <div class="custom-select">
+                        <select name="permiso_ingreso" id="permiso_ingreso" required>
+                            <option value="" disabled selected>Seleccione permiso</option>
+                            <option value="1">Permitido</option>
+                            <option value="0">Denegado</option>
+                        </select>
+                    </div>
+                </div>
+
                 <input type="text" name="nombre" placeholder="Nombre" required>
                 <input type="email" name="correo" placeholder="Correo" required>
                 <input type="text" name="telefono" placeholder="Teléfono">
@@ -436,8 +516,8 @@ $total_pages = ceil($total_records / $limit);
             <div class="search-bar">
                 <form method="post" style="display: flex; width: 100%;">
                     <input type="text" name="cuit_filter" placeholder="Ingrese CUIT">
-                    <button type="submit" style="margin-left: 5px;"><i class="fas fa-search"></i></button>
-                    <button type="submit" name="clear_filter" style="margin-left: 5px; background-color: red;"><i class="fas fa-times"></i></button>
+                    <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+                    <button type="submit" name="clear_filter" class="clear-btn"><i class="fas fa-times"></i></button>
                 </form>
             </div>
         </div>
