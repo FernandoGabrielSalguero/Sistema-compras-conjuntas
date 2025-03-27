@@ -71,7 +71,8 @@ if (isset($_POST['actualizar_usuario'])) {
     $id_finca_asociada = $_POST['id_finca_asociada'];
     $observaciones = $_POST['observaciones'];
 
-    $sql = "UPDATE usuarios SET cuit='$cuit', contrasena='$contrasena', rol='$rol', permiso_ingreso='$permiso_ingreso', 
+    $sql = "UPDATE usuarios SET 
+            cuit='$cuit', contrasena='$contrasena', rol='$rol', permiso_ingreso='$permiso_ingreso', 
             nombre='$nombre', correo='$correo', telefono='$telefono', nombre_responsable='$nombre_responsable', 
             id_cooperativa='$id_cooperativa', id_productor='$id_productor', direccion='$direccion', 
             dir_latitud='$dir_latitud', dir_longitud='$dir_longitud', id_productor_asociados='$id_productor_asociados', 
@@ -80,12 +81,13 @@ if (isset($_POST['actualizar_usuario'])) {
 
     if (mysqli_query($conn, $sql)) {
         echo "<div id='snackbar' class='success'>Usuario actualizado con éxito.</div>";
-        echo "<script>window.onload = showSnackbar;</script>";
+        echo "<script>document.addEventListener('DOMContentLoaded', function() { showSnackbar(); });</script>";
     } else {
         echo "<div id='snackbar' class='error'>Error al actualizar usuario: " . mysqli_error($conn) . "</div>";
-        echo "<script>window.onload = showSnackbar;</script>";
+        echo "<script>document.addEventListener('DOMContentLoaded', function() { showSnackbar(); });</script>";
     }
 }
+
 
 
 // Función para eliminar registros
@@ -647,28 +649,31 @@ $total_pages = ceil($total_records / $limit);
                             <td><input type="text" value="<?php echo $row['id_finca_asociada']; ?>"></td>
                             <td><input type="text" value="<?php echo $row['observaciones']; ?>"></td>
                             <td>
-                                <!-- Botón de actualizar -->
                                 <form method="post" style="display: inline;">
                                     <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-                                    <input type="hidden" name="cuit" value="<?php echo $row['cuit']; ?>">
-                                    <input type="hidden" name="contrasena" value="<?php echo $row['contrasena']; ?>">
-                                    <input type="hidden" name="rol" value="<?php echo $row['rol']; ?>">
-                                    <input type="hidden" name="permiso_ingreso" value="<?php echo $row['permiso_ingreso']; ?>">
-                                    <input type="hidden" name="nombre" value="<?php echo $row['nombre']; ?>">
-                                    <input type="hidden" name="correo" value="<?php echo $row['correo']; ?>">
-                                    <input type="hidden" name="telefono" value="<?php echo $row['telefono']; ?>">
-                                    <input type="hidden" name="nombre_responsable" value="<?php echo $row['nombre_responsable']; ?>">
-                                    <input type="hidden" name="id_cooperativa" value="<?php echo $row['id_cooperativa']; ?>">
-                                    <input type="hidden" name="id_productor" value="<?php echo $row['id_productor']; ?>">
-                                    <input type="hidden" name="direccion" value="<?php echo $row['direccion']; ?>">
-                                    <input type="hidden" name="dir_latitud" value="<?php echo $row['dir_latitud']; ?>">
-                                    <input type="hidden" name="dir_longitud" value="<?php echo $row['dir_longitud']; ?>">
-                                    <input type="hidden" name="id_productor_asociados" value="<?php echo $row['id_productor_asociados']; ?>">
-                                    <input type="hidden" name="id_cooperativa_asociada" value="<?php echo $row['id_cooperativa_asociada']; ?>">
-                                    <input type="hidden" name="id_finca_asociada" value="<?php echo $row['id_finca_asociada']; ?>">
-                                    <input type="hidden" name="observaciones" value="<?php echo $row['observaciones']; ?>">
+                                    <input type="text" name="cuit" value="<?php echo $row['cuit']; ?>">
+                                    <input type="password" name="contrasena" value="<?php echo $row['contrasena']; ?>">
+                                    <input type="text" name="rol" value="<?php echo $row['rol']; ?>">
+                                    <select name="permiso_ingreso">
+                                        <option value="1" <?php if ($row['permiso_ingreso'] == 1) echo 'selected'; ?>>Permitido</option>
+                                        <option value="0" <?php if ($row['permiso_ingreso'] == 0) echo 'selected'; ?>>Denegado</option>
+                                    </select>
+                                    <input type="text" name="nombre" value="<?php echo $row['nombre']; ?>">
+                                    <input type="text" name="correo" value="<?php echo $row['correo']; ?>">
+                                    <input type="text" name="telefono" value="<?php echo $row['telefono']; ?>">
+                                    <input type="text" name="nombre_responsable" value="<?php echo $row['nombre_responsable']; ?>">
+                                    <input type="text" name="id_cooperativa" value="<?php echo $row['id_cooperativa']; ?>">
+                                    <input type="text" name="id_productor" value="<?php echo $row['id_productor']; ?>">
+                                    <input type="text" name="direccion" value="<?php echo $row['direccion']; ?>">
+                                    <input type="text" name="dir_latitud" value="<?php echo $row['dir_latitud']; ?>">
+                                    <input type="text" name="dir_longitud" value="<?php echo $row['dir_longitud']; ?>">
+                                    <input type="text" name="id_productor_asociados" value="<?php echo $row['id_productor_asociados']; ?>">
+                                    <input type="text" name="id_cooperativa_asociada" value="<?php echo $row['id_cooperativa_asociada']; ?>">
+                                    <input type="text" name="id_finca_asociada" value="<?php echo $row['id_finca_asociada']; ?>">
+                                    <input type="text" name="observaciones" value="<?php echo $row['observaciones']; ?>">
                                     <button type="submit" name="actualizar_usuario" onclick="showSnackbar();"><i class="fas fa-save"></i></button>
                                 </form>
+
 
 
                                 <!-- Botón de eliminar -->
