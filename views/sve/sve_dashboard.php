@@ -203,6 +203,10 @@
     <div id="body">
         <div class="card">Tarjeta 1 - Información General</div>
         <div class="card">Tarjeta 2 - Estadísticas</div>
+        <div class="card">Tarjeta 3 - Estadísticas</div>
+        <div class="card">Tarjeta 4 - Estadísticas</div>
+        <div class="card">Tarjeta 5 - Estadísticas</div>
+        <div class="card">Tarjeta 6 - Estadísticas</div>
     </div>
 
     <!-- JavaScript -->
