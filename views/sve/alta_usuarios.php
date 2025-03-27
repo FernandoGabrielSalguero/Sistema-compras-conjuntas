@@ -71,371 +71,175 @@ $total_pages = ceil($total_records / $limit);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alta usuarios</title>
     <style>
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+/* ================================================== */
+/* ======= Estilos Generales (Afectan a todo) ======= */
+/* ================================================== */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+}
 
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            background-color: #F0F2F5;
-        }
+/* Tarjetas en general */
+.card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
 
-        /* General Styles */
-        * {
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
+/* Inputs, Selects, Botones generales */
+input, select, button, textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
 
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
+/* Botones generales */
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
 
-        /* Header */
-        #header {
-            background-color: #ffffff;
-            color: #333;
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 10;
-        }
+button:hover {
+    background-color: #0056b3;
+}
 
-        /* Sidebar */
-        #sidebar {
-            background-color: #ffffff;
-            color: #333;
-            padding: 1rem;
-            width: 250px;
-            height: calc(100vh - 60px);
-            position: fixed;
-            top: 60px;
-            left: 0;
-            overflow-y: auto;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-        }
+/* ================================================== */
+/* ============== Tarjeta 1: Formulario ============= */
+/* ================================================== */
+form {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
 
-        /* Body */
-        #body {
-            margin-left: 250px;
-            padding: 2rem;
-            background-color: #F0F2F5;
-            height: 100vh;
-            overflow-y: auto;
-            padding-top: 60px;
-        }
+/* Estilo para desplegables personalizados */
+.custom-select select {
+    appearance: none;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 12px;
+    cursor: pointer;
+}
 
-        /* Card */
-        .card {
-            background: white;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+/* Responsividad: Formulario en dispositivos móviles */
+@media (max-width: 1024px) {
+    form {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
 
-        /* Mobile Adjustments */
-        @media (max-width: 768px) {
-            #sidebar {
-                transform: translateX(-100%);
-                position: fixed;
-                top: 0;
-                height: 100vh;
-                z-index: 9;
-            }
+@media (max-width: 768px) {
+    form {
+        grid-template-columns: 1fr;
+    }
+}
 
-            #sidebar.show {
-                transform: translateX(0);
-            }
+/* ================================================== */
+/* ============== Tarjeta 2: Filtro ================= */
+/* ================================================== */
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: #f0f0f0;
+    padding: 5px;
+    border-radius: 30px;
+}
 
-            #body {
-                margin-left: 0;
-            }
-        }
+.search-bar input {
+    border: none;
+    background: transparent;
+    padding: 10px;
+    width: 100%;
+    outline: none;
+    border-radius: 30px;
+}
 
-        /* Botón de cerrar menú */
-        #close-menu-button {
-            display: block;
-            /* Visible por defecto */
-        }
+/* Botones del filtro */
+.search-btn, .clear-btn {
+    background-color: #5a67d8;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 8px;
+    margin-left: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    transition: background-color 0.3s;
+}
 
-        /* Ocultar el botón en pantallas grandes */
-        @media (min-width: 769px) {
-            #close-menu-button {
-                display: none;
-            }
-        }
+.clear-btn {
+    background-color: red;
+}
 
-        /* Estilo de botones del menú */
-        #sidebar nav a {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            margin: 5px 0;
-            background-color: white;
-            color: #333;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
+.search-btn:hover {
+    background-color: #3b49df;
+}
 
-        #sidebar nav a:hover {
-            background-color: #E0E0E0;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
+.clear-btn:hover {
+    background-color: darkred;
+}
 
-        /* Iconos */
-        #sidebar nav a i {
-            margin-right: 8px;
-        }
+/* Responsividad: Input de filtro ocupa toda la pantalla en móvil */
+@media (max-width: 768px) {
+    .search-bar form {
+        flex-direction: column;
+    }
 
-        /* Estilo del botón de cerrar menú */
-        #close-menu-button {
-            display: block;
-            /* Visible por defecto */
-            padding: 10px;
-            margin-top: 20px;
-            border: none;
-            background-color: #ff5e57;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+    .search-bar input {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+}
 
-        #close-menu-button:hover {
-            background-color: #ff3d3d;
-        }
+/* ================================================== */
+/* ============== Tarjeta 3: Tabla ================== */
+/* ================================================== */
+.card table {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+    white-space: nowrap;
+    border-radius: 10px;
+}
 
-        /* Ocultar el botón de cerrar menú en pantallas grandes */
-        @media (min-width: 769px) {
-            #close-menu-button {
-                display: none;
-            }
-        }
+/* Tabla general */
+table {
+    border-collapse: collapse;
+}
 
-        /* Ajuste para que el sidebar no se superponga al header en móviles */
-        @media (max-width: 768px) {
-            #sidebar {
-                top: 55PX;
-                /* Para que ocupe todo el alto de la pantalla */
-                height: 100vh;
-            }
-        }
+/* Cabecera de la tabla */
+th {
+    background-color: #f0f0f0;
+    padding: 10px;
+}
 
+/* Celdas */
+td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
 
+/* Mejorar botones de acción */
+button {
+    padding: 5px 10px;
+    margin: 2px;
+}
 
-        /* Nuevos estilos */
-        .card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        form {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-
-        input,
-        select,
-        button,
-        textarea {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 100%;
-        }
-
-        button {
-            grid-column: span 4;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #f0f0f0;
-        }
-
-        @media (max-width: 1024px) {
-            form {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 200px) {
-            form {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* estilo del buscador */
-        .search-bar {
-            display: flex;
-            align-items: center;
-            background-color: #f0f0f0;
-            padding: 5px;
-            border-radius: 30px;
-        }
-
-        .search-bar input {
-            border: none;
-            background: transparent;
-            padding: 10px;
-            width: 100%;
-            outline: none;
-        }
-
-        .search-bar button {
-            background-color: #5a67d8;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        .card table {
-            width: 100%;
-            overflow-x: auto;
-            display: block;
-            white-space: nowrap;
-        }
-
-        /* Tarjeta 1: Formulario */
-        @media (max-width: 768px) {
-            form {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Tarjeta 2: Filtro */
-        @media (max-width: 768px) {
-            .search-bar form {
-                flex-direction: column;
-            }
-
-            .search-bar input {
-                margin-bottom: 10px;
-                width: 100%;
-            }
-        }
-
-        /* Tarjeta 3: Tabla dentro de la tarjeta */
-        .card table {
-            width: 100%;
-            overflow-x: auto;
-            display: block;
-            white-space: nowrap;
-            border-radius: 10px;
-        }
-
-        /* Mejorar botones de acción */
-        button {
-            padding: 5px 10px;
-            margin: 2px;
-        }
-
-        .custom-select {
-            position: relative;
-            display: inline-block;
-            width: 100%;
-        }
-
-        .custom-select select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            appearance: none;
-            background-color: #fff;
-            cursor: pointer;
-        }
-
-        .custom-select select:focus {
-            outline: none;
-            border-color: #007bff;
-        }
-
-
-        .search-bar {
-            display: flex;
-            align-items: center;
-            background-color: #f0f0f0;
-            padding: 5px;
-            border-radius: 30px;
-        }
-
-        .search-bar input {
-            border: none;
-            background: transparent;
-            padding: 10px;
-            width: 100%;
-            outline: none;
-            border-radius: 30px;
-        }
-
-        .search-btn,
-        .clear-btn {
-            background-color: #5a67d8;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            padding: 8px;
-            margin-left: 5px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            transition: background-color 0.3s;
-        }
-
-        .clear-btn {
-            background-color: red;
-        }
-
-        .search-btn:hover {
-            background-color: #3b49df;
-        }
-
-        .clear-btn:hover {
-            background-color: darkred;
-        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
