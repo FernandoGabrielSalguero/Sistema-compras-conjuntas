@@ -237,13 +237,6 @@ $total_pages = ceil($total_records / $limit);
 
 
         /* Nuevos estilos */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-        }
-
         .card {
             background: white;
             border-radius: 10px;
@@ -252,11 +245,16 @@ $total_pages = ceil($total_records / $limit);
             margin-bottom: 20px;
         }
 
+        form {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
         input,
         select,
         button,
         textarea {
-            margin: 5px 0;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -264,6 +262,7 @@ $total_pages = ceil($total_records / $limit);
         }
 
         button {
+            grid-column: span 4;
             background-color: #007bff;
             color: white;
             border: none;
@@ -289,6 +288,18 @@ $total_pages = ceil($total_records / $limit);
 
         th {
             background-color: #f0f0f0;
+        }
+
+        @media (max-width: 1024px) {
+            form {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            form {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 
