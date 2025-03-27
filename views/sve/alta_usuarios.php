@@ -79,6 +79,11 @@ $total_pages = ceil($total_records / $limit);
             margin: 0;
             padding: 0;
             background-color: #f5f5f5;
+            margin-left: 250px;
+            padding: 2rem;
+            height: 100vh;
+            overflow-y: auto;
+            padding-top: 60px;
         }
 
         /* Tarjetas en general */
@@ -149,15 +154,6 @@ $total_pages = ceil($total_records / $limit);
             transition: all 0.3s;
         }
 
-        /* Body */
-        #body {
-            margin-left: 250px;
-            padding: 2rem;
-            background-color: #F0F2F5;
-            height: 100vh;
-            overflow-y: auto;
-            padding-top: 60px;
-        }
 
         /* Card */
         .card {
@@ -182,9 +178,6 @@ $total_pages = ceil($total_records / $limit);
                 transform: translateX(0);
             }
 
-            #body {
-                margin-left: 0;
-            }
         }
 
         /* Botón de cerrar menú */
