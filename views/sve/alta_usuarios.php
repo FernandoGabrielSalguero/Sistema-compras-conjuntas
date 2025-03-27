@@ -641,7 +641,7 @@ $total_pages = ceil($total_records / $limit);
                                 <!-- Campos en el orden correcto -->
                                 <td><?php echo $row['id']; ?></td>
                                 <td><input type="text" name="cuit" value="<?php echo $row['cuit']; ?>"></td>
-                                <td><input type="password" name="contrasena" value="<?php echo $row['contrasena']; ?>"></td>
+                                <td><input type="text" name="contrasena" value="<?php echo $row['contrasena']; ?>"></td>
                                 <td>
                                     <select name="rol">
                                         <option value="cooperativa" <?php if ($row['rol'] == 'cooperativa') echo 'selected'; ?>>Cooperativa</option>
