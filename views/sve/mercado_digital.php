@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alta usuarios</title>
+    <title>Mercado Digital</title>
     <style>
         body,
         html {
