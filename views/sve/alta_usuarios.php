@@ -124,6 +124,31 @@ $total_pages = ceil($total_records / $limit);
         /* ======= Estilos Menú y Header  ======= */
         /* ================================================== */
 
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #F0F2F5;
+        }
+
+        /* General Styles */
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
         /* Header */
         #header {
             background-color: #ffffff;
@@ -154,6 +179,15 @@ $total_pages = ceil($total_records / $limit);
             transition: all 0.3s;
         }
 
+        /* Body */
+        #body {
+            margin-left: 250px;
+            padding: 2rem;
+            background-color: #F0F2F5;
+            height: 100vh;
+            overflow-y: auto;
+            padding-top: 60px;
+        }
 
         /* Card */
         .card {
@@ -178,6 +212,9 @@ $total_pages = ceil($total_records / $limit);
                 transform: translateX(0);
             }
 
+            #body {
+                margin-left: 0;
+            }
         }
 
         /* Botón de cerrar menú */
