@@ -327,6 +327,47 @@ $total_pages = ceil($total_records / $limit);
             border-radius: 50%;
             cursor: pointer;
         }
+
+        .card table {
+            width: 100%;
+            overflow-x: auto;
+            display: block;
+            white-space: nowrap;
+        }
+
+        /* Tarjeta 1: Formulario */
+        @media (max-width: 768px) {
+            form {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Tarjeta 2: Filtro */
+        @media (max-width: 768px) {
+            .search-bar form {
+                flex-direction: column;
+            }
+
+            .search-bar input {
+                margin-bottom: 10px;
+                width: 100%;
+            }
+        }
+
+        /* Tarjeta 3: Tabla dentro de la tarjeta */
+        .card table {
+            width: 100%;
+            overflow-x: auto;
+            display: block;
+            white-space: nowrap;
+            border-radius: 10px;
+        }
+
+        /* Mejorar botones de acción */
+        button {
+            padding: 5px 10px;
+            margin: 2px;
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -362,7 +403,13 @@ $total_pages = ceil($total_records / $limit);
             <form method="post">
                 <input type="text" name="cuit" placeholder="CUIT" required>
                 <input type="password" name="contrasena" placeholder="Contraseña" required>
-                <input type="text" name="rol" placeholder="Rol" required>
+                <label>Rol:</label>
+                <select name="rol" required>
+                    <option value="productor">Productor</option>
+                    <option value="cooperativa">Cooperativa</option>
+                    <option value="administrador">Administrador</option>
+                </select>
+
                 <label>Permiso de Ingreso:</label>
                 <select name="permiso_ingreso" required>
                     <option value="1">Permitido</option>
@@ -387,9 +434,10 @@ $total_pages = ceil($total_records / $limit);
 
         <div class="card">
             <div class="search-bar">
-                <form method="post">
+                <form method="post" style="display: flex; width: 100%;">
                     <input type="text" name="cuit_filter" placeholder="Ingrese CUIT">
-                    <button type="submit"><i class="fas fa-search"></i></button>
+                    <button type="submit" style="margin-left: 5px;"><i class="fas fa-search"></i></button>
+                    <button type="submit" name="clear_filter" style="margin-left: 5px; background-color: red;"><i class="fas fa-times"></i></button>
                 </form>
             </div>
         </div>
