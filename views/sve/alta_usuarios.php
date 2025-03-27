@@ -627,29 +627,6 @@ $total_pages = ceil($total_records / $limit);
                     
                     while ($row = mysqli_fetch_assoc($result)) { ?>
                         <tr>
-                            <td><?php echo $row['id']; ?></td>
-                            <td><input type="text" value="<?php echo $row['cuit']; ?>"></td>
-                            <td><input type="text" value="<?php echo $row['contrasena']; ?>"></td>
-                            <td><input type="text" value="<?php echo $row['rol']; ?>"></td>
-                            <td>
-                                <select>
-                                    <option value="1" <?php echo ($row['permiso_ingreso'] == 1 ? 'selected' : ''); ?>>Permitido</option>
-                                    <option value="0" <?php echo ($row['permiso_ingreso'] == 0 ? 'selected' : ''); ?>>Denegado</option>
-                                </select>
-                            </td>
-                            <td><input type="text" value="<?php echo $row['nombre']; ?>"></td>
-                            <td><input type="text" value="<?php echo $row['correo']; ?>"></td>
-                            <td><input type="text" value="<?php echo $row['telefono']; ?>"></td>
-                            <td><input type="text" value="<?php echo $row['nombre_responsable']; ?>"></td>
-                            <td><input type="text" value="<?php echo $row['id_cooperativa']; ?>"></td>
-                            <td><input type="text" value="<?php echo $row['id_productor']; ?>"></td>
-                            <td><input type="text" value="<?php echo $row['direccion']; ?>"></td>
-                            <td><input type="text" value="<?php echo $row['dir_latitud']; ?>"></td>
-                            <td><input type="text" value="<?php echo $row['dir_longitud']; ?>"></td>
-                            <td><input type="text" value="<?php echo $row['id_productor_asociados']; ?>"></td>
-                            <td><input type="text" value="<?php echo $row['id_cooperativa_asociada']; ?>"></td>
-                            <td><input type="text" value="<?php echo $row['id_finca_asociada']; ?>"></td>
-                            <td><input type="text" value="<?php echo $row['observaciones']; ?>"></td>
                             <td>
                                 <form method="post" style="display: inline;">
                                     <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
