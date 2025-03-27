@@ -385,13 +385,15 @@ $total_pages = ceil($total_records / $limit);
             </form>
         </div>
 
-
-        <div class="card search-bar">
-            <form method="post">
-                <input type="text" name="cuit_filter" placeholder="Ingrese CUIT">
-                <button type="submit"><i class="fas fa-search"></i></button>
-            </form>
+        <div class="card">
+            <div class="search-bar">
+                <form method="post">
+                    <input type="text" name="cuit_filter" placeholder="Ingrese CUIT">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
         </div>
+
 
 
         <div class="card">
