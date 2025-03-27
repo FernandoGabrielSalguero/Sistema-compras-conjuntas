@@ -1,3 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carga Masiva de Usuarios</title>
+</head>
+<body>
+    <h1>Carga Masiva de Usuarios</h1>
+
+    <form action="CargaMasivaUsuarios.php" method="post" enctype="multipart/form-data">
+        <label for="csv_file">Seleccionar archivo CSV:</label>
+        <input type="file" name="csv_file" id="csv_file" accept=".csv" required>
+        <br><br>
+        <input type="submit" name="upload" value="Cargar Usuarios">
+    </form>
+
+</body>
+</html>
+
 <?php
 
 // Habilitar la visualización de errores
@@ -49,12 +69,9 @@ if (isset($_POST['upload'])) {
             $result_finca_id = $conn->query($query_finca_id);
             $id_finca_asociada = ($result_finca_id->fetch_assoc())['id'];
 
-            // Generar contraseña encriptada
-            $password_hash = password_hash((string)$id_productor, PASSWORD_DEFAULT);
-
             // Insertar en la tabla 'usuarios'
             $query_usuario = "INSERT INTO usuarios (id_productor, nombre, id_finca_asociada, password, rol) 
-                            VALUES ('$id_productor', '$nombre', '$id_finca_asociada', '$password_hash', 'productor')";
+                            VALUES ('$id_productor', '$nombre', '$id_finca_asociada', '$id_productor', 'productor')";
             if (!$conn->query($query_usuario)) {
                 echo "Error al insertar en la tabla usuarios: " . $conn->error . "<br>";
             }
