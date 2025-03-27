@@ -201,8 +201,9 @@
 
     <!-- Body -->
     <div id="body">
-        <div class="card">Tarjeta 1 - Información General</div>
-        <div class="card">Tarjeta 2 - Estadísticas</div>
+        <div class="card">Quiero una tarjeta con filtros. Por cuit</div>
+        <div class="card">Quiero un formulario que me permita insertar un usuario nuevo</div>
+        <div class="card">Quiero una tabla que me traiga todos los usuarios de mi tabla "usuarios" y me permita modificarlos</div>
     </div>
 
     <!-- JavaScript -->
