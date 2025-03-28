@@ -1,4 +1,9 @@
 <?php
+// Activar la visualización de errores en pantalla
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // Cargar las variables del archivo .env manualmente
 $env_path = __DIR__ . '/../../.env';
 if (file_exists($env_path)) {
