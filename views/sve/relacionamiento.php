@@ -24,45 +24,29 @@ if ($conn->connect_error) {
     die("Error en la conexión: " . $conn->connect_error);
 }
 
-// Función para agregar un nuevo producto
-if (isset($_POST['agregar_producto'])) {
-    $nombre = $_POST['Nombre_producto'];
-    $detalle = $_POST['Detalle_producto'];
-    $precio = $_POST['Precio_producto'];
-    $unidad = $_POST['Unidad_Medida_venta'];
+// Procesar formularios de relacionamiento
+if (isset($_POST['relacionar'])) {
+    $productor_id = $_POST['id_productor'];
+    $cooperativa_id = $_POST['id_cooperativa'];
 
-    $sql = "INSERT INTO productos (Nombre_producto, Detalle_producto, Precio_producto, Unidad_Medida_venta) VALUES ('$nombre', '$detalle', '$precio', '$unidad')";
+    $sql = "INSERT INTO productores_cooperativas (id_productor, id_cooperativa) VALUES ('$productor_id', '$cooperativa_id')";
 
-    if (mysqli_query($conn, $sql)) {
-        echo "<div id='snackbar' class='success'>Producto agregado con éxito.</div>";
+    if ($conn->query($sql) === TRUE) {
+        echo "<div id='snackbar' class='success'>Relación guardada exitosamente.</div>";
     } else {
-        echo "<div id='snackbar' class='error'>Error al agregar producto: " . mysqli_error($conn) . "</div>";
+        echo "<div id='snackbar' class='error'>Error al guardar la relación: " . $conn->error . "</div>";
     }
 }
 
-// Función para actualizar un producto
-if (isset($_POST['actualizar_producto'])) {
-    $id = $_POST['id'];
-    $nombre = $_POST['Nombre_producto'];
-    $detalle = $_POST['Detalle_producto'];
-    $precio = $_POST['Precio_producto'];
-    $unidad = $_POST['Unidad_Medida_venta'];
+// Obtener listas de productores y cooperativas
+$productores = $conn->query("SELECT id, nombre FROM usuarios WHERE rol = 'productor'");
+$cooperativas = $conn->query("SELECT id, nombre FROM usuarios WHERE rol = 'cooperativa'");
 
-    $sql = "UPDATE productos SET Nombre_producto='$nombre', Detalle_producto='$detalle', Precio_producto='$precio', Unidad_Medida_venta='$unidad' WHERE id='$id'";
-
-    if (mysqli_query($conn, $sql)) {
-        echo "<div id='snackbar' class='success'>Producto actualizado con éxito.</div>";
-    } else {
-        echo "<div id='snackbar' class='error'>Error al actualizar producto: " . mysqli_error($conn) . "</div>";
-    }
-}
-
-// Función para buscar productos
-$nombre_filter = isset($_POST['nombre_filter']) ? $_POST['nombre_filter'] : '';
-$filter_sql = $nombre_filter ? " WHERE Nombre_producto LIKE '%$nombre_filter%'" : '';
-
-$query = "SELECT * FROM productos $filter_sql";
-$result = mysqli_query($conn, $query);
+// Obtener relaciones existentes
+$relaciones = $conn->query("SELECT pc.id, u1.nombre as productor, u2.nombre as cooperativa 
+                           FROM productores_cooperativas pc
+                           JOIN usuarios u1 ON pc.id_productor = u1.id
+                           JOIN usuarios u2 ON pc.id_cooperativa = u2.id");
 ?>
 
 <!DOCTYPE html>
@@ -498,61 +482,51 @@ $result = mysqli_query($conn, $query);
     <div id="body">
         <!-- Tarjeta 1: Formulario de relacionamiento -->
         <div class="card">
-            <h3>Agregar Nuevo Producto</h3>
-            <form method="post">
-                <input type="text" name="Nombre_producto" placeholder="Nombre del Producto" required>
-                <input type="text" name="Detalle_producto" placeholder="Detalle del Producto" required>
-                <input type="number" step="0.01" name="Precio_producto" placeholder="Precio del Producto" required>
-                <select name="Unidad_Medida_venta" required>
-                    <option value="" disabled selected>Seleccione la unidad de medida</option>
-                    <option value="Kilos">Kilos</option>
-                    <option value="Gramos">Gramos</option>
-                    <option value="Litros">Litros</option>
-                    <option value="Unidad">Unidad</option>
-                </select>
-                <button type="submit" name="agregar_producto">Agregar Producto</button>
-            </form>
-        </div>
+        <h3>Relacionar Productores y Cooperativas</h3>
+        <form method="post">
+            <label for="id_productor">Seleccionar Productor:</label>
+            <select name="id_productor" required>
+                <option value="">Seleccione un Productor</option>
+                <?php while ($row = $productores->fetch_assoc()) { ?>
+                    <option value="<?php echo $row['id']; ?>"><?php echo $row['nombre']; ?></option>
+                <?php } ?>
+            </select><br><br>
+
+            <label for="id_cooperativa">Seleccionar Cooperativa:</label>
+            <select name="id_cooperativa" required>
+                <option value="">Seleccione una Cooperativa</option>
+                <?php while ($row = $cooperativas->fetch_assoc()) { ?>
+                    <option value="<?php echo $row['id']; ?>"><?php echo $row['nombre']; ?></option>
+                <?php } ?>
+            </select><br><br>
+
+            <button type="submit" name="relacionar">Guardar Relación</button>
+        </form>
+    </div>
 
 
         <!-- Tarjeta 2: Listado de relaciones -->
         <div class="card">
-            <h3>Lista de Productos</h3>
-            <table>
-                <thead>
+        <h3>Listado de Relaciones</h3>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID Relación</th>
+                    <th>Productor</th>
+                    <th>Cooperativa</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($row = $relaciones->fetch_assoc()) { ?>
                     <tr>
-                        <th>ID</th>
-                        <th>Nombre Producto</th>
-                        <th>Detalle Producto</th>
-                        <th>Precio Producto</th>
-                        <th>Unidad de Medida</th>
-                        <th>Acciones</th>
+                        <td><?php echo $row['id']; ?></td>
+                        <td><?php echo $row['productor']; ?></td>
+                        <td><?php echo $row['cooperativa']; ?></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php while ($row = mysqli_fetch_assoc($result)) { ?>
-                        <tr>
-                            <form method="post">
-                                <input type="hidden" name="id" value="<?php echo $row['Id']; ?>">
-                                <td><?php echo $row['Id']; ?></td>
-                                <td><input type="text" name="Nombre_producto" value="<?php echo $row['Nombre_producto']; ?>"></td>
-                                <td><input type="text" name="Detalle_producto" value="<?php echo $row['Detalle_producto']; ?>"></td>
-                                <td><input type="number" step="0.01" name="Precio_producto" value="<?php echo $row['Precio_producto']; ?>"></td>
-                                <td>
-                                    <select name="Unidad_Medida_venta">
-                                        <option value="Kilos" <?php if ($row['Unidad_Medida_venta'] == 'Kilos') echo 'selected'; ?>>Kilos</option>
-                                        <option value="Gramos" <?php if ($row['Unidad_Medida_venta'] == 'Gramos') echo 'selected'; ?>>Gramos</option>
-                                        <option value="Litros" <?php if ($row['Unidad_Medida_venta'] == 'Litros') echo 'selected'; ?>>Litros</option>
-                                        <option value="Unidad" <?php if ($row['Unidad_Medida_venta'] == 'Unidad') echo 'selected'; ?>>Unidad</option>
-                                    </select>
-                                </td>
-                                <td><button type="submit" name="actualizar_producto">Actualizar</button></td>
-                            </form>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-        </div>
+                <?php } ?>
+            </tbody>
+        </table>
+    </div>
 
         <!-- JavaScript -->
         <script>
