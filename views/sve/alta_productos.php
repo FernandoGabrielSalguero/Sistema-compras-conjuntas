@@ -503,7 +503,13 @@ $result = mysqli_query($conn, $query);
                 <input type="text" name="Nombre_producto" placeholder="Nombre del Producto" required>
                 <input type="text" name="Detalle_producto" placeholder="Detalle del Producto" required>
                 <input type="number" step="0.01" name="Precio_producto" placeholder="Precio del Producto" required>
-                <input type="text" name="Unidad_Medida_venta" placeholder="Unidad de Medida de Venta" required>
+                <select name="Unidad_Medida_venta" required>
+                    <option value="" disabled selected>Seleccione la unidad de medida</option>
+                    <option value="Kilos">Kilos</option>
+                    <option value="Gramos">Gramos</option>
+                    <option value="Litros">Litros</option>
+                    <option value="Unidad">Unidad</option>
+                </select>
                 <button type="submit" name="agregar_producto">Agregar Producto</button>
             </form>
         </div>
@@ -550,15 +556,14 @@ $result = mysqli_query($conn, $query);
                 </tbody>
             </table>
         </div>
-    </div>
 
-    <!-- JavaScript -->
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('show');
-        }
-    </script>
+        <!-- JavaScript -->
+        <script>
+            function toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('show');
+            }
+        </script>
 
 </body>
 
