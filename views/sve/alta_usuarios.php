@@ -28,17 +28,14 @@ if (isset($_POST['agregar_usuario'])) {
     $nombre = $_POST['nombre'];
     $correo = $_POST['correo'];
     $telefono = $_POST['telefono'];
-    $nombre_responsable = $_POST['nombre_responsable'];
     $id_cooperativa = $_POST['id_cooperativa'];
     $id_productor = $_POST['id_productor'];
     $direccion = $_POST['direccion'];
-    $id_productor_asociados = $_POST['id_productor_asociados'];
-    $id_cooperativa_asociada = $_POST['id_cooperativa_asociada'];
     $id_finca_asociada = $_POST['id_finca_asociada'];
     $observaciones = $_POST['observaciones'];
 
-    $sql = "INSERT INTO usuarios (cuit, contrasena, rol, permiso_ingreso, nombre, correo, telefono, nombre_responsable, id_cooperativa, id_productor, direccion, id_productor_asociados, id_cooperativa_asociada, id_finca_asociada, observaciones)
-            VALUES ('$cuit', '$contrasena', '$rol', '$permiso_ingreso', '$nombre', '$correo', '$telefono', '$nombre_responsable', '$id_cooperativa', '$id_productor', '$direccion', '$id_productor_asociados', '$id_cooperativa_asociada', '$id_finca_asociada', '$observaciones')";
+    $sql = "INSERT INTO usuarios (cuit, contrasena, rol, permiso_ingreso, nombre, correo, telefono, id_cooperativa, id_productor, direccion, id_finca_asociada, observaciones)
+            VALUES ('$cuit', '$contrasena', '$rol', '$permiso_ingreso', '$nombre', '$correo', '$telefono', '$id_cooperativa', '$id_productor', '$direccion', '$id_finca_asociada', '$observaciones')";
 
     if (mysqli_query($conn, $sql)) {
         echo "<div id='snackbar' class='success'>Usuario agregado con éxito.</div>";
@@ -58,21 +55,16 @@ if (isset($_POST['actualizar_usuario'])) {
     $nombre = $_POST['nombre'];
     $correo = $_POST['correo'];
     $telefono = $_POST['telefono'];
-    $nombre_responsable = $_POST['nombre_responsable'];
     $id_cooperativa = $_POST['id_cooperativa'];
     $id_productor = $_POST['id_productor'];
     $direccion = $_POST['direccion'];
-    $id_productor_asociados = $_POST['id_productor_asociados'];
-    $id_cooperativa_asociada = $_POST['id_cooperativa_asociada'];
     $id_finca_asociada = $_POST['id_finca_asociada'];
     $observaciones = $_POST['observaciones'];
 
     $sql = "UPDATE usuarios SET 
             cuit='$cuit', contrasena='$contrasena', rol='$rol', permiso_ingreso='$permiso_ingreso', 
-            nombre='$nombre', correo='$correo', telefono='$telefono', nombre_responsable='$nombre_responsable', 
-            id_cooperativa='$id_cooperativa', id_productor='$id_productor', direccion='$direccion', 
-            id_productor_asociados='$id_productor_asociados', 
-            id_cooperativa_asociada='$id_cooperativa_asociada', id_finca_asociada='$id_finca_asociada', 
+            nombre='$nombre', correo='$correo', telefono='$telefono',
+            id_cooperativa='$id_cooperativa', id_productor='$id_productor', direccion='$direccion', id_finca_asociada='$id_finca_asociada', 
             observaciones='$observaciones' WHERE id='$id'";
 
     if (mysqli_query($conn, $sql)) {
@@ -573,12 +565,9 @@ $total_pages = ceil($total_records / $limit);
                 <input type="text" name="nombre" placeholder="Nombre" required>
                 <input type="email" name="correo" placeholder="Correo" required>
                 <input type="text" name="telefono" placeholder="Teléfono">
-                <input type="text" name="nombre_responsable" placeholder="Nombre Responsable">
                 <input type="text" name="id_cooperativa" placeholder="ID Cooperativa">
                 <input type="text" name="id_productor" placeholder="ID Productor">
                 <input type="text" name="direccion" placeholder="Dirección">
-                <input type="text" name="id_productor_asociados" placeholder="ID Productores Asociados">
-                <input type="text" name="id_cooperativa_asociada" placeholder="ID Cooperativa Asociada">
                 <input type="text" name="id_finca_asociada" placeholder="ID Finca Asociada">
                 <input type="text" name="observaciones" placeholder="observaciones">
                 <button type="submit" name="agregar_usuario">Agregar Nuevo Usuario</button>
@@ -648,12 +637,9 @@ $total_pages = ceil($total_records / $limit);
                                 <td><input type="text" name="nombre" value="<?php echo $row['nombre']; ?>"></td>
                                 <td><input type="text" name="correo" value="<?php echo $row['correo']; ?>"></td>
                                 <td><input type="text" name="telefono" value="<?php echo $row['telefono']; ?>"></td>
-                                <td><input type="text" name="nombre_responsable" value="<?php echo $row['nombre_responsable']; ?>"></td>
                                 <td><input type="text" name="id_cooperativa" value="<?php echo $row['id_cooperativa']; ?>"></td>
                                 <td><input type="text" name="id_productor" value="<?php echo $row['id_productor']; ?>"></td>
                                 <td><input type="text" name="direccion" value="<?php echo $row['direccion']; ?>"></td>
-                                <td><input type="text" name="id_productor_asociados" value="<?php echo $row['id_productor_asociados']; ?>"></td>
-                                <td><input type="text" name="id_cooperativa_asociada" value="<?php echo $row['id_cooperativa_asociada']; ?>"></td>
                                 <td><input type="text" name="id_finca_asociada" value="<?php echo $row['id_finca_asociada']; ?>"></td>
                                 <td><input type="text" name="observaciones" value="<?php echo $row['observaciones']; ?>"></td>
 
