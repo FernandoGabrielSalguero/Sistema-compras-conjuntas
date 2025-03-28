@@ -24,91 +24,45 @@ if ($conn->connect_error) {
     die("Error en la conexión: " . $conn->connect_error);
 }
 
-// Función para agregar nuevo usuario
-if (isset($_POST['agregar_usuario'])) {
-    $cuit = $_POST['cuit'];
-    $contrasena = $_POST['contrasena'];
-    $rol = $_POST['rol'];
-    $permiso_ingreso = 'Habilitado';
-    $nombre = $_POST['nombre'];
-    $correo = $_POST['correo'];
-    $telefono = $_POST['telefono'];
-    $id_cooperativa = $_POST['id_cooperativa'];
-    $id_productor = $_POST['id_productor'];
-    $direccion = $_POST['direccion'];
-    $id_finca_asociada = $_POST['id_finca_asociada'];
-    $observaciones = $_POST['observaciones'];
+// Función para agregar un nuevo producto
+if (isset($_POST['agregar_producto'])) {
+    $nombre = $_POST['Nombre_producto'];
+    $detalle = $_POST['Detalle_producto'];
+    $precio = $_POST['Precio_producto'];
+    $unidad = $_POST['Unidad_Medida_venta'];
 
-    $sql = "INSERT INTO usuarios (cuit, contrasena, rol, permiso_ingreso, nombre, correo, telefono, id_cooperativa, id_productor, direccion, id_finca_asociada, observaciones)
-            VALUES ('$cuit', '$contrasena', '$rol', '$permiso_ingreso', '$nombre', '$correo', '$telefono', '$id_cooperativa', '$id_productor', '$direccion', '$id_finca_asociada', '$observaciones')";
+    $sql = "INSERT INTO productos (Nombre_producto, Detalle_producto, Precio_producto, Unidad_Medida_venta) VALUES ('$nombre', '$detalle', '$precio', '$unidad')";
 
     if (mysqli_query($conn, $sql)) {
-        echo "<div id='snackbar' class='success'>Usuario agregado con éxito.</div>";
-        echo "<script>document.addEventListener('DOMContentLoaded', function() { showSnackbar(); });</script>";
+        echo "<div id='snackbar' class='success'>Producto agregado con éxito.</div>";
     } else {
-        echo "<div id='snackbar' class='error'>Error al agregar usuario: " . mysqli_error($conn) . "</div>";
-        echo "<script>document.addEventListener('DOMContentLoaded', function() { showSnackbar(); });</script>";
+        echo "<div id='snackbar' class='error'>Error al agregar producto: " . mysqli_error($conn) . "</div>";
     }
 }
 
-if (isset($_POST['actualizar_usuario'])) {
+// Función para actualizar un producto
+if (isset($_POST['actualizar_producto'])) {
     $id = $_POST['id'];
-    $cuit = $_POST['cuit'];
-    $contrasena = $_POST['contrasena'];
-    $rol = $_POST['rol'];
-    $permiso_ingreso = $_POST['permiso_ingreso'];
-    $nombre = $_POST['nombre'];
-    $correo = $_POST['correo'];
-    $telefono = $_POST['telefono'];
-    $id_cooperativa = $_POST['id_cooperativa'];
-    $id_productor = $_POST['id_productor'];
-    $direccion = $_POST['direccion'];
-    $id_finca_asociada = $_POST['id_finca_asociada'];
-    $observaciones = $_POST['observaciones'];
+    $nombre = $_POST['Nombre_producto'];
+    $detalle = $_POST['Detalle_producto'];
+    $precio = $_POST['Precio_producto'];
+    $unidad = $_POST['Unidad_Medida_venta'];
 
-    $sql = "UPDATE usuarios SET 
-            cuit='$cuit', contrasena='$contrasena', rol='$rol', permiso_ingreso='$permiso_ingreso', 
-            nombre='$nombre', correo='$correo', telefono='$telefono',
-            id_cooperativa='$id_cooperativa', id_productor='$id_productor', direccion='$direccion', id_finca_asociada='$id_finca_asociada', 
-            observaciones='$observaciones' WHERE id='$id'";
+    $sql = "UPDATE productos SET Nombre_producto='$nombre', Detalle_producto='$detalle', Precio_producto='$precio', Unidad_Medida_venta='$unidad' WHERE id='$id'";
 
     if (mysqli_query($conn, $sql)) {
-        echo "<div id='snackbar' class='success'>Usuario actualizado con éxito.</div>";
-        echo "<script>document.addEventListener('DOMContentLoaded', function() { showSnackbar(); });</script>";
+        echo "<div id='snackbar' class='success'>Producto actualizado con éxito.</div>";
     } else {
-        echo "<div id='snackbar' class='error'>Error al actualizar usuario: " . mysqli_error($conn) . "</div>";
-        echo "<script>document.addEventListener('DOMContentLoaded', function() { showSnackbar(); });</script>";
+        echo "<div id='snackbar' class='error'>Error al actualizar producto: " . mysqli_error($conn) . "</div>";
     }
 }
 
+// Función para buscar productos
+$nombre_filter = isset($_POST['nombre_filter']) ? $_POST['nombre_filter'] : '';
+$filter_sql = $nombre_filter ? " WHERE Nombre_producto LIKE '%$nombre_filter%'" : '';
 
-
-// Función para eliminar registros
-if (isset($_POST['eliminar_usuario'])) {
-    $id = $_POST['id'];
-
-    $sql = "DELETE FROM usuarios WHERE id='$id'";
-
-    if (mysqli_query($conn, $sql)) {
-        echo "<div id='snackbar' class='success'>Usuario eliminado con éxito.</div>";
-    } else {
-        echo "<div id='snackbar' class='error'>Error al eliminar usuario: " . mysqli_error($conn) . "</div>";
-    }
-}
-
-
-// Función para obtener usuarios con paginación
-$limit = 15;
-$page = isset($_GET['page']) ? $_GET['page'] : 1;
-$offset = ($page - 1) * $limit;
-
-$cuit_filter = isset($_POST['cuit_filter']) ? $_POST['cuit_filter'] : '';
-$filter_sql = $cuit_filter ? " WHERE cuit LIKE '%$cuit_filter%'" : '';
-
-$query = "SELECT * FROM usuarios $filter_sql LIMIT $limit OFFSET $offset";
+$query = "SELECT * FROM productos $filter_sql";
 $result = mysqli_query($conn, $query);
-$total_records = mysqli_num_rows(mysqli_query($conn, "SELECT * FROM usuarios $filter_sql"));
-$total_pages = ceil($total_records / $limit);
 ?>
 
 <!DOCTYPE html>
@@ -449,12 +403,15 @@ $total_pages = ceil($total_records / $limit);
         }
 
 
-        th, td {
+        th,
+        td {
             padding: 10px;
             text-align: left;
             border-bottom: 1px solid #ddd;
-            min-width: 190px; /* Ajusta el ancho mínimo de cada columna */
-            word-wrap: break-word; /* Permite que el texto se divida en varias líneas si es necesario */
+            min-width: 190px;
+            /* Ajusta el ancho mínimo de cada columna */
+            word-wrap: break-word;
+            /* Permite que el texto se divida en varias líneas si es necesario */
         }
 
         /* Cabecera de la tabla */
@@ -539,68 +496,40 @@ $total_pages = ceil($total_records / $limit);
 
     <!-- Body -->
     <div id="body">
+        <!-- Tarjeta 1: Formulario de Alta de Productos -->
         <div class="card">
-            <h3>Agregar Nuevo Usuario</h3>
+            <h3>Agregar Nuevo Producto</h3>
             <form method="post">
-                <input type="text" name="cuit" placeholder="CUIT" required>
-                <input type="password" name="contrasena" placeholder="Contraseña" required>
-
-                <div class="form-group">
-                    <div class="custom-select">
-                        <select name="rol" id="rol" required>
-                            <option value="" disabled selected>Seleccione un rol</option>
-                            <option value="productor">Productor</option>
-                            <option value="cooperativa">Cooperativa</option>
-                            <option value="administrador">Administrador</option>
-                        </select>
-                    </div>
-                </div>
-
-                <input type="text" name="nombre" placeholder="Nombre" required>
-                <input type="email" name="correo" placeholder="Correo" required>
-                <input type="text" name="telefono" placeholder="Teléfono">
-                <input type="text" name="id_cooperativa" placeholder="ID Cooperativa">
-                <input type="text" name="id_productor" placeholder="ID Productor">
-                <input type="text" name="direccion" placeholder="Dirección">
-                <input type="text" name="id_finca_asociada" placeholder="ID Finca Asociada">
-                <input type="text" name="observaciones" placeholder="observaciones">
-                <button type="submit" name="agregar_usuario">Agregar Nuevo Usuario</button>
+                <input type="text" name="Nombre_producto" placeholder="Nombre del Producto" required>
+                <input type="text" name="Detalle_producto" placeholder="Detalle del Producto" required>
+                <input type="number" step="0.01" name="Precio_producto" placeholder="Precio del Producto" required>
+                <input type="text" name="Unidad_Medida_venta" placeholder="Unidad de Medida de Venta" required>
+                <button type="submit" name="agregar_producto">Agregar Producto</button>
             </form>
         </div>
 
+        <!-- Tarjeta 2: Filtro de Productos por Nombre -->
         <div class="card">
-            <div class="search-bar">
-                <form method="post" style="display: flex; width: 100%;">
-                    <input type="text" name="cuit_filter" placeholder="Ingrese CUIT">
-                    <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
-                    <button type="submit" name="clear_filter" class="clear-btn"><i class="fas fa-times"></i></button>
-                </form>
-            </div>
+            <form method="post">
+                <input type="text" name="nombre_filter" placeholder="Buscar por Nombre del Producto">
+                <button type="submit">Buscar</button>
+                <button type="submit" name="clear_filter">Eliminar Filtro</button>
+            </form>
         </div>
 
 
 
+        <!-- Tarjeta 3: Listado de Productos -->
         <div class="card">
-            <h3>Lista de Usuarios</h3>
+            <h3>Lista de Productos</h3>
             <table>
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>CUIT</th>
-                        <th>Contraseña</th>
-                        <th>Rol</th>
-                        <th>Permiso de Ingreso</th>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Teléfono</th>
-                        <th>Nombre Responsable</th>
-                        <th>ID Cooperativa</th>
-                        <th>ID Productor</th>
-                        <th>Dirección</th>
-                        <th>ID Productores Asociados</th>
-                        <th>ID Cooperativa Asociada</th>
-                        <th>ID Finca Asociada</th>
-                        <th>Observaciones</th>
+                        <th>Nombre Producto</th>
+                        <th>Detalle Producto</th>
+                        <th>Precio Producto</th>
+                        <th>Unidad de Medida</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -608,47 +537,18 @@ $total_pages = ceil($total_records / $limit);
                     <?php while ($row = mysqli_fetch_assoc($result)) { ?>
                         <tr>
                             <form method="post">
-                                <!-- Identificador del registro -->
                                 <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-
-                                <!-- Campos en el orden correcto -->
                                 <td><?php echo $row['id']; ?></td>
-                                <td><input type="text" name="cuit" value="<?php echo $row['cuit']; ?>"></td>
-                                <td><input type="text" name="contrasena" value="<?php echo $row['contrasena']; ?>"></td>
-                                <td>
-                                    <select name="rol">
-                                        <option value="cooperativa" <?php if ($row['rol'] == 'cooperativa') echo 'selected'; ?>>Cooperativa</option>
-                                        <option value="productor" <?php if ($row['rol'] == 'productor') echo 'selected'; ?>>Productor</option>
-                                        <option value="sve" <?php if ($row['rol'] == 'sve') echo 'selected'; ?>>SVE</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <select name="permiso_ingreso">
-                                        <option value="1" <?php if ($row['permiso_ingreso'] == 1) echo 'selected'; ?>>Permitido</option>
-                                        <option value="0" <?php if ($row['permiso_ingreso'] == 0) echo 'selected'; ?>>Denegado</option>
-                                    </select>
-                                </td>
-                                <td><input type="text" name="nombre" value="<?php echo $row['nombre']; ?>"></td>
-                                <td><input type="text" name="correo" value="<?php echo $row['correo']; ?>"></td>
-                                <td><input type="text" name="telefono" value="<?php echo $row['telefono']; ?>"></td>
-                                <td><input type="text" name="id_cooperativa" value="<?php echo $row['id_cooperativa']; ?>"></td>
-                                <td><input type="text" name="id_productor" value="<?php echo $row['id_productor']; ?>"></td>
-                                <td><input type="text" name="direccion" value="<?php echo $row['direccion']; ?>"></td>
-                                <td><input type="text" name="id_finca_asociada" value="<?php echo $row['id_finca_asociada']; ?>"></td>
-                                <td><input type="text" name="observaciones" value="<?php echo $row['observaciones']; ?>"></td>
-
-                                <!-- Botón de actualización -->
-                                <td>
-                                    <button type="submit" name="actualizar_usuario" onclick="showSnackbar();">Actualizar</button>
-                                </td>
+                                <td><input type="text" name="Nombre_producto" value="<?php echo $row['Nombre_producto']; ?>"></td>
+                                <td><input type="text" name="Detalle_producto" value="<?php echo $row['Detalle_producto']; ?>"></td>
+                                <td><input type="number" step="0.01" name="Precio_producto" value="<?php echo $row['Precio_producto']; ?>"></td>
+                                <td><input type="text" name="Unidad_Medida_venta" value="<?php echo $row['Unidad_Medida_venta']; ?>"></td>
+                                <td><button type="submit" name="actualizar_producto">Actualizar</button></td>
                             </form>
                         </tr>
                     <?php } ?>
-
-
                 </tbody>
             </table>
-
         </div>
     </div>
 

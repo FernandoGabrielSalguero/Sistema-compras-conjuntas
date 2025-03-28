@@ -82,21 +82,6 @@ if (isset($_POST['actualizar_usuario'])) {
 }
 
 
-
-// Función para eliminar registros
-if (isset($_POST['eliminar_usuario'])) {
-    $id = $_POST['id'];
-
-    $sql = "DELETE FROM usuarios WHERE id='$id'";
-
-    if (mysqli_query($conn, $sql)) {
-        echo "<div id='snackbar' class='success'>Usuario eliminado con éxito.</div>";
-    } else {
-        echo "<div id='snackbar' class='error'>Error al eliminar usuario: " . mysqli_error($conn) . "</div>";
-    }
-}
-
-
 // Función para obtener usuarios con paginación
 $limit = 15;
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
