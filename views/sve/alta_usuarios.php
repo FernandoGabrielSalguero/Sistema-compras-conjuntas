@@ -54,6 +54,7 @@ if (isset($_POST['actualizar_usuario'])) {
     $nombre = $_POST['nombre'];
     $correo = $_POST['correo'];
     $telefono = $_POST['telefono'];
+    $id_cooperativa = $_POST['id_cooperativa'];
     $id_productor = $_POST['id_productor'];
     $direccion = $_POST['direccion'];
     $observaciones = $_POST['observaciones'];
