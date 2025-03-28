@@ -62,11 +62,28 @@ if (isset($_POST['eliminar_relacion'])) {
 $productores = $conn->query("SELECT id, nombre FROM usuarios WHERE rol = 'productor'");
 $cooperativas = $conn->query("SELECT id, nombre FROM usuarios WHERE rol = 'cooperativa'");
 
-// Obtener relaciones existentes
-$relaciones = $conn->query("SELECT pc.id, u1.nombre as productor, u2.nombre as cooperativa 
-                           FROM productores_cooperativas pc
-                           JOIN usuarios u1 ON pc.id_productor = u1.id
-                           JOIN usuarios u2 ON pc.id_cooperativa = u2.id");
+// Procesar Filtro
+$filtro = '';
+if (isset($_POST['filtrar'])) {
+    $buscar_cooperativa = trim($_POST['buscar_cooperativa']);
+    if (!empty($buscar_cooperativa)) {
+        $filtro = " WHERE u2.nombre LIKE '%$buscar_cooperativa%'";
+    }
+}
+
+if (isset($_POST['limpiar_filtro'])) {
+    $filtro = '';
+}
+
+// Obtener relaciones agrupadas por cooperativa
+$sql = "SELECT u2.nombre as cooperativa, GROUP_CONCAT(u1.nombre SEPARATOR ', ') as productores
+        FROM productores_cooperativas pc
+        JOIN usuarios u1 ON pc.id_productor = u1.id
+        JOIN usuarios u2 ON pc.id_cooperativa = u2.id
+        $filtro
+        GROUP BY u2.nombre";
+
+$relaciones = $conn->query($sql);
 ?>
 
 <!DOCTYPE html>
@@ -635,13 +652,7 @@ $relaciones = $conn->query("SELECT pc.id, u1.nombre as productor, u2.nombre as c
                     <div class="list-item">
                         <div class="list-content">
                             <strong><?php echo $row['cooperativa']; ?></strong>
-                            <div><?php echo $row['productor']; ?></div>
-                        </div>
-                        <div>
-                            <form method="post" style="display:inline;">
-                                <input type="hidden" name="relacion_id" value="<?php echo $row['id']; ?>">
-                                <button type="submit" name="eliminar_relacion">Eliminar</button>
-                            </form>
+                            <div>Productores: <?php echo $row['productores']; ?></div>
                         </div>
                     </div>
                 <?php } ?>
