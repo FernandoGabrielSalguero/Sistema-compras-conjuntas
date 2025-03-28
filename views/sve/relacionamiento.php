@@ -560,10 +560,11 @@ $relaciones = $conn->query($sql);
         }
 
         .list-item {
-            display: flex;
-            justify-content: space-between;
             padding: 10px;
-            border-bottom: 1px solid #E5E7EB;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            background-color: #ffffff;
+            border: 1px solid #E5E7EB;
             transition: background-color 0.2s;
         }
 
