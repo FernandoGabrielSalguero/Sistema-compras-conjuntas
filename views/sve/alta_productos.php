@@ -71,7 +71,7 @@ $result = mysqli_query($conn, $query);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alta usuarios</title>
+    <title>Alta productos</title>
     <style>
         /* ================================================== */
         /* ======= Estilos Generales (Afectan a todo) ======= */
@@ -543,8 +543,8 @@ $result = mysqli_query($conn, $query);
                     <?php while ($row = mysqli_fetch_assoc($result)) { ?>
                         <tr>
                             <form method="post">
-                                <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-                                <td><?php echo $row['id']; ?></td>
+                                <input type="hidden" name="id" value="<?php echo $row['Id']; ?>">
+                                <td><?php echo $row['Id']; ?></td>
                                 <td><input type="text" name="Nombre_producto" value="<?php echo $row['Nombre_producto']; ?>"></td>
                                 <td><input type="text" name="Detalle_producto" value="<?php echo $row['Detalle_producto']; ?>"></td>
                                 <td><input type="number" step="0.01" name="Precio_producto" value="<?php echo $row['Precio_producto']; ?>"></td>
