@@ -548,7 +548,14 @@ $result = mysqli_query($conn, $query);
                                 <td><input type="text" name="Nombre_producto" value="<?php echo $row['Nombre_producto']; ?>"></td>
                                 <td><input type="text" name="Detalle_producto" value="<?php echo $row['Detalle_producto']; ?>"></td>
                                 <td><input type="number" step="0.01" name="Precio_producto" value="<?php echo $row['Precio_producto']; ?>"></td>
-                                <td><input type="text" name="Unidad_Medida_venta" value="<?php echo $row['Unidad_Medida_venta']; ?>"></td>
+                                <td>
+                                    <select name="Unidad_Medida_venta">
+                                        <option value="Kilos" <?php if ($row['Unidad_Medida_venta'] == 'Kilos') echo 'selected'; ?>>Kilos</option>
+                                        <option value="Gramos" <?php if ($row['Unidad_Medida_venta'] == 'Gramos') echo 'selected'; ?>>Gramos</option>
+                                        <option value="Litros" <?php if ($row['Unidad_Medida_venta'] == 'Litros') echo 'selected'; ?>>Litros</option>
+                                        <option value="Unidad" <?php if ($row['Unidad_Medida_venta'] == 'Unidad') echo 'selected'; ?>>Unidad</option>
+                                    </select>
+                                </td>
                                 <td><button type="submit" name="actualizar_producto">Actualizar</button></td>
                             </form>
                         </tr>
