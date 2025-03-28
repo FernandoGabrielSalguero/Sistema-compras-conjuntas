@@ -24,17 +24,37 @@ if ($conn->connect_error) {
     die("Error en la conexión: " . $conn->connect_error);
 }
 
-// Procesar formularios de relacionamiento
-if (isset($_POST['relacionar'])) {
-    $productor_id = $_POST['id_productor'];
-    $cooperativa_id = $_POST['id_cooperativa'];
+// Procesar formularios de relacionamiento masivo
+if (isset($_POST['crear_relaciones'])) {
+    $productores = $_POST['productores'] ?? [];
+    $cooperativas = $_POST['cooperativas'] ?? [];
+    $errores = 0;
 
-    $sql = "INSERT INTO productores_cooperativas (id_productor, id_cooperativa) VALUES ('$productor_id', '$cooperativa_id')";
+    foreach ($productores as $productor_id) {
+        foreach ($cooperativas as $cooperativa_id) {
+            $sql = "INSERT INTO productores_cooperativas (id_productor, id_cooperativa) VALUES ('$productor_id', '$cooperativa_id')";
+            if (!$conn->query($sql)) {
+                $errores++;
+            }
+        }
+    }
 
-    if ($conn->query($sql) === TRUE) {
-        echo "<div id='snackbar' class='success'>Relación guardada exitosamente.</div>";
+    if ($errores === 0) {
+        echo "<div id='snackbar' class='success'>Relaciones guardadas exitosamente.</div>";
     } else {
-        echo "<div id='snackbar' class='error'>Error al guardar la relación: " . $conn->error . "</div>";
+        echo "<div id='snackbar' class='error'>Algunas relaciones no pudieron guardarse.</div>";
+    }
+}
+
+// Eliminar relación
+if (isset($_POST['eliminar_relacion'])) {
+    $relacion_id = $_POST['relacion_id'];
+    $sql = "DELETE FROM productores_cooperativas WHERE id='$relacion_id'";
+
+    if ($conn->query($sql)) {
+        echo "<div id='snackbar' class='success'>Relación eliminada exitosamente.</div>";
+    } else {
+        echo "<div id='snackbar' class='error'>Error al eliminar la relación.</div>";
     }
 }
 
@@ -79,6 +99,22 @@ $relaciones = $conn->query("SELECT pc.id, u1.nombre as productor, u2.nombre as c
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
             margin-bottom: 20px;
+        }
+
+        input[type=checkbox] {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background-color: #f0f0f0;
+            border-radius: 3px;
+            border: 2px solid #bbb;
+            cursor: pointer;
+            position: relative;
+        }
+
+        input[type=checkbox]:checked {
+            background-color: #007bff;
+            border-color: #007bff;
         }
 
         /* Inputs, Selects, Botones generales */
@@ -482,51 +518,66 @@ $relaciones = $conn->query("SELECT pc.id, u1.nombre as productor, u2.nombre as c
     <div id="body">
         <!-- Tarjeta 1: Formulario de relacionamiento -->
         <div class="card">
-        <h3>Relacionar Productores y Cooperativas</h3>
-        <form method="post">
-            <label for="id_productor">Seleccionar Productor:</label>
-            <select name="id_productor" required>
-                <option value="">Seleccione un Productor</option>
-                <?php while ($row = $productores->fetch_assoc()) { ?>
-                    <option value="<?php echo $row['id']; ?>"><?php echo $row['nombre']; ?></option>
-                <?php } ?>
-            </select><br><br>
+            <h3>Relacionar Productores y Cooperativas</h3>
+            <form method="post">
+                <div>
+                    <h4>Productores:</h4>
+                    <?php while ($row = $productores->fetch_assoc()) { ?>
+                        <label>
+                            <input type="checkbox" name="productores[]" value="<?php echo $row['id']; ?>">
+                            <?php echo $row['nombre']; ?>
+                        </label><br>
+                    <?php } ?>
+                </div>
 
-            <label for="id_cooperativa">Seleccionar Cooperativa:</label>
-            <select name="id_cooperativa" required>
-                <option value="">Seleccione una Cooperativa</option>
-                <?php while ($row = $cooperativas->fetch_assoc()) { ?>
-                    <option value="<?php echo $row['id']; ?>"><?php echo $row['nombre']; ?></option>
-                <?php } ?>
-            </select><br><br>
+                <div>
+                    <h4>Cooperativas:</h4>
+                    <?php while ($row = $cooperativas->fetch_assoc()) { ?>
+                        <label>
+                            <input type="checkbox" name="cooperativas[]" value="<?php echo $row['id']; ?>">
+                            <?php echo $row['nombre']; ?>
+                        </label><br>
+                    <?php } ?>
+                </div>
 
-            <button type="submit" name="relacionar">Guardar Relación</button>
-        </form>
-    </div>
+                <button type="submit" name="crear_relaciones">Guardar Relaciones</button>
+            </form>
+        </div>
 
 
         <!-- Tarjeta 2: Listado de relaciones -->
         <div class="card">
-        <h3>Listado de Relaciones</h3>
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>ID Relación</th>
-                    <th>Productor</th>
-                    <th>Cooperativa</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php while ($row = $relaciones->fetch_assoc()) { ?>
+            <h3>Listado de Relaciones</h3>
+            <form method="post">
+                <input type="text" name="buscar_cooperativa" placeholder="Buscar Cooperativa">
+                <button type="submit" name="filtrar">Filtrar</button>
+            </form>
+            <table border="1">
+                <thead>
                     <tr>
-                        <td><?php echo $row['id']; ?></td>
-                        <td><?php echo $row['productor']; ?></td>
-                        <td><?php echo $row['cooperativa']; ?></td>
+                        <th>ID Relación</th>
+                        <th>Productor</th>
+                        <th>Cooperativa</th>
+                        <th>Acciones</th>
                     </tr>
-                <?php } ?>
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    <?php while ($row = $relaciones->fetch_assoc()) { ?>
+                        <tr>
+                            <td><?php echo $row['id']; ?></td>
+                            <td><?php echo $row['productor']; ?></td>
+                            <td><?php echo $row['cooperativa']; ?></td>
+                            <td>
+                                <form method="post" style="display:inline;">
+                                    <input type="hidden" name="relacion_id" value="<?php echo $row['id']; ?>">
+                                    <button type="submit" name="eliminar_relacion">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
 
         <!-- JavaScript -->
         <script>
