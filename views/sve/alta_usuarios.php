@@ -29,7 +29,7 @@ if (isset($_POST['agregar_usuario'])) {
     $cuit = $_POST['cuit'];
     $contrasena = $_POST['contrasena'];
     $rol = $_POST['rol'];
-    $permiso_ingreso = isset($_POST['permiso_ingreso']) ? 1 : 0;
+    $permiso_ingreso = 'Habilitado';
     $nombre = $_POST['nombre'];
     $correo = $_POST['correo'];
     $telefono = $_POST['telefono'];
@@ -553,16 +553,6 @@ $total_pages = ceil($total_records / $limit);
                             <option value="productor">Productor</option>
                             <option value="cooperativa">Cooperativa</option>
                             <option value="administrador">Administrador</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="custom-select">
-                        <select name="permiso_ingreso" id="permiso_ingreso" required>
-                            <option value="" disabled selected>Seleccione permiso</option>
-                            <option value="1">Permitido</option>
-                            <option value="0">Denegado</option>
                         </select>
                     </div>
                 </div>
