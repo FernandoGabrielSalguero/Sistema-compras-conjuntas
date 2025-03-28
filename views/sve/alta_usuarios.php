@@ -596,13 +596,9 @@ $total_pages = ceil($total_records / $limit);
                         <th>Nombre</th>
                         <th>Correo</th>
                         <th>Teléfono</th>
-
                         <th>ID Cooperativa</th>
                         <th>ID Productor</th>
                         <th>Dirección</th>
-                        <th>ID Productores Asociados</th>
-                        <th>ID Cooperativa Asociada</th>
-                        <th>ID Finca Asociada</th>
                         <th>Observaciones</th>
                         <th>Acciones</th>
                     </tr>
