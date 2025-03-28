@@ -640,25 +640,59 @@ $relaciones = $conn->query($sql);
         </div>
 
 
-        <!-- Tarjeta 2: Listado de Relaciones Existentes -->
-        <div class="card">
-            <h3>Listado de Relaciones</h3>
-            <form method="post" style="margin-bottom: 15px;">
-                <input type="text" name="buscar_cooperativa" placeholder="Buscar Cooperativa" value="<?php echo isset($_POST['buscar_cooperativa']) ? $_POST['buscar_cooperativa'] : ''; ?>">
-                <button type="submit" name="filtrar">Filtrar</button>
-                <button type="submit" name="limpiar_filtro">Limpiar Filtro</button>
-            </form>
-            <div class="list-container">
-                <?php while ($row = $relaciones->fetch_assoc()) { ?>
-                    <div class="list-item">
-                        <div class="list-content">
-                            <strong><?php echo $row['cooperativa']; ?></strong>
-                            <div>Productores: <?php echo $row['productores']; ?></div>
-                        </div>
-                    </div>
-                <?php } ?>
+<!-- Tarjeta 2: Listado de Relaciones Existentes -->
+<div class="card">
+    <h3>Listado de Relaciones</h3>
+    <form method="post" style="margin-bottom: 15px;">
+        <input type="text" name="buscar_cooperativa" placeholder="Buscar Cooperativa" value="<?php echo isset($_POST['buscar_cooperativa']) ? $_POST['buscar_cooperativa'] : ''; ?>">
+        <button type="submit" name="filtrar">Filtrar</button>
+        <button type="submit" name="limpiar_filtro">Limpiar Filtro</button>
+    </form>
+    <div class="list-container">
+        <?php
+        // Procesar Filtro
+        $filtro = '';
+        if (isset($_POST['filtrar'])) {
+            $buscar_cooperativa = trim($_POST['buscar_cooperativa']);
+            if (!empty($buscar_cooperativa)) {
+                $filtro = " WHERE u2.nombre LIKE '%$buscar_cooperativa%'";
+            }
+        }
+
+        if (isset($_POST['limpiar_filtro'])) {
+            $filtro = '';
+        }
+
+        // Obtener relaciones agrupadas por cooperativa
+        $sql = "SELECT u2.nombre as cooperativa, GROUP_CONCAT(u1.nombre SEPARATOR ' | ') as productores
+                FROM productores_cooperativas pc
+                JOIN usuarios u1 ON pc.id_productor = u1.id
+                JOIN usuarios u2 ON pc.id_cooperativa = u2.id
+                $filtro
+                GROUP BY u2.nombre";
+
+        $relaciones = $conn->query($sql);
+
+        while ($row = $relaciones->fetch_assoc()) { ?>
+            <div class="list-item">
+                <div class="list-content">
+                    <strong><?php echo $row['cooperativa']; ?></strong>
+                    <?php
+                    $productores = explode(' | ', $row['productores']);
+                    foreach ($productores as $productor) {
+                        echo "<div>- $productor</div>";
+                    }
+                    ?>
+                </div>
             </div>
-        </div>
+        <?php } ?>
+    </div>
+</div>
+
+
+
+
+
 
         <!-- JavaScript -->
         <script>
