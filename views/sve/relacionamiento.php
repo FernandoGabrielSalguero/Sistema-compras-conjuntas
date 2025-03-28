@@ -77,6 +77,54 @@ $relaciones = $conn->query("SELECT pc.id, u1.nombre as productor, u2.nombre as c
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alta productos</title>
     <style>
+
+.list-container {
+    background-color: #F9FAFB;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.list-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.list-item:hover {
+    background-color: #E5E7EB;
+}
+
+.list-item input[type="checkbox"] {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    border: 2px solid #bbb;
+    cursor: pointer;
+    margin-right: 10px;
+    position: relative;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.list-item input[type="checkbox"]:checked {
+    background-color: #4F46E5;
+    border-color: #4F46E5;
+}
+
+.list-item input[type="checkbox"]:checked::after {
+    content: '✔';
+    position: absolute;
+    top: -2px;
+    left: 3px;
+    font-size: 12px;
+    color: white;
+}
+
         /* ================================================== */
         /* ======= Estilos Generales (Afectan a todo) ======= */
         /* ================================================== */
@@ -517,32 +565,33 @@ $relaciones = $conn->query("SELECT pc.id, u1.nombre as productor, u2.nombre as c
     <!-- Body -->
     <div id="body">
         <!-- Tarjeta 1: Formulario de relacionamiento -->
-        <div class="card">
-            <h3>Relacionar Productores y Cooperativas</h3>
-            <form method="post">
-                <div>
-                    <h4>Productores:</h4>
-                    <?php while ($row = $productores->fetch_assoc()) { ?>
-                        <label>
-                            <input type="checkbox" name="productores[]" value="<?php echo $row['id']; ?>">
-                            <?php echo $row['nombre']; ?>
-                        </label><br>
-                    <?php } ?>
-                </div>
-
-                <div>
-                    <h4>Cooperativas:</h4>
-                    <?php while ($row = $cooperativas->fetch_assoc()) { ?>
-                        <label>
-                            <input type="checkbox" name="cooperativas[]" value="<?php echo $row['id']; ?>">
-                            <?php echo $row['nombre']; ?>
-                        </label><br>
-                    <?php } ?>
-                </div>
-
-                <button type="submit" name="crear_relaciones">Guardar Relaciones</button>
-            </form>
+<!-- Tarjeta 1: Relacionamiento Masivo -->
+<div class="card">
+    <h3>Relacionar Productores y Cooperativas</h3>
+    <form method="post">
+        <div class="list-container">
+            <h4>Productores:</h4>
+            <?php while ($row = $productores->fetch_assoc()) { ?>
+                <label class="list-item">
+                    <input type="checkbox" name="productores[]" value="<?php echo $row['id']; ?>">
+                    <span><?php echo $row['nombre']; ?></span>
+                </label>
+            <?php } ?>
         </div>
+
+        <div class="list-container">
+            <h4>Cooperativas:</h4>
+            <?php while ($row = $cooperativas->fetch_assoc()) { ?>
+                <label class="list-item">
+                    <input type="checkbox" name="cooperativas[]" value="<?php echo $row['id']; ?>">
+                    <span><?php echo $row['nombre']; ?></span>
+                </label>
+            <?php } ?>
+        </div>
+
+        <button type="submit" name="crear_relaciones">Guardar Relaciones</button>
+    </form>
+</div>
 
 
         <!-- Tarjeta 2: Listado de relaciones -->
