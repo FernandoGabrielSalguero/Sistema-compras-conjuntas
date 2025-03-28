@@ -77,53 +77,52 @@ $relaciones = $conn->query("SELECT pc.id, u1.nombre as productor, u2.nombre as c
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alta productos</title>
     <style>
+        .list-container {
+            background-color: #F9FAFB;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
 
-.list-container {
-    background-color: #F9FAFB;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
 
-.list-item {
-    display: flex;
-    align-items: center;
-    padding: 8px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
+        .list-item:hover {
+            background-color: #E5E7EB;
+        }
 
-.list-item:hover {
-    background-color: #E5E7EB;
-}
+        .list-item input[type="checkbox"] {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background-color: #f0f0f0;
+            border-radius: 3px;
+            border: 2px solid #bbb;
+            cursor: pointer;
+            margin-right: 10px;
+            position: relative;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
 
-.list-item input[type="checkbox"] {
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    background-color: #f0f0f0;
-    border-radius: 3px;
-    border: 2px solid #bbb;
-    cursor: pointer;
-    margin-right: 10px;
-    position: relative;
-    transition: background-color 0.2s, border-color 0.2s;
-}
+        .list-item input[type="checkbox"]:checked {
+            background-color: #4F46E5;
+            border-color: #4F46E5;
+        }
 
-.list-item input[type="checkbox"]:checked {
-    background-color: #4F46E5;
-    border-color: #4F46E5;
-}
-
-.list-item input[type="checkbox"]:checked::after {
-    content: '✔';
-    position: absolute;
-    top: -2px;
-    left: 3px;
-    font-size: 12px;
-    color: white;
-}
+        .list-item input[type="checkbox"]:checked::after {
+            content: '✔';
+            position: absolute;
+            top: -2px;
+            left: 3px;
+            font-size: 12px;
+            color: white;
+        }
 
         /* ================================================== */
         /* ======= Estilos Generales (Afectan a todo) ======= */
@@ -535,6 +534,35 @@ $relaciones = $conn->query("SELECT pc.id, u1.nombre as productor, u2.nombre as c
         #snackbar.error {
             background-color: #f44336;
         }
+
+        .list-container {
+            background-color: #F9FAFB;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #E5E7EB;
+            transition: background-color 0.2s;
+        }
+
+        .list-item:hover {
+            background-color: #E0E7FF;
+        }
+
+        .list-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .list-content strong {
+            color: #4F46E5;
+            margin-bottom: 2px;
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -565,67 +593,59 @@ $relaciones = $conn->query("SELECT pc.id, u1.nombre as productor, u2.nombre as c
     <!-- Body -->
     <div id="body">
         <!-- Tarjeta 1: Formulario de relacionamiento -->
-<!-- Tarjeta 1: Relacionamiento Masivo -->
-<div class="card">
-    <h3>Relacionar Productores y Cooperativas</h3>
-    <form method="post">
-        <div class="list-container">
-            <h4>Productores:</h4>
-            <?php while ($row = $productores->fetch_assoc()) { ?>
-                <label class="list-item">
-                    <input type="checkbox" name="productores[]" value="<?php echo $row['id']; ?>">
-                    <span><?php echo $row['nombre']; ?></span>
-                </label>
-            <?php } ?>
+        <!-- Tarjeta 1: Relacionamiento Masivo -->
+        <div class="card">
+            <h3>Relacionar Productores y Cooperativas</h3>
+            <form method="post">
+                <div class="list-container">
+                    <h4>Productores:</h4>
+                    <?php while ($row = $productores->fetch_assoc()) { ?>
+                        <label class="list-item">
+                            <input type="checkbox" name="productores[]" value="<?php echo $row['id']; ?>">
+                            <span><?php echo $row['nombre']; ?></span>
+                        </label>
+                    <?php } ?>
+                </div>
+
+                <div class="list-container">
+                    <h4>Cooperativas:</h4>
+                    <?php while ($row = $cooperativas->fetch_assoc()) { ?>
+                        <label class="list-item">
+                            <input type="checkbox" name="cooperativas[]" value="<?php echo $row['id']; ?>">
+                            <span><?php echo $row['nombre']; ?></span>
+                        </label>
+                    <?php } ?>
+                </div>
+
+                <button type="submit" name="crear_relaciones">Guardar Relaciones</button>
+            </form>
         </div>
 
-        <div class="list-container">
-            <h4>Cooperativas:</h4>
-            <?php while ($row = $cooperativas->fetch_assoc()) { ?>
-                <label class="list-item">
-                    <input type="checkbox" name="cooperativas[]" value="<?php echo $row['id']; ?>">
-                    <span><?php echo $row['nombre']; ?></span>
-                </label>
-            <?php } ?>
-        </div>
 
-        <button type="submit" name="crear_relaciones">Guardar Relaciones</button>
-    </form>
-</div>
-
-
-        <!-- Tarjeta 2: Listado de relaciones -->
+        <!-- Tarjeta 2: Listado de Relaciones Existentes -->
         <div class="card">
             <h3>Listado de Relaciones</h3>
-            <form method="post">
-                <input type="text" name="buscar_cooperativa" placeholder="Buscar Cooperativa">
+            <form method="post" style="margin-bottom: 15px;">
+                <input type="text" name="buscar_cooperativa" placeholder="Buscar Cooperativa" value="<?php echo isset($_POST['buscar_cooperativa']) ? $_POST['buscar_cooperativa'] : ''; ?>">
                 <button type="submit" name="filtrar">Filtrar</button>
+                <button type="submit" name="limpiar_filtro">Limpiar Filtro</button>
             </form>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>ID Relación</th>
-                        <th>Productor</th>
-                        <th>Cooperativa</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while ($row = $relaciones->fetch_assoc()) { ?>
-                        <tr>
-                            <td><?php echo $row['id']; ?></td>
-                            <td><?php echo $row['productor']; ?></td>
-                            <td><?php echo $row['cooperativa']; ?></td>
-                            <td>
-                                <form method="post" style="display:inline;">
-                                    <input type="hidden" name="relacion_id" value="<?php echo $row['id']; ?>">
-                                    <button type="submit" name="eliminar_relacion">Eliminar</button>
-                                </form>
-                            </td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
+            <div class="list-container">
+                <?php while ($row = $relaciones->fetch_assoc()) { ?>
+                    <div class="list-item">
+                        <div class="list-content">
+                            <strong><?php echo $row['cooperativa']; ?></strong>
+                            <div><?php echo $row['productor']; ?></div>
+                        </div>
+                        <div>
+                            <form method="post" style="display:inline;">
+                                <input type="hidden" name="relacion_id" value="<?php echo $row['id']; ?>">
+                                <button type="submit" name="eliminar_relacion">Eliminar</button>
+                            </form>
+                        </div>
+                    </div>
+                <?php } ?>
+            </div>
         </div>
 
         <!-- JavaScript -->
