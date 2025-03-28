@@ -28,13 +28,17 @@ if (isset($_POST['agregar_usuario'])) {
     $nombre = $_POST['nombre'];
     $correo = $_POST['correo'];
     $telefono = $_POST['telefono'];
+    $nombre_responsable = $_POST['nombre_responsable'];
     $id_cooperativa = $_POST['id_cooperativa'];
     $id_productor = $_POST['id_productor'];
     $direccion = $_POST['direccion'];
+    $id_productor_asociados = $_POST['id_productor_asociados'];
+    $id_cooperativa_asociada = $_POST['id_cooperativa_asociada'];
+    $id_finca_asociada = $_POST['id_finca_asociada'];
     $observaciones = $_POST['observaciones'];
 
-    $sql = "INSERT INTO usuarios (cuit, contrasena, rol, permiso_ingreso, nombre, correo, telefono, id_cooperativa, id_productor, direccion,  observaciones)
-            VALUES ('$cuit', '$contrasena', '$rol', '$permiso_ingreso', '$nombre', '$correo', '$telefono', '$id_cooperativa', '$id_productor', '$direccion', '$observaciones')";
+    $sql = "INSERT INTO usuarios (cuit, contrasena, rol, permiso_ingreso, nombre, correo, telefono, nombre_responsable, id_cooperativa, id_productor, direccion, id_productor_asociados, id_cooperativa_asociada, id_finca_asociada, observaciones)
+            VALUES ('$cuit', '$contrasena', '$rol', '$permiso_ingreso', '$nombre', '$correo', '$telefono', '$nombre_responsable', '$id_cooperativa', '$id_productor', '$direccion', '$id_productor_asociados', '$id_cooperativa_asociada', '$id_finca_asociada', '$observaciones')";
 
     if (mysqli_query($conn, $sql)) {
         echo "<div id='snackbar' class='success'>Usuario agregado con éxito.</div>";
@@ -54,16 +58,21 @@ if (isset($_POST['actualizar_usuario'])) {
     $nombre = $_POST['nombre'];
     $correo = $_POST['correo'];
     $telefono = $_POST['telefono'];
+    $nombre_responsable = $_POST['nombre_responsable'];
     $id_cooperativa = $_POST['id_cooperativa'];
     $id_productor = $_POST['id_productor'];
     $direccion = $_POST['direccion'];
+    $id_productor_asociados = $_POST['id_productor_asociados'];
+    $id_cooperativa_asociada = $_POST['id_cooperativa_asociada'];
+    $id_finca_asociada = $_POST['id_finca_asociada'];
     $observaciones = $_POST['observaciones'];
 
     $sql = "UPDATE usuarios SET 
             cuit='$cuit', contrasena='$contrasena', rol='$rol', permiso_ingreso='$permiso_ingreso', 
-            nombre='$nombre', correo='$correo', telefono='$telefono',
+            nombre='$nombre', correo='$correo', telefono='$telefono', nombre_responsable='$nombre_responsable', 
             id_cooperativa='$id_cooperativa', id_productor='$id_productor', direccion='$direccion', 
-
+            id_productor_asociados='$id_productor_asociados', 
+            id_cooperativa_asociada='$id_cooperativa_asociada', id_finca_asociada='$id_finca_asociada', 
             observaciones='$observaciones' WHERE id='$id'";
 
     if (mysqli_query($conn, $sql)) {
@@ -521,8 +530,9 @@ $total_pages = ceil($total_records / $limit);
     <!-- Sidebar -->
     <div id="sidebar">
         <nav>
-            <a href="sve_dashboard.php"><i class="fa fa-home"></i> Inicio</a><br>
+            <a href="sve_dashboard.php"><i class="fa fa-home"></i> Dashboard</a><br>
             <a href="alta_usuarios.php"><i class="fa fa-user-plus"></i> Alta Usuarios</a><br>
+            <a href="alta_fincas.php"><i class="fa fa-tree"></i> Alta Fincas</a><br>
             <a href="alta_productos.php"><i class="fa fa-box"></i> Alta Productos</a><br>
             <a href="mercado_digital.php"><i class="fa fa-shopping-cart"></i> Mercado Digital</a><br>
             <a href="pedidos.php"><i class="fa fa-list"></i> Pedidos</a><br>
@@ -563,16 +573,19 @@ $total_pages = ceil($total_records / $limit);
                 <input type="text" name="nombre" placeholder="Nombre" required>
                 <input type="email" name="correo" placeholder="Correo" required>
                 <input type="text" name="telefono" placeholder="Teléfono">
+                <input type="text" name="nombre_responsable" placeholder="Nombre Responsable">
                 <input type="text" name="id_cooperativa" placeholder="ID Cooperativa">
                 <input type="text" name="id_productor" placeholder="ID Productor">
                 <input type="text" name="direccion" placeholder="Dirección">
+                <input type="text" name="id_productor_asociados" placeholder="ID Productores Asociados">
+                <input type="text" name="id_cooperativa_asociada" placeholder="ID Cooperativa Asociada">
+                <input type="text" name="id_finca_asociada" placeholder="ID Finca Asociada">
                 <input type="text" name="observaciones" placeholder="observaciones">
                 <button type="submit" name="agregar_usuario">Agregar Nuevo Usuario</button>
             </form>
         </div>
 
         <div class="card">
-        <h3>Buscador de usuarios por CUIT</h3>
             <div class="search-bar">
                 <form method="post" style="display: flex; width: 100%;">
                     <input type="text" name="cuit_filter" placeholder="Ingrese CUIT">
@@ -597,9 +610,13 @@ $total_pages = ceil($total_records / $limit);
                         <th>Nombre</th>
                         <th>Correo</th>
                         <th>Teléfono</th>
+                        <th>Nombre Responsable</th>
                         <th>ID Cooperativa</th>
                         <th>ID Productor</th>
                         <th>Dirección</th>
+                        <th>ID Productores Asociados</th>
+                        <th>ID Cooperativa Asociada</th>
+                        <th>ID Finca Asociada</th>
                         <th>Observaciones</th>
                         <th>Acciones</th>
                     </tr>
@@ -631,9 +648,13 @@ $total_pages = ceil($total_records / $limit);
                                 <td><input type="text" name="nombre" value="<?php echo $row['nombre']; ?>"></td>
                                 <td><input type="text" name="correo" value="<?php echo $row['correo']; ?>"></td>
                                 <td><input type="text" name="telefono" value="<?php echo $row['telefono']; ?>"></td>
+                                <td><input type="text" name="nombre_responsable" value="<?php echo $row['nombre_responsable']; ?>"></td>
                                 <td><input type="text" name="id_cooperativa" value="<?php echo $row['id_cooperativa']; ?>"></td>
                                 <td><input type="text" name="id_productor" value="<?php echo $row['id_productor']; ?>"></td>
                                 <td><input type="text" name="direccion" value="<?php echo $row['direccion']; ?>"></td>
+                                <td><input type="text" name="id_productor_asociados" value="<?php echo $row['id_productor_asociados']; ?>"></td>
+                                <td><input type="text" name="id_cooperativa_asociada" value="<?php echo $row['id_cooperativa_asociada']; ?>"></td>
+                                <td><input type="text" name="id_finca_asociada" value="<?php echo $row['id_finca_asociada']; ?>"></td>
                                 <td><input type="text" name="observaciones" value="<?php echo $row['observaciones']; ?>"></td>
 
                                 <!-- Botón de actualización -->
