@@ -28,20 +28,15 @@ try {
 // Procesar formulario de carga de productos
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agregar_producto'])) {
     $nombre = $_POST['Nombre_producto'];
-    $foto = $_FILES['Foto_producto']['name'];
     $detalle = $_POST['Detalle_producto'];
     $precio = $_POST['Precio_producto'];
     $unidad = $_POST['Unidad_Medida_venta'];
 
-    if (move_uploaded_file($_FILES['Foto_producto']['tmp_name'], "uploads/" . $foto)) {
-        $sql = "INSERT INTO productos (Nombre_producto, Foto_producto, Detalle_producto, Precio_producto, Unidad_Medida_venta)
-                VALUES (?, ?, ?, ?, ?)";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$nombre, $foto, $detalle, $precio, $unidad]);
-        echo '<script>window.onload = function() { alert("✅ Producto agregado correctamente."); };</script>';
-    } else {
-        echo '<script>window.onload = function() { alert("❌ Error al subir la imagen."); };</script>';
-    }
+    $sql = "INSERT INTO productos (Nombre_producto, Detalle_producto, Precio_producto, Unidad_Medida_venta)
+            VALUES (?, ?, ?, ?)";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$nombre, $detalle, $precio, $unidad]);
+    echo '<script>window.onload = function() { alert("✅ Producto agregado correctamente."); };</script>';
 }
 
 // Procesar modificación de productos
@@ -69,21 +64,14 @@ if (isset($_GET['buscar'])) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alta de Productos</title>
-</head>
-<body>
+<?php include('header.php'); ?>
+<?php include('sidebar.php'); ?>
 
 <!-- Tarjeta 1: Formulario de registro de productos -->
 <div class="tarjeta">
     <h2>Agregar Producto</h2>
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST">
         <input type="text" name="Nombre_producto" placeholder="Nombre del Producto" required><br>
-        <input type="file" name="Foto_producto" required><br>
         <textarea name="Detalle_producto" placeholder="Detalle del Producto" required></textarea><br>
         <input type="number" name="Precio_producto" placeholder="Precio del Producto" required><br>
         <input type="text" name="Unidad_Medida_venta" placeholder="Unidad de Medida" required><br>
@@ -103,7 +91,6 @@ if (isset($_GET['buscar'])) {
     <table border="1">
         <tr>
             <th>Nombre</th>
-            <th>Foto</th>
             <th>Detalle</th>
             <th>Precio</th>
             <th>Unidad</th>
@@ -114,7 +101,6 @@ if (isset($_GET['buscar'])) {
             <form method="POST">
                 <input type="hidden" name="id_producto" value="<?= $producto['Id'] ?>">
                 <td><input type="text" name="Nombre_producto" value="<?= $producto['Nombre_producto'] ?>"></td>
-                <td><img src="uploads/<?= $producto['Foto_producto'] ?>" width="50"></td>
                 <td><textarea name="Detalle_producto"><?= $producto['Detalle_producto'] ?></textarea></td>
                 <td><input type="number" name="Precio_producto" value="<?= $producto['Precio_producto'] ?>"></td>
                 <td><input type="text" name="Unidad_Medida_venta" value="<?= $producto['Unidad_Medida_venta'] ?>"></td>
@@ -126,5 +112,4 @@ if (isset($_GET['buscar'])) {
     <?php } ?>
 </div>
 
-</body>
-</html>
+
