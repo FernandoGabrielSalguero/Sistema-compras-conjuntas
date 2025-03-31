@@ -49,8 +49,10 @@ if (isset($_POST['actualizar_producto'])) {
     $detalle = $_POST['Detalle_producto'];
     $precio = $_POST['Precio_producto'];
     $unidad = $_POST['Unidad_Medida_venta'];
+    $categoria = $_POST['categoria'];
 
-    $sql = "UPDATE productos SET Nombre_producto='$nombre', Detalle_producto='$detalle', Precio_producto='$precio', Unidad_Medida_venta='$unidad' WHERE id='$id'";
+    $sql = "UPDATE productos SET Nombre_producto='$nombre', Detalle_producto='$detalle', Precio_producto='$precio', Unidad_Medida_venta='$unidad', categoria='$categoria' WHERE id='$id'";
+
 
     if (mysqli_query($conn, $sql)) {
         echo "<div id='snackbar' class='success'>Producto actualizado con éxito.</div>";
