@@ -553,6 +553,7 @@ $result = mysqli_query($conn, $query);
                         <th>Detalle Producto</th>
                         <th>Precio Producto</th>
                         <th>Unidad de Medida</th>
+                        <th>Categoria</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
