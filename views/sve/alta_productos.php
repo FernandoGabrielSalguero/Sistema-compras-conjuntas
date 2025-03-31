@@ -30,8 +30,10 @@ if (isset($_POST['agregar_producto'])) {
     $detalle = $_POST['Detalle_producto'];
     $precio = $_POST['Precio_producto'];
     $unidad = $_POST['Unidad_Medida_venta'];
+    $categoria = $_POST['categoria'];
 
-    $sql = "INSERT INTO productos (Nombre_producto, Detalle_producto, Precio_producto, Unidad_Medida_venta) VALUES ('$nombre', '$detalle', '$precio', '$unidad')";
+    $sql = "INSERT INTO productos (Nombre_producto, Detalle_producto, Precio_producto, Unidad_Medida_venta, categoria) VALUES ('$nombre', '$detalle', '$precio', '$unidad', '$categoria')";
+
 
     if (mysqli_query($conn, $sql)) {
         echo "<div id='snackbar' class='success'>Producto agregado con éxito.</div>";
@@ -510,6 +512,21 @@ $result = mysqli_query($conn, $query);
                     <option value="Litros">Litros</option>
                     <option value="Unidad">Unidad</option>
                 </select>
+                <select name="categoria" required>
+                    <option value="" disabled selected>Seleccione una categoría</option>
+                    <option value="Fertilizantes Sólidos">Fertilizantes Sólidos</option>
+                    <option value="Fertilizantes Complejos">Fertilizantes Complejos</option>
+                    <option value="Fertilizantes Líquidos">Fertilizantes Líquidos</option>
+                    <option value="Fungicidas">Fungicidas</option>
+                    <option value="Insecticidas">Insecticidas</option>
+                    <option value="Feromona Asperjable">Feromona Asperjable</option>
+                    <option value="Difusor Feromona">Difusor Feromona</option>
+                    <option value="Herbicidas">Herbicidas</option>
+                    <option value="Fertilizantes Especiales">Fertilizantes Especiales</option>
+                    <option value="Fertilizantes Foliares">Fertilizantes Foliares</option>
+                    <option value="Otros">Otros</option>
+                </select>
+
                 <button type="submit" name="agregar_producto">Agregar Producto</button>
             </form>
         </div>
@@ -554,6 +571,17 @@ $result = mysqli_query($conn, $query);
                                         <option value="Gramos" <?php if ($row['Unidad_Medida_venta'] == 'Gramos') echo 'selected'; ?>>Gramos</option>
                                         <option value="Litros" <?php if ($row['Unidad_Medida_venta'] == 'Litros') echo 'selected'; ?>>Litros</option>
                                         <option value="Unidad" <?php if ($row['Unidad_Medida_venta'] == 'Unidad') echo 'selected'; ?>>Unidad</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="categoria">
+                                        <?php
+                                        $categorias = ['Fertilizantes Sólidos', 'Fertilizantes Complejos', 'Fertilizantes Líquidos', 'Fungicidas', 'Insecticidas', 'Feromona Asperjable', 'Difusor Feromona', 'Herbicidas', 'Fertilizantes Especiales', 'Fertilizantes Foliares', 'Otros'];
+                                        foreach ($categorias as $cat) {
+                                            $selected = ($row['categoria'] == $cat) ? 'selected' : '';
+                                            echo "<option value='$cat' $selected>$cat</option>";
+                                        }
+                                        ?>
                                     </select>
                                 </td>
                                 <td><button type="submit" name="actualizar_producto">Actualizar</button></td>
