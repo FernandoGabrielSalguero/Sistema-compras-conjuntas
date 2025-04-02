@@ -115,6 +115,35 @@ foreach ($categorias as $cat) {
     }
 }
 
+// Guardar pedidos en la base de datos
+if (isset($_POST['finalizar'])) {
+    $info = $_SESSION['info_general'];
+    $pedido = $_SESSION['pedido'];
+
+    $stmt = $conn->prepare("INSERT INTO pedidos (id_cooperativa, id_productor, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("iissssd", $info['cooperativa'], $info['productor'], $info['persona_facturacion'], $info['condicion_facturacion'], $info['afiliacion'], $info['ha_cooperativa'], $_POST['total_pedido']);
+
+    if ($stmt->execute()) {
+        $id_pedido = $stmt->insert_id;
+
+        $stmt_detalle = $conn->prepare("INSERT INTO detalle_pedidos (id_pedido, id_producto, cantidad) VALUES (?, ?, ?)");
+        foreach ($pedido as $id_prod => $cantidad) {
+            $stmt_detalle->bind_param("iii", $id_pedido, $id_prod, $cantidad);
+            $stmt_detalle->execute();
+        }
+
+        // Vaciar sesión y mostrar snackbar
+        $_SESSION = [];
+        echo "<script>
+            alert('✅ Pedido realizado con éxito. ID: $id_pedido');
+            window.location.href = 'mercado_digital.php';
+        </script>";
+        exit;
+    } else {
+        echo "<div style='color: red'>❌ Error al guardar el pedido: " . $stmt->error . "</div>";
+    }
+}
+
 
 
 ?>
@@ -563,6 +592,7 @@ foreach ($categorias as $cat) {
                             <input type="number" id="ha_cooperativa" name="ha_cooperativa" min="0" step="0.01" required />
                         </div>
 
+
                         <!-- Control del paso -->
                         <input type="hidden" name="step" id="stepField" value="1">
 
@@ -589,13 +619,15 @@ foreach ($categorias as $cat) {
                         <?php foreach ($productos as $prod): ?>
                             <div class="producto-row">
                                 <div class="producto-info">
-                                    <strong><?= htmlspecialchars($prod['Nombre_producto']) ?></strong><br>
-                                    <small><?= htmlspecialchars($prod['Detalle_producto']) ?></small><br>
-                                    <span>Precio: $<?= number_format($prod['Precio_producto'], 2) ?> por <?= $prod['Unidad_Medida_venta'] ?></span>
+                                    <strong><?= $prod['Nombre_producto'] ?></strong><br>
+                                    <small><?= $prod['Detalle_producto'] ?></small><br>
+                                    <span>Precio: $<?= number_format($prod['Precio_producto'], 2) ?> por <?= $prod['Unidad_Medida_venta'] ?></span><br>
+                                    <span class="subtotal">Subtotal: $<?= number_format($subtotal, 2) ?></span>
                                 </div>
                                 <div class="producto-cantidad">
-                                    <label for="cantidad_<?= $prod['Id'] ?>">Cantidad:</label>
-                                    <input type="number" name="cantidad[<?= $prod['Id'] ?>]" min="0" step="1" value="0" required />
+                                    <label for="cantidad_<?= $id_producto ?>">Cantidad:</label>
+                                    <input type="number" name="cantidad[<?= $id_producto ?>]" min="0" step="1"
+                                        value="<?= $cantidad ?>" data-precio="<?= $prod['Precio_producto'] ?>" />
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -646,7 +678,9 @@ foreach ($categorias as $cat) {
 
                         <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
                             <button type="submit" name="step" value="<?= $current_step - 1 ?>" class="btn-material">Atrás</button>
-                            <button type="submit" name="step" value="<?= $current_step + 1 ?>" class="btn-material">Finalizar pedido</button>
+                            <input type="hidden" name="step" value="<?= $total_steps ?>">
+                            <input type="hidden" name="total_pedido" id="total_pedido_input" value="<?= $total ?>">
+                            <button type="submit" name="finalizar" class="btn-material">Finalizar pedido</button>
                         </div>
                     </form>
                 </div>
@@ -688,6 +722,27 @@ foreach ($categorias as $cat) {
             if (stepInput.value === "1") {
                 stepInput.value = "2";
             }
+        });
+
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', function() {
+                const row = this.closest('.producto-row');
+                const precio = parseFloat(this.dataset.precio);
+                const subtotalElem = row.querySelector('.subtotal');
+                const cantidad = parseInt(this.value) || 0;
+                const subtotal = precio * cantidad;
+                subtotalElem.innerText = `$${subtotal.toFixed(2)}`;
+
+                // Actualizar total general
+                let total = 0;
+                document.querySelectorAll('.producto-row').forEach(row => {
+                    const input = row.querySelector('input[type="number"]');
+                    const precio = parseFloat(input.dataset.precio);
+                    const cantidad = parseInt(input.value) || 0;
+                    total += precio * cantidad;
+                });
+                document.getElementById('total_general').innerText = `$${total.toFixed(2)}`;
+            });
         });
     </script>
 
