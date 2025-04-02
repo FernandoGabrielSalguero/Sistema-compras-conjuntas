@@ -566,7 +566,13 @@ foreach ($categorias as $cat) {
                         <!-- Control del paso -->
                         <input type="hidden" name="step" id="stepField" value="1">
 
-                        <button type="submit" class="btn-material">Siguiente</button>
+                        <div style="display: flex; justify-content: space-between; max-width: 800px; margin: 2rem auto;">
+                            <?php if ($current_step > 2): ?>
+                                <button type="submit" name="step" value="<?= $current_step - 1 ?>" class="btn-material">Atrás</button>
+                            <?php endif; ?>
+
+                            <button type="submit" name="step" value="<?= $current_step + 1 ?>" class="btn-material">Siguiente</button>
+                        </div>
                     </div>
                 </form>
             <?php endif; ?>
@@ -602,6 +608,43 @@ foreach ($categorias as $cat) {
                     <input type="hidden" name="step" value="<?= $current_step + 1 ?>">
                     <button type="submit" class="btn-material">Siguiente</button>
                 </form>
+            <?php endif; ?>
+
+            <?php if ($current_step === $total_steps): ?>
+                <div class="categoria-card">
+                    <h3>Resumen de la compra</h3>
+
+                    <ul>
+                        <?php
+                        $total = 0;
+                        foreach ($_SESSION['pedido'] as $id_producto => $cantidad):
+                            $query = $conn->query("SELECT Nombre_producto, Precio_producto, Unidad_Medida_venta FROM productos WHERE Id = $id_producto");
+                            $prod = $query->fetch_assoc();
+                            $subtotal = $cantidad * $prod['Precio_producto'];
+                            $total += $subtotal;
+                        ?>
+                            <li>
+                                <?= $prod['Nombre_producto'] ?> - <?= $cantidad ?> <?= $prod['Unidad_Medida_venta'] ?> x $<?= number_format($prod['Precio_producto'], 2) ?> =
+                                <strong>$<?= number_format($subtotal, 2) ?></strong>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+
+                    <h4>Total del pedido: <strong>$<?= number_format($total, 2) ?></strong></h4>
+
+                    <form method="POST" action="guardar_pedido.php">
+                        <?php foreach ($_SESSION['info_general'] as $key => $val): ?>
+                            <input type="hidden" name="<?= htmlspecialchars($key) ?>" value="<?= htmlspecialchars($val) ?>">
+                        <?php endforeach; ?>
+
+                        <?php foreach ($_SESSION['pedido'] as $id => $cantidad): ?>
+                            <input type="hidden" name="pedido[<?= $id ?>]" value="<?= $cantidad ?>">
+                        <?php endforeach; ?>
+
+                        <input type="hidden" name="total_pedido" value="<?= $total ?>">
+                        <button type="submit" class="btn-material">Finalizar pedido</button>
+                    </form>
+                </div>
             <?php endif; ?>
 
 
