@@ -530,7 +530,14 @@ if (isset($_POST['finalizar'])) {
             $current_step = isset($_POST['step']) ? intval($_POST['step']) : 1;
 
             // Guardar datos del paso 1
-            if ($current_step === 1 && isset($_POST['cooperativa'])) {
+            if (
+                isset($_POST['cooperativa']) &&
+                isset($_POST['productor']) &&
+                isset($_POST['persona_facturacion']) &&
+                isset($_POST['condicion_facturacion']) &&
+                isset($_POST['afiliacion']) &&
+                isset($_POST['ha_cooperativa'])
+            ) {
                 $_SESSION['info_general'] = [
                     'cooperativa' => $_POST['cooperativa'],
                     'productor' => $_POST['productor'],
