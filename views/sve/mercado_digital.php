@@ -120,29 +120,56 @@ if (isset($_POST['finalizar'])) {
     $info = $_SESSION['info_general'];
     $pedido = $_SESSION['pedido'];
 
-    $stmt = $conn->prepare("INSERT INTO pedidos (id_cooperativa, id_productor, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("iissssd", $info['cooperativa'], $info['productor'], $info['persona_facturacion'], $info['condicion_facturacion'], $info['afiliacion'], $info['ha_cooperativa'], $_POST['total_pedido']);
+    $stmt = $conn->prepare("INSERT INTO pedidos (cooperativa, productor, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total_pedido) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param(
+        "iissssd",
+        $info['cooperativa'],
+        $info['productor'],
+        $info['persona_facturacion'],
+        $info['condicion_facturacion'],
+        $info['afiliacion'],
+        $info['ha_cooperativa'],
+        $_POST['total_pedido']
+    );
 
     if ($stmt->execute()) {
         $id_pedido = $stmt->insert_id;
 
-        $stmt_detalle = $conn->prepare("INSERT INTO detalle_pedidos (id_pedido, id_producto, cantidad) VALUES (?, ?, ?)");
+        // Insertar en detalle_pedidos
+        $stmt_detalle = $conn->prepare("INSERT INTO detalle_pedidos (pedido_id, nombre_producto, detalle_producto, precio_producto, unidad_medida_venta, categoria, subtotal_por_categoria) VALUES (?, ?, ?, ?, ?, ?, ?)");
         foreach ($pedido as $id_prod => $cantidad) {
-            $stmt_detalle->bind_param("iii", $id_pedido, $id_prod, $cantidad);
-            $stmt_detalle->execute();
+            $query = $conn->query("SELECT * FROM productos WHERE Id = $id_prod");
+            if ($producto = $query->fetch_assoc()) {
+                $subtotal = $producto['Precio_producto'] * $cantidad;
+
+                $stmt_detalle->bind_param(
+                    "issdssd",
+                    $id_pedido,
+                    $producto['Nombre_producto'],
+                    $producto['Detalle_producto'],
+                    $producto['Precio_producto'],
+                    $producto['Unidad_Medida_venta'],
+                    $producto['categoria'],
+                    $subtotal
+                );
+                $stmt_detalle->execute();
+            }
         }
 
-        // Vaciar sesión y mostrar snackbar
-        $_SESSION = [];
+        $_SESSION = []; // Vaciar sesión para un nuevo pedido
+
         echo "<script>
-            alert('✅ Pedido realizado con éxito. ID: $id_pedido');
-            window.location.href = 'mercado_digital.php';
+            setTimeout(() => {
+                alert('✅ Pedido realizado con éxito. ID: $id_pedido');
+                window.location.href = 'mercado_digital.php';
+            }, 200);
         </script>";
         exit;
     } else {
-        echo "<div style='color: red'>❌ Error al guardar el pedido: " . $stmt->error . "</div>";
+        echo "<div style='color:red;'>❌ Error al guardar el pedido: " . $stmt->error . "</div>";
     }
 }
+
 
 
 
@@ -622,7 +649,13 @@ if (isset($_POST['finalizar'])) {
                                     <strong><?= $prod['Nombre_producto'] ?></strong><br>
                                     <small><?= $prod['Detalle_producto'] ?></small><br>
                                     <span>Precio: $<?= number_format($prod['Precio_producto'], 2) ?> por <?= $prod['Unidad_Medida_venta'] ?></span><br>
-                                    <span class="subtotal">Subtotal: $<?= number_format($subtotal, 2) ?></span>
+                                    <?php
+$id_producto = $prod['Id'];
+$cantidad = $_SESSION['pedido'][$id_producto] ?? 0;
+$subtotal = $cantidad * $prod['Precio_producto'];
+?>
+<span class="subtotal">Subtotal: $<?= number_format($subtotal, 2) ?></span>
+
                                 </div>
                                 <div class="producto-cantidad">
                                     <label for="cantidad_<?= $id_producto ?>">Cantidad:</label>
