@@ -605,16 +605,18 @@ foreach ($categorias as $cat) {
                     <?php foreach ($_SESSION['info_general'] as $key => $val): ?>
                         <input type="hidden" name="<?= htmlspecialchars($key) ?>" value="<?= htmlspecialchars($val) ?>">
                     <?php endforeach; ?>
-                    <input type="hidden" name="step" value="<?= $current_step + 1 ?>">
-                    <button type="submit" class="btn-material">Siguiente</button>
+                    <input type="hidden" name="step" value="<?= $current_step ?>">
+                    <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
+                        <button type="submit" name="step" value="<?= $current_step - 1 ?>" class="btn-material">Atrás</button>
+                        <button type="submit" name="step" value="<?= $current_step + 1 ?>" class="btn-material">Siguiente</button>
+                    </div>
                 </form>
             <?php endif; ?>
 
             <?php if ($current_step === $total_steps): ?>
                 <div class="categoria-card">
                     <h3>Resumen de la compra</h3>
-
-                    <ul>
+                    <form method="POST">
                         <?php
                         $total = 0;
                         foreach ($_SESSION['pedido'] as $id_producto => $cantidad):
@@ -623,29 +625,33 @@ foreach ($categorias as $cat) {
                             $subtotal = $cantidad * $prod['Precio_producto'];
                             $total += $subtotal;
                         ?>
-                            <li>
-                                <?= $prod['Nombre_producto'] ?> - <?= $cantidad ?> <?= $prod['Unidad_Medida_venta'] ?> x $<?= number_format($prod['Precio_producto'], 2) ?> =
-                                <strong>$<?= number_format($subtotal, 2) ?></strong>
-                            </li>
+                            <div class="producto-row">
+                                <div class="producto-info">
+                                    <strong><?= htmlspecialchars($prod['Nombre_producto']) ?></strong><br>
+                                    <small><?= $prod['Unidad_Medida_venta'] ?> x $<?= number_format($prod['Precio_producto'], 2) ?></small>
+                                </div>
+                                <div class="producto-cantidad">
+                                    <input type="number" name="cantidad[<?= $id_producto ?>]" value="<?= $cantidad ?>" min="0" step="1" />
+                                    <br><small>Subtotal: $<?= number_format($subtotal, 2) ?></small>
+                                </div>
+                            </div>
                         <?php endforeach; ?>
-                    </ul>
 
-                    <h4>Total del pedido: <strong>$<?= number_format($total, 2) ?></strong></h4>
+                        <hr>
+                        <h4 style="text-align: right;">Total del pedido: <strong>$<?= number_format($total, 2) ?></strong></h4>
 
-                    <form method="POST" action="guardar_pedido.php">
                         <?php foreach ($_SESSION['info_general'] as $key => $val): ?>
                             <input type="hidden" name="<?= htmlspecialchars($key) ?>" value="<?= htmlspecialchars($val) ?>">
                         <?php endforeach; ?>
 
-                        <?php foreach ($_SESSION['pedido'] as $id => $cantidad): ?>
-                            <input type="hidden" name="pedido[<?= $id ?>]" value="<?= $cantidad ?>">
-                        <?php endforeach; ?>
-
-                        <input type="hidden" name="total_pedido" value="<?= $total ?>">
-                        <button type="submit" class="btn-material">Finalizar pedido</button>
+                        <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
+                            <button type="submit" name="step" value="<?= $current_step - 1 ?>" class="btn-material">Atrás</button>
+                            <button type="submit" name="step" value="<?= $current_step + 1 ?>" class="btn-material">Finalizar pedido</button>
+                        </div>
                     </form>
                 </div>
             <?php endif; ?>
+
 
 
         </div>
