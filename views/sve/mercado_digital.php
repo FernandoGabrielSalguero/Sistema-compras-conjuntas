@@ -73,7 +73,10 @@ if ($conn) {
     // Si ya se seleccionó una cooperativa, cargar sus productores
     $id_cooperativa_seleccionada = isset($_POST['cooperativa']) ? intval($_POST['cooperativa']) : 0;
 
-    if ($id_cooperativa_seleccionada) {
+    $productores = [];
+    $id_cooperativa_seleccionada = isset($_POST['cooperativa']) ? intval($_POST['cooperativa']) : 0;
+
+    if ($id_cooperativa_seleccionada > 0) {
         $resProd = $conn->query("
             SELECT u.id, u.nombre 
             FROM usuarios u
@@ -543,7 +546,9 @@ foreach ($categorias as $cat) {
 
                         <div class="form-group">
                             <label for="cooperativa">Cooperativa:</label>
-                            <select id="cooperativa" name="cooperativa" required onchange="document.getElementById('reload_step').value = 1; this.form.submit();">
+                            <select id="cooperativa" name="cooperativa" required onchange="document.getElementById('step').value = 1; this.form.submit();">
+                                <input type="hidden" name="step" id="step" value="<?= $current_step ?>">
+
                                 <option value="">Seleccione una cooperativa</option>
                                 <?php foreach ($cooperativas as $coop): ?>
                                     <option value="<?= $coop['id'] ?>" <?= ($coop['id'] == $id_cooperativa) ? 'selected' : '' ?>>
