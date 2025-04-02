@@ -704,7 +704,13 @@ if (isset($_POST['finalizar'])) {
                                     </small>
                                 </div>
                                 <div class="producto-cantidad">
-                                    <input type="number" name="cantidad[<?= $id_producto ?>]" value="<?= $cantidad ?>" min="0" step="1" />
+                                    <input
+                                        type="number"
+                                        name="cantidad[<?= $id_producto ?>]"
+                                        value="<?= $cantidad ?>"
+                                        min="0"
+                                        step="1"
+                                        data-precio="<?= $prod['Precio_producto'] ?>" />
                                     <br><small>Subtotal: $<?= number_format($subtotal, 2) ?></small>
                                 </div>
                             </div>
