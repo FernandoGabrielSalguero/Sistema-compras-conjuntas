@@ -29,7 +29,7 @@ $productores = [];
 
 if ($conn) {
     // Obtener cooperativas
-    $resCoop = $conn->query("SELECT id, nombre FROM cooperativas");
+    $resCoop = $conn->query("SELECT id, nombre FROM usuarios WHERE rol = 'cooperativa'");
     if ($resCoop) {
         while ($row = $resCoop->fetch_assoc()) {
             $cooperativas[] = $row;
@@ -39,20 +39,11 @@ if ($conn) {
     // Si ya se seleccionó una cooperativa, cargar sus productores
     $id_cooperativa_seleccionada = isset($_POST['cooperativa']) ? intval($_POST['cooperativa']) : 0;
 
-    if ($id_cooperativa_seleccionada) {
-        $resProd = $conn->query("
-            SELECT p.id, p.nombre 
-            FROM productores p
-            JOIN cooperativas_productores cp ON cp.id_productor = p.id
-            WHERE cp.id_cooperativa = $id_cooperativa_seleccionada
-        ");
-
-        if ($resProd) {
-            while ($row = $resProd->fetch_assoc()) {
-                $productores[] = $row;
-            }
-        }
-    }
+    $sql = "SELECT u.id, u.nombre 
+    FROM usuarios u
+    JOIN cooperativas_productores cp ON cp.id_productor = u.id
+    WHERE cp.id_cooperativa = $id_cooperativa_seleccionada
+    AND u.rol = 'productor'";
 }
 
 
