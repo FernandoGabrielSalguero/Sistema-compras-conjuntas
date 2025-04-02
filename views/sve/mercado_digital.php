@@ -408,6 +408,34 @@ foreach ($categorias as $cat) {
             font-size: 1rem;
             width: 80px;
         }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: #1976d2;
+            width: 0%;
+            animation: loading 1.5s infinite;
+            z-index: 9999;
+        }
+
+        @keyframes loading {
+            0% {
+                width: 0%;
+                opacity: 1;
+            }
+
+            50% {
+                width: 50%;
+                opacity: 0.8;
+            }
+
+            100% {
+                width: 100%;
+                opacity: 0.2;
+            }
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -515,7 +543,7 @@ foreach ($categorias as $cat) {
 
                         <div class="form-group">
                             <label for="cooperativa">Cooperativa:</label>
-                            <select id="cooperativa" name="cooperativa" required onchange="this.form.submit()">
+                            <select id="cooperativa" name="cooperativa" required onchange="document.getElementById('reload_step').value = 1; this.form.submit();">
                                 <option value="">Seleccione una cooperativa</option>
                                 <?php foreach ($cooperativas as $coop): ?>
                                     <option value="<?= $coop['id'] ?>" <?= ($coop['id'] == $id_cooperativa) ? 'selected' : '' ?>>
@@ -565,6 +593,7 @@ foreach ($categorias as $cat) {
                         </div>
 
                         <input type="hidden" name="step" value="2">
+                        <input type="hidden" id="reload_step" name="step" value="<?= $current_step ?>">
                         <button type="submit" class="btn-material">Siguiente</button>
                     </div>
                 </form>
@@ -621,8 +650,22 @@ foreach ($categorias as $cat) {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('show');
         }
+
+        window.addEventListener('load', () => {
+            const bar = document.getElementById('progressBar');
+            if (bar) bar.style.display = 'none';
+        });
+
+        document.querySelectorAll("form").forEach(form => {
+            form.addEventListener("submit", () => {
+                const bar = document.getElementById("progressBar");
+                if (bar) bar.style.display = "block";
+            });
+        });
     </script>
 
 </body>
+<div class="progress-bar" id="progressBar"></div>
+
 
 </html>
