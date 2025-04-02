@@ -442,11 +442,6 @@ foreach ($categorias as $cat) {
         <div class="card">
 
             <?php
-            session_start();
-
-            // Conexión
-            require_once 'ruta/a/tu/conexion.php'; // Asegurate de actualizar esta ruta
-
             // Paso actual
             $current_step = isset($_POST['step']) ? intval($_POST['step']) : 1;
 
