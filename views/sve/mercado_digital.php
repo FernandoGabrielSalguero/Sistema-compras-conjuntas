@@ -650,11 +650,16 @@ if (isset($_POST['finalizar'])) {
                                     <small><?= $prod['Detalle_producto'] ?></small><br>
                                     <span>Precio: $<?= number_format($prod['Precio_producto'], 2) ?> por <?= $prod['Unidad_Medida_venta'] ?></span><br>
                                     <?php
-$id_producto = $prod['Id'];
-$cantidad = $_SESSION['pedido'][$id_producto] ?? 0;
-$subtotal = $cantidad * $prod['Precio_producto'];
-?>
-<span class="subtotal">Subtotal: $<?= number_format($subtotal, 2) ?></span>
+                                    $id_producto = $prod['Id'];
+                                    $cantidad = $_SESSION['pedido'][$id_producto] ?? 0;
+                                    $subtotal = $cantidad * $prod['Precio_producto'];
+                                    ?>
+                                    <?php
+                                    $id_producto = $prod['Id'];
+                                    $cantidad = $_SESSION['pedido'][$id_producto] ?? 0;
+                                    $subtotal = $cantidad * $prod['Precio_producto'];
+                                    ?>
+                                    <span class="subtotal">Subtotal: $<?= number_format($subtotal, 2) ?></span>
 
                                 </div>
                                 <div class="producto-cantidad">
@@ -693,7 +698,10 @@ $subtotal = $cantidad * $prod['Precio_producto'];
                             <div class="producto-row">
                                 <div class="producto-info">
                                     <strong><?= htmlspecialchars($prod['Nombre_producto']) ?></strong><br>
-                                    <small><?= $prod['Unidad_Medida_venta'] ?> x $<?= number_format($prod['Precio_producto'], 2) ?></small>
+                                    <small>
+                                        Este producto se vende por <?= htmlspecialchars($prod['Unidad_Medida_venta']) ?>
+                                        y estás comprando <?= $cantidad ?> a un precio de $<?= number_format($prod['Precio_producto'], 2) ?> cada una.
+                                    </small>
                                 </div>
                                 <div class="producto-cantidad">
                                     <input type="number" name="cantidad[<?= $id_producto ?>]" value="<?= $cantidad ?>" min="0" step="1" />
@@ -776,6 +784,40 @@ $subtotal = $cantidad * $prod['Precio_producto'];
                 });
                 document.getElementById('total_general').innerText = `$${total.toFixed(2)}`;
             });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            function actualizarTotales() {
+                let total = 0;
+                document.querySelectorAll('.producto-row').forEach(row => {
+                    const input = row.querySelector('input[type="number"]');
+                    const precio = parseFloat(input.dataset.precio);
+                    const cantidad = parseFloat(input.value) || 0;
+                    const subtotal = precio * cantidad;
+                    total += subtotal;
+
+                    const subtotalSpan = row.querySelector('.subtotal');
+                    if (subtotalSpan) {
+                        subtotalSpan.innerText = `Subtotal: $${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+                    }
+                });
+
+                const totalElem = document.getElementById('total_general');
+                if (totalElem) {
+                    totalElem.innerText = `$${total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+                }
+
+                const inputTotal = document.getElementById('total_pedido_input');
+                if (inputTotal) {
+                    inputTotal.value = total.toFixed(2);
+                }
+            }
+
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.addEventListener('input', actualizarTotales);
+            });
+
+            actualizarTotales(); // ejecutar en carga
         });
     </script>
 
