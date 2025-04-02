@@ -1,4 +1,60 @@
 <?php
+// Activar la visualización de errores en pantalla
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Cargar las variables del archivo .env manualmente
+$env_path = __DIR__ . '/../../.env';
+if (file_exists($env_path)) {
+    $dotenv = parse_ini_file($env_path);
+} else {
+    die("❌ Error: El archivo .env no se encuentra en la carpeta del proyecto.");
+}
+
+// Conexión a la base de datos
+$host = $dotenv['DB_HOST'];
+$dbname = $dotenv['DB_NAME'];
+$username = $dotenv['DB_USER'];
+$password = $dotenv['DB_PASS'];
+
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Error en la conexión: " . $conn->connect_error);
+}
+
+$cooperativas = [];
+$productores = [];
+
+if ($conn) {
+    // Obtener cooperativas
+    $resCoop = $conn->query("SELECT id, nombre FROM cooperativas");
+    if ($resCoop) {
+        while ($row = $resCoop->fetch_assoc()) {
+            $cooperativas[] = $row;
+        }
+    }
+
+    // Si ya se seleccionó una cooperativa, cargar sus productores
+    $id_cooperativa_seleccionada = isset($_POST['cooperativa']) ? intval($_POST['cooperativa']) : 0;
+
+    if ($id_cooperativa_seleccionada) {
+        $resProd = $conn->query("
+            SELECT p.id, p.nombre 
+            FROM productores p
+            JOIN cooperativas_productores cp ON cp.id_productor = p.id
+            WHERE cp.id_cooperativa = $id_cooperativa_seleccionada
+        ");
+
+        if ($resProd) {
+            while ($row = $resProd->fetch_assoc()) {
+                $productores[] = $row;
+            }
+        }
+    }
+}
+
 
 ?>
 
@@ -176,59 +232,56 @@
 
         /* estilos stepper */
         .form-step {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 1rem;
-  border-radius: 8px;
-  background-color: #f9f9f9;
-}
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
 
-.form-step h2 {
-  text-align: center;
-  margin-bottom: 1rem;
-  color: #333;
-}
+        .form-step h2 {
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #333;
+        }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 1rem;
-}
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+        }
 
-.form-group label {
-  margin-bottom: 0.4rem;
-  font-weight: bold;
-}
+        .form-group label {
+            margin-bottom: 0.4rem;
+            font-weight: bold;
+        }
 
-.form-group select,
-.form-group input {
-  padding: 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-}
+        .form-group select,
+        .form-group input {
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
 
-@media (min-width: 768px) {
-  .form-group {
-    flex-direction: row;
-    align-items: center;
-  }
+        @media (min-width: 768px) {
+            .form-group {
+                flex-direction: row;
+                align-items: center;
+            }
 
-  .form-group label {
-    width: 40%;
-    margin-bottom: 0;
-    text-align: right;
-    padding-right: 1rem;
-  }
+            .form-group label {
+                width: 40%;
+                margin-bottom: 0;
+                text-align: right;
+                padding-right: 1rem;
+            }
 
-  .form-group select,
-  .form-group input {
-    width: 60%;
-  }
-}
-
-
-
+            .form-group select,
+            .form-group input {
+                width: 60%;
+            }
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -261,54 +314,65 @@
     <!-- Body -->
     <div id="body">
         <div class="card">
-        <div class="form-step" id="paso1">
-  <h2>Información del Pedido</h2>
 
-  <form id="formInfoGeneral">
-    <div class="form-group">
-      <label for="cooperativa">Cooperativa:</label>
-      <select id="cooperativa" name="cooperativa" required>
-        <option value="">Seleccione una cooperativa</option>
-      </select>
-    </div>
+            <div class="form-step" id="paso1">
+                <h2>Información del Pedido</h2>
 
-    <div class="form-group">
-      <label for="productor">Productor:</label>
-      <select id="productor" name="productor" required>
-        <option value="">Seleccione un productor</option>
-      </select>
-    </div>
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="cooperativa">Cooperativa:</label>
+                        <select id="cooperativa" name="cooperativa" onchange="this.form.submit()" required>
+                            <option value="">Seleccione una cooperativa</option>
+                            <?php foreach ($cooperativas as $coop): ?>
+                                <option value="<?= $coop['id'] ?>" <?= ($coop['id'] == $id_cooperativa_seleccionada) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($coop['nombre']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
-    <div class="form-group">
-      <label for="persona_facturacion">Persona de Facturación:</label>
-      <select id="persona_facturacion" name="persona_facturacion" required>
-        <option value="productor">Productor</option>
-        <option value="cooperativa">Cooperativa</option>
-      </select>
-    </div>
+                    <div class="form-group">
+                        <label for="productor">Productor:</label>
+                        <select id="productor" name="productor" required>
+                            <option value="">Seleccione un productor</option>
+                            <?php foreach ($productores as $prod): ?>
+                                <option value="<?= $prod['id'] ?>"><?= htmlspecialchars($prod['nombre']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
-    <div class="form-group">
-      <label for="condicion_facturacion">Condición de Facturación:</label>
-      <select id="condicion_facturacion" name="condicion_facturacion" required>
-        <option value="responsable inscripto">Responsable Inscripto</option>
-        <option value="monotributista">Monotributista</option>
-      </select>
-    </div>
+                    <div class="form-group">
+                        <label for="persona_facturacion">Persona de Facturación:</label>
+                        <select id="persona_facturacion" name="persona_facturacion" required>
+                            <option value="productor">Productor</option>
+                            <option value="cooperativa">Cooperativa</option>
+                        </select>
+                    </div>
 
-    <div class="form-group">
-      <label for="afiliacion">Afiliación:</label>
-      <select id="afiliacion" name="afiliacion" required>
-        <option value="socio">Socio</option>
-        <option value="tercero">Tercero</option>
-      </select>
-    </div>
+                    <div class="form-group">
+                        <label for="condicion_facturacion">Condición de Facturación:</label>
+                        <select id="condicion_facturacion" name="condicion_facturacion" required>
+                            <option value="responsable inscripto">Responsable Inscripto</option>
+                            <option value="monotributista">Monotributista</option>
+                        </select>
+                    </div>
 
-    <div class="form-group">
-      <label for="ha_cooperativa">Hectáreas con la cooperativa:</label>
-      <input type="number" id="ha_cooperativa" name="ha_cooperativa" min="0" step="0.01" />
-    </div>
-  </form>
-</div>
+                    <div class="form-group">
+                        <label for="afiliacion">Afiliación:</label>
+                        <select id="afiliacion" name="afiliacion" required>
+                            <option value="socio">Socio</option>
+                            <option value="tercero">Tercero</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ha_cooperativa">Hectáreas con la cooperativa:</label>
+                        <input type="number" id="ha_cooperativa" name="ha_cooperativa" min="0" step="0.01" />
+                    </div>
+
+                    <button type="submit">Siguiente paso</button>
+                </form>
+            </div>
 
         </div>
     </div>
