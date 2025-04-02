@@ -5,9 +5,6 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-
-
-
 // Cargar las variables del archivo .env manualmente
 $env_path = __DIR__ . '/../../.env';
 if (file_exists($env_path)) {
@@ -61,37 +58,36 @@ if (isset($_POST['step'])) {
 $cooperativas = [];
 $productores = [];
 
-if ($conn) {
-    // Obtener cooperativas
-    $resCoop = $conn->query("SELECT id, nombre FROM usuarios WHERE rol = 'cooperativa'");
-    if ($resCoop) {
-        while ($row = $resCoop->fetch_assoc()) {
-            $cooperativas[] = $row;
+// Paso actual
+$current_step = isset($_POST['step']) ? intval($_POST['step']) : 1;
+
+// Cooperativa seleccionada
+$id_cooperativa = isset($_POST['cooperativa']) ? intval($_POST['cooperativa']) : 0;
+
+// Cargar cooperativas
+$cooperativas = [];
+$resCoop = $conn->query("SELECT id, nombre FROM usuarios WHERE rol = 'cooperativa'");
+if ($resCoop) {
+    while ($row = $resCoop->fetch_assoc()) {
+        $cooperativas[] = $row;
+    }
+}
+
+// Cargar productores según cooperativa
+$productores = [];
+if ($id_cooperativa > 0) {
+    $resProd = $conn->query("
+        SELECT u.id, u.nombre 
+        FROM usuarios u
+        JOIN productores_cooperativas pc ON pc.id_productor = u.id
+        WHERE pc.id_cooperativa = $id_cooperativa
+        AND u.rol = 'productor'
+    ");
+    if ($resProd) {
+        while ($row = $resProd->fetch_assoc()) {
+            $productores[] = $row;
         }
     }
-
-    // Si ya se seleccionó una cooperativa, cargar sus productores
-    $id_cooperativa_seleccionada = isset($_POST['cooperativa']) ? intval($_POST['cooperativa']) : 0;
-
-    $productores = [];
-    $id_cooperativa_seleccionada = isset($_POST['cooperativa']) ? intval($_POST['cooperativa']) : 0;
-    
-    if ($id_cooperativa_seleccionada > 0) {
-        $resProd = $conn->query("
-            SELECT u.id, u.nombre 
-            FROM usuarios u
-            JOIN productores_cooperativas pc ON pc.id_productor = u.id
-            WHERE pc.id_cooperativa = $id_cooperativa_seleccionada
-            AND u.rol = 'productor'
-        ");
-    
-        if ($resProd) {
-            while ($row = $resProd->fetch_assoc()) {
-                $productores[] = $row;
-            }
-        }
-    }
-    
 }
 
 // Obtener categorías únicas desde la tabla productos
@@ -511,139 +507,69 @@ foreach ($categorias as $cat) {
             // === CONTENIDO DE LA TARJETA ===
             ?>
 
-            <?php if ($current_step === 1): ?>
-                <?php
-                // Cargar cooperativas
-                $cooperativas = [];
-                $resCoop = $conn->query("SELECT id, nombre FROM usuarios WHERE rol = 'cooperativa'");
-                if ($resCoop) {
-                    while ($row = $resCoop->fetch_assoc()) {
-                        $cooperativas[] = $row;
-                    }
-                }
+<?php if ($current_step === 1): ?>
+<form method="POST">
+  <div class="form-step" id="paso1">
+    <h2>Información del Pedido</h2>
 
-                // Cargar productores si se seleccionó cooperativa
-                $productores = [];
-                $id_cooperativa = isset($_POST['cooperativa']) ? intval($_POST['cooperativa']) : 0;
-                if ($id_cooperativa) {
-                    $resProd = $conn->query("
-            SELECT u.id, u.nombre 
-            FROM usuarios u
-            JOIN productores_cooperativas pc ON pc.id_productor = u.id
-            WHERE pc.id_cooperativa = $id_cooperativa
-            AND u.rol = 'productor'
-        ");
-                    if ($resProd) {
-                        while ($row = $resProd->fetch_assoc()) {
-                            $productores[] = $row;
-                        }
-                    }
-                }
-                ?>
+    <div class="form-group">
+      <label for="cooperativa">Cooperativa:</label>
+      <select id="cooperativa" name="cooperativa" required onchange="document.getElementById('step').value = 1; this.form.submit();">
+        <option value="">Seleccione una cooperativa</option>
+        <?php foreach ($cooperativas as $coop): ?>
+          <option value="<?= $coop['id'] ?>" <?= ($coop['id'] == $id_cooperativa) ? 'selected' : '' ?>>
+            <?= htmlspecialchars($coop['nombre']) ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
+    </div>
 
-                <form method="POST">
-                    <div class="form-step" id="paso1">
-                        <h2>Información del Pedido</h2>
+    <div class="form-group">
+      <label for="productor">Productor:</label>
+      <select id="productor" name="productor" required>
+        <option value="">Seleccione un productor</option>
+        <?php foreach ($productores as $prod): ?>
+          <option value="<?= $prod['id'] ?>"><?= htmlspecialchars($prod['nombre']) ?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
 
-                        <div class="form-group">
-                            <label for="cooperativa">Cooperativa:</label>
-                            <select id="cooperativa" name="cooperativa" required onchange="document.getElementById('reload_step').value = 1; this.form.submit();">
-                                <option value="">Seleccione una cooperativa</option>
-                                <?php foreach ($cooperativas as $coop): ?>
-                                    <option value="<?= $coop['id'] ?>" <?= ($coop['id'] == $id_cooperativa) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($coop['nombre']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+    <div class="form-group">
+      <label for="persona_facturacion">Persona de Facturación:</label>
+      <select id="persona_facturacion" name="persona_facturacion" required>
+        <option value="productor">Productor</option>
+        <option value="cooperativa">Cooperativa</option>
+      </select>
+    </div>
 
-                        <div class="form-group">
-                            <label for="productor">Productor:</label>
-                            <select id="productor" name="productor" required>
-                                <option value="">Seleccione un productor</option>
-                                <?php foreach ($productores as $prod): ?>
-                                    <option value="<?= $prod['id'] ?>"><?= htmlspecialchars($prod['nombre']) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+    <div class="form-group">
+      <label for="condicion_facturacion">Condición de Facturación:</label>
+      <select id="condicion_facturacion" name="condicion_facturacion" required>
+        <option value="responsable inscripto">Responsable Inscripto</option>
+        <option value="monotributista">Monotributista</option>
+      </select>
+    </div>
 
-                        <div class="form-group">
-                            <label for="persona_facturacion">Persona de Facturación:</label>
-                            <select id="persona_facturacion" name="persona_facturacion" required>
-                                <option value="productor">Productor</option>
-                                <option value="cooperativa">Cooperativa</option>
-                            </select>
-                        </div>
+    <div class="form-group">
+      <label for="afiliacion">Afiliación:</label>
+      <select id="afiliacion" name="afiliacion" required>
+        <option value="socio">Socio</option>
+        <option value="tercero">Tercero</option>
+      </select>
+    </div>
 
-                        <div class="form-group">
-                            <label for="condicion_facturacion">Condición de Facturación:</label>
-                            <select id="condicion_facturacion" name="condicion_facturacion" required>
-                                <option value="responsable inscripto">Responsable Inscripto</option>
-                                <option value="monotributista">Monotributista</option>
-                            </select>
-                        </div>
+    <div class="form-group">
+      <label for="ha_cooperativa">Hectáreas con la cooperativa:</label>
+      <input type="number" id="ha_cooperativa" name="ha_cooperativa" min="0" step="0.01" required />
+    </div>
 
-                        <div class="form-group">
-                            <label for="afiliacion">Afiliación:</label>
-                            <select id="afiliacion" name="afiliacion" required>
-                                <option value="socio">Socio</option>
-                                <option value="tercero">Tercero</option>
-                            </select>
-                        </div>
+    <!-- Control del paso -->
+    <input type="hidden" name="step" id="step" value="<?= $current_step < 2 && isset($_POST['persona_facturacion']) ? 2 : 1 ?>">
 
-                        <div class="form-group">
-                            <label for="ha_cooperativa">Hectáreas con la cooperativa:</label>
-                            <input type="number" id="ha_cooperativa" name="ha_cooperativa" min="0" step="0.01" />
-                        </div>
-
-                        <input type="hidden" name="step" value="<?= isset($_POST['cooperativa']) && !isset($_POST['persona_facturacion']) ? 1 : 2 ?>">
-
-                        <button type="submit" class="btn-material">Siguiente</button>
-                    </div>
-                </form>
-
-            <?php elseif ($current_step > 1 && $current_step <= count($categorias) + 1): ?>
-                <?php
-                $categoria_actual = $categorias[$current_step - 2];
-                $resProd = $conn->query("SELECT * FROM productos WHERE categoria = '" . $conn->real_escape_string($categoria_actual) . "'");
-                ?>
-                <form method="POST">
-                    <div class="categoria-card">
-                        <h3><?= htmlspecialchars($categoria_actual) ?></h3>
-                        <?php while ($prod = $resProd->fetch_assoc()): ?>
-                            <div class="producto-row">
-                                <div class="producto-info">
-                                    <strong><?= htmlspecialchars($prod['Nombre_producto']) ?></strong><br>
-                                    <small><?= htmlspecialchars($prod['Detalle_producto']) ?></small><br>
-                                    <span>Precio: $<?= number_format($prod['Precio_producto'], 2) ?> por <?= $prod['Unidad_Medida_venta'] ?></span>
-                                </div>
-                                <div class="producto-cantidad">
-                                    <label for="cantidad_<?= $prod['Id'] ?>">Cantidad:</label>
-                                    <input type="number" name="cantidad[<?= $prod['Id'] ?>]" min="0" step="1" value="0" required />
-
-                                </div>
-                            </div>
-                        <?php endwhile; ?>
-                    </div>
-
-                    <input type="hidden" name="step" value="<?= $current_step + 1 ?>">
-                    <button type="submit" class="btn-material">Siguiente</button>
-                </form>
-
-            <?php elseif ($current_step === $total_steps): ?>
-                <div class="categoria-card">
-                    <h3>Resumen de la compra</h3>
-                    <ul>
-                        <?php foreach ($_SESSION['pedido'] as $id => $cant): ?>
-                            <li>Producto ID <?= $id ?> - Cantidad: <?= $cant ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-
-                    <form method="POST" action="guardar_pedido.php">
-                        <button type="submit" class="btn-material">Finalizar pedido</button>
-                    </form>
-                </div>
-            <?php endif; ?>
+    <button type="submit" class="btn-material">Siguiente</button>
+  </div>
+</form>
+<?php endif; ?>
 
 
         </div>
