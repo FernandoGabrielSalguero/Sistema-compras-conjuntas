@@ -507,69 +507,69 @@ foreach ($categorias as $cat) {
             // === CONTENIDO DE LA TARJETA ===
             ?>
 
-<?php if ($current_step === 1): ?>
-<form method="POST">
-  <div class="form-step" id="paso1">
-    <h2>Información del Pedido</h2>
+            <?php if ($current_step === 1): ?>
+                <form method="POST">
+                    <div class="form-step" id="paso1">
+                        <h2>Información del Pedido</h2>
 
-    <div class="form-group">
-      <label for="cooperativa">Cooperativa:</label>
-      <select id="cooperativa" name="cooperativa" required onchange="document.getElementById('step').value = 1; this.form.submit();">
-        <option value="">Seleccione una cooperativa</option>
-        <?php foreach ($cooperativas as $coop): ?>
-          <option value="<?= $coop['id'] ?>" <?= ($coop['id'] == $id_cooperativa) ? 'selected' : '' ?>>
-            <?= htmlspecialchars($coop['nombre']) ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-    </div>
+                        <div class="form-group">
+                            <label for="cooperativa">Cooperativa:</label>
+                            <select id="cooperativa" name="cooperativa" required onchange="document.getElementById('step').value = 1; this.form.submit();">
+                                <option value="">Seleccione una cooperativa</option>
+                                <?php foreach ($cooperativas as $coop): ?>
+                                    <option value="<?= $coop['id'] ?>" <?= ($coop['id'] == $id_cooperativa) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($coop['nombre']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-    <div class="form-group">
-      <label for="productor">Productor:</label>
-      <select id="productor" name="productor" required>
-        <option value="">Seleccione un productor</option>
-        <?php foreach ($productores as $prod): ?>
-          <option value="<?= $prod['id'] ?>"><?= htmlspecialchars($prod['nombre']) ?></option>
-        <?php endforeach; ?>
-      </select>
-    </div>
+                        <div class="form-group">
+                            <label for="productor">Productor:</label>
+                            <select id="productor" name="productor" required>
+                                <option value="">Seleccione un productor</option>
+                                <?php foreach ($productores as $prod): ?>
+                                    <option value="<?= $prod['id'] ?>"><?= htmlspecialchars($prod['nombre']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-    <div class="form-group">
-      <label for="persona_facturacion">Persona de Facturación:</label>
-      <select id="persona_facturacion" name="persona_facturacion" required>
-        <option value="productor">Productor</option>
-        <option value="cooperativa">Cooperativa</option>
-      </select>
-    </div>
+                        <div class="form-group">
+                            <label for="persona_facturacion">Persona de Facturación:</label>
+                            <select id="persona_facturacion" name="persona_facturacion" required>
+                                <option value="productor">Productor</option>
+                                <option value="cooperativa">Cooperativa</option>
+                            </select>
+                        </div>
 
-    <div class="form-group">
-      <label for="condicion_facturacion">Condición de Facturación:</label>
-      <select id="condicion_facturacion" name="condicion_facturacion" required>
-        <option value="responsable inscripto">Responsable Inscripto</option>
-        <option value="monotributista">Monotributista</option>
-      </select>
-    </div>
+                        <div class="form-group">
+                            <label for="condicion_facturacion">Condición de Facturación:</label>
+                            <select id="condicion_facturacion" name="condicion_facturacion" required>
+                                <option value="responsable inscripto">Responsable Inscripto</option>
+                                <option value="monotributista">Monotributista</option>
+                            </select>
+                        </div>
 
-    <div class="form-group">
-      <label for="afiliacion">Afiliación:</label>
-      <select id="afiliacion" name="afiliacion" required>
-        <option value="socio">Socio</option>
-        <option value="tercero">Tercero</option>
-      </select>
-    </div>
+                        <div class="form-group">
+                            <label for="afiliacion">Afiliación:</label>
+                            <select id="afiliacion" name="afiliacion" required>
+                                <option value="socio">Socio</option>
+                                <option value="tercero">Tercero</option>
+                            </select>
+                        </div>
 
-    <div class="form-group">
-      <label for="ha_cooperativa">Hectáreas con la cooperativa:</label>
-      <input type="number" id="ha_cooperativa" name="ha_cooperativa" min="0" step="0.01" required />
-    </div>
+                        <div class="form-group">
+                            <label for="ha_cooperativa">Hectáreas con la cooperativa:</label>
+                            <input type="number" id="ha_cooperativa" name="ha_cooperativa" min="0" step="0.01" required />
+                        </div>
 
-    <!-- Control del paso -->
-    <input type="hidden" name="step" id="step" value="<?= $current_step < 2 && isset($_POST['persona_facturacion']) ? 2 : 1 ?>">
+                        <!-- Control del paso -->
+                        <input type="hidden" name="step" id="stepField" value="1">
 
-    <button type="submit" class="btn-material">Siguiente</button>
-  </div>
-</form>
-<?php endif; ?>
+                        <button type="submit" class="btn-material">Siguiente</button>
+                    </div>
+                </form>
+            <?php endif; ?>
 
 
         </div>
@@ -592,6 +592,20 @@ foreach ($categorias as $cat) {
                 const bar = document.getElementById("progressBar");
                 if (bar) bar.style.display = "block";
             });
+        });
+
+        // Cuando cambia la cooperativa, se mantiene en paso 1
+        document.getElementById("cooperativa").addEventListener("change", function() {
+            document.getElementById("stepField").value = 1;
+            this.form.submit();
+        });
+
+        // Cuando se hace submit manual (con el botón), pasamos al paso 2
+        document.querySelector("form").addEventListener("submit", function() {
+            const stepInput = document.getElementById("stepField");
+            if (stepInput.value === "1") {
+                stepInput.value = "2";
+            }
         });
     </script>
 
