@@ -75,7 +75,7 @@ if ($conn) {
 
     $productores = [];
     $id_cooperativa_seleccionada = isset($_POST['cooperativa']) ? intval($_POST['cooperativa']) : 0;
-
+    
     if ($id_cooperativa_seleccionada > 0) {
         $resProd = $conn->query("
             SELECT u.id, u.nombre 
@@ -84,13 +84,14 @@ if ($conn) {
             WHERE pc.id_cooperativa = $id_cooperativa_seleccionada
             AND u.rol = 'productor'
         ");
-
+    
         if ($resProd) {
             while ($row = $resProd->fetch_assoc()) {
                 $productores[] = $row;
             }
         }
     }
+    
 }
 
 // Obtener categorías únicas desde la tabla productos
@@ -546,9 +547,7 @@ foreach ($categorias as $cat) {
 
                         <div class="form-group">
                             <label for="cooperativa">Cooperativa:</label>
-                            <select id="cooperativa" name="cooperativa" required onchange="document.getElementById('step').value = 1; this.form.submit();">
-                                <input type="hidden" name="step" id="step" value="<?= $current_step ?>">
-
+                            <select id="cooperativa" name="cooperativa" required onchange="document.getElementById('reload_step').value = 1; this.form.submit();">
                                 <option value="">Seleccione una cooperativa</option>
                                 <?php foreach ($cooperativas as $coop): ?>
                                     <option value="<?= $coop['id'] ?>" <?= ($coop['id'] == $id_cooperativa) ? 'selected' : '' ?>>
