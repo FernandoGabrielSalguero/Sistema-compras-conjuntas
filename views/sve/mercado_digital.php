@@ -172,6 +172,63 @@
                 height: 100vh;
             }
         }
+
+
+        /* estilos stepper */
+        .form-step {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.form-step h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  margin-bottom: 0.4rem;
+  font-weight: bold;
+}
+
+.form-group select,
+.form-group input {
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+@media (min-width: 768px) {
+  .form-group {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .form-group label {
+    width: 40%;
+    margin-bottom: 0;
+    text-align: right;
+    padding-right: 1rem;
+  }
+
+  .form-group select,
+  .form-group input {
+    width: 60%;
+  }
+}
+
+
+
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -188,14 +245,14 @@
     <!-- Sidebar -->
     <div id="sidebar">
         <nav>
-        <a href="sve_dashboard.php"><i class="fa fa-home"></i> Inicio</a><br>
+            <a href="sve_dashboard.php"><i class="fa fa-home"></i> Inicio</a><br>
             <a href="alta_usuarios.php"><i class="fa fa-user-plus"></i> Alta Usuarios</a><br>
             <a href="relacionamiento.php"><i class="fa fa-user-plus"></i> Relacionamiento </a><br>
             <a href="alta_productos.php"><i class="fa fa-box"></i> Alta Productos</a><br>
             <a href="mercado_digital.php"><i class="fa fa-shopping-cart"></i> Mercado Digital</a><br>
             <a href="pedidos.php"><i class="fa fa-list"></i> Pedidos</a><br>
             <a href="CargaMasivaUsuarios.php"><i class="fa fa-list"></i> Carga masiva de datos</a><br>
-            <a href="base_datos.php"><i class="fa fa-list"></i>  Base de datos </a><br>
+            <a href="base_datos.php"><i class="fa fa-list"></i> Base de datos </a><br>
             <a href="logout.php"><i class="fa fa-sign-out-alt"></i> Salir</a><br>
         </nav>
         <button id="close-menu-button" onclick="toggleSidebar()">Cerrar Menú</button>
@@ -203,8 +260,57 @@
 
     <!-- Body -->
     <div id="body">
-        <div class="card">Tarjeta 1 - Información General</div>
-        <div class="card">Tarjeta 2 - Estadísticas</div>
+        <div class="card">
+        <div class="form-step" id="paso1">
+  <h2>Información del Pedido</h2>
+
+  <form id="formInfoGeneral">
+    <div class="form-group">
+      <label for="cooperativa">Cooperativa:</label>
+      <select id="cooperativa" name="cooperativa" required>
+        <option value="">Seleccione una cooperativa</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="productor">Productor:</label>
+      <select id="productor" name="productor" required>
+        <option value="">Seleccione un productor</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="persona_facturacion">Persona de Facturación:</label>
+      <select id="persona_facturacion" name="persona_facturacion" required>
+        <option value="productor">Productor</option>
+        <option value="cooperativa">Cooperativa</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="condicion_facturacion">Condición de Facturación:</label>
+      <select id="condicion_facturacion" name="condicion_facturacion" required>
+        <option value="responsable inscripto">Responsable Inscripto</option>
+        <option value="monotributista">Monotributista</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="afiliacion">Afiliación:</label>
+      <select id="afiliacion" name="afiliacion" required>
+        <option value="socio">Socio</option>
+        <option value="tercero">Tercero</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="ha_cooperativa">Hectáreas con la cooperativa:</label>
+      <input type="number" id="ha_cooperativa" name="ha_cooperativa" min="0" step="0.01" />
+    </div>
+  </form>
+</div>
+
+        </div>
     </div>
 
     <!-- JavaScript -->
