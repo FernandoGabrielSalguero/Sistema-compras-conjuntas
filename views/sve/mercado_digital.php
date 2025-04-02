@@ -571,6 +571,39 @@ foreach ($categorias as $cat) {
                 </form>
             <?php endif; ?>
 
+            <?php if ($current_step > 1 && $current_step <= count($categorias) + 1): ?>
+                <?php
+                $categoria_actual = $categorias[$current_step - 2] ?? null;
+                $productos = $productos_por_categoria[$categoria_actual] ?? [];
+                ?>
+                <form method="POST">
+                    <div class="categoria-card">
+                        <h3><?= htmlspecialchars($categoria_actual) ?></h3>
+
+                        <?php foreach ($productos as $prod): ?>
+                            <div class="producto-row">
+                                <div class="producto-info">
+                                    <strong><?= htmlspecialchars($prod['Nombre_producto']) ?></strong><br>
+                                    <small><?= htmlspecialchars($prod['Detalle_producto']) ?></small><br>
+                                    <span>Precio: $<?= number_format($prod['Precio_producto'], 2) ?> por <?= $prod['Unidad_Medida_venta'] ?></span>
+                                </div>
+                                <div class="producto-cantidad">
+                                    <label for="cantidad_<?= $prod['Id'] ?>">Cantidad:</label>
+                                    <input type="number" name="cantidad[<?= $prod['Id'] ?>]" min="0" step="1" value="0" required />
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- Reenviamos datos del paso 1 -->
+                    <?php foreach ($_SESSION['info_general'] as $key => $val): ?>
+                        <input type="hidden" name="<?= htmlspecialchars($key) ?>" value="<?= htmlspecialchars($val) ?>">
+                    <?php endforeach; ?>
+                    <input type="hidden" name="step" value="<?= $current_step + 1 ?>">
+                    <button type="submit" class="btn-material">Siguiente</button>
+                </form>
+            <?php endif; ?>
+
 
         </div>
     </div>
