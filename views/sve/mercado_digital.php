@@ -120,11 +120,14 @@ if (isset($_POST['finalizar'])) {
     $info = $_SESSION['info_general'];
     $pedido = $_SESSION['pedido'];
 
-    $stmt = $conn->prepare("INSERT INTO pedidos (cooperativa, productor, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total_pedido) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $fecha_pedido = date("Y-m-d"); // Fecha del día actual
+
+    $stmt = $conn->prepare("INSERT INTO pedidos (cooperativa, productor, fecha_pedido, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total_pedido) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param(
-        "iissssd",
+        "iisssssd",
         $info['cooperativa'],
         $info['productor'],
+        $fecha_pedido,
         $info['persona_facturacion'],
         $info['condicion_facturacion'],
         $info['afiliacion'],
