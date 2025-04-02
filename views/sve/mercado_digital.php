@@ -592,8 +592,8 @@ foreach ($categorias as $cat) {
                             <input type="number" id="ha_cooperativa" name="ha_cooperativa" min="0" step="0.01" />
                         </div>
 
-                        <input type="hidden" name="step" value="2">
-                        <input type="hidden" id="reload_step" name="step" value="<?= $current_step ?>">
+                        <input type="hidden" name="step" value="<?= isset($_POST['cooperativa']) && !isset($_POST['persona_facturacion']) ? 1 : 2 ?>">
+
                         <button type="submit" class="btn-material">Siguiente</button>
                     </div>
                 </form>
@@ -615,7 +615,8 @@ foreach ($categorias as $cat) {
                                 </div>
                                 <div class="producto-cantidad">
                                     <label for="cantidad_<?= $prod['Id'] ?>">Cantidad:</label>
-                                    <input type="number" name="cantidad[<?= $prod['Id'] ?>]" min="0" step="1" />
+                                    <input type="number" name="cantidad[<?= $prod['Id'] ?>]" min="0" step="1" value="0" required />
+
                                 </div>
                             </div>
                         <?php endwhile; ?>
