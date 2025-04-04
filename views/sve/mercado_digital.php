@@ -555,15 +555,16 @@ if (isset($_POST['finalizar'])) {
         /* Asegura que flex funcione para centrar */
         #modalResumen {
             position: fixed;
-    display: none; /* oculto por defecto */
-    justify-content: center;
-    align-items: center;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 9999;
+            display: none;
+            /* oculto por defecto */
+            justify-content: center;
+            align-items: center;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
         }
 
         .modal-botones button:first-child {
@@ -991,7 +992,7 @@ if (isset($_POST['finalizar'])) {
             resumenHTML += `<h2>Total general con IVA: $${totalConIva.toFixed(2)}</h2>`;
 
             document.getElementById("resumenProductos").innerHTML = resumenHTML;
-            document.getElementById("modalResumen").style.display = "block";
+            document.getElementById("modalResumen").style.display = "flex";
         }
 
         function cerrarModal() {
