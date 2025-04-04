@@ -513,33 +513,28 @@ if (isset($_POST['finalizar'])) {
             border-bottom: 1px solid #ccc;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 999;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-contenido {
-            background-color: #fff;
-            margin: 10% auto;
-            padding: 20px;
-            width: 90%;
-            max-width: 600px;
-            border-radius: 10px;
-        }
-
         .modal-botones {
             text-align: right;
             margin-top: 20px;
         }
 
         .modal-botones button {
-            margin-left: 10px;
+            padding: 10px 15px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .modal-botones button:first-child {
+            background-color: #2ecc71;
+            /* Verde Aceptar */
+        }
+
+        .modal-botones button:last-child {
+            background-color: #e74c3c;
+            /* Rojo Cancelar */
         }
     </style>
 
@@ -710,7 +705,9 @@ if (isset($_POST['finalizar'])) {
                                         <div class="producto-cantidad">
                                             <label for="cantidad_<?= $id_producto ?>">Cantidad:</label>
                                             <input type="number" name="cantidad[<?= $id_producto ?>]" min="0" step="1"
-                                                value="<?= $cantidad ?>" data-precio="<?= $prod['Precio_producto'] ?>" />
+                                                value="<?= $cantidad ?>"
+                                                data-precio="<?= $prod['Precio_producto'] ?>"
+                                                data-alicuota="<?= $prod['alicuota'] ?>" />
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -875,59 +872,75 @@ if (isset($_POST['finalizar'])) {
         }
 
         function mostrarResumen() {
-    const inputs = document.querySelectorAll('input[type="number"][name^="cantidad"]');
-    const alicuota = 0.21;
+            const inputs = document.querySelectorAll('input[type="number"][name^="cantidad"]');
+            let productosPorCategoria = {};
+            let totalSinIva = 0;
+            let totalIva = 0;
+            let totalConIva = 0;
 
-    let productosPorCategoria = {};
-    let totalSinIva = 0;
-    let totalIva = 0;
+            inputs.forEach(input => {
+                const cantidad = parseFloat(input.value);
+                const precio = parseFloat(input.dataset.precio);
+                const alicuota = parseFloat(input.dataset.alicuota || 0);
+                const categoria = input.closest(".productos").id.replace("categoria_", "");
+                const nombreProducto = input.closest(".producto-row").querySelector("strong").innerText;
 
-    inputs.forEach(input => {
-        const cantidad = parseFloat(input.value);
-        const precio = parseFloat(input.dataset.precio);
-        const categoria = input.closest(".productos").id.replace("categoria_", "");
+                if (cantidad > 0) {
+                    const subtotal = cantidad * precio;
+                    const iva = subtotal * (alicuota / 100);
+                    const total = subtotal + iva;
 
-        if (cantidad > 0) {
-            const subtotal = cantidad * precio;
-            const iva = subtotal * alicuota;
-            const totalConIva = subtotal + iva;
+                    if (!productosPorCategoria[categoria]) {
+                        productosPorCategoria[categoria] = {
+                            productos: [],
+                            subtotal: 0,
+                            iva: 0,
+                            total: 0
+                        };
+                    }
 
-            if (!productosPorCategoria[categoria]) {
-                productosPorCategoria[categoria] = {
-                    productos: [],
-                    subtotal: 0,
-                    iva: 0,
-                    total: 0
-                };
+                    productosPorCategoria[categoria].productos.push({
+                        nombre: nombreProducto,
+                        cantidad,
+                        precio,
+                        subtotal,
+                        alicuota,
+                        iva,
+                        total
+                    });
+
+                    productosPorCategoria[categoria].subtotal += subtotal;
+                    productosPorCategoria[categoria].iva += iva;
+                    productosPorCategoria[categoria].total += total;
+
+                    totalSinIva += subtotal;
+                    totalIva += iva;
+                    totalConIva += total;
+                }
+            });
+
+            let resumenHTML = "";
+
+            for (const [cat, datos] of Object.entries(productosPorCategoria)) {
+                resumenHTML += `<h4>${cat}</h4>`;
+                datos.productos.forEach(p => {
+                    resumenHTML += `
+                <p><strong>${p.nombre}</strong></p>
+                <p>${p.cantidad} x $${p.precio.toFixed(2)} = $${p.subtotal.toFixed(2)}</p>
+                <p>IVA (${p.alicuota}%): $${p.iva.toFixed(2)}</p>
+                <p>Total con IVA: $${p.total.toFixed(2)}</p>
+                <hr>
+            `;
+                });
             }
 
-            productosPorCategoria[categoria].productos.push(`${cantidad} x $${precio.toFixed(2)} = $${subtotal.toFixed(2)}`);
-            productosPorCategoria[categoria].subtotal += subtotal;
-            productosPorCategoria[categoria].iva += iva;
-            productosPorCategoria[categoria].total += totalConIva;
+            resumenHTML += `<h3>Total general sin IVA: $${totalSinIva.toFixed(2)}</h3>`;
+            resumenHTML += `<h3>IVA total: $${totalIva.toFixed(2)}</h3>`;
+            resumenHTML += `<h2>Total general con IVA: $${totalConIva.toFixed(2)}</h2>`;
 
-            totalSinIva += subtotal;
-            totalIva += iva;
+            document.getElementById("resumenProductos").innerHTML = resumenHTML;
+            document.getElementById("modalResumen").style.display = "block";
         }
-    });
-
-    let resumenHTML = "";
-
-    for (const [cat, datos] of Object.entries(productosPorCategoria)) {
-        resumenHTML += `<h4>${cat}</h4>`;
-        resumenHTML += datos.productos.map(p => `<p>${p}</p>`).join('');
-        resumenHTML += `<p><em>Subtotal sin IVA:</em> $${datos.subtotal.toFixed(2)}</p>`;
-        resumenHTML += `<p><em>IVA (21%):</em> $${datos.iva.toFixed(2)}</p>`;
-        resumenHTML += `<p><strong>Total con IVA:</strong> $${datos.total.toFixed(2)}</p>`;
-        resumenHTML += `<hr>`;
-    }
-
-    resumenHTML += `<h3>Total general sin IVA: $${totalSinIva.toFixed(2)}</h3>`;
-    resumenHTML += `<h3>Total general con IVA: $${(totalSinIva + totalIva).toFixed(2)}</h3>`;
-
-    document.getElementById("resumenProductos").innerHTML = resumenHTML;
-    document.getElementById("modalResumen").style.display = "block";
-}
 
         function cerrarModal() {
             document.getElementById("modalResumen").style.display = "none";
