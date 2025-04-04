@@ -758,7 +758,8 @@ if (isset($_POST['finalizar'])) {
                     <?php endforeach; ?>
 
                     <div style="margin-top: 2rem; text-align: center;">
-                        <button type="submit" class="btn-material btn-finalizar">Finalizar compra</button>
+                    <button type="button" onclick="mostrarResumen()" class="btn-material btn-finalizar">Finalizar compra</button>
+
                     </div>
                 </form>
             <?php endif; ?>
