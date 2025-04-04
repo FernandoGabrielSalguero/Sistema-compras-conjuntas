@@ -512,6 +512,35 @@ if (isset($_POST['finalizar'])) {
             padding: 10px;
             border-bottom: 1px solid #ccc;
         }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-contenido {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 10px;
+        }
+
+        .modal-botones {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .modal-botones button {
+            margin-left: 10px;
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -691,7 +720,7 @@ if (isset($_POST['finalizar'])) {
 
                     <!-- Botón para avanzar al resumen -->
                     <div style="margin-top: 2rem; text-align: center;">
-                        <button type="submit" name="step" value="<?= $total_steps ?>" class="btn-material btn-finalizar">Finalizar compra</button>
+                        <button type="button" onclick="mostrarResumen()" class="btn-material btn-finalizar">Finalizar compra</button>
                     </div>
                 </form>
             <?php endif; ?>
@@ -844,7 +873,60 @@ if (isset($_POST['finalizar'])) {
             const div = document.getElementById('categoria_' + nombre);
             div.style.display = div.style.display === 'none' ? 'block' : 'none';
         }
+
+        function mostrarResumen() {
+            const inputs = document.querySelectorAll('input[type="number"][name^="cantidad"]');
+            let resumenHTML = "";
+            let totalSinIva = 0;
+            let totalConIva = 0;
+            const alicuota = 0.21;
+
+            inputs.forEach(input => {
+                const cantidad = parseFloat(input.value);
+                const precio = parseFloat(input.dataset.precio);
+                if (cantidad > 0) {
+                    const subtotal = cantidad * precio;
+                    const subtotalConIva = subtotal * (1 + alicuota);
+                    resumenHTML += `<p>${cantidad} x $${precio.toFixed(2)} = $${subtotal.toFixed(2)}</p>`;
+                    totalSinIva += subtotal;
+                    totalConIva += subtotalConIva;
+                }
+            });
+
+            document.getElementById("resumenProductos").innerHTML = resumenHTML;
+            document.getElementById("totalSinIva").innerText = totalSinIva.toFixed(2);
+            document.getElementById("totalConIva").innerText = totalConIva.toFixed(2);
+            document.getElementById("modalResumen").style.display = "block";
+        }
+
+        function cerrarModal() {
+            document.getElementById("modalResumen").style.display = "none";
+        }
+
+        function enviarPedido() {
+            document.querySelector('form').submit(); // Podés reemplazar esto por AJAX si querés
+        }
     </script>
+
+
+    <!-- Modal de resumen -->
+    <div id="modalResumen" class="modal">
+        <div class="modal-contenido">
+            <h2>Resumen de tu pedido</h2>
+            <div id="resumenProductos"></div>
+
+            <div class="totales">
+                <p><strong>Total sin alícuota:</strong> $<span id="totalSinIva">0.00</span></p>
+                <p><strong>Total con alícuota:</strong> $<span id="totalConIva">0.00</span></p>
+            </div>
+
+            <div class="modal-botones">
+                <button onclick="enviarPedido()">Aceptar</button>
+                <button onclick="cerrarModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
 
 </body>
 <div class="progress-bar" id="progressBar"></div>
