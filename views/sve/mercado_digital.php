@@ -527,6 +527,39 @@ if (isset($_POST['finalizar'])) {
             cursor: pointer;
         }
 
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Fondo negro translúcido */
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-contenido {
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Asegura que flex funcione para centrar */
+        #modalResumen {
+            display: none;
+            position: fixed;
+            display: flex;
+            /* <-- importante */
+        }
+
         .modal-botones button:first-child {
             background-color: #2ecc71;
             /* Verde Aceptar */
