@@ -495,6 +495,23 @@ if (isset($_POST['finalizar'])) {
                 opacity: 0.2;
             }
         }
+
+        .toggle-categoria {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .producto-row {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -644,54 +661,41 @@ if (isset($_POST['finalizar'])) {
                 </form>
             <?php endif; ?>
 
-            <?php if ($current_step > 1 && $current_step <= count($categorias) + 1): ?>
-                <?php
-                $categoria_actual = $categorias[$current_step - 2] ?? null;
-                $productos = $productos_por_categoria[$categoria_actual] ?? [];
-                ?>
+            <?php if ($current_step === 2): ?>
                 <form method="POST">
-                    <div class="categoria-card">
-                        <h3><?= htmlspecialchars($categoria_actual) ?></h3>
-
-                        <?php foreach ($productos as $prod): ?>
-                            <div class="producto-row">
-                                <div class="producto-info">
-                                    <strong><?= $prod['Nombre_producto'] ?></strong><br>
-                                    <small><?= $prod['Detalle_producto'] ?></small><br>
-                                    <span>Precio: $<?= number_format($prod['Precio_producto'], 2) ?> por <?= $prod['Unidad_Medida_venta'] ?></span><br>
+                    <?php foreach ($categorias as $cat): ?>
+                        <div class="categoria-container">
+                            <button type="button" class="toggle-categoria" onclick="toggleCategoria('<?= $cat ?>')"><?= htmlspecialchars($cat) ?></button>
+                            <div id="categoria_<?= $cat ?>" class="productos" style="display:none;">
+                                <?php foreach ($productos_por_categoria[$cat] as $prod): ?>
                                     <?php
                                     $id_producto = $prod['Id'];
                                     $cantidad = $_SESSION['pedido'][$id_producto] ?? 0;
-                                    $subtotal = $cantidad * $prod['Precio_producto'];
                                     ?>
-                                    <?php
-                                    $id_producto = $prod['Id'];
-                                    $cantidad = $_SESSION['pedido'][$id_producto] ?? 0;
-                                    $subtotal = $cantidad * $prod['Precio_producto'];
-                                    ?>
-                                    <span class="subtotal">Subtotal: $<?= number_format($subtotal, 2) ?></span>
-
-                                </div>
-                                <div class="producto-cantidad">
-                                    <label for="cantidad_<?= $id_producto ?>">Cantidad:</label>
-                                    <input type="number" name="cantidad[<?= $id_producto ?>]" min="0" step="1"
-                                        value="<?= $cantidad ?>" data-precio="<?= $prod['Precio_producto'] ?>" />
-                                </div>
+                                    <div class="producto-row">
+                                        <div class="producto-info">
+                                            <strong><?= $prod['Nombre_producto'] ?></strong><br>
+                                            <small><?= $prod['Detalle_producto'] ?></small><br>
+                                            <span>Precio: $<?= number_format($prod['Precio_producto'], 2) ?> por <?= $prod['Unidad_Medida_venta'] ?></span>
+                                        </div>
+                                        <div class="producto-cantidad">
+                                            <label for="cantidad_<?= $id_producto ?>">Cantidad:</label>
+                                            <input type="number" name="cantidad[<?= $id_producto ?>]" min="0" step="1"
+                                                value="<?= $cantidad ?>" data-precio="<?= $prod['Precio_producto'] ?>" />
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <!-- Reenviamos datos del paso 1 -->
-                    <?php foreach ($_SESSION['info_general'] as $key => $val): ?>
-                        <input type="hidden" name="<?= htmlspecialchars($key) ?>" value="<?= htmlspecialchars($val) ?>">
+                        </div>
                     <?php endforeach; ?>
-                    <input type="hidden" name="step" value="<?= $current_step ?>">
-                    <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
-                        <button type="submit" name="step" value="<?= $current_step - 1 ?>" class="btn-material">Atrás</button>
-                        <button type="submit" name="step" value="<?= $current_step + 1 ?>" class="btn-material">Siguiente</button>
+
+                    <!-- Botón para avanzar al resumen -->
+                    <div style="margin-top: 2rem; text-align: center;">
+                        <button type="submit" name="step" value="<?= $total_steps ?>" class="btn-material btn-finalizar">Finalizar compra</button>
                     </div>
                 </form>
             <?php endif; ?>
+
 
             <?php if ($current_step === $total_steps): ?>
                 <div class="categoria-card">
@@ -835,6 +839,11 @@ if (isset($_POST['finalizar'])) {
 
             actualizarTotales(); // ejecutar en carga
         });
+
+        function toggleCategoria(nombre) {
+            const div = document.getElementById('categoria_' + nombre);
+            div.style.display = div.style.display === 'none' ? 'block' : 'none';
+        }
     </script>
 
 </body>
