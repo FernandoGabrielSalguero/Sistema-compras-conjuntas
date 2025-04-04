@@ -554,6 +554,7 @@ if (isset($_POST['finalizar'])) {
 
         /* Asegura que flex funcione para centrar */
         #modalResumen {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
@@ -561,8 +562,7 @@ if (isset($_POST['finalizar'])) {
             height: 100vh;
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 9999;
-            display: none;
-            /* oculto por defecto */
+            display: flex;
             justify-content: center;
             align-items: center;
         }
@@ -918,6 +918,16 @@ if (isset($_POST['finalizar'])) {
             let totalIva = 0;
             let totalConIva = 0;
 
+            const productorSelect = document.querySelector('select[name="productor"]');
+            const cooperativaSelect = document.querySelector('select[name="cooperativa"]');
+
+            const productorText = productorSelect ? productorSelect.options[productorSelect.selectedIndex].text : 'Desconocido';
+            const cooperativaText = cooperativaSelect ? cooperativaSelect.options[cooperativaSelect.selectedIndex].text : 'Desconocida';
+
+            document.getElementById("resumenTitulo").innerText = `Detalle de compra de "${productorText}" perteneciente a la cooperativa "${cooperativaText}"`;
+
+
+
             inputs.forEach(input => {
                 const cantidad = parseFloat(input.value);
                 const precio = parseFloat(input.dataset.precio);
@@ -995,14 +1005,8 @@ if (isset($_POST['finalizar'])) {
     <!-- Modal de resumen -->
     <div id="modalResumen" class="modal">
         <div class="modal-contenido">
-            <h2>Resumen de tu pedido</h2>
+            <h2 id="resumenTitulo">Resumen de tu pedido</h2>
             <div id="resumenProductos"></div>
-
-            <div class="totales">
-                <p><strong>Total sin alícuota:</strong> $<span id="totalSinIva">0.00</span></p>
-                <p><strong>Total con alícuota:</strong> $<span id="totalConIva">0.00</span></p>
-            </div>
-
             <div class="modal-botones">
                 <button onclick="enviarPedido()">Aceptar</button>
                 <button onclick="cerrarModal()">Cancelar</button>
