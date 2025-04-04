@@ -875,29 +875,59 @@ if (isset($_POST['finalizar'])) {
         }
 
         function mostrarResumen() {
-            const inputs = document.querySelectorAll('input[type="number"][name^="cantidad"]');
-            let resumenHTML = "";
-            let totalSinIva = 0;
-            let totalConIva = 0;
-            const alicuota = 0.21;
+    const inputs = document.querySelectorAll('input[type="number"][name^="cantidad"]');
+    const alicuota = 0.21;
 
-            inputs.forEach(input => {
-                const cantidad = parseFloat(input.value);
-                const precio = parseFloat(input.dataset.precio);
-                if (cantidad > 0) {
-                    const subtotal = cantidad * precio;
-                    const subtotalConIva = subtotal * (1 + alicuota);
-                    resumenHTML += `<p>${cantidad} x $${precio.toFixed(2)} = $${subtotal.toFixed(2)}</p>`;
-                    totalSinIva += subtotal;
-                    totalConIva += subtotalConIva;
-                }
-            });
+    let productosPorCategoria = {};
+    let totalSinIva = 0;
+    let totalIva = 0;
 
-            document.getElementById("resumenProductos").innerHTML = resumenHTML;
-            document.getElementById("totalSinIva").innerText = totalSinIva.toFixed(2);
-            document.getElementById("totalConIva").innerText = totalConIva.toFixed(2);
-            document.getElementById("modalResumen").style.display = "block";
+    inputs.forEach(input => {
+        const cantidad = parseFloat(input.value);
+        const precio = parseFloat(input.dataset.precio);
+        const categoria = input.closest(".productos").id.replace("categoria_", "");
+
+        if (cantidad > 0) {
+            const subtotal = cantidad * precio;
+            const iva = subtotal * alicuota;
+            const totalConIva = subtotal + iva;
+
+            if (!productosPorCategoria[categoria]) {
+                productosPorCategoria[categoria] = {
+                    productos: [],
+                    subtotal: 0,
+                    iva: 0,
+                    total: 0
+                };
+            }
+
+            productosPorCategoria[categoria].productos.push(`${cantidad} x $${precio.toFixed(2)} = $${subtotal.toFixed(2)}`);
+            productosPorCategoria[categoria].subtotal += subtotal;
+            productosPorCategoria[categoria].iva += iva;
+            productosPorCategoria[categoria].total += totalConIva;
+
+            totalSinIva += subtotal;
+            totalIva += iva;
         }
+    });
+
+    let resumenHTML = "";
+
+    for (const [cat, datos] of Object.entries(productosPorCategoria)) {
+        resumenHTML += `<h4>${cat}</h4>`;
+        resumenHTML += datos.productos.map(p => `<p>${p}</p>`).join('');
+        resumenHTML += `<p><em>Subtotal sin IVA:</em> $${datos.subtotal.toFixed(2)}</p>`;
+        resumenHTML += `<p><em>IVA (21%):</em> $${datos.iva.toFixed(2)}</p>`;
+        resumenHTML += `<p><strong>Total con IVA:</strong> $${datos.total.toFixed(2)}</p>`;
+        resumenHTML += `<hr>`;
+    }
+
+    resumenHTML += `<h3>Total general sin IVA: $${totalSinIva.toFixed(2)}</h3>`;
+    resumenHTML += `<h3>Total general con IVA: $${(totalSinIva + totalIva).toFixed(2)}</h3>`;
+
+    document.getElementById("resumenProductos").innerHTML = resumenHTML;
+    document.getElementById("modalResumen").style.display = "block";
+}
 
         function cerrarModal() {
             document.getElementById("modalResumen").style.display = "none";
