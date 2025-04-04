@@ -710,6 +710,8 @@ if (isset($_POST['finalizar'])) {
                             <input type="number" id="ha_cooperativa" name="ha_cooperativa" min="0" step="0.01" required />
                         </div>
 
+                        <input type="hidden" id="productor_nombre" name="productor_nombre" value="">
+                        <input type="hidden" id="cooperativa_nombre" name="cooperativa_nombre" value="">
 
                         <!-- Control del paso -->
                         <input type="hidden" name="step" id="stepField" value="1">
@@ -921,8 +923,9 @@ if (isset($_POST['finalizar'])) {
             const productorSelect = document.querySelector('select[name="productor"]');
             const cooperativaSelect = document.querySelector('select[name="cooperativa"]');
 
-            const productorText = productorSelect ? productorSelect.options[productorSelect.selectedIndex].text : 'Desconocido';
-            const cooperativaText = cooperativaSelect ? cooperativaSelect.options[cooperativaSelect.selectedIndex].text : 'Desconocida';
+            const productorText = document.getElementById("productor_nombre").value || 'Desconocido';
+            const cooperativaText = document.getElementById("cooperativa_nombre").value || 'Desconocida';
+
 
             document.getElementById("resumenTitulo").innerText = `Detalle de compra de "${productorText}" perteneciente a la cooperativa "${cooperativaText}"`;
 
@@ -999,6 +1002,25 @@ if (isset($_POST['finalizar'])) {
         function enviarPedido() {
             document.querySelector('form').submit(); // Podés reemplazar esto por AJAX si querés
         }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const productorSelect = document.getElementById("productor");
+            const cooperativaSelect = document.getElementById("cooperativa");
+
+            if (productorSelect) {
+                productorSelect.addEventListener("change", () => {
+                    const nombre = productorSelect.options[productorSelect.selectedIndex].text;
+                    document.getElementById("productor_nombre").value = nombre;
+                });
+            }
+
+            if (cooperativaSelect) {
+                cooperativaSelect.addEventListener("change", () => {
+                    const nombre = cooperativaSelect.options[cooperativaSelect.selectedIndex].text;
+                    document.getElementById("cooperativa_nombre").value = nombre;
+                });
+            }
+        });
     </script>
 
 
