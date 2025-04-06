@@ -186,16 +186,8 @@ if (isset($_POST['finalizar'])) {
 
         $_SESSION = [];
 
-        echo "
-        <div id='modalExito' class='modal' style='display:flex; justify-content:center; align-items:center;'>
-            <div class='modal-contenido'>
-                <h2 style='color:green;'>✅ Pedido realizado con éxito</h2>
-                <p>ID del pedido: <strong>$id_pedido</strong></p>
-                <button onclick=\"window.location.href='mercado_digital.php'\" class='btn-material'>Ir al mercado digital</button>
-            </div>
-        </div>
-    ";
-
+        $_SESSION['toast_message'] = "✅ Pedido realizado con éxito. Pedido #$id_pedido";
+        header("Location: mercado_digital.php");
         exit;
     } else {
         echo "<div style='color:red;'>❌ Error al guardar el pedido: " . $stmt->error . "</div>";
@@ -1157,18 +1149,18 @@ if (isset($_POST['finalizar'])) {
 
     <div id="toast">✅ Pedido realizado con éxito</div>
     <?php if (isset($_SESSION['toast_message'])): ?>
-<script>
-    window.addEventListener('DOMContentLoaded', () => {
-        const toast = document.getElementById('toast');
-        toast.textContent = <?= json_encode($_SESSION['toast_message']) ?>;
-        toast.classList.add('show');
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3000);
-    });
-</script>
-<?php unset($_SESSION['toast_message']); ?>
-<?php endif; ?>
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                const toast = document.getElementById('toast');
+                toast.textContent = <?= json_encode($_SESSION['toast_message']) ?>;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            });
+        </script>
+        <?php unset($_SESSION['toast_message']); ?>
+    <?php endif; ?>
 
 
 </body>
