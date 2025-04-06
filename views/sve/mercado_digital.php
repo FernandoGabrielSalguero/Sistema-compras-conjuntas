@@ -186,16 +186,15 @@ if (isset($_POST['finalizar'])) {
 
         $_SESSION = [];
 
-echo "<script>
-    const toast = document.getElementById('toast');
-    toast.textContent = '✅ Pedido realizado con éxito. Pedido #$id_pedido';
-    toast.classList.add('show');
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-        window.location.href = 'mercado_digital.php';
-    }, 3000);
-</script>";
+        echo "
+        <div id='modalExito' class='modal' style='display:flex; justify-content:center; align-items:center;'>
+            <div class='modal-contenido'>
+                <h2 style='color:green;'>✅ Pedido realizado con éxito</h2>
+                <p>ID del pedido: <strong>$id_pedido</strong></p>
+                <button onclick=\"window.location.href='mercado_digital.php'\" class='btn-material'>Ir al mercado digital</button>
+            </div>
+        </div>
+    ";
 
         exit;
     } else {
