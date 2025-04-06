@@ -807,10 +807,10 @@ if (isset($_POST['finalizar'])) {
                             <button type="submit" name="step" value="<?= $current_step - 1 ?>" class="btn-material">Atrás</button>
                             <input type="hidden" name="step" value="<?= $total_steps ?>">
                             <input type="hidden" name="total_pedido" id="total_pedido_input" value="<?= $total ?>">
-<!-- Botón correcto que abre el modal Bootstrap -->
-<button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalFinalizarPedido">
-  Finalizar pedido
-</button>
+                            <!-- Botón correcto que abre el modal Bootstrap -->
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalFinalizarPedido">
+                                Finalizar pedido
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -1026,10 +1026,13 @@ if (isset($_POST['finalizar'])) {
     </script>
 
 
-    <!-- Modal de resumen -->
-    <div class="modal fade" id="modalFinalizarPedido" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
+    <div id="modalFinalizarPedido" class="modal">
+        <div class="modal-contenido">
+            <div class="modal-header">
+                <h5 class="modal-title">Finalizar Pedido</h5>
+                <button onclick="cerrarModal()" class="btn-close">×</button>
+            </div>
+            <div class="modal-body">
                 <form action="procesar_pedido.php" method="POST">
                     <div class="modal-header">
                         <h5 class="modal-title" id="modalLabel">Finalizar Pedido</h5>
@@ -1043,9 +1046,15 @@ if (isset($_POST['finalizar'])) {
                         <button type="submit" class="btn btn-primary">Enviar</button>
                     </div>
                 </form>
+                <p>Aquí va el resumen del pedido y campo de observaciones.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Enviar pedido</button>
             </div>
         </div>
     </div>
+
+
 
 
 </body>
