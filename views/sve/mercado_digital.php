@@ -127,19 +127,26 @@ if (isset($_POST['finalizar'])) {
 
     $fecha_pedido = date("Y-m-d");
     $observaciones = isset($_POST['observaciones']) ? trim($_POST['observaciones']) : 'sin observaciones';
-    $total_pedido = 0;
+    $total_sin_iva = 0;
+    $total_iva = 0;
+    $total_con_iva = 0;
+
     foreach ($pedido as $id_prod => $cantidad) {
         $query = $conn->query("SELECT Precio_producto, alicuota FROM productos WHERE Id = $id_prod");
         if ($producto = $query->fetch_assoc()) {
             $subtotal = $producto['Precio_producto'] * $cantidad;
             $iva = $subtotal * ($producto['alicuota'] / 100);
-            $total_pedido += $subtotal + $iva;
+
+            $total_sin_iva += $subtotal;
+            $total_iva += $iva;
+            $total_con_iva += $subtotal + $iva;
         }
     }
 
-    $stmt = $conn->prepare("INSERT INTO pedidos (cooperativa, productor, fecha_pedido, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total_pedido, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+    $stmt = $conn->prepare("INSERT INTO pedidos (cooperativa, productor, fecha_pedido, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total_sin_iva, total_iva, total_pedido, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param(
-        "iisssssds",
+        "iisssssddds",
         $info['cooperativa'],
         $info['productor'],
         $fecha_pedido,
@@ -147,7 +154,9 @@ if (isset($_POST['finalizar'])) {
         $info['condicion_facturacion'],
         $info['afiliacion'],
         $info['ha_cooperativa'],
-        $total_pedido,
+        $total_sin_iva,
+        $total_iva,
+        $total_con_iva,
         $observaciones
     );
 
@@ -177,15 +186,16 @@ if (isset($_POST['finalizar'])) {
 
         $_SESSION = [];
 
-        echo "
-        <div id='modalExito' class='modal' style='display:flex; justify-content:center; align-items:center;'>
-            <div class='modal-contenido'>
-                <h2 style='color:green;'>✅ Pedido realizado con éxito</h2>
-                <p>ID del pedido: <strong>$id_pedido</strong></p>
-                <button onclick=\"window.location.href='mercado_digital.php'\" class='btn-material'>Ir al mercado digital</button>
-            </div>
-        </div>
-    ";
+        echo "<script>
+        const toast = document.getElementById('toast');
+        toast.textContent = '✅ Pedido realizado con éxito. Pedido #$id_pedido';
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            window.location.href = 'mercado_digital.php';
+        }, 3000);
+    </script>";
 
         exit;
     } else {
@@ -595,6 +605,31 @@ if (isset($_POST['finalizar'])) {
         .modal-botones button:last-child {
             background-color: #e74c3c;
             /* Rojo Cancelar */
+        }
+
+        #toast {
+            visibility: hidden;
+            min-width: 300px;
+            background-color: #218838;
+            /* Verde éxito */
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 99999;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: visibility 0s, opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
         }
     </style>
 
@@ -1121,6 +1156,7 @@ if (isset($_POST['finalizar'])) {
 
 
 
+    <div id="toast">✅ Pedido realizado con éxito</div>
 
 </body>
 <div class="progress-bar" id="progressBar"></div>
