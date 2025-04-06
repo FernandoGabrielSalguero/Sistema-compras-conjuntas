@@ -757,10 +757,8 @@ if (isset($_POST['finalizar'])) {
                         </div>
                     <?php endforeach; ?>
 
-                    <div style="margin-top: 2rem; text-align: center;">
-                        <button type="button" onclick="mostrarResumen()" class="btn-material btn-finalizar">Finalizar compra</button>
+                    <button type="button" onclick="mostrarResumen()" class="btn-material btn-finalizar">Finalizar compra</button>
 
-                    </div>
                 </form>
             <?php endif; ?>
 
@@ -995,7 +993,8 @@ if (isset($_POST['finalizar'])) {
             resumenHTML += `<h2>Total general con IVA: $${totalConIva.toFixed(2)}</h2>`;
 
             document.getElementById("resumenProductos").innerHTML = resumenHTML;
-            document.getElementById("modalResumen").style.display = "flex";
+            document.getElementById("modalFinalizarPedido").style.display = "flex";
+
         }
 
         function cerrarModal() {
