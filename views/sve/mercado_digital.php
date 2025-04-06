@@ -122,7 +122,7 @@ if (isset($_POST['finalizar'])) {
 
     $fecha_pedido = date("Y-m-d"); // Fecha del día actual
 
-    $stmt = $conn->prepare("INSERT INTO pedidos (cooperativa, productor, fecha_pedido, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total_pedido) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO pedidos (cooperativa, productor, fecha_pedido, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total_pedido, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param(
         "iisssssd",
         $info['cooperativa'],
@@ -132,7 +132,8 @@ if (isset($_POST['finalizar'])) {
         $info['condicion_facturacion'],
         $info['afiliacion'],
         $info['ha_cooperativa'],
-        $_POST['total_pedido']
+        $_POST['total_pedido'],
+        $observaciones
     );
 
     if ($stmt->execute()) {
@@ -527,17 +528,18 @@ if (isset($_POST['finalizar'])) {
             cursor: pointer;
         }
 
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 9999;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
-  justify-content: center;
-  align-items: center;
-}
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
 
         .modal-contenido {
             background-color: #fff;
@@ -577,6 +579,10 @@ if (isset($_POST['finalizar'])) {
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 </head>
 
 <body>
@@ -913,31 +919,21 @@ if (isset($_POST['finalizar'])) {
         }
 
         function mostrarResumen() {
-  const modal = document.getElementById("modalFinalizarPedido");
-  modal.style.display = "flex";
-  modal.style.justifyContent = "center";
-  modal.style.alignItems = "center";
-};
+            const modal = document.getElementById("modalFinalizarPedido");
+            const inputs = document.querySelectorAll('input[type="number"]');
+            let productosPorCategoria = {};
             let totalSinIva = 0;
             let totalIva = 0;
             let totalConIva = 0;
 
-            const productorSelect = document.querySelector('select[name="productor"]');
-            const cooperativaSelect = document.querySelector('select[name="cooperativa"]');
-
-            const productorText = document.getElementById("productor_nombre").value || 'Desconocido';
-            const cooperativaText = document.getElementById("cooperativa_nombre").value || 'Desconocida';
-
-
-            document.getElementById("resumenTitulo").innerText = `Detalle de compra de "${productorText}" perteneciente a la cooperativa "${cooperativaText}"`;
-
-
+            const resumenContenedor = document.querySelector("#modalFinalizarPedido .modal-body");
+            let resumenHTML = "";
 
             inputs.forEach(input => {
                 const cantidad = parseFloat(input.value);
                 const precio = parseFloat(input.dataset.precio);
                 const alicuota = parseFloat(input.dataset.alicuota || 0);
-                const categoria = input.closest(".productos").id.replace("categoria_", "");
+                const categoria = input.closest(".productos")?.id?.replace("categoria_", "") || "Sin categoría";
                 const nombreProducto = input.closest(".producto-row").querySelector("strong").innerText;
 
                 if (cantidad > 0) {
@@ -974,8 +970,6 @@ if (isset($_POST['finalizar'])) {
                 }
             });
 
-            let resumenHTML = "";
-
             for (const [cat, datos] of Object.entries(productosPorCategoria)) {
                 resumenHTML += `<h4>${cat}</h4>`;
                 datos.productos.forEach(p => {
@@ -984,19 +978,26 @@ if (isset($_POST['finalizar'])) {
                 <p>${p.cantidad} x $${p.precio.toFixed(2)} = $${p.subtotal.toFixed(2)}</p>
                 <p>IVA (${p.alicuota}%): $${p.iva.toFixed(2)}</p>
                 <p>Total con IVA: $${p.total.toFixed(2)}</p>
-                <hr>
-            `;
+                <hr>`;
                 });
             }
 
-            resumenHTML += `<h3>Total general sin IVA: $${totalSinIva.toFixed(2)}</h3>`;
-            resumenHTML += `<h3>IVA total: $${totalIva.toFixed(2)}</h3>`;
-            resumenHTML += `<h2>Total general con IVA: $${totalConIva.toFixed(2)}</h2>`;
+            resumenHTML += `<h3>Total sin IVA: $${totalSinIva.toFixed(2)}</h3>`;
+            resumenHTML += `<h3>Total IVA: $${totalIva.toFixed(2)}</h3>`;
+            resumenHTML += `<h2>Total con IVA: $${totalConIva.toFixed(2)}</h2>`;
 
-            document.getElementById("resumenProductos").innerHTML = resumenHTML;
-            document.getElementById("modalFinalizarPedido").style.display = "flex";
+            resumenContenedor.innerHTML = `
+        <label for="observaciones">Observaciones:</label><br>
+        <textarea name="observaciones" id="observaciones" rows="3" style="width: 100%;">sin observaciones</textarea>
+        <hr>
+        ${resumenHTML}
+    `;
 
-            document.getElementById("modalFinalizarPedido").style.justifyContent = "center";
+            modal.style.display = "flex";
+            modal.style.justifyContent = "center";
+            modal.style.alignItems = "center";
+        }
+
 
         function cerrarModal() {
             document.getElementById("modalResumen").style.display = "none";
@@ -1024,53 +1025,66 @@ if (isset($_POST['finalizar'])) {
                 });
             }
         });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            $('#cooperativa').select2({
+                placeholder: "Buscar cooperativa...",
+                width: '100%'
+            });
+
+            $('#productor').select2({
+                placeholder: "Buscar productor...",
+                width: '100%'
+            });
+        });
     </script>
 
 
-<div id="modalFinalizarPedido" class="modal">
-    <div class="modal-contenido">
-        <div class="modal-header">
-            <h3>Finalizar Pedido</h3>
-            <button onclick="cerrarModal()" class="btn-close">×</button>
-        </div>
-        <div class="modal-body">
-            <label for="observaciones">Observaciones:</label><br>
-            <textarea name="observaciones" id="observaciones" rows="3" style="width: 100%;"></textarea>
+    <div id="modalFinalizarPedido" class="modal">
+        <div class="modal-contenido">
+            <div class="modal-header">
+                <h3>Finalizar Pedido</h3>
+                <button onclick="cerrarModal()" class="btn-close">×</button>
+            </div>
+            <div class="modal-body">
+                <label for="observaciones">Observaciones:</label><br>
+                <textarea name="observaciones" id="observaciones" rows="3" style="width: 100%;"></textarea>
 
-            <h4>Resumen del Pedido:</h4>
-            <?php
-            if (!empty($_SESSION['pedido'])) {
-                $total_sin_iva = 0;
-                echo "<ul>";
-                foreach ($_SESSION['pedido'] as $id_producto => $cantidad) {
-                    $sql = "SELECT nombre_producto, precio_producto FROM productos WHERE id = $id_producto";
-                    $res = $conn->query($sql);
-                    if ($row = $res->fetch_assoc()) {
-                        $subtotal = $row['precio_producto'] * $cantidad;
-                        $total_sin_iva += $subtotal;
-                        echo "<li>{$row['nombre_producto']} - Cantidad: $cantidad - Subtotal: $" . number_format($subtotal, 2) . "</li>";
+                <h4>Resumen del Pedido:</h4>
+                <?php
+                if (!empty($_SESSION['pedido'])) {
+                    $total_sin_iva = 0;
+                    echo "<ul>";
+                    foreach ($_SESSION['pedido'] as $id_producto => $cantidad) {
+                        $sql = "SELECT nombre_producto, precio_producto FROM productos WHERE id = $id_producto";
+                        $res = $conn->query($sql);
+                        if ($row = $res->fetch_assoc()) {
+                            $subtotal = $row['precio_producto'] * $cantidad;
+                            $total_sin_iva += $subtotal;
+                            echo "<li>{$row['nombre_producto']} - Cantidad: $cantidad - Subtotal: $" . number_format($subtotal, 2) . "</li>";
+                        }
                     }
+                    echo "</ul>";
+                    $total_con_iva = $total_sin_iva * 1.21;
+                    echo "<p><strong>Total sin IVA:</strong> $" . number_format($total_sin_iva, 2) . "</p>";
+                    echo "<p><strong>Total con IVA:</strong> $" . number_format($total_con_iva, 2) . "</p>";
+                } else {
+                    echo "<p>No hay productos en el pedido.</p>";
                 }
-                echo "</ul>";
-                $total_con_iva = $total_sin_iva * 1.21;
-                echo "<p><strong>Total sin IVA:</strong> $" . number_format($total_sin_iva, 2) . "</p>";
-                echo "<p><strong>Total con IVA:</strong> $" . number_format($total_con_iva, 2) . "</p>";
-            } else {
-                echo "<p>No hay productos en el pedido.</p>";
-            }
-            ?>
-        </div>
-        <div class="modal-footer">
-            <button type="submit" name="finalizar">Enviar Pedido</button>
+                ?>
+            </div>
+            <div class="modal-footer">
+            <button type="submit" name="finalizar" class="btn-material">Aceptar y Enviar</button>
+            <button type="button" onclick="cerrarModal()" class="btn-material">Cancelar</button>
+            </div>
         </div>
     </div>
-</div>
 
-        <div class="modal-footer">
-            <button type="submit" name="finalizar" class="btn-finalizar-envio">Enviar Pedido</button>
-        </div>
+    <div class="modal-footer">
+        <button type="submit" name="finalizar" class="btn-finalizar-envio">Enviar Pedido</button>
     </div>
-</div>
+    </div>
+    </div>
 
 
 
