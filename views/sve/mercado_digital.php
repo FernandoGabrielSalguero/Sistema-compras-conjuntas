@@ -127,7 +127,15 @@ if (isset($_POST['finalizar'])) {
 
     $fecha_pedido = date("Y-m-d");
     $observaciones = isset($_POST['observaciones']) ? trim($_POST['observaciones']) : 'sin observaciones';
-    $total_pedido = isset($_POST['total_pedido']) ? floatval($_POST['total_pedido']) : 0;
+    $total_pedido = 0;
+    foreach ($pedido as $id_prod => $cantidad) {
+        $query = $conn->query("SELECT Precio_producto, alicuota FROM productos WHERE Id = $id_prod");
+        if ($producto = $query->fetch_assoc()) {
+            $subtotal = $producto['Precio_producto'] * $cantidad;
+            $iva = $subtotal * ($producto['alicuota'] / 100);
+            $total_pedido += $subtotal + $iva;
+        }
+    }
 
     $stmt = $conn->prepare("INSERT INTO pedidos (cooperativa, productor, fecha_pedido, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total_pedido, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param(
@@ -169,12 +177,16 @@ if (isset($_POST['finalizar'])) {
 
         $_SESSION = [];
 
-        echo "<script>
-            setTimeout(() => {
-                alert('✅ Pedido realizado con éxito. ID: $id_pedido');
-                window.location.href = 'mercado_digital.php';
-            }, 200);
-        </script>";
+        echo "
+        <div id='modalExito' class='modal' style='display:flex; justify-content:center; align-items:center;'>
+            <div class='modal-contenido'>
+                <h2 style='color:green;'>✅ Pedido realizado con éxito</h2>
+                <p>ID del pedido: <strong>$id_pedido</strong></p>
+                <button onclick=\"window.location.href='mercado_digital.php'\" class='btn-material'>Ir al mercado digital</button>
+            </div>
+        </div>
+    ";
+
         exit;
     } else {
         echo "<div style='color:red;'>❌ Error al guardar el pedido: " . $stmt->error . "</div>";
