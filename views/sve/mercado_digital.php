@@ -527,8 +527,8 @@ if (isset($_POST['finalizar'])) {
             cursor: pointer;
         }
 
-        .modal {
-  display: none; /* ✅ Oculto por defecto */
+.modal {
+  display: none;
   position: fixed;
   z-index: 9999;
   top: 0; left: 0;
@@ -913,8 +913,11 @@ if (isset($_POST['finalizar'])) {
         }
 
         function mostrarResumen() {
-            const inputs = document.querySelectorAll('input[type="number"][name^="cantidad"]');
-            let productosPorCategoria = {};
+  const modal = document.getElementById("modalFinalizarPedido");
+  modal.style.display = "flex";
+  modal.style.justifyContent = "center";
+  modal.style.alignItems = "center";
+};
             let totalSinIva = 0;
             let totalIva = 0;
             let totalConIva = 0;
@@ -993,7 +996,7 @@ if (isset($_POST['finalizar'])) {
             document.getElementById("resumenProductos").innerHTML = resumenHTML;
             document.getElementById("modalFinalizarPedido").style.display = "flex";
 
-        }
+            document.getElementById("modalFinalizarPedido").style.justifyContent = "center";
 
         function cerrarModal() {
             document.getElementById("modalResumen").style.display = "none";
