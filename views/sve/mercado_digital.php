@@ -845,10 +845,12 @@ if (isset($_POST['finalizar'])) {
         });
 
         // Cuando cambia la cooperativa, se mantiene en paso 1
-        document.getElementById("cooperativa").addEventListener("change", function() {
-            document.getElementById("stepField").value = 1;
-            this.form.submit();
-        });
+        $(document).ready(function () {
+    $('#cooperativa').on('change', function () {
+        $('#stepField').val(1);
+        $(this).closest('form').submit();
+    });
+});
 
         // Cuando se hace submit manual (con el botón), pasamos al paso 2
         document.querySelector("form").addEventListener("submit", function() {
