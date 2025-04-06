@@ -1027,33 +1027,37 @@ if (isset($_POST['finalizar'])) {
     </script>
 
 
-    <div id="modalFinalizarPedido" class="modal">
-        <div class="modal-contenido">
-            <div class="modal-header">
-                <h5 class="modal-title">Finalizar Pedido</h5>
-                <button onclick="cerrarModal()" class="btn-close">×</button>
-            </div>
-            <div class="modal-body">
-                <form action="procesar_pedido.php" method="POST">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalLabel">Finalizar Pedido</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                    </div>
-                    <div class="modal-body">
-                        <label for="observaciones" class="form-label">Observaciones</label>
-                        <textarea name="observaciones" class="form-control" rows="3"></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Enviar</button>
-                    </div>
-                </form>
-                <p>Aquí va el resumen del pedido y campo de observaciones.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Enviar pedido</button>
+<div id="modalFinalizarPedido" class="modal">
+    <div class="modal-contenido">
+        <div class="modal-header">
+            <h5 class="modal-title">Finalizar Pedido</h5>
+            <button onclick="cerrarModal()" class="btn-close">×</button>
+        </div>
+        <div class="modal-body">
+            <!-- Observaciones -->
+            <label for="observaciones">Observaciones</label>
+            <textarea name="observaciones" id="observaciones" rows="3" style="width: 100%;"></textarea>
+
+            <!-- Detalle del pedido -->
+            <div id="detallePedido">
+                <?php if (!empty($_SESSION['pedido'])): ?>
+                    <ul>
+                        <?php foreach ($_SESSION['pedido'] as $id_producto => $cantidad): ?>
+                            <li>Producto ID <?= $id_producto ?> - Cantidad: <?= $cantidad ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p>No hay productos en el pedido.</p>
+                <?php endif; ?>
             </div>
         </div>
+
+        <div class="modal-footer">
+            <button type="submit" name="finalizar" class="btn-finalizar-envio">Enviar Pedido</button>
+        </div>
     </div>
+</div>
+
 
 
 
