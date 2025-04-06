@@ -809,9 +809,10 @@ if (isset($_POST['finalizar'])) {
                             <button type="submit" name="step" value="<?= $current_step - 1 ?>" class="btn-material">Atrás</button>
                             <input type="hidden" name="step" value="<?= $total_steps ?>">
                             <input type="hidden" name="total_pedido" id="total_pedido_input" value="<?= $total ?>">
-                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalFinalizarPedido">
-                                Finalizar pedido
-                            </button>
+<!-- Botón correcto que abre el modal Bootstrap -->
+<button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalFinalizarPedido">
+  Finalizar pedido
+</button>
                         </div>
                     </form>
                 </div>
