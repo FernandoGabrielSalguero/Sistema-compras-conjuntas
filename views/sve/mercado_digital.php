@@ -528,7 +528,7 @@ if (isset($_POST['finalizar'])) {
         }
 
         .modal {
-  display: none; /* oculto por defecto */
+  display: none; /* ✅ Oculto por defecto */
   position: fixed;
   z-index: 9999;
   top: 0; left: 0;
@@ -537,7 +537,6 @@ if (isset($_POST['finalizar'])) {
   background-color: rgba(0, 0, 0, 0.5);
   justify-content: center;
   align-items: center;
-  display: flex; /* 💥 ESTA LÍNEA HACE QUE FUNCIONE */
 }
 
         .modal-contenido {
