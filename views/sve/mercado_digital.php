@@ -186,8 +186,17 @@ if (isset($_POST['finalizar'])) {
 
         $_SESSION = [];
 
-        $_SESSION['toast_message'] = "✅ Pedido realizado con éxito. Pedido #$id_pedido";
-        header("Location: mercado_digital.php");
+echo "<script>
+    const toast = document.getElementById('toast');
+    toast.textContent = '✅ Pedido realizado con éxito. Pedido #$id_pedido';
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        window.location.href = 'mercado_digital.php';
+    }, 3000);
+</script>";
+
         exit;
     } else {
         echo "<div style='color:red;'>❌ Error al guardar el pedido: " . $stmt->error . "</div>";
@@ -913,7 +922,7 @@ if (isset($_POST['finalizar'])) {
                 const subtotalElem = row.querySelector('.subtotal');
                 const cantidad = parseInt(this.value) || 0;
                 const subtotal = precio * cantidad;
-                subtotalElem.innerText = $${subtotal.toFixed(2)};
+                subtotalElem.innerText = `$${subtotal.toFixed(2)}`;
 
                 // Actualizar total general
                 let total = 0;
@@ -923,7 +932,7 @@ if (isset($_POST['finalizar'])) {
                     const cantidad = parseInt(input.value) || 0;
                     total += precio * cantidad;
                 });
-                document.getElementById('total_general').innerText = $${total.toFixed(2)};
+                document.getElementById('total_general').innerText = `$${total.toFixed(2)}`;
             });
         });
 
@@ -939,13 +948,13 @@ if (isset($_POST['finalizar'])) {
 
                     const subtotalSpan = row.querySelector('.subtotal');
                     if (subtotalSpan) {
-                        subtotalSpan.innerText = Subtotal: $${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })};
+                        subtotalSpan.innerText = `Subtotal: $${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
                     }
                 });
 
                 const totalElem = document.getElementById('total_general');
                 if (totalElem) {
-                    totalElem.innerText = $${total.toLocaleString('es-AR', { minimumFractionDigits: 2 })};
+                    totalElem.innerText = `$${total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
                 }
 
                 const inputTotal = document.getElementById('total_pedido_input');
@@ -1019,27 +1028,27 @@ if (isset($_POST['finalizar'])) {
             });
 
             for (const [cat, datos] of Object.entries(productosPorCategoria)) {
-                resumenHTML += <h4>${cat}</h4>;
+                resumenHTML += `<h4>${cat}</h4>`;
                 datos.productos.forEach(p => {
-                    resumenHTML += 
+                    resumenHTML += `
                 <p><strong>${p.nombre}</strong></p>
                 <p>${p.cantidad} x $${p.precio.toFixed(2)} = $${p.subtotal.toFixed(2)}</p>
                 <p>IVA (${p.alicuota}%): $${p.iva.toFixed(2)}</p>
                 <p>Total con IVA: $${p.total.toFixed(2)}</p>
-                <hr>;
+                <hr>`;
                 });
             }
 
-            resumenHTML += <h3>Total sin IVA: $${totalSinIva.toFixed(2)}</h3>;
-            resumenHTML += <h3>Total IVA: $${totalIva.toFixed(2)}</h3>;
-            resumenHTML += <h2>Total con IVA: $${totalConIva.toFixed(2)}</h2>;
+            resumenHTML += `<h3>Total sin IVA: $${totalSinIva.toFixed(2)}</h3>`;
+            resumenHTML += `<h3>Total IVA: $${totalIva.toFixed(2)}</h3>`;
+            resumenHTML += `<h2>Total con IVA: $${totalConIva.toFixed(2)}</h2>`;
 
-            resumenContenedor.innerHTML = 
+            resumenContenedor.innerHTML = `
         <label for="observaciones">Observaciones:</label><br>
         <textarea name="observaciones" id="observaciones" rows="3" style="width: 100%;">sin observaciones</textarea>
         <hr>
         ${resumenHTML}
-    ;
+    `;
 
             modal.style.display = "flex";
             modal.style.justifyContent = "center";
@@ -1148,20 +1157,6 @@ if (isset($_POST['finalizar'])) {
 
 
     <div id="toast">✅ Pedido realizado con éxito</div>
-
-    <?php if (isset($_SESSION['toast_message'])): ?>
-        <script>
-            window.addEventListener('DOMContentLoaded', () => {
-                const toast = document.getElementById('toast');
-                toast.textContent = <?= json_encode($_SESSION['toast_message']) ?>;
-                toast.classList.add('show');
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
-            });
-        </script>
-        <?php unset($_SESSION['toast_message']); ?>
-    <?php endif; ?>
 
 </body>
 <div class="progress-bar" id="progressBar"></div>
