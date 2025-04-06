@@ -120,7 +120,9 @@ if (isset($_POST['finalizar'])) {
     $info = $_SESSION['info_general'];
     $pedido = $_SESSION['pedido'];
 
-    $fecha_pedido = date("Y-m-d"); // Fecha del día actual
+    $fecha_pedido = date("Y-m-d");
+    $observaciones = isset($_POST['observaciones']) ? $conn->real_escape_string(trim($_POST['observaciones'])) : '';
+
 
     $stmt = $conn->prepare("INSERT INTO pedidos (cooperativa, productor, fecha_pedido, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total_pedido) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param(
@@ -527,17 +529,18 @@ if (isset($_POST['finalizar'])) {
             cursor: pointer;
         }
 
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 9999;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
-  justify-content: center;
-  align-items: center;
-}
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
 
         .modal-contenido {
             background-color: #fff;
@@ -913,90 +916,90 @@ if (isset($_POST['finalizar'])) {
         }
 
         function mostrarResumen() {
-  const modal = document.getElementById("modalFinalizarPedido");
-  modal.style.display = "flex";
-  modal.style.justifyContent = "center";
-  modal.style.alignItems = "center";
-};
-            let totalSinIva = 0;
-            let totalIva = 0;
-            let totalConIva = 0;
+            const modal = document.getElementById("modalFinalizarPedido");
+            modal.style.display = "flex";
+            modal.style.justifyContent = "center";
+            modal.style.alignItems = "center";
+        };
+        let totalSinIva = 0;
+        let totalIva = 0;
+        let totalConIva = 0;
 
-            const productorSelect = document.querySelector('select[name="productor"]');
-            const cooperativaSelect = document.querySelector('select[name="cooperativa"]');
+        const productorSelect = document.querySelector('select[name="productor"]');
+        const cooperativaSelect = document.querySelector('select[name="cooperativa"]');
 
-            const productorText = document.getElementById("productor_nombre").value || 'Desconocido';
-            const cooperativaText = document.getElementById("cooperativa_nombre").value || 'Desconocida';
-
-
-            document.getElementById("resumenTitulo").innerText = `Detalle de compra de "${productorText}" perteneciente a la cooperativa "${cooperativaText}"`;
+        const productorText = document.getElementById("productor_nombre").value || 'Desconocido';
+        const cooperativaText = document.getElementById("cooperativa_nombre").value || 'Desconocida';
 
 
+        document.getElementById("resumenTitulo").innerText = `Detalle de compra de "${productorText}" perteneciente a la cooperativa "${cooperativaText}"`;
 
-            inputs.forEach(input => {
-                const cantidad = parseFloat(input.value);
-                const precio = parseFloat(input.dataset.precio);
-                const alicuota = parseFloat(input.dataset.alicuota || 0);
-                const categoria = input.closest(".productos").id.replace("categoria_", "");
-                const nombreProducto = input.closest(".producto-row").querySelector("strong").innerText;
 
-                if (cantidad > 0) {
-                    const subtotal = cantidad * precio;
-                    const iva = subtotal * (alicuota / 100);
-                    const total = subtotal + iva;
 
-                    if (!productosPorCategoria[categoria]) {
-                        productosPorCategoria[categoria] = {
-                            productos: [],
-                            subtotal: 0,
-                            iva: 0,
-                            total: 0
-                        };
-                    }
+        inputs.forEach(input => {
+            const cantidad = parseFloat(input.value);
+            const precio = parseFloat(input.dataset.precio);
+            const alicuota = parseFloat(input.dataset.alicuota || 0);
+            const categoria = input.closest(".productos").id.replace("categoria_", "");
+            const nombreProducto = input.closest(".producto-row").querySelector("strong").innerText;
 
-                    productosPorCategoria[categoria].productos.push({
-                        nombre: nombreProducto,
-                        cantidad,
-                        precio,
-                        subtotal,
-                        alicuota,
-                        iva,
-                        total
-                    });
+            if (cantidad > 0) {
+                const subtotal = cantidad * precio;
+                const iva = subtotal * (alicuota / 100);
+                const total = subtotal + iva;
 
-                    productosPorCategoria[categoria].subtotal += subtotal;
-                    productosPorCategoria[categoria].iva += iva;
-                    productosPorCategoria[categoria].total += total;
-
-                    totalSinIva += subtotal;
-                    totalIva += iva;
-                    totalConIva += total;
+                if (!productosPorCategoria[categoria]) {
+                    productosPorCategoria[categoria] = {
+                        productos: [],
+                        subtotal: 0,
+                        iva: 0,
+                        total: 0
+                    };
                 }
-            });
 
-            let resumenHTML = "";
+                productosPorCategoria[categoria].productos.push({
+                    nombre: nombreProducto,
+                    cantidad,
+                    precio,
+                    subtotal,
+                    alicuota,
+                    iva,
+                    total
+                });
 
-            for (const [cat, datos] of Object.entries(productosPorCategoria)) {
-                resumenHTML += `<h4>${cat}</h4>`;
-                datos.productos.forEach(p => {
-                    resumenHTML += `
+                productosPorCategoria[categoria].subtotal += subtotal;
+                productosPorCategoria[categoria].iva += iva;
+                productosPorCategoria[categoria].total += total;
+
+                totalSinIva += subtotal;
+                totalIva += iva;
+                totalConIva += total;
+            }
+        });
+
+        let resumenHTML = "";
+
+        for (const [cat, datos] of Object.entries(productosPorCategoria)) {
+            resumenHTML += `<h4>${cat}</h4>`;
+            datos.productos.forEach(p => {
+                resumenHTML += `
                 <p><strong>${p.nombre}</strong></p>
                 <p>${p.cantidad} x $${p.precio.toFixed(2)} = $${p.subtotal.toFixed(2)}</p>
                 <p>IVA (${p.alicuota}%): $${p.iva.toFixed(2)}</p>
                 <p>Total con IVA: $${p.total.toFixed(2)}</p>
                 <hr>
             `;
-                });
-            }
+            });
+        }
 
-            resumenHTML += `<h3>Total general sin IVA: $${totalSinIva.toFixed(2)}</h3>`;
-            resumenHTML += `<h3>IVA total: $${totalIva.toFixed(2)}</h3>`;
-            resumenHTML += `<h2>Total general con IVA: $${totalConIva.toFixed(2)}</h2>`;
+        resumenHTML += `<h3>Total general sin IVA: $${totalSinIva.toFixed(2)}</h3>`;
+        resumenHTML += `<h3>IVA total: $${totalIva.toFixed(2)}</h3>`;
+        resumenHTML += `<h2>Total general con IVA: $${totalConIva.toFixed(2)}</h2>`;
 
-            document.getElementById("resumenProductos").innerHTML = resumenHTML;
-            document.getElementById("modalFinalizarPedido").style.display = "flex";
+        document.getElementById("resumenProductos").innerHTML = resumenHTML;
+        document.getElementById("modalFinalizarPedido").style.display = "flex";
 
-            document.getElementById("modalFinalizarPedido").style.justifyContent = "center";
+        document.getElementById("modalFinalizarPedido").style.justifyContent = "center";
 
         function cerrarModal() {
             document.getElementById("modalResumen").style.display = "none";
@@ -1027,36 +1030,45 @@ if (isset($_POST['finalizar'])) {
     </script>
 
 
-<div id="modalFinalizarPedido" class="modal">
-    <div class="modal-contenido">
-        <div class="modal-header">
-            <h5 class="modal-title">Finalizar Pedido</h5>
-            <button onclick="cerrarModal()" class="btn-close">×</button>
-        </div>
-        <div class="modal-body">
-            <!-- Observaciones -->
-            <label for="observaciones">Observaciones</label>
-            <textarea name="observaciones" id="observaciones" rows="3" style="width: 100%;"></textarea>
+    <div id="modalFinalizarPedido" class="modal">
+        <div class="modal-contenido">
+            <div class="modal-header">
+                <h3>Finalizar Pedido</h3>
+                <button onclick="cerrarModal()" class="btn-close">×</button>
+            </div>
+            <div class="modal-body">
+                <label for="observaciones">Observaciones:</label><br>
+                <textarea name="observaciones" id="observaciones" rows="3" style="width: 100%;"></textarea>
 
-            <!-- Detalle del pedido -->
-            <div id="detallePedido">
-                <?php if (!empty($_SESSION['pedido'])): ?>
-                    <ul>
-                        <?php foreach ($_SESSION['pedido'] as $id_producto => $cantidad): ?>
-                            <li>Producto ID <?= $id_producto ?> - Cantidad: <?= $cantidad ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                <?php else: ?>
-                    <p>No hay productos en el pedido.</p>
-                <?php endif; ?>
+                <h4>Resumen del Pedido:</h4>
+                <?php
+                if (!empty($_SESSION['pedido'])) {
+                    $total_sin_iva = 0;
+                    echo "<ul>";
+                    foreach ($_SESSION['pedido'] as $id_producto => $cantidad) {
+                        $sql = "SELECT nombre_producto, precio_producto FROM productos WHERE id = $id_producto";
+                        $res = $conn->query($sql);
+                        if ($row = $res->fetch_assoc()) {
+                            $subtotal = $row['precio_producto'] * $cantidad;
+                            $total_sin_iva += $subtotal;
+                            echo "<li>{$row['nombre_producto']} - Cantidad: $cantidad - Subtotal: $" . number_format($subtotal, 2) . "</li>";
+                        }
+                    }
+                    echo "</ul>";
+                    $total_con_iva = $total_sin_iva * 1.21;
+                    echo "<p><strong>Total sin IVA:</strong> $" . number_format($total_sin_iva, 2) . "</p>";
+                    echo "<p><strong>Total con IVA:</strong> $" . number_format($total_con_iva, 2) . "</p>";
+                } else {
+                    echo "<p>No hay productos en el pedido.</p>";
+                }
+                ?>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" name="finalizar">Enviar Pedido</button>
             </div>
         </div>
-
-        <div class="modal-footer">
-            <button type="submit" name="finalizar" class="btn-finalizar-envio">Enviar Pedido</button>
-        </div>
     </div>
-</div>
+
 
 
 
