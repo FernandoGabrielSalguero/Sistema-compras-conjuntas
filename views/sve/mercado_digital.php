@@ -123,8 +123,10 @@ if (isset($_POST['finalizar'])) {
     $fecha_pedido = date("Y-m-d"); // Fecha del día actual
 
     $stmt = $conn->prepare("INSERT INTO pedidos (cooperativa, productor, fecha_pedido, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total_pedido, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $observaciones = isset($_POST['observaciones']) ? trim($_POST['observaciones']) : 'sin observaciones';
+
     $stmt->bind_param(
-        "iisssssd",
+        "iisssssds",
         $info['cooperativa'],
         $info['productor'],
         $fecha_pedido,
@@ -845,12 +847,12 @@ if (isset($_POST['finalizar'])) {
         });
 
         // Cuando cambia la cooperativa, se mantiene en paso 1
-        $(document).ready(function () {
-    $('#cooperativa').on('change', function () {
-        $('#stepField').val(1);
-        $(this).closest('form').submit();
-    });
-});
+        $(document).ready(function() {
+            $('#cooperativa').on('change', function() {
+                $('#stepField').val(1);
+                $(this).closest('form').submit();
+            });
+        });
 
         // Cuando se hace submit manual (con el botón), pasamos al paso 2
         document.querySelector("form").addEventListener("submit", function() {
@@ -1002,12 +1004,27 @@ if (isset($_POST['finalizar'])) {
 
 
         function cerrarModal() {
-            document.getElementById("modalResumen").style.display = "none";
+            document.getElementById("modalFinalizarPedido").style.display = "none";
         }
 
         function enviarPedido() {
-            document.querySelector('form').submit(); // Podés reemplazar esto por AJAX si querés
+            const observaciones = document.getElementById("observaciones").value;
+            const inputObservaciones = document.createElement("input");
+            inputObservaciones.type = "hidden";
+            inputObservaciones.name = "observaciones";
+            inputObservaciones.value = observaciones;
+
+            const totalInput = document.getElementById("total_pedido_input");
+            const hiddenTotal = document.getElementById("total_pedido_hidden");
+            if (totalInput && hiddenTotal) {
+                hiddenTotal.value = totalInput.value;
+            }
+
+            const form = document.getElementById("formFinalizarPedido");
+            form.appendChild(inputObservaciones);
+            form.submit();
         }
+
 
         document.addEventListener("DOMContentLoaded", () => {
             const productorSelect = document.getElementById("productor");
@@ -1044,43 +1061,27 @@ if (isset($_POST['finalizar'])) {
 
     <div id="modalFinalizarPedido" class="modal">
         <div class="modal-contenido">
-            <div class="modal-header">
-                <h3>Finalizar Pedido</h3>
-                <button onclick="cerrarModal()" class="btn-close">×</button>
-            </div>
-            <div class="modal-body">
-                <label for="observaciones">Observaciones:</label><br>
-                <textarea name="observaciones" id="observaciones" rows="3" style="width: 100%;"></textarea>
+            <form method="POST" id="formFinalizarPedido">
+                <div class="modal-header">
+                    <h3>Finalizar Pedido</h3>
+                </div>
+                <div class="modal-body">
+                    <label for="observaciones">Observaciones:</label><br>
+                    <textarea name="observaciones" id="observaciones" rows="3" style="width: 100%;">sin observaciones</textarea>
 
-                <h4>Resumen del Pedido:</h4>
-                <?php
-                if (!empty($_SESSION['pedido'])) {
-                    $total_sin_iva = 0;
-                    echo "<ul>";
-                    foreach ($_SESSION['pedido'] as $id_producto => $cantidad) {
-                        $sql = "SELECT nombre_producto, precio_producto FROM productos WHERE id = $id_producto";
-                        $res = $conn->query($sql);
-                        if ($row = $res->fetch_assoc()) {
-                            $subtotal = $row['precio_producto'] * $cantidad;
-                            $total_sin_iva += $subtotal;
-                            echo "<li>{$row['nombre_producto']} - Cantidad: $cantidad - Subtotal: $" . number_format($subtotal, 2) . "</li>";
-                        }
-                    }
-                    echo "</ul>";
-                    $total_con_iva = $total_sin_iva * 1.21;
-                    echo "<p><strong>Total sin IVA:</strong> $" . number_format($total_sin_iva, 2) . "</p>";
-                    echo "<p><strong>Total con IVA:</strong> $" . number_format($total_con_iva, 2) . "</p>";
-                } else {
-                    echo "<p>No hay productos en el pedido.</p>";
-                }
-                ?>
-            </div>
-            <div class="modal-footer">
-            <button type="submit" name="finalizar" class="btn-material">Aceptar y Enviar</button>
-            <button type="button" onclick="cerrarModal()" class="btn-material">Cancelar</button>
-            </div>
+                    <div id="resumenProductos"></div> <!-- Aquí se inyecta dinámicamente el resumen -->
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: space-between; gap: 10px; margin-top: 20px;">
+                    <!-- Observaciones y total ya se agregaron dinámicamente -->
+                    <input type="hidden" name="total_pedido" id="total_pedido_hidden" value="">
+                    <button type="button" class="btn-material" onclick="enviarPedido()">Aceptar y Enviar</button>
+                    <button type="button" class="btn-material" onclick="cerrarModal()">Cancelar</button>
+                    <input type="hidden" name="finalizar" value="1" />
+                </div>
+            </form>
         </div>
     </div>
+
 
     <div class="modal-footer">
         <button type="submit" name="finalizar" class="btn-finalizar-envio">Enviar Pedido</button>
