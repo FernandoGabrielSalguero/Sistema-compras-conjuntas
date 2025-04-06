@@ -758,7 +758,7 @@ if (isset($_POST['finalizar'])) {
                     <?php endforeach; ?>
 
                     <div style="margin-top: 2rem; text-align: center;">
-                    <button type="button" onclick="mostrarResumen()" class="btn-material btn-finalizar">Finalizar compra</button>
+                        <button type="button" onclick="mostrarResumen()" class="btn-material btn-finalizar">Finalizar compra</button>
 
                     </div>
                 </form>
@@ -809,7 +809,9 @@ if (isset($_POST['finalizar'])) {
                             <button type="submit" name="step" value="<?= $current_step - 1 ?>" class="btn-material">Atrás</button>
                             <input type="hidden" name="step" value="<?= $total_steps ?>">
                             <input type="hidden" name="total_pedido" id="total_pedido_input" value="<?= $total ?>">
-                            <button type="submit" name="finalizar" class="btn-material">Finalizar pedido</button>
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalFinalizarPedido">
+                                Finalizar pedido
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -1025,13 +1027,22 @@ if (isset($_POST['finalizar'])) {
 
 
     <!-- Modal de resumen -->
-    <div id="modalResumen" class="modal">
-        <div class="modal-contenido">
-            <h2 id="resumenTitulo">Resumen de tu pedido</h2>
-            <div id="resumenProductos"></div>
-            <div class="modal-botones">
-                <button onclick="enviarPedido()">Aceptar</button>
-                <button onclick="cerrarModal()">Cancelar</button>
+    <div class="modal fade" id="modalFinalizarPedido" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="procesar_pedido.php" method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalLabel">Finalizar Pedido</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="observaciones" class="form-label">Observaciones</label>
+                        <textarea name="observaciones" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Enviar</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
