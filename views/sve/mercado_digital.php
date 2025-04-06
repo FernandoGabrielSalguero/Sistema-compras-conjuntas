@@ -186,17 +186,8 @@ if (isset($_POST['finalizar'])) {
 
         $_SESSION = [];
 
-        echo "<script>
-        const toast = document.getElementById('toast');
-        toast.textContent = '✅ Pedido realizado con éxito. Pedido #$id_pedido';
-        toast.classList.add('show');
-        
-        setTimeout(() => {
-            toast.classList.remove('show');
-            window.location.href = 'mercado_digital.php';
-        }, 3000);
-    </script>";
-
+        $_SESSION['toast_message'] = "✅ Pedido realizado con éxito. Pedido #$id_pedido";
+        header("Location: mercado_digital.php");
         exit;
     } else {
         echo "<div style='color:red;'>❌ Error al guardar el pedido: " . $stmt->error . "</div>";
@@ -1157,6 +1148,20 @@ if (isset($_POST['finalizar'])) {
 
 
     <div id="toast">✅ Pedido realizado con éxito</div>
+
+    <?php if (isset($_SESSION['toast_message'])): ?>
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                const toast = document.getElementById('toast');
+                toast.textContent = <?= json_encode($_SESSION['toast_message']) ?>;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            });
+        </script>
+        <?php unset($_SESSION['toast_message']); ?>
+    <?php endif; ?>
 
 </body>
 <div class="progress-bar" id="progressBar"></div>
