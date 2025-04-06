@@ -528,18 +528,17 @@ if (isset($_POST['finalizar'])) {
         }
 
         .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.5);
-            /* Fondo negro translúcido */
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-        }
+  display: none; /* oculto por defecto */
+  position: fixed;
+  z-index: 9999;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+  display: flex; /* 💥 ESTA LÍNEA HACE QUE FUNCIONE */
+}
 
         .modal-contenido {
             background-color: #fff;
