@@ -1,138 +1,44 @@
 <?php
 session_start();
+// Activar la visualización de errores en pantalla
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Cargar variables desde .env
+// Cargar las variables del archivo .env manualmente
 $env_path = __DIR__ . '/../../.env';
-if (!file_exists($env_path)) {
-    die("❌ Error: El archivo .env no se encuentra.");
+if (file_exists($env_path)) {
+    $dotenv = parse_ini_file($env_path);
+} else {
+    die("❌ Error: El archivo .env no se encuentra en la carpeta del proyecto.");
 }
-$dotenv = parse_ini_file($env_path);
 
 // Conexión a la base de datos
-$conn = new mysqli($dotenv['DB_HOST'], $dotenv['DB_USER'], $dotenv['DB_PASS'], $dotenv['DB_NAME']);
+$host = $dotenv['DB_HOST'];
+$dbname = $dotenv['DB_NAME'];
+$username = $dotenv['DB_USER'];
+$password = $dotenv['DB_PASS'];
+
+$conn = new mysqli($host, $username, $password, $dbname);
+
 if ($conn->connect_error) {
     die("Error en la conexión: " . $conn->connect_error);
 }
 
-// Funciones reutilizables
-function obtenerCategorias($conn) {
-    $categorias = [];
-    $res = $conn->query("SELECT DISTINCT categoria FROM productos ORDER BY categoria");
-    while ($row = $res?->fetch_assoc()) {
+// codigo del proyecto
+
+// Cargar categorías desde base de datos
+$categorias = [];
+$resCategorias = $conn->query("SELECT DISTINCT categoria FROM productos ORDER BY categoria");
+if ($resCategorias) {
+    while ($row = $resCategorias->fetch_assoc()) {
         $categorias[] = $row['categoria'];
     }
-    return $categorias;
 }
+$total_steps = count($categorias) + 2; // Paso 1 (info general) + 1 por categoría + resumen final
 
-function obtenerCooperativas($conn) {
-    $cooperativas = [];
-    $res = $conn->query("SELECT id, nombre FROM usuarios WHERE rol = 'cooperativa'");
-    while ($row = $res?->fetch_assoc()) {
-        $cooperativas[] = $row;
-    }
-    return $cooperativas;
-}
 
-function obtenerProductores($conn, $id_cooperativa) {
-    $productores = [];
-    $res = $conn->query("
-        SELECT u.id, u.nombre 
-        FROM usuarios u 
-        JOIN productores_cooperativas pc ON pc.id_productor = u.id 
-        WHERE pc.id_cooperativa = $id_cooperativa AND u.rol = 'productor'");
-    while ($row = $res?->fetch_assoc()) {
-        $productores[] = $row;
-    }
-    return $productores;
-}
-
-function obtenerProductosPorCategoria($conn, $categorias) {
-    $productos_por_categoria = [];
-    foreach ($categorias as $cat) {
-        $cat_esc = $conn->real_escape_string($cat);
-        $res = $conn->query("SELECT * FROM productos WHERE categoria = '$cat_esc'");
-        while ($prod = $res?->fetch_assoc()) {
-            $productos_por_categoria[$cat][] = $prod;
-        }
-    }
-    return $productos_por_categoria;
-}
-
-function guardarPedido($conn, $info, $pedido, $observaciones) {
-    $fecha_pedido = date("Y-m-d");
-    $total_sin_iva = $total_iva = $total_con_iva = 0;
-
-    foreach ($pedido as $id_prod => $cantidad) {
-        $q = $conn->query("SELECT Precio_producto, alicuota FROM productos WHERE Id = $id_prod");
-        if ($prod = $q->fetch_assoc()) {
-            $subtotal = $prod['Precio_producto'] * $cantidad;
-            $iva = $subtotal * ($prod['alicuota'] / 100);
-            $total_sin_iva += $subtotal;
-            $total_iva += $iva;
-            $total_con_iva += ($subtotal + $iva);
-        }
-    }
-
-    $stmt = $conn->prepare("INSERT INTO pedidos (cooperativa, productor, fecha_pedido, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total_sin_iva, total_iva, total_pedido, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("iisssssddds",
-        $info['cooperativa'], $info['productor'], $fecha_pedido,
-        $info['persona_facturacion'], $info['condicion_facturacion'],
-        $info['afiliacion'], $info['ha_cooperativa'],
-        $total_sin_iva, $total_iva, $total_con_iva, $observaciones
-    );
-
-    if ($stmt->execute()) {
-        $pedido_id = $stmt->insert_id;
-        $detalle_stmt = $conn->prepare("INSERT INTO detalle_pedidos (pedido_id, nombre_producto, detalle_producto, precio_producto, unidad_medida_venta, categoria, subtotal_por_categoria) VALUES (?, ?, ?, ?, ?, ?, ?)");
-
-        foreach ($pedido as $id_prod => $cantidad) {
-            $res = $conn->query("SELECT * FROM productos WHERE Id = $id_prod");
-            if ($producto = $res->fetch_assoc()) {
-                $subtotal = $producto['Precio_producto'] * $cantidad;
-                $detalle_stmt->bind_param("issdssd",
-                    $pedido_id, $producto['Nombre_producto'], $producto['Detalle_producto'],
-                    $producto['Precio_producto'], $producto['Unidad_Medida_venta'],
-                    $producto['categoria'], $subtotal
-                );
-                $detalle_stmt->execute();
-            }
-        }
-
-        $_SESSION = [];
-        $_SESSION['toast_message'] = "✅ Pedido realizado con éxito. Pedido #$pedido_id";
-        header("Location: mercado_digital.php");
-        exit;
-    } else {
-        echo "<div style='color:red;'>❌ Error al guardar el pedido: " . $stmt->error . "</div>";
-    }
-}
-
-// Lógica de flujo
-$current_step = $_POST['step'] ?? 1;
-$id_cooperativa = $_POST['cooperativa'] ?? 0;
-
-$cooperativas = obtenerCooperativas($conn);
-$productores = $id_cooperativa ? obtenerProductores($conn, $id_cooperativa) : [];
-$categorias = obtenerCategorias($conn);
-$total_steps = count($categorias) + 2;
-$productos_por_categoria = obtenerProductosPorCategoria($conn, $categorias);
-
-// Guardar info del paso 1
-if (isset($_POST['cooperativa'], $_POST['productor'], $_POST['persona_facturacion'], $_POST['condicion_facturacion'], $_POST['afiliacion'], $_POST['ha_cooperativa'])) {
-    $_SESSION['info_general'] = [
-        'cooperativa' => $_POST['cooperativa'],
-        'productor' => $_POST['productor'],
-        'persona_facturacion' => $_POST['persona_facturacion'],
-        'condicion_facturacion' => $_POST['condicion_facturacion'],
-        'afiliacion' => $_POST['afiliacion'],
-        'ha_cooperativa' => $_POST['ha_cooperativa']
-    ];
-}
-
-// Guardar productos
+// Guardar datos de cada paso
 if (!empty($_POST['cantidad'])) {
     foreach ($_POST['cantidad'] as $id_producto => $cantidad) {
         if (intval($cantidad) > 0) {
@@ -141,21 +47,158 @@ if (!empty($_POST['cantidad'])) {
     }
 }
 
-// Confirmar pedido
+// Obtener el paso actual o iniciar en 1
+if (isset($_POST['step'])) {
+    $current_step = intval($_POST['step']);
+} else {
+    $current_step = 1;
+}
+
+
+$cooperativas = [];
+$productores = [];
+
+// Paso actual
+$current_step = isset($_POST['step']) ? intval($_POST['step']) : 1;
+
+// Cooperativa seleccionada
+$id_cooperativa = isset($_POST['cooperativa']) ? intval($_POST['cooperativa']) : 0;
+
+// Cargar cooperativas
+$cooperativas = [];
+$resCoop = $conn->query("SELECT id, nombre FROM usuarios WHERE rol = 'cooperativa'");
+if ($resCoop) {
+    while ($row = $resCoop->fetch_assoc()) {
+        $cooperativas[] = $row;
+    }
+}
+
+// Cargar productores según cooperativa
+$productores = [];
+if ($id_cooperativa > 0) {
+    $resProd = $conn->query("
+        SELECT u.id, u.nombre 
+        FROM usuarios u
+        JOIN productores_cooperativas pc ON pc.id_productor = u.id
+        WHERE pc.id_cooperativa = $id_cooperativa
+        AND u.rol = 'productor'
+    ");
+    if ($resProd) {
+        while ($row = $resProd->fetch_assoc()) {
+            $productores[] = $row;
+        }
+    }
+}
+
+// Obtener categorías únicas desde la tabla productos
+$categorias = [];
+$sqlCategorias = "SELECT DISTINCT categoria FROM productos ORDER BY categoria";
+$resCategorias = $conn->query($sqlCategorias);
+
+if ($resCategorias) {
+    while ($row = $resCategorias->fetch_assoc()) {
+        $categorias[] = $row['categoria'];
+    }
+}
+
+// Traer productos por categoría en un array asociativo
+$productos_por_categoria = [];
+
+foreach ($categorias as $cat) {
+    $sqlProd = "SELECT * FROM productos WHERE categoria = '" . $conn->real_escape_string($cat) . "'";
+    $resProd = $conn->query($sqlProd);
+
+    if ($resProd) {
+        while ($prod = $resProd->fetch_assoc()) {
+            $productos_por_categoria[$cat][] = $prod;
+        }
+    }
+}
+
+// Guardar pedidos en la base de datos
 if (isset($_POST['finalizar'])) {
-    $pedido = $_SESSION['pedido'] ?? [];
+    $info = $_SESSION['info_general'];
+    $pedido = isset($_SESSION['pedido']) ? $_SESSION['pedido'] : [];
+
     if (empty($pedido)) {
         echo "<div style='color:red;'>❌ No se encontraron productos en el pedido.</div>";
         exit;
     }
-    $info = $_SESSION['info_general'];
-    $observaciones = $_POST['observaciones'] ?? 'sin observaciones';
-    guardarPedido($conn, $info, $pedido, $observaciones);
+
+    $fecha_pedido = date("Y-m-d");
+    $observaciones = isset($_POST['observaciones']) ? trim($_POST['observaciones']) : 'sin observaciones';
+    $total_sin_iva = 0;
+    $total_iva = 0;
+    $total_con_iva = 0;
+
+    foreach ($pedido as $id_prod => $cantidad) {
+        $query = $conn->query("SELECT Precio_producto, alicuota FROM productos WHERE Id = $id_prod");
+        if ($producto = $query->fetch_assoc()) {
+            $subtotal = $producto['Precio_producto'] * $cantidad;
+            $iva = $subtotal * ($producto['alicuota'] / 100);
+
+            $total_sin_iva += $subtotal;
+            $total_iva += $iva;
+            $total_con_iva += $subtotal + $iva;
+        }
+    }
+
+
+    $stmt = $conn->prepare("INSERT INTO pedidos (cooperativa, productor, fecha_pedido, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total_sin_iva, total_iva, total_pedido, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param(
+        "iisssssddds",
+        $info['cooperativa'],
+        $info['productor'],
+        $fecha_pedido,
+        $info['persona_facturacion'],
+        $info['condicion_facturacion'],
+        $info['afiliacion'],
+        $info['ha_cooperativa'],
+        $total_sin_iva,
+        $total_iva,
+        $total_con_iva,
+        $observaciones
+    );
+
+    if ($stmt->execute()) {
+        $id_pedido = $stmt->insert_id;
+
+        $stmt_detalle = $conn->prepare("INSERT INTO detalle_pedidos (pedido_id, nombre_producto, detalle_producto, precio_producto, unidad_medida_venta, categoria, subtotal_por_categoria) VALUES (?, ?, ?, ?, ?, ?, ?)");
+
+        foreach ($pedido as $id_prod => $cantidad) {
+            $query = $conn->query("SELECT * FROM productos WHERE Id = $id_prod");
+            if ($producto = $query->fetch_assoc()) {
+                $subtotal = $producto['Precio_producto'] * $cantidad;
+
+                $stmt_detalle->bind_param(
+                    "issdssd",
+                    $id_pedido,
+                    $producto['Nombre_producto'],
+                    $producto['Detalle_producto'],
+                    $producto['Precio_producto'],
+                    $producto['Unidad_Medida_venta'],
+                    $producto['categoria'],
+                    $subtotal
+                );
+                $stmt_detalle->execute();
+            }
+        }
+
+        $_SESSION = [];
+
+        $_SESSION['toast_message'] = "✅ Pedido realizado con éxito. Pedido #$id_pedido";
+        header("Location: mercado_digital.php");
+        exit;
+    } else {
+        echo "<div style='color:red;'>❌ Error al guardar el pedido: " . $stmt->error . "</div>";
+    }
 }
+
+
+
+
+
 ?>
-
-
-
 
 <!DOCTYPE html>
 <html lang="es">
@@ -165,295 +208,420 @@ if (isset($_POST['finalizar'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mercado Digital</title>
     <style>
-       /* Reset & Base */
-* {
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-}
-html, body {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    background-color: #F0F2F5;
-}
-a {
-    text-decoration: none;
-    color: inherit;
-}
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-/* Layout */
-#header {
-    background: #fff;
-    color: #333;
-    padding: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    position: fixed;
-    width: 100%;
-    top: 0;
-    z-index: 10;
-}
-#sidebar {
-    background: #fff;
-    color: #333;
-    padding: 1rem;
-    width: 250px;
-    height: calc(100vh - 60px);
-    position: fixed;
-    top: 60px;
-    left: 0;
-    overflow-y: auto;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s;
-}
-#body {
-    margin-left: 250px;
-    padding: 2rem;
-    padding-top: 60px;
-    background-color: #F0F2F5;
-    height: 100vh;
-    overflow-y: auto;
-}
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #F0F2F5;
+        }
 
-/* Responsive */
-@media (max-width: 768px) {
-    #sidebar {
-        transform: translateX(-100%);
-        top: 55px;
-        height: 100vh;
-        z-index: 9;
-    }
-    #sidebar.show {
-        transform: translateX(0);
-    }
-    #body {
-        margin-left: 0;
-    }
-}
-@media (min-width: 769px) {
-    #close-menu-button {
-        display: none;
-    }
-}
+        /* General Styles */
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
 
-/* Components */
-.card {
-    background: white;
-    padding: 1rem;
-    border-radius: 10px;
-    margin-bottom: 1rem;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-.form-step {
-    max-width: 600px;
-    margin: auto;
-    padding: 1rem;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-}
-.form-step h2 {
-    text-align: center;
-    margin-bottom: 1rem;
-    color: #333;
-}
-.form-group {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 1rem;
-}
-.form-group label {
-    margin-bottom: 0.4rem;
-    font-weight: bold;
-}
-.form-group select,
-.form-group input {
-    padding: 0.6rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
-}
-@media (min-width: 768px) {
-    .form-group {
-        flex-direction: row;
-        align-items: center;
-    }
-    .form-group label {
-        width: 40%;
-        margin-bottom: 0;
-        text-align: right;
-        padding-right: 1rem;
-    }
-    .form-group select,
-    .form-group input {
-        width: 60%;
-    }
-}
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
 
-.btn-material {
-    display: block;
-    margin: 2rem auto 0;
-    padding: 0.75rem 2rem;
-    background-color: #1976d2;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease, box-shadow 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-.btn-material:hover {
-    background-color: #1565c0;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-.btn-material:active {
-    background-color: #0d47a1;
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
-}
+        /* Header */
+        #header {
+            background-color: #ffffff;
+            color: #333;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 10;
+        }
 
-.toggle-categoria {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    width: 100%;
-    text-align: left;
-    padding: 10px;
-    margin-top: 10px;
-    font-size: 16px;
-    cursor: pointer;
-}
+        /* Sidebar */
+        #sidebar {
+            background-color: #ffffff;
+            color: #333;
+            padding: 1rem;
+            width: 250px;
+            height: calc(100vh - 60px);
+            position: fixed;
+            top: 60px;
+            left: 0;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
 
-/* Producto y Categoría */
-.categoria-card {
-    background: #f5f5f5;
-    padding: 1rem;
-    margin: 2rem auto;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-    max-width: 800px;
-}
-.categoria-card h3 {
-    margin-bottom: 1rem;
-    color: #333;
-    font-size: 1.3rem;
-    border-bottom: 2px solid #1976d2;
-    padding-bottom: 0.5rem;
-}
-.producto-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 10px 0;
-    border-bottom: 1px solid #ccc;
-}
-.producto-info {
-    width: 70%;
-}
-.producto-cantidad {
-    width: 25%;
-    text-align: right;
-}
-.producto-cantidad input {
-    padding: 0.4rem;
-    font-size: 1rem;
-    width: 80px;
-}
+        /* Body */
+        #body {
+            margin-left: 250px;
+            padding: 2rem;
+            background-color: #F0F2F5;
+            height: 100vh;
+            overflow-y: auto;
+            padding-top: 60px;
+        }
 
-/* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-}
-.modal-contenido {
-    background-color: #fff;
-    padding: 20px 30px;
-    border-radius: 10px;
-    max-width: 600px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-}
-.modal-botones {
-    text-align: right;
-    margin-top: 20px;
-}
-.modal-botones button {
-    padding: 10px 15px;
-    font-size: 14px;
-    border: none;
-    border-radius: 5px;
-    color: white;
-    cursor: pointer;
-}
-.modal-botones button:first-child {
-    background-color: #2ecc71;
-}
-.modal-botones button:last-child {
-    background-color: #e74c3c;
-}
+        /* Card */
+        .card {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
 
-/* Toast */
-#toast {
-    visibility: hidden;
-    min-width: 300px;
-    background-color: #218838;
-    color: white;
-    text-align: center;
-    border-radius: 8px;
-    padding: 16px;
-    position: fixed;
-    z-index: 99999;
-    left: 50%;
-    bottom: 30px;
-    transform: translateX(-50%);
-    font-weight: bold;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    transition: visibility 0s, opacity 0.5s ease-in-out;
-    opacity: 0;
-}
-#toast.show {
-    visibility: visible;
-    opacity: 1;
-}
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            #sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                top: 0;
+                height: 100vh;
+                z-index: 9;
+            }
 
-/* Progress bar */
-.progress-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 4px;
-    background: #1976d2;
-    width: 0%;
-    animation: loading 1.5s infinite;
-    z-index: 9999;
-}
-@keyframes loading {
-    0% {
-        width: 0%;
-        opacity: 1;
-    }
-    50% {
-        width: 50%;
-        opacity: 0.8;
-    }
-    100% {
-        width: 100%;
-        opacity: 0.2;
-    }
-}
+            #sidebar.show {
+                transform: translateX(0);
+            }
 
+            #body {
+                margin-left: 0;
+            }
+        }
+
+        /* Botón de cerrar menú */
+        #close-menu-button {
+            display: block;
+            /* Visible por defecto */
+        }
+
+        /* Ocultar el botón en pantallas grandes */
+        @media (min-width: 769px) {
+            #close-menu-button {
+                display: none;
+            }
+        }
+
+        /* Estilo de botones del menú */
+        #sidebar nav a {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: white;
+            color: #333;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        #sidebar nav a:hover {
+            background-color: #E0E0E0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Iconos */
+        #sidebar nav a i {
+            margin-right: 8px;
+        }
+
+        /* Estilo del botón de cerrar menú */
+        #close-menu-button {
+            display: block;
+            /* Visible por defecto */
+            padding: 10px;
+            margin-top: 20px;
+            border: none;
+            background-color: #ff5e57;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #close-menu-button:hover {
+            background-color: #ff3d3d;
+        }
+
+        /* Ocultar el botón de cerrar menú en pantallas grandes */
+        @media (min-width: 769px) {
+            #close-menu-button {
+                display: none;
+            }
+        }
+
+        /* Ajuste para que el sidebar no se superponga al header en móviles */
+        @media (max-width: 768px) {
+            #sidebar {
+                top: 55PX;
+                /* Para que ocupe todo el alto de la pantalla */
+                height: 100vh;
+            }
+        }
+
+
+        /* estilos stepper */
+        .form-step {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .form-step h2 {
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            margin-bottom: 0.4rem;
+            font-weight: bold;
+        }
+
+        .form-group select,
+        .form-group input {
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .form-group {
+                flex-direction: row;
+                align-items: center;
+            }
+
+            .form-group label {
+                width: 40%;
+                margin-bottom: 0;
+                text-align: right;
+                padding-right: 1rem;
+            }
+
+            .form-group select,
+            .form-group input {
+                width: 60%;
+            }
+        }
+
+        .btn-material {
+            display: block;
+            margin: 2rem auto 0 auto;
+            padding: 0.75rem 2rem;
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-material:hover {
+            background-color: #1565c0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-material:active {
+            background-color: #0d47a1;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) inset;
+        }
+
+        .categoria-card {
+            background: #f5f5f5;
+            padding: 1rem;
+            margin: 2rem auto;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+            max-width: 800px;
+        }
+
+        .categoria-card h3 {
+            margin-bottom: 1rem;
+            color: #333;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #1976d2;
+            padding-bottom: 0.5rem;
+        }
+
+        .producto-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px dashed #ccc;
+            padding: 0.8rem 0;
+        }
+
+        .producto-info {
+            width: 70%;
+        }
+
+        .producto-cantidad {
+            width: 25%;
+            text-align: right;
+        }
+
+        .producto-cantidad input {
+            padding: 0.4rem;
+            font-size: 1rem;
+            width: 80px;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: #1976d2;
+            width: 0%;
+            animation: loading 1.5s infinite;
+            z-index: 9999;
+        }
+
+        @keyframes loading {
+            0% {
+                width: 0%;
+                opacity: 1;
+            }
+
+            50% {
+                width: 50%;
+                opacity: 0.8;
+            }
+
+            100% {
+                width: 100%;
+                opacity: 0.2;
+            }
+        }
+
+        .toggle-categoria {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .producto-row {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .modal-botones {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .modal-botones button {
+            padding: 10px 15px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-contenido {
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Asegura que flex funcione para centrar */
+        #modalResumen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            display: none;
+            /* CORRECTO */
+        }
+
+        .modal-botones button:first-child {
+            background-color: #2ecc71;
+            /* Verde Aceptar */
+        }
+
+        .modal-botones button:last-child {
+            background-color: #e74c3c;
+            /* Rojo Cancelar */
+        }
+
+        #toast {
+            visibility: hidden;
+            min-width: 300px;
+            background-color: #218838;
+            /* Verde éxito */
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 99999;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: visibility 0s, opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -745,7 +913,7 @@ a {
                 const subtotalElem = row.querySelector('.subtotal');
                 const cantidad = parseInt(this.value) || 0;
                 const subtotal = precio * cantidad;
-                subtotalElem.innerText = `$${subtotal.toFixed(2)}`;
+                subtotalElem.innerText = $${subtotal.toFixed(2)};
 
                 // Actualizar total general
                 let total = 0;
@@ -755,7 +923,7 @@ a {
                     const cantidad = parseInt(input.value) || 0;
                     total += precio * cantidad;
                 });
-                document.getElementById('total_general').innerText = `$${total.toFixed(2)}`;
+                document.getElementById('total_general').innerText = $${total.toFixed(2)};
             });
         });
 
@@ -771,13 +939,13 @@ a {
 
                     const subtotalSpan = row.querySelector('.subtotal');
                     if (subtotalSpan) {
-                        subtotalSpan.innerText = `Subtotal: $${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+                        subtotalSpan.innerText = Subtotal: $${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })};
                     }
                 });
 
                 const totalElem = document.getElementById('total_general');
                 if (totalElem) {
-                    totalElem.innerText = `$${total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+                    totalElem.innerText = $${total.toLocaleString('es-AR', { minimumFractionDigits: 2 })};
                 }
 
                 const inputTotal = document.getElementById('total_pedido_input');
@@ -851,27 +1019,27 @@ a {
             });
 
             for (const [cat, datos] of Object.entries(productosPorCategoria)) {
-                resumenHTML += `<h4>${cat}</h4>`;
+                resumenHTML += <h4>${cat}</h4>;
                 datos.productos.forEach(p => {
-                    resumenHTML += `
+                    resumenHTML += 
                 <p><strong>${p.nombre}</strong></p>
                 <p>${p.cantidad} x $${p.precio.toFixed(2)} = $${p.subtotal.toFixed(2)}</p>
                 <p>IVA (${p.alicuota}%): $${p.iva.toFixed(2)}</p>
                 <p>Total con IVA: $${p.total.toFixed(2)}</p>
-                <hr>`;
+                <hr>;
                 });
             }
 
-            resumenHTML += `<h3>Total sin IVA: $${totalSinIva.toFixed(2)}</h3>`;
-            resumenHTML += `<h3>Total IVA: $${totalIva.toFixed(2)}</h3>`;
-            resumenHTML += `<h2>Total con IVA: $${totalConIva.toFixed(2)}</h2>`;
+            resumenHTML += <h3>Total sin IVA: $${totalSinIva.toFixed(2)}</h3>;
+            resumenHTML += <h3>Total IVA: $${totalIva.toFixed(2)}</h3>;
+            resumenHTML += <h2>Total con IVA: $${totalConIva.toFixed(2)}</h2>;
 
-            resumenContenedor.innerHTML = `
+            resumenContenedor.innerHTML = 
         <label for="observaciones">Observaciones:</label><br>
         <textarea name="observaciones" id="observaciones" rows="3" style="width: 100%;">sin observaciones</textarea>
         <hr>
         ${resumenHTML}
-    `;
+    ;
 
             modal.style.display = "flex";
             modal.style.justifyContent = "center";
