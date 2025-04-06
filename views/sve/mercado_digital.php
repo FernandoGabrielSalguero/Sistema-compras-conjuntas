@@ -118,13 +118,18 @@ foreach ($categorias as $cat) {
 // Guardar pedidos en la base de datos
 if (isset($_POST['finalizar'])) {
     $info = $_SESSION['info_general'];
-    $pedido = $_SESSION['pedido'];
+    $pedido = isset($_SESSION['pedido']) ? $_SESSION['pedido'] : [];
 
-    $fecha_pedido = date("Y-m-d"); // Fecha del día actual
+    if (empty($pedido)) {
+        echo "<div style='color:red;'>❌ No se encontraron productos en el pedido.</div>";
+        exit;
+    }
+
+    $fecha_pedido = date("Y-m-d");
+    $observaciones = isset($_POST['observaciones']) ? trim($_POST['observaciones']) : 'sin observaciones';
+    $total_pedido = isset($_POST['total_pedido']) ? floatval($_POST['total_pedido']) : 0;
 
     $stmt = $conn->prepare("INSERT INTO pedidos (cooperativa, productor, fecha_pedido, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, total_pedido, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $observaciones = isset($_POST['observaciones']) ? trim($_POST['observaciones']) : 'sin observaciones';
-
     $stmt->bind_param(
         "iisssssds",
         $info['cooperativa'],
@@ -134,15 +139,15 @@ if (isset($_POST['finalizar'])) {
         $info['condicion_facturacion'],
         $info['afiliacion'],
         $info['ha_cooperativa'],
-        $_POST['total_pedido'],
+        $total_pedido,
         $observaciones
     );
 
     if ($stmt->execute()) {
         $id_pedido = $stmt->insert_id;
 
-        // Insertar en detalle_pedidos
         $stmt_detalle = $conn->prepare("INSERT INTO detalle_pedidos (pedido_id, nombre_producto, detalle_producto, precio_producto, unidad_medida_venta, categoria, subtotal_por_categoria) VALUES (?, ?, ?, ?, ?, ?, ?)");
+
         foreach ($pedido as $id_prod => $cantidad) {
             $query = $conn->query("SELECT * FROM productos WHERE Id = $id_prod");
             if ($producto = $query->fetch_assoc()) {
@@ -162,7 +167,7 @@ if (isset($_POST['finalizar'])) {
             }
         }
 
-        $_SESSION = []; // Vaciar sesión para un nuevo pedido
+        $_SESSION = [];
 
         echo "<script>
             setTimeout(() => {
@@ -175,6 +180,7 @@ if (isset($_POST['finalizar'])) {
         echo "<div style='color:red;'>❌ Error al guardar el pedido: " . $stmt->error . "</div>";
     }
 }
+
 
 
 
