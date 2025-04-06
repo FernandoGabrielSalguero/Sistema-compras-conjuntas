@@ -1156,6 +1156,20 @@ if (isset($_POST['finalizar'])) {
 
 
     <div id="toast">✅ Pedido realizado con éxito</div>
+    <?php if (isset($_SESSION['toast_message'])): ?>
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        const toast = document.getElementById('toast');
+        toast.textContent = <?= json_encode($_SESSION['toast_message']) ?>;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    });
+</script>
+<?php unset($_SESSION['toast_message']); ?>
+<?php endif; ?>
+
 
 </body>
 <div class="progress-bar" id="progressBar"></div>
