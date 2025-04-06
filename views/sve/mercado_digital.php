@@ -1028,8 +1028,19 @@ if (isset($_POST['finalizar'])) {
 
             const form = document.getElementById("formFinalizarPedido");
             form.appendChild(inputObservaciones);
+
+            // ✅ AGREGADO: Copiar también los productos seleccionados
+            document.querySelectorAll('input[name^="cantidad"]').forEach(input => {
+                const hiddenCantidad = document.createElement("input");
+                hiddenCantidad.type = "hidden";
+                hiddenCantidad.name = input.name;
+                hiddenCantidad.value = input.value;
+                form.appendChild(hiddenCantidad);
+            });
+
             form.submit();
         }
+
 
 
         document.addEventListener("DOMContentLoaded", () => {
