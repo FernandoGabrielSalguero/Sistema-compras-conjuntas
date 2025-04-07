@@ -107,67 +107,81 @@ $total_pages = ceil($total_records / $limit);
 
     </style>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <!-- Shoelace -->
+    <!-- Shoelace Components -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/dist/shoelace.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/dist/themes/light.css">
+
+    <!-- Íconos opcionales -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/lucide.js"></script>
 
 </head>
 
 <body>
 
     <!-- Header -->
-    <div id="header">
-        <sl-button variant="text" onclick="toggleSidebar()">
-            <sl-icon name="list"></sl-icon> Menú
+    <header style="position: fixed; top: 0; width: 100%; z-index: 1000; background: white; box-shadow: 0 1px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; padding: 1rem;">
+        <sl-button variant="text" size="medium" onclick="toggleSidebar()">
+            <sl-icon name="list" slot="prefix"></sl-icon>
+            Menú
         </sl-button>
-        <div>Alta usuarios</div>
-    </div>
+        <h2 style="margin: 0;">Alta usuarios</h2>
+    </header>
 
     <!-- Sidebar -->
     <sl-drawer label="Menú de navegación" placement="start" id="sidebar" class="menu">
-        <nav>
-            <sl-button href="sve_dashboard.php" variant="text" size="medium" pill>
-                <sl-icon name="house"></sl-icon> Inicio
-            </sl-button><br>
+        <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <sl-button href="sve_dashboard.php" variant="text" size="medium">
+                <sl-icon name="house" slot="prefix"></sl-icon>
+                Inicio
+            </sl-button>
 
-            <sl-button href="alta_usuarios.php" variant="text" size="medium" pill>
-                <sl-icon name="person-plus-fill"></sl-icon> Alta Usuarios
-            </sl-button><br>
+            <sl-button href="alta_usuarios.php" variant="text" size="medium">
+                <sl-icon name="person-plus-fill" slot="prefix"></sl-icon>
+                Alta Usuarios
+            </sl-button>
 
-            <sl-button href="relacionamiento.php" variant="text" size="medium" pill>
-                <sl-icon name="people-fill"></sl-icon> Relacionamiento
-            </sl-button><br>
+            <sl-button href="relacionamiento.php" variant="text" size="medium">
+                <sl-icon name="people-fill" slot="prefix"></sl-icon>
+                Relacionamiento
+            </sl-button>
 
-            <sl-button href="alta_productos.php" variant="text" size="medium" pill>
-                <sl-icon name="box-seam"></sl-icon> Alta Productos
-            </sl-button><br>
+            <sl-button href="alta_productos.php" variant="text" size="medium">
+                <sl-icon name="box-seam" slot="prefix"></sl-icon>
+                Alta Productos
+            </sl-button>
 
-            <sl-button href="operativos.php" variant="text" size="medium" pill>
-                <sl-icon name="clipboard-check"></sl-icon> Operativos
-            </sl-button><br>
+            <sl-button href="operativos.php" variant="text" size="medium">
+                <sl-icon name="clipboard-check" slot="prefix"></sl-icon>
+                Operativos
+            </sl-button>
 
-            <sl-button href="mercado_digital.php" variant="text" size="medium" pill>
-                <sl-icon name="cart"></sl-icon> Mercado Digital
-            </sl-button><br>
+            <sl-button href="mercado_digital.php" variant="text" size="medium">
+                <sl-icon name="cart" slot="prefix"></sl-icon>
+                Mercado Digital
+            </sl-button>
 
-            <sl-button href="pedidos.php" variant="text" size="medium" pill>
-                <sl-icon name="list"></sl-icon> Pedidos
-            </sl-button><br>
+            <sl-button href="pedidos.php" variant="text" size="medium">
+                <sl-icon name="list" slot="prefix"></sl-icon>
+                Pedidos
+            </sl-button>
 
-            <sl-button href="CargaMasivaUsuarios.php" variant="text" size="medium" pill>
-                <sl-icon name="upload"></sl-icon> Carga Masiva
-            </sl-button><br>
+            <sl-button href="CargaMasivaUsuarios.php" variant="text" size="medium">
+                <sl-icon name="upload" slot="prefix"></sl-icon>
+                Carga Masiva
+            </sl-button>
 
-            <sl-button href="base_datos.php" variant="text" size="medium" pill>
-                <sl-icon name="database"></sl-icon> Base de Datos
-            </sl-button><br>
+            <sl-button href="base_datos.php" variant="text" size="medium">
+                <sl-icon name="database" slot="prefix"></sl-icon>
+                Base de Datos
+            </sl-button>
 
-            <sl-button href="logout.php" variant="danger" size="medium" pill>
-                <sl-icon name="box-arrow-right"></sl-icon> Salir
-            </sl-button><br>
+            <sl-button href="logout.php" variant="danger" size="medium">
+                <sl-icon name="box-arrow-right" slot="prefix"></sl-icon>
+                Salir
+            </sl-button>
         </nav>
     </sl-drawer>
+
 
     <!-- Body -->
     <div id="body">
@@ -281,21 +295,12 @@ $total_pages = ceil($total_records / $limit);
         </div>
     </div>
 
-    <!-- JavaScript -->
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('show');
+            sidebar.show(); // Usa show() en lugar de toggle() para compatibilidad más clara
         }
     </script>
-
 </body>
 
 </html>
-
-<script>
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.toggle();
-    }
-</script>
