@@ -63,6 +63,13 @@
       color: var(--mdc-theme-on-surface);
     }
 
+    .drawer-actions {
+      position: absolute;
+      bottom: 1rem;
+      width: 100%;
+      padding: 0 1rem;
+    }
+
     @media (max-width: 768px) {
       .mdc-drawer {
         display: none;
@@ -82,19 +89,25 @@
     </div>
     <div class="mdc-drawer__content">
       <nav class="mdc-list">
-        <a class="mdc-list-item mdc-list-item--activated" href="#" aria-current="page">
-          <i class="material-icons mdc-list-item__graphic">dashboard</i>
-          <span class="mdc-list-item__text">Dashboard</span>
-        </a>
-        <a class="mdc-list-item" href="#">
-          <i class="material-icons mdc-list-item__graphic">table_view</i>
-          <span class="mdc-list-item__text">Tablas</span>
-        </a>
-        <a class="mdc-list-item" href="#">
-          <i class="material-icons mdc-list-item__graphic">person</i>
-          <span class="mdc-list-item__text">Usuarios</span>
-        </a>
+        <button class="mdc-button mdc-button--text mdc-list-item">
+          <i class="material-icons mdc-button__icon">dashboard</i>
+          <span class="mdc-button__label">Dashboard</span>
+        </button>
+        <button class="mdc-button mdc-button--text mdc-list-item">
+          <i class="material-icons mdc-button__icon">table_view</i>
+          <span class="mdc-button__label">Tablas</span>
+        </button>
+        <button class="mdc-button mdc-button--text mdc-list-item">
+          <i class="material-icons mdc-button__icon">person</i>
+          <span class="mdc-button__label">Usuarios</span>
+        </button>
       </nav>
+      <div class="drawer-actions">
+        <button class="mdc-button mdc-button--outlined mdc-button--icon-leading" onclick="logout()">
+          <i class="material-icons mdc-button__icon" aria-hidden="true">logout</i>
+          <span class="mdc-button__label">Salir</span>
+        </button>
+      </div>
     </div>
   </aside>
 
@@ -138,6 +151,12 @@
         drawer.open = !drawer.open;
       });
     };
+
+    function logout() {
+      alert("Sesión cerrada ✅");
+      // Aquí podrías redirigir a login.php o ejecutar lógica PHP vía fetch
+      // window.location.href = 'logout.php';
+    }
   </script>
 </body>
 </html>
