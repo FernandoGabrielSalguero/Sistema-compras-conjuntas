@@ -43,11 +43,13 @@ if (isset($_POST['agregar_usuario'])) {
             VALUES ('$cuit', '$contrasena', '$rol', '$permiso_ingreso', '$nombre', '$correo', '$telefono', '$id_cooperativa', '$id_productor', '$direccion', '$id_finca_asociada', '$observaciones')";
 
     if (mysqli_query($conn, $sql)) {
-        echo "<div id='snackbar' class='success'>Usuario agregado con éxito.</div>";
-        echo "<script>document.addEventListener('DOMContentLoaded', function() { showSnackbar(); });</script>";
+        echo "<script>document.addEventListener('DOMContentLoaded', function() {
+            mostrarAlerta('success', 'Usuario agregado con éxito');
+          });</script>";
     } else {
-        echo "<div id='snackbar' class='error'>Error al agregar usuario: " . mysqli_error($conn) . "</div>";
-        echo "<script>document.addEventListener('DOMContentLoaded', function() { showSnackbar(); });</script>";
+        echo "<script>document.addEventListener('DOMContentLoaded', function() {
+            mostrarAlerta('error', 'Error al agregar usuario: " . mysqli_error($conn) . "');
+          });</script>";
     }
 }
 
@@ -66,10 +68,10 @@ if (isset($_POST['actualizar_usuario'])) {
     $id_finca_asociada = $_POST['id_finca_asociada'];
     $observaciones = $_POST['observaciones'];
 
-    $sql = "UPDATE usuarios SET 
-            cuit='$cuit', contrasena='$contrasena', rol='$rol', permiso_ingreso='$permiso_ingreso', 
+    $sql = "UPDATE usuarios SET
+            cuit='$cuit', contrasena='$contrasena', rol='$rol', permiso_ingreso='$permiso_ingreso',
             nombre='$nombre', correo='$correo', telefono='$telefono',
-            id_cooperativa='$id_cooperativa', id_productor='$id_productor', direccion='$direccion', id_finca_asociada='$id_finca_asociada', 
+            id_cooperativa='$id_cooperativa', id_productor='$id_productor', direccion='$direccion', id_finca_asociada='$id_finca_asociada',
             observaciones='$observaciones' WHERE id='$id'";
 
     if (mysqli_query($conn, $sql)) {
@@ -301,12 +303,56 @@ $total_pages = ceil($total_records / $limit);
 
     </div>
 
+    <!-- Scripts -->
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             sidebar.show(); // Usa show() en lugar de toggle() para compatibilidad más clara
         }
+
+        // alert
+        function mostrarAlerta(tipo = 'success', mensaje = 'Operación realizada correctamente') {
+            const alerta = document.getElementById('alerta');
+            const titulo = document.getElementById('alerta-titulo');
+            const cuerpo = document.getElementById('alerta-mensaje');
+
+            // Cambiar ícono y color según tipo
+            switch (tipo) {
+                case 'success':
+                    alerta.variant = 'success';
+                    titulo.textContent = 'Éxito';
+                    alerta.querySelector('sl-icon').name = 'check-circle';
+                    break;
+                case 'error':
+                    alerta.variant = 'danger';
+                    titulo.textContent = 'Error';
+                    alerta.querySelector('sl-icon').name = 'x-circle';
+                    break;
+                default:
+                    alerta.variant = 'primary';
+                    titulo.textContent = 'Info';
+                    alerta.querySelector('sl-icon').name = 'info';
+            }
+
+            cuerpo.textContent = mensaje;
+            alerta.show();
+        }
+
+        // Mostrar automáticamente si existe mensaje (por ejemplo después de enviar formulario)
+        window.onload = function() {
+            const alerta = document.getElementById('alerta');
+            if (alerta && alerta.dataset.auto === "true") {
+                alerta.show();
+            }
+        };
     </script>
+
+    <!-- notificaciones -->
+    <sl-alert id="alerta" duration="3000" closable style="position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 400px;">
+        <sl-icon slot="icon" name="check-circle"></sl-icon>
+        <strong id="alerta-titulo">Éxito</strong><br>
+        <span id="alerta-mensaje">Operación realizada correctamente.</span>
+    </sl-alert>
 </body>
 
 </html>
