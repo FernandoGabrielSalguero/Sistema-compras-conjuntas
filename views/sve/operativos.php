@@ -241,84 +241,81 @@ if (isset($_POST['nombre'])) {
         }
 
         .md-input {
-    margin-bottom: 1.5rem;
-    display: flex;
-    flex-direction: column;
-}
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
 
-.md-input label {
-    font-weight: bold;
-    margin-bottom: 6px;
-    color: #333;
-}
+        .md-input label {
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #333;
+        }
 
-.md-input input,
-.md-input select,
-.md-input textarea {
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 15px;
-    background-color: #fff;
-    outline: none;
-    transition: border 0.3s ease, box-shadow 0.3s ease;
-}
+        .md-input input,
+        .md-input select,
+        .md-input textarea {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            background-color: #fff;
+            outline: none;
+            transition: border 0.3s ease, box-shadow 0.3s ease;
+        }
 
-.md-input input:focus,
-.md-input select:focus,
-.md-input textarea:focus {
-    border-color: #3f51b5;
-    box-shadow: 0 0 5px rgba(63, 81, 181, 0.5);
-}
+        .md-input input:focus,
+        .md-input select:focus,
+        .md-input textarea:focus {
+            border-color: #3f51b5;
+            box-shadow: 0 0 5px rgba(63, 81, 181, 0.5);
+        }
 
-/* Checkbox en filas limpias */
-.productos-box {
-    max-height: 300px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 1rem;
-    border-radius: 6px;
-    background-color: #fff;
-}
+        /* Checkbox en filas limpias */
+        .productos-box {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 1rem;
+            border-radius: 6px;
+            background-color: #fff;
+        }
 
-.productos-box label {
-    display: flex;
-    align-items: center;
-    margin-bottom: 6px;
-    cursor: pointer;
-}
+        .productos-box label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            cursor: pointer;
+        }
 
-.productos-box input[type="checkbox"] {
-    margin-right: 10px;
-}
+        .productos-box input[type="checkbox"] {
+            margin-right: 10px;
+        }
 
-/* Botón */
-.submit-btn {
-    background-color: #3f51b5;
-    color: white;
-    border: none;
-    padding: 12px 18px;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
+        /* Botón */
+        .submit-btn {
+            background-color: #3f51b5;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
 
-.submit-btn:hover {
-    background-color: #303f9f;
-}
+        .submit-btn:hover {
+            background-color: #303f9f;
+        }
 
-/* Tabla responsiva */
-@media (max-width: 768px) {
-    table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-}
-
-
-
+        /* Tabla responsiva */
+        @media (max-width: 768px) {
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -328,7 +325,8 @@ if (isset($_POST['nombre'])) {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0-beta.83/dist/shoelace.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0-beta.83/dist/themes/light.css" />
 
 
 </head>
@@ -361,72 +359,64 @@ if (isset($_POST['nombre'])) {
     <!-- Body -->
     <div id="body">
         <div class="card">
-            <h2>Crear nuevo operativo</h2>
+            <!-- FORMULARIO NUEVO OPERATIVO -->
             <form id="form-operativo" method="POST">
-                <!-- Nombre -->
-                <div class="md-input">
-                    <label>Nombre del operativo</label>
-                    <input type="text" name="nombre" required>
-                </div>
+                <!-- Nombre del operativo -->
+                <sl-input name="nombre" label="Nombre del operativo" required></sl-input>
 
                 <!-- Cooperativas -->
-                <div class="md-input">
-                    <label>Cooperativas</label>
-                    <select id="cooperativas" name="cooperativas[]" multiple="multiple" style="width: 100%">
-                        <?php
-                        $res = $conn->query("SELECT id, nombre FROM cooperativas");
-                        while ($row = $res->fetch_assoc()) {
-                            echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
+                <sl-select name="cooperativas[]" label="Cooperativas" multiple filter clearable>
+                    <?php
+                    $res = $conn->query("SELECT id, nombre FROM cooperativas");
+                    while ($row = $res->fetch_assoc()) {
+                        echo "<sl-option value='{$row['id']}'>{$row['nombre']}</sl-option>";
+                    }
+                    ?>
+                </sl-select>
 
                 <!-- Productores -->
-                <div class="md-input">
-                    <label>Productores</label>
-                    <select id="productores" name="productores[]" multiple="multiple" style="width: 100%">
-                        <option value="all" selected>Todos</option>
-                        <?php
-                        $res = $conn->query("SELECT id, nombre FROM productores");
-                        while ($row = $res->fetch_assoc()) {
-                            echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
+                <sl-select name="productores[]" label="Productores" multiple filter clearable>
+                    <sl-option value="all" selected>Todos</sl-option>
+                    <?php
+                    $res = $conn->query("SELECT id, nombre FROM usuarios WHERE rol = 'productor'");
+                    while ($row = $res->fetch_assoc()) {
+                        echo "<sl-option value='{$row['id']}'>{$row['nombre']}</sl-option>";
+                    }
+                    ?>
+                </sl-select>
 
-                <!-- Productos -->
-                <div class="md-input">
-                    <label>Productos</label>
-                    <div class="productos-box">
-                        <?php
-                        $categorias = $conn->query("SELECT DISTINCT categoria FROM productos ORDER BY categoria ASC");
-                        while ($cat = $categorias->fetch_assoc()) {
-                            echo "<strong>{$cat['categoria']}</strong><br>";
-                            $prods = $conn->query("SELECT id, Nombre_producto FROM productos WHERE categoria = '{$cat['categoria']}'");
-                            while ($prod = $prods->fetch_assoc()) {
-                                echo "<label><input type='checkbox' name='productos[]' value='{$prod['id']}'> {$prod['Nombre_producto']}</label><br>";
-                            }
-                            echo "<br>";
+                <!-- Productos por categoría -->
+                <label style="margin-top: 1rem; font-weight: 600">Productos</label>
+                <div style="border: 1px solid #ccc; border-radius: 6px; padding: 1rem; max-height: 300px; overflow-y: auto;">
+                    <?php
+                    $cats = $conn->query("SELECT DISTINCT categoria FROM productos ORDER BY categoria ASC");
+                    while ($cat = $cats->fetch_assoc()) {
+                        echo "<div style='margin-top: 0.5rem'><strong>{$cat['categoria']}</strong></div>";
+                        $prods = $conn->query("SELECT id, Nombre_producto FROM productos WHERE categoria = '{$cat['categoria']}'");
+                        while ($prod = $prods->fetch_assoc()) {
+                            echo "<sl-checkbox name='productos[]' value='{$prod['id']}'>{$prod['Nombre_producto']}</sl-checkbox><br>";
                         }
-                        ?>
-                    </div>
+                    }
+                    ?>
                 </div>
 
                 <!-- Fechas -->
-                <div class="md-input">
-                    <label>Fecha de inicio</label>
-                    <input type="date" name="fecha_inicio" required>
-                </div>
+                <sl-input type="date" name="fecha_inicio" label="Fecha de inicio" required></sl-input>
+                <sl-input type="date" name="fecha_cierre" label="Fecha de cierre" required></sl-input>
 
-                <div class="md-input">
-                    <label>Fecha de cierre</label>
-                    <input type="date" name="fecha_cierre" required>
-                </div>
-
-                <button type="submit" class="submit-btn">Crear Operativo</button>
+                <!-- Botón -->
+                <sl-button type="submit" variant="primary" style="margin-top: 1rem;">Crear Operativo</sl-button>
             </form>
+
+            <!-- TOAST DE ÉXITO O ERROR -->
+            <sl-alert variant="success" duration="3000" closable id="toast-ok">
+                <sl-icon slot="icon" name="check-circle"></sl-icon>
+                Operativo creado con éxito.
+            </sl-alert>
+            <sl-alert variant="danger" duration="3000" closable id="toast-error">
+                <sl-icon slot="icon" name="x-circle"></sl-icon>
+                Error al crear el operativo.
+            </sl-alert>
         </div>
         <div class="card">
             <h2>Operativos existentes</h2>
@@ -465,34 +455,26 @@ if (isset($_POST['nombre'])) {
             sidebar.classList.toggle('show');
         }
 
-        $(document).ready(function() {
-            $('#cooperativas, #productores').select2();
+          // Captura de evento
+  document.getElementById('form-operativo').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-            $('#cooperativas').on('change', function() {
-                const coopIds = $(this).val();
-                $.post('get_productores_por_coop.php', {
-                    cooperativas: coopIds
-                }, function(data) {
-                    $('#productores').html(data).trigger('change');
-                });
-            });
+    const formData = new FormData(this);
+    const res = await fetch('crear_operativo.php', {
+      method: 'POST',
+      body: formData
+    });
 
-            $('#form-operativo').on('submit', function(e) {
-                e.preventDefault();
-                $.post('crear_operativo.php', $(this).serialize(), function(res) {
-                    if (res.success) {
-                        toastr.success('✅ Operativo creado');
-                        setTimeout(() => location.reload(), 1000);
-                    } else {
-                        toastr.error('❌ Error al crear operativo');
-                    }
-                }, 'json');
-            });
-        });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('toast-ok').toast();
+      setTimeout(() => location.reload(), 1000);
+    } else {
+      document.getElementById('toast-error').toast();
+    }
+  });
 
-        function editarOperativo(id) {
-            toastr.info("Funcionalidad de edición aún no implementada");
-        }
+
     </script>
 
 </body>
