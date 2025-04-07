@@ -25,10 +25,6 @@ if ($conn->connect_error) {
 }
 
 
-
-
-require 'conexion.php';
-
 $coops = $_POST['cooperativas'];
 if (!is_array($coops)) $coops = [$coops];
 $ids = implode(",", array_map('intval', $coops));
@@ -47,7 +43,7 @@ while ($row = $res->fetch_assoc()) {
     echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
 }
 
-require 'conexion.php';
+
 
 $nombre = $_POST['nombre'];
 $cooperativas = implode(",", $_POST['cooperativas']);
