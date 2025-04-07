@@ -31,8 +31,9 @@ if (isset($_POST['agregar_producto'])) {
     $precio = $_POST['Precio_producto'];
     $unidad = $_POST['Unidad_Medida_venta'];
     $categoria = $_POST['categoria'];
+    $alicuota = $_POST['alicuota'];
 
-    $sql = "INSERT INTO productos (Nombre_producto, Detalle_producto, Precio_producto, Unidad_Medida_venta, categoria) VALUES ('$nombre', '$detalle', '$precio', '$unidad', '$categoria')";
+    $sql = "INSERT INTO productos (Nombre_producto, Detalle_producto, Precio_producto, Unidad_Medida_venta, categoria, alicuota) VALUES ('$nombre', '$detalle', '$precio', '$unidad', '$categoria', '$alicuota')";
 
 
     if (mysqli_query($conn, $sql)) {
@@ -50,8 +51,9 @@ if (isset($_POST['actualizar_producto'])) {
     $precio = $_POST['Precio_producto'];
     $unidad = $_POST['Unidad_Medida_venta'];
     $categoria = $_POST['categoria'];
+    $alicuota = $_POST['alicuota'];
 
-    $sql = "UPDATE productos SET Nombre_producto='$nombre', Detalle_producto='$detalle', Precio_producto='$precio', Unidad_Medida_venta='$unidad', categoria='$categoria' WHERE id='$id'";
+    $sql = "UPDATE productos SET Nombre_producto='$nombre', Detalle_producto='$detalle', Precio_producto='$precio', Unidad_Medida_venta='$unidad', alicuota='$alicuota', categoria='$categoria' WHERE id='$id'";
 
 
     if (mysqli_query($conn, $sql)) {
@@ -488,14 +490,14 @@ $result = mysqli_query($conn, $query);
     <!-- Sidebar -->
     <div id="sidebar">
         <nav>
-        <a href="sve_dashboard.php"><i class="fa fa-home"></i> Inicio</a><br>
+            <a href="sve_dashboard.php"><i class="fa fa-home"></i> Inicio</a><br>
             <a href="alta_usuarios.php"><i class="fa fa-user-plus"></i> Alta Usuarios</a><br>
             <a href="relacionamiento.php"><i class="fa fa-user-plus"></i> Relacionamiento </a><br>
             <a href="alta_productos.php"><i class="fa fa-box"></i> Alta Productos</a><br>
             <a href="mercado_digital.php"><i class="fa fa-shopping-cart"></i> Mercado Digital</a><br>
             <a href="pedidos.php"><i class="fa fa-list"></i> Pedidos</a><br>
             <a href="CargaMasivaUsuarios.php"><i class="fa fa-list"></i> Carga masiva de datos</a><br>
-            <a href="base_datos.php"><i class="fa fa-list"></i>  Base de datos </a><br>
+            <a href="base_datos.php"><i class="fa fa-list"></i> Base de datos </a><br>
             <a href="logout.php"><i class="fa fa-sign-out-alt"></i> Salir</a><br>
         </nav>
         <button id="close-menu-button" onclick="toggleSidebar()">Cerrar Menú</button>
@@ -531,6 +533,15 @@ $result = mysqli_query($conn, $query);
                     <option value="Fertilizantes Foliares">Fertilizantes Foliares</option>
                     <option value="Otros">Otros</option>
                 </select>
+                <select name="alicuota" required>
+                    <option value="" disabled selected>Seleccione IVA</option>
+                    <option value="0">0%</option>
+                    <option value="2.5">2.5%</option>
+                    <option value="5">5%</option>
+                    <option value="10.5">10.5%</option>
+                    <option value="21">21%</option>
+                    <option value="27">27%</option>
+                </select>
 
                 <button type="submit" name="agregar_producto">Agregar Producto</button>
             </form>
@@ -559,6 +570,7 @@ $result = mysqli_query($conn, $query);
                         <th>Precio Producto</th>
                         <th>Unidad de Medida</th>
                         <th>Categoria</th>
+                        <th>IVA</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -586,6 +598,17 @@ $result = mysqli_query($conn, $query);
                                         foreach ($categorias as $cat) {
                                             $selected = ($row['categoria'] == $cat) ? 'selected' : '';
                                             echo "<option value='$cat' $selected>$cat</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="alicuota">
+                                        <?php
+                                        $ivas = ['0', '2.5', '5', '10.5', '21', '27'];
+                                        foreach ($ivas as $iva) {
+                                            $selected = ($row['alicuota'] == $iva) ? 'selected' : '';
+                                            echo "<option value='$iva' $selected>$iva%</option>";
                                         }
                                         ?>
                                     </select>
