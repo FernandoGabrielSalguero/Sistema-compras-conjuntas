@@ -24,6 +24,45 @@ if ($conn->connect_error) {
     die("Error en la conexión: " . $conn->connect_error);
 }
 
+
+
+
+require 'conexion.php';
+
+$coops = $_POST['cooperativas'];
+if (!is_array($coops)) $coops = [$coops];
+$ids = implode(",", array_map('intval', $coops));
+
+$sql = "
+    SELECT DISTINCT p.id, p.nombre
+    FROM productores p
+    INNER JOIN productores_cooperativas pc ON pc.id_productor = p.id
+    WHERE pc.id_cooperativa IN ($ids)
+";
+
+$res = $conn->query($sql);
+
+echo "<option value='all'>Todos</option>";
+while ($row = $res->fetch_assoc()) {
+    echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
+}
+
+require 'conexion.php';
+
+$nombre = $_POST['nombre'];
+$cooperativas = implode(",", $_POST['cooperativas']);
+$productores = $_POST['productores'][0] === 'all' ? 'all' : implode(",", $_POST['productores']);
+$productos = implode(",", $_POST['productos']);
+$fecha_inicio = $_POST['fecha_inicio'];
+$fecha_cierre = $_POST['fecha_cierre'];
+
+$stmt = $conn->prepare("INSERT INTO operativos (nombre, fecha_inicio, fecha_cierre, cooperativas_ids, productores_ids, productos_ids) VALUES (?, ?, ?, ?, ?, ?)");
+$stmt->bind_param("ssssss", $nombre, $fecha_inicio, $fecha_cierre, $cooperativas, $productores, $productos);
+
+echo json_encode(['success' => $stmt->execute()]);
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -196,9 +235,65 @@ if ($conn->connect_error) {
                 height: 100vh;
             }
         }
+
+        .md-input {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .md-input label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .md-input input,
+        .md-input select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.3s ease;
+            background: #fff;
+        }
+
+        .md-input input:focus,
+        .md-input select:focus {
+            border-color: #3f51b5;
+            box-shadow: 0 0 5px rgba(63, 81, 181, 0.5);
+        }
+
+        .submit-btn {
+            background-color: #3f51b5;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: #303f9f;
+        }
+
+        .productos-box {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 1rem;
+            border-radius: 6px;
+            background-color: #fff;
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 </head>
 
 <body>
@@ -228,8 +323,67 @@ if ($conn->connect_error) {
 
     <!-- Body -->
     <div id="body">
-        <div class="card">Tarjeta 1 - Información General</div>
-        <div class="card">Tarjeta 2 - Estadísticas</div>
+        <div class="card">
+            <h2>Nuevo Operativo</h2>
+            <form id="form-operativo" method="POST">
+                <label>Nombre del operativo</label><br>
+                <input type="text" name="nombre" required><br><br>
+
+                <label>Cooperativas</label><br>
+                <select id="cooperativas" name="cooperativas[]" multiple="multiple" style="width:100%">
+                    <?php
+                    $res = $conn->query("SELECT id, nombre FROM cooperativas");
+                    while ($row = $res->fetch_assoc()) {
+                        echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
+                    }
+                    ?>
+                </select><br><br>
+
+                <label>Productores</label><br>
+                <select id="productores" name="productores[]" multiple="multiple" style="width:100%">
+                    <option value="all" selected>Todos</option>
+                    <?php
+                    $res = $conn->query("SELECT id, nombre FROM productores");
+                    while ($row = $res->fetch_assoc()) {
+                        echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
+                    }
+                    ?>
+                </select><br><br>
+
+                <label>Productos</label><br>
+                <div id="productos-box">
+                    <?php
+                    $cats = $conn->query("SELECT id, nombre FROM categorias");
+                    while ($cat = $cats->fetch_assoc()) {
+                        echo "<strong>{$cat['nombre']}</strong><br>";
+                        $prods = $conn->query("SELECT id, nombre FROM productos WHERE categoria_id = {$cat['id']}");
+                        while ($prod = $prods->fetch_assoc()) {
+                            echo "<label><input type='checkbox' name='productos[]' value='{$prod['id']}'> {$prod['nombre']}</label><br>";
+                        }
+                        echo "<br>";
+                    }
+                    ?>
+                </div><br>
+
+                <label>Fecha de inicio</label><br>
+                <input type="date" name="fecha_inicio" required><br><br>
+
+                <label>Fecha de cierre</label><br>
+                <input type="date" name="fecha_cierre" required><br><br>
+
+                <button type="submit">Crear Operativo</button>
+            </form>
+
+
+
+        </div>
+
+
+
+        <div class="card">
+
+
+        </div>
     </div>
 
     <!-- JavaScript -->
@@ -239,6 +393,17 @@ if ($conn->connect_error) {
             sidebar.classList.toggle('show');
         }
     </script>
+
+    $('#cooperativas, #productores').select2();
+
+    $('#cooperativas').on('change', function () {
+    const coopIds = $(this).val();
+    $.post('get_productores_por_coop.php', { cooperativas: coopIds }, function (data) {
+    $('#productores').html(data).trigger('change');
+    });
+    });
+
+
 
 </body>
 
