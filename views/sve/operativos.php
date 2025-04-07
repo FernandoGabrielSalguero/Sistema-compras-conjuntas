@@ -25,22 +25,27 @@ if ($conn->connect_error) {
 }
 
 
-$coops = $_POST['cooperativas'];
-if (!is_array($coops)) $coops = [$coops];
-$ids = implode(",", array_map('intval', $coops));
+if (isset($_POST['cooperativas'])) {
+    $coops = $_POST['cooperativas'];
+    if (!is_array($coops)) $coops = [$coops];
+    $ids = implode(",", array_map('intval', $coops));
 
-$sql = "
-    SELECT DISTINCT p.id, p.nombre
-    FROM productores p
-    INNER JOIN productores_cooperativas pc ON pc.id_productor = p.id
-    WHERE pc.id_cooperativa IN ($ids)
-";
+    $sql = "
+        SELECT DISTINCT u.id, u.nombre
+        FROM usuarios u
+        INNER JOIN productores_cooperativas pc ON pc.id_productor = u.id
+        WHERE pc.id_cooperativa IN ($ids)
+          AND u.rol = 'productor'
+    ";
 
-$res = $conn->query($sql);
+    $res = $conn->query($sql);
 
-echo "<option value='all'>Todos</option>";
-while ($row = $res->fetch_assoc()) {
-    echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
+    echo "<option value='all'>Todos</option>";
+    while ($row = $res->fetch_assoc()) {
+        echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
+    }
+
+    exit; // 🚨 Detiene el script para que no siga al HTML
 }
 
 
