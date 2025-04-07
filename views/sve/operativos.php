@@ -50,17 +50,22 @@ if (isset($_POST['cooperativas'])) {
 
 
 
-$nombre = $_POST['nombre'];
-$cooperativas = implode(",", $_POST['cooperativas']);
-$productores = $_POST['productores'][0] === 'all' ? 'all' : implode(",", $_POST['productores']);
-$productos = implode(",", $_POST['productos']);
-$fecha_inicio = $_POST['fecha_inicio'];
-$fecha_cierre = $_POST['fecha_cierre'];
+if (isset($_POST['nombre'])) {
+    $nombre = $_POST['nombre'];
+    $cooperativas = is_array($_POST['cooperativas']) ? implode(",", $_POST['cooperativas']) : '';
+    $productores = (isset($_POST['productores']) && $_POST['productores'][0] === 'all')
+        ? 'all'
+        : implode(",", $_POST['productores']);
+    $productos = isset($_POST['productos']) ? implode(",", $_POST['productos']) : '';
+    $fecha_inicio = $_POST['fecha_inicio'];
+    $fecha_cierre = $_POST['fecha_cierre'];
 
-$stmt = $conn->prepare("INSERT INTO operativos (nombre, fecha_inicio, fecha_cierre, cooperativas_ids, productores_ids, productos_ids) VALUES (?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("ssssss", $nombre, $fecha_inicio, $fecha_cierre, $cooperativas, $productores, $productos);
+    $stmt = $conn->prepare("INSERT INTO operativos (nombre, fecha_inicio, fecha_cierre, cooperativas_ids, productores_ids, productos_ids) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssss", $nombre, $fecha_inicio, $fecha_cierre, $cooperativas, $productores, $productos);
 
-echo json_encode(['success' => $stmt->execute()]);
+    echo json_encode(['success' => $stmt->execute()]);
+    exit;
+}
 
 
 
@@ -300,42 +305,24 @@ echo json_encode(['success' => $stmt->execute()]);
     <!-- Notificaciones con Toastr -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js">
-        < /script
 
-        <
-        /head>
+</head>
 
-        <
-        body >
-
-            <
-            !--Header-- >
-            <
-            div id = "header" >
-            <
-            div id = "menu-icon"
-        onclick = "toggleSidebar()" > ☰ < /div> <
-            div > Operativos < /div> <
-            /div>
+        <body>
+            <div id = "header" >
+            <div id = "menu-icon"
+        onclick = "toggleSidebar()" > ☰ </div> <div> Operativos </div> </div>
 
             <
-            !--Sidebar-- >
-            <
-            div id = "sidebar" >
-            <
-            nav >
-            <
-            a href = "sve_dashboard.php" > < i class = "fa fa-home" > < /i> Inicio</a > < br >
-            <
-            a href = "alta_usuarios.php" > < i class = "fa fa-user-plus" > < /i> Alta Usuarios</a > < br >
-            <
-            a href = "relacionamiento.php" > < i class = "fa fa-user-plus" > < /i> Relacionamiento </a > < br >
-            <
-            a href = "alta_productos.php" > < i class = "fa fa-box" > < /i> Alta Productos</a > < br >
-            <
-            a href = "operativos.php" > < i class = "fa fa-box" > < /i> Operativos</a > < br >
-            <
-            a href = "mercado_digital.php" > < i class = "fa fa-shopping-cart" > < /i> Mercado Digital</a > < br >
+            !--Sidebar-->
+            <div id = "sidebar">
+            <nav>
+            <a href = "sve_dashboard.php" > < i class = "fa fa-home" > </i> Inicio</a > <br>
+            <a href = "alta_usuarios.php" > < i class = "fa fa-user-plus" > </i> Alta Usuarios</a > <br>
+            <a href = "relacionamiento.php" > < i class = "fa fa-user-plus" > </i> Relacionamiento </a > < br >
+            <a href = "alta_productos.php" > < i class = "fa fa-box" > </i> Alta Productos</a > <br>
+            <a href = "operativos.php" > < i class = "fa fa-box" > </i> Operativos</a > < br >
+            <a href = "mercado_digital.php" > < i class = "fa fa-shopping-cart" > </i> Mercado Digital</a > < br >
             <
             a href = "pedidos.php" > < i class = "fa fa-list" > < /i> Pedidos</a > < br >
             <
