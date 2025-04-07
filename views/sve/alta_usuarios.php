@@ -434,12 +434,15 @@ $total_pages = ceil($total_records / $limit);
         }
 
 
-        th, td {
+        th,
+        td {
             padding: 10px;
             text-align: left;
             border-bottom: 1px solid #ddd;
-            min-width: 190px; /* Ajusta el ancho mínimo de cada columna */
-            word-wrap: break-word; /* Permite que el texto se divida en varias líneas si es necesario */
+            min-width: 190px;
+            /* Ajusta el ancho mínimo de cada columna */
+            word-wrap: break-word;
+            /* Permite que el texto se divida en varias líneas si es necesario */
         }
 
         /* Cabecera de la tabla */
@@ -498,6 +501,9 @@ $total_pages = ceil($total_records / $limit);
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!-- Shoelace -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/dist/shoelace.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/dist/themes/light.css">
 
 </head>
 
@@ -505,26 +511,56 @@ $total_pages = ceil($total_records / $limit);
 
     <!-- Header -->
     <div id="header">
-        <div id="menu-icon" onclick="toggleSidebar()">☰</div>
+        <sl-button variant="text" onclick="toggleSidebar()">
+            <sl-icon name="list"></sl-icon> Menú
+        </sl-button>
         <div>Alta usuarios</div>
     </div>
 
     <!-- Sidebar -->
-    <div id="sidebar">
+    <sl-drawer label="Menú de navegación" placement="start" id="sidebar" class="menu">
         <nav>
-        <a href="sve_dashboard.php"><i class="fa fa-home"></i> Inicio</a><br>
-            <a href="alta_usuarios.php"><i class="fa fa-user-plus"></i> Alta Usuarios</a><br>
-            <a href="relacionamiento.php"><i class="fa fa-user-plus"></i> Relacionamiento </a><br>
-            <a href="alta_productos.php"><i class="fa fa-box"></i> Alta Productos</a><br>
-            <a href="operativos.php"><i class="fa fa-box"></i> Operativos</a><br>
-            <a href="mercado_digital.php"><i class="fa fa-shopping-cart"></i> Mercado Digital</a><br>
-            <a href="pedidos.php"><i class="fa fa-list"></i> Pedidos</a><br>
-            <a href="CargaMasivaUsuarios.php"><i class="fa fa-list"></i> Carga masiva de datos</a><br>
-            <a href="base_datos.php"><i class="fa fa-list"></i> Base de datos </a><br>
-            <a href="logout.php"><i class="fa fa-sign-out-alt"></i> Salir</a><br>
+            <sl-button href="sve_dashboard.php" variant="text" size="medium" pill>
+                <sl-icon name="house"></sl-icon> Inicio
+            </sl-button><br>
+
+            <sl-button href="alta_usuarios.php" variant="text" size="medium" pill>
+                <sl-icon name="person-plus-fill"></sl-icon> Alta Usuarios
+            </sl-button><br>
+
+            <sl-button href="relacionamiento.php" variant="text" size="medium" pill>
+                <sl-icon name="people-fill"></sl-icon> Relacionamiento
+            </sl-button><br>
+
+            <sl-button href="alta_productos.php" variant="text" size="medium" pill>
+                <sl-icon name="box-seam"></sl-icon> Alta Productos
+            </sl-button><br>
+
+            <sl-button href="operativos.php" variant="text" size="medium" pill>
+                <sl-icon name="clipboard-check"></sl-icon> Operativos
+            </sl-button><br>
+
+            <sl-button href="mercado_digital.php" variant="text" size="medium" pill>
+                <sl-icon name="cart"></sl-icon> Mercado Digital
+            </sl-button><br>
+
+            <sl-button href="pedidos.php" variant="text" size="medium" pill>
+                <sl-icon name="list"></sl-icon> Pedidos
+            </sl-button><br>
+
+            <sl-button href="CargaMasivaUsuarios.php" variant="text" size="medium" pill>
+                <sl-icon name="upload"></sl-icon> Carga Masiva
+            </sl-button><br>
+
+            <sl-button href="base_datos.php" variant="text" size="medium" pill>
+                <sl-icon name="database"></sl-icon> Base de Datos
+            </sl-button><br>
+
+            <sl-button href="logout.php" variant="danger" size="medium" pill>
+                <sl-icon name="box-arrow-right"></sl-icon> Salir
+            </sl-button><br>
         </nav>
-        <button id="close-menu-button" onclick="toggleSidebar()">Cerrar Menú</button>
-    </div>
+    </sl-drawer>
 
     <!-- Body -->
     <div id="body">
@@ -651,17 +687,8 @@ $total_pages = ceil($total_records / $limit);
 </html>
 
 <script>
-    function showSnackbar() {
-        var snackbar = document.getElementById("snackbar");
-        snackbar.className = "show";
-        setTimeout(function() {
-            snackbar.className = snackbar.className.replace("show", "");
-        }, 3000);
-    }
-
-    window.onload = function() {
-        if (document.getElementById('snackbar')) {
-            showSnackbar();
-        }
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.toggle();
     }
 </script>
