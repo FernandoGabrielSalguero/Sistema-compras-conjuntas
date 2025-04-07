@@ -1,1 +1,0 @@
-En esta carpeta, vamos a crear el archivo style.css en el cual vamos a colocar unicamente los estilos generales del sitio.

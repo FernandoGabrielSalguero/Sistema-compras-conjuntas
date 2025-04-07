@@ -1,1 +1,0 @@
-En esta carpeta, vamos a colocar las funciones compartidas. 

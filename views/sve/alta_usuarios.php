@@ -110,8 +110,9 @@ $total_pages = ceil($total_records / $limit);
     </style>
 
     <!-- Shoelace Components -->
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/dist/shoelace.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/dist/themes/light.css">
+    <link rel="stylesheet" href="../../assets/css/shoelace.css">
+    <script type="module" src="assets/js/shoelace.js"></script>
+
 
     <!-- Íconos opcionales -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/lucide.js"></script>
