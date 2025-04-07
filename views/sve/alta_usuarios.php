@@ -185,37 +185,37 @@ $total_pages = ceil($total_records / $limit);
 
     <!-- Body -->
     <div id="body">
-    <div style="margin-top: 100px; max-width: 1000px; margin-inline: auto; padding: 1rem;">
-  <sl-card>
-    <h3 slot="header">Agregar Nuevo Usuario</h3>
-    <form method="post" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+        <div style="margin-top: 100px; max-width: 1000px; margin-inline: auto; padding: 1rem;">
+            <sl-card>
+                <h3 slot="header">Agregar Nuevo Usuario</h3>
+                <form method="post" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
 
-      <sl-input name="cuit" label="CUIT" required></sl-input>
-      <sl-input name="contrasena" type="password" label="Contraseña" required></sl-input>
+                    <sl-input name="cuit" label="CUIT" required></sl-input>
+                    <sl-input name="contrasena" type="password" label="Contraseña" required></sl-input>
 
-      <sl-select name="rol" label="Rol" required>
-        <sl-option value="productor">Productor</sl-option>
-        <sl-option value="cooperativa">Cooperativa</sl-option>
-        <sl-option value="administrador">Administrador</sl-option>
-      </sl-select>
+                    <sl-select name="rol" label="Rol" required>
+                        <sl-option value="productor">Productor</sl-option>
+                        <sl-option value="cooperativa">Cooperativa</sl-option>
+                        <sl-option value="administrador">Administrador</sl-option>
+                    </sl-select>
 
-      <sl-input name="nombre" label="Nombre" required></sl-input>
-      <sl-input name="correo" type="email" label="Correo" required></sl-input>
-      <sl-input name="telefono" label="Teléfono"></sl-input>
-      <sl-input name="id_cooperativa" label="ID Cooperativa"></sl-input>
-      <sl-input name="id_productor" label="ID Productor"></sl-input>
-      <sl-input name="direccion" label="Dirección"></sl-input>
-      <sl-input name="id_finca_asociada" label="ID Finca Asociada"></sl-input>
-      <sl-input name="observaciones" label="Observaciones"></sl-input>
+                    <sl-input name="nombre" label="Nombre" required></sl-input>
+                    <sl-input name="correo" type="email" label="Correo" required></sl-input>
+                    <sl-input name="telefono" label="Teléfono"></sl-input>
+                    <sl-input name="id_cooperativa" label="ID Cooperativa"></sl-input>
+                    <sl-input name="id_productor" label="ID Productor"></sl-input>
+                    <sl-input name="direccion" label="Dirección"></sl-input>
+                    <sl-input name="id_finca_asociada" label="ID Finca Asociada"></sl-input>
+                    <sl-input name="observaciones" label="Observaciones"></sl-input>
 
-      <sl-button type="submit" variant="primary" name="agregar_usuario" style="grid-column: 1 / -1;">
-        <sl-icon name="plus-circle" slot="prefix"></sl-icon>
-        Agregar Nuevo Usuario
-      </sl-button>
+                    <sl-button type="submit" variant="primary" name="agregar_usuario" style="grid-column: 1 / -1;">
+                        <sl-icon name="plus-circle" slot="prefix"></sl-icon>
+                        Agregar Nuevo Usuario
+                    </sl-button>
 
-    </form>
-  </sl-card>
-</div>
+                </form>
+            </sl-card>
+        </div>
 
         <div class="card">
             <div class="search-bar">
@@ -229,73 +229,76 @@ $total_pages = ceil($total_records / $limit);
 
 
 
-        <div class="card">
-            <h3>Lista de Usuarios</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>CUIT</th>
-                        <th>Contraseña</th>
-                        <th>Rol</th>
-                        <th>Permiso de Ingreso</th>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Teléfono</th>
-                        <th>ID Cooperativa</th>
-                        <th>ID Productor</th>
-                        <th>Dirección</th>
-                        <th>ID Finca Asociada</th>
-                        <th>Observaciones</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while ($row = mysqli_fetch_assoc($result)) { ?>
+        <div style="max-width: 100%; overflow-x: auto; margin-top: 2rem;">
+            <sl-card>
+                <h3 slot="header">Lista de Usuarios</h3>
+                <table style="width: 100%; min-width: 1000px; border-collapse: collapse;">
+                    <thead>
                         <tr>
-                            <form method="post">
-                                <!-- Identificador del registro -->
-                                <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-
-                                <!-- Campos en el orden correcto -->
-                                <td><?php echo $row['id']; ?></td>
-                                <td><input type="text" name="cuit" value="<?php echo $row['cuit']; ?>"></td>
-                                <td><input type="text" name="contrasena" value="<?php echo $row['contrasena']; ?>"></td>
-                                <td>
-                                    <select name="rol">
-                                        <option value="cooperativa" <?php if ($row['rol'] == 'cooperativa') echo 'selected'; ?>>Cooperativa</option>
-                                        <option value="productor" <?php if ($row['rol'] == 'productor') echo 'selected'; ?>>Productor</option>
-                                        <option value="sve" <?php if ($row['rol'] == 'sve') echo 'selected'; ?>>SVE</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <select name="permiso_ingreso">
-                                        <option value="1" <?php if ($row['permiso_ingreso'] == 1) echo 'selected'; ?>>Permitido</option>
-                                        <option value="0" <?php if ($row['permiso_ingreso'] == 0) echo 'selected'; ?>>Denegado</option>
-                                    </select>
-                                </td>
-                                <td><input type="text" name="nombre" value="<?php echo $row['nombre']; ?>"></td>
-                                <td><input type="text" name="correo" value="<?php echo $row['correo']; ?>"></td>
-                                <td><input type="text" name="telefono" value="<?php echo $row['telefono']; ?>"></td>
-                                <td><input type="text" name="id_cooperativa" value="<?php echo $row['id_cooperativa']; ?>"></td>
-                                <td><input type="text" name="id_productor" value="<?php echo $row['id_productor']; ?>"></td>
-                                <td><input type="text" name="direccion" value="<?php echo $row['direccion']; ?>"></td>
-                                <td><input type="text" name="id_finca_asociada" value="<?php echo $row['id_finca_asociada']; ?>"></td>
-                                <td><input type="text" name="observaciones" value="<?php echo $row['observaciones']; ?>"></td>
-
-                                <!-- Botón de actualización -->
-                                <td>
-                                    <button type="submit" name="actualizar_usuario" onclick="showSnackbar();">Actualizar</button>
-                                </td>
-                            </form>
+                            <th>ID</th>
+                            <th>CUIT</th>
+                            <th>Contraseña</th>
+                            <th>Rol</th>
+                            <th>Permiso de Ingreso</th>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Teléfono</th>
+                            <th>ID Cooperativa</th>
+                            <th>ID Productor</th>
+                            <th>Dirección</th>
+                            <th>ID Finca Asociada</th>
+                            <th>Observaciones</th>
+                            <th>Acciones</th>
                         </tr>
-                    <?php } ?>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = mysqli_fetch_assoc($result)) { ?>
+                            <tr>
+                                <form method="post">
+                                    <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
 
+                                    <td><?php echo $row['id']; ?></td>
 
-                </tbody>
-            </table>
+                                    <td><sl-input name="cuit" value="<?php echo $row['cuit']; ?>" size="small"></sl-input></td>
+                                    <td><sl-input name="contrasena" value="<?php echo $row['contrasena']; ?>" size="small" type="text"></sl-input></td>
 
+                                    <td>
+                                        <sl-select name="rol" size="small" value="<?php echo $row['rol']; ?>">
+                                            <sl-option value="cooperativa">Cooperativa</sl-option>
+                                            <sl-option value="productor">Productor</sl-option>
+                                            <sl-option value="sve">SVE</sl-option>
+                                        </sl-select>
+                                    </td>
+
+                                    <td>
+                                        <sl-select name="permiso_ingreso" size="small" value="<?php echo $row['permiso_ingreso']; ?>">
+                                            <sl-option value="1">Permitido</sl-option>
+                                            <sl-option value="0">Denegado</sl-option>
+                                        </sl-select>
+                                    </td>
+
+                                    <td><sl-input name="nombre" value="<?php echo $row['nombre']; ?>" size="small"></sl-input></td>
+                                    <td><sl-input name="correo" value="<?php echo $row['correo']; ?>" size="small"></sl-input></td>
+                                    <td><sl-input name="telefono" value="<?php echo $row['telefono']; ?>" size="small"></sl-input></td>
+                                    <td><sl-input name="id_cooperativa" value="<?php echo $row['id_cooperativa']; ?>" size="small"></sl-input></td>
+                                    <td><sl-input name="id_productor" value="<?php echo $row['id_productor']; ?>" size="small"></sl-input></td>
+                                    <td><sl-input name="direccion" value="<?php echo $row['direccion']; ?>" size="small"></sl-input></td>
+                                    <td><sl-input name="id_finca_asociada" value="<?php echo $row['id_finca_asociada']; ?>" size="small"></sl-input></td>
+                                    <td><sl-input name="observaciones" value="<?php echo $row['observaciones']; ?>" size="small"></sl-input></td>
+
+                                    <td>
+                                        <sl-button type="submit" name="actualizar_usuario" variant="primary" size="small">
+                                            <sl-icon name="save" slot="prefix"></sl-icon>Actualizar
+                                        </sl-button>
+                                    </td>
+                                </form>
+                            </tr>
+                        <?php } ?>
+                    </tbody>
+                </table>
+            </sl-card>
         </div>
+
     </div>
 
     <script>
