@@ -5,6 +5,10 @@
   <title>Material Web App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <!-- Material Design Fonts and Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
   <!-- Material Components Web -->
   <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
   <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
@@ -16,7 +20,11 @@
     }
     .content {
       padding: 2rem;
-      margin-left: 280px; /* espacio para el drawer */
+      margin-left: 280px;
+    }
+    .mdc-card {
+      padding: 1rem;
+      margin-bottom: 2rem;
     }
     @media (max-width: 768px) {
       .content {
@@ -29,17 +37,26 @@
 
   <!-- Drawer (Menú lateral) -->
   <aside class="mdc-drawer mdc-drawer--dismissible mdc-top-app-bar--fixed-adjust" id="drawer">
+    <div class="mdc-drawer__header">
+      <h3 class="mdc-drawer__title">Mi Plataforma</h3>
+      <h6 class="mdc-drawer__subtitle">usuario@correo.com</h6>
+    </div>
     <div class="mdc-drawer__content">
       <nav class="mdc-list">
-        <a class="mdc-list-item mdc-list-item--activated" href="#" aria-current="page">
+        <a class="mdc-list-item mdc-list-item--activated" href="#formulario-card" aria-current="page">
           <span class="mdc-list-item__ripple"></span>
-          <i class="material-icons mdc-list-item__graphic" aria-hidden="true">home</i>
-          <span class="mdc-list-item__text">Inicio</span>
+          <i class="material-icons mdc-list-item__graphic" aria-hidden="true">assignment</i>
+          <span class="mdc-list-item__text">Formulario</span>
         </a>
-        <a class="mdc-list-item" href="#">
+        <a class="mdc-list-item" href="#info-card">
           <span class="mdc-list-item__ripple"></span>
-          <i class="material-icons mdc-list-item__graphic" aria-hidden="true">account_circle</i>
-          <span class="mdc-list-item__text">Perfil</span>
+          <i class="material-icons mdc-list-item__graphic" aria-hidden="true">info</i>
+          <span class="mdc-list-item__text">Información</span>
+        </a>
+        <a class="mdc-list-item" href="#configuracion">
+          <span class="mdc-list-item__ripple"></span>
+          <i class="material-icons mdc-list-item__graphic" aria-hidden="true">settings</i>
+          <span class="mdc-list-item__text">Configuración</span>
         </a>
       </nav>
     </div>
@@ -57,83 +74,116 @@
 
   <!-- Contenido -->
   <main class="content">
-    <h2>Formulario de Registro</h2>
-    <form id="formulario">
 
-      <!-- Nombre -->
-      <label class="mdc-text-field mdc-text-field--outlined full-width">
-        <input class="mdc-text-field__input" type="text" id="nombre" required>
-        <span class="mdc-notched-outline">
-          <span class="mdc-notched-outline__leading"></span>
-          <span class="mdc-notched-outline__notch">
-            <span class="mdc-floating-label">Nombre</span>
-          </span>
-          <span class="mdc-notched-outline__trailing"></span>
-        </span>
-      </label>
-      <br><br>
-
-      <!-- Email -->
-      <label class="mdc-text-field mdc-text-field--outlined full-width">
-        <input class="mdc-text-field__input" type="email" id="email" required>
-        <span class="mdc-notched-outline">
-          <span class="mdc-notched-outline__leading"></span>
-          <span class="mdc-notched-outline__notch">
-            <span class="mdc-floating-label">Correo Electrónico</span>
-          </span>
-          <span class="mdc-notched-outline__trailing"></span>
-        </span>
-      </label>
-      <br><br>
-
-      <!-- Select -->
-      <div class="mdc-select mdc-select--outlined full-width" id="rolSelect">
-        <div class="mdc-select__anchor" role="button">
+    <!-- Card con Formulario -->
+    <div class="mdc-card" id="formulario-card">
+      <h2>Formulario de Registro</h2>
+      <form id="formulario">
+        <label class="mdc-text-field mdc-text-field--outlined full-width">
+          <input class="mdc-text-field__input" type="text" id="nombre" required>
           <span class="mdc-notched-outline">
             <span class="mdc-notched-outline__leading"></span>
             <span class="mdc-notched-outline__notch">
-              <span class="mdc-floating-label">Rol</span>
+              <span class="mdc-floating-label">Nombre</span>
             </span>
             <span class="mdc-notched-outline__trailing"></span>
           </span>
-          <span class="mdc-select__selected-text"></span>
-          <span class="mdc-select__dropdown-icon">
-            <svg class="mdc-select__dropdown-icon-graphic" viewBox="7 10 10 5">
-              <polygon class="mdc-select__dropdown-icon-inactive" stroke="none" fill-rule="evenodd"
-                       points="7 10 12 15 17 10"></polygon>
-              <polygon class="mdc-select__dropdown-icon-active" stroke="none" fill-rule="evenodd"
-                       points="7 15 12 10 17 15"></polygon>
-            </svg>
+        </label>
+        <br><br>
+
+        <label class="mdc-text-field mdc-text-field--outlined full-width">
+          <input class="mdc-text-field__input" type="email" id="email" required>
+          <span class="mdc-notched-outline">
+            <span class="mdc-notched-outline__leading"></span>
+            <span class="mdc-notched-outline__notch">
+              <span class="mdc-floating-label">Correo Electrónico</span>
+            </span>
+            <span class="mdc-notched-outline__trailing"></span>
           </span>
+        </label>
+        <br><br>
+
+        <div class="mdc-select mdc-select--outlined full-width" id="rolSelect">
+          <div class="mdc-select__anchor" role="button">
+            <span class="mdc-notched-outline">
+              <span class="mdc-notched-outline__leading"></span>
+              <span class="mdc-notched-outline__notch">
+                <span class="mdc-floating-label">Rol</span>
+              </span>
+              <span class="mdc-notched-outline__trailing"></span>
+            </span>
+            <span class="mdc-select__selected-text"></span>
+            <span class="mdc-select__dropdown-icon">
+              <svg class="mdc-select__dropdown-icon-graphic" viewBox="7 10 10 5">
+                <polygon class="mdc-select__dropdown-icon-inactive" points="7 10 12 15 17 10"></polygon>
+                <polygon class="mdc-select__dropdown-icon-active" points="7 15 12 10 17 15"></polygon>
+              </svg>
+            </span>
+          </div>
+          <div class="mdc-select__menu mdc-menu mdc-menu-surface">
+            <ul class="mdc-list">
+              <li class="mdc-list-item" data-value="admin">Administrador</li>
+              <li class="mdc-list-item" data-value="user">Usuario</li>
+              <li class="mdc-list-item" data-value="guest">Invitado</li>
+            </ul>
+          </div>
         </div>
-        <div class="mdc-select__menu mdc-menu mdc-menu-surface">
-          <ul class="mdc-list">
-            <li class="mdc-list-item" data-value="admin">Administrador</li>
-            <li class="mdc-list-item" data-value="user">Usuario</li>
-            <li class="mdc-list-item" data-value="guest">Invitado</li>
-          </ul>
+        <br><br>
+
+        <label class="mdc-text-field mdc-text-field--textarea mdc-text-field--outlined full-width">
+          <span class="mdc-notched-outline">
+            <span class="mdc-notched-outline__leading"></span>
+            <span class="mdc-notched-outline__notch">
+              <span class="mdc-floating-label">Mensaje</span>
+            </span>
+            <span class="mdc-notched-outline__trailing"></span>
+          </span>
+          <textarea class="mdc-text-field__input" rows="4" cols="40"></textarea>
+        </label>
+        <br><br>
+
+        <button class="mdc-button mdc-button--raised" type="submit">
+          <span class="mdc-button__label">Enviar</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Card extra -->
+    <div class="mdc-card" id="info-card">
+      <h2>Más Componentes</h2>
+      <button class="mdc-button mdc-button--outlined">
+        <span class="mdc-button__ripple"></span>
+        <span class="mdc-button__label">Botón Secundario</span>
+      </button>
+
+      <div style="margin-top: 1rem">
+        <div class="mdc-switch">
+          <div class="mdc-switch__track"></div>
+          <div class="mdc-switch__thumb-underlay">
+            <div class="mdc-switch__thumb">
+              <input type="checkbox" id="switch-basic" class="mdc-switch__native-control" role="switch">
+            </div>
+          </div>
+        </div>
+        <label for="switch-basic">Activar modo oscuro</label>
+      </div>
+
+      <div style="margin-top: 1rem">
+        <div class="mdc-linear-progress" role="progressbar">
+          <div class="mdc-linear-progress__buffer">
+            <div class="mdc-linear-progress__buffer-bar"></div>
+            <div class="mdc-linear-progress__buffer-dots"></div>
+          </div>
+          <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
+            <span class="mdc-linear-progress__bar-inner"></span>
+          </div>
+          <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
+            <span class="mdc-linear-progress__bar-inner"></span>
+          </div>
         </div>
       </div>
-      <br><br>
+    </div>
 
-      <!-- Mensaje -->
-      <label class="mdc-text-field mdc-text-field--textarea mdc-text-field--outlined full-width">
-        <span class="mdc-notched-outline">
-          <span class="mdc-notched-outline__leading"></span>
-          <span class="mdc-notched-outline__notch">
-            <span class="mdc-floating-label">Mensaje</span>
-          </span>
-          <span class="mdc-notched-outline__trailing"></span>
-        </span>
-        <textarea class="mdc-text-field__input" rows="4" cols="40"></textarea>
-      </label>
-      <br><br>
-
-      <!-- Botón -->
-      <button class="mdc-button mdc-button--raised" type="submit">
-        <span class="mdc-button__label">Enviar</span>
-      </button>
-    </form>
   </main>
 
   <!-- Inicialización de componentes -->
