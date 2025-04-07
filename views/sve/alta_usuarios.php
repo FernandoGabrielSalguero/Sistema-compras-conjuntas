@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.14.0/dist/themes/light.css">
 
   <!-- Shoelace sin módulo para compatibilidad -->
-  <script nomodule src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.14.0/dist/shoelace.nomodule.js"></script>
+  <script type="module" src="https://cdn.skypack.dev/@shoelace-style/shoelace@2.14.0"></script>
 
   <style>
     body {
