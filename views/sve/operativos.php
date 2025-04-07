@@ -1,4 +1,28 @@
 <?php
+// Activar la visualización de errores en pantalla
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Cargar las variables del archivo .env manualmente
+$env_path = __DIR__ . '/../../.env';
+if (file_exists($env_path)) {
+    $dotenv = parse_ini_file($env_path);
+} else {
+    die("❌ Error: El archivo .env no se encuentra en la carpeta del proyecto.");
+}
+
+// Conexión a la base de datos
+$host = $dotenv['DB_HOST'];
+$dbname = $dotenv['DB_NAME'];
+$username = $dotenv['DB_USER'];
+$password = $dotenv['DB_PASS'];
+
+$conn = new mysqli($host, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Error en la conexión: " . $conn->connect_error);
+}
 
 ?>
 
@@ -182,13 +206,13 @@
     <!-- Header -->
     <div id="header">
         <div id="menu-icon" onclick="toggleSidebar()">☰</div>
-        <div>Pedidos</div>
+        <div>Operativos</div>
     </div>
 
     <!-- Sidebar -->
     <div id="sidebar">
         <nav>
-        <a href="sve_dashboard.php"><i class="fa fa-home"></i> Inicio</a><br>
+            <a href="sve_dashboard.php"><i class="fa fa-home"></i> Inicio</a><br>
             <a href="alta_usuarios.php"><i class="fa fa-user-plus"></i> Alta Usuarios</a><br>
             <a href="relacionamiento.php"><i class="fa fa-user-plus"></i> Relacionamiento </a><br>
             <a href="alta_productos.php"><i class="fa fa-box"></i> Alta Productos</a><br>

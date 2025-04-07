@@ -490,10 +490,11 @@ $result = mysqli_query($conn, $query);
     <!-- Sidebar -->
     <div id="sidebar">
         <nav>
-            <a href="sve_dashboard.php"><i class="fa fa-home"></i> Inicio</a><br>
+        <a href="sve_dashboard.php"><i class="fa fa-home"></i> Inicio</a><br>
             <a href="alta_usuarios.php"><i class="fa fa-user-plus"></i> Alta Usuarios</a><br>
             <a href="relacionamiento.php"><i class="fa fa-user-plus"></i> Relacionamiento </a><br>
             <a href="alta_productos.php"><i class="fa fa-box"></i> Alta Productos</a><br>
+            <a href="operativos.php"><i class="fa fa-box"></i> Operativos</a><br>
             <a href="mercado_digital.php"><i class="fa fa-shopping-cart"></i> Mercado Digital</a><br>
             <a href="pedidos.php"><i class="fa fa-list"></i> Pedidos</a><br>
             <a href="CargaMasivaUsuarios.php"><i class="fa fa-list"></i> Carga masiva de datos</a><br>
