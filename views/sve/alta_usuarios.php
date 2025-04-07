@@ -70,6 +70,12 @@
       padding: 0 1rem;
     }
 
+    .drawer-button {
+      margin: 0.25rem 0;
+      justify-content: flex-start;
+      width: 100%;
+    }
+
     @media (max-width: 768px) {
       .mdc-drawer {
         display: none;
@@ -89,21 +95,21 @@
     </div>
     <div class="mdc-drawer__content">
       <nav class="mdc-list">
-        <button class="mdc-button mdc-button--text mdc-list-item">
+        <button class="mdc-button mdc-button--raised mdc-button--icon-leading drawer-button">
           <i class="material-icons mdc-button__icon">dashboard</i>
           <span class="mdc-button__label">Dashboard</span>
         </button>
-        <button class="mdc-button mdc-button--text mdc-list-item">
+        <button class="mdc-button mdc-button--raised mdc-button--icon-leading drawer-button">
           <i class="material-icons mdc-button__icon">table_view</i>
           <span class="mdc-button__label">Tablas</span>
         </button>
-        <button class="mdc-button mdc-button--text mdc-list-item">
+        <button class="mdc-button mdc-button--raised mdc-button--icon-leading drawer-button">
           <i class="material-icons mdc-button__icon">person</i>
           <span class="mdc-button__label">Usuarios</span>
         </button>
       </nav>
       <div class="drawer-actions">
-        <button class="mdc-button mdc-button--outlined mdc-button--icon-leading" onclick="logout()">
+        <button class="mdc-button mdc-button--outlined mdc-button--icon-leading drawer-button" onclick="logout()">
           <i class="material-icons mdc-button__icon" aria-hidden="true">logout</i>
           <span class="mdc-button__label">Salir</span>
         </button>
@@ -154,7 +160,6 @@
 
     function logout() {
       alert("Sesión cerrada ✅");
-      // Aquí podrías redirigir a login.php o ejecutar lógica PHP vía fetch
       // window.location.href = 'logout.php';
     }
   </script>
