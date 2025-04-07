@@ -434,15 +434,12 @@ $total_pages = ceil($total_records / $limit);
         }
 
 
-        th,
-        td {
+        th, td {
             padding: 10px;
             text-align: left;
             border-bottom: 1px solid #ddd;
-            min-width: 190px;
-            /* Ajusta el ancho mínimo de cada columna */
-            word-wrap: break-word;
-            /* Permite que el texto se divida en varias líneas si es necesario */
+            min-width: 190px; /* Ajusta el ancho mínimo de cada columna */
+            word-wrap: break-word; /* Permite que el texto se divida en varias líneas si es necesario */
         }
 
         /* Cabecera de la tabla */
@@ -501,8 +498,6 @@ $total_pages = ceil($total_records / $limit);
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.13.0/dist/shoelace.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.13.0/dist/themes/light.css" />
 
 </head>
 
@@ -517,7 +512,7 @@ $total_pages = ceil($total_records / $limit);
     <!-- Sidebar -->
     <div id="sidebar">
         <nav>
-            <a href="sve_dashboard.php"><i class="fa fa-home"></i> Inicio</a><br>
+        <a href="sve_dashboard.php"><i class="fa fa-home"></i> Inicio</a><br>
             <a href="alta_usuarios.php"><i class="fa fa-user-plus"></i> Alta Usuarios</a><br>
             <a href="relacionamiento.php"><i class="fa fa-user-plus"></i> Relacionamiento </a><br>
             <a href="alta_productos.php"><i class="fa fa-box"></i> Alta Productos</a><br>
@@ -536,16 +531,17 @@ $total_pages = ceil($total_records / $limit);
         <div class="card">
             <h3>Agregar Nuevo Usuario</h3>
             <form method="post">
-                <sl-input name="cuit" label="CUIT" required></sl-input>
-                <sl-input type="password" name="contrasena" label="Contraseña" required></sl-input>
+                <input type="text" name="cuit" placeholder="CUIT" required>
+                <input type="password" name="contrasena" placeholder="Contraseña" required>
 
                 <div class="form-group">
                     <div class="custom-select">
-                        <sl-select name="rol" label="Rol" required>
-                            <sl-option value="productor">Productor</sl-option>
-                            <sl-option value="cooperativa">Cooperativa</sl-option>
-                            <sl-option value="administrador">Administrador</sl-option>
-                        </sl-select>
+                        <select name="rol" id="rol" required>
+                            <option value="" disabled selected>Seleccione un rol</option>
+                            <option value="productor">Productor</option>
+                            <option value="cooperativa">Cooperativa</option>
+                            <option value="administrador">Administrador</option>
+                        </select>
                     </div>
                 </div>
 
@@ -557,7 +553,7 @@ $total_pages = ceil($total_records / $limit);
                 <input type="text" name="direccion" placeholder="Dirección">
                 <input type="text" name="id_finca_asociada" placeholder="ID Finca Asociada">
                 <input type="text" name="observaciones" placeholder="observaciones">
-                <sl-button type="submit" name="agregar_usuario" variant="primary">Agregar Nuevo Usuario</sl-button>
+                <button type="submit" name="agregar_usuario">Agregar Nuevo Usuario</button>
             </form>
         </div>
 
