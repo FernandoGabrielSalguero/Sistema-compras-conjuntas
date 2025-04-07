@@ -63,6 +63,7 @@ echo json_encode(['success' => $stmt->execute()]);
 
 
 
+
 ?>
 
 <!DOCTYPE html>
@@ -291,107 +292,199 @@ echo json_encode(['success' => $stmt->execute()]);
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-</head>
+    <!-- Notificaciones con Toastr -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js">
+        < /script
 
-<body>
+        <
+        /head>
 
-    <!-- Header -->
-    <div id="header">
-        <div id="menu-icon" onclick="toggleSidebar()">☰</div>
-        <div>Operativos</div>
-    </div>
+        <
+        body >
 
-    <!-- Sidebar -->
-    <div id="sidebar">
-        <nav>
-            <a href="sve_dashboard.php"><i class="fa fa-home"></i> Inicio</a><br>
-            <a href="alta_usuarios.php"><i class="fa fa-user-plus"></i> Alta Usuarios</a><br>
-            <a href="relacionamiento.php"><i class="fa fa-user-plus"></i> Relacionamiento </a><br>
-            <a href="alta_productos.php"><i class="fa fa-box"></i> Alta Productos</a><br>
-            <a href="operativos.php"><i class="fa fa-box"></i> Operativos</a><br>
-            <a href="mercado_digital.php"><i class="fa fa-shopping-cart"></i> Mercado Digital</a><br>
-            <a href="pedidos.php"><i class="fa fa-list"></i> Pedidos</a><br>
-            <a href="CargaMasivaUsuarios.php"><i class="fa fa-list"></i> Carga masiva de datos</a><br>
-            <a href="base_datos.php"><i class="fa fa-list"></i> Base de datos </a><br>
-            <a href="logout.php"><i class="fa fa-sign-out-alt"></i> Salir</a><br>
-        </nav>
-        <button id="close-menu-button" onclick="toggleSidebar()">Cerrar Menú</button>
-    </div>
+            <
+            !--Header-- >
+            <
+            div id = "header" >
+            <
+            div id = "menu-icon"
+        onclick = "toggleSidebar()" > ☰ < /div> <
+            div > Operativos < /div> <
+            /div>
 
-    <!-- Body -->
-    <div id="body">
-        <div class="card">
-            <h2>Nuevo Operativo</h2>
-            <form id="form-operativo" method="POST">
-                <label>Nombre del operativo</label><br>
-                <input type="text" name="nombre" required><br><br>
+            <
+            !--Sidebar-- >
+            <
+            div id = "sidebar" >
+            <
+            nav >
+            <
+            a href = "sve_dashboard.php" > < i class = "fa fa-home" > < /i> Inicio</a > < br >
+            <
+            a href = "alta_usuarios.php" > < i class = "fa fa-user-plus" > < /i> Alta Usuarios</a > < br >
+            <
+            a href = "relacionamiento.php" > < i class = "fa fa-user-plus" > < /i> Relacionamiento </a > < br >
+            <
+            a href = "alta_productos.php" > < i class = "fa fa-box" > < /i> Alta Productos</a > < br >
+            <
+            a href = "operativos.php" > < i class = "fa fa-box" > < /i> Operativos</a > < br >
+            <
+            a href = "mercado_digital.php" > < i class = "fa fa-shopping-cart" > < /i> Mercado Digital</a > < br >
+            <
+            a href = "pedidos.php" > < i class = "fa fa-list" > < /i> Pedidos</a > < br >
+            <
+            a href = "CargaMasivaUsuarios.php" > < i class = "fa fa-list" > < /i> Carga masiva de datos</a > < br >
+            <
+            a href = "base_datos.php" > < i class = "fa fa-list" > < /i> Base de datos </a > < br >
+            <
+            a href = "logout.php" > < i class = "fa fa-sign-out-alt" > < /i> Salir</a > < br >
+            <
+            /nav> <
+            button id = "close-menu-button"
+        onclick = "toggleSidebar()" > Cerrar Menú < /button> <
+            /div>
 
-                <label>Cooperativas</label><br>
-                <select id="cooperativas" name="cooperativas[]" multiple="multiple" style="width:100%">
-                    <?php
-                    $res = $conn->query("SELECT id, nombre FROM cooperativas");
-                    while ($row = $res->fetch_assoc()) {
-                        echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
-                    }
-                    ?>
-                </select><br><br>
+            <
+            !--Body-- >
+            <
+            div id = "body" >
+            <
+            div class = "card" >
+            <
+            h2 > Nuevo Operativo < /h2> <
+            form id = "form-operativo"
+        method = "POST" >
+            <
+            label > Nombre del operativo < /label><br> <
+            input type = "text"
+        name = "nombre"
+        required > < br > < br >
 
-                <label>Productores</label><br>
-                <select id="productores" name="productores[]" multiple="multiple" style="width:100%">
-                    <option value="all" selected>Todos</option>
-                    <?php
-                    $res = $conn->query("SELECT id, nombre FROM productores");
-                    while ($row = $res->fetch_assoc()) {
-                        echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
-                    }
-                    ?>
-                </select><br><br>
+            <
+            label > Cooperativas < /label><br> <
+            select id = "cooperativas"
+        name = "cooperativas[]"
+        multiple = "multiple"
+        style = "width:100%" >
+            <?php
+            $res = $conn->query("SELECT id, nombre FROM cooperativas");
+            while ($row = $res->fetch_assoc()) {
+                echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
+            }
+            ?> <
+            /select><br><br>
 
-                <label>Productos</label><br>
-                <div id="productos-box">
-                    <?php
-                    $cats = $conn->query("SELECT id, nombre FROM categorias");
-                    while ($cat = $cats->fetch_assoc()) {
-                        echo "<strong>{$cat['nombre']}</strong><br>";
-                        $prods = $conn->query("SELECT id, nombre FROM productos WHERE categoria_id = {$cat['id']}");
-                        while ($prod = $prods->fetch_assoc()) {
-                            echo "<label><input type='checkbox' name='productos[]' value='{$prod['id']}'> {$prod['nombre']}</label><br>";
-                        }
-                        echo "<br>";
-                    }
-                    ?>
-                </div><br>
-
-                <label>Fecha de inicio</label><br>
-                <input type="date" name="fecha_inicio" required><br><br>
-
-                <label>Fecha de cierre</label><br>
-                <input type="date" name="fecha_cierre" required><br><br>
-
-                <button type="submit">Crear Operativo</button>
-            </form>
-
-
-
-        </div>
-
-
-
-        <div class="card">
-
-
-        </div>
-    </div>
-
-    <!-- JavaScript -->
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('show');
+            <
+            label > Productores < /label><br> <
+            select id = "productores"
+        name = "productores[]"
+        multiple = "multiple"
+        style = "width:100%" >
+            <
+            option value = "all"
+        selected > Todos < /option>
+        <?php
+        $res = $conn->query("SELECT id, nombre FROM productores");
+        while ($row = $res->fetch_assoc()) {
+            echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
         }
+        ?>
+            <
+            /select><br><br>
+
+            <
+            label > Productos < /label><br> <
+            div id = "productos-box" >
+            <?php
+            $cats = $conn->query("SELECT id, nombre FROM categorias");
+            while ($cat = $cats->fetch_assoc()) {
+                echo "<strong>{$cat['nombre']}</strong><br>";
+                $prods = $conn->query("SELECT id, nombre FROM productos WHERE categoria_id = {$cat['id']}");
+                while ($prod = $prods->fetch_assoc()) {
+                    echo "<label><input type='checkbox' name='productos[]' value='{$prod['id']}'> {$prod['nombre']}</label><br>";
+                }
+                echo "<br>";
+            }
+            ?> <
+            /div><br>
+
+            <
+            label > Fecha de inicio < /label><br> <
+            input type = "date"
+        name = "fecha_inicio"
+        required > < br > < br >
+
+            <
+            label > Fecha de cierre < /label><br> <
+            input type = "date"
+        name = "fecha_cierre"
+        required > < br > < br >
+
+            <
+            button type = "submit" > Crear Operativo < /button> <
+            /form>
+
+
+
+            <
+            /div>
+
+
+
+            <
+            div class = "card" >
+
+            <
+            h2 > Operativos existentes < /h2> <
+            table border = "1"
+        width = "100%"
+        cellpadding = "10"
+        id = "tabla-operativos" >
+            <
+            tr >
+            <
+            th > Nombre < /th> <
+            th > Cooperativas < /th> <
+            th > Productores < /th> <
+            th > Productos < /th> <
+            th > Fecha inicio < /th> <
+            th > Fecha cierre < /th> <
+            th > Acción < /th> <
+            /tr>
+        <?php
+        $operativos = $conn->query("SELECT * FROM operativos");
+        while ($op = $operativos->fetch_assoc()) {
+            echo "<tr>";
+            echo "<td>{$op['nombre']}</td>";
+            echo "<td>{$op['cooperativas_ids']}</td>";
+            echo "<td>{$op['productores_ids']}</td>";
+            echo "<td>{$op['productos_ids']}</td>";
+            echo "<td>{$op['fecha_inicio']}</td>";
+            echo "<td>{$op['fecha_cierre']}</td>";
+            echo "<td><button onclick='editarOperativo({$op['id']})'>Editar</button></td>";
+            echo "</tr>";
+        }
+        ?>
+            <
+            /table>
+
+            <
+            /div> <
+            /div>
+
+            <
+            !--JavaScript-- >
+            <script
+            script >
+            function toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('show');
+            }
     </script>
 
     $('#cooperativas, #productores').select2();
@@ -403,8 +496,34 @@ echo json_encode(['success' => $stmt->execute()]);
     });
     });
 
+    $(document).ready(function () {
+    $('#cooperativas, #productores').select2();
+
+    $('#cooperativas').on('change', function () {
+    const coopIds = $(this).val();
+    $.post('get_productores_por_coop.php', { cooperativas: coopIds }, function (data) {
+    $('#productores').html(data).trigger('change');
+    });
+    });
+
+    $('#form-operativo').on('submit', function (e) {
+    e.preventDefault();
+    $.post('crear_operativo.php', $(this).serialize(), function (res) {
+    if (res.success) {
+    toastr.success('✅ Operativo creado');
+    setTimeout(() => location.reload(), 1000);
+    } else {
+    toastr.error('❌ Error al crear operativo');
+    }
+    }, 'json');
+    });
+    });
+
+    function editarOperativo(id) {
+    toastr.info("Funcionalidad de edición aún no implementada");
+    }
 
 
-</body>
+    </body>
 
 </html>
