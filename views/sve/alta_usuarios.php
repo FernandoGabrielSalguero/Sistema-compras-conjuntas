@@ -185,34 +185,37 @@ $total_pages = ceil($total_records / $limit);
 
     <!-- Body -->
     <div id="body">
-        <div class="card">
-            <h3>Agregar Nuevo Usuario</h3>
-            <form method="post">
-                <input type="text" name="cuit" placeholder="CUIT" required>
-                <input type="password" name="contrasena" placeholder="Contraseña" required>
+    <div style="margin-top: 100px; max-width: 1000px; margin-inline: auto; padding: 1rem;">
+  <sl-card>
+    <h3 slot="header">Agregar Nuevo Usuario</h3>
+    <form method="post" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
 
-                <div class="form-group">
-                    <div class="custom-select">
-                        <select name="rol" id="rol" required>
-                            <option value="" disabled selected>Seleccione un rol</option>
-                            <option value="productor">Productor</option>
-                            <option value="cooperativa">Cooperativa</option>
-                            <option value="administrador">Administrador</option>
-                        </select>
-                    </div>
-                </div>
+      <sl-input name="cuit" label="CUIT" required></sl-input>
+      <sl-input name="contrasena" type="password" label="Contraseña" required></sl-input>
 
-                <input type="text" name="nombre" placeholder="Nombre" required>
-                <input type="email" name="correo" placeholder="Correo" required>
-                <input type="text" name="telefono" placeholder="Teléfono">
-                <input type="text" name="id_cooperativa" placeholder="ID Cooperativa">
-                <input type="text" name="id_productor" placeholder="ID Productor">
-                <input type="text" name="direccion" placeholder="Dirección">
-                <input type="text" name="id_finca_asociada" placeholder="ID Finca Asociada">
-                <input type="text" name="observaciones" placeholder="observaciones">
-                <button type="submit" name="agregar_usuario">Agregar Nuevo Usuario</button>
-            </form>
-        </div>
+      <sl-select name="rol" label="Rol" required>
+        <sl-option value="productor">Productor</sl-option>
+        <sl-option value="cooperativa">Cooperativa</sl-option>
+        <sl-option value="administrador">Administrador</sl-option>
+      </sl-select>
+
+      <sl-input name="nombre" label="Nombre" required></sl-input>
+      <sl-input name="correo" type="email" label="Correo" required></sl-input>
+      <sl-input name="telefono" label="Teléfono"></sl-input>
+      <sl-input name="id_cooperativa" label="ID Cooperativa"></sl-input>
+      <sl-input name="id_productor" label="ID Productor"></sl-input>
+      <sl-input name="direccion" label="Dirección"></sl-input>
+      <sl-input name="id_finca_asociada" label="ID Finca Asociada"></sl-input>
+      <sl-input name="observaciones" label="Observaciones"></sl-input>
+
+      <sl-button type="submit" variant="primary" name="agregar_usuario" style="grid-column: 1 / -1;">
+        <sl-icon name="plus-circle" slot="prefix"></sl-icon>
+        Agregar Nuevo Usuario
+      </sl-button>
+
+    </form>
+  </sl-card>
+</div>
 
         <div class="card">
             <div class="search-bar">
