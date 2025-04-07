@@ -4,13 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Plataforma Responsiva</title>
-  <script nomodule src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.14.0/dist/shoelace.nomodule.js"></script>
+
+  <!-- Shoelace CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.14.0/dist/themes/light.css">
+
+  <!-- Shoelace sin módulo para compatibilidad -->
+  <script nomodule src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.14.0/dist/shoelace.nomodule.js"></script>
+
   <style>
     body {
       margin: 0;
       font-family: sans-serif;
     }
+
     header {
       display: flex;
       justify-content: space-between;
@@ -18,9 +24,21 @@
       padding: 1rem;
       background-color: #f0f0f0;
     }
+
     main {
       padding: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
     }
+
+    form sl-input,
+    form sl-textarea,
+    form sl-button {
+      margin-bottom: 1rem;
+      display: block;
+      width: 100%;
+    }
+
     @media (max-width: 768px) {
       header {
         flex-direction: column;
@@ -44,37 +62,37 @@
 
   <main>
     <h2 id="form">Formulario de Registro</h2>
-    <form id="registroForm" method="POST" action="guardar.php">
+    <form id="registroForm" method="POST">
       <sl-input name="nombre" label="Nombre" required></sl-input>
-      <br>
       <sl-input name="email" type="email" label="Correo electrónico" required></sl-input>
-      <br>
       <sl-input name="password" type="password" label="Contraseña" required></sl-input>
-      <br>
       <sl-textarea name="mensaje" label="Mensaje opcional"></sl-textarea>
-      <br>
       <sl-button type="submit" variant="primary">Enviar</sl-button>
     </form>
   </main>
 
   <script>
-    document.getElementById('registroForm').addEventListener('submit', function(event) {
-      event.preventDefault();
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('registroForm');
 
-      const formData = new FormData(this);
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
 
-      fetch('guardar.php', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => response.text())
-      .then(data => {
-        alert('Datos enviados correctamente: ' + data);
-        document.getElementById('registroForm').reset();
-      })
-      .catch(error => {
-        alert('Error al enviar los datos');
-        console.error(error);
+        const formData = new FormData(form);
+
+        fetch('guardar.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.text())
+        .then(data => {
+          alert('Datos enviados correctamente: ' + data);
+          form.reset();
+        })
+        .catch(error => {
+          alert('Error al enviar los datos');
+          console.error(error);
+        });
       });
     });
   </script>
