@@ -14,9 +14,29 @@
   <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
 
   <style>
+    :root {
+      --mdc-theme-primary: #6200ee;
+      --mdc-theme-secondary: #03dac6;
+      --mdc-theme-background: #f5f5f5;
+      --mdc-theme-surface: #ffffff;
+      --mdc-theme-error: #b00020;
+      --mdc-theme-on-primary: #ffffff;
+    }
+
+    .dark-theme {
+      --mdc-theme-background: #121212;
+      --mdc-theme-surface: #1e1e1e;
+      --mdc-theme-on-surface: #ffffff;
+      --mdc-theme-primary: #bb86fc;
+      --mdc-theme-secondary: #03dac6;
+      --mdc-theme-error: #cf6679;
+    }
+
     body {
       font-family: Roboto, sans-serif;
       margin: 0;
+      background-color: var(--mdc-theme-background);
+      color: var(--mdc-theme-on-surface);
     }
     .content {
       padding: 2rem;
@@ -25,6 +45,8 @@
     .mdc-card {
       padding: 1rem;
       margin-bottom: 2rem;
+      background-color: var(--mdc-theme-surface);
+      color: var(--mdc-theme-on-surface);
     }
     @media (max-width: 768px) {
       .content {
@@ -74,11 +96,11 @@
 
   <!-- Contenido -->
   <main class="content">
-
     <!-- Card con Formulario -->
     <div class="mdc-card" id="formulario-card">
       <h2>Formulario de Registro</h2>
       <form id="formulario">
+        <!-- Campos aquí (omitidos por brevedad, siguen igual) -->
         <label class="mdc-text-field mdc-text-field--outlined full-width">
           <input class="mdc-text-field__input" type="text" id="nombre" required>
           <span class="mdc-notched-outline">
@@ -90,7 +112,6 @@
           </span>
         </label>
         <br><br>
-
         <label class="mdc-text-field mdc-text-field--outlined full-width">
           <input class="mdc-text-field__input" type="email" id="email" required>
           <span class="mdc-notched-outline">
@@ -102,7 +123,6 @@
           </span>
         </label>
         <br><br>
-
         <div class="mdc-select mdc-select--outlined full-width" id="rolSelect">
           <div class="mdc-select__anchor" role="button">
             <span class="mdc-notched-outline">
@@ -129,7 +149,6 @@
           </div>
         </div>
         <br><br>
-
         <label class="mdc-text-field mdc-text-field--textarea mdc-text-field--outlined full-width">
           <span class="mdc-notched-outline">
             <span class="mdc-notched-outline__leading"></span>
@@ -141,7 +160,6 @@
           <textarea class="mdc-text-field__input" rows="4" cols="40"></textarea>
         </label>
         <br><br>
-
         <button class="mdc-button mdc-button--raised" type="submit">
           <span class="mdc-button__label">Enviar</span>
         </button>
@@ -155,7 +173,6 @@
         <span class="mdc-button__ripple"></span>
         <span class="mdc-button__label">Botón Secundario</span>
       </button>
-
       <div style="margin-top: 1rem">
         <div class="mdc-switch">
           <div class="mdc-switch__track"></div>
@@ -167,30 +184,13 @@
         </div>
         <label for="switch-basic">Activar modo oscuro</label>
       </div>
-
-      <div style="margin-top: 1rem">
-        <div class="mdc-linear-progress" role="progressbar">
-          <div class="mdc-linear-progress__buffer">
-            <div class="mdc-linear-progress__buffer-bar"></div>
-            <div class="mdc-linear-progress__buffer-dots"></div>
-          </div>
-          <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
-            <span class="mdc-linear-progress__bar-inner"></span>
-          </div>
-          <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
-            <span class="mdc-linear-progress__bar-inner"></span>
-          </div>
-        </div>
-      </div>
     </div>
-
   </main>
 
   <!-- Inicialización de componentes -->
   <script>
     window.onload = () => {
       mdc.autoInit();
-
       const drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));
       const topAppBar = mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('.mdc-top-app-bar'));
       const select = mdc.select.MDCSelect.attachTo(document.querySelector('.mdc-select'));
@@ -200,9 +200,15 @@
         drawer.open = !drawer.open;
       });
 
+      // Formulario
       document.getElementById("formulario").addEventListener("submit", function (e) {
         e.preventDefault();
         alert("Formulario enviado correctamente 🚀");
+      });
+
+      // Switch modo oscuro
+      document.getElementById('switch-basic').addEventListener('change', function () {
+        document.body.classList.toggle('dark-theme', this.checked);
       });
     };
   </script>
