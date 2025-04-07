@@ -24,7 +24,7 @@ if ($conn->connect_error) {
     die("Error en la conexión: " . $conn->connect_error);
 }
 
-// Obtener productores por cooperativa (ajax)
+
 if (isset($_POST['cooperativas'])) {
     $coops = $_POST['cooperativas'];
     if (!is_array($coops)) $coops = [$coops];
@@ -45,10 +45,11 @@ if (isset($_POST['cooperativas'])) {
         echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
     }
 
-    exit;
+    exit; // 🚨 Detiene el script para que no siga al HTML
 }
 
-// Crear nuevo operativo
+
+
 if (isset($_POST['nombre'])) {
     $nombre = $_POST['nombre'];
     $cooperativas = is_array($_POST['cooperativas']) ? implode(",", $_POST['cooperativas']) : '';
@@ -65,6 +66,7 @@ if (isset($_POST['nombre'])) {
     echo json_encode(['success' => $stmt->execute()]);
     exit;
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -73,21 +75,34 @@ if (isset($_POST['nombre'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operativos SVE</title>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
-
+    <title>Pedidos SVE</title>
     <style>
         body,
         html {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #F0F2F5;
+        }
+
+        /* General Styles */
+        * {
+            box-sizing: border-box;
             font-family: Arial, sans-serif;
         }
 
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Header */
         #header {
             background-color: #ffffff;
             color: #333;
@@ -102,6 +117,7 @@ if (isset($_POST['nombre'])) {
             z-index: 10;
         }
 
+        /* Sidebar */
         #sidebar {
             background-color: #ffffff;
             color: #333;
@@ -116,114 +132,216 @@ if (isset($_POST['nombre'])) {
             transition: all 0.3s;
         }
 
+        /* Body */
         #body {
             margin-left: 250px;
             padding: 2rem;
             background-color: #F0F2F5;
+            height: 100vh;
+            overflow-y: auto;
             padding-top: 60px;
         }
 
+        /* Card */
         .card {
             background: white;
-            padding: 1.5rem;
+            padding: 1rem;
             border-radius: 10px;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
-        .md-input {
-            margin-bottom: 1.5rem;
-            display: flex;
-            flex-direction: column;
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            #sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                top: 0;
+                height: 100vh;
+                z-index: 9;
+            }
+
+            #sidebar.show {
+                transform: translateX(0);
+            }
+
+            #body {
+                margin-left: 0;
+            }
         }
 
-        .md-input label {
-            font-weight: bold;
-            margin-bottom: 6px;
-            color: #333;
+        /* Botón de cerrar menú */
+        #close-menu-button {
+            display: block;
+            /* Visible por defecto */
         }
 
-        .md-input input,
-        .md-input select,
-        .md-input textarea {
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 15px;
-            background-color: #fff;
-            outline: none;
-            transition: border 0.3s ease, box-shadow 0.3s ease;
+        /* Ocultar el botón en pantallas grandes */
+        @media (min-width: 769px) {
+            #close-menu-button {
+                display: none;
+            }
         }
 
-        .md-input input:focus,
-        .md-input select:focus,
-        .md-input textarea:focus {
-            border-color: #3f51b5;
-            box-shadow: 0 0 5px rgba(63, 81, 181, 0.5);
-        }
-
-        .productos-box {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            padding: 1rem;
-            border-radius: 6px;
-            background-color: #fff;
-        }
-
-        .productos-box label {
+        /* Estilo de botones del menú */
+        #sidebar nav a {
             display: flex;
             align-items: center;
-            margin-bottom: 6px;
-            cursor: pointer;
-        }
-
-        .productos-box input[type="checkbox"] {
-            margin-right: 10px;
-        }
-
-        .submit-btn {
-            background-color: #3f51b5;
-            color: white;
-            border: none;
-            padding: 12px 18px;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .submit-btn:hover {
-            background-color: #303f9f;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
             padding: 10px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
+            margin: 5px 0;
+            background-color: white;
+            color: #333;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
 
-        th {
-            background-color: #f4f4f4;
+        #sidebar nav a:hover {
+            background-color: #E0E0E0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
+
+        /* Iconos */
+        #sidebar nav a i {
+            margin-right: 8px;
+        }
+
+        /* Estilo del botón de cerrar menú */
+        #close-menu-button {
+            display: block;
+            /* Visible por defecto */
+            padding: 10px;
+            margin-top: 20px;
+            border: none;
+            background-color: #ff5e57;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #close-menu-button:hover {
+            background-color: #ff3d3d;
+        }
+
+        /* Ocultar el botón de cerrar menú en pantallas grandes */
+        @media (min-width: 769px) {
+            #close-menu-button {
+                display: none;
+            }
+        }
+
+        /* Ajuste para que el sidebar no se superponga al header en móviles */
+        @media (max-width: 768px) {
+            #sidebar {
+                top: 55PX;
+                /* Para que ocupe todo el alto de la pantalla */
+                height: 100vh;
+            }
+        }
+
+        .md-input {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.md-input label {
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.md-input input,
+.md-input select,
+.md-input textarea {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    background-color: #fff;
+    outline: none;
+    transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+.md-input input:focus,
+.md-input select:focus,
+.md-input textarea:focus {
+    border-color: #3f51b5;
+    box-shadow: 0 0 5px rgba(63, 81, 181, 0.5);
+}
+
+/* Checkbox en filas limpias */
+.productos-box {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 1rem;
+    border-radius: 6px;
+    background-color: #fff;
+}
+
+.productos-box label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+    cursor: pointer;
+}
+
+.productos-box input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+/* Botón */
+.submit-btn {
+    background-color: #3f51b5;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.submit-btn:hover {
+    background-color: #303f9f;
+}
+
+/* Tabla responsiva */
+@media (max-width: 768px) {
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+
+
     </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+
+
 </head>
 
 <body>
+
+    <!-- Header -->
     <div id="header">
         <div id="menu-icon" onclick="toggleSidebar()">☰</div>
-        <div>Operativos</div>
+        <div>Inicio SVE</div>
     </div>
 
+    <!-- Sidebar -->
     <div id="sidebar">
         <nav>
             <a href="sve_dashboard.php"><i class="fa fa-home"></i> Inicio</a><br>
@@ -240,15 +358,18 @@ if (isset($_POST['nombre'])) {
         <button id="close-menu-button" onclick="toggleSidebar()">Cerrar Menú</button>
     </div>
 
+    <!-- Body -->
     <div id="body">
         <div class="card">
             <h2>Crear nuevo operativo</h2>
             <form id="form-operativo" method="POST">
+                <!-- Nombre -->
                 <div class="md-input">
                     <label>Nombre del operativo</label>
                     <input type="text" name="nombre" required>
                 </div>
 
+                <!-- Cooperativas -->
                 <div class="md-input">
                     <label>Cooperativas</label>
                     <select id="cooperativas" name="cooperativas[]" multiple="multiple" style="width: 100%">
@@ -261,13 +382,21 @@ if (isset($_POST['nombre'])) {
                     </select>
                 </div>
 
+                <!-- Productores -->
                 <div class="md-input">
                     <label>Productores</label>
                     <select id="productores" name="productores[]" multiple="multiple" style="width: 100%">
                         <option value="all" selected>Todos</option>
+                        <?php
+                        $res = $conn->query("SELECT id, nombre FROM productores");
+                        while ($row = $res->fetch_assoc()) {
+                            echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
+                        }
+                        ?>
                     </select>
                 </div>
 
+                <!-- Productos -->
                 <div class="md-input">
                     <label>Productos</label>
                     <div class="productos-box">
@@ -285,6 +414,7 @@ if (isset($_POST['nombre'])) {
                     </div>
                 </div>
 
+                <!-- Fechas -->
                 <div class="md-input">
                     <label>Fecha de inicio</label>
                     <input type="date" name="fecha_inicio" required>
@@ -298,60 +428,58 @@ if (isset($_POST['nombre'])) {
                 <button type="submit" class="submit-btn">Crear Operativo</button>
             </form>
         </div>
-
         <div class="card">
             <h2>Operativos existentes</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Cooperativas</th>
-                        <th>Productores</th>
-                        <th>Productos</th>
-                        <th>Fecha inicio</th>
-                        <th>Fecha cierre</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $operativos = $conn->query("SELECT * FROM operativos");
-                    while ($op = $operativos->fetch_assoc()) {
-                        echo "<tr>";
-                        echo "<td>{$op['nombre']}</td>";
-                        echo "<td>{$op['cooperativas_ids']}</td>";
-                        echo "<td>{$op['productores_ids']}</td>";
-                        echo "<td>{$op['productos_ids']}</td>";
-                        echo "<td>{$op['fecha_inicio']}</td>";
-                        echo "<td>{$op['fecha_cierre']}</td>";
-                        echo "<td><button onclick='editarOperativo({$op['id']})'>Editar</button></td>";
-                        echo "</tr>";
-                    }
-                    ?>
-                </tbody>
+            <table border="1" width="100%" cellpadding="10" id="tabla-operativos">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Cooperativas</th>
+                    <th>Productores</th>
+                    <th>Productos</th>
+                    <th>Fecha inicio</th>
+                    <th>Fecha cierre</th>
+                    <th>Acción</th>
+                </tr>
+                <?php
+                $operativos = $conn->query("SELECT * FROM operativos");
+                while ($op = $operativos->fetch_assoc()) {
+                    echo "<tr>";
+                    echo "<td>{$op['nombre']}</td>";
+                    echo "<td>{$op['cooperativas_ids']}</td>";
+                    echo "<td>{$op['productores_ids']}</td>";
+                    echo "<td>{$op['productos_ids']}</td>";
+                    echo "<td>{$op['fecha_inicio']}</td>";
+                    echo "<td>{$op['fecha_cierre']}</td>";
+                    echo "<td><button onclick='editarOperativo({$op['id']})'>Editar</button></td>";
+                    echo "</tr>";
+                }
+                ?>
             </table>
         </div>
     </div>
 
+    <!-- JavaScript -->
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('show');
         }
 
-        $(document).ready(function () {
+        $(document).ready(function() {
             $('#cooperativas, #productores').select2();
 
-            $('#cooperativas').on('change', function () {
+            $('#cooperativas').on('change', function() {
                 const coopIds = $(this).val();
-                $.post('operativos.php', { cooperativas: coopIds }, function (data) {
+                $.post('get_productores_por_coop.php', {
+                    cooperativas: coopIds
+                }, function(data) {
                     $('#productores').html(data).trigger('change');
                 });
             });
 
-            $('#form-operativo').on('submit', function (e) {
+            $('#form-operativo').on('submit', function(e) {
                 e.preventDefault();
-                $.post('operativos.php', $(this).serialize(), function (res) {
+                $.post('crear_operativo.php', $(this).serialize(), function(res) {
                     if (res.success) {
                         toastr.success('✅ Operativo creado');
                         setTimeout(() => location.reload(), 1000);
@@ -366,5 +494,7 @@ if (isset($_POST['nombre'])) {
             toastr.info("Funcionalidad de edición aún no implementada");
         }
     </script>
+
 </body>
+
 </html>
