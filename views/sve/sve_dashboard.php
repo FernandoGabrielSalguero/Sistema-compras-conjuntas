@@ -83,24 +83,24 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             <!-- 📦 CONTENIDO -->
             <section class="content">
 
-            <div class="card .card-grid grid-4">
-            <div class="card ">
-                    <h2>¡Hola! 👋</h2>
-                    <p>Esta es una tarjeta de bienvenida para empezar tu diseño.</p>
-                </div>
-                <div class="card ">
-                    <h2>¡Hola! 👋</h2>
-                    <p>Esta es una tarjeta de bienvenida para empezar tu diseño.</p>
-                </div>
-                <div class="card ">
-                    <h2>¡Hola! 👋</h2>
-                    <p>Esta es una tarjeta de bienvenida para empezar tu diseño.</p>
-                </div>
-                <div class="card ">
-                    <h2>¡Hola! 👋</h2>
-                    <p>Esta es una tarjeta de bienvenida para empezar tu diseño.</p>
-                </div>
-            </div>
+            <div class="card-grid grid-4">
+                        <div class="card">
+                            <h3>Tarjeta 1</h3>
+                            <p>Contenido 1</p>
+                        </div>
+                        <div class="card">
+                            <h3>Tarjeta 2</h3>
+                            <p>Contenido 2</p>
+                        </div>
+                        <div class="card">
+                            <h3>Tarjeta 3</h3>
+                            <p>Contenido 3</p>
+                        </div>
+                        <div class="card">
+                            <h3>Tarjeta 3</h3>
+                            <p>Contenido 3</p>
+                        </div>
+                    </div>
 
 
                 <div class="card">
