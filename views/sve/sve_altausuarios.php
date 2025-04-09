@@ -7,13 +7,8 @@ error_reporting(E_ALL);
 // Iniciar sesión y proteger acceso
 session_start();
 
-if (!isset($_SESSION['cuit'])) {
-    die("⚠️ Acceso denegado. No has iniciado sesión.");
-}
-
-if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'sve') {
-    die("🚫 Acceso restringido: esta página es solo para usuarios SVE.");
-}
+require_once '../../middleware/authMiddleware.php';
+checkAccess('sve');
 
 // Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
