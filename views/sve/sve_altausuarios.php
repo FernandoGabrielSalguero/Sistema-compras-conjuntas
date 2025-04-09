@@ -109,6 +109,95 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
                             </div>
 
+                            <!-- Rol -->
+                            <div class="input-group">
+                                <label for="rol">Rol</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">public</span>
+                                    <select id="rol" name="rol" required>
+                                        <option value="">Seleccionar</option>
+                                        <option value="sve">SVE</option>
+                                        <option value="cooperativa">Cooperativa</option>
+                                        <option value="productor">Productor</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Permiso -->
+                            <div class="input-group">
+                                <label for="permiso">Permiso</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">public</span>
+                                    <select id="permiso" name="permiso" required>
+                                        <option value="Habilitado">Habilitado</option>
+                                        <option value="Deshabilitado">No habilitado</option>
+
+                                    </select>
+                                </div>
+                            </div>
+
+                             <!-- CUIT -->
+                             <div class="input-group">
+                                <label for="cuit">Cuit</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">location_city</span>
+                                    <input type="text" id="cuit" name="cuit" required>
+                                </div>
+                            </div>
+
+                            <!-- Contraseña -->
+                            <div class="input-group">
+                                <label for="cp">Contraseña</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">markunread_mailbox</span>
+                                    <input type="text" id="cp" name="cp" pattern="[0-9]{4,6}" required>
+                                </div>
+                            </div>
+
+                            <!-- Rol -->
+                            <div class="input-group">
+                                <label for="rol">Rol</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">public</span>
+                                    <select id="rol" name="rol" required>
+                                        <option value="">Seleccionar</option>
+                                        <option value="sve">SVE</option>
+                                        <option value="cooperativa">Cooperativa</option>
+                                        <option value="productor">Productor</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Permiso -->
+                            <div class="input-group">
+                                <label for="permiso">Permiso</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">public</span>
+                                    <select id="permiso" name="permiso" required>
+                                        <option value="Habilitado">Habilitado</option>
+                                        <option value="Deshabilitado">No habilitado</option>
+
+                                    </select>
+                                </div>
+                            </div>
+
+                             <!-- CUIT -->
+                             <div class="input-group">
+                                <label for="cuit">Cuit</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">location_city</span>
+                                    <input type="text" id="cuit" name="cuit" required>
+                                </div>
+                            </div>
+
+                            <!-- Contraseña -->
+                            <div class="input-group">
+                                <label for="cp">Contraseña</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">markunread_mailbox</span>
+                                    <input type="text" id="cp" name="cp" pattern="[0-9]{4,6}" required>
+                                </div>
+                            </div>
 
                             <!-- Rol -->
                             <div class="input-group">
