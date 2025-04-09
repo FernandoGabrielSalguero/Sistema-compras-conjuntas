@@ -223,11 +223,23 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <div class="card">
                     <h2>Tablas</h2>
                     <div class="table-container">
-                        <tbody id="tablaUsuarios">
-                            <!-- Se cargará dinámicamente -->
-                        </tbody>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaUsuarios">
+                                <!-- Se cargará dinámicamente -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+
 
 
                 <!-- Alert -->
