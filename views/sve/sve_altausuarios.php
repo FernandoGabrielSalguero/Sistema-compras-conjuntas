@@ -122,7 +122,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
                             </div>
 
-                            <!-- Rol -->
+                            <!-- Permiso -->
                             <div class="input-group">
                                 <label for="permiso">Permiso</label>
                                 <div class="input-icon">
@@ -250,33 +250,56 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <div class="modal-content">
                         <h3>Editar Usuario</h3>
                         <form id="formEditarUsuario">
-                            <input type="hidden" name="id" id="edit_id">
+    <input type="hidden" name="id" id="edit_id">
 
-                            <div class="input-group">
-                                <label for="edit_nombre">Nombre</label>
-                                <input type="text" name="nombre" id="edit_nombre" required>
-                            </div>
+    <div class="input-group">
+        <label for="edit_nombre">Nombre</label>
+        <div class="input-icon">
+            <span class="material-icons">person</span>
+            <input type="text" name="nombre" id="edit_nombre" required>
+        </div>
+    </div>
 
-                            <div class="input-group">
-                                <label for="edit_correo">Correo</label>
-                                <input type="email" name="correo" id="edit_correo" required>
-                            </div>
+    <div class="input-group">
+        <label for="edit_correo">Correo</label>
+        <div class="input-icon">
+            <span class="material-icons">mail</span>
+            <input type="email" name="correo" id="edit_correo" required>
+        </div>
+    </div>
 
-                            <div class="input-group">
-                                <label for="edit_telefono">Teléfono</label>
-                                <input type="text" name="telefono" id="edit_telefono" required>
-                            </div>
+    <div class="input-group">
+        <label for="edit_telefono">Teléfono</label>
+        <div class="input-icon">
+            <span class="material-icons">phone</span>
+            <input type="text" name="telefono" id="edit_telefono" required>
+        </div>
+    </div>
 
-                            <div class="input-group">
-                                <label for="edit_observaciones">Observaciones</label>
-                                <input type="text" name="observaciones" id="edit_observaciones">
-                            </div>
+    <div class="input-group">
+        <label for="edit_observaciones">Observaciones</label>
+        <div class="input-icon">
+            <span class="material-icons">notes</span>
+            <input type="text" name="observaciones" id="edit_observaciones">
+        </div>
+    </div>
 
-                            <div class="form-buttons">
-                                <button type="submit" class="btn btn-aceptar">Guardar</button>
-                                <button type="button" class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
-                            </div>
-                        </form>
+    <div class="input-group">
+        <label for="edit_permiso">Permiso</label>
+        <div class="input-icon">
+            <span class="material-icons">check_circle</span>
+            <select name="permiso" id="edit_permiso" required>
+                <option value="Habilitado">Habilitado</option>
+                <option value="Deshabilitado">Deshabilitado</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-buttons">
+        <button type="submit" class="btn btn-aceptar">Guardar</button>
+        <button type="button" class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
+    </div>
+</form>
                     </div>
                 </div>
 
@@ -343,23 +366,27 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         // modal
         function abrirModalEditar(id) {
-            fetch(`/controllers/obtenerUsuarioController.php?id=${id}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('edit_id').value = data.user.id;
-                        document.getElementById('edit_nombre').value = data.user.nombre;
-                        document.getElementById('edit_correo').value = data.user.correo;
-                        document.getElementById('edit_telefono').value = data.user.telefono;
-                        document.getElementById('edit_observaciones').value = data.user.observaciones;
+    fetch(`/controllers/obtenerUsuarioController.php?id=${id}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('edit_id').value = data.user.id;
+                document.getElementById('edit_nombre').value = data.user.nombre;
+                document.getElementById('edit_correo').value = data.user.correo;
+                document.getElementById('edit_telefono').value = data.user.telefono;
+                document.getElementById('edit_observaciones').value = data.user.observaciones;
+                document.getElementById('edit_permiso').value = data.user.permiso_ingreso;
 
-                        openModal(); // ✅ usa tu framework
-                    } else {
-                        showAlert('error', 'Error al cargar datos del usuario.');
-                    }
-                })
-                .catch(() => showAlert('error', 'Error de red al buscar usuario.'));
-        }
+                openModal();
+            } else {
+                showAlert('error', 'Error al cargar datos del usuario.');
+            }
+        })
+        .catch((err) => {
+            console.error('⛔ Error:', err);
+            showAlert('error', 'Error de red al buscar usuario.');
+        });
+}
 
         // enviar cambios del formulario por ajax
         document.getElementById('formEditarUsuario').addEventListener('submit', async function(e) {

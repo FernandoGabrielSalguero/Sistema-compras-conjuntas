@@ -1,6 +1,4 @@
 <?php
-// controllers/obtenerUsuarioController.php
-
 require_once __DIR__ . '/../config.php';
 
 $id = $_GET['id'] ?? null;
@@ -10,7 +8,11 @@ if (!$id) {
     exit;
 }
 
-$stmt = $pdo->prepare("SELECT id, nombre, correo, telefono, observaciones FROM usuarios WHERE id = ?");
+$stmt = $pdo->prepare("
+    SELECT id, nombre, correo, telefono, observaciones, permiso_ingreso 
+    FROM usuarios 
+    WHERE id = ?
+");
 $stmt->execute([$id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
