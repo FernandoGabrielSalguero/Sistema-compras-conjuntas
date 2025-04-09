@@ -160,7 +160,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="telefono">Teléfono</label>
                                 <div class="input-icon">
                                     <span class="material-icons">phone</span>
-                                    <input type="tel" id="telefono" name="telefono" pattern="[0-9\+\-\s]{7,20}" placeholder="2616686065" required>
+                                    <input type="tel" id="telefono" name="telefono"  placeholder="2616686065" required>
                                 </div>
                             </div>
 
