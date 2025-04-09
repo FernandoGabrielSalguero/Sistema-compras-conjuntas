@@ -95,7 +95,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="cuit">CUIT</label>
                                 <div class="input-icon">
                                     <span class="material-icons">fingerprint</span>
-                                    <input type="text" id="cuit" name="cuit" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" placeholder="20123456781" required>
+                                    <input type="number" id="cuit" name="cuit" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" placeholder="20123456781" required>
                                 </div>
                             </div>
 
@@ -105,7 +105,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </label>
                                 <div class="input-icon">
                                     <span class="material-icons">lock</span>
-                                    <input type="text" id="contraseña" name="contraseña" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" placeholder="20123456781" required>
+                                    <input type="number" id="contraseña" name="contraseña" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" placeholder="20123456781" required>
                                 </div>
                             </div>
 
