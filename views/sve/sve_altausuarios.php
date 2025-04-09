@@ -93,105 +93,139 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <!-- CUIT -->
                             <div class="input-group">
                                 <label for="cuit">CUIT
-                                    <span class="tooltip" data-tooltip="Ej: 20123456781">
-                                        <span class="material-icons">info</span>
-                                    </span>
                                 </label>
                                 <div class="input-icon">
                                     <span class="material-icons">badge</span>
-                                    <input type="text" id="cuit" name="cuit" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}"
-                                        required>
+                                    <input type="text" id="cuit" name="cuit" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" required>
                                 </div>
                             </div>
-
 
                             <!-- Contraseña -->
                             <div class="input-group">
                                 <label for="contraseña">Contraseña
-                                    <span class="tooltip" data-tooltip="Ej: 20123456781">
+                                    <span class="tooltip" data-tooltip="Debe ser el mismo CUIT">
                                         <span class="material-icons">info</span>
                                     </span>
                                 </label>
                                 <div class="input-icon">
                                     <span class="material-icons">badge</span>
-                                    <input type="text" id="contraseña" name="contraseña" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}"
+                                    <input type="text" id="contraseña" name="contraseña" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" required>
+                                </div>
+                            </div>
+
+                            <!-- Rol -->
+                            <div class="input-group">
+                                <label for="rol">Rol</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">person</span>
+                                    <select id="rol" name="rol" required>
+                                        <option value="sve">SVE</option>
+                                        <option value="cooperativa">Cooperativa</option>
+                                        <option value="productor">Productor</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Rol -->
+                            <div class="input-group">
+                                <label for="permiso">Permiso</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">person</span>
+                                    <select id="permiso" name="permiso" required>
+                                        <option value="Habilitado">Habilitado</option>
+                                        <option value="Deshabilitado">Deshabilitado</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Nombre completo -->
+                            <div class="input-group">
+                                <label for="nombre">Nombre completo
+                                </label>
+                                <div class="input-icon">
+                                    <span class="material-icons">person</span>
+                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required
+                                        minlength="2" maxlength="60" aria-required="true">
+                                </div>
+                                <small class="error-message" aria-live="polite"></small>
+                            </div>
+
+                            <!-- Correo electrónico -->
+                            <div class="input-group">
+                                <label for="email">Correo electrónico
+                                </label>
+                                <div class="input-icon">
+                                    <span class="material-icons">mail</span>
+                                    <input type="email" id="email" name="email" placeholder="usuario@correo.com"
+                                        required aria-required="true">
+                                </div>
+                                <small class="error-message" aria-live="polite"></small>
+                            </div>
+
+                            <!-- Teléfono -->
+                            <div class="input-group">
+                                <label for="telefono">Teléfono
+                                </label>
+                                <div class="input-icon">
+                                    <span class="material-icons">phone</span>
+                                    <input type="tel" id="telefono" name="telefono" pattern="[0-9\+\-\s]{7,20}"
                                         required>
                                 </div>
                             </div>
 
-                        </div>
-
-                        <!-- Rol -->
-                        <div class="input-group">
-                            <label for="rol">Rol</label>
-                            <div class="input-icon">
-                                <span class="material-icons">person</span>
-                                <select id="rol" name="rol" required>
-                                    <option value="sve">SVE</option>
-                                    <option value="cooperativa">Cooperativa</option>
-                                    <option value="productor">Productor</option>
-                                </select>
+                                                        <!-- Teléfono -->
+                                                        <div class="input-group">
+                                <label for="telefono">Teléfono
+                                </label>
+                                <div class="input-icon">
+                                    <span class="material-icons">phone</span>
+                                    <input type="tel" id="telefono" name="telefono" pattern="[0-9\+\-\s]{7,20}"
+                                        required>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Rol -->
-                        <div class="input-group">
-                            <label for="permiso">Permiso</label>
-                            <div class="input-icon">
-                                <span class="material-icons">person</span>
-                                <select id="permiso" name="permiso" required>
-                                    <option value="Habilitado">Habilitado</option>
-                                    <option value="Deshabilitado">Deshabilitado</option>
-                                </select>
+                                                        <!-- Teléfono -->
+                                                        <div class="input-group">
+                                <label for="telefono">Teléfono
+                                </label>
+                                <div class="input-icon">
+                                    <span class="material-icons">phone</span>
+                                    <input type="tel" id="telefono" name="telefono" pattern="[0-9\+\-\s]{7,20}"
+                                        required>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Nombre completo -->
-                        <div class="input-group">
-                            <label for="nombre">Nombre completo
-                                <span class="tooltip" data-tooltip="Ingresá tu nombre y apellido completo.">
-                                    <span class="material-icons">info</span>
-                                </span>
-                            </label>
-                            <div class="input-icon">
-                                <span class="material-icons">person</span>
-                                <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required
-                                    minlength="2" maxlength="60" aria-required="true">
+                                                        <!-- Dirección -->
+                                                        <div class="input-group">
+                                <label for="direccion">Dirección</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">home</span>
+                                    <input type="text" id="direccion" name="direccion" required>
+                                </div>
                             </div>
-                            <small class="error-message" aria-live="polite"></small>
-                        </div>
-
-                        <!-- Correo electrónico -->
-                        <div class="input-group">
-                            <label for="email">Correo electrónico
-                                <span class="tooltip" data-tooltip="Ej: usuario@correo.com">
-                                    <span class="material-icons">info</span>
-                                </span>
-                            </label>
-                            <div class="input-icon">
-                                <span class="material-icons">mail</span>
-                                <input type="email" id="email" name="email" placeholder="usuario@correo.com"
-                                    required aria-required="true">
+                    
+                                                                                    <!-- Teléfono -->
+                                                                                    <div class="input-group">
+                                <label for="telefono">Teléfono
+                                </label>
+                                <div class="input-icon">
+                                    <span class="material-icons">phone</span>
+                                    <input type="tel" id="telefono" name="telefono" pattern="[0-9\+\-\s]{7,20}"
+                                        required>
+                                </div>
                             </div>
-                            <small class="error-message" aria-live="polite"></small>
-                        </div>
 
-                        <!-- Teléfono -->
-                        <div class="input-group">
-                            <label for="telefono">Teléfono
-                                <span class="tooltip" data-tooltip="Incluí el código de área. Ej: +54 11 5555-1234">
-                                    <span class="material-icons">info</span>
-                                </span>
-                            </label>
-                            <div class="input-icon">
-                                <span class="material-icons">phone</span>
-                                <input type="tel" id="telefono" name="telefono" pattern="[0-9\+\-\s]{7,20}"
-                                    required>
+                                                                                    <!-- Dirección -->
+                                                                                    <div class="input-group">
+                                <label for="direccion">Dirección</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">home</span>
+                                    <input type="text" id="direccion" name="direccion" required>
+                                </div>
                             </div>
+
+
                         </div>
-
-
-
                         <!-- Botones -->
                         <div class="form-buttons">
                             <button class="btn btn-aceptar" type="submit">Enviar</button>
