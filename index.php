@@ -29,45 +29,7 @@ try {
     $error = "❌ Error de conexión a la base de datos: " . $e->getMessage();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $cuit = trim(strval($_POST['cuit'] ?? ''));
-    $contrasena = trim(strval($_POST['contrasena'] ?? ''));
 
-    if (empty($cuit) || empty($contrasena)) {
-        $error = "❌ CUIT y/o contraseña no proporcionados.";
-    } elseif (!isset($error) || $error === "") {
-        $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE cuit = :cuit LIMIT 1");
-        $stmt->execute([':cuit' => $cuit]);
-
-        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($usuario) {
-            if (trim($usuario['contrasena']) !== $contrasena) {
-                $error = "❌ CUIT o contraseña incorrectos.";
-            } elseif ($usuario['permiso_ingreso'] !== 'Habilitado') {
-                $error = "❌ Su acceso está restringido. Contacte con soporte.";
-            } else {
-                $_SESSION['usuario'] = $usuario;
-
-                switch ($usuario['rol']) {
-                    case 'productor':
-                        header('Location: views/productor/productor_dashboard.php');
-                        exit();
-                    case 'cooperativa':
-                        header('Location: views/cooperativa/cooperativa_dashboard.php');
-                        exit();
-                    case 'sve':
-                        header('Location: views/sve/sve_dashboard.php');
-                        exit();
-                    default:
-                        $error = "❌ Rol desconocido. Contacte con soporte.";
-                }
-            }
-        } else {
-            $error = "❌ CUIT o contraseña incorrectos.";
-        }
-    }
-}
 ?>
 
 
@@ -76,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión - Compra Conjunta SVE</title>
+    <title>Iniciar Sesión</title>
     <style>
         body {
             font-family: Arial, sans-serif;

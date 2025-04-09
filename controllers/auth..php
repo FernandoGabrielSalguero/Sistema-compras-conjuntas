@@ -1,23 +1,38 @@
 <?php
-// Activar la visualización de errores en pantalla
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// controllers/auth.php
 
+require_once __DIR__ . '/../models/AuthModel.php';
 session_start();
 
-// Comprobar si el usuario está logueado
-if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"])) {
-    // Si no está autenticado, redirigir al login
-    header("Location: /index.php");
-    exit();
-}
+$error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $cuit = $_POST['cuit'];
+    $contrasena = $_POST['contrasena'];
 
-// Comprobar si el usuario tiene permisos para acceder a la página
-function verificarAcceso($rolesPermitidos) {
-    if (!in_array($_SESSION["user_role"], $rolesPermitidos)) {
-        // Si el rol del usuario no está permitido, redirigir al login
-        header("Location: /index.php");
-        exit();
+    $auth = new AuthModel($pdo);
+    $user = $auth->login($cuit, $contrasena);
+
+    if ($user) {
+        $_SESSION['nombre'] = $user['nombre'];
+        $_SESSION['correo'] = $user['correo'];
+        $_SESSION['cuit'] = $user['cuit'];
+        $_SESSION['telefono'] = $user['telefono'];
+        $_SESSION['observaciones'] = $user['observaciones'];
+
+        switch ($user['rol']) {
+            case 'cooperativa':
+                header('Location: /views/cooperativa/dashboard.php');
+                break;
+            case 'productor':
+                header('Location: /views/productor/dashboard.php');
+                break;
+            case 'sve':
+                header('Location: /views/sve/dashboard.php');
+                break;
+        }
+        exit;
+    } else {
+        $error = "CUIT, contraseña inválidos o permiso no habilitado.";
     }
 }
+include __DIR__ . '/../views/sve/login.php';
