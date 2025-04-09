@@ -103,7 +103,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                         required>
                                 </div>
                             </div>
-                        </div>
+                        
 
                             <!-- Contraseña -->
                             <div class="input-group">
