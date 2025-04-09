@@ -86,50 +86,61 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Formulario -->
                 <div class="card">
-                    <h2>Formularios</h2>
+                    <h2>Formulario para cargar un nuevo usuario</h2>
                     <form class="form-modern">
                         <div class="form-grid grid-4">
-                            <!-- Provincia -->
-                            <div class="input-group">
-                                <label for="provincia">Provincia</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">public</span>
-                                    <select id="provincia" name="provincia" required>
-                                        <option value="">Seleccionar</option>
-                                        <option>Buenos Aires</option>
-                                        <option>Córdoba</option>
-                                        <option>Santa Fe</option>
-                                    </select>
-                                </div>
-                            </div>
 
-                            <!-- Localidad -->
+
+                            <!-- CUIT -->
                             <div class="input-group">
-                                <label for="localidad">Localidad</label>
+                                <label for="cuit">Cuit</label>
                                 <div class="input-icon">
                                     <span class="material-icons">location_city</span>
-                                    <input type="text" id="localidad" name="localidad" required>
+                                    <input type="text" id="cuit" name="cuit" required>
                                 </div>
                             </div>
 
-                            <!-- Código Postal -->
+                            <!-- Contraseña -->
                             <div class="input-group">
-                                <label for="cp">Código Postal</label>
+                                <label for="cp">Contraseña</label>
                                 <div class="input-icon">
                                     <span class="material-icons">markunread_mailbox</span>
                                     <input type="text" id="cp" name="cp" pattern="[0-9]{4,6}" required>
                                 </div>
                             </div>
 
-                            <!-- Dirección -->
+
+                            <!-- Rol -->
                             <div class="input-group">
-                                <label for="direccion">Dirección</label>
+                                <label for="rol">Rol</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">home</span>
-                                    <input type="text" id="direccion" name="direccion" required>
+                                    <span class="material-icons">public</span>
+                                    <select id="rol" name="rol" required>
+                                        <option value="">Seleccionar</option>
+                                        <option value="sve">SVE</option>
+                                        <option value="cooperativa">Cooperativa</option>
+                                        <option value="productor">Productor</option>
+                                    </select>
                                 </div>
                             </div>
-                        </div>
+
+                            <!-- Permiso -->
+                            <div class="input-group">
+                                <label for="permiso">Permiso</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">public</span>
+                                    <select id="permiso" name="permiso" required>
+                                        <option value="Habilitado">Habilitado</option>
+                                        <option value="Deshabilitado">No habilitado</option>
+
+                                    </select>
+                                </div>
+                            </div>
+
+
+
+
+
 
                         <!-- Botones -->
                         <div class="form-buttons">
