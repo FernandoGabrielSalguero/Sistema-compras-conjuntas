@@ -77,7 +77,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="navbar-title">Inicio</div>
+                <div class="navbar-title">Alta de usuarios nuevos</div>
             </header>
 
             <!-- 📦 CONTENIDO -->
