@@ -29,7 +29,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mi Proyecto con Success</title>
+    <title>SVE</title>
 
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
@@ -48,7 +48,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="material-icons logo-icon">dashboard</span>
-                <span class="logo-text">Success</span>
+                <span class="logo-text">SVE</span>
             </div>
 
             <nav class="sidebar-menu">
@@ -77,16 +77,31 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="navbar-title">Mi Proyecto</div>
+                <div class="navbar-title">Inicio</div>
             </header>
 
             <!-- 📦 CONTENIDO -->
             <section class="content">
 
-                <div class="card">
+            <div class="card .card-grid grid-4">
+            <div class="card ">
                     <h2>¡Hola! 👋</h2>
                     <p>Esta es una tarjeta de bienvenida para empezar tu diseño.</p>
                 </div>
+                <div class="card ">
+                    <h2>¡Hola! 👋</h2>
+                    <p>Esta es una tarjeta de bienvenida para empezar tu diseño.</p>
+                </div>
+                <div class="card ">
+                    <h2>¡Hola! 👋</h2>
+                    <p>Esta es una tarjeta de bienvenida para empezar tu diseño.</p>
+                </div>
+                <div class="card ">
+                    <h2>¡Hola! 👋</h2>
+                    <p>Esta es una tarjeta de bienvenida para empezar tu diseño.</p>
+                </div>
+            </div>
+
 
                 <div class="card">
                     <form class="form-modern">
