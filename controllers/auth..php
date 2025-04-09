@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: /views/productor/dashboard.php');
                 break;
             case 'sve':
-                header('Location: /views/sve/dashboard.php');
+                header('Location: /views/sve/sve_dashboard.php');
                 break;
         }
         exit;
