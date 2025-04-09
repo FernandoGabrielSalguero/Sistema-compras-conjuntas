@@ -6,8 +6,8 @@ error_reporting(E_ALL);
 
 session_start();
 
-require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/models/AuthModel.php';
+// require_once __DIR__ . '/config.php';
+// require_once __DIR__ . '/models/AuthModel.php';
 
 $error = '';
 
