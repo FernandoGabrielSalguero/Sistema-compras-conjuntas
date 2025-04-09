@@ -210,7 +210,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <input type="text" id="observaciones" name="observaciones" placeholder="1234">
                             </div>
                         </div>
-                        
+
                         <!-- Botones -->
                         <div class="form-buttons">
                             <button class="btn btn-aceptar" type="submit">Enviar</button>
@@ -260,12 +260,45 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         </table>
                     </div>
                 </div>
-
+                <!-- Alert -->
+                <div class="alert-container" id="alertContainer"></div>
             </section>
 
         </div>
     </div>
 
+
+    <!-- Script para cargar los datos usando AJAX a la base -->
+    <script>
+        document.getElementById('formUsuario').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            try {
+                const response = await fetch('/controllers/altaUsuariosController.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                const alertContainer = document.getElementById('alertContainer');
+                alertContainer.innerHTML = `
+            <div class="alert ${result.success ? 'success' : 'danger'}">
+                ${result.message}
+            </div>
+        `;
+
+                if (result.success) {
+                    this.reset();
+                }
+
+            } catch (error) {
+                console.error('Error al enviar el formulario:', error);
+            }
+        });
+    </script>
 </body>
 
 </html>
