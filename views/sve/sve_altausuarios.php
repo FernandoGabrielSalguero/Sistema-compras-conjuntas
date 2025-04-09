@@ -269,35 +269,40 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <!-- Script para cargar los datos usando AJAX a la base -->
     <script>
-        document.getElementById('formUsuario').addEventListener('submit', async function(e) {
-            e.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('formUsuario');
 
-            const formData = new FormData(this);
+    if (!form) {
+        console.error("⚠️ No se encontró el formulario con id='formUsuario'");
+        return;
+    }
 
-            try {
-                const response = await fetch('/controllers/altaUsuariosController.php', {
-                    method: 'POST',
-                    body: formData
-                });
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
 
-                const result = await response.json();
+        try {
+            const response = await fetch('/controllers/altaUsuariosController.php', {
+                method: 'POST',
+                body: formData
+            });
 
-                const alertContainer = document.getElementById('alertContainer');
-                alertContainer.innerHTML = `
-            <div class="alert ${result.success ? 'success' : 'danger'}">
-                ${result.message}
-            </div>
-        `;
+            const result = await response.json();
 
-                if (result.success) {
-                    this.reset();
-                }
-
-            } catch (error) {
-                console.error('Error al enviar el formulario:', error);
+            if (result.success) {
+                form.reset();
+                showAlert('success', result.message); // ✅ alerta verde
+            } else {
+                showAlert('error', result.message); // ❌ alerta roja
             }
-        });
-    </script>
+
+        } catch (error) {
+            showAlert('error', 'Error inesperado al enviar el formulario.');
+            console.error('❌ Error en la solicitud AJAX:', error);
+        }
+    });
+});
+</script>
 </body>
 
 </html>
