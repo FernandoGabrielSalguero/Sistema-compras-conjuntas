@@ -95,7 +95,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="cuit">CUIT</label>
                                 <div class="input-icon">
                                     <span class="material-icons">fingerprint</span>
-                                    <input type="text" id="cuit" name="cuit" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" required>
+                                    <input type="text" id="cuit" name="cuit" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" placeholder="20123456781" required>
                                 </div>
                             </div>
 
@@ -105,7 +105,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </label>
                                 <div class="input-icon">
                                     <span class="material-icons">lock</span>
-                                    <input type="text" id="contraseña" name="contraseña" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" required>
+                                    <input type="text" id="contraseña" name="contraseña" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" placeholder="20123456781" required>
                                 </div>
                             </div>
 
@@ -160,7 +160,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="telefono">Teléfono</label>
                                 <div class="input-icon">
                                     <span class="material-icons">phone</span>
-                                    <input type="tel" id="telefono" name="telefono" pattern="[0-9\+\-\s]{7,20}" required>
+                                    <input type="tel" id="telefono" name="telefono" pattern="[0-9\+\-\s]{7,20}" placeholder="2616686065" required>
                                 </div>
                             </div>
 
@@ -169,7 +169,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="id_cooperativa">ID Cooperativa</label>
                                 <div class="input-icon">
                                     <span class="material-icons">groups</span>
-                                    <input type="number" id="id_cooperativa" name="id_cooperativa" required>
+                                    <input type="number" id="id_cooperativa" name="id_cooperativa" placeholder="1234" required>
                                 </div>
                             </div>
 
@@ -178,7 +178,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="id_productor">ID Productor</label>
                                 <div class="input-icon">
                                     <span class="material-icons">agriculture</span>
-                                    <input type="tel" id="id_productor" name="id_productor" required>
+                                    <input type="tel" id="id_productor" name="id_productor" placeholder="1234" required>
                                 </div>
                             </div>
 
@@ -187,7 +187,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="direccion">Dirección</label>
                                 <div class="input-icon">
                                     <span class="material-icons">location_on</span>
-                                    <input type="text" id="direccion" name="direccion" required>
+                                    <input type="text" id="direccion" name="direccion" placeholder="San Martín Sur 25 Godoy Cruz" required>
                                 </div>
                             </div>
 
@@ -196,7 +196,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="finca_asociada">Finca Asociada</label>
                                 <div class="input-icon">
                                     <span class="material-icons">yard</span>
-                                    <input type="number" id="finca_asociada" name="finca_asociada">
+                                    <input type="number" id="finca_asociada" name="finca_asociada" placeholder="1234"> 
                                 </div>
                             </div>
 
@@ -205,7 +205,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="observaciones">Observaciones</label>
                                 <div class="input-icon">
                                     <span class="material-icons">notes</span>
-                                    <input type="text" id="observaciones" name="observaciones" required>
+                                    <input type="text" id="observaciones" name="observaciones" placeholder="1234">
                                 </div>
                             </div>
 
