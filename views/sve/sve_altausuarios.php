@@ -226,15 +226,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>Nombre</th>
-                                    <th>Email</th>
+                                    <th>CUIT</th>
                                     <th>Rol</th>
-                                    <th>Estado</th>
+                                    <th>Permiso</th>
+                                    <th>Nombre</th>
+                                    <th>Correo</th>
+                                    <th>Teléfono</th>
+                                    <th>ID Cooperativa</th>
+                                    <th>ID Productor</th>
+                                    <th>Observaciones</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaUsuarios">
-                                <!-- Se cargará dinámicamente -->
+                                <!-- Contenido dinámico -->
                             </tbody>
                         </table>
                     </div>
