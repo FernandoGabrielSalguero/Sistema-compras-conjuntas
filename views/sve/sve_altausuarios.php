@@ -81,89 +81,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <!-- Bienvenida -->
                 <div class="card">
                     <h2>Hola 👋</h2>
-                    <p>Este es un dashboard de ejemplo con un sidebar moderno y responsive.</p>
+                    <p>En esta página vamos a habilitar el ingreso al sistema a nuevos usuarios.</p>
                 </div>
 
                 <!-- Formulario -->
                 <div class="card">
                     <h2>Formularios</h2>
                     <form class="form-modern">
-                        <div class="form-grid grid-4">
-
-                            <!-- Nombre completo -->
-                            <div class="input-group">
-                                <label for="nombre">Nombre completo
-                                    <span class="tooltip" data-tooltip="Ingresá tu nombre y apellido completo.">
-                                        <span class="material-icons">info</span>
-                                    </span>
-                                </label>
-                                <div class="input-icon">
-                                    <span class="material-icons">person</span>
-                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required
-                                        minlength="2" maxlength="60" aria-required="true">
-                                </div>
-                                <small class="error-message" aria-live="polite"></small>
-                            </div>
-
-                            <!-- Correo electrónico -->
-                            <div class="input-group">
-                                <label for="email">Correo electrónico
-                                    <span class="tooltip" data-tooltip="Ej: usuario@correo.com">
-                                        <span class="material-icons">info</span>
-                                    </span>
-                                </label>
-                                <div class="input-icon">
-                                    <span class="material-icons">mail</span>
-                                    <input type="email" id="email" name="email" placeholder="usuario@correo.com"
-                                        required aria-required="true">
-                                </div>
-                                <small class="error-message" aria-live="polite"></small>
-                            </div>
-                        </div>
-
-                        <div class="form-grid grid-4">
-                            <!-- Fecha de nacimiento -->
-                            <div class="input-group">
-                                <label for="fecha">Fecha de nacimiento
-                                    <span class="tooltip" data-tooltip="Seleccioná tu fecha de nacimiento.">
-                                        <span class="material-icons">info</span>
-                                    </span>
-                                </label>
-                                <div class="input-icon">
-                                    <span class="material-icons">event</span>
-                                    <input type="date" id="fecha" name="fecha" required>
-                                </div>
-                            </div>
-
-                            <!-- Teléfono -->
-                            <div class="input-group">
-                                <label for="telefono">Teléfono
-                                    <span class="tooltip" data-tooltip="Incluí el código de área. Ej: +54 11 5555-1234">
-                                        <span class="material-icons">info</span>
-                                    </span>
-                                </label>
-                                <div class="input-icon">
-                                    <span class="material-icons">phone</span>
-                                    <input type="tel" id="telefono" name="telefono" pattern="[0-9\+\-\s]{7,20}"
-                                        required>
-                                </div>
-                            </div>
-
-                            <!-- CUIT -->
-                            <div class="input-group">
-                                <label for="cuit">CUIT
-                                    <span class="tooltip" data-tooltip="Ej: 20-12345678-1">
-                                        <span class="material-icons">info</span>
-                                    </span>
-                                </label>
-                                <div class="input-icon">
-                                    <span class="material-icons">badge</span>
-                                    <input type="text" id="cuit" name="cuit" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}"
-                                        required>
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="form-grid grid-4">
                             <!-- Provincia -->
                             <div class="input-group">
