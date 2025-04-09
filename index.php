@@ -1,37 +1,49 @@
 <?php
-// Activar la visualización de errores en pantalla
+// index.php
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
 
-// Cargar las variables del archivo .env manualmente
-$env_path = __DIR__ . '/.env';
-if (file_exists($env_path)) {
-    $dotenv = parse_ini_file($env_path);
-} else {
-    die("❌ Error: El archivo .env no se encuentra en la carpeta del proyecto.");
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/models/AuthModel.php';
+
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $cuit = $_POST['cuit'];
+    $contrasena = $_POST['contrasena'];
+
+    $auth = new AuthModel($pdo);
+    $user = $auth->login($cuit, $contrasena);
+
+    if ($user) {
+        $_SESSION['nombre'] = $user['nombre'];
+        $_SESSION['correo'] = $user['correo'];
+        $_SESSION['cuit'] = $user['cuit'];
+        $_SESSION['telefono'] = $user['telefono'];
+        $_SESSION['observaciones'] = $user['observaciones'];
+        $_SESSION['rol'] = $user['rol'];
+
+        switch ($user['rol']) {
+            case 'cooperativa':
+                header('Location: /views/cooperativa/dashboard.php');
+                break;
+            case 'productor':
+                header('Location: /views/productor/dashboard.php');
+                break;
+            case 'sve':
+                header('Location: /views/sve/dashboard.php');
+                break;
+        }
+        exit;
+    } else {
+        $error = "CUIT, contraseña inválidos o permiso no habilitado.";
+    }
 }
-
-// Conexión a la base de datos
-$host = $dotenv['DB_HOST'];
-$dbname = $dotenv['DB_NAME'];
-$username = $dotenv['DB_USER'];
-$password = $dotenv['DB_PASS'];
-
-$error = "";
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    $error = "❌ Error de conexión a la base de datos: " . $e->getMessage();
-}
-
-
 ?>
-
 
 <!DOCTYPE html>
 <html lang="es">
@@ -122,8 +134,10 @@ try {
                 <input type="text" name="cuit" id="cuit" required>
             </div>
             <div class="form-group password-container">
-                <label for="password">Contraseña:</label>
+                <label for="contrasena">Contraseña:</label>
                 <input type="password" name="contrasena" id="contrasena" required>
+                <!-- Ícono para mostrar/ocultar contraseña -->
+                <span class="toggle-password">👁️</span>
             </div>
             <div class="form-group">
                 <button type="submit">INGRESAR</button>
@@ -133,7 +147,7 @@ try {
 
     <script>
         const togglePassword = document.querySelector('.toggle-password');
-        const passwordField = document.getElementById('password');
+        const passwordField = document.getElementById('contrasena');
 
         togglePassword.addEventListener('click', () => {
             const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
