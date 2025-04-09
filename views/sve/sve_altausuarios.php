@@ -196,21 +196,21 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="finca_asociada">Finca Asociada</label>
                                 <div class="input-icon">
                                     <span class="material-icons">yard</span>
-                                    <input type="number" id="finca_asociada" name="finca_asociada" placeholder="1234"> 
+                                    <input type="number" id="finca_asociada" name="finca_asociada" placeholder="1234">
                                 </div>
                             </div>
-
-                            <!-- observaciones OK-->
-                            <div class="input-group">
-                                <label for="observaciones">Observaciones</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">notes</span>
-                                    <input type="text" id="observaciones" name="observaciones" placeholder="1234">
-                                </div>
-                            </div>
-
 
                         </div>
+
+                        <!-- observaciones OK-->
+                        <div class="input-group">
+                            <label for="observaciones">Observaciones</label>
+                            <div class="input-icon">
+                                <span class="material-icons">notes</span>
+                                <input type="text" id="observaciones" name="observaciones" placeholder="1234">
+                            </div>
+                        </div>
+                        
                         <!-- Botones -->
                         <div class="form-buttons">
                             <button class="btn btn-aceptar" type="submit">Enviar</button>
