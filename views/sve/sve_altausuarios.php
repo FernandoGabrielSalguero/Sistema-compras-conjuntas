@@ -53,7 +53,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             <nav class="sidebar-menu">
                 <ul>
-                    <li onclick="location.href='index.html'">
+                    <li onclick="location.href='sve_dashboard.php'">
                         <span class="material-icons">home</span><span class="link-text">Inicio</span>
                     </li>
                     <li onclick="location.href='sve_altausuarios.php'">
