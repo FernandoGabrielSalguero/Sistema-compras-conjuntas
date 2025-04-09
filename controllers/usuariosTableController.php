@@ -1,13 +1,25 @@
 <?php
-
 require_once __DIR__ . '/../config.php';
 
+$cuit = $_GET['cuit'] ?? '';
+
 try {
-    $stmt = $pdo->query("
-        SELECT id, cuit, rol, permiso_ingreso, nombre, correo, telefono, id_cooperativa, id_productor, observaciones 
-        FROM usuarios
-        ORDER BY id DESC
-    ");
+    if ($cuit !== '') {
+        $stmt = $pdo->prepare("
+            SELECT id, cuit, rol, permiso_ingreso, nombre, correo, telefono, id_cooperativa, id_productor, observaciones 
+            FROM usuarios 
+            WHERE cuit LIKE ?
+            ORDER BY id DESC
+        ");
+        $stmt->execute(["%{$cuit}%"]);
+    } else {
+        $stmt = $pdo->query("
+            SELECT id, cuit, rol, permiso_ingreso, nombre, correo, telefono, id_cooperativa, id_productor, observaciones 
+            FROM usuarios 
+            ORDER BY id DESC
+        ");
+    }
+
     $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     http_response_code(500);

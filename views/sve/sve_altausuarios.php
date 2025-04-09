@@ -220,14 +220,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Tarjeta de buscador -->
                 <div class="card">
+                    <h2>Busca un usuario por su CUIT</h2>
                     <div class="input-group">
-                        <label for="cuit">CUIT</label>
+                        <label for="buscarCuit">CUIT</label>
                         <div class="input-icon">
                             <span class="material-icons">fingerprint</span>
-                            <input type="number" id="cuit" name="cuit" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" placeholder="20123456781" required>
+                            <input type="text" id="buscarCuit" name="buscarCuit" placeholder="20123456781">
                         </div>
                     </div>
                 </div>
+
+
                 <!-- Tabla -->
                 <div class="card">
                     <h2>Listado de usuarios registrados</h2>
@@ -421,6 +424,22 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             } catch (err) {
                 showAlert('error', 'Error inesperado al guardar los cambios.');
+            }
+        });
+
+        //Filtrar tabla por cuit
+        document.getElementById('buscarCuit').addEventListener('input', async function() {
+            const cuit = this.value.trim();
+
+            const tabla = document.getElementById('tablaUsuarios');
+
+            try {
+                const response = await fetch(`/controllers/usuariosTableController.php?cuit=${encodeURIComponent(cuit)}`);
+                const html = await response.text();
+                tabla.innerHTML = html;
+            } catch (error) {
+                tabla.innerHTML = '<tr><td colspan="10">Error al filtrar usuarios</td></tr>';
+                showAlert('error', 'No se pudo buscar por CUIT');
             }
         });
     </script>
