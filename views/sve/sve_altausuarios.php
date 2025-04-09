@@ -160,7 +160,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="telefono">Teléfono</label>
                                 <div class="input-icon">
                                     <span class="material-icons">phone</span>
-                                    <input type="tel" id="telefono" name="telefono"  placeholder="2616686065" required>
+                                    <input type="tel" id="telefono" name="telefono" placeholder="2616686065" required>
                                 </div>
                             </div>
 
@@ -223,42 +223,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <div class="card">
                     <h2>Tablas</h2>
                     <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Nombre</th>
-                                    <th>Email</th>
-                                    <th>Rol</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>Carlos Ruiz</td>
-                                    <td>carlos@mail.com</td>
-                                    <td>Administrador</td>
-                                    <td><span class="badge success">Activo</span></td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>Laura Méndez</td>
-                                    <td>laura@mail.com</td>
-                                    <td>Editor</td>
-                                    <td><span class="badge warning">Pendiente</span></td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td>Jorge Peña</td>
-                                    <td>jorge@mail.com</td>
-                                    <td>Usuario</td>
-                                    <td><span class="badge danger">Suspendido</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <tbody id="tablaUsuarios">
+                            <!-- Se cargará dinámicamente -->
+                        </tbody>
                     </div>
                 </div>
+
+
                 <!-- Alert -->
                 <div class="alert-container" id="alertContainer"></div>
             </section>
@@ -269,40 +240,57 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <!-- Script para cargar los datos usando AJAX a la base -->
     <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('formUsuario');
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('formUsuario');
 
-    if (!form) {
-        console.error("⚠️ No se encontró el formulario con id='formUsuario'");
-        return;
-    }
-
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-
-        try {
-            const response = await fetch('/controllers/altaUsuariosController.php', {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                form.reset();
-                showAlert('success', result.message); // ✅ alerta verde
-            } else {
-                showAlert('error', result.message); // ❌ alerta roja
+            if (!form) {
+                console.error("⚠️ No se encontró el formulario con id='formUsuario'");
+                return;
             }
 
-        } catch (error) {
-            showAlert('error', 'Error inesperado al enviar el formulario.');
-            console.error('❌ Error en la solicitud AJAX:', error);
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+
+                try {
+                    const response = await fetch('/controllers/altaUsuariosController.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        form.reset();
+                        showAlert('success', result.message); // ✅ alerta verde
+                        cargarUsuarios(); // 👈 actualiza la tabla
+                    } else {
+                        showAlert('error', result.message); // ❌ alerta roja
+                    }
+
+                } catch (error) {
+                    showAlert('error', 'Error inesperado al enviar el formulario.');
+                    console.error('❌ Error en la solicitud AJAX:', error);
+                }
+            });
+        });
+
+        // carga de datos de la tabla
+
+        async function cargarUsuarios() {
+            const tabla = document.getElementById('tablaUsuarios');
+            try {
+                const res = await fetch('/controllers/usuariosTableController.php');
+                const html = await res.text();
+                tabla.innerHTML = html;
+            } catch (err) {
+                tabla.innerHTML = '<tr><td colspan="5">Error al cargar usuarios</td></tr>';
+                console.error('Error cargando usuarios:', err);
+            }
         }
-    });
-});
-</script>
+
+        document.addEventListener('DOMContentLoaded', cargarUsuarios);
+    </script>
 </body>
 
 </html>
