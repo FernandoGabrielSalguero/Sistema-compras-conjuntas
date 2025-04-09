@@ -1,5 +1,4 @@
 <?php
-
 // Mostrar errores en pantalla (útil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -26,55 +25,91 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard SVE</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #eef2f3;
-            padding: 40px;
-        }
-        .dashboard {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-            max-width: 700px;
-            margin: auto;
-        }
-        h1 {
-            color: #673ab7;
-            margin-bottom: 20px;
-        }
-        .info p {
-            margin: 8px 0;
-            font-size: 16px;
-        }
-        .logout {
-            margin-top: 20px;
-        }
-        .logout a {
-            color: red;
-            text-decoration: none;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <div class="dashboard">
-        <h1>Bienvenido al Dashboard SVE</h1>
-        <div class="info">
-            <p><strong>Nombre:</strong> <?= htmlspecialchars($nombre) ?></p>
-            <p><strong>Correo:</strong> <?= htmlspecialchars($correo) ?></p>
-            <p><strong>CUIT:</strong> <?= htmlspecialchars($cuit) ?></p>
-            <p><strong>Teléfono:</strong> <?= htmlspecialchars($telefono) ?></p>
-            <p><strong>Observaciones:</strong> <?= htmlspecialchars($observaciones) ?></p>
-        </div>
 
-        <div class="logout">
-            <a href="/controllers/logout.php">Cerrar sesión</a>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi Proyecto con Success</title>
+
+    <!-- Íconos de Material Design -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+    <!-- Framework Success desde CDN -->
+    <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
+    <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+</head>
+
+<body>
+
+    <!-- 🔲 CONTENEDOR PRINCIPAL -->
+    <div class="layout">
+
+        <!-- 🧭 SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span class="material-icons logo-icon">dashboard</span>
+                <span class="logo-text">Success</span>
+            </div>
+
+            <nav class="sidebar-menu">
+                <ul>
+                    <li onclick="location.href='index.html'">
+                        <span class="material-icons">home</span><span class="link-text">Inicio</span>
+                    </li>
+                    <li onclick="location.href='documentacion.html'">
+                        <span class="material-icons">description</span><span class="link-text">Documentación</span>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn-icon" onclick="toggleSidebar()">
+                    <span class="material-icons" id="collapseIcon">chevron_left</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- 🧱 MAIN -->
+        <div class="main">
+
+            <!-- 🟪 NAVBAR -->
+            <header class="navbar">
+                <button class="btn-icon" onclick="toggleSidebar()">
+                    <span class="material-icons">menu</span>
+                </button>
+                <div class="navbar-title">Mi Proyecto</div>
+            </header>
+
+            <!-- 📦 CONTENIDO -->
+            <section class="content">
+
+                <div class="card">
+                    <h2>¡Hola! 👋</h2>
+                    <p>Esta es una tarjeta de bienvenida para empezar tu diseño.</p>
+                </div>
+
+                <div class="card">
+                    <form class="form-modern">
+                        <div class="input-group">
+                            <label>Correo</label>
+                            <div class="input-icon">
+                                <span class="material-icons">mail</span>
+                                <input type="email" placeholder="ejemplo@correo.com">
+                            </div>
+                        </div>
+
+                        <div class="form-buttons">
+                            <button class="btn btn-aceptar" type="submit">Enviar</button>
+                            <button class="btn btn-cancelar" type="button">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+            </section>
+
         </div>
     </div>
+
 </body>
+
 </html>
