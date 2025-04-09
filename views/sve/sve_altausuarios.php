@@ -103,9 +103,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <!-- Contraseña -->
                             <div class="input-group">
                                 <label for="contraseña">Contraseña
-                                    <span class="tooltip" data-tooltip="Debe ser el mismo CUIT">
-                                        <span class="material-icons">info</span>
-                                    </span>
                                 </label>
                                 <div class="input-icon">
                                     <span class="material-icons">badge</span>
@@ -152,75 +149,65 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                             <!-- Correo electrónico -->
                             <div class="input-group">
-                                <label for="email">Correo electrónico
-                                </label>
+                                <label for="email">Correo electrónico</label>
                                 <div class="input-icon">
                                     <span class="material-icons">mail</span>
-                                    <input type="email" id="email" name="email" placeholder="usuario@correo.com"
-                                        required aria-required="true">
+                                    <input type="email" id="email" name="email" placeholder="usuario@correo.com" required aria-required="true">
                                 </div>
                                 <small class="error-message" aria-live="polite"></small>
                             </div>
 
-                            <!-- Teléfono -->
+                            <!-- Teléfono OK-->
                             <div class="input-group">
-                                <label for="telefono">Teléfono
-                                </label>
+                                <label for="telefono">Teléfono</label>
                                 <div class="input-icon">
                                     <span class="material-icons">phone</span>
-                                    <input type="tel" id="telefono" name="telefono" pattern="[0-9\+\-\s]{7,20}"
-                                        required>
+                                    <input type="tel" id="telefono" name="telefono" pattern="[0-9\+\-\s]{7,20}" required>
                                 </div>
                             </div>
 
-                                                        <!-- Teléfono -->
-                                                        <div class="input-group">
-                                <label for="telefono">Teléfono
-                                </label>
+                            <!-- id_cooperativa OK-->
+                            <div class="input-group">
+                                <label for="id_cooperativa">ID Cooperativa</label>
                                 <div class="input-icon">
                                     <span class="material-icons">phone</span>
-                                    <input type="tel" id="telefono" name="telefono" pattern="[0-9\+\-\s]{7,20}"
-                                        required>
+                                    <input type="number" id="id_cooperativa" name="id_cooperativa" required>
                                 </div>
                             </div>
 
-                                                        <!-- Teléfono -->
-                                                        <div class="input-group">
-                                <label for="telefono">Teléfono
-                                </label>
+                            <!-- id_productor OK-->
+                            <div class="input-group">
+                                <label for="id_productor">ID Productor</label>
                                 <div class="input-icon">
                                     <span class="material-icons">phone</span>
-                                    <input type="tel" id="telefono" name="telefono" pattern="[0-9\+\-\s]{7,20}"
-                                        required>
+                                    <input type="tel" id="id_productor" name="id_productor" required>
                                 </div>
                             </div>
 
-                                                        <!-- Dirección -->
-                                                        <div class="input-group">
+                            <!-- direccion OK-->
+                            <div class="input-group">
                                 <label for="direccion">Dirección</label>
                                 <div class="input-icon">
                                     <span class="material-icons">home</span>
                                     <input type="text" id="direccion" name="direccion" required>
                                 </div>
                             </div>
-                    
-                                                                                    <!-- Teléfono -->
-                                                                                    <div class="input-group">
-                                <label for="telefono">Teléfono
-                                </label>
+
+                            <!-- id_finca_asociada OK-->
+                            <div class="input-group">
+                                <label for="finca_asociada">Finca Asociada</label>
                                 <div class="input-icon">
                                     <span class="material-icons">phone</span>
-                                    <input type="tel" id="telefono" name="telefono" pattern="[0-9\+\-\s]{7,20}"
-                                        required>
+                                    <input type="number" id="finca_asociada" name="finca_asociada">
                                 </div>
                             </div>
 
-                                                                                    <!-- Dirección -->
-                                                                                    <div class="input-group">
-                                <label for="direccion">Dirección</label>
+                            <!-- observaciones OK-->
+                            <div class="input-group">
+                                <label for="observaciones">Observaciones</label>
                                 <div class="input-icon">
                                     <span class="material-icons">home</span>
-                                    <input type="text" id="direccion" name="direccion" required>
+                                    <input type="text" id="observaciones" name="observaciones" required>
                                 </div>
                             </div>
 
