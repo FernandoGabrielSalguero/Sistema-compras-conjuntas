@@ -57,7 +57,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="material-icons">home</span><span class="link-text">Inicio</span>
                     </li>
                     <li onclick="location.href='sve_altausuarios.php'">
-                        <span class="material-icons">user</span><span class="link-text">Alta usuarios</span>
+                        <span class="material-icons">person</span><span class="link-text">Alta usuarios</span>
                     </li>
                 </ul>
             </nav>
