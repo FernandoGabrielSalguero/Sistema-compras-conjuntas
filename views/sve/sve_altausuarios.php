@@ -92,10 +92,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                             <!-- CUIT -->
                             <div class="input-group">
-                                <label for="cuit">CUIT
-                                </label>
+                                <label for="cuit">CUIT</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">badge</span>
+                                    <span class="material-icons">fingerprint</span>
                                     <input type="text" id="cuit" name="cuit" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" required>
                                 </div>
                             </div>
@@ -105,7 +104,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="contraseña">Contraseña
                                 </label>
                                 <div class="input-icon">
-                                    <span class="material-icons">badge</span>
+                                    <span class="material-icons">lock</span>
                                     <input type="text" id="contraseña" name="contraseña" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" required>
                                 </div>
                             </div>
@@ -114,7 +113,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="rol">Rol</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">person</span>
+                                    <span class="material-icons">supervisor_account</span>
                                     <select id="rol" name="rol" required>
                                         <option value="sve">SVE</option>
                                         <option value="cooperativa">Cooperativa</option>
@@ -127,7 +126,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="permiso">Permiso</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">person</span>
+                                    <span class="material-icons">check_circle</span>
                                     <select id="permiso" name="permiso" required>
                                         <option value="Habilitado">Habilitado</option>
                                         <option value="Deshabilitado">Deshabilitado</option>
@@ -137,8 +136,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                             <!-- Nombre completo -->
                             <div class="input-group">
-                                <label for="nombre">Nombre completo
-                                </label>
+                                <label for="nombre">Nombre completo</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
                                     <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required
@@ -170,7 +168,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="id_cooperativa">ID Cooperativa</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">phone</span>
+                                    <span class="material-icons">groups</span>
                                     <input type="number" id="id_cooperativa" name="id_cooperativa" required>
                                 </div>
                             </div>
@@ -179,7 +177,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="id_productor">ID Productor</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">phone</span>
+                                    <span class="material-icons">agriculture</span>
                                     <input type="tel" id="id_productor" name="id_productor" required>
                                 </div>
                             </div>
@@ -188,7 +186,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="direccion">Dirección</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">home</span>
+                                    <span class="material-icons">location_on</span>
                                     <input type="text" id="direccion" name="direccion" required>
                                 </div>
                             </div>
@@ -197,7 +195,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="finca_asociada">Finca Asociada</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">phone</span>
+                                    <span class="material-icons">yard</span>
                                     <input type="number" id="finca_asociada" name="finca_asociada">
                                 </div>
                             </div>
@@ -206,7 +204,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="observaciones">Observaciones</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">home</span>
+                                    <span class="material-icons">notes</span>
                                     <input type="text" id="observaciones" name="observaciones" required>
                                 </div>
                             </div>
