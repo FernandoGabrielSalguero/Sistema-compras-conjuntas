@@ -1,29 +1,4 @@
-<?php
-// views/sve/sve_dashboard.php
 
-// Mostrar errores en pantalla (útil en desarrollo)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// Iniciar sesión y proteger acceso
-session_start();
-
-if (!isset($_SESSION['cuit'])) {
-    die("⚠️ Acceso denegado. No has iniciado sesión.");
-}
-
-if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'sve') {
-    die("🚫 Acceso restringido: esta página es solo para usuarios SVE.");
-}
-
-// Datos del usuario en sesión
-$nombre = $_SESSION['nombre'] ?? 'Sin nombre';
-$correo = $_SESSION['correo'] ?? 'Sin correo';
-$cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
-$observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
-?>
 
 <!DOCTYPE html>
 <html lang="es">
