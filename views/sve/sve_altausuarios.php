@@ -214,7 +214,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <!-- Botones -->
                         <div class="form-buttons">
                             <button class="btn btn-aceptar" type="submit">Enviar</button>
-                            <button class="btn btn-cancelar" type="reset">Cancelar</button>
                         </div>
                     </form>
                 </div>
