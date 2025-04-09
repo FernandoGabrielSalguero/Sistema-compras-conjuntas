@@ -87,7 +87,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <!-- Formulario -->
                 <div class="card">
                     <h2>Formulario para cargar un nuevo usuario</h2>
-                    <form class="form-modern">
+                    <form class="form-modern" id="formUsuario">
                         <div class="form-grid grid-4">
 
                             <!-- CUIT -->
