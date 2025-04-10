@@ -321,8 +321,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
-        document.addEventListener('DOMContentLoaded', cargarOperativos);
-
         // funciones para arbir y cerrar el modal
         function openModalEditar() {
             document.getElementById('modalEditar').classList.remove('hidden');
