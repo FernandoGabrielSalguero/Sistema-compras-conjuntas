@@ -447,16 +447,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             instance.setChoiceByValue(values);
         }
 
-        // Funcion para selectores con buscador incorporado: 
-        document.addEventListener('DOMContentLoaded', async () => {
-            await cargarCheckboxList('cooperativas', '/controllers/operativosAuxDataController.php?accion=cooperativas');
-            await cargarCheckboxList('productos', '/controllers/operativosAuxDataController.php?accion=productos', true);
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
 
-            document.getElementById('listaCooperativas').addEventListener('change', async () => {
-                const seleccionadas = Array.from(document.querySelectorAll('#listaCooperativas input[type=checkbox]:checked')).map(cb => cb.value);
-                await cargarCheckboxList('productores', `/controllers/operativosAuxDataController.php?accion=productores&ids=${seleccionadas.join(',')}`);
-            });
-        });
+        // cargamos los check boxs de cooperativas y productos al cargar la pagina
 
         async function cargarCheckboxList(tipo, url, agruparPorCategoria = false) {
             const contenedor = document.getElementById(`lista${capitalize(tipo)}`);
@@ -495,9 +490,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
-        function capitalize(str) {
-            return str.charAt(0).toUpperCase() + str.slice(1);
-        }
+        // Funcion para selectores con buscador incorporado: 
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarOperativos();
+
+            // Cargar cooperativas y productos
+            await cargarCheckboxList('cooperativas', '/controllers/operativosAuxDataController.php?accion=cooperativas');
+            await cargarCheckboxList('productos', '/controllers/operativosAuxDataController.php?accion=productos', true);
+
+            // Cargar productores solo si hay cooperativas marcadas
+            document.getElementById('listaCooperativas').addEventListener('change', async () => {
+                const seleccionadas = Array.from(document.querySelectorAll('#listaCooperativas input[type=checkbox]:checked')).map(cb => cb.value);
+                await cargarCheckboxList('productores', `/controllers/operativosAuxDataController.php?accion=productores&ids=${seleccionadas.join(',')}`);
+            });
+        });
     </script>
 </body>
 
