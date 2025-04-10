@@ -363,6 +363,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const select = document.getElementById(id);
             select.innerHTML = '';
 
+            document.addEventListener('DOMContentLoaded', async () => {
+                await cargarSelectConSeleccionados('cooperativas', 'cooperativas');
+                await cargarSelectConSeleccionados('productos', 'productos');
+
+                // Y cuando se elijan cooperativas, cargar los productores asociados
+                document.getElementById('cooperativas').addEventListener('change', async () => {
+                    const seleccionadas = Array.from(document.getElementById('cooperativas').selectedOptions).map(opt => opt.value);
+                    await cargarProductoresFiltrados(seleccionadas);
+                });
+            });
+
             if (tipo === 'productos') {
                 const grupos = {};
                 data.forEach(p => {
@@ -392,6 +403,28 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     if (seleccionados.includes(e.id)) opt.selected = true;
                     select.appendChild(opt);
                 });
+            }
+        }
+
+        async function cargarProductoresFiltrados(idsCooperativas) {
+            const productoresSelect = document.getElementById('productores');
+            productoresSelect.innerHTML = '';
+
+            if (!idsCooperativas.length) return;
+
+            try {
+                const res = await fetch(`/controllers/operativosAuxDataController.php?accion=productores&ids=${idsCooperativas.join(',')}`);
+                const data = await res.json();
+
+                data.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = `#${p.id} - ${p.nombre}`;
+                    productoresSelect.appendChild(opt);
+                });
+            } catch (err) {
+                console.error('❌ Error al cargar productores filtrados:', err);
+                showAlert('error', 'Error al cargar productores asociados.');
             }
         }
     </script>
