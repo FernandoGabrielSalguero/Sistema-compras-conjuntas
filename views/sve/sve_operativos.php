@@ -486,6 +486,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             } catch (err) {
                 console.error(`Error cargando ${tipo}:`, err);
             }
+            console.log(`✅ Datos cargados para ${tipo}:`, data);
+
         }
 
         // Funcion para selectores con buscador incorporado: 
