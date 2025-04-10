@@ -33,10 +33,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
-    <!-- Choise JS CDN -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-
 </head>
 
 <body>
@@ -136,7 +132,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="cooperativas">Cooperativas</label>
                                 <div class="input-icon">
                                     <span class="material-icons">groups</span>
-                                    <select id="cooperativas" name="cooperativas[]" multiple required></select>
+                                    <div class="card smart-selector" id="selectorCooperativas">
+                                        <h3>Cooperativas</h3>
+                                        <input type="text" class="smart-selector-search" placeholder="Buscar cooperativa...">
+                                        <div class="smart-selector-list" id="listaCooperativas"></div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -145,7 +145,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="productores">Productores</label>
                                 <div class="input-icon">
                                     <span class="material-icons">agriculture</span>
-                                    <select id="productores" name="productores[]" multiple required></select>
+                                    <div class="card smart-selector" id="selectorProductores">
+                                        <h3>Productores</h3>
+                                        <input type="text" class="smart-selector-search" placeholder="Buscar productor...">
+                                        <div class="smart-selector-list" id="listaProductores"></div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -155,7 +159,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="productos">Productos</label>
                                 <div class="input-icon">
                                     <span class="material-icons">shopping_cart</span>
-                                    <select id="productos" name="productos[]" multiple required></select>
+                                    <div class="card smart-selector" id="selectorProductos">
+                                        <h3>Productos</h3>
+                                        <input type="text" class="smart-selector-search" placeholder="Buscar producto...">
+                                        <div class="smart-selector-list" id="listaProductos"></div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -460,6 +468,58 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             if (!instance) return;
             const values = instance._store.choices.map(c => c.value);
             instance.setChoiceByValue(values);
+        }
+
+        // Funcion para selectores con buscador incorporado: 
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarCheckboxList('cooperativas', '/controllers/operativosAuxDataController.php?accion=cooperativas');
+            await cargarCheckboxList('productos', '/controllers/operativosAuxDataController.php?accion=productos', true);
+
+            document.getElementById('listaCooperativas').addEventListener('change', async () => {
+                const seleccionadas = Array.from(document.querySelectorAll('#listaCooperativas input[type=checkbox]:checked')).map(cb => cb.value);
+                await cargarCheckboxList('productores', `/controllers/operativosAuxDataController.php?accion=productores&ids=${seleccionadas.join(',')}`);
+            });
+        });
+
+        async function cargarCheckboxList(tipo, url, agruparPorCategoria = false) {
+            const contenedor = document.getElementById(`lista${capitalize(tipo)}`);
+            contenedor.innerHTML = '';
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (agruparPorCategoria) {
+                    const grupos = {};
+                    data.forEach(p => {
+                        if (!grupos[p.Categoria]) grupos[p.Categoria] = [];
+                        grupos[p.Categoria].push(p);
+                    });
+
+                    Object.entries(grupos).forEach(([categoria, items]) => {
+                        const titulo = document.createElement('strong');
+                        titulo.textContent = categoria;
+                        contenedor.appendChild(titulo);
+
+                        items.forEach(p => {
+                            const label = document.createElement('label');
+                            label.innerHTML = `<input type="checkbox" name="${tipo}[]" value="${p.id}"> ${p.Nombre_producto}`;
+                            contenedor.appendChild(label);
+                        });
+                    });
+                } else {
+                    data.forEach(e => {
+                        const label = document.createElement('label');
+                        label.innerHTML = `<input type="checkbox" name="${tipo}[]" value="${e.id}"> #${e.id} - ${e.nombre}`;
+                        contenedor.appendChild(label);
+                    });
+                }
+            } catch (err) {
+                console.error(`Error cargando ${tipo}:`, err);
+            }
+        }
+
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
         }
     </script>
 </body>
