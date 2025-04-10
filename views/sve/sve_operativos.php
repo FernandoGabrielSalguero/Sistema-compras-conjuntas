@@ -327,16 +327,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         document.addEventListener('DOMContentLoaded', cargarOperativos);
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            await cargarSelectConSeleccionados('cooperativas', 'cooperativas');
-            await cargarSelectConSeleccionados('productos', 'productos');
-
-            document.getElementById('cooperativas').addEventListener('change', async () => {
-                const seleccionadas = Array.from(document.getElementById('cooperativas').selectedOptions).map(opt => opt.value);
-                await cargarProductoresFiltrados(seleccionadas);
-            });
-        });
-
         // funciones para arbir y cerrar el modal
         function openModalEditar() {
             document.getElementById('modalEditar').classList.remove('hidden');
