@@ -107,7 +107,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <!-- Fecha_inicio -->
                             <div class="input-group">
                                 <label for="fecha">Fecha de inicio</label>
-                                <span class="material-icons">info</span>
                                 </span>
                                 </label>
                                 <div class="input-icon">
@@ -119,7 +118,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <!-- Fecha_cierre -->
                             <div class="input-group">
                                 <label for="fecha">Fecha de cierre</label>
-                                <span class="material-icons">info</span>
                                 </span>
                                 </label>
                                 <div class="input-icon">
