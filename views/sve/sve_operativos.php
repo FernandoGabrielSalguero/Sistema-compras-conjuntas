@@ -323,6 +323,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         document.addEventListener('DOMContentLoaded', cargarOperativos);
 
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarSelectConSeleccionados('cooperativas', 'cooperativas');
+            await cargarSelectConSeleccionados('productos', 'productos');
+
+            document.getElementById('cooperativas').addEventListener('change', async () => {
+                const seleccionadas = Array.from(document.getElementById('cooperativas').selectedOptions).map(opt => opt.value);
+                await cargarProductoresFiltrados(seleccionadas);
+            });
+        });
+
         // funciones para arbir y cerrar el modal
         function openModalEditar() {
             document.getElementById('modalEditar').classList.remove('hidden');
@@ -362,17 +372,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const data = await res.json();
             const select = document.getElementById(id);
             select.innerHTML = '';
-
-            document.addEventListener('DOMContentLoaded', async () => {
-                await cargarSelectConSeleccionados('cooperativas', 'cooperativas');
-                await cargarSelectConSeleccionados('productos', 'productos');
-
-                // Y cuando se elijan cooperativas, cargar los productores asociados
-                document.getElementById('cooperativas').addEventListener('change', async () => {
-                    const seleccionadas = Array.from(document.getElementById('cooperativas').selectedOptions).map(opt => opt.value);
-                    await cargarProductoresFiltrados(seleccionadas);
-                });
-            });
 
             if (tipo === 'productos') {
                 const grupos = {};
