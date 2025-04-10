@@ -127,34 +127,31 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
                             </div>
 
-                            <!-- cooperativas_ids -->
-                            <div class="input-group">
-                                <label for="cooperativas">Cooperativas</label>
-                                <div class="card smart-selector" id="selectorCooperativas">
-                                    <input type="text" class="smart-selector-search" placeholder="Buscar cooperativa...">
-                                    <div class="smart-selector-list" id="listaCooperativas"></div>
+                            <div class="card-grid grid-3">
+                                <!-- cooperativas_ids -->
+                                <div class="card input-group">
+                                    <label for="cooperativas">Cooperativas</label>
+                                    <div class="card smart-selector" id="selectorCooperativas">
+                                        <input type="text" class="smart-selector-search" placeholder="Buscar cooperativa...">
+                                        <div class="smart-selector-list" id="listaCooperativas"></div>
+                                    </div>
                                 </div>
-
-                            </div>
-
-                            <!-- productores_ids -->
-                            <div class="input-group">
-                                <label for="productores">Productores</label>
-                                <div class="card smart-selector" id="selectorProductores">
-                                    <input type="text" class="smart-selector-search" placeholder="Buscar productor...">
-                                    <div class="smart-selector-list" id="listaProductores"></div> <!-- ESTO ESTÁ BIEN -->
+                                <!-- productores_ids -->
+                                <div class="card input-group">
+                                    <label for="productores">Productores</label>
+                                    <div class="card smart-selector" id="selectorProductores">
+                                        <input type="text" class="smart-selector-search" placeholder="Buscar productor...">
+                                        <div class="smart-selector-list" id="listaProductores"></div> <!-- ESTO ESTÁ BIEN -->
+                                    </div>
                                 </div>
-                            </div>
-
-
-                            <!-- productos_ids -->
-                            <div class="input-group">
-                                <label for="productos">Productos</label>
-                                <div class="card smart-selector" id="selectorProductos">
-                                    <input type="text" class="smart-selector-search" placeholder="Buscar producto...">
-                                    <div class="smart-selector-list" id="listaProductos"></div>
+                                <!-- productos_ids -->
+                                <div class="card input-group">
+                                    <label for="productos">Productos</label>
+                                    <div class="card smart-selector" id="selectorProductos">
+                                        <input type="text" class="smart-selector-search" placeholder="Buscar producto...">
+                                        <div class="smart-selector-list" id="listaProductos"></div>
+                                    </div>
                                 </div>
-
                             </div>
 
                             <!-- Botones -->
