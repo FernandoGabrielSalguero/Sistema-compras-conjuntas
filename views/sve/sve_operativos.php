@@ -32,6 +32,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
+    <!-- Choise JS CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
 </head>
 
 <body>
@@ -425,6 +430,36 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 console.error('❌ Error al cargar productores filtrados:', err);
                 showAlert('error', 'Error al cargar productores asociados.');
             }
+        }
+
+        const selects = ['cooperativas', 'productores', 'productos', 'edit_cooperativas', 'edit_productores', 'edit_productos'];
+
+        const choicesInstances = {};
+
+        selects.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                choicesInstances[id] = new Choices(el, {
+                    removeItemButton: true,
+                    searchEnabled: true,
+                    placeholder: true,
+                    placeholderValue: 'Seleccionar...',
+                    noResultsText: 'No hay coincidencias',
+                    noChoicesText: 'Sin opciones disponibles',
+                    itemSelectText: '',
+                    classNames: {
+                        containerOuter: 'choices rounded-md border'
+                    }
+                });
+            }
+        });
+
+        // Función opcional: seleccionar todos
+        function seleccionarTodos(id) {
+            const instance = choicesInstances[id];
+            if (!instance) return;
+            const values = instance._store.choices.map(c => c.value);
+            instance.setChoiceByValue(values);
         }
     </script>
 </body>
