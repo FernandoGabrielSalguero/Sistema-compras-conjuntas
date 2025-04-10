@@ -33,6 +33,35 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
+    <style>
+        .btn-mini {
+            background-color: transparent;
+            border: none;
+            color: #5c6bc0;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 2px 4px;
+            margin: 4px 0 4px 0;
+            text-decoration: underline;
+        }
+
+        .btn-mini:hover {
+            color: #3949ab;
+        }
+
+        .smart-selector strong {
+            display: block;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .smart-selector label {
+            display: block;
+            margin: 2px 0;
+        }
+    </style>
+
 </head>
 
 <body>
