@@ -142,9 +142,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="productores">Productores</label>
                                 <div class="card smart-selector" id="selectorProductores">
                                     <input type="text" class="smart-selector-search" placeholder="Buscar productor...">
-                                    <div class="smart-selector-list" id="listaProductores"></div>
+                                    <div class="smart-selector-list" id="listaProductores"></div> <!-- ESTO ESTÁ BIEN -->
                                 </div>
-
                             </div>
 
 
@@ -424,9 +423,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         async function cargarCheckboxList(tipo, url, agruparPorCategoria = false) {
             const contenedor = document.getElementById(`lista${capitalize(tipo)}`);
             contenedor.innerHTML = '';
+
             try {
                 const res = await fetch(url);
                 const data = await res.json();
+
+                console.log(`✅ ${tipo} cargados desde: ${url}`, data);
 
                 if (agruparPorCategoria) {
                     const grupos = {};
@@ -440,25 +442,46 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         titulo.textContent = categoria;
                         contenedor.appendChild(titulo);
 
+                        // Botón seleccionar todos por categoría
+                        const btnSelTodos = document.createElement('button');
+                        btnSelTodos.textContent = 'Seleccionar todos';
+                        btnSelTodos.classList.add('btn-mini');
+                        btnSelTodos.onclick = () => {
+                            items.forEach(p => {
+                                const input = contenedor.querySelector(`input[value="${p.id}"]`);
+                                if (input) input.checked = true;
+                            });
+                        };
+                        contenedor.appendChild(btnSelTodos);
+
                         items.forEach(p => {
                             const label = document.createElement('label');
                             label.innerHTML = `<input type="checkbox" name="${tipo}[]" value="${p.id}"> ${p.Nombre_producto}`;
                             contenedor.appendChild(label);
                         });
                     });
+
                 } else {
+                    // Botón seleccionar todos
+                    const btnSelTodos = document.createElement('button');
+                    btnSelTodos.textContent = 'Seleccionar todos';
+                    btnSelTodos.classList.add('btn-mini');
+                    btnSelTodos.onclick = () => {
+                        contenedor.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true);
+                    };
+                    contenedor.appendChild(btnSelTodos);
+
                     data.forEach(e => {
                         const label = document.createElement('label');
-                        label.innerHTML = `<input type="checkbox" name="${tipo}[]" value="${e.id}"> #${e.id} - ${e.nombre}`;
+                        label.innerHTML = `<input type="checkbox" name="${tipo}[]" value="${e.id}" checked> #${e.id} - ${e.nombre}`;
                         contenedor.appendChild(label);
                     });
                 }
             } catch (err) {
                 console.error(`Error cargando ${tipo}:`, err);
             }
-            console.log(`✅ Datos cargados para ${tipo}:`, data);
-
         }
+
 
         // Funcion para selectores con buscador incorporado: 
         document.addEventListener('DOMContentLoaded', async () => {
