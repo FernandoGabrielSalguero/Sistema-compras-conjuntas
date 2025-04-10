@@ -275,13 +275,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             formData.append('fecha_inicio', document.getElementById('fecha').value);
             formData.append('fecha_cierre', document.getElementsByName('fecha')[1].value);
 
-            const coopSelect = document.getElementById('cooperativas');
-            const prodSelect = document.getElementById('productores');
-            const prodxSelect = document.getElementById('productos');
-
-            const cooperativas = Array.from(coopSelect.selectedOptions).map(opt => opt.value);
-            const productores = Array.from(prodSelect.selectedOptions).map(opt => opt.value);
-            const productos = Array.from(prodxSelect.selectedOptions).map(opt => opt.value);
+            const cooperativas = Array.from(document.querySelectorAll('#listaCooperativas input[type=checkbox]:checked')).map(cb => cb.value);
+            const productores = Array.from(document.querySelectorAll('#listaProductores input[type=checkbox]:checked')).map(cb => cb.value);
+            const productos = Array.from(document.querySelectorAll('#listaProductos input[type=checkbox]:checked')).map(cb => cb.value);
 
             cooperativas.forEach(id => formData.append('cooperativas[]', id));
             productores.forEach(id => formData.append('productores[]', id));
