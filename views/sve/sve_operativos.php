@@ -452,7 +452,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         // cargamos los check boxs de cooperativas y productos al cargar la pagina
 
         async function cargarCheckboxList(tipo, url, agruparPorCategoria = false) {
-            const contenedor = document.getElementById(`lista${capitalize(tipo)}`);
+            const contenedor = document.getElementById(`lista${tipo}`);
             contenedor.innerHTML = '';
             try {
                 const res = await fetch(url);
