@@ -28,6 +28,11 @@ if ($model->existeNombre($nombre)) {
     exit;
 }
 
+file_put_contents('php://stderr', "Cooperativas:\n" . print_r($_POST['cooperativas'], true));
+file_put_contents('php://stderr', "Productores:\n" . print_r($_POST['productores'], true));
+file_put_contents('php://stderr', "Productos:\n" . print_r($_POST['productos'], true));
+
+
 try {
     $pdo->beginTransaction();
 
@@ -40,5 +45,8 @@ try {
     echo json_encode(['success' => true, 'message' => '✅ Operativo creado correctamente']);
 } catch (Exception $e) {
     $pdo->rollBack();
-    echo json_encode(['success' => false, 'message' => 'Error al crear el operativo']);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Error al crear el operativo: ' . $e->getMessage()
+    ]);
 }
