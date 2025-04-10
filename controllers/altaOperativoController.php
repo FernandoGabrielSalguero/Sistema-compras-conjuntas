@@ -42,6 +42,18 @@ file_put_contents('php://stderr', "Cooperativas:\n" . print_r($_POST['cooperativ
 file_put_contents('php://stderr', "Productores:\n" . print_r($_POST['productores'], true));
 file_put_contents('php://stderr', "Productos:\n" . print_r($_POST['productos'], true));
 
+echo json_encode([
+    'success' => false,
+    'debug' => true,
+    'nombre' => $nombre,
+    'fecha_inicio' => $fecha_inicio,
+    'fecha_cierre' => $fecha_cierre,
+    'cooperativas' => $cooperativas,
+    'productores' => $productores,
+    'productos' => $productos
+]);
+exit;
+
 
 try {
     $pdo->beginTransaction();
