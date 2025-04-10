@@ -14,9 +14,19 @@ $model = new OperativosModel($pdo);
 $nombre = $_POST['nombre'] ?? '';
 $fecha_inicio = $_POST['fecha_inicio'] ?? '';
 $fecha_cierre = $_POST['fecha_cierre'] ?? '';
-$cooperativas = $_POST['cooperativas'] ?? [];
-$productores = $_POST['productores'] ?? [];
-$productos = $_POST['productos'] ?? [];
+$cooperativas = isset($_POST['cooperativas']) && is_array($_POST['cooperativas']) ? $_POST['cooperativas'] : [];
+$productores = isset($_POST['productores']) && is_array($_POST['productores']) ? $_POST['productores'] : [];
+$productos = isset($_POST['productos']) && is_array($_POST['productos']) ? $_POST['productos'] : [];
+
+if (!empty($cooperativas)) {
+    $model->guardarCooperativas($operativo_id, $cooperativas);
+}
+if (!empty($productores)) {
+    $model->guardarProductores($operativo_id, $productores);
+}
+if (!empty($productos)) {
+    $model->guardarProductos($operativo_id, $productos);
+}
 
 if (empty($nombre) || empty($fecha_inicio) || empty($fecha_cierre)) {
     echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios.']);
@@ -37,9 +47,11 @@ try {
     $pdo->beginTransaction();
 
     $operativo_id = $model->crearOperativo($nombre, $fecha_inicio, $fecha_cierre);
-    $model->guardarCooperativas($operativo_id, $cooperativas);
-    $model->guardarProductores($operativo_id, $productores);
-    $model->guardarProductos($operativo_id, $productos);
+
+    if (!empty($cooperativas)) $model->guardarCooperativas($operativo_id, $cooperativas);
+    if (!empty($productores))  $model->guardarProductores($operativo_id, $productores);
+    if (!empty($productos))    $model->guardarProductos($operativo_id, $productos);
+    
 
     $pdo->commit();
     echo json_encode(['success' => true, 'message' => '✅ Operativo creado correctamente']);
@@ -49,4 +61,6 @@ try {
         'success' => false,
         'message' => 'Error al crear el operativo: ' . $e->getMessage()
     ]);
+
+    error_log($e->getMessage());
 }
