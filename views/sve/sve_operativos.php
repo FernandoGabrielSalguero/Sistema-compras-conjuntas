@@ -98,7 +98,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="nombre">Nombre</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
-                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required
+                                    <input type="text" id="nombre" name="nombre" placeholder="Operativo 1" required
                                         minlength="2" maxlength="60" aria-required="true">
                                 </div>
                                 <small class="error-message" aria-live="polite"></small>
@@ -173,12 +173,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="form-buttons">
                                 <button class="btn btn-aceptar" type="submit">Enviar</button>
                             </div>
+                        </div>
                     </form>
                 </div>
 
                 <!-- Tarjeta de buscador -->
                 <div class="card">
-                    <h2>Busca un usuario por su CUIT</h2>
+                    <h2>Busca un opeartivo por nombre</h2>
                     <div class="input-group">
                         <label for="buscarCuit">CUIT</label>
                         <div class="input-icon">
