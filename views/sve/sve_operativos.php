@@ -415,36 +415,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
-        const selects = ['cooperativas', 'productores', 'productos', 'edit_cooperativas', 'edit_productores', 'edit_productos'];
-
-        const choicesInstances = {};
-
-        selects.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                choicesInstances[id] = new Choices(el, {
-                    removeItemButton: true,
-                    searchEnabled: true,
-                    placeholder: true,
-                    placeholderValue: 'Seleccionar...',
-                    noResultsText: 'No hay coincidencias',
-                    noChoicesText: 'Sin opciones disponibles',
-                    itemSelectText: '',
-                    classNames: {
-                        containerOuter: 'choices rounded-md border'
-                    }
-                });
-            }
-        });
-
-        // Función opcional: seleccionar todos
-        function seleccionarTodos(id) {
-            const instance = choicesInstances[id];
-            if (!instance) return;
-            const values = instance._store.choices.map(c => c.value);
-            instance.setChoiceByValue(values);
-        }
-
         function capitalize(str) {
             return str.charAt(0).toUpperCase() + str.slice(1);
         }
