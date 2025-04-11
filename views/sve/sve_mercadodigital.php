@@ -190,6 +190,47 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </form>
                 </div>
 
+                <!-- Bienvenida -->
+                <div class="card">
+                    <h2>Tabla de pedidos</h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>Carlos Ruiz</td>
+                                    <td>carlos@mail.com</td>
+                                    <td>Administrador</td>
+                                    <td><span class="badge success">Activo</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>Laura Méndez</td>
+                                    <td>laura@mail.com</td>
+                                    <td>Editor</td>
+                                    <td><span class="badge warning">Pendiente</span></td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>Jorge Peña</td>
+                                    <td>jorge@mail.com</td>
+                                    <td>Usuario</td>
+                                    <td><span class="badge danger">Suspendido</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </section>
 
         </div>
