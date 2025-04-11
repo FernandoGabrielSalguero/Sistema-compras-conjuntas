@@ -44,6 +44,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- 🔲 CONTENEDOR PRINCIPAL -->
     <div class="layout">
 
+        <!-- Bienvenida -->
+        <div class="card">
+            <h2>Hola 👋</h2>
+            <p>En esta página vamos a comprar y administrar las compras de los usuarios</p>
+        </div>
+
         <!-- 🧭 SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
