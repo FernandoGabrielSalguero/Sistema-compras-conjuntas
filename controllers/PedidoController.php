@@ -40,6 +40,10 @@ switch ($action) {
         }
         break;
 
+    case 'getPedidos':
+        echo json_encode(PedidoModel::obtenerTodosLosPedidos());
+        break;
+
     default:
         echo json_encode(['error' => 'Acción no válida']);
         break;

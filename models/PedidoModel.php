@@ -1,10 +1,12 @@
 <?php
 require_once __DIR__ . '/../config.php';
 
-class PedidoModel {
+class PedidoModel
+{
 
     // Obtener todas las cooperativas
-    public static function getCooperativas() {
+    public static function getCooperativas()
+    {
         global $pdo;
         $query = "SELECT id, nombre FROM usuarios WHERE rol = 'cooperativa'";
         $stmt = $pdo->query($query);
@@ -12,7 +14,8 @@ class PedidoModel {
     }
 
     // Obtener los productores vinculados a una cooperativa
-    public static function getProductoresPorCooperativa($id_cooperativa) {
+    public static function getProductoresPorCooperativa($id_cooperativa)
+    {
         global $pdo;
         $query = "
             SELECT u.id, u.nombre
@@ -26,7 +29,8 @@ class PedidoModel {
     }
 
     // Obtener todos los productos organizados por categoría
-    public static function getProductosPorCategoria() {
+    public static function getProductosPorCategoria()
+    {
         global $pdo;
         $query = "SELECT * FROM productos ORDER BY categoria";
         $stmt = $pdo->query($query);
@@ -44,7 +48,8 @@ class PedidoModel {
     }
 
     // Guardar el pedido y sus detalles
-    public static function guardarPedido($pedido, $detalles) {
+    public static function guardarPedido($pedido, $detalles)
+    {
         global $pdo;
 
         try {
@@ -102,10 +107,18 @@ class PedidoModel {
 
             $pdo->commit();
             return ['success' => true];
-
         } catch (Exception $e) {
             $pdo->rollBack();
             return ['success' => false, 'error' => $e->getMessage()];
         }
+    }
+
+    // Obtener todos los pedidos existentes
+    public static function obtenerTodosLosPedidos(): array
+    {
+        global $pdo;
+        $query = "SELECT * FROM pedidos ORDER BY fecha_pedido DESC";
+        $stmt = $pdo->query($query);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
