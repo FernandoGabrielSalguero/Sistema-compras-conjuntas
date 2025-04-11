@@ -40,7 +40,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <style>
         #acordeones-productos .accordion {
-            min-width: 800px;
             width: 100%;
         }
 
@@ -222,7 +221,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </div>
 
                     <!-- Acordeones de productos (dinámicos desde JS) -->
-                    <div class="form-grid grid-1">
+                    <div class="">
                         <div id="acordeones-productos"></div>
                     </div>
 
