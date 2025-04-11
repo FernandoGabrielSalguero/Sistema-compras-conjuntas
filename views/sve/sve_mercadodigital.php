@@ -311,6 +311,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             console.log("🛒 Productos para categoría:", categoria, productos);
             const container = document.getElementById("acordeones-productos");
 
+            // Acordeón general
             const acordeon = document.createElement("div");
             acordeon.classList.add("accordion");
 
@@ -322,33 +323,45 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const body = document.createElement("div");
             body.classList.add("accordion-body");
 
-            productos.forEach(prod => {
-                console.log("🧪 Producto:", prod); // debug visual
+            // Validación de productos
+            if (!productos || productos.length === 0) {
+                const emptyMsg = document.createElement("p");
+                emptyMsg.textContent = "No hay productos disponibles en esta categoría.";
+                body.appendChild(emptyMsg);
+            } else {
+                productos.forEach(prod => {
+                    console.log("🧪 Producto:", prod);
 
-                const item = document.createElement("div");
-                item.classList.add("input-group");
+                    const item = document.createElement("div");
+                    item.classList.add("input-group");
 
-                item.innerHTML = `
-            <label>${prod.Nombre_producto} (${prod.Unidad_Medida_venta})</label>
-            <input 
-                type="number" min="0" value="0"
-                data-id="${prod.Id}"
-                data-nombre="${prod.Nombre_producto}"
-                data-detalle="${prod.Detalle_producto}"
-                data-precio="${prod.Precio_producto}"
-                data-unidad="${prod.Unidad_Medida_venta}"
-                data-categoria="${prod.categoria}"
-                onchange="actualizarProductoSeleccionado(this)"
-            />
-        `;
+                    // Crear label y input por separado
+                    const label = document.createElement("label");
+                    label.textContent = `${prod.Nombre_producto} (${prod.Unidad_Medida_venta})`;
 
-                body.appendChild(item);
-            });
+                    const input = document.createElement("input");
+                    input.type = "number";
+                    input.min = 0;
+                    input.value = 0;
+                    input.setAttribute("data-id", prod.Id);
+                    input.setAttribute("data-nombre", prod.Nombre_producto);
+                    input.setAttribute("data-detalle", prod.Detalle_producto);
+                    input.setAttribute("data-precio", prod.Precio_producto);
+                    input.setAttribute("data-unidad", prod.Unidad_Medida_venta);
+                    input.setAttribute("data-categoria", prod.categoria);
+                    input.addEventListener("change", () => actualizarProductoSeleccionado(input));
+
+                    item.appendChild(label);
+                    item.appendChild(input);
+                    body.appendChild(item);
+                });
+            }
 
             acordeon.appendChild(header);
             acordeon.appendChild(body);
             container.appendChild(acordeon);
         }
+
 
         // 4. Guardar productos seleccionados
         function actualizarProductoSeleccionado(input) {
