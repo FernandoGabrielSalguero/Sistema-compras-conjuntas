@@ -156,6 +156,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
                             </div>
 
+                            <!-- Botones -->
+                            <div class="form-buttons">
+                                <button class="btn btn-aceptar" type="submit">Enviar</button>
+                            </div>
+
                             <div class="card-grid grid-3">
                                 <!-- cooperativas_ids -->
                                 <div class="card input-group">
@@ -183,10 +188,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
                             </div>
 
-                            <!-- Botones -->
-                            <div class="form-buttons">
-                                <button class="btn btn-aceptar" type="submit">Enviar</button>
-                            </div>
+
                         </div>
                     </form>
                 </div>
