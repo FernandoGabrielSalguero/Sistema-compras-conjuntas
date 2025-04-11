@@ -272,8 +272,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="edit_productores">Productores</label>
                                 <div class="input-icon">
                                     <span class="material-icons">agriculture</span>
-                                    <select id="edit_productores" multiple disabled></select>
-                                    </div>
+                                    <select id="edit_productores" multiple readonly></select>
+                                </div>
                             </div>
 
                             <div class="input-group">
@@ -596,6 +596,43 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         function cerrarModalDetalle() {
             document.getElementById('modalDetalle').classList.add('hidden');
         }
+
+        // Guardar cambios del formulario de edición
+        document.getElementById('formEditarOperativo').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('edit_id').value;
+            const nombre = document.getElementById('edit_nombre').value;
+            const fecha_inicio = document.getElementById('edit_fecha_inicio').value;
+            const fecha_cierre = document.getElementById('edit_fecha_cierre').value;
+
+            const formData = new FormData();
+            formData.append('id', id);
+            formData.append('nombre', nombre);
+            formData.append('fecha_inicio', fecha_inicio);
+            formData.append('fecha_cierre', fecha_cierre);
+
+            try {
+                const response = await fetch('/controllers/editarOperativoController.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeModalEditar();
+                    showAlert('success', result.message);
+                    cargarOperativos(); // refrescar tabla
+                } else {
+                    showAlert('error', result.message || 'No se pudo guardar.');
+                }
+
+            } catch (err) {
+                console.error('❌ Error al guardar edición:', err);
+                showAlert('error', 'Error inesperado al guardar el operativo.');
+            }
+        });
     </script>
 </body>
 
