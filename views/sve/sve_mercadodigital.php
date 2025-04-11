@@ -220,6 +220,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
+    <!-- 🛠️ SCRIPTS -->
+    <script src="/assets/js/sve_mercadodigital.js" defer></script>
+
 </body>
 
 </html>
