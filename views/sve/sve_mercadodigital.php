@@ -270,21 +270,50 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-    <!-- Modal para actualizar pedido -->
+    <!-- Modal extendido para actualizar pedido -->
     <div id="modal-editar" class="modal" style="display: none;">
         <div class="modal-content card">
             <h2>Editar Pedido</h2>
             <form id="form-editar">
-                <input type="hidden" name="id" id="edit-id">
+                <input type="hidden" id="edit-id">
 
-                <div class="form-grid grid-2">
+                <div class="form-grid grid-4">
                     <div class="input-group">
-                        <label for="edit-observaciones">Observaciones</label>
-                        <input type="text" id="edit-observaciones" name="observaciones">
+                        <label>Cooperativa</label>
+                        <select id="edit-cooperativa" required></select>
                     </div>
                     <div class="input-group">
-                        <label for="edit-ha">Hectáreas</label>
-                        <input type="number" id="edit-ha" name="ha_cooperativa" step="0.1">
+                        <label>Productor</label>
+                        <select id="edit-productor" required></select>
+                    </div>
+                    <div class="input-group">
+                        <label>¿A quién facturamos?</label>
+                        <select id="edit-factura" required>
+                            <option value="productor">Productor</option>
+                            <option value="cooperativa">Cooperativa</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Condición factura</label>
+                        <select id="edit-condicion" required>
+                            <option value="responsable inscripto">Responsable Inscripto</option>
+                            <option value="monotributista">Monotributista</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>¿Es socio?</label>
+                        <select id="edit-afiliacion" required>
+                            <option value="socio">Sí</option>
+                            <option value="tercero">No</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Hectáreas</label>
+                        <input type="number" id="edit-ha" step="0.1" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Observaciones</label>
+                        <input type="text" id="edit-observaciones">
                     </div>
                 </div>
 
@@ -581,7 +610,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <td>$${parseFloat(pedido.total_pedido).toFixed(2)}</td>
                     <td>${pedido.observaciones}</td>
                     <td>
-                        <button class="btn btn-aceptar" onclick="editarPedidoCompleto(${pedido.id})">Actualizar</button>
+                        <button class="btn btn-aceptar" onclick="abrirModalEditar(${pedido.id})">Actualizar</button>
                         <button class="btn btn-cancelar" onclick="eliminarPedido(${pedido.id})">Eliminar</button>
                     </td>
                 `;
@@ -609,23 +638,21 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const pedido = obtenerPedidoPorId(id);
             if (!pedido) return;
 
-            pedidoEditandoId = id; // ← estamos en modo edición
+            pedidoEditandoId = id;
 
-            document.getElementById("cooperativa").value = pedido.cooperativa;
-            cargarProductores().then(() => {
-                document.getElementById("productor").value = pedido.productor;
+            document.getElementById("edit-id").value = pedido.id;
+            document.getElementById("edit-cooperativa").value = pedido.cooperativa;
+            cargarProductoresModal().then(() => {
+                document.getElementById("edit-productor").value = pedido.productor;
             });
 
-            document.getElementById("factura").value = pedido.persona_facturacion;
-            document.getElementById("condicion").value = pedido.condicion_facturacion;
-            document.getElementById("afiliacion").value = pedido.afiliacion;
-            document.getElementById("hectareas").value = pedido.ha_cooperativa;
-            document.getElementById("observaciones").value = pedido.observaciones;
+            document.getElementById("edit-factura").value = pedido.persona_facturacion;
+            document.getElementById("edit-condicion").value = pedido.condicion_facturacion;
+            document.getElementById("edit-afiliacion").value = pedido.afiliacion;
+            document.getElementById("edit-ha").value = pedido.ha_cooperativa;
+            document.getElementById("edit-observaciones").value = pedido.observaciones;
 
-            // Podés luego agregar la carga de productos seleccionados si los traés desde backend también.
-            alert("🔁 Pedido cargado para edición. Ahora podés modificar y presionar Enviar.");
-
-            // Mostrar el modal 🔥
+            // Mostrar el modal
             document.getElementById("modal-editar").style.display = "block";
         }
 
@@ -706,6 +733,42 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             // ❗️Opción futura: podrías agregar productos seleccionados acá.
 
             alert("🔁 Pedido cargado para edición. Modificá los campos y presioná Enviar.");
+        }
+
+        function cargarProductoresModal() {
+            const idCoop = document.getElementById("edit-cooperativa").value;
+            const select = document.getElementById("edit-productor");
+            select.innerHTML = '<option value="">Cargando...</option>';
+
+            return fetch(`/controllers/PedidoController.php?action=getProductores&id=${idCoop}`)
+                .then(res => res.json())
+                .then(data => {
+                    select.innerHTML = '<option value="">Seleccionar</option>';
+                    data.forEach(prod => {
+                        const opt = document.createElement("option");
+                        opt.value = prod.id;
+                        opt.textContent = prod.nombre;
+                        select.appendChild(opt);
+                    });
+                });
+        }
+
+        function cargarCooperativasModal() {
+            return fetch("/controllers/PedidoController.php?action=getCooperativas")
+                .then(res => res.json())
+                .then(data => {
+                    const select = document.getElementById("edit-cooperativa");
+                    select.innerHTML = '<option value="">Seleccionar</option>';
+                    data.forEach(coop => {
+                        const opt = document.createElement("option");
+                        opt.value = coop.id;
+                        opt.textContent = coop.nombre;
+                        select.appendChild(opt);
+                    });
+
+                    // Al cambiar la cooperativa, cargar sus productores
+                    select.addEventListener("change", cargarProductoresModal);
+                });
         }
     </script>
 </body>
