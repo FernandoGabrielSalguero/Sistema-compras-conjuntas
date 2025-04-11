@@ -24,6 +24,6 @@ foreach ($operativos as $op) {
 
 
         <td>{$op['created_at']}</td>
-        <td><button class='btn-mini' onclick='editarOperativo({$op['id']})'>Editar</button></td>
+        <td><button class='btn btn-info' onclick='editarOperativo({$op['id']})'>Editar</button></td>
     </tr>";
 }

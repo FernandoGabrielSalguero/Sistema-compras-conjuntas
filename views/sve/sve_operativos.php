@@ -588,9 +588,25 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     document.getElementById('modalDetalleContenido').innerHTML = '';
                     document.getElementById('modalDetalleContenido').appendChild(ul);
                 })
-                .catch(err => {
+                // .catch(err => {
+                //     console.error('Error al obtener detalles:', err);
+                //     document.getElementById('modalDetalleContenido').innerHTML = 'Error al cargar datos.';
+                // });
+                .catch(async err => {
                     console.error('Error al obtener detalles:', err);
-                    document.getElementById('modalDetalleContenido').innerHTML = 'Error al cargar datos.';
+
+                    let mensajeError = 'Error al cargar datos.';
+
+                    try {
+                        const errorJson = await err.response.json();
+                        if (errorJson && errorJson.message) {
+                            mensajeError += `<br><code>${errorJson.message}</code>`;
+                        }
+                    } catch (e) {
+                        mensajeError += `<br><code>${err.message || 'Error desconocido'}</code>`;
+                    }
+
+                    document.getElementById('modalDetalleContenido').innerHTML = mensajeError;
                 });
         }
 
