@@ -14,9 +14,9 @@ $model = new OperativosModel($pdo);
 $nombre = $_POST['nombre'] ?? '';
 $fecha_inicio = $_POST['fecha_inicio'] ?? '';
 $fecha_cierre = $_POST['fecha_cierre'] ?? '';
-$cooperativas = isset($_POST['cooperativas']) && is_array($_POST['cooperativas']) ? $_POST['cooperativas'] : [];
-$productores = isset($_POST['productores']) && is_array($_POST['productores']) ? $_POST['productores'] : [];
-$productos = isset($_POST['productos']) && is_array($_POST['productos']) ? $_POST['productos'] : [];
+$cooperativas = $_POST['cooperativas'] ?? [];
+$productores = $_POST['productores'] ?? [];
+$productos = $_POST['productos'] ?? [];
 
 if (empty($nombre) || empty($fecha_inicio) || empty($fecha_cierre)) {
     echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios.']);
@@ -28,7 +28,7 @@ if ($model->existeNombre($nombre)) {
     exit;
 }
 
-// Debug temporal para ver datos (opcional, comentar si no se usa)
+// Debug temporal (opcional)
 file_put_contents('php://stderr', "📝 Datos recibidos:\n" . print_r($_POST, true));
 
 try {
@@ -45,8 +45,8 @@ try {
     if (!empty($productos))    $model->guardarProductos($operativo_id, $productos);
 
     $pdo->commit();
-    echo json_encode(['success' => true, 'message' => '✅ Operativo creado correctamente']);
 
+    echo json_encode(['success' => true, 'message' => '✅ Operativo creado correctamente']);
 } catch (Exception $e) {
     $pdo->rollBack();
     echo json_encode([

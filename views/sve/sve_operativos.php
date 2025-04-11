@@ -318,7 +318,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 if (result.success) {
                     form.reset();
-                    document.getElementById('productores').innerHTML = '';
+                    document.getElementById('listaProductores').innerHTML = '';
                     showAlert('success', result.message);
                     cargarOperativos(); // 👈 Refresca tabla
                 } else {
@@ -499,7 +499,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                     data.forEach(e => {
                         const label = document.createElement('label');
-                        label.innerHTML = `<input type="checkbox" name="${tipo}[]" value="${e.id}" checked> #${e.id} - ${e.nombre}`;
+                        label.innerHTML = `<input type="checkbox" name="${tipo}[]" value="${e.id}"> #${e.id} - ${e.nombre}`;
                         contenedor.appendChild(label);
                     });
                 }
