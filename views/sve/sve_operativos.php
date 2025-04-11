@@ -8,7 +8,8 @@ error_reporting(E_ALL);
 session_start();
 
 // spinner
-include 'views\partials\spinner.html';
+include __DIR__ . '/../partials/spinner.html';
+
 
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
