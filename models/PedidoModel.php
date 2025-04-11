@@ -3,6 +3,7 @@ require_once __DIR__ . '/../config.php';
 
 class PedidoModel {
 
+    // Obtener todas las cooperativas
     public static function getCooperativas() {
         global $pdo;
         $query = "SELECT id, nombre FROM usuarios WHERE rol = 'cooperativa'";
@@ -10,26 +11,28 @@ class PedidoModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Obtener los productores vinculados a una cooperativa
     public static function getProductoresPorCooperativa($id_cooperativa) {
-        global $db;
-        $stmt = $db->prepare("
+        global $pdo;
+        $query = "
             SELECT u.id, u.nombre
             FROM Relaciones_Cooperativa_Productores r
             JOIN usuarios u ON r.id_productor = u.id
-            WHERE r.id_cooperativa = ?
-        ");
-        $stmt->bind_param("i", $id_cooperativa);
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            WHERE r.id_cooperativa = :id_coop
+        ";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute(['id_coop' => $id_cooperativa]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Obtener todos los productos organizados por categoría
     public static function getProductosPorCategoria() {
-        global $db;
+        global $pdo;
         $query = "SELECT * FROM productos ORDER BY categoria";
-        $result = $db->query($query);
+        $stmt = $pdo->query($query);
         $productos = [];
 
-        while ($row = $result->fetch_assoc()) {
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $cat = $row['categoria'];
             if (!isset($productos[$cat])) {
                 $productos[$cat] = [];
@@ -40,64 +43,68 @@ class PedidoModel {
         return $productos;
     }
 
+    // Guardar el pedido y sus detalles
     public static function guardarPedido($pedido, $detalles) {
-        global $db;
-        $db->begin_transaction();
+        global $pdo;
 
         try {
-            $stmt = $db->prepare("
+            $pdo->beginTransaction();
+
+            // Insertar pedido
+            $stmt = $pdo->prepare("
                 INSERT INTO pedidos (
                     cooperativa, productor, fecha_pedido, persona_facturacion, 
                     condicion_facturacion, afiliacion, ha_cooperativa, 
                     total_sin_iva, total_iva, factura, total_pedido, observaciones
                 )
-                VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (:cooperativa, :productor, NOW(), :persona_facturacion, :condicion_facturacion, 
+                        :afiliacion, :ha_cooperativa, :total_sin_iva, :total_iva, :factura, 
+                        :total_pedido, :observaciones)
             ");
 
-            $stmt->bind_param(
-                "iisssidddds",
-                $pedido['cooperativa'],
-                $pedido['productor'],
-                $pedido['persona_facturacion'],
-                $pedido['condicion_facturacion'],
-                $pedido['afiliacion'],
-                $pedido['ha_cooperativa'],
-                $pedido['total_sin_iva'],
-                $pedido['total_iva'],
-                $pedido['factura'],
-                $pedido['total_pedido'],
-                $pedido['observaciones']
-            );
+            $stmt->execute([
+                'cooperativa' => $pedido['cooperativa'],
+                'productor' => $pedido['productor'],
+                'persona_facturacion' => $pedido['persona_facturacion'],
+                'condicion_facturacion' => $pedido['condicion_facturacion'],
+                'afiliacion' => $pedido['afiliacion'],
+                'ha_cooperativa' => $pedido['ha_cooperativa'],
+                'total_sin_iva' => $pedido['total_sin_iva'],
+                'total_iva' => $pedido['total_iva'],
+                'factura' => $pedido['factura'],
+                'total_pedido' => $pedido['total_pedido'],
+                'observaciones' => $pedido['observaciones']
+            ]);
 
-            $stmt->execute();
-            $pedido_id = $db->insert_id;
+            $pedido_id = $pdo->lastInsertId();
+
+            // Insertar detalles del pedido
+            $stmt = $pdo->prepare("
+                INSERT INTO detalle_pedidos (
+                    pedido_id, nombre_producto, detalle_producto, 
+                    precio_producto, unidad_medida_venta, categoria, subtotal_por_categoria
+                )
+                VALUES (:pedido_id, :nombre_producto, :detalle_producto, :precio_producto, 
+                        :unidad_medida_venta, :categoria, :subtotal_por_categoria)
+            ");
 
             foreach ($detalles as $detalle) {
-                $stmt = $db->prepare("
-                    INSERT INTO detalle_pedidos (
-                        pedido_id, nombre_producto, detalle_producto, 
-                        precio_producto, unidad_medida_venta, categoria, subtotal_por_categoria
-                    )
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                ");
-                $stmt->bind_param(
-                    "issdssd",
-                    $pedido_id,
-                    $detalle['nombre_producto'],
-                    $detalle['detalle_producto'],
-                    $detalle['precio_producto'],
-                    $detalle['unidad_medida_venta'],
-                    $detalle['categoria'],
-                    $detalle['subtotal_por_categoria']
-                );
-                $stmt->execute();
+                $stmt->execute([
+                    'pedido_id' => $pedido_id,
+                    'nombre_producto' => $detalle['nombre_producto'],
+                    'detalle_producto' => $detalle['detalle_producto'],
+                    'precio_producto' => $detalle['precio_producto'],
+                    'unidad_medida_venta' => $detalle['unidad_medida_venta'],
+                    'categoria' => $detalle['categoria'],
+                    'subtotal_por_categoria' => $detalle['subtotal_por_categoria']
+                ]);
             }
 
-            $db->commit();
+            $pdo->commit();
             return ['success' => true];
 
         } catch (Exception $e) {
-            $db->rollback();
+            $pdo->rollBack();
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
