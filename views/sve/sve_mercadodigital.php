@@ -174,17 +174,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <input type="text" id="observaciones" name="observaciones">
                                 </div>
                             </div>
-
-                            <!-- Contenedor para acordeones de productos -->
-                            <div class="form-grid grid-1">
-                                <div id="acordeones-productos"></div>
-                            </div>
-
-                            <!-- Contenedor para resumen del pedido -->
-                            <div class="form-grid grid-1">
-                                <div id="acordeon-resumen"></div>
-                            </div>
-
+                        </div>
+                        <!-- Contenedor para acordeones de productos -->
+                        <div class="form-grid grid-1">
+                            <div id="acordeones-productos"></div>
                         </div>
 
                         <!-- Botones -->
