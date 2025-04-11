@@ -104,10 +104,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-icon">
                                     <span class="material-icons">public</span>
                                     <select id="cooperativa" name="cooperativa" required>
-                                        <option value="">Seleccionar</option>
-                                        <option>Buenos Aires</option>
-                                        <option>Córdoba</option>
-                                        <option>Santa Fe</option>
+                                        <option value="">Cargando cooperativas...</option>
                                     </select>
                                 </div>
                             </div>
@@ -118,10 +115,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-icon">
                                     <span class="material-icons">public</span>
                                     <select id="productor" name="productor" required>
-                                        <option value="">Seleccionar</option>
-                                        <option>Buenos Aires</option>
-                                        <option>Córdoba</option>
-                                        <option>Santa Fe</option>
+                                        <option value="">Seleccione una cooperativa primero</option>
                                     </select>
                                 </div>
                             </div>
@@ -129,7 +123,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                             <!-- persona_facturacion -->
                             <div class="input-group">
-                                <label for="factura">¿A quien facturamos</label>
+                                <label for="factura">¿A quién facturamos?</label>
                                 <div class="input-icon">
                                     <span class="material-icons">public</span>
                                     <select id="factura" name="factura" required>
@@ -145,7 +139,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-icon">
                                     <span class="material-icons">public</span>
                                     <select id="condicion" name="condicion" required>
-                                        <option value="responsabe inscripto">Responsable Inscripto</option>
+                                        <option value="responsable inscripto">Responsable Inscripto</option>
                                         <option value="monotributista">Monotributista</option>
                                     </select>
                                 </div>
@@ -157,7 +151,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-icon">
                                     <span class="material-icons">public</span>
                                     <select id="afiliacion" name="afiliacion" required>
-                                        <option value="socio">Si, es socio</option>
+                                        <option value="socio">Sí, es socio</option>
                                         <option value="tercero">No, es tercero</option>
                                     </select>
                                 </div>
@@ -165,9 +159,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                             <!-- ha_cooperativa -->
                             <div class="input-group">
-                                <label for="hectareas">Hectareas</label>
+                                <label for="hectareas">Hectáreas</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">phone</span>
+                                    <span class="material-icons">agriculture</span>
                                     <input type="number" id="hectareas" name="hectareas" required>
                                 </div>
                             </div>
@@ -176,9 +170,19 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="observaciones">Observaciones</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">location_city</span>
-                                    <input type="text" id="observaciones" name="observaciones" required>
+                                    <span class="material-icons">note</span>
+                                    <input type="text" id="observaciones" name="observaciones">
                                 </div>
+                            </div>
+
+                            <!-- Contenedor para acordeones de productos -->
+                            <div class="form-grid grid-1">
+                                <div id="acordeones-productos"></div>
+                            </div>
+
+                            <!-- Contenedor para resumen del pedido -->
+                            <div class="form-grid grid-1">
+                                <div id="acordeon-resumen"></div>
                             </div>
 
                         </div>
