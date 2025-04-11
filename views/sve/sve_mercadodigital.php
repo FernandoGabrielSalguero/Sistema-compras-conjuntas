@@ -308,55 +308,59 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         function crearAcordeonCategoria(categoria, productos) {
-            console.log("🛒 Productos para categoría:", categoria, productos);
             const container = document.getElementById("acordeones-productos");
 
-            // Acordeón general
+            // Contenedor del acordeón
             const acordeon = document.createElement("div");
             acordeon.classList.add("accordion");
 
+            // Header
             const header = document.createElement("div");
             header.classList.add("accordion-header");
-            header.textContent = categoria;
-            header.onclick = () => acordeon.classList.toggle("active");
+            header.setAttribute("onclick", "toggleAccordion(this)");
 
+            const spanTitulo = document.createElement("span");
+            spanTitulo.textContent = categoria;
+
+            const icono = document.createElement("span");
+            icono.classList.add("material-icons");
+            icono.textContent = "expand_more";
+
+            header.appendChild(spanTitulo);
+            header.appendChild(icono);
+
+            // Body
             const body = document.createElement("div");
             body.classList.add("accordion-body");
 
-            // Validación de productos
             if (!productos || productos.length === 0) {
-                const emptyMsg = document.createElement("p");
-                emptyMsg.textContent = "No hay productos disponibles en esta categoría.";
-                body.appendChild(emptyMsg);
+                const vacio = document.createElement("p");
+                vacio.textContent = "No hay productos disponibles en esta categoría.";
+                body.appendChild(vacio);
             } else {
                 productos.forEach(prod => {
-                    console.log("🧪 Producto:", prod);
+                    const grupo = document.createElement("div");
+                    grupo.classList.add("input-group");
 
-                    const item = document.createElement("div");
-                    item.classList.add("input-group");
+                    grupo.innerHTML = `
+                <label>${prod.Nombre_producto} (${prod.Unidad_Medida_venta})</label>
+                <input 
+                    type="number" min="0" value="0"
+                    data-id="${prod.Id}"
+                    data-nombre="${prod.Nombre_producto}"
+                    data-detalle="${prod.Detalle_producto}"
+                    data-precio="${prod.Precio_producto}"
+                    data-unidad="${prod.Unidad_Medida_venta}"
+                    data-categoria="${prod.categoria}"
+                    onchange="actualizarProductoSeleccionado(this)"
+                >
+            `;
 
-                    // Crear label y input por separado
-                    const label = document.createElement("label");
-                    label.textContent = `${prod.Nombre_producto} (${prod.Unidad_Medida_venta})`;
-
-                    const input = document.createElement("input");
-                    input.type = "number";
-                    input.min = 0;
-                    input.value = 0;
-                    input.setAttribute("data-id", prod.Id);
-                    input.setAttribute("data-nombre", prod.Nombre_producto);
-                    input.setAttribute("data-detalle", prod.Detalle_producto);
-                    input.setAttribute("data-precio", prod.Precio_producto);
-                    input.setAttribute("data-unidad", prod.Unidad_Medida_venta);
-                    input.setAttribute("data-categoria", prod.categoria);
-                    input.addEventListener("change", () => actualizarProductoSeleccionado(input));
-
-                    item.appendChild(label);
-                    item.appendChild(input);
-                    body.appendChild(item);
+                    body.appendChild(grupo);
                 });
             }
 
+            // Armamos el acordeón completo
             acordeon.appendChild(header);
             acordeon.appendChild(body);
             container.appendChild(acordeon);
