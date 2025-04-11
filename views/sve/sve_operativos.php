@@ -470,14 +470,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                         // Botón seleccionar todos por categoría
                         const btnSelTodos = document.createElement('button');
+                        btnSelTodos.type = 'button'; // 👈 esto evita que se dispare el submit del formulario
                         btnSelTodos.textContent = 'Seleccionar todos';
                         btnSelTodos.classList.add('btn-mini');
-                        btnSelTodos.onclick = () => {
+                        btnSelTodos.addEventListener('click', (e) => {
+                            e.preventDefault(); // 👈 por las dudas también prevenimos comportamiento por defecto
                             items.forEach(p => {
                                 const input = contenedor.querySelector(`input[value="${p.id}"]`);
                                 if (input) input.checked = true;
                             });
-                        };
+                        });
                         contenedor.appendChild(btnSelTodos);
 
                         items.forEach(p => {
