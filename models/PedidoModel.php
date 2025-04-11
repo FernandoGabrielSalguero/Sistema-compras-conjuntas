@@ -176,4 +176,76 @@ class PedidoModel
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
+
+    public static function actualizarPedidoCompleto($pedido, $detalles)
+    {
+        global $pdo;
+
+        try {
+            $pdo->beginTransaction();
+
+            // Actualizar datos principales
+            $stmt = $pdo->prepare("
+                UPDATE pedidos
+                SET cooperativa = :cooperativa,
+                    productor = :productor,
+                    persona_facturacion = :persona_facturacion,
+                    condicion_facturacion = :condicion_facturacion,
+                    afiliacion = :afiliacion,
+                    ha_cooperativa = :ha_cooperativa,
+                    total_sin_iva = :total_sin_iva,
+                    total_iva = :total_iva,
+                    factura = :factura,
+                    total_pedido = :total_pedido,
+                    observaciones = :observaciones
+                WHERE id = :id
+            ");
+
+            $stmt->execute([
+                'id' => $pedido['id'],
+                'cooperativa' => $pedido['cooperativa'],
+                'productor' => $pedido['productor'],
+                'persona_facturacion' => $pedido['persona_facturacion'],
+                'condicion_facturacion' => $pedido['condicion_facturacion'],
+                'afiliacion' => $pedido['afiliacion'],
+                'ha_cooperativa' => $pedido['ha_cooperativa'],
+                'total_sin_iva' => $pedido['total_sin_iva'],
+                'total_iva' => $pedido['total_iva'],
+                'factura' => $pedido['factura'],
+                'total_pedido' => $pedido['total_pedido'],
+                'observaciones' => $pedido['observaciones']
+            ]);
+
+            // Borrar detalles previos
+            $pdo->prepare("DELETE FROM detalle_pedidos WHERE pedido_id = :id")->execute(['id' => $pedido['id']]);
+
+            // Insertar nuevos detalles
+            $stmt = $pdo->prepare("
+                INSERT INTO detalle_pedidos (
+                    pedido_id, nombre_producto, detalle_producto, 
+                    precio_producto, unidad_medida_venta, categoria, subtotal_por_categoria
+                )
+                VALUES (:pedido_id, :nombre_producto, :detalle_producto, :precio_producto, 
+                        :unidad_medida_venta, :categoria, :subtotal_por_categoria)
+            ");
+
+            foreach ($detalles as $d) {
+                $stmt->execute([
+                    'pedido_id' => $pedido['id'],
+                    'nombre_producto' => $d['nombre_producto'],
+                    'detalle_producto' => $d['detalle_producto'],
+                    'precio_producto' => $d['precio_producto'],
+                    'unidad_medida_venta' => $d['unidad_medida_venta'],
+                    'categoria' => $d['categoria'],
+                    'subtotal_por_categoria' => $d['subtotal_por_categoria']
+                ]);
+            }
+
+            $pdo->commit();
+            return ['success' => true];
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
 }

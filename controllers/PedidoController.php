@@ -82,4 +82,21 @@ switch ($action) {
             echo json_encode(['success' => false, 'error' => 'Método no permitido']);
         }
         break;
+
+    case 'actualizarPedidoCompleto':
+        if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            $pedido = $data['pedido'] ?? [];
+            $detalles = $data['detalles'] ?? [];
+
+            if (isset($pedido['id'])) {
+                echo json_encode(PedidoModel::actualizarPedidoCompleto($pedido, $detalles));
+            } else {
+                echo json_encode(['success' => false, 'error' => 'ID faltante para actualización.']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
+        }
+        break;
 }
