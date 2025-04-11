@@ -216,6 +216,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </div>
                 </div>
 
+                <!-- Modal de detalle (cooperativas, productores, productos) -->
+                <div id="modalDetalle" class="modal hidden">
+                    <div class="modal-content">
+                        <h3 id="modalDetalleTitulo">Detalles</h3>
+                        <div id="modalDetalleContenido" style="max-height: 400px; overflow-y: auto; margin-top: 15px;"></div>
+
+                        <div class="form-buttons" style="margin-top: 20px;">
+                            <button type="button" class="btn btn-cancelar" onclick="cerrarModalDetalle()">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+
 
                 <!-- Modal editar operativo -->
                 <div id="modalEditar" class="modal hidden">
@@ -534,6 +546,55 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     });
                 });
             });
+        }
+
+        function verDetalle(tipo, operativoId) {
+            const titulo = {
+                cooperativas: 'Cooperativas del operativo',
+                productores: 'Productores del operativo',
+                productos: 'Productos del operativo'
+            };
+
+            // Mostrar modal
+            document.getElementById('modalDetalleTitulo').textContent = titulo[tipo] || 'Detalles';
+            document.getElementById('modalDetalle').classList.remove('hidden');
+            document.getElementById('modalDetalleContenido').innerHTML = 'Cargando...';
+
+            fetch(`/controllers/detalleOperativoController.php?tipo=${tipo}&id=${operativoId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        document.getElementById('modalDetalleContenido').innerHTML = `<p>${data.message}</p>`;
+                        return;
+                    }
+
+                    if (!data.items.length) {
+                        document.getElementById('modalDetalleContenido').innerHTML = '<p>No se encontraron registros.</p>';
+                        return;
+                    }
+
+                    const ul = document.createElement('ul');
+                    data.items.forEach(item => {
+                        const li = document.createElement('li');
+                        if (tipo === 'productos') {
+                            li.textContent = `#${item.id} - ${item.Nombre_producto} (${item.Categoria})`;
+                        } else {
+                            li.textContent = `#${item.id} - ${item.nombre}`;
+                        }
+                        ul.appendChild(li);
+                    });
+
+                    document.getElementById('modalDetalleContenido').innerHTML = '';
+                    document.getElementById('modalDetalleContenido').appendChild(ul);
+                })
+                .catch(err => {
+                    console.error('Error al obtener detalles:', err);
+                    document.getElementById('modalDetalleContenido').innerHTML = 'Error al cargar datos.';
+                });
+        }
+
+        function cerrarModalDetalle() {
+            document.getElementById('modalDetalle').classList.add('hidden');
         }
     </script>
 </body>

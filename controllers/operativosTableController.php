@@ -17,10 +17,14 @@ foreach ($operativos as $op) {
         <td>{$op['nombre']}</td>
         <td>{$op['fecha_inicio']}</td>
         <td>{$op['fecha_cierre']}</td>
-        <td>Ver cooperativas</td>
-        <td>Ver productores</td>
-        <td>Ver productos</td>
+        
+        <td><button class='btn-mini' onclick='verDetalle(\"cooperativas\", {$op['id']})'>Ver cooperativas</button></td>
+        <td><button class='btn-mini' onclick='verDetalle(\"productores\", {$op['id']})'>Ver productores</button></td>
+        <td><button class='btn-mini' onclick='verDetalle(\"productos\", {$op['id']})'>Ver productos</button></td>
+
         <td>{$op['created_at']}</td>
-        <td><button class='btn btn-info' onclick='editarOperativo({$op['id']})'>Editar</button></td>
+        <td><button class='btn-mini' onclick='editarOperativo({$op['id']})'>Editar</button></td>
     </tr>";
 }
+
+
