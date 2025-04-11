@@ -446,7 +446,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         // cargamos los check boxs de cooperativas y productos al cargar la pagina
 
-        async function cargarCheckboxList(tipo, url, agruparPorCategoria = false) {
+        async function cargarCheckboxList(tipo, url) {
             const contenedor = document.getElementById(`lista${capitalize(tipo)}`);
             contenedor.innerHTML = '';
 
@@ -456,7 +456,19 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 console.log(`✅ ${tipo} cargados desde: ${url}`, data);
 
-                if (agruparPorCategoria) {
+                // Agregar botón seleccionar todos (general)
+                const btnSelTodos = document.createElement('button');
+                btnSelTodos.type = 'button';
+                btnSelTodos.textContent = 'Seleccionar todos';
+                btnSelTodos.classList.add('btn-mini');
+                btnSelTodos.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    contenedor.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true);
+                });
+                contenedor.appendChild(btnSelTodos);
+
+                // Renderizar los checkboxes
+                if (tipo === 'productos') {
                     const grupos = {};
                     data.forEach(p => {
                         if (!grupos[p.Categoria]) grupos[p.Categoria] = [];
@@ -468,20 +480,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         titulo.textContent = categoria;
                         contenedor.appendChild(titulo);
 
-                        // Botón seleccionar todos por categoría
-                        const btnSelTodos = document.createElement('button');
-                        btnSelTodos.type = 'button'; // 👈 esto evita que se dispare el submit del formulario
-                        btnSelTodos.textContent = 'Seleccionar todos';
-                        btnSelTodos.classList.add('btn-mini');
-                        btnSelTodos.addEventListener('click', (e) => {
-                            e.preventDefault(); // 👈 por las dudas también prevenimos comportamiento por defecto
-                            items.forEach(p => {
-                                const input = contenedor.querySelector(`input[value="${p.id}"]`);
-                                if (input) input.checked = true;
-                            });
-                        });
-                        contenedor.appendChild(btnSelTodos);
-
                         items.forEach(p => {
                             const label = document.createElement('label');
                             label.innerHTML = `<input type="checkbox" name="${tipo}[]" value="${p.id}"> ${p.Nombre_producto}`;
@@ -490,21 +488,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     });
 
                 } else {
-                    // Botón seleccionar todos
-                    const btnSelTodos = document.createElement('button');
-                    btnSelTodos.textContent = 'Seleccionar todos';
-                    btnSelTodos.classList.add('btn-mini');
-                    btnSelTodos.onclick = () => {
-                        contenedor.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true);
-                    };
-                    contenedor.appendChild(btnSelTodos);
-
                     data.forEach(e => {
                         const label = document.createElement('label');
                         label.innerHTML = `<input type="checkbox" name="${tipo}[]" value="${e.id}"> #${e.id} - ${e.nombre}`;
                         contenedor.appendChild(label);
                     });
                 }
+
             } catch (err) {
                 console.error(`Error cargando ${tipo}:`, err);
             }
@@ -515,16 +505,34 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         document.addEventListener('DOMContentLoaded', async () => {
             await cargarOperativos();
 
-            // Cargar cooperativas y productos
+            // Cargar cooperativas, productos y productores
             await cargarCheckboxList('cooperativas', '/controllers/operativosAuxDataController.php?accion=cooperativas');
-            await cargarCheckboxList('productos', '/controllers/operativosAuxDataController.php?accion=productos', true);
+            await cargarCheckboxList('productos', '/controllers/operativosAuxDataController.php?accion=productos');
 
-            // Cargar productores solo si hay cooperativas marcadas
+            // Activar filtros una vez cargados
+            activarBuscadores();
+
             document.getElementById('listaCooperativas').addEventListener('change', async () => {
                 const seleccionadas = Array.from(document.querySelectorAll('#listaCooperativas input[type=checkbox]:checked')).map(cb => cb.value);
                 await cargarCheckboxList('productores', `/controllers/operativosAuxDataController.php?accion=productores&ids=${seleccionadas.join(',')}`);
+                activarBuscadores(); // volver a activar después de actualizar
             });
         });
+
+
+        function activarBuscadores() {
+            document.querySelectorAll('.smart-selector-search').forEach(input => {
+                input.addEventListener('input', () => {
+                    const filtro = input.value.toLowerCase();
+                    const lista = input.parentElement.querySelector('.smart-selector-list');
+
+                    lista.querySelectorAll('label').forEach(label => {
+                        const texto = label.textContent.toLowerCase();
+                        label.style.display = texto.includes(filtro) ? '' : 'none';
+                    });
+                });
+            });
+        }
     </script>
 </body>
 
