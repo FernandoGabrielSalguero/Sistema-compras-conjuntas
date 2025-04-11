@@ -226,7 +226,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <!-- 🛠️ SCRIPTS -->
 
-    <script src="../../assets/js/sve_mercadodigital.js"></script>
+    <script src="../../assets/js/sve_mercadodigital.js" defer></script>
 </body>
 
 </html>
