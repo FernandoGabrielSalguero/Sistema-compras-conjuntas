@@ -221,7 +221,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </div>
 
                     <!-- Acordeones de productos (dinámicos desde JS) -->
-                    <div class="form-grid grid-2">
+                    <div class="">
                         <div id="acordeones-productos"></div>
                     </div>
 
