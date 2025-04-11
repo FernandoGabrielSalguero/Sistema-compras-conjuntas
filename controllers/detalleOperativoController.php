@@ -11,7 +11,8 @@ $tipo = $_GET['tipo'] ?? '';
 $id = $_GET['id'] ?? 0;
 
 if (!in_array($tipo, ['cooperativas', 'productores', 'productos']) || !is_numeric($id)) {
-    echo json_encode(['success' => false, 'message' => 'Parámetros inválidos.']);
+    echo json_encode(['success' => true, 'items' => $datos]); // 👈 cambio clave aquí
+
     exit;
 }
 
