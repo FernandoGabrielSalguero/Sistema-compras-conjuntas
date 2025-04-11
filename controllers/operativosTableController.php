@@ -18,9 +18,9 @@ foreach ($operativos as $op) {
         <td>{$op['fecha_inicio']}</td>
         <td>{$op['fecha_cierre']}</td>
         
-<td><button class='btn btn btn-aceptar btn-mini' onclick=\"verDetalle('cooperativas', {$op['id']})\">Ver cooperativas</button></td>
-<td><button class='btn btn btn-aceptar btn-mini' onclick=\"verDetalle('productores', {$op['id']})\">Ver productores</button></td>
-<td><button class='btn btn btn-aceptar btn-mini' onclick=\"verDetalle('productos', {$op['id']})\">Ver productos</button></td>
+<td><button class='btn btn-info' onclick=\"verDetalle('cooperativas', {$op['id']})\">Ver cooperativas</button></td>
+<td><button class='btn btn-info' onclick=\"verDetalle('productores', {$op['id']})\">Ver productores</button></td>
+<td><button class='btn btn-info' onclick=\"verDetalle('productos', {$op['id']})\">Ver productos</button></td>
 
 
         <td>{$op['created_at']}</td>

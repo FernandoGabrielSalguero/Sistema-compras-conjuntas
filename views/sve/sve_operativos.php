@@ -562,19 +562,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             fetch(`/controllers/detalleOperativoController.php?tipo=${tipo}&id=${operativoId}`)
                 .then(res => res.json())
-                .then(data => {
+                .then(data => { // 🔴 Esto está en tu función verDetalle (código actual):
                     if (!data.success) {
                         document.getElementById('modalDetalleContenido').innerHTML = `<p>${data.message}</p>`;
                         return;
                     }
 
-                    if (!data.items.length) {
+                    if (!data.items.length) { // ← ACA el nombre debe coincidir con tu JSON PHP
                         document.getElementById('modalDetalleContenido').innerHTML = '<p>No se encontraron registros.</p>';
                         return;
                     }
 
                     const ul = document.createElement('ul');
-                    data.items.forEach(item => {
+
+                    data.items.forEach(item => { // ← items está OK si en PHP devolvés 'items'
                         const li = document.createElement('li');
                         if (tipo === 'productos') {
                             li.textContent = `#${item.id} - ${item.Nombre_producto} (${item.Categoria})`;
