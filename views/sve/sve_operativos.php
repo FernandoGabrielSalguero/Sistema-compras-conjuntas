@@ -7,10 +7,6 @@ error_reporting(E_ALL);
 // Iniciar sesión y proteger acceso
 session_start();
 
-// spinner
-include __DIR__ . '/../partials/spinner.html';
-
-
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
@@ -303,6 +299,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         </div>
     </div>
+
+    <script src="/assets/js/sve_operativos.js" defer></script>
+    <!-- 🔁 Spinner global -->
+    <?php include __DIR__ . '/../partials/spinner.html'; ?>
 
     <script src="/assets/js/sve_operativos.js" defer></script>
 
