@@ -550,6 +550,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             fetch("/controllers/PedidoController.php?action=getPedidos")
                 .then(res => res.json())
                 .then(data => {
+                    cachePedidos = data; 
                     const tbody = document.querySelector(".data-table tbody");
                     tbody.innerHTML = "";
 
