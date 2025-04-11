@@ -507,55 +507,55 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         // 7. Enviar formulario
         function enviarFormulario(e) {
-    e.preventDefault();
+            e.preventDefault();
 
-    const formData = new FormData(e.target);
-    const pedido = {
-        cooperativa: formData.get("cooperativa"),
-        productor: formData.get("productor"),
-        persona_facturacion: formData.get("factura"),
-        condicion_facturacion: formData.get("condicion"),
-        afiliacion: formData.get("afiliacion"),
-        ha_cooperativa: formData.get("hectareas"),
-        observaciones: formData.get("observaciones"),
-        total_sin_iva: calcularTotalSinIVA(),
-        total_iva: calcularTotalIVA(),
-        total_pedido: calcularTotalFinal(),
-        factura: ""
-    };
+            const formData = new FormData(e.target);
+            const pedido = {
+                cooperativa: formData.get("cooperativa"),
+                productor: formData.get("productor"),
+                persona_facturacion: formData.get("factura"),
+                condicion_facturacion: formData.get("condicion"),
+                afiliacion: formData.get("afiliacion"),
+                ha_cooperativa: formData.get("hectareas"),
+                observaciones: formData.get("observaciones"),
+                total_sin_iva: calcularTotalSinIVA(),
+                total_iva: calcularTotalIVA(),
+                total_pedido: calcularTotalFinal(),
+                factura: ""
+            };
 
-    const payload = {
-        pedido,
-        detalles: Object.values(productosSeleccionados)
-    };
+            const payload = {
+                pedido,
+                detalles: Object.values(productosSeleccionados)
+            };
 
-    let url = "/controllers/PedidoController.php?action=guardarPedido";
-    let metodo = "POST";
+            let url = "/controllers/PedidoController.php?action=guardarPedido";
+            let metodo = "POST";
 
-    if (pedidoEditandoId !== null) {
-        pedido.id = pedidoEditandoId; // incluimos ID
-        url = "/controllers/PedidoController.php?action=actualizarPedidoCompleto";
-        metodo = "PUT";
-    }
-
-    fetch(url, {
-        method: metodo,
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert("✅ Pedido guardado/actualizado correctamente");
-                location.reload();
-            } else {
-                alert("❌ Error al guardar/actualizar");
-                console.error(data.error);
+            if (pedidoEditandoId !== null) {
+                pedido.id = pedidoEditandoId; // incluimos ID
+                url = "/controllers/PedidoController.php?action=actualizarPedidoCompleto";
+                metodo = "PUT";
             }
-        });
-}
+
+            fetch(url, {
+                    method: metodo,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("✅ Pedido guardado/actualizado correctamente");
+                        location.reload();
+                    } else {
+                        alert("❌ Error al guardar/actualizar");
+                        console.error(data.error);
+                    }
+                });
+        }
 
         // 8 - cargar pedidos en tabla
         function cargarPedidos() {
@@ -581,7 +581,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <td>$${parseFloat(pedido.total_pedido).toFixed(2)}</td>
                     <td>${pedido.observaciones}</td>
                     <td>
-                        <button class="btn btn-aceptar" onclick="abrirModalEditar(${pedido.id})">Actualizar</button>
+                        <button class="btn btn-aceptar" onclick="editarPedidoCompleto(${pedido.id})">Actualizar</button>
                         <button class="btn btn-cancelar" onclick="eliminarPedido(${pedido.id})">Eliminar</button>
                     </td>
                 `;
@@ -605,26 +605,26 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             return calcularTotalSinIVA() + calcularTotalIVA();
         }
 
-        function abrirModalEditar(id) {
-            const pedido = obtenerPedidoPorId(id);
-            if (!pedido) return;
+        // function abrirModalEditar(id) {
+        //     const pedido = obtenerPedidoPorId(id);
+        //     if (!pedido) return;
 
-            pedidoEditandoId = id; // ← estamos en modo edición
+        //     pedidoEditandoId = id; // ← estamos en modo edición
 
-            document.getElementById("cooperativa").value = pedido.cooperativa;
-            cargarProductores().then(() => {
-                document.getElementById("productor").value = pedido.productor;
-            });
+        //     document.getElementById("cooperativa").value = pedido.cooperativa;
+        //     cargarProductores().then(() => {
+        //         document.getElementById("productor").value = pedido.productor;
+        //     });
 
-            document.getElementById("factura").value = pedido.persona_facturacion;
-            document.getElementById("condicion").value = pedido.condicion_facturacion;
-            document.getElementById("afiliacion").value = pedido.afiliacion;
-            document.getElementById("hectareas").value = pedido.ha_cooperativa;
-            document.getElementById("observaciones").value = pedido.observaciones;
+        //     document.getElementById("factura").value = pedido.persona_facturacion;
+        //     document.getElementById("condicion").value = pedido.condicion_facturacion;
+        //     document.getElementById("afiliacion").value = pedido.afiliacion;
+        //     document.getElementById("hectareas").value = pedido.ha_cooperativa;
+        //     document.getElementById("observaciones").value = pedido.observaciones;
 
-            // Podés luego agregar la carga de productos seleccionados si los traés desde backend también.
-            alert("🔁 Pedido cargado para edición. Ahora podés modificar y presionar Enviar.");
-        }
+        //     // Podés luego agregar la carga de productos seleccionados si los traés desde backend también.
+        //     alert("🔁 Pedido cargado para edición. Ahora podés modificar y presionar Enviar.");
+        // }
 
         function cerrarModal() {
             document.getElementById("modal-editar").style.display = "none";
@@ -681,6 +681,28 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         alert("❌ Error al eliminar");
                     }
                 });
+        }
+
+        function editarPedidoCompleto(id) {
+            const pedido = obtenerPedidoPorId(id);
+            if (!pedido) return;
+
+            pedidoEditandoId = id;
+
+            document.getElementById("cooperativa").value = pedido.cooperativa;
+            cargarProductores().then(() => {
+                document.getElementById("productor").value = pedido.productor;
+            });
+
+            document.getElementById("factura").value = pedido.persona_facturacion;
+            document.getElementById("condicion").value = pedido.condicion_facturacion;
+            document.getElementById("afiliacion").value = pedido.afiliacion;
+            document.getElementById("hectareas").value = pedido.ha_cooperativa;
+            document.getElementById("observaciones").value = pedido.observaciones;
+
+            // ❗️Opción futura: podrías agregar productos seleccionados acá.
+
+            alert("🔁 Pedido cargado para edición. Modificá los campos y presioná Enviar.");
         }
     </script>
 </body>
