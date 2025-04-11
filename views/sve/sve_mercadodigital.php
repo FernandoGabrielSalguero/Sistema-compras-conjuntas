@@ -94,7 +94,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <p>En esta página vamos a comprar y administrar las compras de los usuarios</p>
                 </div>
                 <div class="card">
-                    <h2>Formularios</h2>
+                    <h2>Realicemos un nuevo pedido</h2>
                     <form class="form-modern">
                         <div class="form-grid grid-4">
 
@@ -190,43 +190,27 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </form>
                 </div>
 
-                <!-- Bienvenida -->
+                <!-- Tabla de pedidos -->
                 <div class="card">
-                    <h2>Tabla de pedidos</h2>
+                    <h2>Listado de pedidos registrados</h2>
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>Nombre</th>
-                                    <th>Email</th>
-                                    <th>Rol</th>
-                                    <th>Estado</th>
+                                    <th>id</th>
+                                    <th>Fecha Pedido</th>
+                                    <th>Cooperativa</th>
+                                    <th>Productor</th>
+                                    <th>Condicion de factura</th>
+                                    <th>Afiliacion</th>
+                                    <th>Total IVA</th>
+                                    <th>Total sin IVA</th>
+                                    <th>Total</th>
+                                    <th>Observaciones</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>Carlos Ruiz</td>
-                                    <td>carlos@mail.com</td>
-                                    <td>Administrador</td>
-                                    <td><span class="badge success">Activo</span></td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>Laura Méndez</td>
-                                    <td>laura@mail.com</td>
-                                    <td>Editor</td>
-                                    <td><span class="badge warning">Pendiente</span></td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td>Jorge Peña</td>
-                                    <td>jorge@mail.com</td>
-                                    <td>Usuario</td>
-                                    <td><span class="badge danger">Suspendido</span></td>
-                                </tr>
-                            </tbody>
+                            <tbody id=" "></tbody>
                         </table>
                     </div>
                 </div>
