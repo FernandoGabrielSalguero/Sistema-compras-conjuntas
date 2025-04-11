@@ -1,60 +1,52 @@
 <?php
-// Mostrar errores en desarrollo
+// Mostrar errores
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../config.php';
-
 header('Content-Type: application/json');
 
-// Validar parámetros
 $tipo = $_GET['tipo'] ?? '';
-$id = intval($_GET['id'] ?? 0);
+$id = $_GET['id'] ?? 0;
 
-if (!$id || !in_array($tipo, ['cooperativas', 'productores', 'productos'])) {
-    echo json_encode(['success' => false, 'message' => 'Parámetros inválidos']);
+if (!in_array($tipo, ['cooperativas', 'productores', 'productos']) || !is_numeric($id)) {
+    echo json_encode(['success' => false, 'message' => 'Parámetros inválidos.']);
     exit;
 }
 
 try {
-    switch ($tipo) {
-        case 'cooperativas':
-            $stmt = $pdo->prepare("
-                SELECT c.id, c.nombre
-                FROM operativos_cooperativas oc
-                JOIN cooperativas c ON c.id = oc.cooperativa_id
-                WHERE oc.operativo_id = ?
-            ");
-            break;
+    if ($tipo === 'cooperativas') {
+        $stmt = $pdo->prepare("
+            SELECT c.id, c.nombre
+            FROM operativos_cooperativas oc
+            JOIN cooperativas c ON oc.cooperativa_id = c.id
+            WHERE oc.operativo_id = ?
+        ");
+    }
 
-        case 'productores':
-            $stmt = $pdo->prepare("
-                SELECT p.id, p.nombre
-                FROM operativos_productores op
-                JOIN productores p ON p.id = op.productor_id
-                WHERE op.operativo_id = ?
-            ");
-            break;
+    if ($tipo === 'productores') {
+        $stmt = $pdo->prepare("
+            SELECT p.id, p.nombre
+            FROM operativos_productores op
+            JOIN productores p ON op.productor_id = p.id
+            WHERE op.operativo_id = ?
+        ");
+    }
 
-        case 'productos':
-            $stmt = $pdo->prepare("
-                SELECT pr.id, pr.Nombre_producto, pr.Categoria
-                FROM operativos_productos op
-                JOIN productos pr ON pr.id = op.producto_id
-                WHERE op.operativo_id = ?
-            ");
-            break;
+    if ($tipo === 'productos') {
+        $stmt = $pdo->prepare("
+            SELECT pr.id, pr.Nombre_producto AS nombre
+            FROM operativos_productos op
+            JOIN productos pr ON op.producto_id = pr.id
+            WHERE op.operativo_id = ?
+        ");
     }
 
     $stmt->execute([$id]);
-    $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $datos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode(['success' => true, 'items' => $items]);
-
+    echo json_encode(['success' => true, 'data' => $datos]);
 } catch (Exception $e) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Error al obtener datos: ' . $e->getMessage()
-    ]);
+    echo json_encode(['success' => false, 'message' => 'Error al obtener datos: ' . $e->getMessage()]);
 }
