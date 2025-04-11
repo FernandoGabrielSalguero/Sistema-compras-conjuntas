@@ -40,6 +40,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <style>
         #acordeones-productos .accordion {
+            min-width: 800px;
             width: 100%;
         }
 
