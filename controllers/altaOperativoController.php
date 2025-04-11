@@ -18,16 +18,6 @@ $cooperativas = isset($_POST['cooperativas']) && is_array($_POST['cooperativas']
 $productores = isset($_POST['productores']) && is_array($_POST['productores']) ? $_POST['productores'] : [];
 $productos = isset($_POST['productos']) && is_array($_POST['productos']) ? $_POST['productos'] : [];
 
-if (!empty($cooperativas)) {
-    $model->guardarCooperativas($operativo_id, $cooperativas);
-}
-if (!empty($productores)) {
-    $model->guardarProductores($operativo_id, $productores);
-}
-if (!empty($productos)) {
-    $model->guardarProductos($operativo_id, $productos);
-}
-
 if (empty($nombre) || empty($fecha_inicio) || empty($fecha_cierre)) {
     echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios.']);
     exit;
@@ -38,41 +28,30 @@ if ($model->existeNombre($nombre)) {
     exit;
 }
 
-file_put_contents('php://stderr', "Cooperativas:\n" . print_r($_POST['cooperativas'], true));
-file_put_contents('php://stderr', "Productores:\n" . print_r($_POST['productores'], true));
-file_put_contents('php://stderr', "Productos:\n" . print_r($_POST['productos'], true));
-
-echo json_encode([
-    'success' => false,
-    'debug' => true,
-    'nombre' => $nombre,
-    'fecha_inicio' => $fecha_inicio,
-    'fecha_cierre' => $fecha_cierre,
-    'cooperativas' => $cooperativas,
-    'productores' => $productores,
-    'productos' => $productos
-]);
-exit;
-
+// Debug temporal para ver datos (opcional, comentar si no se usa)
+file_put_contents('php://stderr', "📝 Datos recibidos:\n" . print_r($_POST, true));
 
 try {
     $pdo->beginTransaction();
 
     $operativo_id = $model->crearOperativo($nombre, $fecha_inicio, $fecha_cierre);
 
+    if (!$operativo_id) {
+        throw new Exception("❌ No se pudo obtener el ID del operativo.");
+    }
+
     if (!empty($cooperativas)) $model->guardarCooperativas($operativo_id, $cooperativas);
     if (!empty($productores))  $model->guardarProductores($operativo_id, $productores);
     if (!empty($productos))    $model->guardarProductos($operativo_id, $productos);
-    
 
     $pdo->commit();
     echo json_encode(['success' => true, 'message' => '✅ Operativo creado correctamente']);
+
 } catch (Exception $e) {
     $pdo->rollBack();
     echo json_encode([
         'success' => false,
         'message' => 'Error al crear el operativo: ' . $e->getMessage()
     ]);
-
     error_log($e->getMessage());
 }
