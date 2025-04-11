@@ -152,8 +152,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-icon">
                                     <span class="material-icons">public</span>
                                     <select id="afiliacion" name="afiliacion" required>
-                                        <option value="socio">Es socio</option>
-                                        <option value="tercero">Es un tercero</option>
+                                        <option value="socio">Si, es socio</option>
+                                        <option value="tercero">No, es tercero</option>
                                     </select>
                                 </div>
                             </div>
