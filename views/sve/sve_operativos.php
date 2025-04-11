@@ -272,8 +272,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="edit_productores">Productores</label>
                                 <div class="input-icon">
                                     <span class="material-icons">agriculture</span>
-                                    <select name="productores[]" id="edit_productores" multiple required></select>
-                                </div>
+                                    <select id="edit_productores" multiple disabled></select>
+                                    </div>
                             </div>
 
                             <div class="input-group">
