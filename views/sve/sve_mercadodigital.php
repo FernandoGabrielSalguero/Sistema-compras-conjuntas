@@ -83,47 +83,111 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="navbar-title">Inicio</div>
+                <div class="navbar-title">Mercado Digital</div>
             </header>
 
             <!-- 📦 CONTENIDO -->
             <section class="content">
 
-            <div class="card-grid grid-4">
-                        <div class="card">
-                            <h3>KPI 1</h3>
-                            <p>Contenido 1</p>
-                        </div>
-                        <div class="card">
-                            <h3>KPI 2</h3>
-                            <p>Contenido 2</p>
-                        </div>
-                        <div class="card">
-                            <h3>KPI 3</h3>
-                            <p>Contenido 3</p>
-                        </div>
-                        <div class="card">
-                            <h3>KPI 4</h3>
-                            <p>Contenido 3</p>
-                        </div>
-                    </div>
+                <h2>Formularios</h2>
+                <form class="form-modern">
+                    <div class="form-grid grid-4">
 
-
-                <div class="card">
-                    <form class="form-modern">
+                        <!-- cooperativa -->
                         <div class="input-group">
-                            <label>Correo</label>
+                            <label for="cooperativa">Cooperativa</label>
                             <div class="input-icon">
-                                <span class="material-icons">mail</span>
-                                <input type="email" placeholder="ejemplo@correo.com">
+                                <span class="material-icons">public</span>
+                                <select id="cooperativa" name="cooperativa" required>
+                                    <option value="">Seleccionar</option>
+                                    <option>Buenos Aires</option>
+                                    <option>Córdoba</option>
+                                    <option>Santa Fe</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="submit">Enviar</button>
-                            <button class="btn btn-cancelar" type="button">Cancelar</button>
+                        <!-- productor -->
+                        <div class="input-group">
+                            <label for="productor">Productor</label>
+                            <div class="input-icon">
+                                <span class="material-icons">public</span>
+                                <select id="productor" name="productor" required>
+                                    <option value="">Seleccionar</option>
+                                    <option>Buenos Aires</option>
+                                    <option>Córdoba</option>
+                                    <option>Santa Fe</option>
+                                </select>
+                            </div>
                         </div>
-                    </form>
+
+
+                        <!-- persona_facturacion -->
+                        <div class="input-group">
+                            <label for="factura">¿A quien facturamos</label>
+                            <div class="input-icon">
+                                <span class="material-icons">public</span>
+                                <select id="factura" name="factura" required>
+                                    <option value="productor">Productor</option>
+                                    <option value="cooperativa">Cooperativa</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- condicion_facturacion -->
+                        <div class="input-group">
+                            <label for="condicion">Condición factura</label>
+                            <div class="input-icon">
+                                <span class="material-icons">public</span>
+                                <select id="condicion" name="condicion" required>
+                                    <option value="responsabe inscripto">Responsable Inscripto</option>
+                                    <option value="monotributista">Monotributista</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- afiliacion -->
+                        <div class="input-group">
+                            <label for="afiliacion">¿Es socio?</label>
+                            <div class="input-icon">
+                                <span class="material-icons">public</span>
+                                <select id="afiliacion" name="afiliacion" required>
+                                    <option value="socio">Es socio</option>
+                                    <option value="tercero">Es un tercero</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- ha_cooperativa -->
+                        <div class="input-group">
+                            <label for="hectareas">Hectareas</label>
+                            <span class="material-icons">info</span>
+                            <div class="input-icon">
+                                <span class="material-icons">phone</span>
+                                <input type="number" id="hectareas" name="hectareas" required>
+                            </div>
+                        </div>
+
+                        <!-- observaciones -->
+                        <div class="input-group">
+                            <label for="observaciones">Observaciones</label>
+                            <div class="input-icon">
+                                <span class="material-icons">location_city</span>
+                                <input type="text" id="observaciones" name="observaciones" required>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="form-buttons">
+                        <button class="btn btn-aceptar" type="submit">Enviar</button>
+                    </div>
+                </form>
+
+
+                <div class="card">
+
                 </div>
 
             </section>
