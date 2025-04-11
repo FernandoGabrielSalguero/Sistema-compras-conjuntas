@@ -4,10 +4,10 @@ require_once __DIR__ . '/../config.php';
 class PedidoModel {
 
     public static function getCooperativas() {
-        global $db;
+        global $pdo;
         $query = "SELECT id, nombre FROM usuarios WHERE rol = 'cooperativa'";
-        $result = $db->query($query);
-        return $result->fetch_all(MYSQLI_ASSOC);
+        $stmt = $pdo->query($query);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public static function getProductoresPorCooperativa($id_cooperativa) {
