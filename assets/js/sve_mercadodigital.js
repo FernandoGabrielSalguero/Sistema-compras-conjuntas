@@ -1,5 +1,6 @@
+console.log("🟢 El archivo JS se está ejecutando (inicio).");
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("🚀 JS cargado correctamente");
+    console.log("✅ DOM completamente cargado.");
 
     const coopSelect = document.getElementById("cooperativa");
     const form = document.querySelector("form");
@@ -24,6 +25,7 @@ let productosSeleccionados = {};
 
 // 1. Cargar cooperativas
 function cargarCooperativas() {
+    console.log("📦 Ejecutando cargarCooperativas()");
     fetch("/controllers/PedidoController.php?action=getCooperativas")
         .then(res => res.json())
         .then(data => {
@@ -41,6 +43,7 @@ function cargarCooperativas() {
 
 // 2. Cargar productores
 function cargarProductores() {
+    console.log("📦 Ejecutando cargarProductores()");
     const idCoop = document.getElementById("cooperativa").value;
     const select = document.getElementById("productor");
     select.innerHTML = '<option value="">Seleccionar</option>';
@@ -49,7 +52,9 @@ function cargarProductores() {
 
     fetch(`/controllers/PedidoController.php?action=getProductores&id=${idCoop}`)
         .then(res => res.json())
+        
         .then(data => {
+            console.log("✅ Respuesta obtenida para cooperativas");
             data.forEach(prod => {
                 const opt = document.createElement("option");
                 opt.value = prod.id;
@@ -62,6 +67,7 @@ function cargarProductores() {
 
 // 3. Cargar productos
 function cargarProductos() {
+    console.log("📦 Ejecutando cargarProductos()");
     fetch("/controllers/PedidoController.php?action=getProductos")
         .then(res => res.json())
         .then(data => {
