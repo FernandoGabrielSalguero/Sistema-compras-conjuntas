@@ -94,98 +94,117 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <p>En esta página vamos a comprar y administrar las compras de los usuarios</p>
                 </div>
                 <div class="card">
-                    <h2>Realicemos un nuevo pedido</h2>
-                    <form class="form-modern">
-                        <div class="form-grid grid-4">
+    <h2>Realicemos un nuevo pedido</h2>
 
-                            <!-- cooperativa -->
-                            <div class="input-group">
-                                <label for="cooperativa">Cooperativa</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">public</span>
-                                    <select id="cooperativa" name="cooperativa" required>
-                                        <option value="">Cargando cooperativas...</option>
-                                    </select>
-                                </div>
-                            </div>
+    <!-- Acordeón: Datos básicos -->
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span>Datos básicos</span>
+            <span class="material-icons">expand_more</span>
+        </div>
+        <div class="accordion-body">
+            <form class="form-modern" id="formulario-pedido">
+                <div class="form-grid grid-4">
 
-                            <!-- productor -->
-                            <div class="input-group">
-                                <label for="productor">Productor</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">public</span>
-                                    <select id="productor" name="productor" required>
-                                        <option value="">Seleccione una cooperativa primero</option>
-                                    </select>
-                                </div>
-                            </div>
-
-
-                            <!-- persona_facturacion -->
-                            <div class="input-group">
-                                <label for="factura">¿A quién facturamos?</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">public</span>
-                                    <select id="factura" name="factura" required>
-                                        <option value="productor">Productor</option>
-                                        <option value="cooperativa">Cooperativa</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- condicion_facturacion -->
-                            <div class="input-group">
-                                <label for="condicion">Condición factura</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">public</span>
-                                    <select id="condicion" name="condicion" required>
-                                        <option value="responsable inscripto">Responsable Inscripto</option>
-                                        <option value="monotributista">Monotributista</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- afiliacion -->
-                            <div class="input-group">
-                                <label for="afiliacion">¿Es socio?</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">public</span>
-                                    <select id="afiliacion" name="afiliacion" required>
-                                        <option value="socio">Sí, es socio</option>
-                                        <option value="tercero">No, es tercero</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- ha_cooperativa -->
-                            <div class="input-group">
-                                <label for="hectareas">Hectáreas</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">agriculture</span>
-                                    <input type="number" id="hectareas" name="hectareas" required>
-                                </div>
-                            </div>
-
-                            <!-- observaciones -->
-                            <div class="input-group">
-                                <label for="observaciones">Observaciones</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">note</span>
-                                    <input type="text" id="observaciones" name="observaciones">
-                                </div>
-                            </div>
+                    <!-- cooperativa -->
+                    <div class="input-group">
+                        <label for="cooperativa">Cooperativa</label>
+                        <div class="input-icon">
+                            <span class="material-icons">public</span>
+                            <select id="cooperativa" name="cooperativa" required>
+                                <option value="">Cargando cooperativas...</option>
+                            </select>
                         </div>
-                        <!-- Contenedor para acordeones de productos -->
-                        <div class="form-grid grid-1">
-                            <div id="acordeones-productos"></div>
-                        </div>
+                    </div>
 
-                        <!-- Botones -->
-                        <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="submit">Enviar</button>
+                    <!-- productor -->
+                    <div class="input-group">
+                        <label for="productor">Productor</label>
+                        <div class="input-icon">
+                            <span class="material-icons">public</span>
+                            <select id="productor" name="productor" required>
+                                <option value="">Seleccione una cooperativa primero</option>
+                            </select>
                         </div>
-                    </form>
+                    </div>
+
+                    <!-- persona_facturacion -->
+                    <div class="input-group">
+                        <label for="factura">¿A quién facturamos?</label>
+                        <div class="input-icon">
+                            <span class="material-icons">public</span>
+                            <select id="factura" name="factura" required>
+                                <option value="productor">Productor</option>
+                                <option value="cooperativa">Cooperativa</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- condicion_facturacion -->
+                    <div class="input-group">
+                        <label for="condicion">Condición factura</label>
+                        <div class="input-icon">
+                            <span class="material-icons">public</span>
+                            <select id="condicion" name="condicion" required>
+                                <option value="responsable inscripto">Responsable Inscripto</option>
+                                <option value="monotributista">Monotributista</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- afiliacion -->
+                    <div class="input-group">
+                        <label for="afiliacion">¿Es socio?</label>
+                        <div class="input-icon">
+                            <span class="material-icons">public</span>
+                            <select id="afiliacion" name="afiliacion" required>
+                                <option value="socio">Sí, es socio</option>
+                                <option value="tercero">No, es tercero</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- ha_cooperativa -->
+                    <div class="input-group">
+                        <label for="hectareas">Hectáreas</label>
+                        <div class="input-icon">
+                            <span class="material-icons">agriculture</span>
+                            <input type="number" id="hectareas" name="hectareas" required>
+                        </div>
+                    </div>
+
+                    <!-- observaciones -->
+                    <div class="input-group">
+                        <label for="observaciones">Observaciones</label>
+                        <div class="input-icon">
+                            <span class="material-icons">note</span>
+                            <input type="text" id="observaciones" name="observaciones">
+                        </div>
+                    </div>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Acordeones de productos (dinámicos desde JS) -->
+    <div class="form-grid grid-1">
+        <div id="acordeones-productos"></div>
+    </div>
+
+    <!-- Acordeón final: Terminar la compra -->
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span>Terminar la compra</span>
+            <span class="material-icons">expand_more</span>
+        </div>
+        <div class="accordion-body">
+            <div id="acordeon-resumen"></div>
+            <div class="form-buttons">
+                <button class="btn btn-aceptar" type="submit" form="formulario-pedido">Enviar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
                 <!-- Tabla de pedidos -->
                 <div class="card">
