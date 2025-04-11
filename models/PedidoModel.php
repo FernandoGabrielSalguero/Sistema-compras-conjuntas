@@ -121,4 +121,59 @@ class PedidoModel
         $stmt = $pdo->query($query);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    // Obtener todos los pedidos para mostrar en la tabla
+    public static function getPedidos()
+    {
+        global $pdo;
+        $stmt = $pdo->query("SELECT * FROM pedidos ORDER BY fecha_pedido DESC");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Actualizar un pedido existente
+    public static function actualizarPedido($id, $ha_cooperativa, $observaciones)
+    {
+        global $pdo;
+
+        $stmt = $pdo->prepare("
+        UPDATE pedidos
+        SET ha_cooperativa = :ha, observaciones = :obs
+        WHERE id = :id
+    ");
+
+        try {
+            $stmt->execute([
+                'ha' => $ha_cooperativa,
+                'obs' => $observaciones,
+                'id' => $id
+            ]);
+            return ['success' => true];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    // Eliminar un pedido y sus detalles
+    public static function eliminarPedido($id)
+    {
+        global $pdo;
+
+        try {
+            $pdo->beginTransaction();
+
+            // Eliminar detalles primero
+            $stmtDetalles = $pdo->prepare("DELETE FROM detalle_pedidos WHERE pedido_id = :id");
+            $stmtDetalles->execute(['id' => $id]);
+
+            // Luego el pedido
+            $stmtPedido = $pdo->prepare("DELETE FROM pedidos WHERE id = :id");
+            $stmtPedido->execute(['id' => $id]);
+
+            $pdo->commit();
+            return ['success' => true];
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
 }

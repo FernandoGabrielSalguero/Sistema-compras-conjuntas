@@ -270,6 +270,32 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
+    <!-- Modal para actualizar pedido -->
+    <div id="modal-editar" class="modal" style="display: none;">
+        <div class="modal-content card">
+            <h2>Editar Pedido</h2>
+            <form id="form-editar">
+                <input type="hidden" name="id" id="edit-id">
+
+                <div class="form-grid grid-2">
+                    <div class="input-group">
+                        <label for="edit-observaciones">Observaciones</label>
+                        <input type="text" id="edit-observaciones" name="observaciones">
+                    </div>
+                    <div class="input-group">
+                        <label for="edit-ha">Hectáreas</label>
+                        <input type="number" id="edit-ha" name="ha_cooperativa" step="0.1">
+                    </div>
+                </div>
+
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
+                    <button type="button" class="btn btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- 🛠️ SCRIPTS -->
 
     <script>
@@ -564,6 +590,74 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         function calcularTotalFinal() {
             return calcularTotalSinIVA() + calcularTotalIVA();
+        }
+
+        function abrirModalEditar(id) {
+            const pedido = obtenerPedidoPorId(id);
+            if (!pedido) return;
+
+            document.getElementById("edit-id").value = pedido.id;
+            document.getElementById("edit-observaciones").value = pedido.observaciones;
+            document.getElementById("edit-ha").value = pedido.ha_cooperativa;
+
+            document.getElementById("modal-editar").style.display = "block";
+        }
+
+        function cerrarModal() {
+            document.getElementById("modal-editar").style.display = "none";
+        }
+
+        let cachePedidos = [];
+
+        function obtenerPedidoPorId(id) {
+            return cachePedidos.find(p => p.id == id);
+        }
+
+        document.getElementById("form-editar").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const id = document.getElementById("edit-id").value;
+            const ha = document.getElementById("edit-ha").value;
+            const obs = document.getElementById("edit-observaciones").value;
+
+            fetch("/controllers/PedidoController.php?action=actualizarPedido", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        id,
+                        ha_cooperativa: ha,
+                        observaciones: obs
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("✅ Pedido actualizado");
+                        cerrarModal();
+                        cargarPedidos();
+                    } else {
+                        alert("❌ No se pudo actualizar");
+                    }
+                });
+        });
+
+        function eliminarPedido(id) {
+            if (!confirm("¿Estás seguro de eliminar este pedido?")) return;
+
+            fetch(`/controllers/PedidoController.php?action=eliminarPedido&id=${id}`, {
+                    method: "DELETE"
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("🗑️ Pedido eliminado");
+                        cargarPedidos();
+                    } else {
+                        alert("❌ Error al eliminar");
+                    }
+                });
         }
     </script>
 </body>

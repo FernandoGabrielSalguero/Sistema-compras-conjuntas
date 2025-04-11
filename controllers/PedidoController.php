@@ -47,4 +47,39 @@ switch ($action) {
     default:
         echo json_encode(['error' => 'Acción no válida']);
         break;
+
+    case 'getPedidosParaEdicion':
+        echo json_encode(PedidoModel::getPedidos());
+        break;
+
+    case 'actualizarPedido':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $data = json_decode(file_get_contents("php://input"), true);
+            $id = $data['id'] ?? null;
+            $ha = $data['ha_cooperativa'] ?? null;
+            $obs = $data['observaciones'] ?? '';
+
+            if ($id && $ha !== null) {
+                echo json_encode(PedidoModel::actualizarPedido($id, $ha, $obs));
+            } else {
+                echo json_encode(['success' => false, 'error' => 'Datos incompletos']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
+        }
+        break;
+
+    case 'eliminarPedido':
+        if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+            $id = $_GET['id'] ?? null;
+
+            if ($id) {
+                echo json_encode(PedidoModel::eliminarPedido($id));
+            } else {
+                echo json_encode(['success' => false, 'error' => 'ID no proporcionado']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
+        }
+        break;
 }
