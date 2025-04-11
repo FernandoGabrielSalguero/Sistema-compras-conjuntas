@@ -309,7 +309,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         function crearAcordeonCategoria(categoria, productos) {
             console.log("🛒 Productos para categoría:", categoria, productos);
-
             const container = document.getElementById("acordeones-productos");
 
             const acordeon = document.createElement("div");
@@ -324,20 +323,25 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             body.classList.add("accordion-body");
 
             productos.forEach(prod => {
+                console.log("🧪 Producto:", prod); // debug visual
+
                 const item = document.createElement("div");
                 item.classList.add("input-group");
 
                 item.innerHTML = `
             <label>${prod.Nombre_producto} (${prod.Unidad_Medida_venta})</label>
-            <input type="number" min="0" value="0" 
-                   data-id="${prod.id}" 
-                   data-nombre="${prod.Nombre_producto}" 
-                   data-detalle="${prod.Detalle_producto}"
-                   data-precio="${prod.Precio_producto}"
-                   data-unidad="${prod.Unidad_Medida_venta}"
-                   data-categoria="${prod.categoria}"
-                   onchange="actualizarProductoSeleccionado(this)">
+            <input 
+                type="number" min="0" value="0"
+                data-id="${prod.Id}"
+                data-nombre="${prod.Nombre_producto}"
+                data-detalle="${prod.Detalle_producto}"
+                data-precio="${prod.Precio_producto}"
+                data-unidad="${prod.Unidad_Medida_venta}"
+                data-categoria="${prod.categoria}"
+                onchange="actualizarProductoSeleccionado(this)"
+            />
         `;
+
                 body.appendChild(item);
             });
 
@@ -346,28 +350,27 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             container.appendChild(acordeon);
         }
 
-
         // 4. Guardar productos seleccionados
         function actualizarProductoSeleccionado(input) {
-    const id = input.dataset.id;
-    const cantidad = parseFloat(input.value);
+            const id = input.dataset.id;
+            const cantidad = parseFloat(input.value);
 
-    if (cantidad > 0) {
-        productosSeleccionados[id] = {
-            nombre_producto: input.dataset.nombre,
-            detalle_producto: input.dataset.detalle,
-            precio_producto: parseFloat(input.dataset.precio),
-            unidad_medida_venta: input.dataset.unidad,
-            categoria: input.dataset.categoria,
-            cantidad: cantidad,
-            subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
-        };
-    } else {
-        delete productosSeleccionados[id];
-    }
+            if (cantidad > 0) {
+                productosSeleccionados[id] = {
+                    nombre_producto: input.dataset.nombre,
+                    detalle_producto: input.dataset.detalle,
+                    precio_producto: parseFloat(input.dataset.precio),
+                    unidad_medida_venta: input.dataset.unidad,
+                    categoria: input.dataset.categoria,
+                    cantidad: cantidad,
+                    subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
+                };
+            } else {
+                delete productosSeleccionados[id];
+            }
 
-    renderResumen(); // <-- asegúrate que esta línea exista
-}
+            renderResumen(); // <-- asegúrate que esta línea exista
+        }
 
         // 5. Mostrar resumen dinámico
         function renderResumen() {
