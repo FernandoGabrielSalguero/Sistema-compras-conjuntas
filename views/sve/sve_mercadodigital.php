@@ -289,6 +289,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 return;
             }
 
+            cargarPedidos(); // 🔄 Llama la función al cargar la página
             cargarCooperativas();
             cargarProductos();
 
@@ -516,6 +517,40 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         console.error(data.error);
                     }
                 });
+        }
+
+        // 8 - cargar pedidos en tabla
+        function cargarPedidos() {
+            fetch("/controllers/PedidoController.php?action=getPedidos")
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.querySelector(".data-table tbody");
+                    tbody.innerHTML = "";
+
+                    data.forEach(pedido => {
+                        const fila = document.createElement("tr");
+
+                        fila.innerHTML = `
+                    <td>${pedido.id}</td>
+                    <td>${pedido.fecha_pedido}</td>
+                    <td>${pedido.cooperativa}</td>
+                    <td>${pedido.productor}</td>
+                    <td>${pedido.condicion_facturacion}</td>
+                    <td>${pedido.afiliacion}</td>
+                    <td>$${parseFloat(pedido.total_iva).toFixed(2)}</td>
+                    <td>$${parseFloat(pedido.total_sin_iva).toFixed(2)}</td>
+                    <td>$${parseFloat(pedido.total_pedido).toFixed(2)}</td>
+                    <td>${pedido.observaciones}</td>
+                    <td>
+                        <button class="btn btn-aceptar" onclick="abrirModalEditar(${pedido.id})">Actualizar</button>
+                        <button class="btn btn-cancelar" onclick="eliminarPedido(${pedido.id})">Eliminar</button>
+                    </td>
+                `;
+
+                        tbody.appendChild(fila);
+                    });
+                })
+                .catch(err => console.error("❌ Error al cargar pedidos:", err));
         }
 
         // Helpers
