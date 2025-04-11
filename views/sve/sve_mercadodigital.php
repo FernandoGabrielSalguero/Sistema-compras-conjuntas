@@ -605,26 +605,29 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             return calcularTotalSinIVA() + calcularTotalIVA();
         }
 
-        // function abrirModalEditar(id) {
-        //     const pedido = obtenerPedidoPorId(id);
-        //     if (!pedido) return;
+        function abrirModalEditar(id) {
+            const pedido = obtenerPedidoPorId(id);
+            if (!pedido) return;
 
-        //     pedidoEditandoId = id; // ← estamos en modo edición
+            pedidoEditandoId = id; // ← estamos en modo edición
 
-        //     document.getElementById("cooperativa").value = pedido.cooperativa;
-        //     cargarProductores().then(() => {
-        //         document.getElementById("productor").value = pedido.productor;
-        //     });
+            document.getElementById("cooperativa").value = pedido.cooperativa;
+            cargarProductores().then(() => {
+                document.getElementById("productor").value = pedido.productor;
+            });
 
-        //     document.getElementById("factura").value = pedido.persona_facturacion;
-        //     document.getElementById("condicion").value = pedido.condicion_facturacion;
-        //     document.getElementById("afiliacion").value = pedido.afiliacion;
-        //     document.getElementById("hectareas").value = pedido.ha_cooperativa;
-        //     document.getElementById("observaciones").value = pedido.observaciones;
+            document.getElementById("factura").value = pedido.persona_facturacion;
+            document.getElementById("condicion").value = pedido.condicion_facturacion;
+            document.getElementById("afiliacion").value = pedido.afiliacion;
+            document.getElementById("hectareas").value = pedido.ha_cooperativa;
+            document.getElementById("observaciones").value = pedido.observaciones;
 
-        //     // Podés luego agregar la carga de productos seleccionados si los traés desde backend también.
-        //     alert("🔁 Pedido cargado para edición. Ahora podés modificar y presionar Enviar.");
-        // }
+            // Podés luego agregar la carga de productos seleccionados si los traés desde backend también.
+            alert("🔁 Pedido cargado para edición. Ahora podés modificar y presionar Enviar.");
+
+            // Mostrar el modal 🔥
+            document.getElementById("modal-editar").style.display = "block";
+        }
 
         function cerrarModal() {
             document.getElementById("modal-editar").style.display = "none";
