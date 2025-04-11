@@ -327,7 +327,8 @@ function crearAcordeonCategoria(categoria, productos) {
 
         item.innerHTML = `
             <label>${prod.Nombre_producto} (${prod.Unidad_Medida_venta})</label>
-            <input type="number" min="0" value="0" data-id="${prod.id}" 
+            <input type="number" min="0" value="0" 
+                   data-id="${prod.id}" 
                    data-nombre="${prod.Nombre_producto}" 
                    data-detalle="${prod.Detalle_producto}"
                    data-precio="${prod.Precio_producto}"
@@ -342,6 +343,7 @@ function crearAcordeonCategoria(categoria, productos) {
     acordeon.appendChild(body);
     container.appendChild(acordeon);
 }
+
 
 // 4. Guardar productos seleccionados
 function actualizarProductoSeleccionado(input) {
