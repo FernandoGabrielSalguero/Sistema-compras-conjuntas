@@ -300,8 +300,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-    <!-- 🔁 Spinner global -->
-    <?php include __DIR__ . '/../partials/spinner.html'; ?>
+    <!-- 🛠️ SCRIPTS -->
     <script src="/assets/js/sve_operativos.js" defer></script>
 
 </body>
