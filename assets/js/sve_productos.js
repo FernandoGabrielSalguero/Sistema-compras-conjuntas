@@ -71,7 +71,7 @@ function abrirModalEditar(id) {
             document.getElementById('edit_categoria').value = data.producto.categoria;
             document.getElementById('edit_alicuota').value = data.producto.alicuota;
 
-            openModal();
+            openModalEditar(); // 👈 CORREGIDO
         })
         .catch((err) => {
             console.error('⛔ Error capturado:', err);
