@@ -1,7 +1,5 @@
 console.log('✅ sve_operativos.js CARGADO correctamente');
 
-
-
 async function fetchConSpinner(url, options = {}, mensaje = '') {
     const spinner = document.getElementById('spinner-global');
     const spinnerText = document.getElementById('spinner-text');
