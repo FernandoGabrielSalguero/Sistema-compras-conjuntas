@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function cargarProductos() {
-    const tabla = document.getElementById('tablaUsuarios');
+    const tabla = document.getElementById('tablaProductos');
     try {
         const res = await fetch('/controllers/productosTableController.php');
         const html = await res.text();
