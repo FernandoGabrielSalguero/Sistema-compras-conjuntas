@@ -10,7 +10,7 @@ $productosModel = new ProductosModel();
 $productos = $productosModel->obtenerTodos();
 
 if (!$productos) {
-    echo '<tr><td colspan="7">No hay productos cargados.</td></tr>';
+    echo '<tr><td colspan="8">No hay productos cargados.</td></tr>';
     exit;
 }
 
