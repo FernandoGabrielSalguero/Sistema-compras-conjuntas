@@ -287,8 +287,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <!-- Script para cargar los datos usando AJAX a la base -->
     <script>
-        // carga de datos de la tabla
 
+        // carga de datos de la tabla
         async function cargarProductos() {
             const tabla = document.getElementById('tablaProductos');
             try {
@@ -358,15 +358,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         });
     </script>
 
-    <div id="modalConfirmacion" class="modal hidden">
-        <div class="modal-content">
-            <h3>¿Estás seguro de eliminar este producto?</h3>
-            <div class="form-buttons">
-                <button id="btnConfirmarEliminar" class="btn btn-aceptar">Eliminar</button>
-                <button class="btn btn-cancelar" onclick="closeModalConfirmacion()">Cancelar</button>
-            </div>
+<div id="modalConfirmacion" class="modal hidden">
+    <div class="modal-content">
+        <h3>¿Estás seguro de eliminar este producto?</h3>
+        <div class="form-buttons">
+            <button id="btnConfirmarEliminar" class="btn btn-error">Eliminar</button>
+            <button class="btn btn-cancelar" onclick="closeModalConfirmacion()">Cancelar</button>
         </div>
     </div>
+</div>
 </body>
 
 </html>
