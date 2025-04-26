@@ -275,7 +275,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </div>
                 </div>
 
-
                 <!-- Alert -->
                 <div class="alert-container" id="alertContainer"></div>
             </section>
@@ -305,7 +304,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         // modal para editar producto
         function abrirModalEditar(id) {
-            console.log("Abrir modal para producto ID:", id);
+            console.log("Abrir modal (funcion abrirModalEditar) para producto ID:", id);
 
             fetch(`/controllers/obtenerProductoController.php?id=${id}`)
                 .then(res => res.json())
