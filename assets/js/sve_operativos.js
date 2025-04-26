@@ -46,7 +46,7 @@ async function cargarOperativos() {
     if (!tabla) return;
 
     try {
-        const res = await fetchConSpinner('/controllers/operativosTableController.php');
+        const res = await fetch('/controllers/operativosTableController.php');
         const html = await res.text();
         tabla.innerHTML = html;
     } catch (err) {
