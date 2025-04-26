@@ -50,7 +50,7 @@ async function cargarOperativos() {
         const html = await res.text();
         tabla.innerHTML = html;
     } catch (err) {
-        tabla.innerHTML = '<tr><td colspan="8">Error al cargar los operativos</td></tr>';
+        tabla.innerHTML = '<tr><td colspan="9">Error al cargar los operativos</td></tr>'; // corregido a 9 columnas
         console.error('❌ Error cargando tabla de operativos:', err);
     }
 }
