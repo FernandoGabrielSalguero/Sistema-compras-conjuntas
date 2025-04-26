@@ -213,69 +213,63 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <!-- Modal -->
                 <div id="modal" class="modal hidden">
                     <div class="modal-content">
-                        <h3>Editar Usuario</h3>
-                        <form id="formEditarUsuario">
-                            <input type="hidden" name="id" id="edit_id">
+                        <h3>Editar Producto</h3>
+<form id="formEditarProducto">
+    <input type="hidden" name="id" id="edit_id">
 
-                            <div class="input-group">
-                                <label for="edit_nombre">Nombre_producto</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">person</span>
-                                    <input type="text" name="nombre" id="edit_nombre" required>
-                                </div>
-                            </div>
+    <div class="input-group">
+        <label for="edit_Nombre_producto">Nombre</label>
+        <div class="input-icon">
+            <span class="material-icons">inventory_2</span>
+            <input type="text" name="Nombre_producto" id="edit_Nombre_producto" required>
+        </div>
+    </div>
 
-                            <div class="input-group">
-                                <label for="edit_correo">Detalle_producto</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">mail</span>
-                                    <input type="email" name="correo" id="edit_correo" required>
-                                </div>
-                            </div>
+    <div class="input-group">
+        <label for="edit_Detalle_producto">Detalle</label>
+        <div class="input-icon">
+            <span class="material-icons">description</span>
+            <input type="text" name="Detalle_producto" id="edit_Detalle_producto">
+        </div>
+    </div>
 
-                            <div class="input-group">
-                                <label for="edit_telefono">Precio_producto</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">phone</span>
-                                    <input type="text" name="telefono" id="edit_telefono" required>
-                                </div>
-                            </div>
+    <div class="input-group">
+        <label for="edit_Precio_producto">Precio</label>
+        <div class="input-icon">
+            <span class="material-icons">attach_money</span>
+            <input type="number" name="Precio_producto" id="edit_Precio_producto" required min="0">
+        </div>
+    </div>
 
-                            <div class="input-group">
-                                <label for="edit_observaciones">Unidad_medida_venta</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">notes</span>
-                                    <input type="text" name="observaciones" id="edit_observaciones">
-                                </div>
-                            </div>
+    <div class="input-group">
+        <label for="edit_Unidad_medida_venta">Unidad de medida</label>
+        <div class="input-icon">
+            <span class="material-icons">scale</span>
+            <input type="text" name="Unidad_medida_venta" id="edit_Unidad_medida_venta" required>
+        </div>
+    </div>
 
-                            <div class="input-group">
-                                <label for="edit_permiso">categoria</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">check_circle</span>
-                                    <select name="permiso" id="edit_permiso" required>
-                                        <option value="Habilitado">Habilitado</option>
-                                        <option value="Deshabilitado">Deshabilitado</option>
-                                    </select>
-                                </div>
-                            </div>
+    <div class="input-group">
+        <label for="edit_categoria">Categoría</label>
+        <div class="input-icon">
+            <span class="material-icons">category</span>
+            <input type="text" name="categoria" id="edit_categoria" required>
+        </div>
+    </div>
 
-                            <div class="input-group">
-                                <label for="edit_permiso">alicuota</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">check_circle</span>
-                                    <select name="permiso" id="edit_permiso" required>
-                                        <option value="Habilitado">Habilitado</option>
-                                        <option value="Deshabilitado">Deshabilitado</option>
-                                    </select>
-                                </div>
-                            </div>
+    <div class="input-group">
+        <label for="edit_alicuota">Alicuota</label>
+        <div class="input-icon">
+            <span class="material-icons">percent</span>
+            <input type="number" name="alicuota" id="edit_alicuota" required step="0.1">
+        </div>
+    </div>
 
-                            <div class="form-buttons">
-                                <button type="submit" class="btn btn-aceptar">Guardar</button>
-                                <button type="button" class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
-                            </div>
-                        </form>
+    <div class="form-buttons">
+        <button type="submit" class="btn btn-aceptar">Guardar</button>
+        <button type="button" class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
+    </div>
+</form>
                     </div>
                 </div>
 
@@ -298,11 +292,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
 
             form.addEventListener('submit', async (e) => {
+                const precio = parseFloat(formData.get('Precio_producto'));
+if (isNaN(precio) || precio < 0) {
+    showAlert('error', 'El precio no puede ser negativo.');
+    return;
+}
                 e.preventDefault();
                 const formData = new FormData(form);
 
                 try {
-                    const response = await fetch('/controllers/altaUsuariosController.php', {
+                    const response = await fetch('/controllers/altaProductosController.php', {
                         method: 'POST',
                         body: formData
                     });
@@ -326,24 +325,24 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         // carga de datos de la tabla
 
-        async function cargarUsuarios() {
+        async function cargarProductos() {
             const tabla = document.getElementById('tablaUsuarios');
             try {
-                const res = await fetch('/controllers/usuariosTableController.php');
+                const res = await fetch('/controllers/productosTableController.php');
                 const html = await res.text();
                 tabla.innerHTML = html;
             } catch (err) {
                 tabla.innerHTML = '<tr><td colspan="5">Error al cargar usuarios</td></tr>';
-                console.error('Error cargando usuarios:', err);
+                console.error('Error cargando productos:', err);
             }
         }
 
-        document.addEventListener('DOMContentLoaded', cargarUsuarios);
+        document.addEventListener('DOMContentLoaded', cargarProductos);
 
         // modal
         function abrirModalEditar(id) {
-            fetch(`/controllers/obtenerUsuarioController.php?id=${id}`)
-                .then(res => res.json())
+            fetch(`/controllers/obtenerProductoController.php?id=${id}`)
+            .then(res => res.json())
                 .then(data => {
                     if (data.success) {
                         document.getElementById('edit_id').value = data.user.id;
@@ -371,7 +370,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const formData = new FormData(this);
 
             try {
-                const response = await fetch('/controllers/actualizarUsuarioController.php', {
+                const response = await fetch('/controllers/actualizarProductoController.php', {
                     method: 'POST',
                     body: formData
                 });
