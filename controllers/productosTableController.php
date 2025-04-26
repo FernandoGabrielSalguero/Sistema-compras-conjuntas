@@ -29,10 +29,12 @@ foreach ($productos as $producto) {
         echo '<button class="btn-icon" onclick="abrirModalEditar(' . intval($producto['Id']) . ')">';
         echo '<i class="material-icons">edit</i>';
         echo '</button> ';
-        echo '<button class="btn-icon btn-error" onclick="eliminarProducto(' . intval($producto['Id']) . ')">';
+        echo '<button class="btn-icon" onclick="confirmarEliminacion(' . intval($producto['Id']) . ')">';
         echo '<i class="material-icons">delete</i>';
         echo '</button>';
         echo '</td>';
+    } else {
+        echo '<td>-</td>';
     }
 
     echo '</tr>';
