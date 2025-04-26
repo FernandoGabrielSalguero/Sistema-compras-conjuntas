@@ -1,3 +1,7 @@
+window.addEventListener('error', function(event) {
+    console.error('🌋 Error atrapado globalmente:', event.message);
+});
+
 async function fetchConSpinner(url, options = {}, mensaje = '') {
     const spinner = document.getElementById('spinner-global');
     const spinnerText = document.getElementById('spinner-text');
