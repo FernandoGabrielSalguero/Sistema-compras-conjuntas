@@ -280,6 +280,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
+    <script src="/assets/js/sve_productos.js"></script>
 
     <!-- Script para cargar los datos usando AJAX a la base -->
     <script>
