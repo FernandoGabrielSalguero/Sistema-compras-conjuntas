@@ -75,7 +75,7 @@ function abrirModalEditar(id) {
         });
 }
 
-// Modal confirmación para eliminar
+// abrir modal confirmación
 function confirmarEliminacion(id) {
     console.log("Confirmar eliminación para ID:", id);
     const modal = document.getElementById('modalConfirmacion');
@@ -85,14 +85,18 @@ function confirmarEliminacion(id) {
     btnConfirmar.dataset.id = id;
 }
 
+// cerrar modal
 function closeModalConfirmacion() {
-    document.getElementById('modalConfirmacion').classList.add('hidden');
-    document.getElementById('btnConfirmarEliminar').removeAttribute('data-id');
+    const modal = document.getElementById('modalConfirmacion');
+    modal.classList.add('hidden');
+
+    const btnConfirmar = document.getElementById('btnConfirmarEliminar');
+    btnConfirmar.removeAttribute('data-id');
 }
 
-async function eliminarProductoConfirmado() {
-    const btnConfirmar = document.getElementById('btnConfirmarEliminar');
-    const id = btnConfirmar.dataset.id;
+// eliminar producto confirmado
+async function eliminarProductoConfirmado(event) {
+    const id = event.target.dataset.id; // 👈 corregimos acá!
 
     if (!id) {
         showAlert('error', 'ID no proporcionado');
@@ -116,5 +120,6 @@ async function eliminarProductoConfirmado() {
     }
 }
 
-// Asignar evento de confirmación
+// asignar evento
 document.getElementById('btnConfirmarEliminar').addEventListener('click', eliminarProductoConfirmado);
+
