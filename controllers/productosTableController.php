@@ -24,19 +24,15 @@ foreach ($productos as $producto) {
     echo '<td>' . htmlspecialchars($producto['alicuota'] ?? '-') . '%</td>';
     
 
-    // 👉 Columna de botones
-    if (isset($producto['id'])) {
+    if (isset($producto['Id'])) {
         echo '<td style="text-align: center;">';
-        echo '<button class="btn-icon" onclick="abrirModalEditar(' . intval($producto['id']) . ')">';
+        echo '<button class="btn-icon" onclick="abrirModalEditar(' . intval($producto['Id']) . ')">';
         echo '<i class="material-icons">edit</i>';
-        echo '</button>';
-        echo ' ';
-        echo '<button class="btn-icon" onclick="eliminarProducto(' . intval($producto['id']) . ')">';
+        echo '</button> ';
+        echo '<button class="btn-icon" onclick="eliminarProducto(' . intval($producto['Id']) . ')">';
         echo '<i class="material-icons">delete</i>';
         echo '</button>';
         echo '</td>';
-    } else {
-        echo '<td>-</td>';
     }
 
     echo '</tr>';

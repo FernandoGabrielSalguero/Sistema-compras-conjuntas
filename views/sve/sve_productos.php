@@ -302,27 +302,28 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         document.addEventListener('DOMContentLoaded', cargarProductos);
 
-        // modal
+        // modal para editar producto
         function abrirModalEditar(id) {
             fetch(`/controllers/obtenerProductoController.php?id=${id}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        document.getElementById('edit_id').value = data.user.id;
-                        document.getElementById('edit_nombre').value = data.user.nombre;
-                        document.getElementById('edit_correo').value = data.user.correo;
-                        document.getElementById('edit_telefono').value = data.user.telefono;
-                        document.getElementById('edit_observaciones').value = data.user.observaciones;
-                        document.getElementById('edit_permiso').value = data.user.permiso_ingreso;
+                        document.getElementById('edit_id').value = data.producto.Id;
+                        document.getElementById('edit_Nombre_producto').value = data.producto.Nombre_producto;
+                        document.getElementById('edit_Detalle_producto').value = data.producto.Detalle_producto;
+                        document.getElementById('edit_Precio_producto').value = data.producto.Precio_producto;
+                        document.getElementById('edit_Unidad_Medida_venta').value = data.producto.Unidad_Medida_venta;
+                        document.getElementById('edit_categoria').value = data.producto.categoria;
+                        document.getElementById('edit_alicuota').value = data.producto.alicuota;
 
                         openModal();
                     } else {
-                        showAlert('error', 'Error al cargar datos del productos.');
+                        showAlert('error', 'Error al cargar datos del producto.');
                     }
                 })
                 .catch((err) => {
                     console.error('⛔ Error:', err);
-                    showAlert('error', 'Error de red al buscar productos.');
+                    showAlert('error', 'Error de red al buscar producto.');
                 });
         }
 
@@ -352,7 +353,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 showAlert('error', 'Error inesperado al guardar los cambios.');
             }
         });
-
     </script>
 </body>
 

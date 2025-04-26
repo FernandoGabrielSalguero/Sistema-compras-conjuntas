@@ -9,7 +9,7 @@ class ProductosModel
 
     public function __construct()
     {
-        global $pdo; // <<< CAMBIO: ahora agarramos la variable $pdo, no $conn
+        global $pdo;
         $this->conn = $pdo;
     }
 
