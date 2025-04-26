@@ -28,11 +28,11 @@ foreach ($productos as $producto) {
     if (isset($producto['id'])) {
         echo '<td style="text-align: center;">';
         echo '<button class="btn-icon" onclick="abrirModalEditar(' . intval($producto['id']) . ')">';
-        echo '<span class="material-icons">edit</span>';
+        echo '<i class="material-icons">edit</i>';
         echo '</button>';
         echo ' ';
         echo '<button class="btn-icon" onclick="eliminarProducto(' . intval($producto['id']) . ')">';
-        echo '<span class="material-icons">delete</span>';
+        echo '<i class="material-icons">delete</i>';
         echo '</button>';
         echo '</td>';
     } else {
