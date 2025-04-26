@@ -76,35 +76,29 @@ function abrirModalEditar(id) {
 }
 
 // abrir modal confirmación
+let productoIdAEliminar = null; // 👈 variable global para guardar ID
+
 function confirmarEliminacion(id) {
-    console.log("Confirmar eliminación para ID:", id);
+    console.log("Quiero eliminar el producto ID:", id);
+    productoIdAEliminar = id;
+
     const modal = document.getElementById('modalConfirmacion');
     modal.classList.remove('hidden');
-
-    const btnConfirmar = document.getElementById('btnConfirmarEliminar');
-    btnConfirmar.dataset.id = id;
 }
 
-// cerrar modal
 function closeModalConfirmacion() {
-    const modal = document.getElementById('modalConfirmacion');
-    modal.classList.add('hidden');
-
-    const btnConfirmar = document.getElementById('btnConfirmarEliminar');
-    btnConfirmar.removeAttribute('data-id');
+    document.getElementById('modalConfirmacion').classList.add('hidden');
+    productoIdAEliminar = null; // 👈 limpiamos
 }
 
-// eliminar producto confirmado
-async function eliminarProductoConfirmado(event) {
-    const id = event.target.dataset.id; // 👈 corregimos acá!
-
-    if (!id) {
+async function eliminarProductoConfirmado() {
+    if (!productoIdAEliminar) {
         showAlert('error', 'ID no proporcionado');
         return;
     }
 
     try {
-        const response = await fetch(`/controllers/eliminarProductoController.php?id=${id}`, { method: 'DELETE' });
+        const response = await fetch(`/controllers/eliminarProductoController.php?id=${productoIdAEliminar}`, { method: 'DELETE' });
         const result = await response.json();
 
         if (result.success) {
@@ -120,6 +114,5 @@ async function eliminarProductoConfirmado(event) {
     }
 }
 
-// asignar evento
+// Asignar evento al botón de confirmar
 document.getElementById('btnConfirmarEliminar').addEventListener('click', eliminarProductoConfirmado);
-
