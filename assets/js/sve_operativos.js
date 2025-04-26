@@ -380,3 +380,5 @@ document.getElementById('formEditarOperativo').addEventListener('submit', async 
         showAlert('error', 'Error inesperado al guardar el operativo.');
     }
 });
+
+cargarOperativos();
