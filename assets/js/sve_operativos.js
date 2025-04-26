@@ -1,10 +1,5 @@
-window.addEventListener('error', function(event) {
-    console.error('🌋 Error atrapado globalmente:', event.message);
-});
+console.log('✅ sve_operativos.js CARGADO correctamente');
 
-<script>
-    console.log("JS cargando desde: ", document.currentScript.src);
-</script>
 
 
 async function fetchConSpinner(url, options = {}, mensaje = '') {
