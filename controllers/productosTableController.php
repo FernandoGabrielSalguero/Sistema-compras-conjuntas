@@ -16,6 +16,7 @@ if (!$productos) {
 
 foreach ($productos as $producto) {
     echo '<tr>';
+    echo '<td>' . htmlspecialchars($producto['Id'] ?? '-') . '</td>';
     echo '<td>' . htmlspecialchars($producto['Nombre_producto'] ?? '-') . '</td>';
     echo '<td>' . htmlspecialchars($producto['Detalle_producto'] ?? '-') . '</td>';
     echo '<td>$' . number_format(floatval($producto['Precio_producto'] ?? 0), 2, ',', '.') . '</td>';

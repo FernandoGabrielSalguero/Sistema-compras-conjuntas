@@ -195,6 +195,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <table class="data-table">
                             <thead>
                                 <tr>
+                                    <th>ID</th>
                                     <th>Nombre_producto</th>
                                     <th>Detalle_producto</th>
                                     <th>Precio_producto</th>
