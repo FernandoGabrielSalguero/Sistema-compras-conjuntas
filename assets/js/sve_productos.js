@@ -126,16 +126,23 @@ function confirmarEliminacion(id) {
     modal.classList.remove('hidden');
 
     const btnConfirmar = document.getElementById('btnConfirmarEliminar');
-    btnConfirmar.onclick = async function() {
-        await eliminarProductoConfirmado(id);
-    }
+    btnConfirmar.dataset.id = id; // 👉 Guardamos el id en un atributo
 }
 
 function closeModalConfirmacion() {
     document.getElementById('modalConfirmacion').classList.add('hidden');
+    document.getElementById('btnConfirmarEliminar').removeAttribute('data-id'); // Limpieza
 }
 
-async function eliminarProductoConfirmado(id) {
+async function eliminarProductoConfirmado() {
+    const btnConfirmar = document.getElementById('btnConfirmarEliminar');
+    const id = btnConfirmar.dataset.id; // 👉 Leemos el id guardado
+
+    if (!id) {
+        showAlert('error', 'ID no proporcionado');
+        return;
+    }
+
     try {
         const response = await fetch(`/controllers/eliminarProductoController.php?id=${id}`, { method: 'DELETE' });
         const result = await response.json();
@@ -152,4 +159,8 @@ async function eliminarProductoConfirmado(id) {
         showAlert('error', 'Error inesperado al eliminar producto.');
     }
 }
+
+// Asignamos el evento al botón eliminar al cargar la página
+document.getElementById('btnConfirmarEliminar').addEventListener('click', eliminarProductoConfirmado);
+
 
