@@ -19,7 +19,7 @@ foreach ($productos as $producto) {
     echo '<td>' . htmlspecialchars($producto['Nombre_producto'] ?? '-') . '</td>';
     echo '<td>' . htmlspecialchars($producto['Detalle_producto'] ?? '-') . '</td>';
     echo '<td>$' . number_format(floatval($producto['Precio_producto'] ?? 0), 2, ',', '.') . '</td>';
-    echo '<td>' . htmlspecialchars($producto['Unidad_medida_venta'] ?? '-') . '</td>';
+    echo '<td>' . htmlspecialchars($producto['Unidad_Medida_venta'] ?? '-') . '</td>';
     echo '<td>' . htmlspecialchars($producto['categoria'] ?? '-') . '</td>';
     echo '<td>' . htmlspecialchars($producto['alicuota'] ?? '-') . '%</td>';
     
