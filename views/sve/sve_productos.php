@@ -212,50 +212,51 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </div>
                 </div>
 
-                <!-- Modal -->
-                <div id="modal" class="modal hidden">
+                <!-- Modal Editar Producto -->
+                <div id="modalEditar" class="modal hidden">
                     <div class="modal-content">
                         <h3>Editar Producto</h3>
                         <form id="formEditarProducto">
-            <input type="hidden" id="edit_id" name="id">
+                            <input type="hidden" id="edit_id" name="id">
 
-            <div class="input-group">
-                <label for="edit_Nombre_producto">Nombre</label>
-                <input type="text" id="edit_Nombre_producto" name="Nombre_producto" required>
-            </div>
+                            <div class="input-group">
+                                <label for="edit_Nombre_producto">Nombre</label>
+                                <input type="text" id="edit_Nombre_producto" name="Nombre_producto" required>
+                            </div>
 
-            <div class="input-group">
-                <label for="edit_Detalle_producto">Detalle</label>
-                <input type="text" id="edit_Detalle_producto" name="Detalle_producto">
-            </div>
+                            <div class="input-group">
+                                <label for="edit_Detalle_producto">Detalle</label>
+                                <input type="text" id="edit_Detalle_producto" name="Detalle_producto">
+                            </div>
 
-            <div class="input-group">
-                <label for="edit_Precio_producto">Precio</label>
-                <input type="number" id="edit_Precio_producto" name="Precio_producto" min="0" required>
-            </div>
+                            <div class="input-group">
+                                <label for="edit_Precio_producto">Precio</label>
+                                <input type="number" id="edit_Precio_producto" name="Precio_producto" min="0" step="0.01" required>
+                            </div>
 
-            <div class="input-group">
-                <label for="edit_Unidad_medida_venta">Unidad de medida</label>
-                <input type="text" id="edit_Unidad_medida_venta" name="Unidad_medida_venta" required>
-            </div>
+                            <div class="input-group">
+                                <label for="edit_Unidad_medida_venta">Unidad de medida</label>
+                                <input type="text" id="edit_Unidad_medida_venta" name="Unidad_medida_venta" required>
+                            </div>
 
-            <div class="input-group">
-                <label for="edit_categoria">Categoría</label>
-                <input type="text" id="edit_categoria" name="categoria" required>
-            </div>
+                            <div class="input-group">
+                                <label for="edit_categoria">Categoría</label>
+                                <input type="text" id="edit_categoria" name="categoria" required>
+                            </div>
 
-            <div class="input-group">
-                <label for="edit_alicuota">Alicuota</label>
-                <input type="number" id="edit_alicuota" name="alicuota" step="0.1" required>
-            </div>
+                            <div class="input-group">
+                                <label for="edit_alicuota">Alicuota</label>
+                                <input type="number" id="edit_alicuota" name="alicuota" step="0.1" min="0" required>
+                            </div>
 
-            <div class="form-buttons">
-                <button type="submit" class="btn btn-aceptar">Guardar</button>
-                <button type="button" class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
-            </div>
-        </form>
+                            <div class="form-buttons">
+                                <button type="submit" class="btn btn-aceptar">Guardar</button>
+                                <button type="button" class="btn btn-cancelar" onclick="closeModalEditar()">Cancelar</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
+
 
                 <!-- Alert -->
                 <div class="alert-container" id="alertContainer"></div>
@@ -268,7 +269,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <!-- Script para cargar los datos usando AJAX a la base -->
     <script>
-
         // carga de datos de la tabla
         async function cargarProductos() {
             const tabla = document.getElementById('tablaProductos');
@@ -339,15 +339,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         });
     </script>
 
-<div id="modalConfirmacion" class="modal hidden">
-    <div class="modal-content">
-        <h3>¿Estás seguro de eliminar este producto?</h3>
-        <div class="form-buttons">
-            <button id="btnConfirmarEliminar" class="btn btn-error">Eliminar</button>
-            <button class="btn btn-cancelar" onclick="closeModalConfirmacion()">Cancelar</button>
+    <div id="modalConfirmacion" class="modal hidden">
+        <div class="modal-content">
+            <h3>¿Estás seguro de eliminar este producto?</h3>
+            <div class="form-buttons">
+                <button id="btnConfirmarEliminar" class="btn btn-error">Eliminar</button>
+                <button class="btn btn-cancelar" onclick="closeModalConfirmacion()">Cancelar</button>
+            </div>
         </div>
     </div>
-</div>
 </body>
 
 </html>

@@ -10,7 +10,7 @@ $productosModel = new ProductosModel();
 $productos = $productosModel->obtenerTodos();
 
 if (!$productos) {
-    echo '<tr><td colspan="7">No hay productos cargados.</td></tr>';
+    echo '<tr><td colspan="8">No hay productos cargados.</td></tr>';
     exit;
 }
 
@@ -24,12 +24,18 @@ foreach ($productos as $producto) {
     echo '<td>' . htmlspecialchars($producto['categoria'] ?? '-') . '</td>';
     echo '<td>' . htmlspecialchars($producto['alicuota'] ?? '-') . '%</td>';
     echo '<td style="text-align: center;">';
+    
+    // Botón Editar
     echo '<button class="btn-icon" onclick="abrirModalEditar(' . intval($producto['Id']) . ')">';
     echo '<i class="material-icons">edit</i>';
     echo '</button> ';
+    
+    // Botón Eliminar
     echo '<button class="btn-icon" onclick="confirmarEliminacion(' . intval($producto['Id']) . ')">';
     echo '<i class="material-icons">delete</i>';
     echo '</button>';
+
     echo '</td>';
     echo '</tr>';
 }
+?>
