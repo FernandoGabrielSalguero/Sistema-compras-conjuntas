@@ -361,7 +361,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         <div class="modal-content">
             <h3>¿Estás seguro de eliminar este producto?</h3>
             <div class="form-buttons">
-                <button id="btnConfirmarEliminar" class="btn btn-error">Eliminar</button>
+                <button id="btnConfirmarEliminar" class="btn btn-aceptar">Eliminar</button>
                 <button class="btn btn-cancelar" onclick="closeModalConfirmacion()">Cancelar</button>
             </div>
         </div>
