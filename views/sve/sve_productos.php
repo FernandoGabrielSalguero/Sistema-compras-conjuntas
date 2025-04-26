@@ -217,61 +217,43 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <div class="modal-content">
                         <h3>Editar Producto</h3>
                         <form id="formEditarProducto">
-                            <input type="hidden" name="id" id="edit_id">
+            <input type="hidden" id="edit_id" name="id">
 
-                            <div class="input-group">
-                                <label for="edit_Nombre_producto">Nombre</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">inventory_2</span>
-                                    <input type="text" name="Nombre_producto" id="edit_Nombre_producto" required>
-                                </div>
-                            </div>
+            <div class="input-group">
+                <label for="edit_Nombre_producto">Nombre</label>
+                <input type="text" id="edit_Nombre_producto" name="Nombre_producto" required>
+            </div>
 
-                            <div class="input-group">
-                                <label for="edit_Detalle_producto">Detalle</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">description</span>
-                                    <input type="text" name="Detalle_producto" id="edit_Detalle_producto">
-                                </div>
-                            </div>
+            <div class="input-group">
+                <label for="edit_Detalle_producto">Detalle</label>
+                <input type="text" id="edit_Detalle_producto" name="Detalle_producto">
+            </div>
 
-                            <div class="input-group">
-                                <label for="edit_Precio_producto">Precio</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">attach_money</span>
-                                    <input type="number" name="Precio_producto" id="edit_Precio_producto" min="0" required>
-                                </div>
-                            </div>
+            <div class="input-group">
+                <label for="edit_Precio_producto">Precio</label>
+                <input type="number" id="edit_Precio_producto" name="Precio_producto" min="0" required>
+            </div>
 
-                            <div class="input-group">
-                                <label for="edit_Unidad_medida_venta">Unidad de medida</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">scale</span>
-                                    <input type="text" name="Unidad_medida_venta" id="edit_Unidad_medida_venta" required>
-                                </div>
-                            </div>
+            <div class="input-group">
+                <label for="edit_Unidad_medida_venta">Unidad de medida</label>
+                <input type="text" id="edit_Unidad_medida_venta" name="Unidad_medida_venta" required>
+            </div>
 
-                            <div class="input-group">
-                                <label for="edit_categoria">Categoría</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">category</span>
-                                    <input type="text" name="categoria" id="edit_categoria" required>
-                                </div>
-                            </div>
+            <div class="input-group">
+                <label for="edit_categoria">Categoría</label>
+                <input type="text" id="edit_categoria" name="categoria" required>
+            </div>
 
-                            <div class="input-group">
-                                <label for="edit_alicuota">Alicuota</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">percent</span>
-                                    <input type="number" step="0.1" name="alicuota" id="edit_alicuota" required>
-                                </div>
-                            </div>
+            <div class="input-group">
+                <label for="edit_alicuota">Alicuota</label>
+                <input type="number" id="edit_alicuota" name="alicuota" step="0.1" required>
+            </div>
 
-                            <div class="form-buttons">
-                                <button type="submit" class="btn btn-aceptar">Guardar</button>
-                                <button type="button" class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
-                            </div>
-                        </form>
+            <div class="form-buttons">
+                <button type="submit" class="btn btn-aceptar">Guardar</button>
+                <button type="button" class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
+            </div>
+        </form>
                     </div>
                 </div>
 
