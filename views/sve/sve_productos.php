@@ -47,7 +47,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
 
             <nav class="sidebar-menu">
-            <ul>
+                <ul>
                     <li onclick="location.href='sve_dashboard.php'">
                         <span class="material-icons">home</span><span class="link-text">Inicio</span>
                     </li>
@@ -99,164 +99,108 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <form class="form-modern" id="formUsuario">
                         <div class="form-grid grid-4">
 
-                            <!-- CUIT -->
+                            <!-- Nombre_producto -->
                             <div class="input-group">
-                                <label for="cuit">CUIT</label>
+                                <label for="Nombre_producto">Nombre</label>
                                 <div class="input-icon">
                                     <span class="material-icons">fingerprint</span>
-                                    <input type="number" id="cuit" name="cuit" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" placeholder="20123456781" required>
+                                    <input type="text" id="Nombre_producto" name="Nombre_producto" placeholder="Nombre producto" required>
                                 </div>
                             </div>
 
-                            <!-- Contraseña -->
+
+                            <!-- Detalle_producto -->
                             <div class="input-group">
-                                <label for="contraseña">Contraseña
-                                </label>
+                                <label for="Detalle_producto">Detalle</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">lock</span>
-                                    <input type="number" id="contraseña" name="contraseña" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" placeholder="20123456781" required>
+                                    <span class="material-icons">notes</span>
+                                    <input type="text" id="Detalle_producto" name="Detalle_producto" placeholder="Detalle...">
                                 </div>
                             </div>
 
-                            <!-- Rol -->
+                            <!-- Precio_producto -->
                             <div class="input-group">
-                                <label for="rol">Rol</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">supervisor_account</span>
-                                    <select id="rol" name="rol" required>
-                                        <option value="sve">SVE</option>
-                                        <option value="cooperativa">Cooperativa</option>
-                                        <option value="productor">Productor</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Permiso -->
-                            <div class="input-group">
-                                <label for="permiso">Permiso</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">check_circle</span>
-                                    <select id="permiso" name="permiso" required>
-                                        <option value="Habilitado">Habilitado</option>
-                                        <option value="Deshabilitado">Deshabilitado</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Nombre completo -->
-                            <div class="input-group">
-                                <label for="nombre">Nombre completo</label>
+                                <label for="Precio_producto">Precio</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
-                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required
-                                        minlength="2" maxlength="60" aria-required="true">
+                                    <input type="text" id="Precio_producto" name="Precio_producto" placeholder="$2545" required>
                                 </div>
-                                <small class="error-message" aria-live="polite"></small>
                             </div>
 
-                            <!-- Correo electrónico -->
+                            <!-- Unidad_medida_venta -->
                             <div class="input-group">
-                                <label for="email">Correo electrónico</label>
+                                <label for="Unidad_medida_venta">¿Se vende por?</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">mail</span>
-                                    <input type="email" id="email" name="email" placeholder="usuario@correo.com" required aria-required="true">
+                                    <span class="material-icons">check_circle</span>
+                                    <select id="Unidad_medida_venta" name="Unidad_medida_venta" required>
+                                        <option value="Kilos"> Kilos</option>
+                                        <option value="Gramos">Gramos</option>
+                                        <option value="Litros">Litros</option>
+                                        <option value="Unidad">Unidad</option>
+                                    </select>
                                 </div>
-                                <small class="error-message" aria-live="polite"></small>
                             </div>
 
-                            <!-- Teléfono OK-->
+                            <!-- categoria -->
                             <div class="input-group">
-                                <label for="telefono">Teléfono</label>
+                                <label for="categoria">Categoria</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">phone</span>
-                                    <input type="tel" id="telefono" name="telefono" placeholder="2616686065" required>
+                                    <span class="material-icons">supervisor_account</span>
+                                    <select id="categoria" name="categoria" required>
+                                        <option value="Fertilizantes Sólidos">Fertilizantes Sólidos</option>
+                                        <option value="Fertilizantes Complejos">Fertilizantes Complejos</option>
+                                        <option value="Fertilizantes Líquidos">Fertilizantes Líquidos</option>
+                                        <option value="Fungicidas">Fungicidas</option>
+                                        <option value="Insecticidas">Insecticidas</option>
+                                        <option value="Feromona Asperjable">Feromona Asperjable</option>
+                                        <option value="Difusor Feromona">Difusor Feromona</option>
+                                        <option value="Herbicidas">Herbicidas</option>
+                                        <option value="Fertilizantes Especiales">Fertilizantes Especiales</option>
+                                        <option value="Fertilizantes Foliares">Fertilizantes Foliares</option>
+                                        <option value="Otros">Otros</option>
+                                    </select>
                                 </div>
                             </div>
 
-                            <!-- id_cooperativa OK-->
+                            <!-- alicuota -->
                             <div class="input-group">
-                                <label for="id_cooperativa">ID Cooperativa</label>
+                                <label for="alicuota">Alicuota</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">groups</span>
-                                    <input type="number" id="id_cooperativa" name="id_cooperativa" placeholder="1234" required>
+                                    <span class="material-icons">supervisor_account</span>
+                                    <select id="alicuota" name="alicuota" required>
+                                        <option value="0">0</option>
+                                        <option value="2.5">2.5</option>
+                                        <option value="5">5</option>
+                                        <option value="10.5">10.5</option>
+                                        <option value="21">21</option>
+                                        <option value="27">27</option>
+                                    </select>
                                 </div>
                             </div>
 
-                            <!-- id_productor OK-->
-                            <div class="input-group">
-                                <label for="id_productor">ID Productor</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">agriculture</span>
-                                    <input type="tel" id="id_productor" name="id_productor" placeholder="1234" required>
-                                </div>
-                            </div>
-
-                            <!-- direccion OK-->
-                            <div class="input-group">
-                                <label for="direccion">Dirección</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">location_on</span>
-                                    <input type="text" id="direccion" name="direccion" placeholder="San Martín Sur 25 Godoy Cruz" required>
-                                </div>
-                            </div>
-
-                            <!-- id_finca_asociada OK-->
-                            <div class="input-group">
-                                <label for="finca_asociada">Finca Asociada</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">yard</span>
-                                    <input type="number" id="finca_asociada" name="finca_asociada" placeholder="1234">
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <!-- observaciones OK-->
-                        <div class="input-group">
-                            <label for="observaciones">Observaciones</label>
-                            <div class="input-icon">
-                                <span class="material-icons">notes</span>
-                                <input type="text" id="observaciones" name="observaciones" placeholder="1234">
-                            </div>
                         </div>
 
                         <!-- Botones -->
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="submit">Enviar</button>
+                            <button class="btn btn-aceptar" type="submit">Crear producto nuevo</button>
                         </div>
                     </form>
-                </div>
-
-                <!-- Tarjeta de buscador -->
-                <div class="card">
-                    <h2>Busca un usuario por su CUIT</h2>
-                    <div class="input-group">
-                        <label for="buscarCuit">CUIT</label>
-                        <div class="input-icon">
-                            <span class="material-icons">fingerprint</span>
-                            <input type="text" id="buscarCuit" name="buscarCuit" placeholder="20123456781">
-                        </div>
-                    </div>
                 </div>
 
 
                 <!-- Tabla -->
                 <div class="card">
-                    <h2>Listado de usuarios registrados</h2>
+                    <h2>Listado de productos</h2>
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>CUIT</th>
-                                    <th>Rol</th>
-                                    <th>Permiso</th>
-                                    <th>Nombre</th>
-                                    <th>Correo</th>
-                                    <th>Teléfono</th>
-                                    <th>ID Cooperativa</th>
-                                    <th>ID Productor</th>
-                                    <th>Observaciones</th>
-                                    <th>Acciones</th>
+                                    <th>Nombre_producto</th>
+                                    <th>Detalle_producto</th>
+                                    <th>Precio_producto</th>
+                                    <th>Unidad_medida_venta</th>
+                                    <th>categoria</th>
+                                    <th>alicuota</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaUsuarios">
@@ -274,7 +218,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <input type="hidden" name="id" id="edit_id">
 
                             <div class="input-group">
-                                <label for="edit_nombre">Nombre</label>
+                                <label for="edit_nombre">Nombre_producto</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
                                     <input type="text" name="nombre" id="edit_nombre" required>
@@ -282,7 +226,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             </div>
 
                             <div class="input-group">
-                                <label for="edit_correo">Correo</label>
+                                <label for="edit_correo">Detalle_producto</label>
                                 <div class="input-icon">
                                     <span class="material-icons">mail</span>
                                     <input type="email" name="correo" id="edit_correo" required>
@@ -290,7 +234,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             </div>
 
                             <div class="input-group">
-                                <label for="edit_telefono">Teléfono</label>
+                                <label for="edit_telefono">Precio_producto</label>
                                 <div class="input-icon">
                                     <span class="material-icons">phone</span>
                                     <input type="text" name="telefono" id="edit_telefono" required>
@@ -298,7 +242,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             </div>
 
                             <div class="input-group">
-                                <label for="edit_observaciones">Observaciones</label>
+                                <label for="edit_observaciones">Unidad_medida_venta</label>
                                 <div class="input-icon">
                                     <span class="material-icons">notes</span>
                                     <input type="text" name="observaciones" id="edit_observaciones">
@@ -306,7 +250,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             </div>
 
                             <div class="input-group">
-                                <label for="edit_permiso">Permiso</label>
+                                <label for="edit_permiso">categoria</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">check_circle</span>
+                                    <select name="permiso" id="edit_permiso" required>
+                                        <option value="Habilitado">Habilitado</option>
+                                        <option value="Deshabilitado">Deshabilitado</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="edit_permiso">alicuota</label>
                                 <div class="input-icon">
                                     <span class="material-icons">check_circle</span>
                                     <select name="permiso" id="edit_permiso" required>
