@@ -19,19 +19,21 @@ foreach ($productos as $producto) {
     echo '<td>' . htmlspecialchars($producto['Nombre_producto'] ?? '-') . '</td>';
     echo '<td>' . htmlspecialchars($producto['Detalle_producto'] ?? '-') . '</td>';
     echo '<td>$' . number_format(floatval($producto['Precio_producto'] ?? 0), 2, ',', '.') . '</td>';
-    echo '<td>' . htmlspecialchars($producto['Unidad_Medida_venta'] ?? '-') . '</td>';
+    echo '<td>' . htmlspecialchars($producto['Unidad_medida_venta'] ?? '-') . '</td>';
     echo '<td>' . htmlspecialchars($producto['categoria'] ?? '-') . '</td>';
     echo '<td>' . htmlspecialchars($producto['alicuota'] ?? '-') . '%</td>';
-    
+
+    // 👉 Columna de botones
     if (isset($producto['id'])) {
-        echo '<td>
-                <button class="btn-icon" onclick="abrirModalEditar(' . intval($producto['id']) . ')">
-                    <span class="material-icons">edit</span>
-                </button>
-                <button class="btn-icon" onclick="eliminarProducto(' . intval($producto['id']) . ')">
-                    <span class="material-icons">delete</span>
-                </button>
-              </td>';
+        echo '<td style="text-align: center;">';
+        echo '<button class="btn-icon" onclick="abrirModalEditar(' . intval($producto['id']) . ')">';
+        echo '<span class="material-icons">edit</span>';
+        echo '</button>';
+        echo ' ';
+        echo '<button class="btn-icon" onclick="eliminarProducto(' . intval($producto['id']) . ')">';
+        echo '<span class="material-icons">delete</span>';
+        echo '</button>';
+        echo '</td>';
     } else {
         echo '<td>-</td>';
     }

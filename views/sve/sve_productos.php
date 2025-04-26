@@ -201,6 +201,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <th>Unidad_medida_venta</th>
                                     <th>categoria</th>
                                     <th>alicuota</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaUsuarios">
