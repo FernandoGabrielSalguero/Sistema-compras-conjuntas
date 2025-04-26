@@ -95,8 +95,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Formulario -->
                 <div class="card">
-                    <h2>Formulario para cargar un nuevo usuario</h2>
-                    <form class="form-modern" id="formUsuario">
+                    <h2>Formulario para cargar un nuevo producto</h2>
+                    <form class="form-modern" id="formProducto">
                         <div class="form-grid grid-4">
 
                             <!-- Nombre_producto -->
@@ -211,67 +211,69 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 </div>
 
                 <!-- Modal -->
+                <!-- Modal -->
                 <div id="modal" class="modal hidden">
                     <div class="modal-content">
                         <h3>Editar Producto</h3>
-<form id="formEditarProducto">
-    <input type="hidden" name="id" id="edit_id">
+                        <form id="formEditarProducto">
+                            <input type="hidden" name="id" id="edit_id">
 
-    <div class="input-group">
-        <label for="edit_Nombre_producto">Nombre</label>
-        <div class="input-icon">
-            <span class="material-icons">inventory_2</span>
-            <input type="text" name="Nombre_producto" id="edit_Nombre_producto" required>
-        </div>
-    </div>
+                            <div class="input-group">
+                                <label for="edit_Nombre_producto">Nombre</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">inventory_2</span>
+                                    <input type="text" name="Nombre_producto" id="edit_Nombre_producto" required>
+                                </div>
+                            </div>
 
-    <div class="input-group">
-        <label for="edit_Detalle_producto">Detalle</label>
-        <div class="input-icon">
-            <span class="material-icons">description</span>
-            <input type="text" name="Detalle_producto" id="edit_Detalle_producto">
-        </div>
-    </div>
+                            <div class="input-group">
+                                <label for="edit_Detalle_producto">Detalle</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">description</span>
+                                    <input type="text" name="Detalle_producto" id="edit_Detalle_producto">
+                                </div>
+                            </div>
 
-    <div class="input-group">
-        <label for="edit_Precio_producto">Precio</label>
-        <div class="input-icon">
-            <span class="material-icons">attach_money</span>
-            <input type="number" name="Precio_producto" id="edit_Precio_producto" required min="0">
-        </div>
-    </div>
+                            <div class="input-group">
+                                <label for="edit_Precio_producto">Precio</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">attach_money</span>
+                                    <input type="number" name="Precio_producto" id="edit_Precio_producto" min="0" required>
+                                </div>
+                            </div>
 
-    <div class="input-group">
-        <label for="edit_Unidad_medida_venta">Unidad de medida</label>
-        <div class="input-icon">
-            <span class="material-icons">scale</span>
-            <input type="text" name="Unidad_medida_venta" id="edit_Unidad_medida_venta" required>
-        </div>
-    </div>
+                            <div class="input-group">
+                                <label for="edit_Unidad_medida_venta">Unidad de medida</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">scale</span>
+                                    <input type="text" name="Unidad_medida_venta" id="edit_Unidad_medida_venta" required>
+                                </div>
+                            </div>
 
-    <div class="input-group">
-        <label for="edit_categoria">Categoría</label>
-        <div class="input-icon">
-            <span class="material-icons">category</span>
-            <input type="text" name="categoria" id="edit_categoria" required>
-        </div>
-    </div>
+                            <div class="input-group">
+                                <label for="edit_categoria">Categoría</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">category</span>
+                                    <input type="text" name="categoria" id="edit_categoria" required>
+                                </div>
+                            </div>
 
-    <div class="input-group">
-        <label for="edit_alicuota">Alicuota</label>
-        <div class="input-icon">
-            <span class="material-icons">percent</span>
-            <input type="number" name="alicuota" id="edit_alicuota" required step="0.1">
-        </div>
-    </div>
+                            <div class="input-group">
+                                <label for="edit_alicuota">Alicuota</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">percent</span>
+                                    <input type="number" step="0.1" name="alicuota" id="edit_alicuota" required>
+                                </div>
+                            </div>
 
-    <div class="form-buttons">
-        <button type="submit" class="btn btn-aceptar">Guardar</button>
-        <button type="button" class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
-    </div>
-</form>
+                            <div class="form-buttons">
+                                <button type="submit" class="btn btn-aceptar">Guardar</button>
+                                <button type="button" class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
+
 
                 <!-- Alert -->
                 <div class="alert-container" id="alertContainer"></div>
@@ -294,10 +296,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             form.addEventListener('submit', async (e) => {
                 const precio = parseFloat(formData.get('Precio_producto'));
-if (isNaN(precio) || precio < 0) {
-    showAlert('error', 'El precio no puede ser negativo.');
-    return;
-}
+                if (isNaN(precio) || precio < 0) {
+                    showAlert('error', 'El precio no puede ser negativo.');
+                    return;
+                }
                 e.preventDefault();
                 const formData = new FormData(form);
 
@@ -343,7 +345,7 @@ if (isNaN(precio) || precio < 0) {
         // modal
         function abrirModalEditar(id) {
             fetch(`/controllers/obtenerProductoController.php?id=${id}`)
-            .then(res => res.json())
+                .then(res => res.json())
                 .then(data => {
                     if (data.success) {
                         document.getElementById('edit_id').value = data.user.id;
@@ -365,7 +367,7 @@ if (isNaN(precio) || precio < 0) {
         }
 
         // enviar cambios del formulario por ajax
-        document.getElementById('formEditarUsuario').addEventListener('submit', async function(e) {
+        document.getElementById('formEditarProducto').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const formData = new FormData(this);

@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('formUsuario');
+    const form = document.getElementById('formProducto');
 
     if (form) {
         form.addEventListener('submit', async (e) => {
