@@ -72,6 +72,7 @@ document.getElementById('formOperativo').addEventListener('submit', async functi
 
 // cargar la tabla de operativos
 async function cargarOperativos() {
+    console.log('👉 Ejecutando cargarOperativos()...');
     const tabla = document.querySelector('tbody#tablaOperativos');
     if (!tabla) return;
 

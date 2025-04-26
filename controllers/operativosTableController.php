@@ -1,8 +1,9 @@
 <?php
-// Mostrar errores en pantalla (útil en desarrollo)
+// Mostrar todos los errores en pantalla mientras debugueamos
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+?>
 
 require_once __DIR__ . '/../config.php';
 
