@@ -7,8 +7,8 @@ class ProductosModel
 
     public function __construct()
     {
-        global $conn; // Usamos la conexión de config.php
-        $this->conn = $conn;
+        global $pdo; // <<< CAMBIO: ahora agarramos la variable $pdo, no $conn
+        $this->conn = $pdo;
     }
 
     public function crearProducto($nombre, $detalle, $precio, $unidad, $categoria, $alicuota)
