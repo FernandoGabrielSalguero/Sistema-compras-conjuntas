@@ -44,4 +44,3 @@ class ProductosModel
         return $stmt->execute([$id]);
     }
 }
-?>

@@ -50,17 +50,20 @@ async function cargarProductos() {
 }
 
 function abrirModalEditar(id) {
+    console.log("Abrir modal para ID:", id);
+
     fetch(`/controllers/obtenerProductoController.php?id=${id}`)
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                document.getElementById('edit_id').value = data.producto.id;
+                document.getElementById('edit_id').value = data.producto.Id;
                 document.getElementById('edit_Nombre_producto').value = data.producto.Nombre_producto;
                 document.getElementById('edit_Detalle_producto').value = data.producto.Detalle_producto;
                 document.getElementById('edit_Precio_producto').value = data.producto.Precio_producto;
                 document.getElementById('edit_Unidad_medida_venta').value = data.producto.Unidad_medida_venta;
                 document.getElementById('edit_categoria').value = data.producto.categoria;
                 document.getElementById('edit_alicuota').value = data.producto.alicuota;
+
                 openModal();
             } else {
                 showAlert('error', 'Error al cargar datos del producto.');
@@ -72,71 +75,24 @@ function abrirModalEditar(id) {
         });
 }
 
-document.getElementById('formEditarProducto').addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const formData = new FormData(this);
-
-    try {
-        const response = await fetch('/controllers/actualizarProductoController.php', {
-            method: 'POST',
-            body: formData
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            showAlert('success', result.message);
-            closeModal();
-            cargarProductos();
-        } else {
-            showAlert('error', result.message);
-        }
-    } catch (err) {
-        showAlert('error', 'Error inesperado al guardar los cambios.');
-    }
-});
-
-async function eliminarProducto(id) {
-    if (!id) {
-        showAlert('error', 'ID inválido');
-        return;
-    }
-
-    try {
-        const response = await fetch(`/controllers/eliminarProductoController.php?id=${id}`, { method: 'DELETE' });
-        const result = await response.json();
-
-        if (result.success) {
-            showAlert('success', result.message);
-            cargarProductos();
-        } else {
-            showAlert('error', result.message);
-        }
-    } catch (error) {
-        console.error('⛔ Error al eliminar producto:', error);
-        showAlert('error', 'Error inesperado al eliminar producto.');
-    }
-
-    confirmarEliminacion(id);
-}
-
+// Modal confirmación para eliminar
 function confirmarEliminacion(id) {
+    console.log("Confirmar eliminación para ID:", id);
     const modal = document.getElementById('modalConfirmacion');
     modal.classList.remove('hidden');
 
     const btnConfirmar = document.getElementById('btnConfirmarEliminar');
-    btnConfirmar.dataset.id = id; // 👉 Guardamos el id en un atributo
+    btnConfirmar.dataset.id = id;
 }
 
 function closeModalConfirmacion() {
     document.getElementById('modalConfirmacion').classList.add('hidden');
-    document.getElementById('btnConfirmarEliminar').removeAttribute('data-id'); // Limpieza
+    document.getElementById('btnConfirmarEliminar').removeAttribute('data-id');
 }
 
 async function eliminarProductoConfirmado() {
     const btnConfirmar = document.getElementById('btnConfirmarEliminar');
-    const id = btnConfirmar.dataset.id; // 👉 Leemos el id guardado
+    const id = btnConfirmar.dataset.id;
 
     if (!id) {
         showAlert('error', 'ID no proporcionado');
@@ -160,7 +116,5 @@ async function eliminarProductoConfirmado() {
     }
 }
 
-// Asignamos el evento al botón eliminar al cargar la página
+// Asignar evento de confirmación
 document.getElementById('btnConfirmarEliminar').addEventListener('click', eliminarProductoConfirmado);
-
-
