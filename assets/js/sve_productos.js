@@ -50,28 +50,32 @@ async function cargarProductos() {
 }
 
 function abrirModalEditar(id) {
-    console.log("Abrir modal para ID:", id);
+    console.log("👉 Abrir modal para ID:", id);
 
     fetch(`/controllers/obtenerProductoController.php?id=${id}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('edit_id').value = data.producto.Id;
-                document.getElementById('edit_Nombre_producto').value = data.producto.Nombre_producto;
-                document.getElementById('edit_Detalle_producto').value = data.producto.Detalle_producto;
-                document.getElementById('edit_Precio_producto').value = data.producto.Precio_producto;
-                document.getElementById('edit_Unidad_medida_venta').value = data.producto.Unidad_medida_venta;
-                document.getElementById('edit_categoria').value = data.producto.categoria;
-                document.getElementById('edit_alicuota').value = data.producto.alicuota;
-
-                openModal();
-            } else {
-                showAlert('error', 'Error al cargar datos del producto.');
+        .then(async (res) => {
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.message || 'Error al obtener producto.');
             }
+            return res.json();
+        })
+        .then(data => {
+            console.log("✅ Producto recibido:", data);
+
+            document.getElementById('edit_id').value = data.producto.Id;
+            document.getElementById('edit_Nombre_producto').value = data.producto.Nombre_producto;
+            document.getElementById('edit_Detalle_producto').value = data.producto.Detalle_producto;
+            document.getElementById('edit_Precio_producto').value = data.producto.Precio_producto;
+            document.getElementById('edit_Unidad_medida_venta').value = data.producto.Unidad_medida_venta;
+            document.getElementById('edit_categoria').value = data.producto.categoria;
+            document.getElementById('edit_alicuota').value = data.producto.alicuota;
+
+            openModal();
         })
         .catch((err) => {
-            console.error('⛔ Error:', err);
-            showAlert('error', 'Error de red al buscar producto.');
+            console.error('⛔ Error capturado:', err);
+            showAlert('error', err.message);
         });
 }
 
@@ -93,13 +97,22 @@ function closeModalConfirmacion() {
 
 async function eliminarProductoConfirmado() {
     if (!productoIdAEliminar) {
-        showAlert('error', 'ID no proporcionado');
+        showAlert('error', 'ID no proporcionado para eliminar.');
         return;
     }
 
     try {
+        console.log("👉 Eliminando producto ID:", productoIdAEliminar);
+
         const response = await fetch(`/controllers/eliminarProductoController.php?id=${productoIdAEliminar}`, { method: 'DELETE' });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Error al eliminar producto.');
+        }
+
         const result = await response.json();
+        console.log("✅ Producto eliminado:", result);
 
         if (result.success) {
             showAlert('success', result.message);
@@ -109,10 +122,11 @@ async function eliminarProductoConfirmado() {
             showAlert('error', result.message);
         }
     } catch (error) {
-        console.error('⛔ Error al eliminar producto:', error);
-        showAlert('error', 'Error inesperado al eliminar producto.');
+        console.error('⛔ Error capturado:', error);
+        showAlert('error', error.message || 'Error inesperado.');
     }
 }
+
 
 // Asignar evento al botón de confirmar
 document.getElementById('btnConfirmarEliminar').addEventListener('click', eliminarProductoConfirmado);
