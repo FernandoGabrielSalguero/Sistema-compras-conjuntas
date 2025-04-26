@@ -6,25 +6,27 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/ProductosModel.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
-    echo json_encode(['success' => false, 'message' => 'Método no permitido']);
-    exit;
-}
+try {
+    // Cambiado para leer de $_GET
+    if (!isset($_GET['id'])) {
+        throw new Exception('ID no proporcionado.');
+    }
 
-parse_str(file_get_contents("php://input"), $delete_vars);
+    $id = intval($_GET['id']);
+    if ($id <= 0) {
+        throw new Exception('ID inválido.');
+    }
 
-$id = $delete_vars['id'] ?? '';
+    $productosModel = new ProductosModel();
+    $resultado = $productosModel->eliminarProducto($id);
 
-if (empty($id)) {
-    echo json_encode(['success' => false, 'message' => 'ID no proporcionado']);
-    exit;
-}
+    if (!$resultado) {
+        throw new Exception('Error al eliminar producto.');
+    }
 
-$productosModel = new ProductosModel();
-
-if ($productosModel->eliminarProducto($id)) {
     echo json_encode(['success' => true, 'message' => 'Producto eliminado correctamente.']);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Error al eliminar el producto.']);
+} catch (Exception $e) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>
