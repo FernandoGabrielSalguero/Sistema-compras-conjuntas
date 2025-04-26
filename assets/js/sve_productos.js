@@ -98,7 +98,10 @@ document.getElementById('formEditarProducto').addEventListener('submit', async f
 });
 
 async function eliminarProducto(id) {
-    if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+    if (!id) {
+        showAlert('error', 'ID inválido');
+        return;
+    }
 
     try {
         const response = await fetch(`/controllers/eliminarProductoController.php?id=${id}`, { method: 'DELETE' });
@@ -114,4 +117,39 @@ async function eliminarProducto(id) {
         console.error('⛔ Error al eliminar producto:', error);
         showAlert('error', 'Error inesperado al eliminar producto.');
     }
+
+    confirmarEliminacion(id);
 }
+
+function confirmarEliminacion(id) {
+    const modal = document.getElementById('modalConfirmacion');
+    modal.classList.remove('hidden');
+
+    const btnConfirmar = document.getElementById('btnConfirmarEliminar');
+    btnConfirmar.onclick = async function() {
+        await eliminarProductoConfirmado(id);
+    }
+}
+
+function closeModalConfirmacion() {
+    document.getElementById('modalConfirmacion').classList.add('hidden');
+}
+
+async function eliminarProductoConfirmado(id) {
+    try {
+        const response = await fetch(`/controllers/eliminarProductoController.php?id=${id}`, { method: 'DELETE' });
+        const result = await response.json();
+
+        if (result.success) {
+            showAlert('success', result.message);
+            closeModalConfirmacion();
+            cargarProductos();
+        } else {
+            showAlert('error', result.message);
+        }
+    } catch (error) {
+        console.error('⛔ Error al eliminar producto:', error);
+        showAlert('error', 'Error inesperado al eliminar producto.');
+    }
+}
+

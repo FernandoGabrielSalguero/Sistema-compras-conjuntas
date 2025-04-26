@@ -304,7 +304,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         // modal para editar producto
         function abrirModalEditar(id) {
-            fetch(`/controllers/obtenerProductoController.php?id=${id}`)
+    console.log("Abrir modal para producto ID:", id);
+
+    fetch(`/controllers/obtenerProductoController.php?id=${id}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -354,6 +356,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         });
     </script>
+
+<div id="modalConfirmacion" class="modal hidden">
+    <div class="modal-content">
+        <h3>¿Estás seguro de eliminar este producto?</h3>
+        <div class="form-buttons">
+            <button id="btnConfirmarEliminar" class="btn btn-error">Eliminar</button>
+            <button class="btn btn-cancelar" onclick="closeModalConfirmacion()">Cancelar</button>
+        </div>
+    </div>
+</div>
 </body>
 
 </html>
