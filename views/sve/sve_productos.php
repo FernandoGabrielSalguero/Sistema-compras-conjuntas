@@ -204,7 +204,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="tablaUsuarios">
+                            <tbody id="tablaProductos">
                                 <!-- Contenido dinámico -->
                             </tbody>
                         </table>
@@ -315,7 +315,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     if (result.success) {
                         form.reset();
                         showAlert('success', result.message); // ✅ alerta verde
-                        cargarUsuarios(); // 👈 actualiza la tabla
+                        cargarProductos(); // 👈 actualiza la tabla
                     } else {
                         showAlert('error', result.message); // ❌ alerta roja
                     }
@@ -330,13 +330,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         // carga de datos de la tabla
 
         async function cargarProductos() {
-            const tabla = document.getElementById('tablaUsuarios');
+            const tabla = document.getElementById('tablaProductos');
             try {
                 const res = await fetch('/controllers/productosTableController.php');
                 const html = await res.text();
                 tabla.innerHTML = html;
             } catch (err) {
-                tabla.innerHTML = '<tr><td colspan="5">Error al cargar usuarios</td></tr>';
+                tabla.innerHTML = '<tr><td colspan="5">Error al cargar productos</td></tr>';
                 console.error('Error cargando productos:', err);
             }
         }
@@ -358,12 +358,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                         openModal();
                     } else {
-                        showAlert('error', 'Error al cargar datos del usuario.');
+                        showAlert('error', 'Error al cargar datos del productos.');
                     }
                 })
                 .catch((err) => {
                     console.error('⛔ Error:', err);
-                    showAlert('error', 'Error de red al buscar usuario.');
+                    showAlert('error', 'Error de red al buscar productos.');
                 });
         }
 
@@ -384,7 +384,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 if (result.success) {
                     showAlert('success', result.message);
                     closeModal();
-                    cargarUsuarios(); // Refresca tabla
+                    cargarProductos();
                 } else {
                     showAlert('error', result.message);
                 }
@@ -394,21 +394,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         });
 
-        //Filtrar tabla por cuit
-        document.getElementById('buscarCuit').addEventListener('input', async function() {
-            const cuit = this.value.trim();
-
-            const tabla = document.getElementById('tablaUsuarios');
-
-            try {
-                const response = await fetch(`/controllers/usuariosTableController.php?cuit=${encodeURIComponent(cuit)}`);
-                const html = await response.text();
-                tabla.innerHTML = html;
-            } catch (error) {
-                tabla.innerHTML = '<tr><td colspan="10">Error al filtrar usuarios</td></tr>';
-                showAlert('error', 'No se pudo buscar por CUIT');
-            }
-        });
     </script>
 </body>
 
