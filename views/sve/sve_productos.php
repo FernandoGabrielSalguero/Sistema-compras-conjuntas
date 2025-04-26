@@ -212,7 +212,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 </div>
 
                 <!-- Modal -->
-                <!-- Modal -->
                 <div id="modal" class="modal hidden">
                     <div class="modal-content">
                         <h3>Editar Producto</h3>
@@ -287,46 +286,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <!-- Script para cargar los datos usando AJAX a la base -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('formProducto');
-
-            if (!form) {
-                console.error("⚠️ No se encontró el formulario con id='formProducto'");
-                return;
-            }
-
-            form.addEventListener('submit', async (e) => {
-                const precio = parseFloat(formData.get('Precio_producto'));
-                if (isNaN(precio) || precio < 0) {
-                    showAlert('error', 'El precio no puede ser negativo.');
-                    return;
-                }
-                e.preventDefault();
-                const formData = new FormData(form);
-
-                try {
-                    const response = await fetch('/controllers/altaProductosController.php', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        form.reset();
-                        showAlert('success', result.message); // ✅ alerta verde
-                        cargarProductos(); // 👈 actualiza la tabla
-                    } else {
-                        showAlert('error', result.message); // ❌ alerta roja
-                    }
-
-                } catch (error) {
-                    showAlert('error', 'Error inesperado al enviar el formulario.');
-                    console.error('❌ Error en la solicitud AJAX:', error);
-                }
-            });
-        });
-
         // carga de datos de la tabla
 
         async function cargarProductos() {

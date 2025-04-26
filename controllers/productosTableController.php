@@ -22,6 +22,7 @@ foreach ($productos as $producto) {
     echo '<td>' . htmlspecialchars($producto['Unidad_Medida_venta'] ?? '-') . '</td>';
     echo '<td>' . htmlspecialchars($producto['categoria'] ?? '-') . '</td>';
     echo '<td>' . htmlspecialchars($producto['alicuota'] ?? '-') . '%</td>';
+    
 
     // 👉 Columna de botones
     if (isset($producto['id'])) {

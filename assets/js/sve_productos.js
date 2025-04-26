@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     showAlert('error', result.message);
                 }
-
             } catch (error) {
                 console.error('❌ Error en la solicitud AJAX:', error);
                 showAlert('error', 'Error inesperado al enviar el formulario.');
@@ -45,7 +44,7 @@ async function cargarProductos() {
         const html = await res.text();
         tabla.innerHTML = html;
     } catch (err) {
-        tabla.innerHTML = '<tr><td colspan="6">Error al cargar productos</td></tr>';
+        tabla.innerHTML = '<tr><td colspan="7">Error al cargar productos</td></tr>';
         console.error('Error cargando productos:', err);
     }
 }
@@ -93,7 +92,6 @@ document.getElementById('formEditarProducto').addEventListener('submit', async f
         } else {
             showAlert('error', result.message);
         }
-
     } catch (err) {
         showAlert('error', 'Error inesperado al guardar los cambios.');
     }
