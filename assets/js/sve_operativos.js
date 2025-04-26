@@ -76,14 +76,18 @@ async function cargarOperativos() {
     if (!tabla) return;
 
     try {
-        const res = await fetchConSpinner('/controllers/operativosTableController.php');
+        const res = await fetch('/controllers/operativosTableController.php'); // SIN spinner por ahora
+        if (!res.ok) { 
+            throw new Error(`HTTP error ${res.status} - ${res.statusText}`);
+        }
         const html = await res.text();
         tabla.innerHTML = html;
     } catch (err) {
-        tabla.innerHTML = '<tr><td colspan="9">Error al cargar los operativos</td></tr>'; // corregido a 9 columnas
         console.error('❌ Error cargando tabla de operativos:', err);
+        tabla.innerHTML = `<tr><td colspan="9" style="color:red;">Error al cargar los operativos:<br>${err.message}</td></tr>`;
     }
 }
+
 
 // funciones para arbir y cerrar el modal
 function openModalEditar() {
