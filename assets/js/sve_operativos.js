@@ -1,3 +1,33 @@
+async function fetchConSpinner(url, options = {}, mensaje = '') {
+    const spinner = document.getElementById('spinner-global');
+    const spinnerText = document.getElementById('spinner-text');
+
+    let timeoutId = null;
+
+    if (mensaje) {
+        spinnerText.textContent = mensaje;
+    } else {
+        spinnerText.textContent = '';
+    }
+
+    // Esperar 300ms antes de mostrar el spinner
+    timeoutId = setTimeout(() => {
+        spinner.style.display = 'flex';
+    }, 300);
+
+    try {
+        const response = await fetch(url, options);
+        return response;
+    } catch (error) {
+        throw error;
+    } finally {
+        clearTimeout(timeoutId); // cancelar el timeout si ya estaba esperando
+        spinner.style.display = 'none'; // ocultar spinner siempre
+    }
+}
+
+
+
 // Carga inicial de cooperativas y productos
 document.getElementById('formOperativo').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -46,7 +76,7 @@ async function cargarOperativos() {
     if (!tabla) return;
 
     try {
-        const res = await fetch('/controllers/operativosTableController.php');
+        const res = await fetchConSpinner('/controllers/operativosTableController.php');
         const html = await res.text();
         tabla.innerHTML = html;
     } catch (err) {
