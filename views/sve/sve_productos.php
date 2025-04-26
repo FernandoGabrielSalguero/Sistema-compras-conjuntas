@@ -287,10 +287,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- Script para cargar los datos usando AJAX a la base -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('formUsuario');
+            const form = document.getElementById('formProducto');
 
             if (!form) {
-                console.error("⚠️ No se encontró el formulario con id='formUsuario'");
+                console.error("⚠️ No se encontró el formulario con id='formProducto'");
                 return;
             }
 
