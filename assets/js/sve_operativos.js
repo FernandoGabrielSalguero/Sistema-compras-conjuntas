@@ -31,7 +31,7 @@ async function fetchConSpinner(url, options = {}, mensaje = '') {
 
 
 // Carga inicial de cooperativas y productos
-document.getElementById('formOperativo').addEventListener('submit', async function(e) {
+document.getElementById('formOperativo').addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const form = this;
@@ -80,7 +80,7 @@ async function cargarOperativos() {
 
     try {
         const res = await fetch('/controllers/operativosTableController.php'); // SIN spinner por ahora
-        if (!res.ok) { 
+        if (!res.ok) {
             throw new Error(`HTTP error ${res.status} - ${res.statusText}`);
         }
         const html = await res.text();
@@ -347,7 +347,7 @@ function cerrarModalDetalle() {
 }
 
 // Guardar cambios del formulario de edición
-document.getElementById('formEditarOperativo').addEventListener('submit', async function(e) {
+document.getElementById('formEditarOperativo').addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const id = document.getElementById('edit_id').value;
@@ -384,3 +384,47 @@ document.getElementById('formEditarOperativo').addEventListener('submit', async 
 });
 
 cargarOperativos();
+
+// Función para mostrar alertas
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('formOperativo');
+    const btnSubmit = form.querySelector('button[type="submit"]');
+
+    const listaCooperativas = document.getElementById('listaCooperativas');
+    const listaProductores = document.getElementById('listaProductores');
+    const listaProductos = document.getElementById('listaProductos');
+
+    const advertencia = document.getElementById('advertenciaCampos');
+
+    function haySeleccionados(contenedor) {
+        return contenedor.querySelectorAll('input[type="checkbox"]:checked').length > 0;
+    }
+
+    function validarFormulario() {
+        const coopOK = haySeleccionados(listaCooperativas);
+        const prodOK = haySeleccionados(listaProductores);
+        const prodtOK = haySeleccionados(listaProductos);
+
+        const esValido = coopOK && prodOK && prodtOK;
+
+        btnSubmit.disabled = !esValido;
+        advertencia.style.display = esValido ? 'none' : 'block';
+    }
+
+    // Escuchamos los cambios
+    [listaCooperativas, listaProductores, listaProductos].forEach(lista => {
+        lista.addEventListener('change', validarFormulario);
+    });
+
+    // También al enviar
+    form.addEventListener('submit', function (e) {
+        if (btnSubmit.disabled) {
+            e.preventDefault();
+            advertencia.style.display = 'block';
+        }
+    });
+
+    // Verificación inicial
+    validarFormulario();
+});
+
