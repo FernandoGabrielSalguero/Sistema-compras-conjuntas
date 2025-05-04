@@ -268,6 +268,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </div>
                 </div>
 
+                <!-- 🟢 Alertas -->
+                <div class="alert-container" id="alertContainer"></div>
+
             </section>
 
         </div>
@@ -328,8 +331,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-    <!-- 🟢 Alertas -->
-    <div class="alert-container" id="alertContainer"></div>
+
 
     <!-- Modal de confirmación para eliminar pedido -->
     <div id="modalConfirmacion" class="modal hidden">
@@ -796,7 +798,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             document.getElementById("observaciones").value = pedido.observaciones;
 
             mostrarAlerta("success", "Pedido cargado para edición. Modificá los campos y presioná Enviar.");
-            
+
         }
 
         function cargarProductoresModal() {
