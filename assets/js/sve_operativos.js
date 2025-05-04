@@ -437,15 +437,50 @@ async function abrirModalEditar(operativoId) {
 
         const operativo = data.operativo;
 
+        // Llenar campos básicos
         document.getElementById('edit_id').value = operativo.id;
         document.getElementById('edit_nombre').value = operativo.nombre;
         document.getElementById('edit_fecha_inicio').value = operativo.fecha_inicio;
         document.getElementById('edit_fecha_cierre').value = operativo.fecha_cierre;
 
+        // Llenar cooperativas
+        const coopSelect = document.getElementById('edit_cooperativas');
+        coopSelect.innerHTML = '';
+        data.cooperativas.forEach(coop => {
+            const opt = document.createElement('option');
+            opt.value = coop.id;
+            opt.textContent = `#${coop.id} - ${coop.nombre}`;
+            opt.selected = true;
+            coopSelect.appendChild(opt);
+        });
+
+        // Llenar productores
+        const prodSelect = document.getElementById('edit_productores');
+        prodSelect.innerHTML = '';
+        data.productores.forEach(prod => {
+            const opt = document.createElement('option');
+            opt.value = prod.id;
+            opt.textContent = `#${prod.id} - ${prod.nombre}`;
+            opt.selected = true;
+            prodSelect.appendChild(opt);
+        });
+
+        // Llenar productos
+        const prodtSelect = document.getElementById('edit_productos');
+        prodtSelect.innerHTML = '';
+        data.productos.forEach(prodt => {
+            const opt = document.createElement('option');
+            opt.value = prodt.id;
+            opt.textContent = `#${prodt.id} - ${prodt.Nombre_producto} (${prodt.Categoria})`;
+            opt.selected = true;
+            prodtSelect.appendChild(opt);
+        });
+
+        // Mostrar modal
         document.getElementById('modalEditar').classList.remove('hidden');
+
     } catch (err) {
         console.error('❌ Error al cargar operativo:', err);
         showAlert('error', 'Error inesperado al abrir el modal.');
     }
 }
-
