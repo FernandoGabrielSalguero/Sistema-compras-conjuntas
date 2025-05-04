@@ -196,8 +196,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     </div>
                                 </div>
                             </div>
-
-
                         </div>
                     </form>
                 </div>

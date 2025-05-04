@@ -41,14 +41,6 @@ $productos = $prodStmt->fetchAll(PDO::FETCH_COLUMN);
 // Devolver datos al frontend
 echo json_encode([
     'success' => true,
-    'operativo' => $operativo,
-    'cooperativas' => array_map('intval', $cooperativas),
-    'productores' => array_map('intval', $productores),
-    'productos' => array_map('intval', $productos)
-]);
-
-echo json_encode([
-    'success' => true,
     'operativo' => [
         'id' => $operativo['id'],
         'nombre' => $operativo['nombre'],
