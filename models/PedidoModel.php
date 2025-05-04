@@ -248,4 +248,5 @@ class PedidoModel
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
+    
 }
