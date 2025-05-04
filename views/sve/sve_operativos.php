@@ -237,47 +237,47 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 
                 <!-- Modal editar operativo -->
-                <div id="modalEditar" class="modal hidden">
-                    <div class="modal-content">
-                        <h3>Editar Operativo</h3>
-                        <form id="formEditarOperativo">
-                            <input type="hidden" name="id" id="edit_id">
+<div id="modalEditar" class="modal hidden">
+    <div class="modal-content">
+        <h3>Editar Operativo</h3>
+        <form id="formEditarOperativo">
+            <input type="hidden" name="id" id="edit_id">
 
-                            <!-- Campo: Nombre -->
-                            <div class="input-group">
-                                <label for="edit_nombre">Nombre</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">person</span>
-                                    <input type="text" name="nombre" id="edit_nombre" required>
-                                </div>
-                            </div>
-
-                            <!-- Campo: Fecha de inicio -->
-                            <div class="input-group">
-                                <label for="edit_fecha_inicio">Fecha de inicio</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">event</span>
-                                    <input type="date" name="fecha_inicio" id="edit_fecha_inicio" required>
-                                </div>
-                            </div>
-
-                            <!-- Campo: Fecha de cierre -->
-                            <div class="input-group">
-                                <label for="edit_fecha_cierre">Fecha de cierre</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">event</span>
-                                    <input type="date" name="fecha_cierre" id="edit_fecha_cierre" required>
-                                </div>
-                            </div>
-
-                            <!-- Botones -->
-                            <div class="form-buttons">
-                                <button type="submit" class="btn btn-aceptar">Guardar</button>
-                                <button type="button" class="btn btn-cancelar" onclick="closeModalEditar()">Cancelar</button>
-                            </div>
-                        </form>
-                    </div>
+            <!-- Campo: Nombre -->
+            <div class="input-group">
+                <label for="edit_nombre">Nombre</label>
+                <div class="input-icon">
+                    <span class="material-icons">person</span>
+                    <input type="text" name="nombre" id="edit_nombre" required>
                 </div>
+            </div>
+
+            <!-- Campo: Fecha de inicio -->
+            <div class="input-group">
+                <label for="edit_fecha_inicio">Fecha de inicio</label>
+                <div class="input-icon">
+                    <span class="material-icons">event</span>
+                    <input type="date" name="fecha_inicio" id="edit_fecha_inicio" required>
+                </div>
+            </div>
+
+            <!-- Campo: Fecha de cierre -->
+            <div class="input-group">
+                <label for="edit_fecha_cierre">Fecha de cierre</label>
+                <div class="input-icon">
+                    <span class="material-icons">event</span>
+                    <input type="date" name="fecha_cierre" id="edit_fecha_cierre" required>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="form-buttons">
+                <button type="submit" class="btn btn-aceptar">Guardar</button>
+                <button type="button" class="btn btn-cancelar" onclick="closeModalEditar()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 
 
