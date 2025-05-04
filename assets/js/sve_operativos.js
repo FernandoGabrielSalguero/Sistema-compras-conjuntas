@@ -114,9 +114,10 @@ async function editarOperativo(id) {
         document.getElementById('edit_fecha_cierre').value = data.operativo.fecha_cierre;
 
         // Cargar listas con valores seleccionados
-        await cargarSelectConSeleccionados('edit_cooperativas', 'cooperativas', data.cooperativas);
-        await cargarSelectConSeleccionados('edit_productores', 'productores', data.productores);
-        await cargarSelectConSeleccionados('edit_productos', 'productos', data.productos);
+        await cargarSelectConSeleccionados('edit_cooperativas', 'cooperativas', data.cooperativas.map(c => c.id));
+        await cargarSelectConSeleccionados('edit_productores', 'productores', data.productores.map(p => p.id));
+        await cargarSelectConSeleccionados('edit_productos', 'productos', data.productos.map(p => p.id));
+        
 
         openModalEditar();
     } catch (err) {
