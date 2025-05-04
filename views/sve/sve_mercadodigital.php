@@ -86,7 +86,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
 
             <nav class="sidebar-menu">
-            <ul>
+                <ul>
                     <li onclick="location.href='sve_dashboard.php'">
                         <span class="material-icons">home</span><span class="link-text">Inicio</span>
                     </li>
@@ -612,10 +612,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <td>$${parseFloat(pedido.total_sin_iva).toFixed(2)}</td>
                     <td>$${parseFloat(pedido.total_pedido).toFixed(2)}</td>
                     <td>${pedido.observaciones}</td>
-                    <td>
-                        <button class="btn btn-aceptar" onclick="abrirModalEditar(${pedido.id})">Actualizar</button>
-                        <button class="btn btn-cancelar" onclick="eliminarPedido(${pedido.id})">Eliminar</button>
-                    </td>
+<td>
+    <button class="btn-icon" title="Editar" onclick="abrirModalEditar(${pedido.id})">
+        <span class="material-icons">edit</span>
+    </button>
+    <button class="btn-icon" title="Eliminar" onclick="eliminarPedido(${pedido.id})">
+        <span class="material-icons">delete</span>
+    </button>
+</td>
                 `;
 
                         tbody.appendChild(fila);
