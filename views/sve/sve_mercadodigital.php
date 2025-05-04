@@ -713,8 +713,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         document.getElementById("btnConfirmarEliminar").addEventListener("click", () => {
             if (!pedidoIdAEliminar) return;
 
-            fetch(`/controllers/PedidoController.php?action=eliminarPedido&id=${pedidoIdAEliminar}`, {
-                    method: "DELETE"
+            fetch("/controllers/PedidoController.php?action=eliminarPedido", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        id: pedidoIdAEliminar
+                    })
                 })
                 .then(res => res.json())
                 .then(data => {
