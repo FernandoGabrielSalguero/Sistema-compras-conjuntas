@@ -703,10 +703,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
         });
 
-        function eliminarPedido(id) {
-            if (!confirm("¿Estás seguro de eliminar este pedido?")) return;
+        let pedidoIdAEliminar = null;
 
-            fetch(`/controllers/PedidoController.php?action=eliminarPedido&id=${id}`, {
+        function eliminarPedido(id) {
+            pedidoIdAEliminar = id;
+            document.getElementById("modalConfirmacion").classList.remove("hidden");
+        }
+
+        document.getElementById("btnConfirmarEliminar").addEventListener("click", () => {
+            if (!pedidoIdAEliminar) return;
+
+            fetch(`/controllers/PedidoController.php?action=eliminarPedido&id=${pedidoIdAEliminar}`, {
                     method: "DELETE"
                 })
                 .then(res => res.json())
@@ -717,8 +724,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     } else {
                         alert("❌ Error al eliminar");
                     }
+                })
+                .finally(() => {
+                    closeModalConfirmacion();
+                    pedidoIdAEliminar = null;
                 });
+        });
+
+        function closeModalConfirmacion() {
+            document.getElementById("modalConfirmacion").classList.add("hidden");
         }
+
 
         function editarPedidoCompleto(id) {
             const pedido = obtenerPedidoPorId(id);
@@ -778,6 +794,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
         }
     </script>
+
+    <!-- Modal de confirmación para eliminar pedido -->
+    <div id="modalConfirmacion" class="modal hidden">
+        <div class="modal-content card">
+            <h3>¿Estás seguro de eliminar este pedido?</h3>
+            <div class="form-buttons">
+                <button id="btnConfirmarEliminar" class="btn btn-aceptar">Eliminar</button>
+                <button class="btn btn-cancelar" onclick="closeModalConfirmacion()">Cancelar</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
