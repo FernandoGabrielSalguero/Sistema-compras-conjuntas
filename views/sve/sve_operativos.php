@@ -284,7 +284,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <!-- 🛠️ SCRIPTS -->
-    <script src="/assets/js/sve_operativos.js" defer></script>
+    <script src="/assets/js/sve_operativo.js" defer></script>
 
     <style>
         @keyframes spin {
