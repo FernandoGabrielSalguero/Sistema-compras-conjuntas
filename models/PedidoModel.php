@@ -109,7 +109,7 @@ class PedidoModel
             }
 
             $pdo->commit();
-            return ['success' => true];
+            return ['success' => true, 'message' => '✅ Pedido guardado correctamente.'];
         } catch (Exception $e) {
             $pdo->rollBack();
             return ['success' => false, 'error' => $e->getMessage()];
@@ -150,7 +150,7 @@ class PedidoModel
                 'obs' => $observaciones,
                 'id' => $id
             ]);
-            return ['success' => true];
+            return ['success' => true, 'message' => '✅ Pedido actualizado correctamente.'];
         } catch (Exception $e) {
             return ['success' => false, 'error' => $e->getMessage()];
         }
@@ -173,7 +173,8 @@ class PedidoModel
             $stmtPedido->execute(['id' => $id]);
 
             $pdo->commit();
-            return ['success' => true];
+            return ['success' => true, 'message' => '🗑️ Pedido eliminado correctamente.'];
+
         } catch (Exception $e) {
             $pdo->rollBack();
             return ['success' => false, 'error' => $e->getMessage()];
@@ -245,7 +246,7 @@ class PedidoModel
             }
 
             $pdo->commit();
-            return ['success' => true];
+            return ['success' => true, 'message' => '✅ Pedido actualizado correctamente.'];
         } catch (Exception $e) {
             $pdo->rollBack();
             return ['success' => false, 'error' => $e->getMessage()];
