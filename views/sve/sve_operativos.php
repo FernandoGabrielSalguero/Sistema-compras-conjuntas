@@ -243,6 +243,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <form id="formEditarOperativo">
                             <input type="hidden" name="id" id="edit_id">
 
+                            <!-- Campo: Nombre -->
                             <div class="input-group">
                                 <label for="edit_nombre">Nombre</label>
                                 <div class="input-icon">
@@ -251,6 +252,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
                             </div>
 
+                            <!-- Campo: Fecha de inicio -->
                             <div class="input-group">
                                 <label for="edit_fecha_inicio">Fecha de inicio</label>
                                 <div class="input-icon">
@@ -259,6 +261,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
                             </div>
 
+                            <!-- Campo: Fecha de cierre -->
                             <div class="input-group">
                                 <label for="edit_fecha_cierre">Fecha de cierre</label>
                                 <div class="input-icon">
@@ -267,30 +270,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
                             </div>
 
-                            <div class="input-group">
-                                <label for="edit_cooperativas">Cooperativas</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">groups</span>
-                                    <select name="cooperativas[]" id="edit_cooperativas" multiple required></select>
-                                </div>
-                            </div>
-
-                            <div class="input-group">
-                                <label for="edit_productores">Productores</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">agriculture</span>
-                                    <select name="productores[]" id="edit_productores" multiple readonly></select>
-                                </div>
-                            </div>
-
-                            <div class="input-group">
-                                <label for="edit_productos">Productos</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">shopping_cart</span>
-                                    <select name="productos[]" id="edit_productos" multiple required></select>
-                                </div>
-                            </div>
-
+                            <!-- Botones -->
                             <div class="form-buttons">
                                 <button type="submit" class="btn btn-aceptar">Guardar</button>
                                 <button type="button" class="btn btn-cancelar" onclick="closeModalEditar()">Cancelar</button>
@@ -298,6 +278,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         </form>
                     </div>
                 </div>
+
 
 
                 <!-- Alert -->
