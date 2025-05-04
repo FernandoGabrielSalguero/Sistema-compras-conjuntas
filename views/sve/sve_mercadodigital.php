@@ -343,8 +343,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <div class="alert-container" id="alertContainer"></div>
 
     <!-- 🛠️ SCRIPTS -->
-    <script src="/assets/js/sve_mercadodigital.js" defer></script>
-
+    <script src="/assets/js/sve_operativo.js" defer></script>
 </body>
 
 </html>
