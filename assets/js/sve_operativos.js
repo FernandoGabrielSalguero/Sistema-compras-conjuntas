@@ -113,76 +113,10 @@ async function editarOperativo(id) {
         document.getElementById('edit_fecha_inicio').value = data.operativo.fecha_inicio;
         document.getElementById('edit_fecha_cierre').value = data.operativo.fecha_cierre;
 
-        // Cargar listas con valores seleccionados
-        await cargarSelectConSeleccionados('edit_cooperativas', 'cooperativas', data.cooperativas.map(c => c.id));
-        await cargarSelectConSeleccionados('edit_productores', 'productores', data.productores.map(p => p.id));
-        await cargarSelectConSeleccionados('edit_productos', 'productos', data.productos.map(p => p.id));
-        
-
         openModalEditar();
     } catch (err) {
         console.error('❌ Error al cargar operativo:', err);
         showAlert('error', 'Error inesperado al cargar el operativo');
-    }
-}
-
-async function cargarSelectConSeleccionados(id, tipo, seleccionados = []) {
-    const res = await fetch(`/controllers/operativosAuxDataController.php?accion=${tipo}`);
-    const data = await res.json();
-    const select = document.getElementById(id);
-    select.innerHTML = '';
-
-    if (tipo === 'productos') {
-        const grupos = {};
-        data.forEach(p => {
-            if (!grupos[p.Categoria]) grupos[p.Categoria] = [];
-            grupos[p.Categoria].push(p);
-        });
-
-        Object.entries(grupos).forEach(([cat, items]) => {
-            const group = document.createElement('optgroup');
-            group.label = cat;
-
-            items.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.id;
-                opt.textContent = p.Nombre_producto;
-                if (seleccionados.includes(p.id)) opt.selected = true;
-                group.appendChild(opt);
-            });
-
-            select.appendChild(group);
-        });
-    } else {
-        data.forEach(e => {
-            const opt = document.createElement('option');
-            opt.value = e.id;
-            opt.textContent = `#${e.id} - ${e.nombre}`;
-            if (seleccionados.includes(e.id)) opt.selected = true;
-            select.appendChild(opt);
-        });
-    }
-}
-
-async function cargarProductoresFiltrados(idsCooperativas) {
-    const productoresSelect = document.getElementById('productores');
-    productoresSelect.innerHTML = '';
-
-    if (!idsCooperativas.length) return;
-
-    try {
-        const res = await fetch(`/controllers/operativosAuxDataController.php?accion=productores&ids=${idsCooperativas.join(',')}`);
-        const data = await res.json();
-
-        data.forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p.id;
-            opt.textContent = `#${p.id} - ${p.nombre}`;
-            productoresSelect.appendChild(opt);
-        });
-    } catch (err) {
-        console.error('❌ Error al cargar productores filtrados:', err);
-        showAlert('error', 'Error al cargar productores asociados.');
     }
 }
 
