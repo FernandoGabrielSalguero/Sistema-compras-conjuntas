@@ -69,19 +69,20 @@ switch ($action) {
         }
         break;
 
-    case 'eliminarPedido':
-        if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
-            $id = $_GET['id'] ?? null;
-
-            if ($id) {
-                echo json_encode(PedidoModel::eliminarPedido($id));
+        case 'eliminarPedido':
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $data = json_decode(file_get_contents("php://input"), true);
+                $id = $data['id'] ?? null;
+        
+                if ($id) {
+                    echo json_encode(PedidoModel::eliminarPedido($id));
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'ID no proporcionado']);
+                }
             } else {
-                echo json_encode(['success' => false, 'error' => 'ID no proporcionado']);
+                echo json_encode(['success' => false, 'error' => 'Método no permitido']);
             }
-        } else {
-            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
-        }
-        break;
+            break;
 
     case 'actualizarPedidoCompleto':
         if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
