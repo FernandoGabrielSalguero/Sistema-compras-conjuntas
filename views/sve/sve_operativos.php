@@ -184,7 +184,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <label for="productores">Productores</label>
                                     <div class="card smart-selector" id="selectorProductores">
                                         <input type="text" class="smart-selector-search" placeholder="Buscar productor...">
-                                        <div class="smart-selector-list" id="listaProductores"></div> <!-- ESTO ESTÁ BIEN -->
+                                        <div class="smart-selector-list" id="listaProductores"></div>
                                     </div>
                                 </div>
                                 <!-- productos_ids -->

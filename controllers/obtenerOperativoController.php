@@ -1,11 +1,9 @@
 <?php
-// Mostrar errores en pantalla (útil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../config.php';
-
 header('Content-Type: application/json');
 
 $id = $_GET['id'] ?? null;
@@ -25,28 +23,38 @@ if (!$operativo) {
     exit;
 }
 
-// Obtener IDs de entidades asociadas
-$coopsStmt = $pdo->prepare("SELECT cooperativa_id FROM operativos_cooperativas WHERE operativo_id = ?");
+// Cooperativas
+$coopsStmt = $pdo->prepare("SELECT u.id, u.nombre
+    FROM operativos_cooperativas oc
+    JOIN usuarios u ON oc.cooperativa_id = u.id
+    WHERE oc.operativo_id = ?");
 $coopsStmt->execute([$id]);
-$cooperativas = $coopsStmt->fetchAll(PDO::FETCH_COLUMN);
+$cooperativas = $coopsStmt->fetchAll(PDO::FETCH_ASSOC);
 
-$prodsStmt = $pdo->prepare("SELECT productor_id FROM operativos_productores WHERE operativo_id = ?");
+// Productores (con nombre)
+$prodsStmt = $pdo->prepare("
+    SELECT u.id, u.nombre
+    FROM operativos_productores op
+    JOIN usuarios u ON op.productor_id = u.id
+    WHERE op.operativo_id = ?
+");
 $prodsStmt->execute([$id]);
-$productores = $prodsStmt->fetchAll(PDO::FETCH_COLUMN);
+$productores = $prodsStmt->fetchAll(PDO::FETCH_ASSOC);
 
-$prodStmt = $pdo->prepare("SELECT producto_id FROM operativos_productos WHERE operativo_id = ?");
+// Productos
+$prodStmt = $pdo->prepare("
+    SELECT p.id, p.Nombre_producto, p.Categoria
+    FROM operativos_productos op
+    JOIN productos p ON op.producto_id = p.id
+    WHERE op.operativo_id = ?
+");
 $prodStmt->execute([$id]);
-$productos = $prodStmt->fetchAll(PDO::FETCH_COLUMN);
+$productos = $prodStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Devolver datos al frontend
 echo json_encode([
     'success' => true,
-    'operativo' => [
-        'id' => $operativo['id'],
-        'nombre' => $operativo['nombre'],
-        'fecha_inicio' => $operativo['fecha_inicio'],
-        'fecha_cierre' => $operativo['fecha_cierre'],
-    ],
+    'operativo' => $operativo,
     'cooperativas' => $cooperativas,
     'productores' => $productores,
     'productos' => $productos
