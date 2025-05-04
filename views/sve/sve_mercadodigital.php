@@ -86,7 +86,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
 
             <nav class="sidebar-menu">
-            <ul>
+                <ul>
                     <li onclick="location.href='sve_dashboard.php'">
                         <span class="material-icons">home</span><span class="link-text">Inicio</span>
                     </li>
@@ -263,7 +263,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id=" "></tbody>
+                            <tbody id="tablaPedidos"></tbody>
                         </table>
                     </div>
                 </div>
@@ -327,6 +327,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </form>
         </div>
     </div>
+
+    <!-- modal para eliminar el pedido -->
+    <div id="modalEliminarPedido" class="modal hidden">
+        <div class="modal-content">
+            <h3>¿Estás seguro de eliminar este pedido?</h3>
+            <div class="form-buttons">
+                <button id="btnConfirmarEliminarPedido" class="btn btn-aceptar">Eliminar</button>
+                <button class="btn btn-cancelar" onclick="closeModalEliminarPedido()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- modal de confirmaciones -->
+    <div class="alert-container" id="alertContainer"></div>
 
     <!-- 🛠️ SCRIPTS -->
 
@@ -602,21 +616,25 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         const fila = document.createElement("tr");
 
                         fila.innerHTML = `
-                    <td>${pedido.id}</td>
-                    <td>${pedido.fecha_pedido}</td>
-                    <td>${pedido.cooperativa}</td>
-                    <td>${pedido.productor}</td>
-                    <td>${pedido.condicion_facturacion}</td>
-                    <td>${pedido.afiliacion}</td>
-                    <td>$${parseFloat(pedido.total_iva).toFixed(2)}</td>
-                    <td>$${parseFloat(pedido.total_sin_iva).toFixed(2)}</td>
-                    <td>$${parseFloat(pedido.total_pedido).toFixed(2)}</td>
-                    <td>${pedido.observaciones}</td>
-                    <td>
-                        <button class="btn btn-aceptar" onclick="abrirModalEditar(${pedido.id})">Actualizar</button>
-                        <button class="btn btn-cancelar" onclick="eliminarPedido(${pedido.id})">Eliminar</button>
-                    </td>
-                `;
+    <td>${pedido.id}</td>
+    <td>${pedido.fecha_pedido}</td>
+    <td>${pedido.cooperativa}</td>
+    <td>${pedido.productor}</td>
+    <td>${pedido.condicion_facturacion}</td>
+    <td>${pedido.afiliacion}</td>
+    <td>$${parseFloat(pedido.total_iva).toFixed(2)}</td>
+    <td>$${parseFloat(pedido.total_sin_iva).toFixed(2)}</td>
+    <td>$${parseFloat(pedido.total_pedido).toFixed(2)}</td>
+    <td>${pedido.observaciones}</td>
+    <td>
+        <button class="icon-btn" onclick="abrirModalEditar(${pedido.id})">
+            <span class="material-icons">edit</span>
+        </button>
+        <button class="icon-btn" onclick="abrirModalEliminarPedido(${pedido.id})">
+            <span class="material-icons">delete</span>
+        </button>
+    </td>
+`;
 
                         tbody.appendChild(fila);
                     });

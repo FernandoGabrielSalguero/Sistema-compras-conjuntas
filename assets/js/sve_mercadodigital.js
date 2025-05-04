@@ -52,7 +52,7 @@ function cargarProductores() {
 
     fetch(`/controllers/PedidoController.php?action=getProductores&id=${idCoop}`)
         .then(res => res.json())
-        
+
         .then(data => {
             console.log("✅ Respuesta obtenida para cooperativas");
             data.forEach(prod => {
@@ -202,16 +202,16 @@ function enviarFormulario(e) {
             detalles: Object.values(productosSeleccionados)
         })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            alert("✅ Pedido guardado con éxito");
-            location.reload();
-        } else {
-            alert("❌ Error al guardar el pedido");
-            console.error(data.error);
-        }
-    });
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("✅ Pedido guardado con éxito");
+                location.reload();
+            } else {
+                alert("❌ Error al guardar el pedido");
+                console.error(data.error);
+            }
+        });
 }
 
 // Helpers
@@ -225,4 +225,52 @@ function calcularTotalIVA() {
 
 function calcularTotalFinal() {
     return calcularTotalSinIVA() + calcularTotalIVA();
+}
+
+
+
+let pedidoAEliminar = null;
+
+function abrirModalEliminarPedido(id) {
+    pedidoAEliminar = id;
+    document.getElementById('modalEliminarPedido').classList.remove('hidden');
+}
+
+function closeModalEliminarPedido() {
+    pedidoAEliminar = null;
+    document.getElementById('modalEliminarPedido').classList.add('hidden');
+}
+
+document.getElementById('btnConfirmarEliminarPedido').addEventListener('click', () => {
+    if (!pedidoAEliminar) return;
+
+    fetch(`/controllers/PedidoController.php?action=eliminarPedido&id=${pedidoAEliminar}`, {
+        method: 'DELETE'
+    })
+        .then(res => res.json())
+        .then(data => {
+            closeModalEliminarPedido();
+            if (data.success) {
+                showAlert('success', 'Pedido eliminado correctamente.');
+                location.reload();
+            } else {
+                showAlert('error', data.error || 'No se pudo eliminar el pedido.');
+            }
+        })
+        .catch(err => {
+            closeModalEliminarPedido();
+            showAlert('error', 'Error inesperado al eliminar.');
+            console.error(err);
+        });
+});
+
+
+// metodo modales
+function showAlert(tipo, mensaje) {
+    const container = document.getElementById('alertContainer');
+    const alert = document.createElement('div');
+    alert.className = 'alert ' + tipo;
+    alert.textContent = mensaje;
+    container.appendChild(alert);
+    setTimeout(() => container.removeChild(alert), 4000);
 }
