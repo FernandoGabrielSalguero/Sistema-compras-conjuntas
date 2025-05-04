@@ -74,12 +74,11 @@ document.getElementById('formOperativo').addEventListener('submit', async functi
 
 // cargar la tabla de operativos
 async function cargarOperativos() {
-    console.log('👉 Ejecutando cargarOperativos()...');
     const tabla = document.querySelector('tbody#tablaOperativos');
     if (!tabla) return;
 
     try {
-        const res = await fetch('/controllers/operativosTableController.php'); // SIN spinner por ahora
+        const res = await fetch('/controllers/operativosTableController.php');
         if (!res.ok) {
             throw new Error(`HTTP error ${res.status} - ${res.statusText}`);
         }
@@ -307,7 +306,7 @@ function verDetalle(tipo, operativoId) {
 
             const ul = document.createElement('ul');
 
-            data.items.forEach(item => { // ← items está OK si en PHP devolvés 'items'
+            data.items.forEach(item => { 
                 const li = document.createElement('li');
                 if (tipo === 'productos') {
                     li.textContent = `#${item.id} - ${item.Nombre_producto} (${item.Categoria})`;
@@ -320,10 +319,7 @@ function verDetalle(tipo, operativoId) {
             document.getElementById('modalDetalleContenido').innerHTML = '';
             document.getElementById('modalDetalleContenido').appendChild(ul);
         })
-        // .catch(err => {
-        //     console.error('Error al obtener detalles:', err);
-        //     document.getElementById('modalDetalleContenido').innerHTML = 'Error al cargar datos.';
-        // });
+
         .catch(async err => {
             console.error('Error al obtener detalles:', err);
 
@@ -428,3 +424,63 @@ document.addEventListener('DOMContentLoaded', function () {
     validarFormulario();
 });
 
+
+async function abrirModalEditar(operativoId) {
+    try {
+        const res = await fetch(`/controllers/obtenerOperativoController.php?id=${operativoId}`);
+        const data = await res.json();
+
+        if (!data.success) {
+            showAlert('error', data.message || 'No se pudo cargar el operativo.');
+            return;
+        }
+
+        const operativo = data.operativo;
+
+        // Llenar campos básicos
+        document.getElementById('edit_id').value = operativo.id;
+        document.getElementById('edit_nombre').value = operativo.nombre;
+        document.getElementById('edit_fecha_inicio').value = operativo.fecha_inicio;
+        document.getElementById('edit_fecha_cierre').value = operativo.fecha_cierre;
+
+        // Llenar cooperativas
+        const coopSelect = document.getElementById('edit_cooperativas');
+        coopSelect.innerHTML = '';
+        data.cooperativas.forEach(coop => {
+            const opt = document.createElement('option');
+            opt.value = coop.id;
+            opt.textContent = `#${coop.id} - ${coop.nombre}`;
+            opt.selected = true;
+            coopSelect.appendChild(opt);
+        });
+
+        // Llenar productores
+        const prodSelect = document.getElementById('edit_productores');
+        prodSelect.innerHTML = '';
+        data.productores.forEach(prod => {
+            const opt = document.createElement('option');
+            opt.value = prod.id;
+            opt.textContent = `#${prod.id} - ${prod.nombre}`;
+            opt.selected = true;
+            prodSelect.appendChild(opt);
+        });
+
+        // Llenar productos
+        const prodtSelect = document.getElementById('edit_productos');
+        prodtSelect.innerHTML = '';
+        data.productos.forEach(prodt => {
+            const opt = document.createElement('option');
+            opt.value = prodt.id;
+            opt.textContent = `#${prodt.id} - ${prodt.Nombre_producto} (${prodt.Categoria})`;
+            opt.selected = true;
+            prodtSelect.appendChild(opt);
+        });
+
+        // Mostrar modal
+        document.getElementById('modalEditar').classList.remove('hidden');
+
+    } catch (err) {
+        console.error('❌ Error al cargar operativo:', err);
+        showAlert('error', 'Error inesperado al abrir el modal.');
+    }
+}

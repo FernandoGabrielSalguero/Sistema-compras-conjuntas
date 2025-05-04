@@ -46,3 +46,16 @@ echo json_encode([
     'productores' => array_map('intval', $productores),
     'productos' => array_map('intval', $productos)
 ]);
+
+echo json_encode([
+    'success' => true,
+    'operativo' => [
+        'id' => $operativo['id'],
+        'nombre' => $operativo['nombre'],
+        'fecha_inicio' => $operativo['fecha_inicio'],
+        'fecha_cierre' => $operativo['fecha_cierre'],
+    ],
+    'cooperativas' => $cooperativas,
+    'productores' => $productores,
+    'productos' => $productos
+]);

@@ -312,12 +312,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- 🛠️ SCRIPTS -->
     <script src="/assets/js/sve_operativos.js" defer></script>
 
-    <!-- Spinner global mejorado -->
-    <div id="spinner-global" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.6); z-index:9999; flex-direction:column; justify-content:center; align-items:center;">
-        <div style="border:8px solid #f3f3f3; border-top:8px solid #5c6bc0; border-radius:50%; width:60px; height:60px; animation:spin 1s linear infinite;"></div>
-        <div id="spinner-text" style="margin-top:15px; font-size:1.2rem; color:#5c6bc0; font-weight:500;"></div>
-    </div>
-
     <style>
         @keyframes spin {
             0% {
