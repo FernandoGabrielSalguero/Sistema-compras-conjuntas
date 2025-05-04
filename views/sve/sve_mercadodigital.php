@@ -270,7 +270,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- 🟢 Alertas -->
                 <div class="alert-container" id="alertContainer"></div>
-
             </section>
 
         </div>
