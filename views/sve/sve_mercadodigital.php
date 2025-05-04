@@ -328,8 +328,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-        <!-- Modal de confirmación para eliminar pedido -->
-        <div id="modalConfirmacion" class="modal hidden">
+    <!-- 🟢 Alertas -->
+    <div class="alert-container" id="alertContainer"></div>
+
+    <!-- Modal de confirmación para eliminar pedido -->
+    <div id="modalConfirmacion" class="modal hidden">
         <div class="modal-content card">
             <h3>¿Estás seguro de eliminar este pedido?</h3>
             <div class="form-buttons">
@@ -342,6 +345,28 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- 🛠️ SCRIPTS -->
 
     <script>
+        // funciones para las alertas
+        function mostrarAlerta(tipo, mensaje, duracion = 4000) {
+            const contenedor = document.getElementById("alertContainer");
+            if (!contenedor) return;
+
+            const alerta = document.createElement("div");
+            alerta.className = `alert alert-${tipo}`; // 'success' o 'error'
+            alerta.innerHTML = `
+        <span class="material-icons">${tipo === 'success' ? 'check_circle' : 'error'}</span>
+        <span>${mensaje}</span>
+        <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+    `;
+
+            contenedor.appendChild(alerta);
+
+            // Remover luego de un tiempo
+            setTimeout(() => {
+                alerta.remove();
+            }, duracion);
+        }
+
+
         let pedidoEditandoId = null;
         console.log("🟢 El archivo JS se está ejecutando (inicio).");
         document.addEventListener("DOMContentLoaded", () => {
@@ -736,10 +761,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        alert("🗑️ Pedido eliminado");
+                        mostrarAlerta("success", "🗑️ Pedido eliminado correctamente.");
                         cargarPedidos();
                     } else {
-                        alert("❌ Error al eliminar");
+                        mostrarAlerta("error", "❌ Ocurrió un error al eliminar el pedido.");
                     }
                 })
                 .finally(() => {
