@@ -616,10 +616,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        alert("✅ Pedido guardado/actualizado correctamente");
+                        mostrarAlerta("success", "Pedido guardado/actualizado correctamente");
                         location.reload();
                     } else {
-                        alert("❌ Error al guardar/actualizar");
+                        mostrarAlerta("error", "Error al guardar/actualizar");
                         console.error(data.error);
                     }
                 });
@@ -730,11 +730,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        alert("✅ Pedido actualizado");
+                        mostrarAlerta("success", "Pedido actualizado");
                         cerrarModal();
                         cargarPedidos();
                     } else {
-                        alert("❌ No se pudo actualizar");
+                        mostrarAlerta("error", "No se pudo actualizar");
                     }
                 });
         });
@@ -795,9 +795,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             document.getElementById("hectareas").value = pedido.ha_cooperativa;
             document.getElementById("observaciones").value = pedido.observaciones;
 
-            // ❗️Opción futura: podrías agregar productos seleccionados acá.
-
-            alert("🔁 Pedido cargado para edición. Modificá los campos y presioná Enviar.");
+            mostrarAlerta("success", "Pedido cargado para edición. Modificá los campos y presioná Enviar.");
+            
         }
 
         function cargarProductoresModal() {
