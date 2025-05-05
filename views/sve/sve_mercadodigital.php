@@ -272,7 +272,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-    <!-- Modal extendido para actualizar pedido -->
     <!-- Modal editar pedido completo -->
 <div id="modalEditarPedido" class="modal hidden">
     <div class="modal-content card">
@@ -281,7 +280,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             <input type="hidden" id="edit_id">
 
             <!-- Información estática -->
-            <div class="form-grid grid-4">
+            <div class="form-grid grid-2">
                 <div class="input-group">
                     <label>Cooperativa</label>
                     <div class="input-icon">
