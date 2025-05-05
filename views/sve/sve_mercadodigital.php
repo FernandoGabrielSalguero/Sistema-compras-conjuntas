@@ -267,9 +267,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         </table>
                     </div>
                 </div>
-
-                <!-- 🟢 Alertas -->
-                <div class="alert-container" id="alertContainer"></div>
             </section>
 
         </div>
@@ -838,6 +835,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </script>
 
 
+                <!-- 🟢 Alertas -->
+                <div class="alert-container" id="alertContainer"></div>
 </body>
 
 </html>
