@@ -273,59 +273,99 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <!-- Modal extendido para actualizar pedido -->
-    <div id="modal-editar" class="modal" style="display: none;">
-        <div class="modal-content card">
-            <h2>Editar Pedido</h2>
-            <form id="form-editar">
-                <input type="hidden" id="edit-id">
+    <!-- Modal editar pedido completo -->
+<div id="modalEditarPedido" class="modal hidden">
+    <div class="modal-content card">
+        <h3>Editar Pedido</h3>
+        <form id="formEditarPedidoCompleto">
+            <input type="hidden" id="edit_id">
 
-                <div class="form-grid grid-4">
-                    <div class="input-group">
-                        <label>Cooperativa</label>
-                        <select id="edit-cooperativa" required></select>
-                    </div>
-                    <div class="input-group">
-                        <label>Productor</label>
-                        <select id="edit-productor" required></select>
-                    </div>
-                    <div class="input-group">
-                        <label>¿A quién facturamos?</label>
-                        <select id="edit-factura" required>
-                            <option value="productor">Productor</option>
-                            <option value="cooperativa">Cooperativa</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Condición factura</label>
-                        <select id="edit-condicion" required>
-                            <option value="responsable inscripto">Responsable Inscripto</option>
-                            <option value="monotributista">Monotributista</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>¿Es socio?</label>
-                        <select id="edit-afiliacion" required>
-                            <option value="socio">Sí</option>
-                            <option value="tercero">No</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Hectáreas</label>
-                        <input type="number" id="edit-ha" step="0.1" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Observaciones</label>
-                        <input type="text" id="edit-observaciones">
+            <!-- Información estática -->
+            <div class="form-grid grid-3">
+                <div class="input-group">
+                    <label>Cooperativa</label>
+                    <div class="input-icon">
+                        <span class="material-icons">group</span>
+                        <input type="text" id="view_cooperativa" readonly disabled>
                     </div>
                 </div>
 
-                <div class="form-buttons">
-                    <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
-                    <button type="button" class="btn btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+                <div class="input-group">
+                    <label>Productor</label>
+                    <div class="input-icon">
+                        <span class="material-icons">agriculture</span>
+                        <input type="text" id="view_productor" readonly disabled>
+                    </div>
                 </div>
-            </form>
-        </div>
+
+                <div class="input-group">
+                    <label>¿A quién facturamos?</label>
+                    <div class="input-icon">
+                        <span class="material-icons">receipt</span>
+                        <input type="text" id="view_factura" readonly disabled>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Condición de factura</label>
+                    <div class="input-icon">
+                        <span class="material-icons">article</span>
+                        <input type="text" id="view_condicion" readonly disabled>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>¿Es socio?</label>
+                    <div class="input-icon">
+                        <span class="material-icons">badge</span>
+                        <input type="text" id="view_afiliacion" readonly disabled>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campos editables -->
+            <div class="form-grid grid-2">
+                <div class="input-group">
+                    <label>Hectáreas</label>
+                    <div class="input-icon">
+                        <span class="material-icons">map</span>
+                        <input type="number" id="edit_hectareas" step="0.1" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Observaciones</label>
+                    <div class="input-icon">
+                        <span class="material-icons">comment</span>
+                        <input type="text" id="edit_observaciones">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos del pedido -->
+            <hr>
+            <h4>Productos del Pedido</h4>
+            <div id="productosEditablesContainer">
+                <!-- JS va a cargar los productos existentes con campos editables -->
+            </div>
+            <div class="input-group">
+    <label>Agregar producto</label>
+    <div class="input-icon">
+        <select id="selectProductoNuevo">
+            <!-- Llenado dinámico -->
+        </select>
+        <button class="btn btn-aceptar" onclick="agregarProductoManual()">+</button>
     </div>
+</div>
+
+            <div class="form-buttons">
+                <button type="submit" class="btn btn-aceptar">Guardar Cambios</button>
+                <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 
 
@@ -832,6 +872,95 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     select.addEventListener("change", cargarProductoresModal);
                 });
         }
+
+        function abrirModalEditarPedidoCompleto(id) {
+    const pedido = obtenerPedidoPorId(id);
+    if (!pedido) return;
+
+    // Guardamos ID
+    pedidoEditandoId = id;
+
+    // Rellenar campos de visualización
+    document.getElementById("edit_id").value = id;
+    document.getElementById("view_cooperativa").value = pedido.cooperativa;
+    document.getElementById("view_productor").value = pedido.productor;
+    document.getElementById("view_factura").value = pedido.persona_facturacion;
+    document.getElementById("view_condicion").value = pedido.condicion_facturacion;
+    document.getElementById("view_afiliacion").value = pedido.afiliacion;
+    document.getElementById("edit_hectareas").value = pedido.ha_cooperativa;
+    document.getElementById("edit_observaciones").value = pedido.observaciones;
+
+    // Cargar productos existentes del pedido
+    fetch(`/controllers/PedidoController.php?action=getDetallePedido&id=${id}`)
+        .then(res => res.json())
+        .then(detalles => {
+            renderProductosEditable(detalles);
+        });
+
+    // Mostrar modal
+    document.getElementById("modalEditarPedido").classList.remove("hidden");
+}
+
+function cerrarModalEditarPedido() {
+    document.getElementById("modalEditarPedido").classList.add("hidden");
+}
+
+
+function renderProductosEditable(productos) {
+    const container = document.getElementById("productosEditablesContainer");
+    container.innerHTML = "";
+
+    productos.forEach(prod => {
+        const grupo = document.createElement("div");
+        grupo.className = "input-group";
+
+        grupo.innerHTML = `
+            <label><strong>${prod.nombre_producto}</strong> - ${prod.detalle_producto}</label>
+            <div class="input-icon">
+                <span class="material-icons">inventory_2</span>
+                <input 
+                    type="number"
+                    min="0"
+                    value="${prod.cantidad || 0}"
+                    data-id="${prod.id || ''}"
+                    data-nombre="${prod.nombre_producto}"
+                    data-detalle="${prod.detalle_producto}"
+                    data-precio="${prod.precio_producto}"
+                    data-unidad="${prod.unidad_medida_venta}"
+                    data-categoria="${prod.categoria}"
+                />
+                <span>${prod.unidad_medida_venta}</span>
+            </div>
+        `;
+
+        container.appendChild(grupo);
+    });
+}
+
+function agregarProductoManual() {
+    const select = document.getElementById("selectProductoNuevo");
+    const productoId = select.value;
+    const texto = select.options[select.selectedIndex].text;
+
+    // Usás los datos en el option.dataset si lo llenaste así
+    // Por ahora simplemente mostrás una fila nueva
+    const container = document.getElementById("productosEditablesContainer");
+
+    const nuevo = document.createElement("div");
+    nuevo.className = "input-group";
+
+    nuevo.innerHTML = `
+        <label><strong>${texto}</strong></label>
+        <div class="input-icon">
+            <span class="material-icons">inventory_2</span>
+            <input type="number" min="0" value="0" />
+        </div>
+    `;
+
+    container.appendChild(nuevo);
+}
+
+
     </script>
 
 

@@ -174,7 +174,6 @@ class PedidoModel
 
             $pdo->commit();
             return ['success' => true, 'message' => '🗑️ Pedido eliminado correctamente.'];
-
         } catch (Exception $e) {
             $pdo->rollBack();
             return ['success' => false, 'error' => $e->getMessage()];
@@ -252,5 +251,12 @@ class PedidoModel
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
-    
+
+    public static function getDetallePedido($pedido_id)
+    {
+        global $pdo;
+        $stmt = $pdo->prepare("SELECT * FROM detalle_pedidos WHERE pedido_id = :id");
+        $stmt->execute(['id' => $pedido_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
