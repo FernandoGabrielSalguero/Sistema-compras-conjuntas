@@ -281,7 +281,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             <input type="hidden" id="edit_id">
 
             <!-- Información estática -->
-            <div class="form-grid grid-3">
+            <div class="form-grid grid-4">
                 <div class="input-group">
                     <label>Cooperativa</label>
                     <div class="input-icon">
@@ -717,7 +717,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         function abrirModalEditar(id) {
     abrirModalEditarPedidoCompleto(id);
-            
+
             const pedido = obtenerPedidoPorId(id);
             if (!pedido) return;
 
