@@ -716,6 +716,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         function abrirModalEditar(id) {
+    abrirModalEditarPedidoCompleto(id);
+            
             const pedido = obtenerPedidoPorId(id);
             if (!pedido) return;
 
