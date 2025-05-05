@@ -365,20 +365,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-
-
-
-    <!-- Modal de confirmación para eliminar pedido -->
-    <div id="modalConfirmacion" class="modal hidden">
-        <div class="modal-content card">
-            <h3>¿Estás seguro de eliminar este pedido?</h3>
-            <div class="form-buttons">
-                <button id="btnConfirmarEliminar" class="btn btn-aceptar">Eliminar</button>
-                <button class="btn btn-cancelar" onclick="closeModalConfirmacion()">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
     <!-- 🛠️ SCRIPTS -->
 
     <script>
@@ -1030,6 +1016,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
     </script>
 
+    <!-- Modal de confirmación para eliminar pedido -->
+    <div id="modalConfirmacion" class="modal hidden">
+        <div class="modal-content card">
+            <h3>¿Estás seguro de eliminar este pedido?</h3>
+            <div class="form-buttons">
+                <button id="btnConfirmarEliminar" class="btn btn-aceptar">Eliminar</button>
+                <button class="btn btn-cancelar" onclick="closeModalConfirmacion()">Cancelar</button>
+            </div>
+        </div>
+    </div>
 
     <!-- 🟢 Alertas -->
     <div class="alert-container" id="alertContainer"></div>
