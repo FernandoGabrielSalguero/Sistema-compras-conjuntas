@@ -273,97 +273,97 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <!-- Modal editar pedido completo -->
-<div id="modalEditarPedido" class="modal hidden">
-    <div class="modal-content card">
-        <h3>Editar Pedido</h3>
-        <form id="formEditarPedidoCompleto">
-            <input type="hidden" id="edit_id">
+    <div id="modalEditarPedido" class="modal hidden">
+        <div class="modal-content card">
+            <h3>Editar Pedido</h3>
+            <form id="formEditarPedidoCompleto">
+                <input type="hidden" id="edit_id">
 
-            <!-- Información estática -->
-            <div class="form-grid grid-2">
-                <div class="input-group">
-                    <label>Cooperativa</label>
-                    <div class="input-icon">
-                        <span class="material-icons">group</span>
-                        <input type="text" id="view_cooperativa" readonly disabled>
+                <!-- Información estática -->
+                <div class="form-grid grid-2">
+                    <div class="input-group">
+                        <label>Cooperativa</label>
+                        <div class="input-icon">
+                            <span class="material-icons">group</span>
+                            <input type="text" id="view_cooperativa" readonly disabled>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Productor</label>
+                        <div class="input-icon">
+                            <span class="material-icons">agriculture</span>
+                            <input type="text" id="view_productor" readonly disabled>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>¿A quién facturamos?</label>
+                        <div class="input-icon">
+                            <span class="material-icons">receipt</span>
+                            <input type="text" id="view_factura" readonly disabled>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Condición de factura</label>
+                        <div class="input-icon">
+                            <span class="material-icons">article</span>
+                            <input type="text" id="view_condicion" readonly disabled>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>¿Es socio?</label>
+                        <div class="input-icon">
+                            <span class="material-icons">badge</span>
+                            <input type="text" id="view_afiliacion" readonly disabled>
+                        </div>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label>Productor</label>
-                    <div class="input-icon">
-                        <span class="material-icons">agriculture</span>
-                        <input type="text" id="view_productor" readonly disabled>
+                <!-- Campos editables -->
+                <div class="form-grid grid-2">
+                    <div class="input-group">
+                        <label>Hectáreas</label>
+                        <div class="input-icon">
+                            <span class="material-icons">map</span>
+                            <input type="number" id="edit_hectareas" step="0.1" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Observaciones</label>
+                        <div class="input-icon">
+                            <span class="material-icons">comment</span>
+                            <input type="text" id="edit_observaciones">
+                        </div>
                     </div>
                 </div>
 
+                <!-- Productos del pedido -->
+                <hr>
+                <h4>Productos del Pedido</h4>
+                <div id="productosEditablesContainer">
+                    <!-- JS va a cargar los productos existentes con campos editables -->
+                </div>
                 <div class="input-group">
-                    <label>¿A quién facturamos?</label>
+                    <label>Agregar producto</label>
                     <div class="input-icon">
-                        <span class="material-icons">receipt</span>
-                        <input type="text" id="view_factura" readonly disabled>
+                        <select id="selectProductoNuevo">
+                            <!-- Llenado dinámico -->
+                        </select>
+                        <button class="btn btn-aceptar" onclick="agregarProductoManual()">+</button>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label>Condición de factura</label>
-                    <div class="input-icon">
-                        <span class="material-icons">article</span>
-                        <input type="text" id="view_condicion" readonly disabled>
-                    </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-aceptar">Guardar Cambios</button>
+                    <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
                 </div>
-
-                <div class="input-group">
-                    <label>¿Es socio?</label>
-                    <div class="input-icon">
-                        <span class="material-icons">badge</span>
-                        <input type="text" id="view_afiliacion" readonly disabled>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Campos editables -->
-            <div class="form-grid grid-2">
-                <div class="input-group">
-                    <label>Hectáreas</label>
-                    <div class="input-icon">
-                        <span class="material-icons">map</span>
-                        <input type="number" id="edit_hectareas" step="0.1" required>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label>Observaciones</label>
-                    <div class="input-icon">
-                        <span class="material-icons">comment</span>
-                        <input type="text" id="edit_observaciones">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Productos del pedido -->
-            <hr>
-            <h4>Productos del Pedido</h4>
-            <div id="productosEditablesContainer">
-                <!-- JS va a cargar los productos existentes con campos editables -->
-            </div>
-            <div class="input-group">
-    <label>Agregar producto</label>
-    <div class="input-icon">
-        <select id="selectProductoNuevo">
-            <!-- Llenado dinámico -->
-        </select>
-        <button class="btn btn-aceptar" onclick="agregarProductoManual()">+</button>
+            </form>
+        </div>
     </div>
-</div>
-
-            <div class="form-buttons">
-                <button type="submit" class="btn btn-aceptar">Guardar Cambios</button>
-                <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 
 
@@ -485,6 +485,37 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 })
                 .catch(err => console.error("❌ Error al cargar productos:", err));
         }
+
+
+        // guardar en la cache
+        function cargarTodosLosProductosParaSelect() {
+            fetch("/controllers/PedidoController.php?action=getProductos")
+                .then(res => res.json())
+                .then(data => {
+                    const select = document.getElementById("selectProductoNuevo");
+                    select.innerHTML = '<option value="">Seleccionar producto</option>';
+                    Object.entries(data).forEach(([categoria, productos]) => {
+                        productos.forEach(prod => {
+                            const option = document.createElement("option");
+                            option.value = prod.Id;
+                            option.textContent = prod.Nombre_producto;
+                            option.dataset.nombre = prod.Nombre_producto;
+                            option.dataset.detalle = prod.Detalle_producto;
+                            option.dataset.precio = prod.Precio_producto;
+                            option.dataset.unidad = prod.Unidad_Medida_venta;
+                            option.dataset.categoria = prod.categoria;
+                            select.appendChild(option);
+
+                            // cache
+                            cacheTodosProductos[prod.Id] = prod;
+                        });
+                    });
+                });
+        }
+
+
+        cargarTodosLosProductosParaSelect();
+
 
         function crearAcordeonCategoria(categoria, productos) {
             const container = document.getElementById("acordeones-productos");
@@ -715,7 +746,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         function abrirModalEditar(id) {
-    abrirModalEditarPedidoCompleto(id);
+            abrirModalEditarPedidoCompleto(id);
 
             const pedido = obtenerPedidoPorId(id);
             if (!pedido) return;
@@ -875,54 +906,54 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         function abrirModalEditarPedidoCompleto(id) {
-    const pedido = obtenerPedidoPorId(id);
-    if (!pedido) return;
+            const pedido = obtenerPedidoPorId(id);
+            if (!pedido) return;
 
-    // Guardamos ID
-    pedidoEditandoId = id;
+            // Guardamos ID
+            pedidoEditandoId = id;
 
-    // Rellenar campos de visualización
-    document.getElementById("edit_id").value = id;
-    document.getElementById("view_cooperativa").value = pedido.cooperativa;
-    document.getElementById("view_productor").value = pedido.productor;
-    document.getElementById("view_factura").value = pedido.persona_facturacion;
-    document.getElementById("view_condicion").value = pedido.condicion_facturacion;
-    document.getElementById("view_afiliacion").value = pedido.afiliacion;
-    document.getElementById("edit_hectareas").value = pedido.ha_cooperativa;
-    document.getElementById("edit_observaciones").value = pedido.observaciones;
+            // Rellenar campos de visualización
+            document.getElementById("edit_id").value = id;
+            document.getElementById("view_cooperativa").value = pedido.cooperativa;
+            document.getElementById("view_productor").value = pedido.productor;
+            document.getElementById("view_factura").value = pedido.persona_facturacion;
+            document.getElementById("view_condicion").value = pedido.condicion_facturacion;
+            document.getElementById("view_afiliacion").value = pedido.afiliacion;
+            document.getElementById("edit_hectareas").value = pedido.ha_cooperativa;
+            document.getElementById("edit_observaciones").value = pedido.observaciones;
 
-    // Cargar productos existentes del pedido
-    fetch(`/controllers/PedidoController.php?action=getDetallePedido&id=${id}`)
-        .then(res => res.json())
-        .then(detalles => {
-            renderProductosEditable(detalles);
-        });
+            // Cargar productos existentes del pedido
+            fetch(`/controllers/PedidoController.php?action=getDetallePedido&id=${id}`)
+                .then(res => res.json())
+                .then(detalles => {
+                    renderProductosEditable(detalles);
+                });
 
-    // Mostrar modal
-    document.getElementById("modalEditarPedido").classList.remove("hidden");
-}
+            // Mostrar modal
+            document.getElementById("modalEditarPedido").classList.remove("hidden");
+        }
 
-function cerrarModalEditarPedido() {
-    document.getElementById("modalEditarPedido").classList.add("hidden");
-}
+        function cerrarModalEditarPedido() {
+            document.getElementById("modalEditarPedido").classList.add("hidden");
+        }
 
 
-function renderProductosEditable(productos) {
-    const container = document.getElementById("productosEditablesContainer");
-    container.innerHTML = "";
+        function renderProductosEditable(productos) {
+            const container = document.getElementById("productosEditablesContainer");
+            container.innerHTML = "";
 
-    productos.forEach(prod => {
-        const grupo = document.createElement("div");
-        grupo.className = "input-group";
+            productos.forEach(prod => {
+                const grupo = document.createElement("div");
+                grupo.className = "input-group";
 
-        grupo.innerHTML = `
+                grupo.innerHTML = `
             <label><strong>${prod.nombre_producto}</strong> - ${prod.detalle_producto}</label>
             <div class="input-icon">
                 <span class="material-icons">inventory_2</span>
                 <input 
                     type="number"
                     min="0"
-                    value="${prod.cantidad || 0}"
+                    value="${(prod.subtotal_por_categoria / prod.precio_producto).toFixed(2)}"
                     data-id="${prod.id || ''}"
                     data-nombre="${prod.nombre_producto}"
                     data-detalle="${prod.detalle_producto}"
@@ -934,39 +965,50 @@ function renderProductosEditable(productos) {
             </div>
         `;
 
-        container.appendChild(grupo);
-    });
-}
+                container.appendChild(grupo);
+            });
+        }
 
-function agregarProductoManual() {
-    const select = document.getElementById("selectProductoNuevo");
-    const productoId = select.value;
-    const texto = select.options[select.selectedIndex].text;
+        function agregarProductoManual() {
+            const select = document.getElementById("selectProductoNuevo");
+            const productoId = select.value;
 
-    // Usás los datos en el option.dataset si lo llenaste así
-    // Por ahora simplemente mostrás una fila nueva
-    const container = document.getElementById("productosEditablesContainer");
+            if (!productoId) return;
 
-    const nuevo = document.createElement("div");
-    nuevo.className = "input-group";
+            const prod = cacheTodosProductos[productoId];
+            if (!prod) return;
 
-    nuevo.innerHTML = `
-        <label><strong>${texto}</strong></label>
+            const container = document.getElementById("productosEditablesContainer");
+
+            const nuevo = document.createElement("div");
+            nuevo.className = "input-group";
+
+            nuevo.innerHTML = `
+        <label><strong>${prod.Nombre_producto}</strong> - ${prod.Detalle_producto}</label>
         <div class="input-icon">
             <span class="material-icons">inventory_2</span>
-            <input type="number" min="0" value="0" />
+            <input 
+                type="number" 
+                min="0" 
+                value="0"
+                data-id="${prod.Id}"
+                data-nombre="${prod.Nombre_producto}"
+                data-detalle="${prod.Detalle_producto}"
+                data-precio="${prod.Precio_producto}"
+                data-unidad="${prod.Unidad_Medida_venta}"
+                data-categoria="${prod.categoria}"
+            />
+            <span>${prod.Unidad_Medida_venta}</span>
         </div>
     `;
 
-    container.appendChild(nuevo);
-}
-
-
+            container.appendChild(nuevo);
+        }
     </script>
 
 
-                <!-- 🟢 Alertas -->
-                <div class="alert-container" id="alertContainer"></div>
+    <!-- 🟢 Alertas -->
+    <div class="alert-container" id="alertContainer"></div>
 </body>
 
 </html>
