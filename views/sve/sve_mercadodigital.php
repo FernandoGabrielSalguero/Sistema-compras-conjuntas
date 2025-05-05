@@ -599,7 +599,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             let metodo = "POST";
 
             if (pedidoEditandoId !== null) {
-                pedido.id = pedidoEditandoId; // incluimos ID
+                pedido.id = pedidoEditandoId;
                 url = "/controllers/PedidoController.php?action=actualizarPedidoCompleto";
                 metodo = "PUT";
             }
@@ -614,11 +614,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        mostrarAlerta("success", "Pedido guardado/actualizado correctamente");
+                        mostrarAlerta("success", data.message || "✅ Pedido guardado o actualizado correctamente.");
                         location.reload();
                     } else {
-                        mostrarAlerta("error", "Error al guardar/actualizar");
-                        console.error(data.error);
+                        mostrarAlerta("error", data.message || "❌ Error al guardar/actualizar el pedido.");
+                        console.error(data.error || data);
                     }
                 });
         }
@@ -728,11 +728,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        mostrarAlerta("success", "Pedido actualizado");
+                        mostrarAlerta("success", data.message || "✅ Pedido actualizado correctamente.");
                         cerrarModal();
                         cargarPedidos();
                     } else {
-                        mostrarAlerta("error", "No se pudo actualizar");
+                        mostrarAlerta("error", data.message || "❌ No se pudo actualizar el pedido.");
                     }
                 });
         });
@@ -759,10 +759,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        mostrarAlerta("success", "🗑️ Pedido eliminado correctamente.");
+                        mostrarAlerta("success", data.message || "🗑️ Pedido eliminado correctamente.");
                         cargarPedidos();
                     } else {
-                        mostrarAlerta("error", "❌ Ocurrió un error al eliminar el pedido.");
+                        mostrarAlerta("error", data.message || "❌ No se pudo eliminar el pedido.");
                     }
                 })
                 .finally(() => {
