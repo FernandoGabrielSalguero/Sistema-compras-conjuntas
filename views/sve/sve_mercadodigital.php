@@ -662,19 +662,19 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 
             const productosManual = [...document.querySelectorAll("#productosEditablesContainer input")].map(input => {
-    const cantidad = parseFloat(input.value);
-    if (!cantidad || cantidad <= 0) return null;
+                const cantidad = parseFloat(input.value);
+                if (!cantidad || cantidad <= 0) return null;
 
-    return {
-        nombre_producto: input.dataset.nombre,
-        detalle_producto: input.dataset.detalle,
-        precio_producto: parseFloat(input.dataset.precio),
-        unidad_medida_venta: input.dataset.unidad,
-        categoria: input.dataset.categoria,
-        cantidad,
-        subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
-    };
-}).filter(p => p !== null);
+                return {
+                    nombre_producto: input.dataset.nombre,
+                    detalle_producto: input.dataset.detalle,
+                    precio_producto: parseFloat(input.dataset.precio),
+                    unidad_medida_venta: input.dataset.unidad,
+                    categoria: input.dataset.categoria,
+                    cantidad,
+                    subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
+                };
+            }).filter(p => p !== null);
 
 
             const payload = {
@@ -988,15 +988,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         function agregarProductoManual() {
-            const yaExiste = [...document.querySelectorAll("#productosEditablesContainer input")].some(input => input.dataset.id === productoId);
-if (yaExiste) {
-    showAlert("error", "Este producto ya fue agregado.");
-    return;
-}
             const select = document.getElementById("selectProductoNuevo");
             const productoId = select.value;
-
             if (!productoId) return;
+
+            const yaExiste = [...document.querySelectorAll("#productosEditablesContainer input")]
+                .some(input => input.dataset.id === productoId);
+            if (yaExiste) {
+                showAlert("error", "Este producto ya fue agregado.");
+                return;
+            }
 
             const prod = cacheTodosProductos[productoId];
             if (!prod) return;
