@@ -604,23 +604,24 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 metodo = "PUT";
             }
 
-            fetch(url, {
-                    method: metodo,
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        mostrarAlerta("success", data.message || "✅ Pedido guardado o actualizado correctamente.");
-                        location.reload();
+            then(data => {
+                if (data.success) {
+                    if (pedidoEditandoId === null) {
+                        // Es un nuevo pedido
+                        mostrarAlerta("success", data.message || "✅ Pedido creado correctamente.");
                     } else {
-                        mostrarAlerta("error", data.message || "❌ Error al guardar/actualizar el pedido.");
-                        console.error(data.error || data);
+                        // Es una actualización
+                        mostrarAlerta("success", data.message || "✅ Pedido actualizado correctamente.");
                     }
-                });
+
+                    // Recargamos la página para ver el cambio
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    mostrarAlerta("error", data.message || "❌ Error al guardar el pedido.");
+                    console.error(data.error || data);
+                }
+            });
+
         }
 
         // 8 - cargar pedidos en tabla
@@ -835,8 +836,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </script>
 
 
-                <!-- 🟢 Alertas -->
-                <div class="alert-container" id="alertContainer"></div>
+    <!-- 🟢 Alertas -->
+    <div class="alert-container" id="alertContainer"></div>
 </body>
 
 </html>
