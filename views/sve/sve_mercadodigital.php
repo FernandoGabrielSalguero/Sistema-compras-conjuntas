@@ -353,7 +353,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <select id="selectProductoNuevo">
                             <!-- Llenado dinámico -->
                         </select>
-                        <button class="btn btn-aceptar" onclick="agregarProductoManual()">+</button>
+                        <button type="button" class="btn btn-aceptar" onclick="agregarProductoManual()">+</button>
                     </div>
                 </div>
 
@@ -513,7 +513,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
         }
 
-
+        let cacheTodosProductos = {};
         cargarTodosLosProductosParaSelect();
 
 
@@ -660,9 +660,27 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 factura: ""
             };
 
+
+            const productosManual = [...document.querySelectorAll("#productosEditablesContainer input")].map(input => {
+    const cantidad = parseFloat(input.value);
+    if (!cantidad || cantidad <= 0) return null;
+
+    return {
+        nombre_producto: input.dataset.nombre,
+        detalle_producto: input.dataset.detalle,
+        precio_producto: parseFloat(input.dataset.precio),
+        unidad_medida_venta: input.dataset.unidad,
+        categoria: input.dataset.categoria,
+        cantidad,
+        subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
+    };
+}).filter(p => p !== null);
+
+
             const payload = {
                 pedido,
-                detalles: Object.values(productosSeleccionados)
+                detalles: productosManual
+
             };
 
             let url = "/controllers/PedidoController.php?action=guardarPedido";
@@ -970,6 +988,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         function agregarProductoManual() {
+            const yaExiste = [...document.querySelectorAll("#productosEditablesContainer input")].some(input => input.dataset.id === productoId);
+if (yaExiste) {
+    showAlert("error", "Este producto ya fue agregado.");
+    return;
+}
             const select = document.getElementById("selectProductoNuevo");
             const productoId = select.value;
 
