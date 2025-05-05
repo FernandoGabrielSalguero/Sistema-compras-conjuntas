@@ -344,7 +344,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <script>
         // funciones para las alertas
-        function mostrarAlerta(tipo, mensaje, duracion = 4000) {
+        function showAlert(tipo, mensaje, duracion = 4000) {
             const contenedor = document.getElementById("alertContainer");
             if (!contenedor) return;
 
@@ -614,10 +614,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        alert("success", data.message || "✅ Pedido guardado o actualizado correctamente.");
+                        showAlert("success", data.message || "✅ Pedido guardado o actualizado correctamente.");
                         location.reload();
                     } else {
-                        alert("error", data.message || "❌ Error al guardar/actualizar el pedido.");
+                        showAlert("error", data.message || "❌ Error al guardar/actualizar el pedido.");
                         console.error(data.error || data);
                     }
                 });
@@ -728,11 +728,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        mostrarAlerta("success", data.message || "✅ Pedido actualizado correctamente.");
+                        showAlert("success", data.message || "✅ Pedido actualizado correctamente.");
                         cerrarModal();
                         cargarPedidos();
                     } else {
-                        mostrarAlerta("error", data.message || "❌ No se pudo actualizar el pedido.");
+                        showAlert("error", data.message || "❌ No se pudo actualizar el pedido.");
                     }
                 });
         });
@@ -759,10 +759,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        mostrarAlerta("success", data.message || "🗑️ Pedido eliminado correctamente.");
+                        showAlert("success", data.message || "🗑️ Pedido eliminado correctamente.");
                         cargarPedidos();
                     } else {
-                        mostrarAlerta("error", data.message || "❌ No se pudo eliminar el pedido.");
+                        showAlert("error", data.message || "❌ No se pudo eliminar el pedido.");
                     }
                 })
                 .finally(() => {
@@ -793,7 +793,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             document.getElementById("hectareas").value = pedido.ha_cooperativa;
             document.getElementById("observaciones").value = pedido.observaciones;
 
-            mostrarAlerta("success", "Pedido cargado para edición. Modificá los campos y presioná Enviar.");
+            showAlert("success", "Pedido cargado para edición. Modificá los campos y presioná Enviar.");
 
         }
 
