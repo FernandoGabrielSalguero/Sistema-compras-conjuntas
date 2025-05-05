@@ -67,6 +67,35 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             margin-right: 0.5rem;
             color: #8a2be2;
         }
+
+        <style>
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0,0,0,0.4); /* fondo oscuro */
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+}
+
+.hidden {
+  display: none;
+}
+</style>
+
     </style>
 
 
