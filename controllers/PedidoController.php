@@ -85,7 +85,7 @@ switch ($action) {
         break;
 
     case 'actualizarPedidoCompleto':
-        if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = json_decode(file_get_contents("php://input"), true);
 
             $pedido = $data['pedido'] ?? [];

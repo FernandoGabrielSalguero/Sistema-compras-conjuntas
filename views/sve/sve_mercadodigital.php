@@ -675,7 +675,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             if (pedidoEditandoId !== null) {
                 pedido.id = pedidoEditandoId;
                 url = "/controllers/PedidoController.php?action=actualizarPedidoCompleto";
-                metodo = "PUT";
+                metodo = "POST";
             }
 
             fetch(url, {
@@ -828,7 +828,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 btnEliminar.addEventListener("click", () => {
                     if (pedidoAEliminar) {
                         fetch(`PedidoController.php?action=eliminar&id=${pedidoAEliminar}`, {
-                                method: "GET"
+                                method: "POST"
                             })
                             .then(response => response.text())
                             .then(data => {
