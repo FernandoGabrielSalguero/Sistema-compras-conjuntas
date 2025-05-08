@@ -632,73 +632,69 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         // 7. Enviar formulario
         function enviarFormulario(e) {
-            e.preventDefault();
+    e.preventDefault();
 
-            const formData = new FormData(e.target);
-            const pedido = {
-                cooperativa: formData.get("cooperativa"),
-                productor: formData.get("productor"),
-                persona_facturacion: formData.get("factura"),
-                condicion_facturacion: formData.get("condicion"),
-                afiliacion: formData.get("afiliacion"),
-                ha_cooperativa: formData.get("hectareas"),
-                observaciones: formData.get("observaciones"),
-                total_sin_iva: calcularTotalSinIVA(),
-                total_iva: calcularTotalIVA(),
-                total_pedido: calcularTotalFinal(),
-                factura: ""
-            };
+    const formData = new FormData(e.target);
+    const pedido = {
+        cooperativa: formData.get("cooperativa"),
+        productor: formData.get("productor"),
+        persona_facturacion: formData.get("factura"),
+        condicion_facturacion: formData.get("condicion"),
+        afiliacion: formData.get("afiliacion"),
+        ha_cooperativa: formData.get("hectareas"),
+        observaciones: formData.get("observaciones"),
+        total_sin_iva: calcularTotalSinIVA(),
+        total_iva: calcularTotalIVA(),
+        total_pedido: calcularTotalFinal(),
+        factura: ""
+    };
 
+    const detalles = [...document.querySelectorAll("#productosEditablesContainer input")].map(input => {
+        const cantidad = parseFloat(input.value);
+        return {
+            nombre_producto: input.dataset.nombre,
+            detalle_producto: input.dataset.detalle,
+            precio_producto: parseFloat(input.dataset.precio),
+            unidad_medida_venta: input.dataset.unidad,
+            categoria: input.dataset.categoria,
+            cantidad,
+            subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
+        };
+    }).filter(p => p.cantidad && p.cantidad > 0); // ⚠️ ignora productos vacíos
 
-            const productosManual = [...document.querySelectorAll("#productosEditablesContainer input")].map(input => {
-                const cantidad = parseFloat(input.value);
-                if (!cantidad || cantidad <= 0) return null;
+    const payload = {
+        pedido,
+        detalles
+    };
 
-                return {
-                    nombre_producto: input.dataset.nombre,
-                    detalle_producto: input.dataset.detalle,
-                    precio_producto: parseFloat(input.dataset.precio),
-                    unidad_medida_venta: input.dataset.unidad,
-                    categoria: input.dataset.categoria,
-                    cantidad,
-                    subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
-                };
-            }).filter(p => p !== null);
+    let url = "/controllers/PedidoController.php?action=guardarPedido";
+    let metodo = "POST";
 
+    if (pedidoEditandoId !== null) {
+        pedido.id = pedidoEditandoId;
+        url = "/controllers/PedidoController.php?action=actualizarPedidoCompleto";
+        metodo = "PUT";
+    }
 
-            const payload = {
-                pedido,
-                detalles: productosManual
-
-            };
-
-            let url = "/controllers/PedidoController.php?action=guardarPedido";
-            let metodo = "POST";
-
-            if (pedidoEditandoId !== null) {
-                pedido.id = pedidoEditandoId;
-                url = "/controllers/PedidoController.php?action=actualizarPedidoCompleto";
-                metodo = "PUT";
-            }
-
-            fetch(url, {
-                    method: metodo,
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        showAlert("success", data.message || "✅ Pedido guardado o actualizado correctamente.");
-                        location.reload();
-                    } else {
-                        showAlert("error", data.message || "❌ Error al guardar/actualizar el pedido.");
-                        console.error(data.error || data);
-                    }
-                });
+    fetch(url, {
+        method: metodo,
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showAlert("success", data.message || "✅ Pedido guardado o actualizado correctamente.");
+            location.reload();
+        } else {
+            showAlert("error", data.message || "❌ Error al guardar/actualizar el pedido.");
+            console.error(data.error || data);
         }
+    });
+}
+
 
         // 8 - cargar pedidos en tabla
         function cargarPedidos() {
@@ -1019,16 +1015,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
     </script>
 
-    <!-- Modal de confirmación para eliminar pedido -->
-    <div id="modalConfirmacion" class="modal hidden">
-        <div class="modal-content card">
-            <h3>¿Estás seguro de eliminar este pedido?</h3>
-            <div class="form-buttons">
-                <button id="btnConfirmarEliminar" class="btn btn-aceptar">Eliminar</button>
-                <button class="btn btn-cancelar" onclick="closeModalConfirmacion()">Cancelar</button>
-            </div>
+<!-- Modal de confirmación para eliminar pedido -->
+<div id="modalConfirmacion" class="modal hidden">
+    <div class="modal-content card">
+        <h3>¿Estás seguro de eliminar este pedido?</h3>
+        <div class="form-buttons">
+            <button id="btnConfirmarEliminar" class="btn btn-aceptar">Eliminar</button>
+            <button class="btn btn-cancelar" onclick="closeModalConfirmacion()">Cancelar</button>
         </div>
     </div>
+</div>
 
     <!-- 🟢 Alertas -->
     <div class="alert-container" id="alertContainer"></div>
