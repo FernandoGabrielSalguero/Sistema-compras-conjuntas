@@ -817,10 +817,34 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         let pedidoIdAEliminar = null;
 
-        function eliminarPedido(id) {
-            pedidoIdAEliminar = id;
-            document.getElementById("modalConfirmacion").classList.remove("hidden");
-        }
+        btnEliminar.addEventListener("click", () => {
+            console.log("🚨 Confirmando eliminación:", pedidoIdAEliminar);
+
+            if (pedidoIdAEliminar) {
+                fetch("/controllers/PedidoController.php?action=eliminarPedido", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            id: pedidoIdAEliminar
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log("📥 Respuesta del servidor:", data);
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert("❌ Error: " + (data.error || "No se pudo eliminar"));
+                        }
+                    })
+                    .catch(err => console.error("❌ Error en fetch:", err));
+            } else {
+                console.error("❌ pedidoIdAEliminar es NULL");
+            }
+        });
+
 
         document.addEventListener("DOMContentLoaded", () => {
             const btnEliminar = document.getElementById("btnConfirmarEliminar");

@@ -5,6 +5,8 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/../models/PedidoModel.php';
 header('Content-Type: application/json');
+file_put_contents(__DIR__ . '/../log_backend.txt', "🔄 Acción: $action - Método: {$_SERVER['REQUEST_METHOD']}\n", FILE_APPEND);
+
 
 $action = $_GET['action'] ?? null;
 
