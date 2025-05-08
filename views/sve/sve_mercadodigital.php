@@ -3,6 +3,7 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+ob_start(); // Captura salida
 
 // Iniciar sesión y proteger acceso
 session_start();
@@ -67,6 +68,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             margin-right: 0.5rem;
             color: #8a2be2;
         }
+
+        
     </style>
 
 
@@ -675,7 +678,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             if (pedidoEditandoId !== null) {
                 pedido.id = pedidoEditandoId;
                 url = "/controllers/PedidoController.php?action=actualizarPedidoCompleto";
-                metodo = "POST";
+                metodo = "PUT";
             }
 
             fetch(url, {
@@ -813,56 +816,38 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
         });
 
-        document.getElementById("formEditarPedidoCompleto").addEventListener("submit", enviarFormulario);
-
         let pedidoIdAEliminar = null;
 
-        btnEliminar.addEventListener("click", () => {
-            console.log("🚨 Confirmando eliminación:", pedidoIdAEliminar);
+        function eliminarPedido(id) {
+            pedidoIdAEliminar = id;
+            document.getElementById("modalConfirmacion").classList.remove("hidden");
+        }
 
-            if (pedidoIdAEliminar) {
-                fetch("/controllers/PedidoController.php?action=eliminarPedido", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            id: pedidoIdAEliminar
-                        })
+        document.getElementById("btnConfirmarEliminar").addEventListener("click", () => {
+            if (!pedidoIdAEliminar) return;
+
+            fetch("/controllers/PedidoController.php?action=eliminarPedido", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        id: pedidoIdAEliminar
                     })
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log("📥 Respuesta del servidor:", data);
-                        if (data.success) {
-                            location.reload();
-                        } else {
-                            alert("❌ Error: " + (data.error || "No se pudo eliminar"));
-                        }
-                    })
-                    .catch(err => console.error("❌ Error en fetch:", err));
-            } else {
-                console.error("❌ pedidoIdAEliminar es NULL");
-            }
-        });
-
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const btnEliminar = document.getElementById("btnConfirmarEliminar");
-            if (btnEliminar) {
-                btnEliminar.addEventListener("click", () => {
-                    if (pedidoAEliminar) {
-                        fetch(`PedidoController.php?action=eliminar&id=${pedidoAEliminar}`, {
-                                method: "POST"
-                            })
-                            .then(response => response.text())
-                            .then(data => {
-                                console.log(data);
-                                location.reload();
-                            })
-                            .catch(error => console.error("Error al eliminar el pedido:", error));
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert("success", data.message || "🗑️ Pedido eliminado correctamente.");
+                        cargarPedidos();
+                    } else {
+                        showAlert("error", data.message || "❌ No se pudo eliminar el pedido.");
                     }
+                })
+                .finally(() => {
+                    closeModalConfirmacion();
+                    pedidoIdAEliminar = null;
                 });
-            }
         });
 
         function closeModalConfirmacion() {
