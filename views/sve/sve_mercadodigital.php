@@ -67,8 +67,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             margin-right: 0.5rem;
             color: #8a2be2;
         }
-
-        
     </style>
 
 
@@ -815,6 +813,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
         });
 
+        document.getElementById("formEditarPedidoCompleto").addEventListener("submit", enviarFormulario);
+
         let pedidoIdAEliminar = null;
 
         function eliminarPedido(id) {
@@ -822,31 +822,23 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             document.getElementById("modalConfirmacion").classList.remove("hidden");
         }
 
-        document.getElementById("btnConfirmarEliminar").addEventListener("click", () => {
-            if (!pedidoIdAEliminar) return;
-
-            fetch("/controllers/PedidoController.php?action=eliminarPedido", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        id: pedidoIdAEliminar
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        showAlert("success", data.message || "🗑️ Pedido eliminado correctamente.");
-                        cargarPedidos();
-                    } else {
-                        showAlert("error", data.message || "❌ No se pudo eliminar el pedido.");
+        document.addEventListener("DOMContentLoaded", () => {
+            const btnEliminar = document.getElementById("btnConfirmarEliminar");
+            if (btnEliminar) {
+                btnEliminar.addEventListener("click", () => {
+                    if (pedidoAEliminar) {
+                        fetch(`PedidoController.php?action=eliminar&id=${pedidoAEliminar}`, {
+                                method: "GET"
+                            })
+                            .then(response => response.text())
+                            .then(data => {
+                                console.log(data);
+                                location.reload();
+                            })
+                            .catch(error => console.error("Error al eliminar el pedido:", error));
                     }
-                })
-                .finally(() => {
-                    closeModalConfirmacion();
-                    pedidoIdAEliminar = null;
                 });
+            }
         });
 
         function closeModalConfirmacion() {
