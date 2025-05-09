@@ -371,6 +371,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- 🛠️ SCRIPTS -->
 
     <script>
+
+        let pedidoIdAEliminar = null;
+let pedidoEditandoId = null;
+let cachePedidos = [];
+let productosSeleccionados = {};
+let cacheTodosProductos = {};
+
+
         // funciones para las alertas
         function showAlert(tipo, mensaje, duracion = 4000) {
             const contenedor = document.getElementById("alertContainer");
@@ -393,32 +401,65 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
 
-        let pedidoEditandoId = null;
-        console.log("🟢 El archivo JS se está ejecutando (inicio).");
-        document.addEventListener("DOMContentLoaded", () => {
-            console.log("✅ DOM completamente cargado.");
+        // Función para mostrar el modal de confirmación
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ DOM completamente cargado.");
 
-            const coopSelect = document.getElementById("cooperativa");
-            const form = document.querySelector("form");
+    // Asegurar referencias
+    const coopSelect = document.getElementById("cooperativa");
+    const form = document.querySelector("#formulario-pedido");
+    const btnEliminar = document.getElementById("btnConfirmarEliminar");
 
-            if (!coopSelect) {
-                console.error("❌ No se encontró el selector #cooperativa");
-                return;
-            }
-            if (!form) {
-                console.error("❌ No se encontró el <form>");
-                return;
-            }
+    if (!coopSelect || !form) {
+        console.error("❌ No se encontró el selector #cooperativa o el formulario.");
+        return;
+    }
 
-            cargarPedidos(); // 🔄 Llama la función al cargar la página
-            cargarCooperativas();
-            cargarProductos();
+    if (btnEliminar) {
+        btnEliminar.addEventListener("click", () => {
+            if (!pedidoIdAEliminar) return;
 
-            coopSelect.addEventListener("change", cargarProductores);
-            form.addEventListener("submit", enviarFormulario);
+            console.log(`🚨 Eliminando pedido ID: ${pedidoIdAEliminar}`);
+
+            fetch("/controllers/PedidoController.php?action=eliminarPedido", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ id: pedidoIdAEliminar })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log("✅ Respuesta:", data);
+                if (data.success) {
+                    showAlert("success", data.message || "Pedido eliminado correctamente.");
+                    cargarPedidos();
+                } else {
+                    showAlert("error", data.message || "Error al eliminar pedido.");
+                }
+            })
+            .catch(err => {
+                console.error("❌ Error de red:", err);
+                showAlert("error", "Error de conexión al eliminar.");
+            })
+            .finally(() => {
+                closeModalConfirmacion();
+                pedidoIdAEliminar = null;
+            });
         });
+    } else {
+        console.warn("⚠️ Botón btnConfirmarEliminar no encontrado.");
+    }
 
-        let productosSeleccionados = {};
+    // Cargar datos
+    cargarPedidos();
+    cargarCooperativas();
+    cargarProductos();
+
+    coopSelect.addEventListener("change", cargarProductores);
+    form.addEventListener("submit", enviarFormulario);
+});
+
 
         // 1. Cargar cooperativas
         function cargarCooperativas() {
@@ -502,7 +543,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
         }
 
-        let cacheTodosProductos = {};
         cargarTodosLosProductosParaSelect();
 
 
@@ -799,7 +839,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             document.getElementById("modal-editar").style.display = "none";
         }
 
-        let cachePedidos = [];
 
         function obtenerPedidoPorId(id) {
             return cachePedidos.find(p => p.id == id);
@@ -835,7 +874,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
         });
 
-        let pedidoIdAEliminar = null;
 
 function eliminarPedido(id) {
     console.log(`🗑️ Solicitud de eliminar pedido con ID: ${id}`);
