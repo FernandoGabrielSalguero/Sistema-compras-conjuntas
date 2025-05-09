@@ -811,29 +811,29 @@ document.addEventListener("DOMContentLoaded", () => {
             return calcularTotalSinIVA() + calcularTotalIVA();
         }
 
-        function abrirModalEditar(id) {
-            abrirModalEditarPedidoCompleto(id);
+        // function abrirModalEditar(id) {
+        //     abrirModalEditarPedidoCompleto(id);
 
-            const pedido = obtenerPedidoPorId(id);
-            if (!pedido) return;
+        //     const pedido = obtenerPedidoPorId(id);
+        //     if (!pedido) return;
 
-            pedidoEditandoId = id;
+        //     pedidoEditandoId = id;
 
-            document.getElementById("edit-id").value = pedido.id;
-            document.getElementById("edit-cooperativa").value = pedido.cooperativa;
-            cargarProductoresModal().then(() => {
-                document.getElementById("edit-productor").value = pedido.productor;
-            });
+        //     document.getElementById("edit-id").value = pedido.id;
+        //     document.getElementById("edit-cooperativa").value = pedido.cooperativa;
+        //     cargarProductoresModal().then(() => {
+        //         document.getElementById("edit-productor").value = pedido.productor;
+        //     });
 
-            document.getElementById("edit-factura").value = pedido.persona_facturacion;
-            document.getElementById("edit-condicion").value = pedido.condicion_facturacion;
-            document.getElementById("edit-afiliacion").value = pedido.afiliacion;
-            document.getElementById("edit-ha").value = pedido.ha_cooperativa;
-            document.getElementById("edit-observaciones").value = pedido.observaciones;
+        //     document.getElementById("edit-factura").value = pedido.persona_facturacion;
+        //     document.getElementById("edit-condicion").value = pedido.condicion_facturacion;
+        //     document.getElementById("edit-afiliacion").value = pedido.afiliacion;
+        //     document.getElementById("edit-ha").value = pedido.ha_cooperativa;
+        //     document.getElementById("edit-observaciones").value = pedido.observaciones;
 
-            // Mostrar el modal
-            document.getElementById("modal-editar").style.display = "block";
-        }
+        //     // Mostrar el modal
+        //     document.getElementById("modal-editar").style.display = "block";
+        // }
 
         function cerrarModal() {
             document.getElementById("modal-editar").style.display = "none";
