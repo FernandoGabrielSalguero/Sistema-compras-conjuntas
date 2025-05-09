@@ -68,6 +68,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             margin-right: 0.5rem;
             color: #8a2be2;
         }
+
+        
     </style>
 
 
@@ -369,11 +371,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- 🛠️ SCRIPTS -->
 
     <script>
+
         let pedidoIdAEliminar = null;
-        let pedidoEditandoId = null;
-        let cachePedidos = [];
-        let productosSeleccionados = {};
-        let cacheTodosProductos = {};
+let pedidoEditandoId = null;
+let cachePedidos = [];
+let productosSeleccionados = {};
+let cacheTodosProductos = {};
 
 
         // funciones para las alertas
@@ -399,65 +402,63 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 
         // Función para mostrar el modal de confirmación
-        document.addEventListener("DOMContentLoaded", () => {
-            console.log("✅ DOM completamente cargado.");
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ DOM completamente cargado.");
 
-            // Asegurar referencias
-            const coopSelect = document.getElementById("cooperativa");
-            const form = document.querySelector("#formulario-pedido");
-            const btnEliminar = document.getElementById("btnConfirmarEliminar");
+    // Asegurar referencias
+    const coopSelect = document.getElementById("cooperativa");
+    const form = document.querySelector("#formulario-pedido");
+    const btnEliminar = document.getElementById("btnConfirmarEliminar");
 
-            if (!coopSelect || !form) {
-                console.error("❌ No se encontró el selector #cooperativa o el formulario.");
-                return;
-            }
+    if (!coopSelect || !form) {
+        console.error("❌ No se encontró el selector #cooperativa o el formulario.");
+        return;
+    }
 
-            if (btnEliminar) {
-                btnEliminar.addEventListener("click", () => {
-                    if (!pedidoIdAEliminar) return;
+    if (btnEliminar) {
+        btnEliminar.addEventListener("click", () => {
+            if (!pedidoIdAEliminar) return;
 
-                    console.log(`🚨 Eliminando pedido ID: ${pedidoIdAEliminar}`);
+            console.log(`🚨 Eliminando pedido ID: ${pedidoIdAEliminar}`);
 
-                    fetch("/controllers/PedidoController.php?action=eliminarPedido", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify({
-                                id: pedidoIdAEliminar
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            console.log("✅ Respuesta:", data);
-                            if (data.success) {
-                                showAlert("success", data.message || "Pedido eliminado correctamente.");
-                                cargarPedidos();
-                            } else {
-                                showAlert("error", data.message || "Error al eliminar pedido.");
-                            }
-                        })
-                        .catch(err => {
-                            console.error("❌ Error de red:", err);
-                            showAlert("error", "Error de conexión al eliminar.");
-                        })
-                        .finally(() => {
-                            closeModalConfirmacion();
-                            pedidoIdAEliminar = null;
-                        });
-                });
-            } else {
-                console.warn("⚠️ Botón btnConfirmarEliminar no encontrado.");
-            }
-
-            // Cargar datos
-            cargarPedidos();
-            cargarCooperativas();
-            cargarProductos();
-
-            coopSelect.addEventListener("change", cargarProductores);
-            form.addEventListener("submit", enviarFormulario);
+            fetch("/controllers/PedidoController.php?action=eliminarPedido", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ id: pedidoIdAEliminar })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log("✅ Respuesta:", data);
+                if (data.success) {
+                    showAlert("success", data.message || "Pedido eliminado correctamente.");
+                    cargarPedidos();
+                } else {
+                    showAlert("error", data.message || "Error al eliminar pedido.");
+                }
+            })
+            .catch(err => {
+                console.error("❌ Error de red:", err);
+                showAlert("error", "Error de conexión al eliminar.");
+            })
+            .finally(() => {
+                closeModalConfirmacion();
+                pedidoIdAEliminar = null;
+            });
         });
+    } else {
+        console.warn("⚠️ Botón btnConfirmarEliminar no encontrado.");
+    }
+
+    // Cargar datos
+    cargarPedidos();
+    cargarCooperativas();
+    cargarProductos();
+
+    coopSelect.addEventListener("change", cargarProductores);
+    form.addEventListener("submit", enviarFormulario);
+});
 
 
         // 1. Cargar cooperativas
@@ -671,186 +672,92 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         // 7. Enviar formulario
         function enviarFormulario(e) {
-            e.preventDefault();
+    e.preventDefault();
 
-            try {
-                console.log("🔄 Ejecutando enviarFormulario...");
-
-                const formData = new FormData(e.target);
-
-                const detalles = [...document.querySelectorAll("#productosEditablesContainer input")].map(input => {
-                    const cantidad = parseFloat(input.value);
-                    return {
-                        nombre_producto: input.dataset.nombre,
-                        detalle_producto: input.dataset.detalle,
-                        precio_producto: parseFloat(input.dataset.precio),
-                        unidad_medida_venta: input.dataset.unidad,
-                        categoria: input.dataset.categoria,
-                        cantidad,
-                        subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
-                    };
-                }).filter(p => p.cantidad && p.cantidad > 0);
-
-                const pedido = {
-                    cooperativa: formData.get("cooperativa") || formData.get("edit_cooperativa"),
-                    productor: formData.get("productor") || formData.get("edit_productor"),
-                    persona_facturacion: formData.get("factura") || formData.get("edit_factura"),
-                    condicion_facturacion: formData.get("condicion") || formData.get("edit_condicion"),
-                    afiliacion: formData.get("afiliacion") || formData.get("edit_afiliacion"),
-                    ha_cooperativa: formData.get("hectareas") || formData.get("edit_hectareas"),
-                    observaciones: formData.get("observaciones") || formData.get("edit_observaciones"),
-                    total_sin_iva: calcularTotalSinIVADesde(detalles),
-                    total_iva: calcularTotalIVADesde(detalles),
-                    total_pedido: calcularTotalFinalDesde(detalles),
-                    factura: ""
-                };
-
-                console.log("📦 Pedido armado:", pedido);
-                console.log("📦 Detalles productos:", detalles);
-
-                const payload = {
-                    pedido,
-                    detalles
-                };
-
-                let url = "/controllers/PedidoController.php?action=guardarPedido";
-                let metodo = "POST";
-
-                if (pedidoEditandoId !== null) {
-                    pedido.id = pedidoEditandoId;
-                    url = "/controllers/PedidoController.php?action=actualizarPedidoCompleto";
-                    metodo = "PUT";
-                }
-
-                console.log(`🚀 Enviando datos a ${url} con método ${metodo}`);
-                console.log("📤 Payload:", payload);
-
-                fetch(url, {
-                        method: metodo,
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(payload)
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log("✅ Respuesta del servidor:", data);
-
-                        if (data.success) {
-                            showAlert("success", data.message || "✅ Pedido guardado/actualizado correctamente.");
-                            location.reload();
-                        } else {
-                            showAlert("error", data.message || "❌ Error al guardar/actualizar.");
-                            console.error("❌ Error del servidor:", data.error);
-                        }
-                    })
-                    .catch(err => {
-                        console.error("❌ Error al hacer fetch:", err);
-                        showAlert("error", "❌ Error en conexión con el servidor.");
-                    });
-
-            } catch (err) {
-                console.error("❌ Error en enviarFormulario:", err);
-                showAlert("error", "❌ Fallo interno al enviar el formulario.");
-            }
-        }
-
-        // Funciones auxiliares para cálculo desde los detalles
-        function calcularTotalSinIVADesde(detalles) {
-            return detalles.reduce((total, p) => total + p.subtotal_por_categoria, 0);
-        }
-
-        function calcularTotalIVADesde(detalles) {
-            return calcularTotalSinIVADesde(detalles) * 0.21;
-        }
-
-        function calcularTotalFinalDesde(detalles) {
-            return calcularTotalSinIVADesde(detalles) + calcularTotalIVADesde(detalles);
-        }
-
-
-        try {
-            console.log("🔄 Ejecutando enviarFormulario...");
-
-            const formData = new FormData(e.target);
-
-            const pedido = {
-                cooperativa: formData.get("cooperativa"),
-                productor: formData.get("productor"),
-                persona_facturacion: formData.get("factura"),
-                condicion_facturacion: formData.get("condicion"),
-                afiliacion: formData.get("afiliacion"),
-                ha_cooperativa: formData.get("hectareas"),
-                observaciones: formData.get("observaciones"),
-                total_sin_iva: calcularTotalSinIVA(),
-                total_iva: calcularTotalIVA(),
-                total_pedido: calcularTotalFinal(),
-                factura: ""
-            };
-
-            console.log("📦 Pedido armado:", pedido);
-
-            const detalles = [...document.querySelectorAll("#productosEditablesContainer input")].map(input => {
-                const cantidad = parseFloat(input.value);
-                return {
-                    nombre_producto: input.dataset.nombre,
-                    detalle_producto: input.dataset.detalle,
-                    precio_producto: parseFloat(input.dataset.precio),
-                    unidad_medida_venta: input.dataset.unidad,
-                    categoria: input.dataset.categoria,
-                    cantidad,
-                    subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
-                };
-            }).filter(p => p.cantidad && p.cantidad > 0);
-
-            console.log("📦 Detalles productos:", detalles);
-
-            const payload = {
-                pedido,
-                detalles
-            };
-
-            let url = "/controllers/PedidoController.php?action=guardarPedido";
-            let metodo = "POST";
-
-            if (pedidoEditandoId !== null) {
-                pedido.id = pedidoEditandoId;
-                url = "/controllers/PedidoController.php?action=actualizarPedidoCompleto";
-                metodo = "PUT";
-            }
-
-            console.log(`🚀 Enviando datos a ${url} con método ${metodo}`);
-            console.log("📤 Payload:", payload);
-
-            fetch(url, {
-                    method: metodo,
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                })
-                .then(res => res.json())
-                .then(data => {
-                    console.log("✅ Respuesta del servidor:", data);
-
-                    if (data.success) {
-                        showAlert("success", data.message || "✅ Pedido guardado/actualizado correctamente.");
-                        location.reload();
-                    } else {
-                        showAlert("error", data.message || "❌ Error al guardar/actualizar.");
-                        console.error("❌ Error del servidor:", data.error);
-                    }
-                })
-                .catch(err => {
-                    console.error("❌ Error al hacer fetch:", err);
-                    showAlert("error", "❌ Error en conexión con el servidor.");
-                });
-
-        } catch (err) {
-            console.error("❌ Error en enviarFormulario:", err);
-            showAlert("error", "❌ Fallo interno al enviar el formulario.");
-        }
+    try {
+        console.log("🔄 Ejecutando enviarFormulario...");
         
+        const formData = new FormData(e.target);
+
+        const pedido = {
+            cooperativa: formData.get("cooperativa"),
+            productor: formData.get("productor"),
+            persona_facturacion: formData.get("factura"),
+            condicion_facturacion: formData.get("condicion"),
+            afiliacion: formData.get("afiliacion"),
+            ha_cooperativa: formData.get("hectareas"),
+            observaciones: formData.get("observaciones"),
+            total_sin_iva: calcularTotalSinIVA(),
+            total_iva: calcularTotalIVA(),
+            total_pedido: calcularTotalFinal(),
+            factura: ""
+        };
+
+        console.log("📦 Pedido armado:", pedido);
+
+        const detalles = [...document.querySelectorAll("#productosEditablesContainer input")].map(input => {
+            const cantidad = parseFloat(input.value);
+            return {
+                nombre_producto: input.dataset.nombre,
+                detalle_producto: input.dataset.detalle,
+                precio_producto: parseFloat(input.dataset.precio),
+                unidad_medida_venta: input.dataset.unidad,
+                categoria: input.dataset.categoria,
+                cantidad,
+                subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
+            };
+        }).filter(p => p.cantidad && p.cantidad > 0);
+
+        console.log("📦 Detalles productos:", detalles);
+
+        const payload = {
+            pedido,
+            detalles
+        };
+
+        let url = "/controllers/PedidoController.php?action=guardarPedido";
+        let metodo = "POST";
+
+        if (pedidoEditandoId !== null) {
+            pedido.id = pedidoEditandoId;
+            url = "/controllers/PedidoController.php?action=actualizarPedidoCompleto";
+            metodo = "PUT";
+        }
+
+        console.log(`🚀 Enviando datos a ${url} con método ${metodo}`);
+        console.log("📤 Payload:", payload);
+
+        fetch(url, {
+            method: metodo,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log("✅ Respuesta del servidor:", data);
+
+            if (data.success) {
+                showAlert("success", data.message || "✅ Pedido guardado/actualizado correctamente.");
+                location.reload();
+            } else {
+                showAlert("error", data.message || "❌ Error al guardar/actualizar.");
+                console.error("❌ Error del servidor:", data.error);
+            }
+        })
+        .catch(err => {
+            console.error("❌ Error al hacer fetch:", err);
+            showAlert("error", "❌ Error en conexión con el servidor.");
+        });
+
+    } catch (err) {
+        console.error("❌ Error en enviarFormulario:", err);
+        showAlert("error", "❌ Fallo interno al enviar el formulario.");
+    }
+}
+
+
 
         // 8 - cargar pedidos en tabla
         function cargarPedidos() {
@@ -945,65 +852,63 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         });
 
 
-        function eliminarPedido(id) {
-            console.log(`🗑️ Solicitud de eliminar pedido con ID: ${id}`);
-            pedidoIdAEliminar = id;
+function eliminarPedido(id) {
+    console.log(`🗑️ Solicitud de eliminar pedido con ID: ${id}`);
+    pedidoIdAEliminar = id;
 
-            const modal = document.getElementById("modalConfirmacion");
-            if (!modal) {
-                console.error("❌ No se encontró el modal de confirmación (#modalConfirmacion)");
-                alert("❌ Error interno: modal de confirmación no encontrado.");
+    const modal = document.getElementById("modalConfirmacion");
+    if (!modal) {
+        console.error("❌ No se encontró el modal de confirmación (#modalConfirmacion)");
+        alert("❌ Error interno: modal de confirmación no encontrado.");
+        return;
+    }
+
+    modal.classList.remove("hidden");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("btnConfirmarEliminar");
+
+    if (btn) {
+        btn.addEventListener("click", () => {
+            if (!pedidoIdAEliminar) {
+                console.warn("⚠️ No hay pedido pendiente de eliminar.");
                 return;
             }
 
-            modal.classList.remove("hidden");
-        }
+            console.log(`🚨 Confirmando eliminación de pedido ID: ${pedidoIdAEliminar}`);
 
-        document.addEventListener("DOMContentLoaded", () => {
-            const btn = document.getElementById("btnConfirmarEliminar");
-
-            if (btn) {
-                btn.addEventListener("click", () => {
-                    if (!pedidoIdAEliminar) {
-                        console.warn("⚠️ No hay pedido pendiente de eliminar.");
-                        return;
-                    }
-
-                    console.log(`🚨 Confirmando eliminación de pedido ID: ${pedidoIdAEliminar}`);
-
-                    fetch("/controllers/PedidoController.php?action=eliminarPedido", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify({
-                                id: pedidoIdAEliminar
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            console.log("✅ Respuesta del servidor:", data);
-                            if (data.success) {
-                                showAlert("success", data.message || "🗑️ Pedido eliminado.");
-                                cargarPedidos();
-                            } else {
-                                showAlert("error", data.message || "❌ No se pudo eliminar.");
-                                console.error("❌ Detalle del error:", data.error);
-                            }
-                        })
-                        .catch(err => {
-                            console.error("❌ Error al eliminar pedido:", err);
-                            showAlert("error", "❌ Error en la conexión al servidor.");
-                        })
-                        .finally(() => {
-                            closeModalConfirmacion();
-                            pedidoIdAEliminar = null;
-                        });
-                });
-            } else {
-                console.error("❌ Botón de confirmación de eliminación no encontrado (#btnConfirmarEliminar)");
-            }
+            fetch("/controllers/PedidoController.php?action=eliminarPedido", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ id: pedidoIdAEliminar })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log("✅ Respuesta del servidor:", data);
+                if (data.success) {
+                    showAlert("success", data.message || "🗑️ Pedido eliminado.");
+                    cargarPedidos();
+                } else {
+                    showAlert("error", data.message || "❌ No se pudo eliminar.");
+                    console.error("❌ Detalle del error:", data.error);
+                }
+            })
+            .catch(err => {
+                console.error("❌ Error al eliminar pedido:", err);
+                showAlert("error", "❌ Error en la conexión al servidor.");
+            })
+            .finally(() => {
+                closeModalConfirmacion();
+                pedidoIdAEliminar = null;
+            });
         });
+    } else {
+        console.error("❌ Botón de confirmación de eliminación no encontrado (#btnConfirmarEliminar)");
+    }
+});
 
 
         function closeModalConfirmacion() {
@@ -1175,16 +1080,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
     </script>
 
-    <!-- Modal de confirmación para eliminar pedido -->
-    <div id="modalConfirmacion" class="modal hidden">
-        <div class="modal-content card">
-            <h3>¿Estás seguro de eliminar este pedido?</h3>
-            <div class="form-buttons">
-                <button id="btnConfirmarEliminar" class="btn btn-aceptar">Eliminar</button>
-                <button class="btn btn-cancelar" onclick="closeModalConfirmacion()">Cancelar</button>
-            </div>
+<!-- Modal de confirmación para eliminar pedido -->
+<div id="modalConfirmacion" class="modal hidden">
+    <div class="modal-content card">
+        <h3>¿Estás seguro de eliminar este pedido?</h3>
+        <div class="form-buttons">
+            <button id="btnConfirmarEliminar" class="btn btn-aceptar">Eliminar</button>
+            <button class="btn btn-cancelar" onclick="closeModalConfirmacion()">Cancelar</button>
         </div>
     </div>
+</div>
 
     <!-- 🟢 Alertas -->
     <div class="alert-container" id="alertContainer"></div>
