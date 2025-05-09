@@ -720,7 +720,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 if (pedidoEditandoId !== null) {
                     pedido.id = pedidoEditandoId;
                     url = "/controllers/PedidoController.php?action=actualizarPedidoCompleto";
-                    metodo = "PUT";
+                    metodo = "POST";
                 }
 
                 console.log(`🚀 Enviando datos a ${url} con método ${metodo}`);
