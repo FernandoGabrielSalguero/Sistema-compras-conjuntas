@@ -356,7 +356,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 </div>
 
                 <!-- Productos del pedido -->
+                 <br>
                 <hr>
+                <br>
                 <h4>Productos del Pedido</h4>
                 <div id="productosEditablesContainer">
                     <!-- JS va a cargar los productos existentes con campos editables -->
