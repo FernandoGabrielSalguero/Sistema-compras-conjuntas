@@ -854,7 +854,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             console.log("📤 Enviando actualización de pedido:", payload);
 
             fetch("/controllers/PedidoController.php?action=actualizarPedidoCompleto", {
-                    method: "PUT",
+                    method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
@@ -885,7 +885,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             const modal = document.getElementById("modalConfirmacion");
             if (!modal) {
-                console.error("❌ No se encontró el modal de confirmación (#modalConfirmacion)");
+                console.error("❌ No se encontró el modal de confirmación! (#modalConfirmacion)");
                 alert("❌ Error interno: modal de confirmación no encontrado.");
                 return;
             }
