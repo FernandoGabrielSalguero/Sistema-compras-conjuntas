@@ -678,22 +678,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 const formData = new FormData(e.target);
 
-                const pedido = {
-                    cooperativa: formData.get("cooperativa"),
-                    productor: formData.get("productor"),
-                    persona_facturacion: formData.get("factura"),
-                    condicion_facturacion: formData.get("condicion"),
-                    afiliacion: formData.get("afiliacion"),
-                    ha_cooperativa: formData.get("hectareas"),
-                    observaciones: formData.get("observaciones"),
-                    total_sin_iva: calcularTotalSinIVA(),
-                    total_iva: calcularTotalIVA(),
-                    total_pedido: calcularTotalFinal(),
-                    factura: ""
-                };
-
-                console.log("📦 Pedido armado:", pedido);
-
                 const detalles = [...document.querySelectorAll("#productosEditablesContainer input")].map(input => {
                     const cantidad = parseFloat(input.value);
                     return {
@@ -707,6 +691,21 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     };
                 }).filter(p => p.cantidad && p.cantidad > 0);
 
+                const pedido = {
+                    cooperativa: formData.get("cooperativa") || formData.get("edit_cooperativa"),
+                    productor: formData.get("productor") || formData.get("edit_productor"),
+                    persona_facturacion: formData.get("factura") || formData.get("edit_factura"),
+                    condicion_facturacion: formData.get("condicion") || formData.get("edit_condicion"),
+                    afiliacion: formData.get("afiliacion") || formData.get("edit_afiliacion"),
+                    ha_cooperativa: formData.get("hectareas") || formData.get("edit_hectareas"),
+                    observaciones: formData.get("observaciones") || formData.get("edit_observaciones"),
+                    total_sin_iva: calcularTotalSinIVADesde(detalles),
+                    total_iva: calcularTotalIVADesde(detalles),
+                    total_pedido: calcularTotalFinalDesde(detalles),
+                    factura: ""
+                };
+
+                console.log("📦 Pedido armado:", pedido);
                 console.log("📦 Detalles productos:", detalles);
 
                 const payload = {
@@ -756,7 +755,102 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
+        // Funciones auxiliares para cálculo desde los detalles
+        function calcularTotalSinIVADesde(detalles) {
+            return detalles.reduce((total, p) => total + p.subtotal_por_categoria, 0);
+        }
 
+        function calcularTotalIVADesde(detalles) {
+            return calcularTotalSinIVADesde(detalles) * 0.21;
+        }
+
+        function calcularTotalFinalDesde(detalles) {
+            return calcularTotalSinIVADesde(detalles) + calcularTotalIVADesde(detalles);
+        }
+
+
+        try {
+            console.log("🔄 Ejecutando enviarFormulario...");
+
+            const formData = new FormData(e.target);
+
+            const pedido = {
+                cooperativa: formData.get("cooperativa"),
+                productor: formData.get("productor"),
+                persona_facturacion: formData.get("factura"),
+                condicion_facturacion: formData.get("condicion"),
+                afiliacion: formData.get("afiliacion"),
+                ha_cooperativa: formData.get("hectareas"),
+                observaciones: formData.get("observaciones"),
+                total_sin_iva: calcularTotalSinIVA(),
+                total_iva: calcularTotalIVA(),
+                total_pedido: calcularTotalFinal(),
+                factura: ""
+            };
+
+            console.log("📦 Pedido armado:", pedido);
+
+            const detalles = [...document.querySelectorAll("#productosEditablesContainer input")].map(input => {
+                const cantidad = parseFloat(input.value);
+                return {
+                    nombre_producto: input.dataset.nombre,
+                    detalle_producto: input.dataset.detalle,
+                    precio_producto: parseFloat(input.dataset.precio),
+                    unidad_medida_venta: input.dataset.unidad,
+                    categoria: input.dataset.categoria,
+                    cantidad,
+                    subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
+                };
+            }).filter(p => p.cantidad && p.cantidad > 0);
+
+            console.log("📦 Detalles productos:", detalles);
+
+            const payload = {
+                pedido,
+                detalles
+            };
+
+            let url = "/controllers/PedidoController.php?action=guardarPedido";
+            let metodo = "POST";
+
+            if (pedidoEditandoId !== null) {
+                pedido.id = pedidoEditandoId;
+                url = "/controllers/PedidoController.php?action=actualizarPedidoCompleto";
+                metodo = "PUT";
+            }
+
+            console.log(`🚀 Enviando datos a ${url} con método ${metodo}`);
+            console.log("📤 Payload:", payload);
+
+            fetch(url, {
+                    method: metodo,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log("✅ Respuesta del servidor:", data);
+
+                    if (data.success) {
+                        showAlert("success", data.message || "✅ Pedido guardado/actualizado correctamente.");
+                        location.reload();
+                    } else {
+                        showAlert("error", data.message || "❌ Error al guardar/actualizar.");
+                        console.error("❌ Error del servidor:", data.error);
+                    }
+                })
+                .catch(err => {
+                    console.error("❌ Error al hacer fetch:", err);
+                    showAlert("error", "❌ Error en conexión con el servidor.");
+                });
+
+        } catch (err) {
+            console.error("❌ Error en enviarFormulario:", err);
+            showAlert("error", "❌ Fallo interno al enviar el formulario.");
+        }
+        
 
         // 8 - cargar pedidos en tabla
         function cargarPedidos() {
