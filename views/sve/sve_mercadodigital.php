@@ -633,52 +633,39 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         // 5. Mostrar resumen dinámico
-        function renderResumen() {
-            let container = document.getElementById("acordeon-resumen");
-            container.innerHTML = `<h3>Resumen del Pedido</h3>`;
+function renderResumen() {
+    let container = document.getElementById("acordeon-resumen");
+    container.innerHTML = `<h3>Resumen del Pedido</h3>`;
 
-            let totalSinIVA = 0;
+    let totalSinIVA = 0;
+    let totalIVA = 0;
 
-            Object.entries(productosSeleccionados).forEach(([id, p]) => {
-                totalSinIVA += p.subtotal_por_categoria;
+    Object.entries(productosSeleccionados).forEach(([id, p]) => {
+        const iva = (p.alicuota ?? 0) * p.subtotal_por_categoria;
+        totalSinIVA += p.subtotal_por_categoria;
+        totalIVA += iva;
 
-                const row = document.createElement("div");
-                row.classList.add("input-group");
+        const row = document.createElement("div");
+        row.classList.add("input-group");
 
-                row.innerHTML = `
+        row.innerHTML = `
             <strong>${p.nombre_producto}</strong> - ${p.cantidad} x $${p.precio_producto.toFixed(2)} = $${p.subtotal_por_categoria.toFixed(2)}
+            <br><small>IVA (${((p.alicuota ?? 0) * 100).toFixed(0)}%): $${iva.toFixed(2)}</small>
             <button class="btn btn-cancelar" onclick="eliminarProducto('${id}')">❌</button>
         `;
-                container.appendChild(row);
-            });
+        container.appendChild(row);
+    });
 
-            let totalIVA = 0;
+    const totalConIVA = totalSinIVA + totalIVA;
 
-            Object.entries(productosSeleccionados).forEach(([id, p]) => {
-                const ivaProducto = p.subtotal_por_categoria * (p.alicuota || 0);
-                totalIVA += ivaProducto;
-
-                const row = document.createElement("div");
-                row.classList.add("input-group");
-
-                row.innerHTML = `
-        <strong>${p.nombre_producto}</strong> - ${p.cantidad} x $${p.precio_producto.toFixed(2)} = $${p.subtotal_por_categoria.toFixed(2)}
-        <br><small>IVA (${(p.alicuota * 100).toFixed(0)}%): $${ivaProducto.toFixed(2)}</small>
-        <button class="btn btn-cancelar" onclick="eliminarProducto('${id}')">❌</button>
+    container.innerHTML += `
+        <hr>
+        <p><strong>Subtotal sin IVA:</strong> $${totalSinIVA.toFixed(2)}</p>
+        <p><strong>Total IVA:</strong> $${totalIVA.toFixed(2)}</p>
+        <p><strong>Total:</strong> $${totalConIVA.toFixed(2)}</p>
     `;
-                container.appendChild(row);
-            });
+}
 
-            const totalConIVA = totalSinIVA + totalIVA;
-
-            container.innerHTML += `
-    <hr>
-    <p><strong>Subtotal sin IVA:</strong> $${totalSinIVA.toFixed(2)}</p>
-    <p><strong>Total IVA:</strong> $${totalIVA.toFixed(2)}</p>
-    <p><strong>Total:</strong> $${totalConIVA.toFixed(2)}</p>
-`;
-
-        }
 
         // 6. Eliminar producto del resumen
         function eliminarProducto(id) {
