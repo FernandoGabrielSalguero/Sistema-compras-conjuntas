@@ -1058,6 +1058,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 
         function renderProductosEditable(productos) {
+            console.log("🛠️ Renderizando productos editables:", productos);
             const container = document.getElementById("productosEditablesContainer");
             container.innerHTML = "";
 
