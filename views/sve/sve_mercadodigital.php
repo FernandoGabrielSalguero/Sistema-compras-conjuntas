@@ -825,7 +825,7 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
 
             const id = document.getElementById("edit-id").value;
-            const ha = document.getElementById("edit-ha").value;
+            const ha = document.getElementById("edit_hectareas").value;
             const obs = document.getElementById("edit-observaciones").value;
 
             fetch("/controllers/PedidoController.php?action=actualizarPedido", {
