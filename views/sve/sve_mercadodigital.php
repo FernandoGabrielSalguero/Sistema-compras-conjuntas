@@ -694,18 +694,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 console.log("📦 Pedido armado:", pedido);
 
-                const detalles = [...document.querySelectorAll("#productosEditablesContainer input")].map(input => {
-                    const cantidad = parseFloat(input.value);
-                    return {
-                        nombre_producto: input.dataset.nombre,
-                        detalle_producto: input.dataset.detalle,
-                        precio_producto: parseFloat(input.dataset.precio),
-                        unidad_medida_venta: input.dataset.unidad,
-                        categoria: input.dataset.categoria,
-                        cantidad,
-                        subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
-                    };
-                }).filter(p => p.cantidad && p.cantidad > 0);
+                const detalles = Object.values(productosSeleccionados).map(p => ({
+                    nombre_producto: p.nombre_producto,
+                    detalle_producto: p.detalle_producto,
+                    precio_producto: p.precio_producto,
+                    unidad_medida_venta: p.unidad_medida_venta,
+                    categoria: p.categoria,
+                    cantidad: p.cantidad,
+                    subtotal_por_categoria: p.subtotal_por_categoria
+                }));
 
                 console.log("📦 Detalles productos:", detalles);
 
@@ -823,80 +820,80 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         document.getElementById("formEditarPedidoCompleto").addEventListener("submit", actualizarPedidoCompleto);
 
         function actualizarPedidoCompleto(e) {
-    e.preventDefault();
+            e.preventDefault();
 
-    const id = document.getElementById("edit_id").value;
-    const hectareas = document.getElementById("edit_hectareas").value;
-    const observaciones = document.getElementById("edit_observaciones").value;
+            const id = document.getElementById("edit_id").value;
+            const hectareas = document.getElementById("edit_hectareas").value;
+            const observaciones = document.getElementById("edit_observaciones").value;
 
-    // Obtener los valores de los campos que están solo en "lectura"
-    const cooperativa = document.getElementById("view_cooperativa").value;
-    const productor = document.getElementById("view_productor").value;
-    const persona_facturacion = document.getElementById("view_factura").value;
-    const condicion_facturacion = document.getElementById("view_condicion").value;
-    const afiliacion = document.getElementById("view_afiliacion").value;
+            // Obtener los valores de los campos que están solo en "lectura"
+            const cooperativa = document.getElementById("view_cooperativa").value;
+            const productor = document.getElementById("view_productor").value;
+            const persona_facturacion = document.getElementById("view_factura").value;
+            const condicion_facturacion = document.getElementById("view_condicion").value;
+            const afiliacion = document.getElementById("view_afiliacion").value;
 
-    const detalles = [...document.querySelectorAll("#productosEditablesContainer input")].map(input => {
-        const cantidad = parseFloat(input.value);
-        return {
-            nombre_producto: input.dataset.nombre,
-            detalle_producto: input.dataset.detalle,
-            precio_producto: parseFloat(input.dataset.precio),
-            unidad_medida_venta: input.dataset.unidad,
-            categoria: input.dataset.categoria,
-            cantidad,
-            subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
-        };
-    }).filter(p => p.cantidad && p.cantidad > 0);
+            const detalles = [...document.querySelectorAll("#productosEditablesContainer input")].map(input => {
+                const cantidad = parseFloat(input.value);
+                return {
+                    nombre_producto: input.dataset.nombre,
+                    detalle_producto: input.dataset.detalle,
+                    precio_producto: parseFloat(input.dataset.precio),
+                    unidad_medida_venta: input.dataset.unidad,
+                    categoria: input.dataset.categoria,
+                    cantidad,
+                    subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
+                };
+            }).filter(p => p.cantidad && p.cantidad > 0);
 
-    // Calcula los totales de nuevo
-    const total_sin_iva = detalles.reduce((sum, p) => sum + p.subtotal_por_categoria, 0);
-    const total_iva = total_sin_iva * 0.21;
-    const total_pedido = total_sin_iva + total_iva;
+            // Calcula los totales de nuevo
+            const total_sin_iva = detalles.reduce((sum, p) => sum + p.subtotal_por_categoria, 0);
+            const total_iva = total_sin_iva * 0.21;
+            const total_pedido = total_sin_iva + total_iva;
 
-    const payload = {
-        pedido: {
-            id,
-            cooperativa,
-            productor,
-            persona_facturacion,
-            condicion_facturacion,
-            afiliacion,
-            ha_cooperativa: hectareas,
-            total_sin_iva,
-            total_iva,
-            total_pedido,
-            factura: "", // Si tenés algún valor por defecto, ponelo acá
-            observaciones
-        },
-        detalles
-    };
+            const payload = {
+                pedido: {
+                    id,
+                    cooperativa,
+                    productor,
+                    persona_facturacion,
+                    condicion_facturacion,
+                    afiliacion,
+                    ha_cooperativa: hectareas,
+                    total_sin_iva,
+                    total_iva,
+                    total_pedido,
+                    factura: "", // Si tenés algún valor por defecto, ponelo acá
+                    observaciones
+                },
+                detalles
+            };
 
-    console.log("📤 Enviando actualización de pedido:", payload);
+            console.log("📤 Enviando actualización de pedido:", payload);
 
-    fetch("/controllers/PedidoController.php?action=actualizarPedidoCompleto", {
-        method: "POST", // ya lo corregiste en el controlador
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showAlert("success", data.message || "✅ Pedido actualizado correctamente.");
-                cerrarModalEditarPedido();
-                cargarPedidos();
-            } else {
-                showAlert("error", data.message || "❌ No se pudo actualizar.");
-                console.error("⚠️ Respuesta con error:", data);
-            }
-        })
-        .catch(err => {
-            console.error("❌ Error de red al actualizar:", err);
-            showAlert("error", "❌ Fallo de conexión al servidor.");
-        });
-}
+            fetch("/controllers/PedidoController.php?action=actualizarPedidoCompleto", {
+                    method: "POST", // ya lo corregiste en el controlador
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert("success", data.message || "✅ Pedido actualizado correctamente.");
+                        cerrarModalEditarPedido();
+                        cargarPedidos();
+                    } else {
+                        showAlert("error", data.message || "❌ No se pudo actualizar.");
+                        console.error("⚠️ Respuesta con error:", data);
+                    }
+                })
+                .catch(err => {
+                    console.error("❌ Error de red al actualizar:", err);
+                    showAlert("error", "❌ Fallo de conexión al servidor.");
+                });
+        }
 
 
 
