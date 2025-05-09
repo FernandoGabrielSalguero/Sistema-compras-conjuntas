@@ -52,23 +52,6 @@ switch ($action) {
         echo json_encode(PedidoModel::getPedidos());
         break;
 
-    case 'actualizarPedido':
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $data = json_decode(file_get_contents("php://input"), true);
-            $id = $data['id'] ?? null;
-            $ha = $data['ha_cooperativa'] ?? null;
-            $obs = $data['observaciones'] ?? '';
-
-            if ($id && $ha !== null) {
-                echo json_encode(PedidoModel::actualizarPedido($id, $ha, $obs));
-            } else {
-                echo json_encode(['success' => false, 'error' => 'Datos incompletos']);
-            }
-        } else {
-            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
-        }
-        break;
-
     case 'eliminarPedido':
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = json_decode(file_get_contents("php://input"), true);
@@ -83,10 +66,15 @@ switch ($action) {
             echo json_encode(['success' => false, 'error' => 'Método no permitido']);
         }
         break;
-
     case 'actualizarPedidoCompleto':
-        if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
-            $data = json_decode(file_get_contents("php://input"), true);
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') { // <-- CAMBIADO
+            $json = file_get_contents("php://input");
+            $data = json_decode($json, true);
+
+            if (!$data) {
+                echo json_encode(['success' => false, 'error' => 'JSON inválido.']);
+                exit;
+            }
 
             $pedido = $data['pedido'] ?? [];
             $detalles = $data['detalles'] ?? [];
