@@ -375,6 +375,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <button type="button" class="btn btn-aceptar" onclick="agregarProductoManual()">+</button>
                     </div>
                 </div>
+                <br>
+                <hr>
+                <br>
+                <div id="resumenTotalesModal" style="margin-top: 1rem;">
+                    <hr />
+                    <p><strong>Subtotal sin IVA:</strong> $<span id="subtotalSinIvaModal">0.00</span></p>
+                    <p><strong>Total IVA:</strong> $<span id="totalIvaModal">0.00</span></p>
+                    <p><strong>Total:</strong> $<span id="totalConIvaModal">0.00</span></p>
+                </div>
                 <div class="form-buttons">
                     <button type="submit" class="btn btn-aceptar">Guardar Cambios</button>
                     <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
@@ -1090,6 +1099,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 
         function renderProductosEditable(productos) {
+            input.addEventListener("input", recalcularTotalesModal);
+            recalcularTotalesModal();
+
             console.log("🛠️ Renderizando productos editables:", productos);
             const container = document.getElementById("productosEditablesContainer");
             container.innerHTML = "";
@@ -1161,6 +1173,28 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     `;
 
             container.appendChild(nuevo);
+        }
+
+        function recalcularTotalesModal() {
+            let subtotal = 0;
+            let totalIVA = 0;
+
+            const inputs = document.querySelectorAll("#productosEditablesContainer input[type='number']");
+            inputs.forEach(input => {
+                const cantidad = parseFloat(input.value) || 0;
+                const precio = parseFloat(input.dataset.precio) || 0;
+                const alicuota = parseFloat(input.dataset.alicuota) || 0;
+
+                const parcial = cantidad * precio;
+                subtotal += parcial;
+                totalIVA += parcial * (alicuota / 100);
+            });
+
+            const total = subtotal + totalIVA;
+
+            document.getElementById("subtotalSinIvaModal").textContent = subtotal.toFixed(2);
+            document.getElementById("totalIvaModal").textContent = totalIVA.toFixed(2);
+            document.getElementById("totalConIvaModal").textContent = total.toFixed(2);
         }
     </script>
 
