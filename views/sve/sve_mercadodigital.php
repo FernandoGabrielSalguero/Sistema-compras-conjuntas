@@ -783,7 +783,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>$${parseFloat(pedido.total_pedido).toFixed(2)}</td>
                     <td>${pedido.observaciones}</td>
 <td>
-    <button class="btn-icon" title="Editar" onclick="abrirModalEditar(${pedido.id})">
+    <button class="btn-icon" title="Editar" onclick="abrirModalEditarPedidoCompleto(${pedido.id})">
         <span class="material-icons">edit</span>
     </button>
     <button class="btn-icon" title="Eliminar" onclick="eliminarPedido(${pedido.id})">
@@ -811,29 +811,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return calcularTotalSinIVA() + calcularTotalIVA();
         }
 
-        // function abrirModalEditar(id) {
-        //     abrirModalEditarPedidoCompleto(id);
-
-        //     const pedido = obtenerPedidoPorId(id);
-        //     if (!pedido) return;
-
-        //     pedidoEditandoId = id;
-
-        //     document.getElementById("edit-id").value = pedido.id;
-        //     document.getElementById("edit-cooperativa").value = pedido.cooperativa;
-        //     cargarProductoresModal().then(() => {
-        //         document.getElementById("edit-productor").value = pedido.productor;
-        //     });
-
-        //     document.getElementById("edit-factura").value = pedido.persona_facturacion;
-        //     document.getElementById("edit-condicion").value = pedido.condicion_facturacion;
-        //     document.getElementById("edit-afiliacion").value = pedido.afiliacion;
-        //     document.getElementById("edit-ha").value = pedido.ha_cooperativa;
-        //     document.getElementById("edit-observaciones").value = pedido.observaciones;
-
-        //     // Mostrar el modal
-        //     document.getElementById("modal-editar").style.display = "block";
-        // }
 
         function cerrarModal() {
             document.getElementById("modal-editar").style.display = "none";
