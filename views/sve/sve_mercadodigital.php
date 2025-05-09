@@ -1143,29 +1143,29 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 
 
-        function agregarProductoManual() {
-            input.addEventListener("input", recalcularTotalesModal);
-            const select = document.getElementById("selectProductoNuevo");
-            const productoId = select.value;
-            if (!productoId) return;
+       function agregarProductoManual() {
+    const select = document.getElementById("selectProductoNuevo");
+    const productoId = select.value;
+    if (!productoId) return;
 
-            const yaExiste = [...document.querySelectorAll("#productosEditablesContainer input")]
-                .some(input => input.dataset.id === productoId);
-            if (yaExiste) {
-                showAlert("error", "Este producto ya fue agregado.");
-                return;
-            }
+    const yaExiste = [...document.querySelectorAll("#productosEditablesContainer input")]
+        .some(input => input.dataset.id === productoId);
+    if (yaExiste) {
+        showAlert("error", "Este producto ya fue agregado.");
+        return;
+    }
 
+    const prod = cacheTodosProductos[productoId];
+    if (!prod) return;
 
-            const prod = cacheTodosProductos[productoId];
-            if (!prod) return;
+    const container = document.getElementById("productosEditablesContainer");
 
-            const container = document.getElementById("productosEditablesContainer");
+    const nuevo = document.createElement("div");
+    nuevo.className = "input-group";
 
-            const nuevo = document.createElement("div");
-            nuevo.className = "input-group";
+    const alicuotaDecimal = (parseFloat(prod.alicuota) || 0) / 100;
 
-            nuevo.innerHTML = `
+    nuevo.innerHTML = `
         <label><strong>${prod.Nombre_producto}</strong> - ${prod.Detalle_producto}</label>
         <div class="input-icon">
             <span class="material-icons">inventory_2</span>
@@ -1179,15 +1179,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 data-precio="${prod.Precio_producto}"
                 data-unidad="${prod.Unidad_Medida_venta}"
                 data-categoria="${prod.categoria}"
+                data-alicuota="${alicuotaDecimal}"
             />
             <span>${prod.Unidad_Medida_venta}</span>
         </div>
+        <small>IVA: ${(alicuotaDecimal * 100).toFixed(0)}%</small>
     `;
 
-            container.appendChild(nuevo);
+    const input = nuevo.querySelector("input");
+    input.addEventListener("input", recalcularTotalesModal);
 
+    container.appendChild(nuevo);
+    recalcularTotalesModal(); // <- opcional para actualizar totales al instante
+}
 
-        }
 
         function recalcularTotalesModal() {
             let subtotal = 0;
