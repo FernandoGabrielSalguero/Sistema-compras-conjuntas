@@ -40,6 +40,19 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
     <style>
+        #modalEditarPedido .modal-content {
+            max-width: 900px;
+            /* o 1000px si querés más */
+            width: 100%;
+        }
+
+        /* Si querés que los grupos de campos tengan 2 columnas */
+        #modalEditarPedido .form-grid.grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
         #acordeones-productos .accordion {
             width: 100%;
         }
@@ -546,37 +559,37 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 
         function crearAcordeonCategoria(categoria, productos) {
-    const container = document.getElementById("acordeones-productos");
+            const container = document.getElementById("acordeones-productos");
 
-    const acordeon = document.createElement("div");
-    acordeon.classList.add("accordion");
+            const acordeon = document.createElement("div");
+            acordeon.classList.add("accordion");
 
-    const header = document.createElement("div");
-    header.classList.add("accordion-header");
-    header.setAttribute("onclick", "toggleAccordion(this)");
-    header.innerHTML = `<span>${categoria}</span><span class="material-icons">expand_more</span>`;
+            const header = document.createElement("div");
+            header.classList.add("accordion-header");
+            header.setAttribute("onclick", "toggleAccordion(this)");
+            header.innerHTML = `<span>${categoria}</span><span class="material-icons">expand_more</span>`;
 
-    const body = document.createElement("div");
-    body.classList.add("accordion-body");
+            const body = document.createElement("div");
+            body.classList.add("accordion-body");
 
-    productos.forEach(prod => {
-        const iconosCategoria = {
-            "Fertilizantes Sólidos": "🧪",
-            "Fertilizantes Completos": "⚗️",
-            "Fertilizantes Líquidos": "💧",
-            "Fungicidas": "🧫",
-            "Insecticidas": "🐛",
-            "Feromona Asperjable": "🌿",
-        };
+            productos.forEach(prod => {
+                const iconosCategoria = {
+                    "Fertilizantes Sólidos": "🧪",
+                    "Fertilizantes Completos": "⚗️",
+                    "Fertilizantes Líquidos": "💧",
+                    "Fungicidas": "🧫",
+                    "Insecticidas": "🐛",
+                    "Feromona Asperjable": "🌿",
+                };
 
-        const icono = iconosCategoria[categoria] || "📦";
-        const item = document.createElement("div");
-        item.classList.add("input-group");
+                const icono = iconosCategoria[categoria] || "📦";
+                const item = document.createElement("div");
+                item.classList.add("input-group");
 
-        // ⚠️ Convertimos alicuota a decimal (ej: 27 => 0.27)
-        const alicuotaDecimal = (parseFloat(prod.alicuota) || 0) / 100;
+                // ⚠️ Convertimos alicuota a decimal (ej: 27 => 0.27)
+                const alicuotaDecimal = (parseFloat(prod.alicuota) || 0) / 100;
 
-        item.innerHTML = `
+                item.innerHTML = `
         <label style="font-weight: bold; margin-bottom: 0.25rem;">
               ${icono} ${prod.Nombre_producto}
         </label>
@@ -602,13 +615,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     `;
 
-        body.appendChild(item);
-    });
+                body.appendChild(item);
+            });
 
-    acordeon.appendChild(header);
-    acordeon.appendChild(body);
-    container.appendChild(acordeon);
-}
+            acordeon.appendChild(header);
+            acordeon.appendChild(body);
+            container.appendChild(acordeon);
+        }
 
 
 
@@ -636,42 +649,42 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         // 5. Mostrar resumen dinámico
-function renderResumen() {
-    const container = document.getElementById("acordeon-resumen");
-    container.innerHTML = `<h3>Resumen del Pedido</h3>`;
+        function renderResumen() {
+            const container = document.getElementById("acordeon-resumen");
+            container.innerHTML = `<h3>Resumen del Pedido</h3>`;
 
-    let totalSinIVA = 0;
-    let totalIVA = 0;
+            let totalSinIVA = 0;
+            let totalIVA = 0;
 
-    Object.entries(productosSeleccionados).forEach(([id, p]) => {
-        const alicuota = parseFloat(p.alicuota);
-        const porcentajeIVA = isNaN(alicuota) ? 0 : alicuota;
-        const iva = p.subtotal_por_categoria * porcentajeIVA;
+            Object.entries(productosSeleccionados).forEach(([id, p]) => {
+                const alicuota = parseFloat(p.alicuota);
+                const porcentajeIVA = isNaN(alicuota) ? 0 : alicuota;
+                const iva = p.subtotal_por_categoria * porcentajeIVA;
 
-        totalSinIVA += p.subtotal_por_categoria;
-        totalIVA += iva;
+                totalSinIVA += p.subtotal_por_categoria;
+                totalIVA += iva;
 
-        const row = document.createElement("div");
-        row.classList.add("input-group");
+                const row = document.createElement("div");
+                row.classList.add("input-group");
 
-        row.innerHTML = `
+                row.innerHTML = `
             <strong>${p.nombre_producto}</strong> - ${p.cantidad} x $${p.precio_producto.toFixed(2)} = $${p.subtotal_por_categoria.toFixed(2)}
             <br><small>IVA (${(porcentajeIVA * 100).toFixed(0)}%): $${iva.toFixed(2)}</small>
             <button class="btn btn-cancelar" onclick="eliminarProducto('${id}')">❌</button>
         `;
 
-        container.appendChild(row);
-    });
+                container.appendChild(row);
+            });
 
-    const totalConIVA = totalSinIVA + totalIVA;
+            const totalConIVA = totalSinIVA + totalIVA;
 
-    container.innerHTML += `
+            container.innerHTML += `
         <hr>
         <p><strong>Subtotal sin IVA:</strong> $${totalSinIVA.toFixed(2)}</p>
         <p><strong>Total IVA:</strong> $${totalIVA.toFixed(2)}</p>
         <p><strong>Total:</strong> $${totalConIVA.toFixed(2)}</p>
     `;
-}
+        }
 
 
 
