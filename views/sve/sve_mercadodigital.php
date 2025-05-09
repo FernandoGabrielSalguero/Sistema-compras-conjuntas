@@ -592,6 +592,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     data-precio="${prod.Precio_producto}"
                     data-unidad="${prod.Unidad_Medida_venta}"
                     data-categoria="${prod.categoria}"
+                    data-alicuota="${prod.Alicuota}"
                     onchange="actualizarProductoSeleccionado(this)"
                 />
                 <span style="padding-left: 0.5rem;">${prod.Unidad_Medida_venta}</span>
@@ -621,6 +622,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     unidad_medida_venta: input.dataset.unidad,
                     categoria: input.dataset.categoria,
                     cantidad: cantidad,
+                    alicuota: parseFloat(input.dataset.alicuota),
                     subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
                 };
             } else {
@@ -650,15 +652,32 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 container.appendChild(row);
             });
 
-            const iva = totalSinIVA * 0.21;
-            const total = totalSinIVA + iva;
+            let totalIVA = 0;
+
+            Object.entries(productosSeleccionados).forEach(([id, p]) => {
+                const ivaProducto = p.subtotal_por_categoria * (p.alicuota || 0);
+                totalIVA += ivaProducto;
+
+                const row = document.createElement("div");
+                row.classList.add("input-group");
+
+                row.innerHTML = `
+        <strong>${p.nombre_producto}</strong> - ${p.cantidad} x $${p.precio_producto.toFixed(2)} = $${p.subtotal_por_categoria.toFixed(2)}
+        <br><small>IVA (${(p.alicuota * 100).toFixed(0)}%): $${ivaProducto.toFixed(2)}</small>
+        <button class="btn btn-cancelar" onclick="eliminarProducto('${id}')">❌</button>
+    `;
+                container.appendChild(row);
+            });
+
+            const totalConIVA = totalSinIVA + totalIVA;
 
             container.innerHTML += `
-        <hr>
-        <p><strong>Subtotal sin IVA:</strong> $${totalSinIVA.toFixed(2)}</p>
-        <p><strong>IVA (21%):</strong> $${iva.toFixed(2)}</p>
-        <p><strong>Total:</strong> $${total.toFixed(2)}</p>
-    `;
+    <hr>
+    <p><strong>Subtotal sin IVA:</strong> $${totalSinIVA.toFixed(2)}</p>
+    <p><strong>Total IVA:</strong> $${totalIVA.toFixed(2)}</p>
+    <p><strong>Total:</strong> $${totalConIVA.toFixed(2)}</p>
+`;
+
         }
 
         // 6. Eliminar producto del resumen
@@ -800,7 +819,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         function calcularTotalIVA() {
-            return calcularTotalSinIVA() * 0.21;
+            return Object.values(productosSeleccionados).reduce((suma, p) => {
+                const alicuota = p.alicuota || 0;
+                return suma + (p.subtotal_por_categoria * alicuota);
+            }, 0);
         }
 
         function calcularTotalFinal() {
