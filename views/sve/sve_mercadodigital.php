@@ -546,66 +546,69 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 
         function crearAcordeonCategoria(categoria, productos) {
-            const container = document.getElementById("acordeones-productos");
+    const container = document.getElementById("acordeones-productos");
 
-            const acordeon = document.createElement("div");
-            acordeon.classList.add("accordion");
+    const acordeon = document.createElement("div");
+    acordeon.classList.add("accordion");
 
-            const header = document.createElement("div");
-            header.classList.add("accordion-header");
-            header.setAttribute("onclick", "toggleAccordion(this)");
-            header.innerHTML = `<span>${categoria}</span><span class="material-icons">expand_more</span>`;
+    const header = document.createElement("div");
+    header.classList.add("accordion-header");
+    header.setAttribute("onclick", "toggleAccordion(this)");
+    header.innerHTML = `<span>${categoria}</span><span class="material-icons">expand_more</span>`;
 
-            const body = document.createElement("div");
-            body.classList.add("accordion-body");
+    const body = document.createElement("div");
+    body.classList.add("accordion-body");
 
-            productos.forEach(prod => {
-                const iconosCategoria = {
-                    "Fertilizantes Sólidos": "🧪",
-                    "Fertilizantes Completos": "⚗️",
-                    "Fertilizantes Líquidos": "💧",
-                    "Fungicidas": "🧫",
-                    "Insecticidas": "🐛",
-                    "Feromona Asperjable": "🌿",
-                };
+    productos.forEach(prod => {
+        const iconosCategoria = {
+            "Fertilizantes Sólidos": "🧪",
+            "Fertilizantes Completos": "⚗️",
+            "Fertilizantes Líquidos": "💧",
+            "Fungicidas": "🧫",
+            "Insecticidas": "🐛",
+            "Feromona Asperjable": "🌿",
+        };
 
-                const icono = iconosCategoria[categoria] || "📦";
-                const item = document.createElement("div");
-                item.classList.add("input-group");
+        const icono = iconosCategoria[categoria] || "📦";
+        const item = document.createElement("div");
+        item.classList.add("input-group");
 
-                item.innerHTML = `
-            <label style="font-weight: bold; margin-bottom: 0.25rem;">
-                  ${icono} ${prod.Nombre_producto}
-            </label>
-            <p style="margin: 0 0 0.5rem; color: #666;">${prod.Detalle_producto}</p>
+        // ⚠️ Convertimos alicuota a decimal (ej: 27 => 0.27)
+        const alicuotaDecimal = (parseFloat(prod.Alicuota) || 0) / 100;
 
-            <div class="input-icon">
-                <span class="material-icons">inventory_2</span>
-                <input 
-                    type="number" 
-                    min="0" 
-                    value="0"
-                    style="flex: 1;"
-                    data-id="${prod.Id}"
-                    data-nombre="${prod.Nombre_producto}"
-                    data-detalle="${prod.Detalle_producto}"
-                    data-precio="${prod.Precio_producto}"
-                    data-unidad="${prod.Unidad_Medida_venta}"
-                    data-categoria="${prod.categoria}"
-                    data-alicuota="${prod.Alicuota}"
-                    onchange="actualizarProductoSeleccionado(this)"
-                />
-                <span style="padding-left: 0.5rem;">${prod.Unidad_Medida_venta}</span>
-            </div>
-        `;
+        item.innerHTML = `
+        <label style="font-weight: bold; margin-bottom: 0.25rem;">
+              ${icono} ${prod.Nombre_producto}
+        </label>
+        <p style="margin: 0 0 0.5rem; color: #666;">${prod.Detalle_producto}</p>
 
-                body.appendChild(item);
-            });
+        <div class="input-icon">
+            <span class="material-icons">inventory_2</span>
+            <input 
+                type="number" 
+                min="0" 
+                value="0"
+                style="flex: 1;"
+                data-id="${prod.Id}"
+                data-nombre="${prod.Nombre_producto}"
+                data-detalle="${prod.Detalle_producto}"
+                data-precio="${prod.Precio_producto}"
+                data-unidad="${prod.Unidad_Medida_venta}"
+                data-categoria="${prod.categoria}"
+                data-alicuota="${alicuotaDecimal}"
+                onchange="actualizarProductoSeleccionado(this)"
+            />
+            <span style="padding-left: 0.5rem;">${prod.Unidad_Medida_venta}</span>
+        </div>
+    `;
 
-            acordeon.appendChild(header);
-            acordeon.appendChild(body);
-            container.appendChild(acordeon);
-        }
+        body.appendChild(item);
+    });
+
+    acordeon.appendChild(header);
+    acordeon.appendChild(body);
+    container.appendChild(acordeon);
+}
 
 
 
