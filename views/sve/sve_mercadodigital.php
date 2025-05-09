@@ -634,14 +634,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         // 5. Mostrar resumen dinámico
 function renderResumen() {
-    let container = document.getElementById("acordeon-resumen");
+    const container = document.getElementById("acordeon-resumen");
     container.innerHTML = `<h3>Resumen del Pedido</h3>`;
 
     let totalSinIVA = 0;
     let totalIVA = 0;
 
     Object.entries(productosSeleccionados).forEach(([id, p]) => {
-        const iva = (p.alicuota ?? 0) * p.subtotal_por_categoria;
+        const alicuota = parseFloat(p.alicuota);
+        const porcentajeIVA = isNaN(alicuota) ? 0 : alicuota;
+        const iva = p.subtotal_por_categoria * porcentajeIVA;
+
         totalSinIVA += p.subtotal_por_categoria;
         totalIVA += iva;
 
@@ -650,9 +653,10 @@ function renderResumen() {
 
         row.innerHTML = `
             <strong>${p.nombre_producto}</strong> - ${p.cantidad} x $${p.precio_producto.toFixed(2)} = $${p.subtotal_por_categoria.toFixed(2)}
-            <br><small>IVA (${((p.alicuota ?? 0) * 100).toFixed(0)}%): $${iva.toFixed(2)}</small>
+            <br><small>IVA (${(porcentajeIVA * 100).toFixed(0)}%): $${iva.toFixed(2)}</small>
             <button class="btn btn-cancelar" onclick="eliminarProducto('${id}')">❌</button>
         `;
+
         container.appendChild(row);
     });
 
@@ -665,6 +669,7 @@ function renderResumen() {
         <p><strong>Total:</strong> $${totalConIVA.toFixed(2)}</p>
     `;
 }
+
 
 
         // 6. Eliminar producto del resumen
@@ -811,6 +816,7 @@ function renderResumen() {
                 return suma + (p.subtotal_por_categoria * alicuota);
             }, 0);
         }
+
 
         function calcularTotalFinal() {
             return calcularTotalSinIVA() + calcularTotalIVA();
