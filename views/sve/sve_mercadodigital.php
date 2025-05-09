@@ -574,7 +574,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         item.classList.add("input-group");
 
         // ⚠️ Convertimos alicuota a decimal (ej: 27 => 0.27)
-        const alicuotaDecimal = (parseFloat(prod.Alicuota) || 0) / 100;
+        const alicuotaDecimal = (parseFloat(prod.alicuota) || 0) / 100;
 
         item.innerHTML = `
         <label style="font-weight: bold; margin-bottom: 0.25rem;">
