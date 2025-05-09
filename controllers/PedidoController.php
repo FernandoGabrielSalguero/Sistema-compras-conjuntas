@@ -13,7 +13,7 @@ $action = $_GET['action'] ?? null;
 //     echo json_encode(['success' => false, 'error' => 'Método no permitido']);
 //     exit;
 // }
-
+ 
 header('Content-Type: application/json');
 
 switch ($action) {

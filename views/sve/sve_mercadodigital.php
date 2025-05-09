@@ -581,7 +581,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
               ${icono} ${prod.Nombre_producto}
         </label>
         <p style="margin: 0 0 0.5rem; color: #666;">${prod.Detalle_producto}</p>
-
+ 
         <div class="input-icon">
             <span class="material-icons">inventory_2</span>
             <input 

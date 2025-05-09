@@ -30,7 +30,7 @@ class PedidoModel
         $stmt->execute(['id_coop' => $id_cooperativa]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
+ 
     // Obtener todos los productos organizados por categoría
     public static function getProductosPorCategoria()
     {
