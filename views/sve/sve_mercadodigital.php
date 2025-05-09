@@ -367,7 +367,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <hr>
                 <br>
                 <div class="input-group">
-                    <label>Agregar producto</label>
+                    <h4>Agregar producto</h4>
                     <div class="input-icon">
                         <select id="selectProductoNuevo">
                             <!-- Llenado dinámico -->
