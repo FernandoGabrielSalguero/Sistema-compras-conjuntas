@@ -363,6 +363,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <div id="productosEditablesContainer">
                     <!-- JS va a cargar los productos existentes con campos editables -->
                 </div>
+                <br>
+                <hr>
+                <br>
                 <div class="input-group">
                     <label>Agregar producto</label>
                     <div class="input-icon">
@@ -372,10 +375,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <button type="button" class="btn btn-aceptar" onclick="agregarProductoManual()">+</button>
                     </div>
                 </div>
-                <br>
-                <hr>
-                <br>
-
                 <div class="form-buttons">
                     <button type="submit" class="btn btn-aceptar">Guardar Cambios</button>
                     <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
