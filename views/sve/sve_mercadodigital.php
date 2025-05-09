@@ -356,7 +356,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 </div>
 
                 <!-- Productos del pedido -->
-                 <br>
+                <br>
                 <hr>
                 <br>
                 <h4>Productos del Pedido</h4>
@@ -372,6 +372,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <button type="button" class="btn btn-aceptar" onclick="agregarProductoManual()">+</button>
                     </div>
                 </div>
+                <br>
+                <hr>
+                <br>
 
                 <div class="form-buttons">
                     <button type="submit" class="btn btn-aceptar">Guardar Cambios</button>
