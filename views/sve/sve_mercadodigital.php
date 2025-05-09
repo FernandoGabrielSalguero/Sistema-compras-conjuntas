@@ -1098,50 +1098,53 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
 
-function renderProductosEditable(productos) {
-    console.log("🛠️ Renderizando productos editables:", productos);
-    const container = document.getElementById("productosEditablesContainer");
-    container.innerHTML = "";
+        function renderProductosEditable(productos) {
+            const container = document.getElementById("productosEditablesContainer");
+            container.innerHTML = "";
 
-    productos.forEach(prod => {
-        const grupo = document.createElement("div");
-        grupo.className = "input-group";
+            productos.forEach(prod => {
+                const grupo = document.createElement("div");
+                grupo.className = "input-group";
 
-        const cantidad = (prod.subtotal_por_categoria / prod.precio_producto).toFixed(2);
-        const alicuotaDecimal = (parseFloat(prod.alicuota) || 0) / 100;
+                const cantidad = (prod.subtotal_por_categoria / prod.precio_producto).toFixed(2);
+                const alicuotaDecimal = (parseFloat(prod.alicuota) || 0) / 100;
 
-        const input = document.createElement("input");
-        input.type = "number";
-        input.min = "0";
-        input.value = cantidad;
-        input.dataset.id = prod.id || '';
-        input.dataset.nombre = prod.nombre_producto;
-        input.dataset.detalle = prod.detalle_producto;
-        input.dataset.precio = prod.precio_producto;
-        input.dataset.unidad = prod.unidad_medida_venta;
-        input.dataset.categoria = prod.categoria;
-        input.dataset.alicuota = alicuotaDecimal;
+                const input = document.createElement("input");
+                input.type = "number";
+                input.min = "0";
+                input.value = cantidad;
+                input.dataset.id = prod.id || '';
+                input.dataset.nombre = prod.nombre_producto;
+                input.dataset.detalle = prod.detalle_producto;
+                input.dataset.precio = prod.precio_producto;
+                input.dataset.unidad = prod.unidad_medida_venta;
+                input.dataset.categoria = prod.categoria;
+                input.dataset.alicuota = alicuotaDecimal;
 
-        input.addEventListener("input", recalcularTotalesModal); // ✅ AHORA SÍ
+                input.addEventListener("input", recalcularTotalesModal);
 
-        grupo.innerHTML = `
+                grupo.innerHTML = `
             <label><strong>${prod.nombre_producto}</strong> - ${prod.detalle_producto}</label>
             <div class="input-icon">
                 <span class="material-icons">inventory_2</span>
             </div>
+            <small>IVA: ${(alicuotaDecimal * 100).toFixed(0)}%</small>
         `;
 
-        grupo.querySelector(".input-icon").appendChild(input);
-        grupo.querySelector(".input-icon").insertAdjacentHTML("beforeend", `<span>${prod.unidad_medida_venta}</span>`);
+                grupo.querySelector(".input-icon").appendChild(input);
+                grupo.querySelector(".input-icon").insertAdjacentHTML("beforeend", `<span>${prod.unidad_medida_venta}</span>`);
 
-        container.appendChild(grupo);
-    });
+                container.appendChild(grupo);
+            });
 
-    recalcularTotalesModal();
-}
+            recalcularTotalesModal();
+
+        }
+
 
 
         function agregarProductoManual() {
+            input.addEventListener("input", recalcularTotalesModal);
             const select = document.getElementById("selectProductoNuevo");
             const productoId = select.value;
             if (!productoId) return;
@@ -1152,6 +1155,7 @@ function renderProductosEditable(productos) {
                 showAlert("error", "Este producto ya fue agregado.");
                 return;
             }
+
 
             const prod = cacheTodosProductos[productoId];
             if (!prod) return;
@@ -1181,6 +1185,8 @@ function renderProductosEditable(productos) {
     `;
 
             container.appendChild(nuevo);
+
+
         }
 
         function recalcularTotalesModal() {
