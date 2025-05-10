@@ -47,7 +47,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
 
             <nav class="sidebar-menu">
-            <ul>
+                <ul>
                     <li onclick="location.href='sve_dashboard.php'">
                         <span class="material-icons">home</span><span class="link-text">Inicio</span>
                     </li>
@@ -452,6 +452,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         });
     </script>
+
+    <!-- Spinner Global -->
+    <script src="../../views/partials/spinner-global.js"></script>
 </body>
 
 </html>

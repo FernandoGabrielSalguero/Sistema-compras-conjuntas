@@ -92,24 +92,24 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             <!-- 📦 CONTENIDO -->
             <section class="content">
 
-            <div class="card-grid grid-4">
-                        <div class="card">
-                            <h3>KPI 1</h3>
-                            <p>Contenido 1</p>
-                        </div>
-                        <div class="card">
-                            <h3>KPI 2</h3>
-                            <p>Contenido 2</p>
-                        </div>
-                        <div class="card">
-                            <h3>KPI 3</h3>
-                            <p>Contenido 3</p>
-                        </div>
-                        <div class="card">
-                            <h3>KPI 4</h3>
-                            <p>Contenido 3</p>
-                        </div>
+                <div class="card-grid grid-4">
+                    <div class="card">
+                        <h3>KPI 1</h3>
+                        <p>Contenido 1</p>
                     </div>
+                    <div class="card">
+                        <h3>KPI 2</h3>
+                        <p>Contenido 2</p>
+                    </div>
+                    <div class="card">
+                        <h3>KPI 3</h3>
+                        <p>Contenido 3</p>
+                    </div>
+                    <div class="card">
+                        <h3>KPI 4</h3>
+                        <p>Contenido 3</p>
+                    </div>
+                </div>
 
 
                 <div class="card">
@@ -133,7 +133,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         </div>
     </div>
-
+    <!-- Spinner Global -->
+    <script src="../../views/partials/spinner-global.js"></script>
 </body>
 
 </html>

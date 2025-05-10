@@ -96,7 +96,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         #productosEditablesContainer .card {
-            background-color:rgb(213, 204, 250);
+            background-color: rgb(213, 204, 250);
             padding: 1rem;
             border-radius: 10px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
@@ -1245,6 +1245,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <!-- 🟢 Alertas -->
     <div class="alert-container" id="alertContainer"></div>
+
+    <!-- Spinner Global -->
+    <script src="../../views/partials/spinner-global.js"></script>
 </body>
 
 </html>

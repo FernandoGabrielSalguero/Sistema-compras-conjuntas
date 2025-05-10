@@ -3,7 +3,7 @@ document.body.insertAdjacentHTML("beforeend", `
     <div id="globalSpinner" class="spinner-overlay hidden">
       <div class="spinner-box">
         <div class="spinner"></div>
-        <p class="spinner-text">Cargando...</p>
+        <p class="spinner-text">Estamos procesando tu solicitud</p>
       </div>
     </div>
   `);
