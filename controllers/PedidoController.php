@@ -13,11 +13,11 @@ $action = $_GET['action'] ?? null;
 //     echo json_encode(['success' => false, 'error' => 'Método no permitido']);
 //     exit;
 // }
- 
+
 header('Content-Type: application/json');
 
 switch ($action) {
-    
+
     case 'getCooperativas':
         echo json_encode(PedidoModel::getCooperativas());
         break;
@@ -75,64 +75,30 @@ switch ($action) {
             echo json_encode(['success' => false, 'error' => 'Método no permitido']);
         }
         break;
-        
-    // case 'actualizarPedidoCompleto':
-    //     if ($_SERVER['REQUEST_METHOD'] === 'POST') { 
-    //         $json = file_get_contents("php://input");
-    //         $data = json_decode($json, true);
 
-    //         if (!$data) {
-    //             echo json_encode(['success' => false, 'error' => 'JSON inválido.']);
-    //             exit;
-    //         }
 
-    //         $pedido = $data['pedido'] ?? [];
-    //         $detalles = $data['detalles'] ?? [];
+    case 'actualizarPedidoCompleto':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $json = file_get_contents("php://input");
+            $data = json_decode($json, true);
 
-    //         if (isset($pedido['id'])) {
-    //             echo json_encode(PedidoModel::actualizarPedidoCompleto($pedido, $detalles));
-    //         } else {
-    //             echo json_encode(['success' => false, 'error' => 'ID faltante para actualización.']);
-    //         }
-    //     } else {
-    //         echo json_encode(['success' => false, 'error' => 'Método no permitido']);
-    //     }
-    //     break;
+            if (!$data) {
+                echo json_encode(['success' => false, 'error' => 'JSON inválido', 'raw' => $json]);
+                exit;
+            }
 
-case 'actualizarPedidoCompleto':
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') { 
-        $json = file_get_contents("php://input");
-        $data = json_decode($json, true);
+            $pedido = $data['pedido'] ?? [];
+            $detalles = $data['detalles'] ?? [];
 
-        if (!$data) {
-            echo json_encode(['success' => false, 'error' => 'JSON inválido', 'raw' => $json]);
-            exit;
+            if (!isset($pedido['id'])) {
+                echo json_encode(['success' => false, 'error' => 'ID faltante']);
+                exit;
+            }
+            echo json_encode(PedidoModel::actualizarPedidoCompleto($pedido, $detalles));
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
         }
-
-        $pedido = $data['pedido'] ?? [];
-        $detalles = $data['detalles'] ?? [];
-
-        if (!isset($pedido['id'])) {
-            echo json_encode(['success' => false, 'error' => 'ID faltante']);
-            exit;
-        }
-
-        // 👇 DEBUG temporal
-        echo json_encode([
-            'success' => true,
-            'debug' => [
-                'pedido' => $pedido,
-                'detalles' => $detalles
-            ]
-        ]);
-        exit;
-
-        // Luego de confirmar que los datos llegan bien, podés comentar el bloque anterior y ejecutar esto:
-        // echo json_encode(PedidoModel::actualizarPedidoCompleto($pedido, $detalles));
-    } else {
-        echo json_encode(['success' => false, 'error' => 'Método no permitido']);
-    }
-    break;
+        break;
 
     case 'getDetallePedido':
         $id = $_GET['id'] ?? null;
