@@ -42,8 +42,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <style>
         #modalEditarPedido .modal-content {
             max-width: 900px;
-            /* o 1000px si querés más */
             width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         /* Si querés que los grupos de campos tengan 2 columnas */
@@ -80,6 +81,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             font-size: 1.25rem;
             margin-right: 0.5rem;
             color: #8a2be2;
+        }
+
+        #productosEditablesContainer {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
         }
     </style>
 
@@ -1106,7 +1113,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const grupo = document.createElement("div");
                 grupo.className = "input-group";
 
-                const cantidad = (prod.subtotal_por_categoria / prod.precio_producto).toFixed(2);
+                const cantidad = Math.round(prod.subtotal_por_categoria / prod.precio_producto);
                 const alicuotaDecimal = (parseFloat(prod.alicuota) || 0) / 100;
 
                 const input = document.createElement("input");
@@ -1143,29 +1150,29 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 
 
-       function agregarProductoManual() {
-    const select = document.getElementById("selectProductoNuevo");
-    const productoId = select.value;
-    if (!productoId) return;
+        function agregarProductoManual() {
+            const select = document.getElementById("selectProductoNuevo");
+            const productoId = select.value;
+            if (!productoId) return;
 
-    const yaExiste = [...document.querySelectorAll("#productosEditablesContainer input")]
-        .some(input => input.dataset.id === productoId);
-    if (yaExiste) {
-        showAlert("error", "Este producto ya fue agregado.");
-        return;
-    }
+            const yaExiste = [...document.querySelectorAll("#productosEditablesContainer input")]
+                .some(input => input.dataset.id === productoId);
+            if (yaExiste) {
+                showAlert("error", "Este producto ya fue agregado.");
+                return;
+            }
 
-    const prod = cacheTodosProductos[productoId];
-    if (!prod) return;
+            const prod = cacheTodosProductos[productoId];
+            if (!prod) return;
 
-    const container = document.getElementById("productosEditablesContainer");
+            const container = document.getElementById("productosEditablesContainer");
 
-    const nuevo = document.createElement("div");
-    nuevo.className = "input-group";
+            const nuevo = document.createElement("div");
+            nuevo.className = "input-group";
 
-    const alicuotaDecimal = (parseFloat(prod.alicuota) || 0) / 100;
+            const alicuotaDecimal = (parseFloat(prod.alicuota) || 0) / 100;
 
-    nuevo.innerHTML = `
+            nuevo.innerHTML = `
         <label><strong>${prod.Nombre_producto}</strong> - ${prod.Detalle_producto}</label>
         <div class="input-icon">
             <span class="material-icons">inventory_2</span>
@@ -1186,12 +1193,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         <small>IVA: ${(alicuotaDecimal * 100).toFixed(0)}%</small>
     `;
 
-    const input = nuevo.querySelector("input");
-    input.addEventListener("input", recalcularTotalesModal);
+            const input = nuevo.querySelector("input");
+            input.addEventListener("input", recalcularTotalesModal);
 
-    container.appendChild(nuevo);
-    recalcularTotalesModal(); // <- opcional para actualizar totales al instante
-}
+            container.appendChild(nuevo);
+            recalcularTotalesModal(); // <- opcional para actualizar totales al instante
+        }
 
 
         function recalcularTotalesModal() {
