@@ -153,6 +153,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </script>
 
     <!-- Spinner Global -->
-    <script src="https://www.fernandosalguero.com/cdn/assets/javascript/spinner-global.js"></script>
+    <script src="views/partials/spinner-global.js"></script>
 </body>
 </html>
