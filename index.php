@@ -151,5 +151,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             passwordField.setAttribute('type', type);
         });
     </script>
+
+    <!-- Spinner Global -->
+    <script src="https://www.fernandosalguero.com/cdn/assets/javascript/spinner-global.js"></script>
 </body>
 </html>
