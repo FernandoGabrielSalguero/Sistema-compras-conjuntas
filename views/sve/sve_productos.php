@@ -212,50 +212,50 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </div>
                 </div>
 
-<!-- Modal Editar Producto -->
-<div id="modalEditar" class="modal hidden">
-    <div class="modal-content">
-        <h3>Editar Producto</h3>
-        <form id="formEditarProducto">
-            <input type="hidden" id="edit_id" name="id">
+                <!-- Modal Editar Producto -->
+                <div id="modalEditar" class="modal hidden">
+                    <div class="modal-content">
+                        <h3>Editar Producto</h3>
+                        <form id="formEditarProducto">
+                            <input type="hidden" id="edit_id" name="id">
 
-            <div class="input-group">
-                <label for="edit_Nombre_producto">Nombre</label>
-                <input type="text" id="edit_Nombre_producto" name="Nombre_producto" required>
-            </div>
+                            <div class="input-group">
+                                <label for="edit_Nombre_producto">Nombre</label>
+                                <input type="text" id="edit_Nombre_producto" name="Nombre_producto" required>
+                            </div>
 
-            <div class="input-group">
-                <label for="edit_Detalle_producto">Detalle</label>
-                <input type="text" id="edit_Detalle_producto" name="Detalle_producto">
-            </div>
+                            <div class="input-group">
+                                <label for="edit_Detalle_producto">Detalle</label>
+                                <input type="text" id="edit_Detalle_producto" name="Detalle_producto">
+                            </div>
 
-            <div class="input-group">
-                <label for="edit_Precio_producto">Precio</label>
-                <input type="number" id="edit_Precio_producto" name="Precio_producto" min="0" step="0.01" required>
-            </div>
+                            <div class="input-group">
+                                <label for="edit_Precio_producto">Precio</label>
+                                <input type="number" id="edit_Precio_producto" name="Precio_producto" min="0" step="0.01" required>
+                            </div>
 
-            <div class="input-group">
-                <label for="edit_Unidad_medida_venta">Unidad de medida</label>
-                <input type="text" id="edit_Unidad_medida_venta" name="Unidad_medida_venta">
-            </div>
+                            <div class="input-group">
+                                <label for="edit_Unidad_medida_venta">Unidad de medida</label>
+                                <input type="text" id="edit_Unidad_medida_venta" name="Unidad_medida_venta">
+                            </div>
 
-            <div class="input-group">
-                <label for="edit_categoria">Categoría</label>
-                <input type="text" id="edit_categoria" name="categoria">
-            </div>
+                            <div class="input-group">
+                                <label for="edit_categoria">Categoría</label>
+                                <input type="text" id="edit_categoria" name="categoria">
+                            </div>
 
-            <div class="input-group">
-                <label for="edit_alicuota">Alicuota</label>
-                <input type="number" id="edit_alicuota" name="alicuota" step="0.1">
-            </div>
+                            <div class="input-group">
+                                <label for="edit_alicuota">Alicuota</label>
+                                <input type="number" id="edit_alicuota" name="alicuota" step="0.1">
+                            </div>
 
-            <div class="form-buttons">
-                <button type="submit" class="btn btn-aceptar">Guardar</button>
-                <button type="button" class="btn btn-cancelar" onclick="closeModalEditar()">Cancelar</button>
-            </div>
-        </form>
-    </div>
-</div>
+                            <div class="form-buttons">
+                                <button type="submit" class="btn btn-aceptar">Guardar</button>
+                                <button type="button" class="btn btn-cancelar" onclick="closeModalEditar()">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
 
 
@@ -349,6 +349,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
         </div>
     </div>
+
+    <!-- Spinner Global -->
+    <script src="../../views/partials/spinner-global.js"></script>
 </body>
 
 </html>
