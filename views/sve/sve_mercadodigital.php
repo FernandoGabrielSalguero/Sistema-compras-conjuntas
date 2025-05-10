@@ -96,7 +96,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         #productosEditablesContainer .card {
-            background-color: #f3f0ff;
+            background-color:rgb(206, 194, 253);
             padding: 1rem;
             border-radius: 10px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
