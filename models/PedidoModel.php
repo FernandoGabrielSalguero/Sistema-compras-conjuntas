@@ -30,7 +30,7 @@ class PedidoModel
         $stmt->execute(['id_coop' => $id_cooperativa]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
- 
+
     // Obtener todos los productos organizados por categoría
     public static function getProductosPorCategoria()
     {
@@ -81,8 +81,7 @@ class PedidoModel
                 'total_iva' => $pedido['total_iva'],
                 'factura' => $pedido['factura'],
                 'total_pedido' => $pedido['total_pedido'],
-                'observaciones' => $pedido['observaciones'],
-                'alicuota' => $detalle['alicuota'] ?? 0
+                'observaciones' => $pedido['observaciones']
             ]);
 
             $pedido_id = $pdo->lastInsertId();
@@ -219,7 +218,6 @@ class PedidoModel
                 'factura' => $pedido['factura'],
                 'total_pedido' => $pedido['total_pedido'],
                 'observaciones' => $pedido['observaciones'],
-                'alicuota' => $detalle['alicuota'] ?? 0
             ]);
 
             // Borrar detalles previos
