@@ -88,6 +88,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
         }
+
+        #productosEditablesContainer {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        #productosEditablesContainer .card {
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
     </style>
 
 
@@ -1107,43 +1119,42 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             container.innerHTML = "";
 
             productos.forEach(prod => {
-                const grupo = document.createElement("div");
-                grupo.className = "input-group";
-
                 const cantidad = Math.round(prod.subtotal_por_categoria / prod.precio_producto);
                 const alicuotaDecimal = (parseFloat(prod.alicuota) || 0) / 100;
 
-                const input = document.createElement("input");
-                input.type = "number";
-                input.min = "0";
-                input.value = cantidad;
-                input.dataset.id = prod.id || '';
-                input.dataset.nombre = prod.nombre_producto;
-                input.dataset.detalle = prod.detalle_producto;
-                input.dataset.precio = prod.precio_producto;
-                input.dataset.unidad = prod.unidad_medida_venta;
-                input.dataset.categoria = prod.categoria;
-                input.dataset.alicuota = alicuotaDecimal;
+                const tarjeta = document.createElement("div");
+                tarjeta.className = "card";
 
-                input.addEventListener("input", recalcularTotalesModal);
-
-                grupo.innerHTML = `
+                tarjeta.innerHTML = `
             <label><strong>${prod.nombre_producto}</strong> - ${prod.detalle_producto}</label>
-            <div class="input-icon">
+            <div class="input-icon" style="margin-top: 0.5rem;">
                 <span class="material-icons">inventory_2</span>
+                <input 
+                    type="number" 
+                    min="0" 
+                    value="${cantidad}"
+                    data-id="${prod.id || ''}"
+                    data-nombre="${prod.nombre_producto}"
+                    data-detalle="${prod.detalle_producto}"
+                    data-precio="${prod.precio_producto}"
+                    data-unidad="${prod.unidad_medida_venta}"
+                    data-categoria="${prod.categoria}"
+                    data-alicuota="${alicuotaDecimal}"
+                />
+                <span>${prod.unidad_medida_venta}</span>
             </div>
-            <small>IVA: ${(alicuotaDecimal * 100).toFixed(0)}%</small>
+            <small style="color: #666;">IVA: ${(alicuotaDecimal * 100).toFixed(0)}%</small>
         `;
 
-                grupo.querySelector(".input-icon").appendChild(input);
-                grupo.querySelector(".input-icon").insertAdjacentHTML("beforeend", `<span>${prod.unidad_medida_venta}</span>`);
+                const input = tarjeta.querySelector("input");
+                input.addEventListener("input", recalcularTotalesModal);
 
-                container.appendChild(grupo);
+                container.appendChild(tarjeta);
             });
 
             recalcularTotalesModal();
-
         }
+
 
 
 
