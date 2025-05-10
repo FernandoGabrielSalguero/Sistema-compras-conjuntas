@@ -81,7 +81,8 @@ class PedidoModel
                 'total_iva' => $pedido['total_iva'],
                 'factura' => $pedido['factura'],
                 'total_pedido' => $pedido['total_pedido'],
-                'observaciones' => $pedido['observaciones']
+                'observaciones' => $pedido['observaciones'],
+                'alicuota' => $detalle['alicuota'] ?? 0
             ]);
 
             $pedido_id = $pdo->lastInsertId();
@@ -90,10 +91,10 @@ class PedidoModel
             $stmt = $pdo->prepare("
                 INSERT INTO detalle_pedidos (
                     pedido_id, nombre_producto, detalle_producto, 
-                    precio_producto, unidad_medida_venta, categoria, subtotal_por_categoria
+                    precio_producto, unidad_medida_venta, categoria, subtotal_por_categoria, alicuota
                 )
                 VALUES (:pedido_id, :nombre_producto, :detalle_producto, :precio_producto, 
-                        :unidad_medida_venta, :categoria, :subtotal_por_categoria)
+                        :unidad_medida_venta, :categoria, :subtotal_por_categoria, :alicuota)
             ");
 
             foreach ($detalles as $detalle) {
@@ -104,7 +105,8 @@ class PedidoModel
                     'precio_producto' => $detalle['precio_producto'],
                     'unidad_medida_venta' => $detalle['unidad_medida_venta'],
                     'categoria' => $detalle['categoria'],
-                    'subtotal_por_categoria' => $detalle['subtotal_por_categoria']
+                    'subtotal_por_categoria' => $detalle['subtotal_por_categoria'],
+                    'alicuota' => $detalle['alicuota'] ?? 0
                 ]);
             }
 
@@ -216,7 +218,8 @@ class PedidoModel
                 'total_iva' => $pedido['total_iva'],
                 'factura' => $pedido['factura'],
                 'total_pedido' => $pedido['total_pedido'],
-                'observaciones' => $pedido['observaciones']
+                'observaciones' => $pedido['observaciones'],
+                'alicuota' => $detalle['alicuota'] ?? 0
             ]);
 
             // Borrar detalles previos
@@ -226,10 +229,10 @@ class PedidoModel
             $stmt = $pdo->prepare("
                 INSERT INTO detalle_pedidos (
                     pedido_id, nombre_producto, detalle_producto, 
-                    precio_producto, unidad_medida_venta, categoria, subtotal_por_categoria
+                    precio_producto, unidad_medida_venta, categoria, subtotal_por_categoria, alicuota
                 )
                 VALUES (:pedido_id, :nombre_producto, :detalle_producto, :precio_producto, 
-                        :unidad_medida_venta, :categoria, :subtotal_por_categoria)
+                        :unidad_medida_venta, :categoria, :subtotal_por_categoria, :alicuota)
             ");
 
             foreach ($detalles as $d) {
@@ -240,7 +243,8 @@ class PedidoModel
                     'precio_producto' => $d['precio_producto'],
                     'unidad_medida_venta' => $d['unidad_medida_venta'],
                     'categoria' => $d['categoria'],
-                    'subtotal_por_categoria' => $d['subtotal_por_categoria']
+                    'subtotal_por_categoria' => $d['subtotal_por_categoria'],
+                    'alicuota' => $detalle['alicuota'] ?? 0
                 ]);
             }
 

@@ -96,7 +96,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         #productosEditablesContainer .card {
-            background-color:rgb(206, 194, 253);
+            background-color:rgb(213, 204, 250);
             padding: 1rem;
             border-radius: 10px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
@@ -380,6 +380,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <hr>
                 <br>
                 <h4>Productos del Pedido</h4>
+                <br>
                 <div id="productosEditablesContainer">
                     <!-- JS va a cargar los productos existentes con campos editables -->
                 </div>
@@ -729,12 +730,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         // 7. Enviar formulario
         function enviarFormulario(e) {
             e.preventDefault();
-
             try {
                 console.log("🔄 Ejecutando enviarFormulario...");
-
                 const formData = new FormData(e.target);
-
                 const pedido = {
                     cooperativa: formData.get("cooperativa"),
                     productor: formData.get("productor"),
@@ -758,7 +756,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     unidad_medida_venta: p.unidad_medida_venta,
                     categoria: p.categoria,
                     cantidad: p.cantidad,
-                    subtotal_por_categoria: p.subtotal_por_categoria
+                    subtotal_por_categoria: p.subtotal_por_categoria,
+                    alicuota: p.alicuota
                 }));
 
                 console.log("📦 Detalles productos:", detalles);
