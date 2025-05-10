@@ -1103,33 +1103,31 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 
         function renderProductosEditable(productos) {
-    const container = document.getElementById("productosEditablesContainer");
-    container.innerHTML = "";
+            const container = document.getElementById("productosEditablesContainer");
+            container.innerHTML = "";
 
-    productos.forEach(prod => {
-        const cantidad = Math.round(prod.subtotal_por_categoria / prod.precio_producto);
-        const alicuotaDecimal = (parseFloat(prod.alicuota) || 0) / 100;
+            productos.forEach(prod => {
+                const grupo = document.createElement("div");
+                grupo.className = "input-group";
 
-        // Crear tarjeta contenedora
-        const tarjeta = document.createElement("div");
-        tarjeta.className = "card";
+                const cantidad = Math.round(prod.subtotal_por_categoria / prod.precio_producto);
+                const alicuotaDecimal = (parseFloat(prod.alicuota) || 0) / 100;
 
-        // Crear input
-        const input = document.createElement("input");
-        input.type = "number";
-        input.min = "0";
-        input.value = cantidad;
-        input.dataset.id = prod.id || '';
-        input.dataset.nombre = prod.nombre_producto;
-        input.dataset.detalle = prod.detalle_producto;
-        input.dataset.precio = prod.precio_producto;
-        input.dataset.unidad = prod.unidad_medida_venta;
-        input.dataset.categoria = prod.categoria;
-        input.dataset.alicuota = alicuotaDecimal;
-        input.addEventListener("input", recalcularTotalesModal);
+                const input = document.createElement("input");
+                input.type = "number";
+                input.min = "0";
+                input.value = cantidad;
+                input.dataset.id = prod.id || '';
+                input.dataset.nombre = prod.nombre_producto;
+                input.dataset.detalle = prod.detalle_producto;
+                input.dataset.precio = prod.precio_producto;
+                input.dataset.unidad = prod.unidad_medida_venta;
+                input.dataset.categoria = prod.categoria;
+                input.dataset.alicuota = alicuotaDecimal;
 
-        // Construir contenido de la tarjeta
-        tarjeta.innerHTML = `
+                input.addEventListener("input", recalcularTotalesModal);
+
+                grupo.innerHTML = `
             <label><strong>${prod.nombre_producto}</strong> - ${prod.detalle_producto}</label>
             <div class="input-icon">
                 <span class="material-icons">inventory_2</span>
@@ -1137,15 +1135,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             <small>IVA: ${(alicuotaDecimal * 100).toFixed(0)}%</small>
         `;
 
-        tarjeta.querySelector(".input-icon").appendChild(input);
-        tarjeta.querySelector(".input-icon").insertAdjacentHTML("beforeend", `<span>${prod.unidad_medida_venta}</span>`);
+                grupo.querySelector(".input-icon").appendChild(input);
+                grupo.querySelector(".input-icon").insertAdjacentHTML("beforeend", `<span>${prod.unidad_medida_venta}</span>`);
 
-        container.appendChild(tarjeta);
-    });
+                container.appendChild(grupo);
+            });
 
-    recalcularTotalesModal();
-}
+            recalcularTotalesModal();
 
+        }
 
 
 
