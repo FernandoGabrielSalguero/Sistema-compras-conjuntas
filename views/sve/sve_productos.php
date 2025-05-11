@@ -396,7 +396,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 if (result.success) {
                     showAlert('success', result.message);
-                    closeModal();
+                    closeModalEditar();
                     cargarProductos();
                 } else {
                     showAlert('error', result.message);
