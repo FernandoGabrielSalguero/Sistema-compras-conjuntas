@@ -214,63 +214,74 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Modal Editar Producto -->
                 <div id="modalEditar" class="modal hidden">
-                    <div class="modal-content">
+                    <div class="modal-content card">
                         <h3>Editar Producto</h3>
                         <form id="formEditarProducto">
                             <input type="hidden" id="edit_id" name="id">
 
-                            <div class="input-group">
-                                <label for="edit_Nombre_producto">Nombre</label>
-                                <input type="text" id="edit_Nombre_producto" name="Nombre_producto" required>
-                            </div>
+                            <div class="form-grid grid-2">
+                                <div class="input-group">
+                                    <label for="edit_Nombre_producto">Nombre</label>
+                                    <div class="input-icon">
+                                        <span class="material-icons">group</span>
+                                        <input type="text" id="edit_Nombre_producto" name="Nombre_producto" required>
+                                    </div>
+                                </div>
 
-                            <div class="input-group">
-                                <label for="edit_Detalle_producto">Detalle</label>
-                                <input type="text" id="edit_Detalle_producto" name="Detalle_producto">
-                            </div>
+                                <div class="input-group">
+                                    <label for="edit_Detalle_producto">Detalle</label>
+                                    <div class="input-icon">
+                                        <span class="material-icons">group</span>
+                                        <input type="text" id="edit_Detalle_producto" name="Detalle_producto">
+                                    </div>
+                                </div>
 
-                            <div class="input-group">
-                                <label for="edit_Precio_producto">Precio</label>
-                                <input type="number" id="edit_Precio_producto" name="Precio_producto" min="0" step="0.01" required>
-                            </div>
+                                <div class="input-group">
+                                    <label for="edit_Precio_producto">Precio</label>
+                                    <div class="input-icon">
+                                        <span class="material-icons">group</span>
+                                        <input type="number" id="edit_Precio_producto" name="Precio_producto" min="0" step="0.01" required>
+                                    </div>
+                                </div>
 
-                            <div class="input-group">
-                                <label for="edit_Unidad_medida_venta">Unidad de medida</label>
-                                <select id="edit_Unidad_medida_venta" name="Unidad_medida_venta" required>
-                                    <option value="Kilos">Kilos</option>
-                                    <option value="Gramos">Gramos</option>
-                                    <option value="Litros">Litros</option>
-                                    <option value="Unidad">Unidad</option>
-                                </select>
-                            </div>
+                                <div class="input-group">
+                                    <label for="edit_Unidad_medida_venta">Unidad de medida</label>
+                                    <select id="edit_Unidad_medida_venta" name="Unidad_medida_venta" required>
+                                        <option value="Kilos">Kilos</option>
+                                        <option value="Gramos">Gramos</option>
+                                        <option value="Litros">Litros</option>
+                                        <option value="Unidad">Unidad</option>
+                                    </select>
+                                </div>
 
-                            <div class="input-group">
-                                <label for="edit_categoria">Categoría</label>
-                                <select id="edit_categoria" name="categoria" required>
-                                    <option value="Fertilizantes Sólidos">Fertilizantes Sólidos</option>
-                                    <option value="Fertilizantes Complejos">Fertilizantes Complejos</option>
-                                    <option value="Fertilizantes Líquidos">Fertilizantes Líquidos</option>
-                                    <option value="Fungicidas">Fungicidas</option>
-                                    <option value="Insecticidas">Insecticidas</option>
-                                    <option value="Feromona Asperjable">Feromona Asperjable</option>
-                                    <option value="Difusor Feromona">Difusor Feromona</option>
-                                    <option value="Herbicidas">Herbicidas</option>
-                                    <option value="Fertilizantes Especiales">Fertilizantes Especiales</option>
-                                    <option value="Fertilizantes Foliares">Fertilizantes Foliares</option>
-                                    <option value="Otros">Otros</option>
-                                </select>
-                            </div>
+                                <div class="input-group">
+                                    <label for="edit_categoria">Categoría</label>
+                                    <select id="edit_categoria" name="categoria" required>
+                                        <option value="Fertilizantes Sólidos">Fertilizantes Sólidos</option>
+                                        <option value="Fertilizantes Complejos">Fertilizantes Complejos</option>
+                                        <option value="Fertilizantes Líquidos">Fertilizantes Líquidos</option>
+                                        <option value="Fungicidas">Fungicidas</option>
+                                        <option value="Insecticidas">Insecticidas</option>
+                                        <option value="Feromona Asperjable">Feromona Asperjable</option>
+                                        <option value="Difusor Feromona">Difusor Feromona</option>
+                                        <option value="Herbicidas">Herbicidas</option>
+                                        <option value="Fertilizantes Especiales">Fertilizantes Especiales</option>
+                                        <option value="Fertilizantes Foliares">Fertilizantes Foliares</option>
+                                        <option value="Otros">Otros</option>
+                                    </select>
+                                </div>
 
-                            <div class="input-group">
-                                <label for="edit_alicuota">Alicuota</label>
-                                <select id="edit_alicuota" name="alicuota" required>
-                                    <option value="0">0</option>
-                                    <option value="2.5">2.5</option>
-                                    <option value="5">5</option>
-                                    <option value="10.5">10.5</option>
-                                    <option value="21">21</option>
-                                    <option value="27">27</option>
-                                </select>
+                                <div class="input-group">
+                                    <label for="edit_alicuota">Alicuota</label>
+                                    <select id="edit_alicuota" name="alicuota" required>
+                                        <option value="0">0</option>
+                                        <option value="2.5">2.5</option>
+                                        <option value="5">5</option>
+                                        <option value="10.5">10.5</option>
+                                        <option value="21">21</option>
+                                        <option value="27">27</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <div class="form-buttons">
@@ -311,51 +322,51 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         document.addEventListener('DOMContentLoaded', cargarProductos);
 
-function abrirModalEditar(id) {
-    console.log("🔍 Abrir modal (función abrirModalEditar) para producto ID:", id);
+        function abrirModalEditar(id) {
+            console.log("🔍 Abrir modal (función abrirModalEditar) para producto ID:", id);
 
-    fetch(`/controllers/obtenerProductoController.php?id=${id}`)
-        .then(res => {
-            if (!res.ok) {
-                throw new Error(`❌ Error HTTP: ${res.status}`);
-            }
-            return res.json();
-        })
-        .then(data => {
-            console.log("📦 Datos recibidos del backend:", data);
+            fetch(`/controllers/obtenerProductoController.php?id=${id}`)
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`❌ Error HTTP: ${res.status}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    console.log("📦 Datos recibidos del backend:", data);
 
-            if (!data.success) {
-                throw new Error('⚠️ Backend no devolvió success = true');
-            }
+                    if (!data.success) {
+                        throw new Error('⚠️ Backend no devolvió success = true');
+                    }
 
-            const campos = {
-                'edit_id': data.producto.Id,
-                'edit_Nombre_producto': data.producto.Nombre_producto,
-                'edit_Detalle_producto': data.producto.Detalle_producto,
-                'edit_Precio_producto': data.producto.Precio_producto,
-                'edit_Unidad_medida_venta': data.producto.Unidad_Medida_venta,
-                'edit_categoria': data.producto.categoria,
-                'edit_alicuota': data.producto.alicuota
-            };
+                    const campos = {
+                        'edit_id': data.producto.Id,
+                        'edit_Nombre_producto': data.producto.Nombre_producto,
+                        'edit_Detalle_producto': data.producto.Detalle_producto,
+                        'edit_Precio_producto': data.producto.Precio_producto,
+                        'edit_Unidad_medida_venta': data.producto.Unidad_Medida_venta,
+                        'edit_categoria': data.producto.categoria,
+                        'edit_alicuota': data.producto.alicuota
+                    };
 
-            // Recorremos y asignamos campo por campo
-            for (const [id, valor] of Object.entries(campos)) {
-                const input = document.getElementById(id);
-                if (!input) {
-                    console.error(`❌ No se encontró el input con ID: ${id}`);
-                    continue;
-                }
-                input.value = valor;
-                console.log(`✅ Asignado: ${id} =`, valor);
-            }
+                    // Recorremos y asignamos campo por campo
+                    for (const [id, valor] of Object.entries(campos)) {
+                        const input = document.getElementById(id);
+                        if (!input) {
+                            console.error(`❌ No se encontró el input con ID: ${id}`);
+                            continue;
+                        }
+                        input.value = valor;
+                        console.log(`✅ Asignado: ${id} =`, valor);
+                    }
 
-            openModalEditar();
-        })
-        .catch((err) => {
-            console.error('⛔ Error en abrirModalEditar:', err);
-            showAlert('error', 'Error al cargar datos del producto.');
-        });
-}
+                    openModalEditar();
+                })
+                .catch((err) => {
+                    console.error('⛔ Error en abrirModalEditar:', err);
+                    showAlert('error', 'Error al cargar datos del producto.');
+                });
+        }
 
 
         // enviar cambios del formulario por ajax
