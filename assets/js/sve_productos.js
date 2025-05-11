@@ -108,6 +108,7 @@ async function eliminarProductoConfirmado() {
 
         if (!response.ok) {
             const errorData = await response.json();
+            logger.error('⛔ Error en la respuesta:', errorData);
             throw new Error(errorData.message || 'Error al eliminar producto.');
         }
 
