@@ -246,12 +246,31 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                             <div class="input-group">
                                 <label for="edit_categoria">Categoría</label>
-                                <input type="text" id="edit_categoria" name="categoria">
+                                <select id="edit_categoria" name="categoria" required>
+                                    <option value="Fertilizantes Sólidos">Fertilizantes Sólidos</option>
+                                    <option value="Fertilizantes Complejos">Fertilizantes Complejos</option>
+                                    <option value="Fertilizantes Líquidos">Fertilizantes Líquidos</option>
+                                    <option value="Fungicidas">Fungicidas</option>
+                                    <option value="Insecticidas">Insecticidas</option>
+                                    <option value="Feromona Asperjable">Feromona Asperjable</option>
+                                    <option value="Difusor Feromona">Difusor Feromona</option>
+                                    <option value="Herbicidas">Herbicidas</option>
+                                    <option value="Fertilizantes Especiales">Fertilizantes Especiales</option>
+                                    <option value="Fertilizantes Foliares">Fertilizantes Foliares</option>
+                                    <option value="Otros">Otros</option>
+                                </select>
                             </div>
 
                             <div class="input-group">
                                 <label for="edit_alicuota">Alicuota</label>
-                                <input type="number" id="edit_alicuota" name="alicuota" step="0.1">
+                                <select id="edit_alicuota" name="alicuota" required>
+                                    <option value="0">0</option>
+                                    <option value="2.5">2.5</option>
+                                    <option value="5">5</option>
+                                    <option value="10.5">10.5</option>
+                                    <option value="21">21</option>
+                                    <option value="27">27</option>
+                                </select>
                             </div>
 
                             <div class="form-buttons">
