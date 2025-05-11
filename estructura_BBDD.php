@@ -28,7 +28,8 @@ foreach ($tables as $table) {
     foreach ($columns as $column) {
         echo "<tr>";
         foreach (['Field', 'Type', 'Null', 'Key', 'Default', 'Extra'] as $campo) {
-            echo "<td>" . htmlspecialchars($column[$campo]) . "</td>";
+            $value = $column[$campo] ?? '';
+            echo "<td>" . htmlspecialchars((string) $value) . "</td>";
         }
         echo "</tr>";
     }
@@ -59,4 +60,3 @@ foreach ($tables as $table) {
         echo "</ul>";
     }
 }
-?>
