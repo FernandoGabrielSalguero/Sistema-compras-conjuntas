@@ -135,3 +135,13 @@ async function eliminarProductoConfirmado() {
     }
 }
 
+function openModalEditar() {
+    const modal = document.getElementById('modalEditar');
+    if (modal) {
+        modal.classList.remove('hidden');
+    } else {
+        console.error('❌ No se encontró el modal con ID modalEditar');
+    }
+}
+
+
