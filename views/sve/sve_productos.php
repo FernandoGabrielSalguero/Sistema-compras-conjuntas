@@ -223,7 +223,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-group">
                                     <label for="edit_Nombre_producto">Nombre</label>
                                     <div class="input-icon">
-                                        <span class="material-icons">group</span>
+                                        <span class="material-icons">label</span>
                                         <input type="text" id="edit_Nombre_producto" name="Nombre_producto" required>
                                     </div>
                                 </div>
@@ -276,7 +276,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                             <option value="Otros">Otros</option>
                                         </select>
                                     </div>
-
                                 </div>
 
                                 <div class="input-group">
