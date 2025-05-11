@@ -92,7 +92,7 @@ function confirmarEliminacion(id) {
 
 function closeModalConfirmacion() {
     document.getElementById('modalConfirmacion').classList.add('hidden');
-    productoIdAEliminar = null; // 👈 limpiamos
+    productoIdAEliminar = null;
 }
 
 async function eliminarProductoConfirmado() {
@@ -120,6 +120,7 @@ async function eliminarProductoConfirmado() {
             closeModalConfirmacion();
             cargarProductos();
         } else {
+            console.log("❌ Error al eliminar producto:", result);
             showAlert('error', result.message);
         }
     } catch (error) {
