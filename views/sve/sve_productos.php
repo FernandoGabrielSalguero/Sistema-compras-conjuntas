@@ -231,7 +231,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-group">
                                     <label for="edit_Detalle_producto">Detalle</label>
                                     <div class="input-icon">
-                                        <span class="material-icons">group</span>
+                                        <span class="material-icons">notes</span>
                                         <input type="text" id="edit_Detalle_producto" name="Detalle_producto">
                                     </div>
                                 </div>
@@ -239,7 +239,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-group">
                                     <label for="edit_Precio_producto">Precio</label>
                                     <div class="input-icon">
-                                        <span class="material-icons">group</span>
+                                        <span class="material-icons">monetization_on</span>
                                         <input type="number" id="edit_Precio_producto" name="Precio_producto" min="0" step="0.01" required>
                                     </div>
                                 </div>
@@ -247,7 +247,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-group">
                                     <label for="edit_Unidad_medida_venta">Unidad de medida</label>
                                     <div class="input-icon">
-                                        <span class="material-icons">group</span>
+                                        <span class="material-icons">scale</span>
                                         <select id="edit_Unidad_medida_venta" name="Unidad_medida_venta" required>
                                             <option value="Kilos">Kilos</option>
                                             <option value="Gramos">Gramos</option>
@@ -261,7 +261,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-group">
                                     <label for="edit_categoria">Categoría</label>
                                     <div class="input-icon">
-                                        <span class="material-icons">group</span>
+                                        <span class="material-icons">category</span>
                                         <select id="edit_categoria" name="categoria" required>
                                             <option value="Fertilizantes Sólidos">Fertilizantes Sólidos</option>
                                             <option value="Fertilizantes Complejos">Fertilizantes Complejos</option>
@@ -281,7 +281,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-group">
                                     <label for="edit_alicuota">Alicuota</label>
                                     <div class="input-icon">
-                                        <span class="material-icons">group</span>
+                                        <span class="material-icons">calculate</span>
                                         <select id="edit_alicuota" name="alicuota" required>
                                             <option value="0">0</option>
                                             <option value="2.5">2.5</option>
