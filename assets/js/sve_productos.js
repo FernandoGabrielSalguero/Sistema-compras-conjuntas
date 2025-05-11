@@ -144,4 +144,8 @@ function openModalEditar() {
     }
 }
 
+function closeModalEditar() {
+    document.getElementById('modalEditar').classList.add('hidden');
+}
+
 
