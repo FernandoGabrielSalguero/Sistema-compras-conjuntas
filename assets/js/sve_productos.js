@@ -69,33 +69,13 @@ function abrirModalEditar(id) {
         .then(data => {
             console.log("✅ Producto recibido:", data);
 
-            // document.getElementById('edit_id').value = data.producto.Id;
-            // document.getElementById('edit_Nombre_producto').value = data.producto.Nombre_producto;
-            // document.getElementById('edit_Detalle_producto').value = data.producto.Detalle_producto;
-            // document.getElementById('edit_Precio_producto').value = data.producto.Precio_producto;
-            // document.getElementById('edit_Unidad_Medida_venta').value = data.producto.Unidad_Medida_venta;
-            // document.getElementById('edit_categoria').value = data.producto.categoria;
-            // document.getElementById('edit_alicuota').value = data.producto.alicuota;
-
-            const campos = [
-    'edit_id',
-    'edit_Nombre_producto',
-    'edit_Detalle_producto',
-    'edit_Precio_producto',
-    'edit_Unidad_medida_venta',
-    'edit_categoria',
-    'edit_alicuota'
-];
-
-for (let campo of campos) {
-    const el = document.getElementById(campo);
-    if (!el) {
-        console.error(`⛔ No se encontró el elemento con id "${campo}"`);
-    } else {
-        console.log(`✅ Encontrado: #${campo}`);
-    }
-}
-
+            document.getElementById('edit_id').value = data.producto.Id;
+            document.getElementById('edit_Nombre_producto').value = data.producto.Nombre_producto;
+            document.getElementById('edit_Detalle_producto').value = data.producto.Detalle_producto;
+            document.getElementById('edit_Precio_producto').value = data.producto.Precio_producto;
+            document.getElementById('edit_Unidad_Medida_venta').value = data.producto.Unidad_Medida_venta;
+            document.getElementById('edit_categoria').value = data.producto.categoria;
+            document.getElementById('edit_alicuota').value = data.producto.alicuota;
 
             openModalEditar();
         })
@@ -105,7 +85,7 @@ for (let campo of campos) {
         });
 }
 
-// abrir modal confirmación
+// abrir modal para confirmación
 let productoIdAEliminar = null;
 
 function confirmarEliminacion(id) {
