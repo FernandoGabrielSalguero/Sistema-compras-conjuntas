@@ -34,6 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 💡 Boton eliminar productos
+    const btnEliminar = document.getElementById('btnConfirmarEliminar');
+    if (btnEliminar) {
+        btnEliminar.addEventListener('click', eliminarProductoConfirmado);
+    }
+
     cargarProductos();
 });
 
@@ -129,6 +135,3 @@ async function eliminarProductoConfirmado() {
     }
 }
 
-
-// Asignar evento al botón de confirmar
-document.getElementById('btnConfirmarEliminar').addEventListener('click', eliminarProductoConfirmado);
