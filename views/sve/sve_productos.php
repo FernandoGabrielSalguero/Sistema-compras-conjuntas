@@ -236,7 +236,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                             <div class="input-group">
                                 <label for="edit_Unidad_medida_venta">Unidad de medida</label>
-                                <input type="text" id="edit_Unidad_medida_venta" name="Unidad_medida_venta">
+                                <select id="edit_Unidad_medida_venta" name="Unidad_medida_venta" required>
+                                    <option value="Kilos">Kilos</option>
+                                    <option value="Gramos">Gramos</option>
+                                    <option value="Litros">Litros</option>
+                                    <option value="Unidad">Unidad</option>
+                                </select>
                             </div>
 
                             <div class="input-group">
