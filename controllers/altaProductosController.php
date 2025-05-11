@@ -32,4 +32,3 @@ if ($productosModel->crearProducto($Nombre_producto, $Detalle_producto, $Precio_
 } else {
     echo json_encode(['success' => false, 'message' => 'Error al crear el producto.']);
 }
-?>

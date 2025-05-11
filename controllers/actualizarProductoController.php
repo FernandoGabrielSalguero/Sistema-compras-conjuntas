@@ -31,4 +31,3 @@ if ($productosModel->actualizarProducto($id, $Nombre_producto, $Detalle_producto
 } else {
     echo json_encode(['success' => false, 'message' => 'Error al actualizar el producto.']);
 }
-?>
