@@ -59,7 +59,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <li onclick="location.href='sve_altausuarios.php'">
                         <span class="material-icons">person</span><span class="link-text">Alta usuarios</span>
                     </li>
-                    <li onclick="location.href='sve_altausuarios.php'">
+                    <li onclick="location.href='sve_cargaMasivaUsuarios.php'">
                         <span class="material-icons">persons</span><span class="link-text">Carga masiva usuaios</span>
                     </li>
                     <li onclick="location.href='sve_operativos.php'">
