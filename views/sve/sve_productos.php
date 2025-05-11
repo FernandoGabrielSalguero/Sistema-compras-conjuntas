@@ -196,12 +196,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Nombre_producto</th>
-                                    <th>Detalle_producto</th>
-                                    <th>Precio_producto</th>
-                                    <th>Unidad_medida_venta</th>
-                                    <th>categoria</th>
-                                    <th>alicuota</th>
+                                    <th>Nombre</th>
+                                    <th>Detalle del producto</th>
+                                    <th>Precio</th>
+                                    <th>Unidad de venta</th>
+                                    <th>Categoria</th>
+                                    <th>Alicuota</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>

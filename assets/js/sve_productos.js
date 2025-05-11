@@ -104,7 +104,7 @@ async function eliminarProductoConfirmado() {
     try {
         console.log("👉 Eliminando producto ID:", productoIdAEliminar);
 
-        const response = await fetch(`/controllers/eliminarProductoController.php?id=${productoIdAEliminar}`, { method: 'DELETE' });
+        const response = await fetch(`/controllers/eliminarProductoController.php?id=${productoIdAEliminar}`);
 
         if (!response.ok) {
             const errorData = await response.json();
