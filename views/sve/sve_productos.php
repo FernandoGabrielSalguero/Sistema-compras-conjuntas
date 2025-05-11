@@ -333,7 +333,7 @@ function abrirModalEditar(id) {
                 'edit_Nombre_producto': data.producto.Nombre_producto,
                 'edit_Detalle_producto': data.producto.Detalle_producto,
                 'edit_Precio_producto': data.producto.Precio_producto,
-                'edit_Unidad_medida_venta': data.producto.Unidad_Medida_venta, // ⚠️ este ID exacto importa
+                'edit_Unidad_medida_venta': data.producto.Unidad_Medida_venta,
                 'edit_categoria': data.producto.categoria,
                 'edit_alicuota': data.producto.alicuota
             };
@@ -349,7 +349,7 @@ function abrirModalEditar(id) {
                 console.log(`✅ Asignado: ${id} =`, valor);
             }
 
-            openModal(); // Mostramos el modal
+            openModalEditar();
         })
         .catch((err) => {
             console.error('⛔ Error en abrirModalEditar:', err);
