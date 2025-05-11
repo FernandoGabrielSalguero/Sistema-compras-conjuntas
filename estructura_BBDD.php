@@ -3,7 +3,7 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 // Incluí tu conexión
-require_once '../../middleware/authMiddleware.php';
+require_once __DIR__ . './config.php';
 
 $baseDatos = $conn->query("SELECT DATABASE()")->fetch_row()[0];
 
