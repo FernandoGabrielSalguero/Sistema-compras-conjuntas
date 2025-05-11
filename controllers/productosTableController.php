@@ -38,4 +38,3 @@ foreach ($productos as $producto) {
     echo '</td>';
     echo '</tr>';
 }
-?>
