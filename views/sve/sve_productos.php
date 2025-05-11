@@ -311,32 +311,52 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         document.addEventListener('DOMContentLoaded', cargarProductos);
 
-        // modal para editar producto
-        function abrirModalEditar(id) {
-            console.log("Abrir modal (funcion abrirModalEditar) para producto ID:", id);
+function abrirModalEditar(id) {
+    console.log("🔍 Abrir modal (función abrirModalEditar) para producto ID:", id);
 
-            fetch(`/controllers/obtenerProductoController.php?id=${id}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('edit_id').value = data.producto.Id;
-                        document.getElementById('edit_Nombre_producto').value = data.producto.Nombre_producto;
-                        document.getElementById('edit_Detalle_producto').value = data.producto.Detalle_producto;
-                        document.getElementById('edit_Precio_producto').value = data.producto.Precio_producto;
-                        document.getElementById('edit_Unidad_Medida_venta').value = data.producto.Unidad_Medida_venta;
-                        document.getElementById('edit_categoria').value = data.producto.categoria;
-                        document.getElementById('edit_alicuota').value = data.producto.alicuota;
+    fetch(`/controllers/obtenerProductoController.php?id=${id}`)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`❌ Error HTTP: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            console.log("📦 Datos recibidos del backend:", data);
 
-                        openModal();
-                    } else {
-                        showAlert('error', 'Error al cargar datos del producto.');
-                    }
-                })
-                .catch((err) => {
-                    console.error('⛔ Error:', err);
-                    showAlert('error', 'Error de red al buscar producto.');
-                });
-        }
+            if (!data.success) {
+                throw new Error('⚠️ Backend no devolvió success = true');
+            }
+
+            const campos = {
+                'edit_id': data.producto.Id,
+                'edit_Nombre_producto': data.producto.Nombre_producto,
+                'edit_Detalle_producto': data.producto.Detalle_producto,
+                'edit_Precio_producto': data.producto.Precio_producto,
+                'edit_Unidad_medida_venta': data.producto.Unidad_Medida_venta, // ⚠️ este ID exacto importa
+                'edit_categoria': data.producto.categoria,
+                'edit_alicuota': data.producto.alicuota
+            };
+
+            // Recorremos y asignamos campo por campo
+            for (const [id, valor] of Object.entries(campos)) {
+                const input = document.getElementById(id);
+                if (!input) {
+                    console.error(`❌ No se encontró el input con ID: ${id}`);
+                    continue;
+                }
+                input.value = valor;
+                console.log(`✅ Asignado: ${id} =`, valor);
+            }
+
+            openModal(); // Mostramos el modal
+        })
+        .catch((err) => {
+            console.error('⛔ Error en abrirModalEditar:', err);
+            showAlert('error', 'Error al cargar datos del producto.');
+        });
+}
+
 
         // enviar cambios del formulario por ajax
         document.getElementById('formEditarProducto').addEventListener('submit', async function(e) {
