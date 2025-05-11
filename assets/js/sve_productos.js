@@ -145,7 +145,12 @@ function openModalEditar() {
 }
 
 function closeModalEditar() {
-    document.getElementById('modalEditar').classList.add('hidden');
+    const modal = document.getElementById('modalEditar');
+    modal.classList.add('hidden');
+
+    // Limpiar campos del formulario
+    const form = document.getElementById('formEditarProducto');
+    if (form) form.reset();
 }
 
 
