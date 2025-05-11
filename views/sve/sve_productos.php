@@ -103,7 +103,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="Nombre_producto">Nombre</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">fingerprint</span>
+                                    <span class="material-icons">label</span>
                                     <input type="text" id="Nombre_producto" name="Nombre_producto" placeholder="Nombre producto" required>
                                 </div>
                             </div>
@@ -122,7 +122,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="Precio_producto">Precio</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">person</span>
+                                    <span class="material-icons">monetization_on</span>
                                     <input type="text" id="Precio_producto" name="Precio_producto" placeholder="$2545" required>
                                 </div>
                             </div>
@@ -131,7 +131,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="Unidad_medida_venta">¿Se vende por?</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">check_circle</span>
+                                    <span class="material-icons">scale</span>
                                     <select id="Unidad_medida_venta" name="Unidad_medida_venta" required>
                                         <option value="Kilos"> Kilos</option>
                                         <option value="Gramos">Gramos</option>
@@ -145,7 +145,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="categoria">Categoria</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">supervisor_account</span>
+                                    <span class="material-icons">category</span>
                                     <select id="categoria" name="categoria" required>
                                         <option value="Fertilizantes Sólidos">Fertilizantes Sólidos</option>
                                         <option value="Fertilizantes Complejos">Fertilizantes Complejos</option>
@@ -166,7 +166,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="alicuota">Alicuota</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">supervisor_account</span>
+                                    <span class="material-icons">calculate</span>
                                     <select id="alicuota" name="alicuota" required>
                                         <option value="0">0</option>
                                         <option value="2.5">2.5</option>
