@@ -18,7 +18,13 @@ if (!file_exists($archivoTmp)) {
     exit;
 }
 
-$csv = array_map('str_getcsv', file($archivoTmp));
+$csv = [];
+if (($handle = fopen($archivoTmp, 'r')) !== false) {
+    while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+        $csv[] = $data;
+    }
+    fclose($handle);
+}
 $encabezados = array_map('trim', $csv[0]);
 $datos = array_slice($csv, 1);
 

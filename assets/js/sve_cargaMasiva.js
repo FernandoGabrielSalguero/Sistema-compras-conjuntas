@@ -12,11 +12,11 @@ function previewCSV(tipo) {
     const file = inputFile.files[0];
     const reader = new FileReader();
 
-    reader.onload = function (e) {
-        const contenido = e.target.result;
-        const filas = contenido.split('\n').map(fila => fila.split(','));
-        renderPreview(filas, previewDiv);
-    };
+reader.onload = function (e) {
+    const contenido = e.target.result;
+    const filas = contenido.split('\n').map(fila => fila.split(';'));
+    renderPreview(filas, previewDiv);
+};
 
     reader.readAsText(file);
 }
