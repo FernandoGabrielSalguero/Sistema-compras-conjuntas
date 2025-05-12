@@ -526,28 +526,68 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         // 2. Cargar productores
+        // function cargarProductores() {
+        //     console.log("📦 Ejecutando cargarProductores()");
+        //     const idCoop = document.getElementById("cooperativa").value;
+        //     const select = document.getElementById("productor");
+        //     select.innerHTML = '<option value="">Seleccionar</option>';
+
+        //     if (!idCoop) return;
+
+        //     fetch(`/controllers/PedidoController.php?action=getProductores&id=${idCoop}`)
+        //         .then(res => res.json())
+
+        //         .then(data => {
+        //             console.log("✅ Respuesta obtenida para cooperativas");
+        //             data.forEach(prod => {
+        //                 const opt = document.createElement("option");
+        //                 opt.value = prod.real_id;
+        //                 opt.textContent = prod.nombre;
+        //                 select.appendChild(opt);
+        //             });
+        //         })
+        //         .catch(err => console.error("❌ Error al cargar productores:", err));
+        // }
+
         function cargarProductores() {
             console.log("📦 Ejecutando cargarProductores()");
+
             const idCoop = document.getElementById("cooperativa").value;
+            console.log("🔍 ID cooperativa seleccionada:", idCoop);
+
             const select = document.getElementById("productor");
             select.innerHTML = '<option value="">Seleccionar</option>';
 
-            if (!idCoop) return;
+            if (!idCoop) {
+                console.warn("⚠️ No se seleccionó ninguna cooperativa.");
+                return;
+            }
 
             fetch(`/controllers/PedidoController.php?action=getProductores&id=${idCoop}`)
                 .then(res => res.json())
-
                 .then(data => {
-                    console.log("✅ Respuesta obtenida para cooperativas");
+                    console.log("✅ Productores recibidos:", data);
+
+                    if (!data.length) {
+                        console.warn("⚠️ No se encontraron productores para esta cooperativa.");
+                        return;
+                    }
+
                     data.forEach(prod => {
                         const opt = document.createElement("option");
-                        opt.value = prod.real_id;
+                        // Asegurate de usar el campo correcto (id o real_id)
+                        opt.value = prod.real_id || prod.id; // usa según tu backend
                         opt.textContent = prod.nombre;
                         select.appendChild(opt);
                     });
+
+                    console.log("✅ Productores cargados exitosamente.");
                 })
-                .catch(err => console.error("❌ Error al cargar productores:", err));
+                .catch(err => {
+                    console.error("❌ Error al cargar productores:", err);
+                });
         }
+
 
         // 3. Cargar productos
         function cargarProductos() {
