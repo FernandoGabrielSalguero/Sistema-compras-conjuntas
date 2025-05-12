@@ -18,38 +18,15 @@ if (!file_exists($archivoTmp)) {
     exit;
 }
 
-$csv = [];
-if (($handle = fopen($archivoTmp, 'r')) !== false) {
-    while (($data = fgetcsv($handle, 1000, ';')) !== false) {
-        $csv[] = $data;
-    }
-    fclose($handle);
-}
-
+$csv = array_map('str_getcsv', file($archivoTmp));
 $encabezados = array_map('trim', $csv[0]);
 $datos = array_slice($csv, 1);
 
+// Convertir filas a array asociativo
 $datosProcesados = [];
-
 foreach ($datos as $fila) {
     if (count($fila) !== count($encabezados)) continue;
-
-    $asociativo = array_combine($encabezados, array_map('trim', $fila));
-
-    // Limpiar y normalizar valores vacíos
-    foreach ($asociativo as $clave => &$valor) {
-        $valor = trim($valor);
-        if ($valor === '') {
-            // Por defecto si es campo numérico
-            if (preg_match('/id|telefono|cuit|contrasena|cantidad|ha|superficie|monto|precio/i', $clave)) {
-                $valor = 0;
-            } else {
-                $valor = null; // Dejá null si es texto
-            }
-        }
-    }
-
-    $datosProcesados[] = $asociativo;
+    $datosProcesados[] = array_combine($encabezados, array_map('trim', $fila));
 }
 
 $modelo = new CargaMasivaModel();
