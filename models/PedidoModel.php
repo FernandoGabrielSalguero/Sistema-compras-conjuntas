@@ -8,13 +8,13 @@ class PedidoModel
 {
 
     // Obtener todas las cooperativas
-    public static function getCooperativas()
-    {
-        global $pdo;
-        $query = "SELECT id, nombre FROM usuarios WHERE rol = 'cooperativa'";
-        $stmt = $pdo->query($query);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+public static function getCooperativas()
+{
+    global $pdo;
+    $query = "SELECT id_cooperativa, nombre FROM usuarios WHERE rol = 'cooperativa'";
+    $stmt = $pdo->query($query);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
     // Obtener los productores vinculados a una cooperativa
     // public static function getProductoresPorCooperativa($id_cooperativa)

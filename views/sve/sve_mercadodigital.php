@@ -517,7 +517,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     select.innerHTML = '<option value="">Seleccionar</option>';
                     data.forEach(coop => {
                         const opt = document.createElement("option");
-                        opt.value = coop.id;
+                        opt.value = coop.id_cooperativa;
                         opt.textContent = coop.nombre;
                         select.appendChild(opt);
                     });
@@ -1114,7 +1114,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     select.innerHTML = '<option value="">Seleccionar</option>';
                     data.forEach(coop => {
                         const opt = document.createElement("option");
-                        opt.value = coop.id;
+                        opt.value = coop.id_cooperativa;
                         opt.textContent = coop.nombre;
                         select.appendChild(opt);
                     });
