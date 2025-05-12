@@ -17,11 +17,24 @@ class PedidoModel
     }
 
     // Obtener los productores vinculados a una cooperativa
+    // public static function getProductoresPorCooperativa($id_cooperativa)
+    // {
+    //     global $pdo;
+    //     $query = "
+    //     SELECT u.id AS real_id, u.nombre
+    //     FROM Relaciones_Cooperativa_Productores r
+    //     JOIN usuarios u ON r.id_productor = u.id_productor
+    //     WHERE r.id_cooperativa = :id_coop
+    // ";
+    //     $stmt = $pdo->prepare($query);
+    //     $stmt->execute(['id_coop' => $id_cooperativa]);
+    //     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // }
     public static function getProductoresPorCooperativa($id_cooperativa)
     {
         global $pdo;
         $query = "
-        SELECT u.id AS real_id, u.nombre
+        SELECT u.id, u.nombre
         FROM Relaciones_Cooperativa_Productores r
         JOIN usuarios u ON r.id_productor = u.id_productor
         WHERE r.id_cooperativa = :id_coop
@@ -30,6 +43,7 @@ class PedidoModel
         $stmt->execute(['id_coop' => $id_cooperativa]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
 
 
     // Obtener todos los productos organizados por categoría
