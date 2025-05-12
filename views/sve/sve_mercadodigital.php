@@ -541,7 +541,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     console.log("✅ Respuesta obtenida para cooperativas");
                     data.forEach(prod => {
                         const opt = document.createElement("option");
-                        opt.value = prod.id;
+                        opt.value = prod.real_id;
                         opt.textContent = prod.nombre;
                         select.appendChild(opt);
                     });
@@ -1059,7 +1059,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     select.innerHTML = '<option value="">Seleccionar</option>';
                     data.forEach(prod => {
                         const opt = document.createElement("option");
-                        opt.value = prod.id;
+                        opt.value = prod.real_id;
                         opt.textContent = prod.nombre;
                         select.appendChild(opt);
                     });
