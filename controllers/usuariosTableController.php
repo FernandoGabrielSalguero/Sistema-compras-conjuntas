@@ -36,17 +36,17 @@ foreach ($usuarios as $usuario) {
     $permisoClass = $usuario['permiso_ingreso'] === 'Habilitado' ? 'success' : 'danger';
 
     echo "<tr>
-        <td>" . htmlspecialchars($usuario['cuit']) . "</td>
-        <td>" . htmlspecialchars($usuario['rol']) . "</td>
-        <td><span class='badge {$permisoClass}'>" . htmlspecialchars($usuario['permiso_ingreso']) . "</span></td>
-        <td>" . htmlspecialchars($usuario['nombre']) . "</td>
-        <td>" . htmlspecialchars($usuario['correo']) . "</td>
-        <td>" . htmlspecialchars($usuario['telefono']) . "</td>
-        <td>" . htmlspecialchars($usuario['id_cooperativa']) . "</td>
-        <td>" . htmlspecialchars($usuario['id_productor']) . "</td>
-        <td>" . htmlspecialchars($usuario['observaciones']) . "</td>
+        <td>" . htmlspecialchars($usuario['cuit'] ?? '') . "</td>
+        <td>" . htmlspecialchars($usuario['rol'] ?? '') . "</td>
+        <td><span class='badge {$permisoClass}'>" . htmlspecialchars($usuario['permiso_ingreso'] ?? '') . "</span></td>
+        <td>" . htmlspecialchars($usuario['nombre'] ?? '') . "</td>
+        <td>" . htmlspecialchars($usuario['correo'] ?? '') . "</td>
+        <td>" . htmlspecialchars($usuario['telefono'] ?? '') . "</td>
+        <td>" . htmlspecialchars($usuario['id_cooperativa'] ?? '') . "</td>
+        <td>" . htmlspecialchars($usuario['id_productor'] ?? '') . "</td>
+        <td>" . htmlspecialchars($usuario['observaciones'] ?? '') . "</td>
         <td>
-            <button class='btn btn-info btn-sm' onclick='abrirModalEditar(" . $usuario['id'] . ")'>
+            <button class='btn btn-info btn-sm' onclick='abrirModalEditar(" . ($usuario['id'] ?? 0) . ")'>
                 <span class='material-icons'>edit</span>
             </button>
         </td>
