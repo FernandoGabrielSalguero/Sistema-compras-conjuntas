@@ -1,9 +1,9 @@
 console.log("🟢 sve_cargaMasiva.js cargado");
 
-window.previewCSV = function(tipo) {
+window.previewCSV = function (tipo) {
     const inputFile = document.getElementById('csv' + capitalize(tipo));
     const previewDiv = document.getElementById('preview' + capitalize(tipo));
-    
+
     if (!inputFile.files.length) {
         alert("Por favor seleccioná un archivo CSV.");
         return;
@@ -12,11 +12,11 @@ window.previewCSV = function(tipo) {
     const file = inputFile.files[0];
     const reader = new FileReader();
 
-reader.onload = function (e) {
-    const contenido = e.target.result;
-    const filas = contenido.split('\n').map(fila => fila.split(';'));
-    renderPreview(filas, previewDiv);
-};
+    reader.onload = function (e) {
+        const contenido = e.target.result;
+        const filas = contenido.split('\n').map(fila => fila.split(';'));
+        renderPreview(filas, previewDiv);
+    };
 
     reader.readAsText(file);
 }
@@ -46,7 +46,7 @@ function renderPreview(filas, container) {
     container.innerHTML = html;
 }
 
-window.confirmarCarga = function(tipo) {
+window.confirmarCarga = function (tipo) {
     const inputFile = document.getElementById('csv' + capitalize(tipo));
     if (!inputFile.files.length) {
         alert("Seleccioná un archivo para cargar.");
@@ -61,14 +61,25 @@ window.confirmarCarga = function(tipo) {
         method: 'POST',
         body: formData
     })
-    .then(resp => resp.json())
-    .then(data => {
-        alert(data.mensaje || "Carga completada.");
-    })
-    .catch(err => {
-        console.error(err);
-        alert("Ocurrió un error al subir el archivo.");
-    });
+        .then(async resp => {
+            const text = await resp.text();
+            console.log("🔎 Respuesta cruda del servidor:", text);
+
+            try {
+                const data = JSON.parse(text);
+                alert(data.mensaje || "Carga completada.");
+            } catch (e) {
+                console.error("❌ Error al parsear JSON:", e);
+                alert("El servidor devolvió una respuesta inválida.");
+            }
+        })
+        .then(data => {
+            alert(data.mensaje || "Carga completada.");
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Ocurrió un error al subir el archivo.");
+        });
 }
 
 function capitalize(str) {
