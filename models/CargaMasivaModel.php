@@ -68,8 +68,9 @@ class CargaMasivaModel
 
         public function insertarRelaciones($datos)
         {
-                $sql = "INSERT INTO Relaciones_Cooperativa_Productores (id_productor, id_cooperativa)
-                VALUES (:id_productor, :id_cooperativa)";
+                $sql = "INSERT IGNORE INTO Relaciones_Cooperativa_Productores (id_productor, id_cooperativa)
+            VALUES (:id_productor, :id_cooperativa)";
+
                 $stmt = $this->pdo->prepare($sql);
 
                 foreach ($datos as $fila) {
