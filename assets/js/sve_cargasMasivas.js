@@ -46,41 +46,49 @@ function renderPreview(filas, container) {
     container.innerHTML = html;
 }
 
-window.confirmarCarga = function (tipo) {
+window.confirmarCarga = function(tipo) {
     const inputFile = document.getElementById('csv' + capitalize(tipo));
     if (!inputFile.files.length) {
         alert("Seleccioná un archivo para cargar.");
         return;
     }
 
+    const file = inputFile.files[0];
     const formData = new FormData();
-    formData.append('archivo', inputFile.files[0]);
+    formData.append('archivo', file);
     formData.append('tipo', tipo);
 
+    // 🔍 NUEVO: mostrar contenido del archivo CSV antes de enviar
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        console.log("📦 CSV a enviar (tipo:", tipo, "):");
+        console.log(e.target.result);
+    };
+    reader.readAsText(file);
+
+    // Enviar al servidor
     fetch('../../controllers/cargaMasivaController.php', {
         method: 'POST',
         body: formData
     })
-        .then(async resp => {
-            const text = await resp.text();
-            console.log("🔎 Respuesta cruda del servidor:", text);
-
-            try {
-                const data = JSON.parse(text);
-                alert(data.mensaje || "Carga completada.");
-            } catch (e) {
-                console.error("❌ Error al parsear JSON:", e);
-                alert("El servidor devolvió una respuesta inválida.");
-            }
-        })
-        .then(data => {
+    .then(async resp => {
+        const text = await resp.text();
+        console.log("🔎 Respuesta cruda del servidor:", text);
+        try {
+            const data = JSON.parse(text);
             alert(data.mensaje || "Carga completada.");
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Ocurrió un error al subir el archivo.");
-        });
-}
+        } catch (e) {
+            console.error("❌ Error al parsear JSON:", e);
+            alert("El servidor devolvió una respuesta inválida.");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Ocurrió un error al subir el archivo.");
+    });
+};
+
+
 
 function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
