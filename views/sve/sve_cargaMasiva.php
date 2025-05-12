@@ -105,31 +105,29 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <div class="card">
                         <h3>📁 Cargar cooperativas</h3>
                         <input type="file" id="csvCooperativas" accept=".csv" />
-                        <button class="btn" onclick="previewCSV('cooperativas')">Previsualizar</button>
+                        <button class="btn btn-info" onclick="previewCSV('cooperativas')">Previsualizar</button>
                         <div id="previewCooperativas" class="csv-preview"></div>
-                        <button class="btn success" onclick="confirmarCarga('cooperativas')">Confirmar carga</button>
+                        <button class="btn btn-aceptar" onclick="confirmarCarga('cooperativas')">Confirmar carga</button>
                     </div>
 
                     <!-- Tarjeta: Carga de Productores -->
                     <div class="card">
                         <h3>📁 Cargar productores</h3>
                         <input type="file" id="csvProductores" accept=".csv" />
-                        <button class="btn" onclick="previewCSV('productores')">Previsualizar</button>
+                        <button class="btn btn-info" onclick="previewCSV('productores')">Previsualizar</button>
                         <div id="previewProductores" class="csv-preview"></div>
-                        <button class="btn success" onclick="confirmarCarga('productores')">Confirmar carga</button>
+                        <button class="btn btn-aceptar" onclick="confirmarCarga('productores')">Confirmar carga</button>
                     </div>
 
                     <!-- Tarjeta: Carga de relaciones -->
                     <div class="card">
                         <h3>📁 Cargar relaciones productores ↔ cooperativas</h3>
                         <input type="file" id="csvRelaciones" accept=".csv" />
-                        <button class="btn" onclick="previewCSV('relaciones')">Previsualizar</button>
+                        <button class="btn btn-info" onclick="previewCSV('relaciones')">Previsualizar</button>
                         <div id="previewRelaciones" class="csv-preview"></div>
-                        <button class="btn success" onclick="confirmarCarga('relaciones')">Confirmar carga</button>
+                        <button class="btn btn-aceptar" onclick="confirmarCarga('relaciones')">Confirmar carga</button>
                     </div>
                 </div>
-
-
             </section>
 
         </div>

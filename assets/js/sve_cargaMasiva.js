@@ -1,3 +1,5 @@
+console.log("js funcionando bien");
+
 function previewCSV(tipo) {
     const inputFile = document.getElementById('csv' + capitalize(tipo));
     const previewDiv = document.getElementById('preview' + capitalize(tipo));
