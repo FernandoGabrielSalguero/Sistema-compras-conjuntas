@@ -17,13 +17,17 @@ class CargaMasivaModel
 
         public function insertarCooperativas($datos)
         {
-                $sql = "INSERT INTO usuarios (id, nombre, rol, permiso_ingreso, cuit, contrasena)
-                VALUES (:id, :nombre, 'cooperativa', :permiso_ingreso, :cuit, :contrasena)";
+                $sql = "INSERT INTO usuarios (nombre, rol, permiso_ingreso, cuit, contrasena)
+            VALUES (:nombre, 'cooperativa', :permiso_ingreso, :cuit, :contrasena)
+            ON DUPLICATE KEY UPDATE
+                nombre = VALUES(nombre),
+                permiso_ingreso = VALUES(permiso_ingreso),
+                contrasena = VALUES(contrasena)";
+
                 $stmt = $this->pdo->prepare($sql);
 
                 foreach ($datos as $fila) {
                         $stmt->execute([
-                                ':id' => $fila['id'],
                                 ':nombre' => $fila['nombre'],
                                 ':permiso_ingreso' => $fila['permiso_ingreso'],
                                 ':cuit' => $fila['cuit'],
@@ -32,15 +36,21 @@ class CargaMasivaModel
                 }
         }
 
+
         public function insertarProductores($datos)
         {
-                $sql = "INSERT INTO usuarios (id, nombre, rol, permiso_ingreso, cuit, contrasena, id_cooperativa)
-                VALUES (:id, :nombre, 'productor', :permiso_ingreso, :cuit, :contrasena, :id_cooperativa)";
+                $sql = "INSERT INTO usuarios (nombre, rol, permiso_ingreso, cuit, contrasena, id_cooperativa)
+            VALUES (:nombre, 'productor', :permiso_ingreso, :cuit, :contrasena, :id_cooperativa)
+            ON DUPLICATE KEY UPDATE
+                nombre = VALUES(nombre),
+                permiso_ingreso = VALUES(permiso_ingreso),
+                contrasena = VALUES(contrasena),
+                id_cooperativa = VALUES(id_cooperativa)";
+
                 $stmt = $this->pdo->prepare($sql);
 
                 foreach ($datos as $fila) {
                         $stmt->execute([
-                                ':id' => $fila['id'],
                                 ':nombre' => $fila['nombre'],
                                 ':permiso_ingreso' => $fila['permiso_ingreso'],
                                 ':cuit' => $fila['cuit'],
@@ -49,6 +59,7 @@ class CargaMasivaModel
                         ]);
                 }
         }
+
 
         public function insertarRelaciones($datos)
         {
