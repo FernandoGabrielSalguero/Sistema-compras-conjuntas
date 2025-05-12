@@ -1,6 +1,4 @@
-console.log("js funcionando bien");
-
-function previewCSV(tipo) {
+window.previewCSV = function(tipo) {
     const inputFile = document.getElementById('csv' + capitalize(tipo));
     const previewDiv = document.getElementById('preview' + capitalize(tipo));
     
@@ -46,7 +44,7 @@ function renderPreview(filas, container) {
     container.innerHTML = html;
 }
 
-function confirmarCarga(tipo) {
+window.confirmarCarga = function(tipo) {
     const inputFile = document.getElementById('csv' + capitalize(tipo));
     if (!inputFile.files.length) {
         alert("Seleccioná un archivo para cargar.");
