@@ -1,3 +1,5 @@
+console.log("🟢 sve_cargaMasiva.js cargado");
+
 window.previewCSV = function(tipo) {
     const inputFile = document.getElementById('csv' + capitalize(tipo));
     const previewDiv = document.getElementById('preview' + capitalize(tipo));

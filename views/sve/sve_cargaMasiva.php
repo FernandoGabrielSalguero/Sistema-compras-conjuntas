@@ -134,7 +134,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <!-- script principal  -->
-    <script src="../../assets/js/sve_cargaMasiva.js" defer></script>
+    <script src="../../assets/js/sve_cargasMasivas.js" defer></script>
 
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
