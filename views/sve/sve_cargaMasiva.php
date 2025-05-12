@@ -60,7 +60,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="material-icons">person</span><span class="link-text">Alta usuarios</span>
                     </li>
                     <li onclick="location.href='sve_cargaMasiva.php'">
-                        <span class="material-icons">persons</span><span class="link-text">Carga masiva</span>
+                        <span class="material-icons">upload_file</span><span class="link-text">Carga masiva</span>
                     </li>
                     <li onclick="location.href='sve_operativos.php'">
                         <span class="material-icons">assignment</span><span class="link-text">Operativos</span>
@@ -101,10 +101,40 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <p>En esta página vamos a cargar masivamente los usuarios en nuestro sistema. Recordá que solo podemos cargar archivos con extensión CSV.</p>
                 </div>
 
+                <!-- Tarjeta: Carga de Cooperativas -->
+                <div class="card">
+                    <h3>📁 Cargar cooperativas</h3>
+                    <input type="file" id="csvCooperativas" accept=".csv" />
+                    <button class="btn" onclick="previewCSV('cooperativas')">Previsualizar</button>
+                    <div id="previewCooperativas" class="csv-preview"></div>
+                    <button class="btn success" onclick="confirmarCarga('cooperativas')">Confirmar carga</button>
+                </div>
+
+                <!-- Tarjeta: Carga de Productores -->
+                <div class="card">
+                    <h3>📁 Cargar productores</h3>
+                    <input type="file" id="csvProductores" accept=".csv" />
+                    <button class="btn" onclick="previewCSV('productores')">Previsualizar</button>
+                    <div id="previewProductores" class="csv-preview"></div>
+                    <button class="btn success" onclick="confirmarCarga('productores')">Confirmar carga</button>
+                </div>
+
+                <!-- Tarjeta: Carga de relaciones -->
+                <div class="card">
+                    <h3>📁 Cargar relaciones productores ↔ cooperativas</h3>
+                    <input type="file" id="csvRelaciones" accept=".csv" />
+                    <button class="btn" onclick="previewCSV('relaciones')">Previsualizar</button>
+                    <div id="previewRelaciones" class="csv-preview"></div>
+                    <button class="btn success" onclick="confirmarCarga('relaciones')">Confirmar carga</button>
+                </div>
+
             </section>
 
         </div>
     </div>
+
+    <!-- script principal  -->
+    <script src="../../assets/js/sve_cargaMasiva.js"></script>
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
 </body>
