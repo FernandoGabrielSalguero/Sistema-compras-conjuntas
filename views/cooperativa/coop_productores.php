@@ -92,7 +92,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <!-- Bienvenida -->
                 <div class="card">
                     <h4><?php echo htmlspecialchars($nombre); ?>, estas es la página "Productores"</h4>
-                    <p>te mostramos de forma clara, la información de los productores asociados. Vas a poder modificar sus datos y asociar nuevos productores</p>
+                    <p>Te mostramos de forma clara la información de tus productores asociados. Vas a poder modificar sus datos, asociar nuevos productores y mucho más</p>
                 </div>
 
                 <div class="card-grid grid-4">
