@@ -56,7 +56,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <li onclick="location.href='coop_dashboard.php'">
                         <span class="material-icons">home</span><span class="link-text">Inicio</span>
                     </li>
-                    <li onclick="location.href='coop_dashboard.php'">
+                    <li onclick="location.href='coop_mercadoDigital.php'">
                         <span class="material-icons">shopping_cart</span><span class="link-text">Mercado Digital</span>
                     </li>
                     <li onclick="location.href='coop_pedidos.php'">
