@@ -21,6 +21,12 @@ $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
 $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
+
+// Campos adicionales para cooperativa
+$id_cooperativa = $_SESSION['id_cooperativa'] ?? null;
+$id_productor = $_SESSION['id_productor'] ?? null;
+$direccion = $_SESSION['direccion'] ?? 'Sin dirección';
+$id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
 ?>
 
 <!DOCTYPE html>
