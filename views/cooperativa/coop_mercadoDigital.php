@@ -236,23 +236,23 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
             fetch("/controllers/CoopPedidoController.php?action=getProductores")
                 .then(res => res.json())
                 .then(data => {
-    console.log("📦 Respuesta de productores:", data);
+                    console.log("📦 Respuesta de productores:", data);
 
-    const select = document.getElementById("productor");
-    select.innerHTML = '<option value="">Seleccionar productor</option>';
+                    const select = document.getElementById("productor");
+                    select.innerHTML = '<option value="">Seleccionar productor</option>';
 
-    if (!Array.isArray(data)) {
-        console.error("❌ Error: se esperaba un array. Respuesta:", data);
-        return;
-    }
+                    if (!Array.isArray(data)) {
+                        console.error("❌ Error: se esperaba un array. Respuesta:", data);
+                        return;
+                    }
 
-    data.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p.nombre;
-        opt.textContent = p.nombre;
-        select.appendChild(opt);
-    });
-})
+                    data.forEach(p => {
+                        const opt = document.createElement("option");
+                        opt.value = p.id_productor; // Sigue usando el ID como valor para enviar
+                        opt.textContent = `${p.id_productor} - ${p.nombre}`;
+                        select.appendChild(opt);
+                    });
+                })
                 .catch(err => console.error("❌ Error al cargar productores:", err));
         }
 
