@@ -167,10 +167,11 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
                                             <input type="text" id="cooperativa" name="cooperativa" value="<?php echo htmlspecialchars($nombre); ?>" readonly disabled>
                                         </div>
                                     </div>
+
                                     <!-- Productor con buscador -->
                                     <div class="input-group">
                                         <label for="productor">Productor</label>
-                                        <div class="card smart-selector" id="selectorProductores">
+                                        <div class="smart-selector input-icon" id="selectorProductores">
                                             <input type="text" class="smart-selector-search" placeholder="Buscar productor..." id="buscadorProductores" required>
                                             <div class="smart-selector-list" id="listaProductores"></div>
                                         </div>
