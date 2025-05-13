@@ -53,4 +53,18 @@ switch ($action) {
     default:
         echo json_encode(['error' => 'Acción no válida']);
         break;
+
+
+        case 'getPedidos':
+    $id_cooperativa = $_SESSION['id_cooperativa'] ?? null;
+    if (!$id_cooperativa) {
+        echo json_encode(['success' => false, 'message' => 'Cooperativa no identificada']);
+        exit;
+    }
+
+    require_once '../models/CoopPedidoModel.php';
+    $model = new CoopPedidoModel();
+    $pedidos = $model->getPedidosPorCooperativa($id_cooperativa);
+    echo json_encode($pedidos);
+    break;
 }

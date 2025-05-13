@@ -160,6 +160,32 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                     showAlert("error", "No se pudieron cargar los pedidos.");
                 });
         }
+
+        function cargarPedidos() {
+            fetch('/controllers/CoopPedidoController.php?action=getPedidos')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.querySelector(".data-table tbody");
+                    tbody.innerHTML = '';
+
+                    data.forEach(p => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                    <td>${p.id}</td>
+                    <td>${p.fecha_pedido}</td>
+                    <td>${p.productor}</td>
+                    <td>$${parseFloat(p.total_sin_iva).toFixed(2)}</td>
+                    <td>$${parseFloat(p.total_iva).toFixed(2)}</td>
+                    <td>$${parseFloat(p.total_pedido).toFixed(2)}</td>
+                    <td>${p.observaciones || ''}</td>
+                `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(err => console.error("❌ Error al cargar pedidos:", err));
+        }
+
+        document.addEventListener("DOMContentLoaded", cargarPedidos);
     </script>
 </body>
 
