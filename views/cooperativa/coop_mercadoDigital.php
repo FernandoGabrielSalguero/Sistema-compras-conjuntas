@@ -27,6 +27,9 @@ $id_cooperativa = $_SESSION['id_cooperativa'] ?? null;
 $id_productor = $_SESSION['id_productor'] ?? null;
 $direccion = $_SESSION['direccion'] ?? 'Sin dirección';
 $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
+
+// Verificar si el ID de la cooperativa está disponible
+echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . "');</script>";
 ?>
 
 <!DOCTYPE html>
@@ -233,18 +236,23 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
             fetch("/controllers/CoopPedidoController.php?action=getProductores")
                 .then(res => res.json())
                 .then(data => {
-                    console.log("📦 Respuesta de productores:", data); // <-- línea clave
+    console.log("📦 Respuesta de productores:", data);
 
-                    const select = document.getElementById("productor");
-                    select.innerHTML = '<option value="">Seleccionar productor</option>';
+    const select = document.getElementById("productor");
+    select.innerHTML = '<option value="">Seleccionar productor</option>';
 
-                    data.forEach(p => {
-                        const opt = document.createElement("option");
-                        opt.value = p.nombre;
-                        opt.textContent = p.nombre;
-                        select.appendChild(opt);
-                    });
-                })
+    if (!Array.isArray(data)) {
+        console.error("❌ Error: se esperaba un array. Respuesta:", data);
+        return;
+    }
+
+    data.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.nombre;
+        opt.textContent = p.nombre;
+        select.appendChild(opt);
+    });
+})
                 .catch(err => console.error("❌ Error al cargar productores:", err));
         }
 
