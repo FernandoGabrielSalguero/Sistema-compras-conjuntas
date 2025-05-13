@@ -46,6 +46,47 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
+    <style>
+        .smart-selector {
+            position: relative;
+            width: 100%;
+        }
+
+        .smart-selector-search {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 0.95rem;
+        }
+
+        .smart-selector-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 10;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-top: none;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .smart-selector-list label {
+            display: block;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .smart-selector-list label:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
 </head>
 
 <body>
@@ -235,41 +276,45 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
             fetch("/controllers/CoopPedidoController.php?action=getProductores")
                 .then(res => res.json())
                 .then(data => {
-                    console.log("📦 Productores recibidos:", data);
-
+                    const input = document.getElementById("buscadorProductores");
                     const lista = document.getElementById("listaProductores");
-                    const inputBuscador = document.getElementById("buscadorProductores");
-                    const hiddenInput = document.getElementById("productor");
+                    const hidden = document.getElementById("productor");
 
-                    let productores = data.sort((a, b) => a.id_productor - b.id_productor);
+                    const productores = data.sort((a, b) => a.id_productor - b.id_productor);
 
-                    function renderLista(filtrados) {
+                    function render(filtrados) {
                         lista.innerHTML = '';
                         filtrados.forEach(p => {
                             const item = document.createElement("label");
                             item.textContent = `${p.id_productor} - ${p.nombre}`;
-                            item.classList.add("btn-mini");
                             item.onclick = () => {
-                                inputBuscador.value = `${p.id_productor} - ${p.nombre}`;
-                                hiddenInput.value = p.id_productor;
-                                lista.innerHTML = '';
+                                input.value = `${p.id_productor} - ${p.nombre}`;
+                                hidden.value = p.id_productor;
+                                lista.style.display = 'none';
                             };
                             lista.appendChild(item);
                         });
+                        lista.style.display = 'block';
                     }
 
-                    renderLista(productores);
-
-                    inputBuscador.addEventListener("input", () => {
-                        const val = inputBuscador.value.toLowerCase();
+                    input.addEventListener("focus", () => render(productores));
+                    input.addEventListener("input", () => {
+                        const val = input.value.toLowerCase();
                         const filtrados = productores.filter(p =>
-                            `${p.id_productor} - ${p.nombre}`.toLowerCase().includes(val)
+                            (`${p.id_productor} - ${p.nombre}`).toLowerCase().includes(val)
                         );
-                        renderLista(filtrados);
+                        render(filtrados);
+                    });
+
+                    document.addEventListener("click", (e) => {
+                        if (!document.getElementById("selectorProductores").contains(e.target)) {
+                            lista.style.display = 'none';
+                        }
                     });
                 })
                 .catch(err => console.error("❌ Error al cargar productores:", err));
         }
+
 
         // 2. Cargar productos por categoría
         function cargarProductos() {
