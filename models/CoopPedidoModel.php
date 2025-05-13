@@ -128,4 +128,19 @@ class CoopPedidoModel
         $stmt->execute(['id_coop' => $id_coop]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    // Eliminar pedidos
+    public static function eliminarPedido($id)
+    {
+        global $pdo;
+
+        try {
+            $stmt = $pdo->prepare("DELETE FROM pedidos WHERE id = :id");
+            $stmt->execute(['id' => $id]);
+
+            return ['success' => true, 'message' => 'Pedido eliminado correctamente'];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
 }

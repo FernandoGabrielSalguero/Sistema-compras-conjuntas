@@ -50,21 +50,36 @@ switch ($action) {
         }
         break;
 
+    case 'eliminarPedido':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $data = json_decode(file_get_contents('php://input'), true);
+            if (!isset($data['id'])) {
+                echo json_encode(['success' => false, 'error' => 'Falta el ID del pedido.']);
+                exit;
+            }
+
+            $resultado = CoopPedidoModel::eliminarPedido($data['id']);
+            echo json_encode($resultado);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
+        }
+        break;
+
     default:
         echo json_encode(['error' => 'Acción no válida']);
         break;
 
 
-        case 'getPedidos':
-    $id_cooperativa = $_SESSION['id_cooperativa'] ?? null;
-    if (!$id_cooperativa) {
-        echo json_encode(['success' => false, 'message' => 'Cooperativa no identificada']);
-        exit;
-    }
+    case 'getPedidos':
+        $id_cooperativa = $_SESSION['id_cooperativa'] ?? null;
+        if (!$id_cooperativa) {
+            echo json_encode(['success' => false, 'message' => 'Cooperativa no identificada']);
+            exit;
+        }
 
-    require_once '../models/CoopPedidoModel.php';
-    $model = new CoopPedidoModel();
-    $pedidos = $model->getPedidosPorCooperativa($id_cooperativa);
-    echo json_encode($pedidos);
-    break;
+        require_once '../models/CoopPedidoModel.php';
+        $model = new CoopPedidoModel();
+        $pedidos = $model->getPedidosPorCooperativa($id_cooperativa);
+        echo json_encode($pedidos);
+        break;
 }
