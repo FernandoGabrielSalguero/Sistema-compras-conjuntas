@@ -26,6 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['observaciones'] = $user['observaciones'];
         $_SESSION['rol'] = $user['rol'];
 
+        // Campos extras para cooperativa y $productores
+        $_SESSION['id_cooperativa'] = $user['id_cooperativa'];
+        $_SESSION['id_productor'] = $user['id_productor'];
+        $_SESSION['direccion'] = $user['direccion'];
+        $_SESSION['id_finca_asociada'] = $user['id_finca_asociada'];
+
         switch ($user['rol']) {
             case 'cooperativa':
                 header('Location: /views/cooperativa/coop_dashboard.php');
