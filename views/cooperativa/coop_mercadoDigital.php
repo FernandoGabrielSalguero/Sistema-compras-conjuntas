@@ -254,7 +254,8 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
                         </div>
                     </div>
                 </div>
-
+                <!-- Alert -->
+                <div class="alert-container" id="alertContainer"></div>
             </section>
 
         </div>
@@ -465,7 +466,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        alert("✅ Pedido guardado correctamente.");
+                        showAlert("✅ Pedido guardado correctamente.");
                         location.reload();
                     } else {
                         alert("❌ Error: " + (data.message || data.error));
