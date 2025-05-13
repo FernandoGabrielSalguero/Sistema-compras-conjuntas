@@ -65,6 +65,27 @@ switch ($action) {
         }
         break;
 
+    case 'editarPedido':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $data = json_decode(file_get_contents('php://input'), true);
+
+            $id = $data['id'] ?? null;
+            $obs = $data['observaciones'] ?? '';
+            $hectareas = $data['ha_cooperativa'] ?? null;
+
+            if (!$id) {
+                echo json_encode(['success' => false, 'error' => 'ID faltante']);
+                exit;
+            }
+
+            $res = CoopPedidoModel::actualizarPedido($id, $obs, $hectareas);
+            echo json_encode($res);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
+        }
+        break;
+
+
     default:
         echo json_encode(['error' => 'Acción no válida']);
         break;

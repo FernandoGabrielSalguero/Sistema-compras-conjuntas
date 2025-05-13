@@ -143,4 +143,21 @@ class CoopPedidoModel
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
+
+    // actualziar pedido
+    public static function actualizarPedido($id, $observaciones, $ha_cooperativa)
+    {
+        global $pdo;
+        try {
+            $stmt = $pdo->prepare("UPDATE pedidos SET observaciones = :obs, ha_cooperativa = :ha WHERE id = :id");
+            $stmt->execute([
+                'obs' => $observaciones,
+                'ha' => $ha_cooperativa,
+                'id' => $id
+            ]);
+            return ['success' => true, 'message' => 'Pedido actualizado'];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
 }
