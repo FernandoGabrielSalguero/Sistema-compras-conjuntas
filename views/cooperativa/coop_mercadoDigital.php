@@ -164,7 +164,9 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
                                         <label for="cooperativa">Cooperativa</label>
                                         <div class="input-icon">
                                             <span class="material-icons">apartment</span>
-                                            <input type="text" id="cooperativa" name="cooperativa" value="<?php echo htmlspecialchars($nombre); ?>" readonly disabled>
+                                            <input type="text" id="cooperativa_visible" value="<?php echo htmlspecialchars($nombre); ?>" readonly disabled>
+                                            <!-- Enviar el ID real -->
+                                            <input type="hidden" id="cooperativa" name="cooperativa" value="<?php echo htmlspecialchars($id_cooperativa); ?>">
                                         </div>
                                     </div>
 
