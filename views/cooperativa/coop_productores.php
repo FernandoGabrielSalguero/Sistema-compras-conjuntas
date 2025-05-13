@@ -91,7 +91,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Bienvenida -->
                 <div class="card">
-                    <p><?php echo htmlspecialchars($nombre); ?>, esta es la página productores</p>
+                    <h4><?php echo htmlspecialchars($nombre); ?>, esta es la página productores</h4>
                     <p>te mostramos de forma clara, la información de los productores asociados. <br> Vas a poder modificar sus datos y asociar nuevos productores</p>
                 </div>
 

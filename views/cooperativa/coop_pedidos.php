@@ -92,7 +92,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Bienvenida -->
                 <div class="card">
-                    <p><?php echo htmlspecialchars($nombre); ?>, esta es la página Pedidos</p>
+                    <h4><?php echo htmlspecialchars($nombre); ?>, esta es la página Pedidos</h4>
                     <p>Administrar los pedidos, nunca fue tan facil <br> Mira todos los pedidos de tus productores, sus estado y modificalos si necesitas</p>
                 </div>
 

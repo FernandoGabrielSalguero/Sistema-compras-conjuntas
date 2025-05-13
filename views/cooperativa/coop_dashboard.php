@@ -91,7 +91,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Bienvenida -->
                 <div class="card">
-                    <h2>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h2>
+                    <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
                     <p>En esta página, vas a conocer cuantos pedidos realizaron tus asociados, quien falta pedir y mucha información más. </p>
                 </div>
 
