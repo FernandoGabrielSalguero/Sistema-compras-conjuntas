@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         switch ($user['rol']) {
             case 'cooperativa':
-                header('Location: /views/cooperativa/dashboard.php');
+                header('Location: /views/cooperativa/coop_dashboard.php');
                 break;
             case 'productor':
                 header('Location: /views/productor/dashboard.php');
