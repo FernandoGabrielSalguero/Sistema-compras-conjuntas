@@ -91,8 +91,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Bienvenida -->
                 <div class="card">
-                    <h4><?php echo htmlspecialchars($nombre); ?>, esta es la página Mercado Digital</h4>
-                    <p>Desde acá, vas a poder cargar los pedidos de los productores de una manera más fácil y rápida. <br> Simplemente selecciona al productor, coloca las cantidades que necesites y listo</p>
+                    <h4><?php echo htmlspecialchars($nombre); ?>, estas en la página "Mercado Digital"</h4>
+                    <p>Desde acá, vas a poder cargar los pedidos de los productores de una manera más fácil y rápida. Simplemente selecciona al productor, coloca las cantidades que necesites y listo</p>
                 </div>
 
                 <div class="card-grid grid-4">
