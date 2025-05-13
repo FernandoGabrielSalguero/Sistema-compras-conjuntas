@@ -233,8 +233,11 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
             fetch("/controllers/CoopPedidoController.php?action=getProductores")
                 .then(res => res.json())
                 .then(data => {
+                    console.log("📦 Respuesta de productores:", data); // <-- línea clave
+
                     const select = document.getElementById("productor");
                     select.innerHTML = '<option value="">Seleccionar productor</option>';
+
                     data.forEach(p => {
                         const opt = document.createElement("option");
                         opt.value = p.nombre;
