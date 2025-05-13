@@ -142,14 +142,14 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                     tbody.innerHTML = "";
 
                     data.forEach(pedido => {
-                        const fila = document.createElement("tr");
+                        // ✅ Formatear fecha como dd/mm/yyyy
+                        const fecha = new Date(pedido.fecha_pedido);
+                        const fechaFormateada = `${fecha.getDate().toString().padStart(2, '0')}/${(fecha.getMonth() + 1).toString().padStart(2, '0')}/${fecha.getFullYear()}`;
 
-                        // ✅ Formatear fecha (yyyy/mm/dd)
-                        const fechaFormateada = new Date(pedido.fecha_pedido).toISOString().slice(0, 10).replace(/-/g, '/');
-
-                        // ✅ Productor como ID - nombre
+                        // ✅ Mostrar ID y nombre del productor
                         const productorTexto = `${pedido.productor_id} - ${pedido.productor}`;
 
+                        const fila = document.createElement("tr");
                         fila.innerHTML = `
                     <td>${pedido.id}</td>
                     <td>${fechaFormateada}</td>
