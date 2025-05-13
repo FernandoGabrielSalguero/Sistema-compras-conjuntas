@@ -143,10 +143,17 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
 
                     data.forEach(pedido => {
                         const fila = document.createElement("tr");
+
+                        // ✅ Formatear fecha (yyyy/mm/dd)
+                        const fechaFormateada = new Date(pedido.fecha_pedido).toISOString().slice(0, 10).replace(/-/g, '/');
+
+                        // ✅ Productor como ID - nombre
+                        const productorTexto = `${pedido.productor_id} - ${pedido.productor}`;
+
                         fila.innerHTML = `
                     <td>${pedido.id}</td>
-                    <td>${pedido.fecha_pedido}</td>
-                    <td>${pedido.productor}</td>
+                    <td>${fechaFormateada}</td>
+                    <td>${productorTexto}</td>
                     <td>$${parseFloat(pedido.total_sin_iva).toFixed(2)}</td>
                     <td>$${parseFloat(pedido.total_iva).toFixed(2)}</td>
                     <td>$${parseFloat(pedido.total_pedido).toFixed(2)}</td>
