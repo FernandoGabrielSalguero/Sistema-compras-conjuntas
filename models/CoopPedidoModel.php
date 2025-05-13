@@ -104,4 +104,25 @@ class CoopPedidoModel
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
+
+    public static function getPedidosPorCooperativa($id_coop)
+    {
+        global $pdo;
+
+        $query = "
+        SELECT 
+            p.id, p.fecha_pedido, 
+            u.nombre AS productor, 
+            p.total_sin_iva, p.total_iva, p.total_pedido, 
+            p.observaciones
+        FROM pedidos p
+        LEFT JOIN usuarios u ON p.productor = u.id_productor
+        WHERE p.cooperativa = :id_coop
+        ORDER BY p.fecha_pedido DESC
+    ";
+
+        $stmt = $pdo->prepare($query);
+        $stmt->execute(['id_coop' => $id_coop]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

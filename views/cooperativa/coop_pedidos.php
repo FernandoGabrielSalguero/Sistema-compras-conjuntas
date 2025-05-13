@@ -96,23 +96,23 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <p>Administrar los pedidos, nunca fue tan facil, Mirá todos los pedidos de tus productores, sus estados y modificalos si necesitas</p>
                 </div>
 
-
-                <div class="card-grid grid-4">
-                    <div class="card">
-                        <h3>KPI 1</h3>
-                        <p>Contenido 1</p>
-                    </div>
-                    <div class="card">
-                        <h3>KPI 2</h3>
-                        <p>Contenido 2</p>
-                    </div>
-                    <div class="card">
-                        <h3>KPI 3</h3>
-                        <p>Contenido 3</p>
-                    </div>
-                    <div class="card">
-                        <h3>KPI 4</h3>
-                        <p>Contenido 3</p>
+                <div class="card">
+                    <h2>Listado de pedidos realizados</h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fecha</th>
+                                    <th>Productor</th>
+                                    <th>Total sin IVA</th>
+                                    <th>Total IVA</th>
+                                    <th>Total</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaPedidos"></tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -122,6 +122,39 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarPedidosCoop();
+        });
+
+        function cargarPedidosCoop() {
+            fetch("/controllers/CoopPedidoController.php?action=getPedidosPorCooperativa")
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById("tablaPedidos");
+                    tbody.innerHTML = "";
+
+                    data.forEach(pedido => {
+                        const fila = document.createElement("tr");
+                        fila.innerHTML = `
+                    <td>${pedido.id}</td>
+                    <td>${pedido.fecha_pedido}</td>
+                    <td>${pedido.productor}</td>
+                    <td>$${parseFloat(pedido.total_sin_iva).toFixed(2)}</td>
+                    <td>$${parseFloat(pedido.total_iva).toFixed(2)}</td>
+                    <td>$${parseFloat(pedido.total_pedido).toFixed(2)}</td>
+                    <td>${pedido.observaciones || ''}</td>
+                `;
+                        tbody.appendChild(fila);
+                    });
+                })
+                .catch(err => {
+                    console.error("❌ Error al cargar pedidos:", err);
+                    showAlert("error", "No se pudieron cargar los pedidos.");
+                });
+        }
+    </script>
 </body>
 
 </html>

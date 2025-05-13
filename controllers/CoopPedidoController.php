@@ -11,18 +11,18 @@ $action = $_GET['action'] ?? null;
 
 switch ($action) {
 
-case 'getProductores':
-    $id_coop = $_SESSION['id_cooperativa'] ?? null;
+    case 'getProductores':
+        $id_coop = $_SESSION['id_cooperativa'] ?? null;
 
-    if (!$id_coop) {
-        error_log("❌ ID de cooperativa no disponible en sesión");
-        echo json_encode([]);
-        exit;
-    }
+        if (!$id_coop) {
+            error_log("❌ ID de cooperativa no disponible en sesión");
+            echo json_encode([]);
+            exit;
+        }
 
-    $productores = CoopPedidoModel::getProductoresDeCooperativa($id_coop);
-    echo json_encode($productores);
-    break;
+        $productores = CoopPedidoModel::getProductoresDeCooperativa($id_coop);
+        echo json_encode($productores);
+        break;
 
     case 'getProductos':
         echo json_encode(CoopPedidoModel::getProductosPorCategoria());
@@ -38,6 +38,15 @@ case 'getProductores':
             echo json_encode($resultado);
         } else {
             echo json_encode(['error' => 'Método no permitido']);
+        }
+        break;
+
+    case 'getPedidosPorCooperativa':
+        $id_coop = $_SESSION['id_cooperativa'] ?? null;
+        if ($id_coop) {
+            echo json_encode(CoopPedidoModel::getPedidosPorCooperativa($id_coop));
+        } else {
+            echo json_encode(['error' => 'ID de cooperativa no disponible en sesión']);
         }
         break;
 
