@@ -60,7 +60,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="material-icons">shopping_cart</span><span class="link-text">Mercado Digital</span>
                     </li>
                     <li onclick="location.href='sve_productos.php'">
-                        <span class="material-icons">inventory</span><span class="link-text">Pedidos</span>
+                        <span class="material-icons">receipt_long</span><span class="link-text">Pedidos</span>
+                    </li>
+                    <li onclick="location.href='sve_productos.php'">
+                        <span class="material-icons">Diversity3</span><span class="link-text">Pedidos</span>
                     </li>
                 </ul>
             </nav>
