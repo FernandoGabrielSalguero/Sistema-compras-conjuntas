@@ -83,7 +83,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="navbar-title">Inicio</div>
+                <div class="navbar-title">Mercado Digital</div>
             </header>
 
             <!-- 📦 CONTENIDO -->
@@ -91,8 +91,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Bienvenida -->
                 <div class="card">
-                    <h2>Hola 👋</h2>
-                    <p>En esta página vamos a comprar y administrar las compras de los usuarios</p>
+                    <p><?php echo htmlspecialchars($nombre); ?>, esta es la página Mercado Digital</p>
+                    <p>Desde acá, vas a poder cargar los pedidos de los productores de una manera más fácil y rápida. <br> Simplemente selecciona al productor, coloca las cantidades que necesites y listo</p>
                 </div>
 
                 <div class="card-grid grid-4">

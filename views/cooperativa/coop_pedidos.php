@@ -83,7 +83,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="navbar-title">Inicio</div>
+                <div class="navbar-title">Pedidos</div>
             </header>
 
             <!-- 📦 CONTENIDO -->
@@ -92,8 +92,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Bienvenida -->
                 <div class="card">
-                    <h2>Hola 👋</h2>
-                    <p>En esta página vamos a comprar y administrar las compras de los usuarios</p>
+                    <p><?php echo htmlspecialchars($nombre); ?>, esta es la página Pedidos</p>
+                    <p>Administrar los pedidos, nunca fue tan facil <br> Mira todos los pedidos de tus productores, sus estado y modificalos si necesitas</p>
                 </div>
 
 
