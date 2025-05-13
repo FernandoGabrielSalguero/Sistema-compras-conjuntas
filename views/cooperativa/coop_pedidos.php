@@ -115,6 +115,7 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                                     <th>Total IVA</th>
                                     <th>Total</th>
                                     <th>Observaciones</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaPedidos"></tbody>
@@ -126,10 +127,28 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
 
         </div>
     </div>
+
+    <!-- Modal de Confirmación -->
+    <div id="modalConfirmacion" class="modal hidden">
+        <div class="modal-content card">
+            <h3>¿Estás seguro de eliminar este pedido?</h3>
+            <div class="form-buttons">
+                <button id="btnConfirmarEliminar" class="btn btn-aceptar">Eliminar</button>
+                <button class="btn btn-cancelar" onclick="cerrarModalConfirmacion()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor para alertas -->
+    <div class="alert-container" id="alertContainer"></div>
+
+
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
 
     <script>
+        let pedidoIdAEliminar = null;
+
         document.addEventListener("DOMContentLoaded", () => {
             cargarPedidosCoop();
         });
@@ -193,6 +212,101 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
         }
 
         document.addEventListener("DOMContentLoaded", cargarPedidos);
+
+        function cargarPedidosCoop() {
+            fetch("/controllers/CoopPedidoController.php?action=getPedidosPorCooperativa")
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById("tablaPedidos");
+                    tbody.innerHTML = "";
+
+                    data.forEach(pedido => {
+                        const fecha = new Date(pedido.fecha_pedido);
+                        const fechaFormateada = `${fecha.getDate().toString().padStart(2, '0')}/${(fecha.getMonth() + 1).toString().padStart(2, '0')}/${fecha.getFullYear()}`;
+                        const productorTexto = `${pedido.productor_id} - ${pedido.productor}`;
+
+                        const fila = document.createElement("tr");
+                        fila.innerHTML = `
+                    <td>${pedido.id}</td>
+                    <td>${fechaFormateada}</td>
+                    <td>${productorTexto}</td>
+                    <td>$${parseFloat(pedido.total_sin_iva).toFixed(2)}</td>
+                    <td>$${parseFloat(pedido.total_iva).toFixed(2)}</td>
+                    <td>$${parseFloat(pedido.total_pedido).toFixed(2)}</td>
+                    <td>${pedido.observaciones || ''}</td>
+                    <td>
+                        <button class="btn-icon" title="Editar"><span class="material-icons">edit</span></button>
+                        <button class="btn-icon" title="Eliminar" onclick="confirmarEliminacion(${pedido.id})"><span class="material-icons">delete</span></button>
+                    </td>
+                `;
+                        tbody.appendChild(fila);
+                    });
+                })
+                .catch(err => {
+                    console.error("❌ Error al cargar pedidos:", err);
+                    showAlert("error", "No se pudieron cargar los pedidos.");
+                });
+        }
+
+
+        function confirmarEliminacion(id) {
+            pedidoIdAEliminar = id;
+            document.getElementById("modalConfirmacion").classList.remove("hidden");
+        }
+
+        function cerrarModalConfirmacion() {
+            document.getElementById("modalConfirmacion").classList.add("hidden");
+        }
+
+        document.getElementById("btnConfirmarEliminar").addEventListener("click", () => {
+            if (!pedidoIdAEliminar) return;
+
+            fetch("/controllers/CoopPedidoController.php?action=eliminarPedido", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        id: pedidoIdAEliminar
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert("success", "✅ Pedido eliminado correctamente.");
+                        cargarPedidosCoop();
+                    } else {
+                        showAlert("error", "❌ Error al eliminar el pedido.");
+                    }
+                })
+                .catch(err => {
+                    console.error("❌ Error:", err);
+                    showAlert("error", "❌ Fallo al conectar con el servidor.");
+                })
+                .finally(() => {
+                    cerrarModalConfirmacion();
+                    pedidoIdAEliminar = null;
+                });
+        });
+
+        function showAlert(tipo, mensaje, duracion = 4000) {
+            const contenedor = document.getElementById("alertContainer");
+            if (!contenedor) return;
+
+            const alerta = document.createElement("div");
+            alerta.className = `alert alert-${tipo}`;
+            alerta.innerHTML = `
+        <span class="material-icons">${tipo === 'success' ? 'check_circle' : 'error'}</span>
+        <span>${mensaje}</span>
+        <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+    `;
+
+            contenedor.appendChild(alerta);
+
+            setTimeout(() => {
+                alerta.remove();
+            }, duracion);
+        }
     </script>
 </body>
 
