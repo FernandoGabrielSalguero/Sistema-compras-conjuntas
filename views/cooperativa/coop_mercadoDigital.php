@@ -126,16 +126,15 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
                                             <input type="text" id="cooperativa" name="cooperativa" value="<?php echo htmlspecialchars($nombre); ?>" readonly disabled>
                                         </div>
                                     </div>
-
-                                    <!-- Productor (asociado) -->
+                                    <!-- Productor con buscador -->
                                     <div class="input-group">
                                         <label for="productor">Productor</label>
-                                        <div class="input-icon">
-                                            <span class="material-icons">person</span>
-                                            <select id="productor" name="productor" required>
-                                                <option value="">Cargando productores...</option>
-                                            </select>
+                                        <div class="card smart-selector" id="selectorProductores">
+                                            <input type="text" class="smart-selector-search" placeholder="Buscar productor..." id="buscadorProductores" required>
+                                            <div class="smart-selector-list" id="listaProductores"></div>
                                         </div>
+                                        <!-- Campo oculto para enviar el id del productor seleccionado -->
+                                        <input type="hidden" name="productor" id="productor" required>
                                     </div>
 
                                     <!-- Factura a -->
@@ -236,21 +235,37 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
             fetch("/controllers/CoopPedidoController.php?action=getProductores")
                 .then(res => res.json())
                 .then(data => {
-                    console.log("📦 Respuesta de productores:", data);
+                    console.log("📦 Productores recibidos:", data);
 
-                    const select = document.getElementById("productor");
-                    select.innerHTML = '<option value="">Seleccionar productor</option>';
+                    const lista = document.getElementById("listaProductores");
+                    const inputBuscador = document.getElementById("buscadorProductores");
+                    const hiddenInput = document.getElementById("productor");
 
-                    if (!Array.isArray(data)) {
-                        console.error("❌ Error: se esperaba un array. Respuesta:", data);
-                        return;
+                    let productores = data.sort((a, b) => a.id_productor - b.id_productor);
+
+                    function renderLista(filtrados) {
+                        lista.innerHTML = '';
+                        filtrados.forEach(p => {
+                            const item = document.createElement("label");
+                            item.textContent = `${p.id_productor} - ${p.nombre}`;
+                            item.classList.add("btn-mini");
+                            item.onclick = () => {
+                                inputBuscador.value = `${p.id_productor} - ${p.nombre}`;
+                                hiddenInput.value = p.id_productor;
+                                lista.innerHTML = '';
+                            };
+                            lista.appendChild(item);
+                        });
                     }
 
-                    data.forEach(p => {
-                        const opt = document.createElement("option");
-                        opt.value = p.id_productor; // Sigue usando el ID como valor para enviar
-                        opt.textContent = `${p.id_productor} - ${p.nombre}`;
-                        select.appendChild(opt);
+                    renderLista(productores);
+
+                    inputBuscador.addEventListener("input", () => {
+                        const val = inputBuscador.value.toLowerCase();
+                        const filtrados = productores.filter(p =>
+                            `${p.id_productor} - ${p.nombre}`.toLowerCase().includes(val)
+                        );
+                        renderLista(filtrados);
                     });
                 })
                 .catch(err => console.error("❌ Error al cargar productores:", err));
