@@ -177,6 +177,10 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                     <td>$${parseFloat(pedido.total_iva).toFixed(2)}</td>
                     <td>$${parseFloat(pedido.total_pedido).toFixed(2)}</td>
                     <td>${pedido.observaciones || ''}</td>
+                                        <td>
+                        <button class="btn-icon" title="Editar"><span class="material-icons">edit</span></button>
+                        <button class="btn-icon" title="Eliminar" onclick="confirmarEliminacion(${pedido.id})"><span class="material-icons">delete</span></button>
+                    </td>
                 `;
                         tbody.appendChild(fila);
                     });
@@ -212,42 +216,6 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
         }
 
         document.addEventListener("DOMContentLoaded", cargarPedidos);
-
-        function cargarPedidosCoop() {
-            fetch("/controllers/CoopPedidoController.php?action=getPedidosPorCooperativa")
-                .then(res => res.json())
-                .then(data => {
-                    const tbody = document.getElementById("tablaPedidos");
-                    tbody.innerHTML = "";
-
-                    data.forEach(pedido => {
-                        const fecha = new Date(pedido.fecha_pedido);
-                        const fechaFormateada = `${fecha.getDate().toString().padStart(2, '0')}/${(fecha.getMonth() + 1).toString().padStart(2, '0')}/${fecha.getFullYear()}`;
-                        const productorTexto = `${pedido.productor_id} - ${pedido.productor}`;
-
-                        const fila = document.createElement("tr");
-                        fila.innerHTML = `
-                    <td>${pedido.id}</td>
-                    <td>${fechaFormateada}</td>
-                    <td>${productorTexto}</td>
-                    <td>$${parseFloat(pedido.total_sin_iva).toFixed(2)}</td>
-                    <td>$${parseFloat(pedido.total_iva).toFixed(2)}</td>
-                    <td>$${parseFloat(pedido.total_pedido).toFixed(2)}</td>
-                    <td>${pedido.observaciones || ''}</td>
-                    <td>
-                        <button class="btn-icon" title="Editar"><span class="material-icons">edit</span></button>
-                        <button class="btn-icon" title="Eliminar" onclick="confirmarEliminacion(${pedido.id})"><span class="material-icons">delete</span></button>
-                    </td>
-                `;
-                        tbody.appendChild(fila);
-                    });
-                })
-                .catch(err => {
-                    console.error("❌ Error al cargar pedidos:", err);
-                    showAlert("error", "No se pudieron cargar los pedidos.");
-                });
-        }
-
 
         function confirmarEliminacion(id) {
             pedidoIdAEliminar = id;
