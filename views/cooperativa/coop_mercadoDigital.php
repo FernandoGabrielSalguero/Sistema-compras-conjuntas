@@ -466,10 +466,10 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        showAlert("✅ Pedido guardado correctamente.");
-                        location.reload();
+                        showAlert("success", data.message || "✅ Pedido guardado correctamente.");
+                        setTimeout(() => location.reload(), 3000);
                     } else {
-                        alert("❌ Error: " + (data.message || data.error));
+                        showAlert("error", data.message || "❌ Error al guardar el pedido.");
                     }
                 })
                 .catch(err => {
@@ -489,6 +489,26 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
         function calcularTotalFinal() {
             return calcularTotalSinIVA() + calcularTotalIVA();
         }
+
+        function showAlert(tipo, mensaje, duracion = 4000) {
+            const contenedor = document.getElementById("alertContainer");
+            if (!contenedor) return;
+
+            const alerta = document.createElement("div");
+            alerta.className = `alert alert-${tipo}`;
+            alerta.innerHTML = `
+        <span class="material-icons">${tipo === 'success' ? 'check_circle' : 'error'}</span>
+        <span>${mensaje}</span>
+        <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+    `;
+
+            contenedor.appendChild(alerta);
+
+            setTimeout(() => {
+                alerta.remove();
+            }, duracion);
+        }
+
 
         // Acordeón
         function toggleAccordion(element) {

@@ -429,7 +429,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             if (!contenedor) return;
 
             const alerta = document.createElement("div");
-            alerta.className = `alert alert-${tipo}`; // 'success' o 'error'
+            alerta.className = `alert alert-${tipo}`;
             alerta.innerHTML = `
         <span class="material-icons">${tipo === 'success' ? 'check_circle' : 'error'}</span>
         <span>${mensaje}</span>
