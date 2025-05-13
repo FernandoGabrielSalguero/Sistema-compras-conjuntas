@@ -215,6 +215,216 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
 
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("🟢 DOM listo. Iniciando carga de productores y productos...");
+            cargarProductores();
+            cargarProductos();
+
+            const form = document.getElementById("formulario-pedido");
+            if (form) {
+                form.addEventListener("submit", enviarFormulario);
+            }
+        });
+
+        // 1. Cargar productores asociados a la cooperativa
+        function cargarProductores() {
+            fetch("/controllers/CoopPedidoController.php?action=getProductores")
+                .then(res => res.json())
+                .then(data => {
+                    const select = document.getElementById("productor");
+                    select.innerHTML = '<option value="">Seleccionar productor</option>';
+                    data.forEach(p => {
+                        const opt = document.createElement("option");
+                        opt.value = p.nombre;
+                        opt.textContent = p.nombre;
+                        select.appendChild(opt);
+                    });
+                })
+                .catch(err => console.error("❌ Error al cargar productores:", err));
+        }
+
+        // 2. Cargar productos por categoría
+        function cargarProductos() {
+            fetch("/controllers/CoopPedidoController.php?action=getProductos")
+                .then(res => res.json())
+                .then(data => {
+                    Object.entries(data).forEach(([categoria, productos]) => {
+                        crearAcordeonCategoria(categoria, productos);
+                    });
+                })
+                .catch(err => console.error("❌ Error al cargar productos:", err));
+        }
+
+        // 3. Crear acordeones de productos
+        function crearAcordeonCategoria(categoria, productos) {
+            const container = document.getElementById("acordeones-productos");
+
+            const acordeon = document.createElement("div");
+            acordeon.classList.add("accordion");
+
+            const header = document.createElement("div");
+            header.classList.add("accordion-header");
+            header.setAttribute("onclick", "toggleAccordion(this)");
+            header.innerHTML = `<span>${categoria}</span><span class="material-icons">expand_more</span>`;
+
+            const body = document.createElement("div");
+            body.classList.add("accordion-body");
+
+            productos.forEach(prod => {
+                const alicuotaDecimal = parseFloat(prod.alicuota) / 100;
+
+                const item = document.createElement("div");
+                item.classList.add("input-group");
+
+                item.innerHTML = `
+            <label><strong>${prod.Nombre_producto}</strong> - ${prod.Detalle_producto}</label>
+            <div class="input-icon">
+                <span class="material-icons">shopping_bag</span>
+                <input 
+                    type="number" min="0" value="0"
+                    data-id="${prod.Id}"
+                    data-nombre="${prod.Nombre_producto}"
+                    data-detalle="${prod.Detalle_producto}"
+                    data-precio="${prod.Precio_producto}"
+                    data-unidad="${prod.Unidad_Medida_venta}"
+                    data-categoria="${prod.categoria}"
+                    data-alicuota="${alicuotaDecimal}"
+                    onchange="actualizarProductoSeleccionado(this)"
+                />
+                <span>${prod.Unidad_Medida_venta}</span>
+            </div>
+        `;
+                body.appendChild(item);
+            });
+
+            acordeon.appendChild(header);
+            acordeon.appendChild(body);
+            container.appendChild(acordeon);
+        }
+
+        let productosSeleccionados = {};
+
+        // 4. Guardar producto si cantidad > 0
+        function actualizarProductoSeleccionado(input) {
+            const id = input.dataset.id;
+            const cantidad = parseFloat(input.value);
+
+            if (cantidad > 0) {
+                productosSeleccionados[id] = {
+                    nombre_producto: input.dataset.nombre,
+                    detalle_producto: input.dataset.detalle,
+                    precio_producto: parseFloat(input.dataset.precio),
+                    unidad_medida_venta: input.dataset.unidad,
+                    categoria: input.dataset.categoria,
+                    cantidad: cantidad,
+                    alicuota: parseFloat(input.dataset.alicuota),
+                    subtotal_por_categoria: cantidad * parseFloat(input.dataset.precio)
+                };
+            } else {
+                delete productosSeleccionados[id];
+            }
+
+            renderResumen();
+        }
+
+        // 5. Renderizar resumen
+        function renderResumen() {
+            const container = document.getElementById("acordeon-resumen");
+            container.innerHTML = `<h3>Resumen del Pedido</h3>`;
+            let totalSinIVA = 0;
+            let totalIVA = 0;
+
+            Object.values(productosSeleccionados).forEach(p => {
+                const iva = p.subtotal_por_categoria * p.alicuota;
+                totalSinIVA += p.subtotal_por_categoria;
+                totalIVA += iva;
+
+                const row = document.createElement("div");
+                row.classList.add("input-group");
+                row.innerHTML = `
+            <strong>${p.nombre_producto}</strong> - ${p.cantidad} x $${p.precio_producto} = $${p.subtotal_por_categoria.toFixed(2)}
+            <br><small>IVA: $${iva.toFixed(2)}</small>
+        `;
+                container.appendChild(row);
+            });
+
+            container.innerHTML += `
+        <hr>
+        <p><strong>Subtotal sin IVA:</strong> $${totalSinIVA.toFixed(2)}</p>
+        <p><strong>Total IVA:</strong> $${totalIVA.toFixed(2)}</p>
+        <p><strong>Total:</strong> $${(totalSinIVA + totalIVA).toFixed(2)}</p>
+    `;
+        }
+
+        // 6. Enviar pedido
+        function enviarFormulario(e) {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+
+            const pedido = {
+                cooperativa: document.getElementById("cooperativa").value,
+                productor: formData.get("productor"),
+                persona_facturacion: formData.get("factura"),
+                condicion_facturacion: formData.get("condicion"),
+                afiliacion: formData.get("afiliacion"),
+                ha_cooperativa: formData.get("hectareas"),
+                observaciones: formData.get("observaciones"),
+                total_sin_iva: calcularTotalSinIVA(),
+                total_iva: calcularTotalIVA(),
+                total_pedido: calcularTotalFinal(),
+                factura: ""
+            };
+
+            const detalles = Object.values(productosSeleccionados);
+
+            fetch("/controllers/CoopPedidoController.php?action=guardarPedido", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        pedido,
+                        detalles
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("✅ Pedido guardado correctamente.");
+                        location.reload();
+                    } else {
+                        alert("❌ Error: " + (data.message || data.error));
+                    }
+                })
+                .catch(err => {
+                    console.error("❌ Error al enviar pedido:", err);
+                    alert("❌ Error en el envío del pedido.");
+                });
+        }
+
+        function calcularTotalSinIVA() {
+            return Object.values(productosSeleccionados).reduce((sum, p) => sum + p.subtotal_por_categoria, 0);
+        }
+
+        function calcularTotalIVA() {
+            return Object.values(productosSeleccionados).reduce((sum, p) => sum + (p.subtotal_por_categoria * p.alicuota), 0);
+        }
+
+        function calcularTotalFinal() {
+            return calcularTotalSinIVA() + calcularTotalIVA();
+        }
+
+        // Acordeón
+        function toggleAccordion(element) {
+            const parent = element.parentElement;
+            parent.classList.toggle("active");
+        }
+    </script>
+
+
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
 </body>
