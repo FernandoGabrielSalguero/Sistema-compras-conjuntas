@@ -89,11 +89,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             <!-- 📦 CONTENIDO -->
             <section class="content">
 
+
                 <!-- Bienvenida -->
                 <div class="card">
-                    <h2>Hola 👋 <?php echo htmlspecialchars($nombre); ?></h2>
+                    <h2>Hola 👋</h2>
                     <p>En esta página vamos a comprar y administrar las compras de los usuarios</p>
                 </div>
+
 
                 <div class="card-grid grid-4">
                     <div class="card">
