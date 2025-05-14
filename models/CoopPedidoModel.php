@@ -145,19 +145,43 @@ class CoopPedidoModel
     }
 
     // actualziar pedido
-    public static function actualizarPedido($id, $observaciones, $ha_cooperativa)
+    public static function actualizarPedido($id, $observaciones, $ha_cooperativa, $detalles = [])
     {
         global $pdo;
         try {
+            $pdo->beginTransaction();
+
             $stmt = $pdo->prepare("UPDATE pedidos SET observaciones = :obs, ha_cooperativa = :ha WHERE id = :id");
             $stmt->execute([
                 'obs' => $observaciones,
                 'ha' => $ha_cooperativa,
                 'id' => $id
             ]);
-            return ['success' => true, 'message' => 'Pedido actualizado'];
+
+            foreach ($detalles as $detalle) {
+                $stmt = $pdo->prepare("UPDATE detalle_pedidos SET detalle_producto = :detalle, precio_producto = :precio WHERE id = :id");
+                $stmt->execute([
+                    'detalle' => $detalle['detalle_producto'],
+                    'precio' => $detalle['precio_producto'],
+                    'id' => $detalle['id']
+                ]);
+            }
+
+            $pdo->commit();
+            return ['success' => true, 'message' => 'Pedido actualizado con productos'];
         } catch (Exception $e) {
+            $pdo->rollBack();
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
+
+// obtener detalles del pedido
+    public static function getDetallesPorPedido($id_pedido)
+{
+    global $pdo;
+    $query = "SELECT * FROM detalle_pedidos WHERE pedido_id = :id";
+    $stmt = $pdo->prepare($query);
+    $stmt->execute(['id' => $id_pedido]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 }

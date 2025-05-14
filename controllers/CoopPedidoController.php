@@ -72,13 +72,14 @@ switch ($action) {
             $id = $data['id'] ?? null;
             $obs = $data['observaciones'] ?? '';
             $hectareas = $data['ha_cooperativa'] ?? null;
+            $detalles = $data['detalles'] ?? [];
 
             if (!$id) {
                 echo json_encode(['success' => false, 'error' => 'ID faltante']);
                 exit;
             }
 
-            $res = CoopPedidoModel::actualizarPedido($id, $obs, $hectareas);
+            $res = CoopPedidoModel::actualizarPedido($id, $obs, $hectareas, $detalles);
             echo json_encode($res);
         } else {
             echo json_encode(['success' => false, 'error' => 'Método no permitido']);
@@ -102,5 +103,15 @@ switch ($action) {
         $model = new CoopPedidoModel();
         $pedidos = $model->getPedidosPorCooperativa($id_cooperativa);
         echo json_encode($pedidos);
+        break;
+
+    case 'getDetallesPedido':
+        if (!isset($_GET['id'])) {
+            echo json_encode(['error' => 'ID faltante']);
+            exit;
+        }
+        $id = $_GET['id'];
+        $detalles = CoopPedidoModel::getDetallesPorPedido($id);
+        echo json_encode($detalles);
         break;
 }
