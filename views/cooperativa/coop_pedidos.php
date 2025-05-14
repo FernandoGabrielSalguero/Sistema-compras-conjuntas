@@ -256,46 +256,46 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
             }, duracion);
         }
 
-function abrirModalEditarPedido(id) {
-    const pedido = pedidosCache.find(p => p.id == id);
-    if (!pedido) {
-        showAlert("error", "❌ No se encontró el pedido para editar.");
-        return;
-    }
+        function abrirModalEditarPedido(id) {
+            const pedido = pedidosCache.find(p => p.id == id);
+            if (!pedido) {
+                showAlert("error", "❌ No se encontró el pedido para editar.");
+                return;
+            }
 
-    document.getElementById("edit_id").value = pedido.id;
-    document.getElementById("edit_observaciones").value = pedido.observaciones || '';
-    document.getElementById("edit_hectareas").value = pedido.ha_cooperativa || '';
+            document.getElementById("edit_id").value = pedido.id;
+            document.getElementById("edit_observaciones").value = pedido.observaciones || '';
+            document.getElementById("edit_hectareas").value = pedido.ha_cooperativa || '';
 
-    // Fetch de detalles
-    fetch(`/controllers/CoopPedidoController.php?action=getDetallesPedido&id=${pedido.id}`)
-        .then(res => res.json())
-        .then(detalles => {
-            const container = document.getElementById("detallesPedidoContainer");
-            container.innerHTML = '';
+            // Fetch de detalles
+            fetch(`/controllers/CoopPedidoController.php?action=getDetallesPedido&id=${pedido.id}`)
+                .then(res => res.json())
+                .then(detalles => {
+                    const container = document.getElementById("detallesPedidoContainer");
+                    container.innerHTML = '';
 
-            detalles.forEach((item, index) => {
-                const grupo = document.createElement("div");
-                grupo.className = "input-group";
+                    detalles.forEach((item, index) => {
+                        const grupo = document.createElement("div");
+                        grupo.className = "input-group";
 
-                grupo.innerHTML = `
+                        grupo.innerHTML = `
                     <label>Producto: ${item.nombre_producto}</label>
                     <input type="text" value="${item.detalle_producto}" data-index="${index}" data-campo="detalle_producto" />
                     <input type="number" value="${item.precio_producto}" data-index="${index}" data-campo="precio_producto" />
                 `;
-                container.appendChild(grupo);
-            });
+                        container.appendChild(grupo);
+                    });
 
-            // Guardar temporalmente los detalles para editar
-            window.detallesPedidoEditando = detalles;
-        })
-        .catch(err => {
-            console.error("❌ Error al obtener detalles:", err);
-            showAlert("error", "No se pudieron cargar los productos del pedido.");
-        });
+                    // Guardar temporalmente los detalles para editar
+                    window.detallesPedidoEditando = detalles;
+                })
+                .catch(err => {
+                    console.error("❌ Error al obtener detalles:", err);
+                    showAlert("error", "No se pudieron cargar los productos del pedido.");
+                });
 
-    document.getElementById("modalEditarPedido").classList.remove("hidden");
-}
+            document.getElementById("modalEditarPedido").classList.remove("hidden");
+        }
 
 
 
@@ -304,76 +304,87 @@ function abrirModalEditarPedido(id) {
         }
 
         document.getElementById("formEditarPedido").addEventListener("submit", function(e) {
-    e.preventDefault();
+            e.preventDefault();
 
-    const id = document.getElementById("edit_id").value;
-    const observaciones = document.getElementById("edit_observaciones").value;
-    const hectareas = document.getElementById("edit_hectareas").value;
+            const id = document.getElementById("edit_id").value;
+            const observaciones = document.getElementById("edit_observaciones").value;
+            const hectareas = document.getElementById("edit_hectareas").value;
 
-    // Leer detalles editados
-    const inputs = document.querySelectorAll('#detallesPedidoContainer input');
-    const detalles = window.detallesPedidoEditando.map((d, index) => {
-        const inputsDeEste = [...inputs].filter(i => i.dataset.index == index);
-        inputsDeEste.forEach(input => {
-            d[input.dataset.campo] = input.value;
+            // Leer detalles editados
+            const inputs = document.querySelectorAll('#detallesPedidoContainer input');
+            const detalles = window.detallesPedidoEditando.map((d, index) => {
+                const inputsDeEste = [...inputs].filter(i => i.dataset.index == index);
+                inputsDeEste.forEach(input => {
+                    d[input.dataset.campo] = input.value;
+                });
+                return d;
+            });
+
+            fetch("/controllers/CoopPedidoController.php?action=editarPedido", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        id,
+                        observaciones,
+                        ha_cooperativa: hectareas,
+                        detalles
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert("success", "✅ Pedido actualizado correctamente.");
+                        cargarPedidosCoop();
+                        cerrarModalEditarPedido();
+                    } else {
+                        showAlert("error", "❌ No se pudo actualizar el pedido.");
+                    }
+                })
+                .catch(err => {
+                    console.error("❌ Error al actualizar:", err);
+                    showAlert("error", "❌ Fallo al conectar con el servidor.");
+                });
         });
-        return d;
-    });
-
-    fetch("/controllers/CoopPedidoController.php?action=editarPedido", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                id,
-                observaciones,
-                ha_cooperativa: hectareas,
-                detalles
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showAlert("success", "✅ Pedido actualizado correctamente.");
-                cargarPedidosCoop();
-                cerrarModalEditarPedido();
-            } else {
-                showAlert("error", "❌ No se pudo actualizar el pedido.");
-            }
-        })
-        .catch(err => {
-            console.error("❌ Error al actualizar:", err);
-            showAlert("error", "❌ Fallo al conectar con el servidor.");
-        });
-});
-
     </script>
 
-    <!-- modal editar pedido -->
-    <div id="modalEditarPedido" class="modal hidden">
-        <div class="modal-content card">
-            <h3>Editar Pedido</h3>
-            <form id="formEditarPedido">
-                <input type="hidden" id="edit_id">
+<!-- Modal Editar Pedido -->
+<div id="modalEditarPedido" class="modal hidden">
+    <div class="modal-content card">
+        <h3>Editar Pedido</h3>
+        <form id="formEditarPedido">
+            <input type="hidden" id="edit_id">
 
+            <div class="form-grid grid-2">
                 <div class="input-group">
                     <label for="edit_observaciones">Observaciones</label>
-                    <input type="text" id="edit_observaciones" />
+                    <div class="input-icon">
+                        <span class="material-icons">notes</span>
+                        <input type="text" id="edit_observaciones" />
+                    </div>
                 </div>
 
                 <div class="input-group">
                     <label for="edit_hectareas">Hectáreas</label>
-                    <input type="number" id="edit_hectareas" />
+                    <div class="input-icon">
+                        <span class="material-icons">landscape</span>
+                        <input type="number" id="edit_hectareas" />
+                    </div>
                 </div>
-<div id="detallesPedidoContainer"></div>
-                <div class="form-buttons">
-                    <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
-                    <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
-                </div>
-            </form>
-        </div>
+            </div>
+
+            <!-- Contenedor dinámico de detalles del pedido -->
+            <div id="contenedorDetallesPedido" class="form-grid grid-1 mt-4"></div>
+
+            <div class="form-buttons">
+                <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
+                <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
+            </div>
+        </form>
     </div>
+</div>
+
 
 </body>
 
