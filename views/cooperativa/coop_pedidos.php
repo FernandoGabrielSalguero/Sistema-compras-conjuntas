@@ -310,27 +310,25 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
 
                     detalles.forEach((detalle, index) => {
                         const grupo = document.createElement("div");
-                        grupo.className = "card p-2";
-
+                        grupo.className = "card p-2 mb-2";
+                        grupo.style.minHeight = "180px";
                         grupo.innerHTML = `
-                <div class="input-group">
-                    <label>Producto: ${detalle.nombre_producto}</label>
-                    <div class="input-icon">
-                        <span class="material-icons">info</span>
-                        <input type="text" disabled value="${detalle.detalle_producto || ''}" />
-                    </div>
-                </div>
+    <div class="input-group">
+        <label>Producto</label>
+        <p style="margin: 0; font-weight: 500;">${detalle.nombre_producto}</p>
+        <p style="font-size: 0.85rem; color: #666;">${detalle.detalle_producto || ''}</p>
+    </div>
 
-                <div class="input-group">
-                    <label>Cantidad</label>
-                    <div class="input-icon">
-                        <span class="material-icons">inventory_2</span>
-                        <input type="number" min="0" step="0.01" name="cantidades[]" value="${detalle.cantidad || 1}" required />
-                    </div>
-                </div>
+    <div class="input-group">
+        <label>Cantidad</label>
+        <div class="input-icon">
+            <span class="material-icons">inventory_2</span>
+            <input type="number" min="0" step="0.01" name="cantidades[]" value="${detalle.cantidad || 1}" required />
+        </div>
+    </div>
 
-                <input type="hidden" name="productos_ids[]" value="${detalle.id || detalle.pedido_id}">
-            `;
+    <input type="hidden" name="productos_ids[]" value="${detalle.id || detalle.pedido_id}">
+`;
 
                         contenedor.appendChild(grupo);
                     });
