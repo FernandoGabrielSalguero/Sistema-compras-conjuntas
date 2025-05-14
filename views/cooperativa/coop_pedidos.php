@@ -394,40 +394,28 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                         </div>
                     </div>
 
-                    <!-- persona_facturacion -->
                     <div class="input-group">
-                        <label for="factura">¿A quién facturamos?</label>
-                        <div class="input-icon">
-                            <span class="material-icons">public</span>
-                            <select id="factura" name="factura" required>
-                                <option value="productor">Productor</option>
-                                <option value="cooperativa">Cooperativa</option>
-                            </select>
-                        </div>
+                        <label for="edit_persona_facturacion">¿A quién facturamos?</label>
+                        <select id="edit_persona_facturacion">
+                            <option value="productor">Productor</option>
+                            <option value="cooperativa">Cooperativa</option>
+                        </select>
                     </div>
 
-                    <!-- condicion_facturacion -->
                     <div class="input-group">
-                        <label for="condicion">Condición factura</label>
-                        <div class="input-icon">
-                            <span class="material-icons">public</span>
-                            <select id="condicion" name="condicion" required>
-                                <option value="responsable inscripto">Responsable Inscripto</option>
-                                <option value="monotributista">Monotributista</option>
-                            </select>
-                        </div>
+                        <label for="edit_condicion_facturacion">Condición de facturación</label>
+                        <select id="edit_condicion_facturacion">
+                            <option value="responsable inscripto">Responsable Inscripto</option>
+                            <option value="monotributista">Monotributista</option>
+                        </select>
                     </div>
 
-                    <!-- afiliacion -->
                     <div class="input-group">
-                        <label for="afiliacion">¿Es socio?</label>
-                        <div class="input-icon">
-                            <span class="material-icons">public</span>
-                            <select id="afiliacion" name="afiliacion" required>
-                                <option value="socio">Sí, es socio</option>
-                                <option value="tercero">No, es tercero</option>
-                            </select>
-                        </div>
+                        <label for="edit_afiliacion">Afiliación</label>
+                        <select id="edit_afiliacion">
+                            <option value="socio">Socio</option>
+                            <option value="tercero">Tercero</option>
+                        </select>
                     </div>
                 </div>
 
