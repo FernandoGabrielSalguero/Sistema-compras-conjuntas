@@ -163,6 +163,8 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
             fetch("/controllers/CoopPedidoController.php?action=getPedidosPorCooperativa")
                 .then(res => res.json())
                 .then(data => {
+                    pedidosCache = data;
+
                     const tbody = document.getElementById("tablaPedidos");
                     tbody.innerHTML = "";
 
@@ -173,18 +175,18 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
 
                         const fila = document.createElement("tr");
                         fila.innerHTML = `
-                        <td>${pedido.id}</td>
-                        <td>${fechaFormateada}</td>
-                        <td>${productorTexto}</td>
-                        <td>$${parseFloat(pedido.total_sin_iva).toFixed(2)}</td>
-                        <td>$${parseFloat(pedido.total_iva).toFixed(2)}</td>
-                        <td>$${parseFloat(pedido.total_pedido).toFixed(2)}</td>
-                        <td>${pedido.observaciones || ''}</td>
-                        <td>
+                    <td>${pedido.id}</td>
+                    <td>${fechaFormateada}</td>
+                    <td>${productorTexto}</td>
+                    <td>$${parseFloat(pedido.total_sin_iva).toFixed(2)}</td>
+                    <td>$${parseFloat(pedido.total_iva).toFixed(2)}</td>
+                    <td>$${parseFloat(pedido.total_pedido).toFixed(2)}</td>
+                    <td>${pedido.observaciones || ''}</td>
+                    <td>
                         <button class="btn-icon" title="Editar" onclick="abrirModalEditarPedido(${pedido.id})"><span class="material-icons">edit</span></button>
                         <button class="btn-icon" title="Eliminar" onclick="confirmarEliminacion(${pedido.id})"><span class="material-icons">delete</span></button>
-                        </td>
-                    `;
+                    </td>
+                `;
                         tbody.appendChild(fila);
                     });
                 })
@@ -193,6 +195,7 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                     showAlert("error", "No se pudieron cargar los pedidos.");
                 });
         }
+
 
         function confirmarEliminacion(id) {
             pedidoIdAEliminar = id;
@@ -254,8 +257,11 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
         }
 
         function abrirModalEditarPedido(id) {
-            const pedido = window.pedidosCache?.find(p => p.id == id);
-            if (!pedido) return;
+            const pedido = pedidosCache.find(p => p.id == id);
+            if (!pedido) {
+                showAlert("error", "❌ No se encontró el pedido para editar.");
+                return;
+            }
 
             document.getElementById("edit_id").value = pedido.id;
             document.getElementById("edit_observaciones").value = pedido.observaciones || '';
@@ -263,6 +269,7 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
 
             document.getElementById("modalEditarPedido").classList.remove("hidden");
         }
+
 
         function cerrarModalEditarPedido() {
             document.getElementById("modalEditarPedido").classList.add("hidden");
