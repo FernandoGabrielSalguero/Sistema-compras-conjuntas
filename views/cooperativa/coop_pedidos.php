@@ -295,6 +295,51 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                 });
 
             document.getElementById("modalEditarPedido").classList.remove("hidden");
+
+            // Luego de setear observaciones y ha_cooperativa...
+            fetch(`/controllers/CoopPedidoController.php?action=getDetallesPedido&id=${id}`)
+                .then(res => res.json())
+                .then(detalles => {
+                    const contenedor = document.getElementById("contenedorDetallesPedido");
+                    contenedor.innerHTML = "";
+
+                    if (!Array.isArray(detalles) || detalles.length === 0) {
+                        contenedor.innerHTML = "<p>No hay productos en este pedido.</p>";
+                        return;
+                    }
+
+                    detalles.forEach((detalle, index) => {
+                        const grupo = document.createElement("div");
+                        grupo.className = "card p-2";
+
+                        grupo.innerHTML = `
+                <div class="input-group">
+                    <label>Producto: ${detalle.nombre_producto}</label>
+                    <div class="input-icon">
+                        <span class="material-icons">info</span>
+                        <input type="text" disabled value="${detalle.detalle_producto || ''}" />
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Cantidad</label>
+                    <div class="input-icon">
+                        <span class="material-icons">inventory_2</span>
+                        <input type="number" min="0" step="0.01" name="cantidades[]" value="${detalle.cantidad || 1}" required />
+                    </div>
+                </div>
+
+                <input type="hidden" name="productos_ids[]" value="${detalle.id || detalle.pedido_id}">
+            `;
+
+                        contenedor.appendChild(grupo);
+                    });
+                })
+                .catch(err => {
+                    console.error("❌ Error al obtener detalles:", err);
+                    showAlert("error", "No se pudieron cargar los productos del pedido.");
+                });
+
         }
 
 
@@ -349,41 +394,41 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
         });
     </script>
 
-<!-- Modal Editar Pedido -->
-<div id="modalEditarPedido" class="modal hidden">
-    <div class="modal-content card">
-        <h3>Editar Pedido</h3>
-        <form id="formEditarPedido">
-            <input type="hidden" id="edit_id">
+    <!-- Modal Editar Pedido -->
+    <div id="modalEditarPedido" class="modal hidden">
+        <div class="modal-content card">
+            <h3>Editar Pedido</h3>
+            <form id="formEditarPedido">
+                <input type="hidden" id="edit_id">
 
-            <div class="form-grid grid-2">
-                <div class="input-group">
-                    <label for="edit_observaciones">Observaciones</label>
-                    <div class="input-icon">
-                        <span class="material-icons">notes</span>
-                        <input type="text" id="edit_observaciones" />
+                <div class="form-grid grid-2">
+                    <div class="input-group">
+                        <label for="edit_observaciones">Observaciones</label>
+                        <div class="input-icon">
+                            <span class="material-icons">notes</span>
+                            <input type="text" id="edit_observaciones" />
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="edit_hectareas">Hectáreas</label>
+                        <div class="input-icon">
+                            <span class="material-icons">landscape</span>
+                            <input type="number" id="edit_hectareas" />
+                        </div>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label for="edit_hectareas">Hectáreas</label>
-                    <div class="input-icon">
-                        <span class="material-icons">landscape</span>
-                        <input type="number" id="edit_hectareas" />
-                    </div>
+                <!-- Contenedor dinámico de detalles del pedido -->
+                <div id="contenedorDetallesPedido" class="form-grid grid-1 mt-4"></div>
+
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
+                    <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
                 </div>
-            </div>
-
-            <!-- Contenedor dinámico de detalles del pedido -->
-            <div id="contenedorDetallesPedido" class="form-grid grid-1 mt-4"></div>
-
-            <div class="form-buttons">
-                <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
-                <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 
 
 </body>
