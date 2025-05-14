@@ -145,25 +145,49 @@ class CoopPedidoModel
     }
 
     // actualziar pedido
-    public static function actualizarPedido($id, $observaciones, $ha_cooperativa, $detalles = [])
+    public static function actualizarPedido($id, $observaciones, $ha_cooperativa, $detalles = [], $persona_facturacion, $condicion_facturacion, $afiliacion)
     {
         global $pdo;
         try {
             $pdo->beginTransaction();
 
-            $stmt = $pdo->prepare("UPDATE pedidos SET observaciones = :obs, ha_cooperativa = :ha WHERE id = :id");
+            $stmt = $pdo->prepare("
+    UPDATE pedidos 
+    SET observaciones = :obs,
+        ha_cooperativa = :ha,
+        persona_facturacion = :pf,
+        condicion_facturacion = :cf,
+        afiliacion = :af
+    WHERE id = :id
+");
+
             $stmt->execute([
                 'obs' => $observaciones,
                 'ha' => $ha_cooperativa,
+                'pf' => $persona_facturacion,
+                'cf' => $condicion_facturacion,
+                'af' => $afiliacion,
                 'id' => $id
             ]);
 
             foreach ($detalles as $detalle) {
-                $stmt = $pdo->prepare("UPDATE detalle_pedidos SET detalle_producto = :detalle, precio_producto = :precio WHERE id = :id");
+                $stmt = $pdo->prepare("
+    UPDATE pedidos 
+    SET observaciones = :obs,
+        ha_cooperativa = :ha,
+        persona_facturacion = :pf,
+        condicion_facturacion = :cf,
+        afiliacion = :af
+    WHERE id = :id
+");
+
                 $stmt->execute([
-                    'detalle' => $detalle['detalle_producto'],
-                    'precio' => $detalle['precio_producto'],
-                    'id' => $detalle['id']
+                    'obs' => $observaciones,
+                    'ha' => $ha_cooperativa,
+                    'pf' => $persona_facturacion,
+                    'cf' => $condicion_facturacion,
+                    'af' => $afiliacion,
+                    'id' => $id
                 ]);
             }
 
@@ -175,13 +199,13 @@ class CoopPedidoModel
         }
     }
 
-// obtener detalles del pedido
+    // obtener detalles del pedido
     public static function getDetallesPorPedido($id_pedido)
-{
-    global $pdo;
-    $query = "SELECT * FROM detalle_pedidos WHERE pedido_id = :id";
-    $stmt = $pdo->prepare($query);
-    $stmt->execute(['id' => $id_pedido]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+    {
+        global $pdo;
+        $query = "SELECT * FROM detalle_pedidos WHERE pedido_id = :id";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute(['id' => $id_pedido]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

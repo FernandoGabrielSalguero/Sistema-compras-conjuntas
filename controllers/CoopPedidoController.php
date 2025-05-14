@@ -73,13 +73,25 @@ switch ($action) {
             $obs = $data['observaciones'] ?? '';
             $hectareas = $data['ha_cooperativa'] ?? null;
             $detalles = $data['detalles'] ?? [];
+            $persona_facturacion = $data['persona_facturacion'] ?? '';
+            $condicion_facturacion = $data['condicion_facturacion'] ?? '';
+            $afiliacion = $data['afiliacion'] ?? '';
+
 
             if (!$id) {
                 echo json_encode(['success' => false, 'error' => 'ID faltante']);
                 exit;
             }
 
-            $res = CoopPedidoModel::actualizarPedido($id, $obs, $hectareas, $detalles);
+            $res = CoopPedidoModel::actualizarPedido(
+                $id,
+                $obs,
+                $hectareas,
+                $detalles,
+                $persona_facturacion,
+                $condicion_facturacion,
+                $afiliacion
+            );
             echo json_encode($res);
         } else {
             echo json_encode(['success' => false, 'error' => 'Método no permitido']);

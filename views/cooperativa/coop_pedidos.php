@@ -266,26 +266,30 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
             document.getElementById("edit_id").value = pedido.id;
             document.getElementById("edit_observaciones").value = pedido.observaciones || '';
             document.getElementById("edit_hectareas").value = pedido.ha_cooperativa || '';
+            document.getElementById("edit_persona_facturacion").value = pedido.persona_facturacion || '';
+            document.getElementById("edit_condicion_facturacion").value = pedido.condicion_facturacion || '';
+            document.getElementById("edit_afiliacion").value = pedido.afiliacion || '';
+
 
             document.getElementById("modalEditarPedido").classList.remove("hidden");
 
             // Luego de setear observaciones y ha_cooperativa...
             // ✅ Este es el bloque correcto para mostrar los detalles
-fetch(`/controllers/CoopPedidoController.php?action=getDetallesPedido&id=${id}`)
-    .then(res => res.json())
-    .then(detalles => {
-        const contenedor = document.getElementById("contenedorDetallesPedido");
-        contenedor.innerHTML = "";
+            fetch(`/controllers/CoopPedidoController.php?action=getDetallesPedido&id=${id}`)
+                .then(res => res.json())
+                .then(detalles => {
+                    const contenedor = document.getElementById("contenedorDetallesPedido");
+                    contenedor.innerHTML = "";
 
-        if (!Array.isArray(detalles) || detalles.length === 0) {
-            contenedor.innerHTML = "<p>No hay productos en este pedido.</p>";
-            return;
-        }
+                    if (!Array.isArray(detalles) || detalles.length === 0) {
+                        contenedor.innerHTML = "<p>No hay productos en este pedido.</p>";
+                        return;
+                    }
 
-        detalles.forEach((detalle, index) => {
-            const grupo = document.createElement("div");
-            grupo.className = "card p-2 mb-2";
-            grupo.innerHTML = `
+                    detalles.forEach((detalle, index) => {
+                        const grupo = document.createElement("div");
+                        grupo.className = "card p-2 mb-2";
+                        grupo.innerHTML = `
                 <div class="input-group">
                     <label>Producto</label>
                     <p style="margin: 0; font-weight: 500;">${detalle.nombre_producto}</p>
@@ -302,13 +306,13 @@ fetch(`/controllers/CoopPedidoController.php?action=getDetallesPedido&id=${id}`)
 
                 <input type="hidden" name="productos_ids[]" value="${detalle.id || detalle.pedido_id}">
             `;
-            contenedor.appendChild(grupo);
-        });
-    })
-    .catch(err => {
-        console.error("❌ Error al obtener detalles:", err);
-        showAlert("error", "No se pudieron cargar los productos del pedido.");
-    });
+                        contenedor.appendChild(grupo);
+                    });
+                })
+                .catch(err => {
+                    console.error("❌ Error al obtener detalles:", err);
+                    showAlert("error", "No se pudieron cargar los productos del pedido.");
+                });
             // ✅ Fin del bloque correcto para mostrar los detalles
             // Guardar detalles editando
 
@@ -326,6 +330,10 @@ fetch(`/controllers/CoopPedidoController.php?action=getDetallesPedido&id=${id}`)
             const id = document.getElementById("edit_id").value;
             const observaciones = document.getElementById("edit_observaciones").value;
             const hectareas = document.getElementById("edit_hectareas").value;
+            const persona_facturacion = document.getElementById("edit_persona_facturacion").value;
+            const condicion_facturacion = document.getElementById("edit_condicion_facturacion").value;
+            const afiliacion = document.getElementById("edit_afiliacion").value;
+
 
             // Leer detalles editados
             const inputs = document.querySelectorAll('#detallesPedidoContainer input');
@@ -346,6 +354,9 @@ fetch(`/controllers/CoopPedidoController.php?action=getDetallesPedido&id=${id}`)
                         id,
                         observaciones,
                         ha_cooperativa: hectareas,
+                        persona_facturacion,
+                        condicion_facturacion,
+                        afiliacion,
                         detalles
                     })
                 })
@@ -373,7 +384,7 @@ fetch(`/controllers/CoopPedidoController.php?action=getDetallesPedido&id=${id}`)
             <form id="formEditarPedido">
                 <input type="hidden" id="edit_id">
 
-                <div class="form-grid grid-2">
+                <div class="form-grid grid-3">
                     <div class="input-group">
                         <label for="edit_observaciones">Observaciones</label>
                         <div class="input-icon">
@@ -388,6 +399,30 @@ fetch(`/controllers/CoopPedidoController.php?action=getDetallesPedido&id=${id}`)
                             <span class="material-icons">landscape</span>
                             <input type="number" id="edit_hectareas" />
                         </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="edit_persona_facturacion">Persona de facturación</label>
+                        <select id="edit_persona_facturacion">
+                            <option value="productor">Productor</option>
+                            <option value="cooperativa">Cooperativa</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="edit_condicion_facturacion">Condición de facturación</label>
+                        <select id="edit_condicion_facturacion">
+                            <option value="responsable inscripto">Responsable Inscripto</option>
+                            <option value="monotributista">Monotributista</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="edit_afiliacion">Afiliación</label>
+                        <select id="edit_afiliacion">
+                            <option value="socio">Socio</option>
+                            <option value="tercero">Tercero</option>
+                        </select>
                     </div>
                 </div>
 
