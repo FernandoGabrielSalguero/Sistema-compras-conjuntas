@@ -267,76 +267,50 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
             document.getElementById("edit_observaciones").value = pedido.observaciones || '';
             document.getElementById("edit_hectareas").value = pedido.ha_cooperativa || '';
 
-            // Fetch de detalles
-            fetch(`/controllers/CoopPedidoController.php?action=getDetallesPedido&id=${pedido.id}`)
-                .then(res => res.json())
-                .then(detalles => {
-                    const container = document.getElementById("detallesPedidoContainer");
-                    container.innerHTML = '';
-
-                    detalles.forEach((item, index) => {
-                        const grupo = document.createElement("div");
-                        grupo.className = "input-group";
-
-                        grupo.innerHTML = `
-                    <label>Producto: ${item.nombre_producto}</label>
-                    <input type="text" value="${item.detalle_producto}" data-index="${index}" data-campo="detalle_producto" />
-                    <input type="number" value="${item.precio_producto}" data-index="${index}" data-campo="precio_producto" />
-                `;
-                        container.appendChild(grupo);
-                    });
-
-                    // Guardar temporalmente los detalles para editar
-                    window.detallesPedidoEditando = detalles;
-                })
-                .catch(err => {
-                    console.error("❌ Error al obtener detalles:", err);
-                    showAlert("error", "No se pudieron cargar los productos del pedido.");
-                });
-
             document.getElementById("modalEditarPedido").classList.remove("hidden");
 
             // Luego de setear observaciones y ha_cooperativa...
-            fetch(`/controllers/CoopPedidoController.php?action=getDetallesPedido&id=${id}`)
-                .then(res => res.json())
-                .then(detalles => {
-                    const contenedor = document.getElementById("contenedorDetallesPedido");
-                    contenedor.innerHTML = "";
+            // ✅ Este es el bloque correcto para mostrar los detalles
+fetch(`/controllers/CoopPedidoController.php?action=getDetallesPedido&id=${id}`)
+    .then(res => res.json())
+    .then(detalles => {
+        const contenedor = document.getElementById("contenedorDetallesPedido");
+        contenedor.innerHTML = "";
 
-                    if (!Array.isArray(detalles) || detalles.length === 0) {
-                        contenedor.innerHTML = "<p>No hay productos en este pedido.</p>";
-                        return;
-                    }
+        if (!Array.isArray(detalles) || detalles.length === 0) {
+            contenedor.innerHTML = "<p>No hay productos en este pedido.</p>";
+            return;
+        }
 
-                    detalles.forEach((detalle, index) => {
-                        const grupo = document.createElement("div");
-                        grupo.className = "card p-2 mb-2";
-                        grupo.style.minHeight = "180px";
-                        grupo.innerHTML = `
-    <div class="input-group">
-        <label>Producto</label>
-        <p style="margin: 0; font-weight: 500;">${detalle.nombre_producto}</p>
-        <p style="font-size: 0.85rem; color: #666;">${detalle.detalle_producto || ''}</p>
-    </div>
+        detalles.forEach((detalle, index) => {
+            const grupo = document.createElement("div");
+            grupo.className = "card p-2 mb-2";
+            grupo.innerHTML = `
+                <div class="input-group">
+                    <label>Producto</label>
+                    <p style="margin: 0; font-weight: 500;">${detalle.nombre_producto}</p>
+                    <p style="font-size: 0.85rem; color: #666;">${detalle.detalle_producto || ''}</p>
+                </div>
 
-    <div class="input-group">
-        <label>Cantidad</label>
-        <div class="input-icon">
-            <span class="material-icons">inventory_2</span>
-            <input type="number" min="0" step="0.01" name="cantidades[]" value="${detalle.cantidad || 1}" required />
-        </div>
-    </div>
+                <div class="input-group">
+                    <label>Cantidad</label>
+                    <div class="input-icon">
+                        <span class="material-icons">inventory_2</span>
+                        <input type="number" min="0" step="0.01" name="cantidades[]" value="${detalle.cantidad || 1}" required />
+                    </div>
+                </div>
 
-    <input type="hidden" name="productos_ids[]" value="${detalle.id || detalle.pedido_id}">
-`;
-
-                        contenedor.appendChild(grupo);
-                    });
-                })
-                .catch(err => {
-                    console.error("❌ Error al obtener detalles:", err);
-                    showAlert("error", "No se pudieron cargar los productos del pedido.");
-                });
+                <input type="hidden" name="productos_ids[]" value="${detalle.id || detalle.pedido_id}">
+            `;
+            contenedor.appendChild(grupo);
+        });
+    })
+    .catch(err => {
+        console.error("❌ Error al obtener detalles:", err);
+        showAlert("error", "No se pudieron cargar los productos del pedido.");
+    });
+            // ✅ Fin del bloque correcto para mostrar los detalles
+            // Guardar detalles editando
 
         }
 
@@ -418,7 +392,7 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                 </div>
 
                 <!-- Contenedor dinámico de detalles del pedido -->
-                <div id="contenedorDetallesPedido" class="form-grid grid-1 mt-4"></div>
+                <div id="contenedorDetallesPedido" class="form-grid grid-3 mt-4"></div>
 
                 <div class="form-buttons">
                     <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
