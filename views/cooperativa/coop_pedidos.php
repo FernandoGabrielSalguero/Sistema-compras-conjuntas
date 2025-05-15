@@ -440,9 +440,13 @@ function agregarProducto() {
     const tarjeta = document.createElement("div");
     tarjeta.className = "card p-2 mb-2";
 
-    const opciones = productosDisponibles.map(p =>
-        `<option value="${p.Id}">${p.Nombre_producto} - ${p.Detalle_producto || ''}</option>`
-    ).join("");
+    const opciones = productosDisponibles.map(p => {
+        const nombre = p.Nombre_producto || '';
+        const detalle = p.Detalle_producto || '';
+        const precio = parseFloat(p.Precio_producto).toFixed(2) || '0.00';
+        const iva = p.Alicuota ?? 0;
+        return `<option value="${p.Id}">${nombre} - ${detalle} | 💲${precio} + IVA ${iva}%</option>`;
+    }).join("");
 
     tarjeta.innerHTML = `
         <div class="input-group">
@@ -466,6 +470,7 @@ function agregarProducto() {
 
     contenedor.appendChild(tarjeta);
 }
+
 
         function showAlert(tipo, mensaje, duracion = 4000) {
             const contenedor = document.getElementById("alertContainer");
