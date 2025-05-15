@@ -49,22 +49,25 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             <nav class="sidebar-menu">
                 <ul>
                     <li onclick="location.href='sve_dashboard.php'">
-                        <span class="material-icons">home</span><span class="link-text">Inicio</span>
+                        <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
                     </li>
                     <li onclick="location.href='sve_altausuarios.php'">
-                        <span class="material-icons">person</span><span class="link-text">Alta usuarios</span>
+                        <span class="material-icons" style="color: #5b21b6;">person</span><span class="link-text">Alta usuarios</span>
                     </li>
                     <li onclick="location.href='sve_cargaMasiva.php'">
-                        <span class="material-icons">upload_file</span><span class="link-text">Carga masiva</span>
+                        <span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Carga masiva</span>
                     </li>
                     <li onclick="location.href='sve_operativos.php'">
-                        <span class="material-icons">assignment</span><span class="link-text">Operativos</span>
+                        <span class="material-icons" style="color: #5b21b6;">assignment</span><span class="link-text">Operativos</span>
                     </li>
                     <li onclick="location.href='sve_mercadodigital.php'">
-                        <span class="material-icons">shopping_cart</span><span class="link-text">Mercado Digital</span>
+                        <span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
                     </li>
                     <li onclick="location.href='sve_productos.php'">
-                        <span class="material-icons">inventory</span><span class="link-text">Productos</span>
+                        <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
+                    </li>
+                    <li onclick="location.href='../../../logout.php'">
+                        <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
                     </li>
                 </ul>
             </nav>
