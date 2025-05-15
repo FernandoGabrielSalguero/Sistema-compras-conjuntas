@@ -288,9 +288,9 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
             document.getElementById("edit_observaciones").value = pedido.observaciones || '';
             document.getElementById("edit_hectareas").value = pedido.ha_cooperativa || '';
 
-            setValueIfExists("edit_persona_facturacion", pedido.persona_facturacion);
-            setValueIfExists("edit_condicion_facturacion", pedido.condicion_facturacion);
-            setValueIfExists("edit_afiliacion", pedido.afiliacion);
+            setValueIfExists("edit_persona_facturacion", (pedido.persona_facturacion || "").trim());
+            setValueIfExists("edit_condicion_facturacion", (pedido.condicion_facturacion || "").trim());
+            setValueIfExists("edit_afiliacion", (pedido.afiliacion || "").trim());
 
             document.getElementById("modalEditarPedido").classList.remove("hidden");
 
