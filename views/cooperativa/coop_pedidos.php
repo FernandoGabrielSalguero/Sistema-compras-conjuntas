@@ -65,7 +65,7 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
-        background-color: #333333
+        background-color: #f4f4f5
     }
 
     #modalEditarPedido form {
