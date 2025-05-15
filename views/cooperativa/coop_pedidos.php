@@ -434,21 +434,28 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                 });
         }
 
-function agregarProducto() {
-    const contenedor = document.getElementById("contenedorDetallesPedido");
+        function agregarProducto() {
+            const contenedor = document.getElementById("contenedorDetallesPedido");
 
-    const tarjeta = document.createElement("div");
-    tarjeta.className = "card p-2 mb-2";
+            const tarjeta = document.createElement("div");
+            tarjeta.className = "card p-2 mb-2";
 
-    const opciones = productosDisponibles.map(p => {
-        const nombre = p.Nombre_producto || '';
-        const detalle = p.Detalle_producto || '';
-        const precio = parseFloat(p.Precio_producto).toFixed(2) || '0.00';
-        const iva = p.Alicuota ?? 0;
-        return `<option value="${p.Id}">${nombre} - ${detalle} | 💲${precio} + IVA ${iva}%</option>`;
-    }).join("");
+            const opciones = productosDisponibles.map(p => {
+                const nombre = p.Nombre_producto || '';
+                const detalle = p.Detalle_producto || '';
+                const precio = parseFloat(p.Precio_producto).toFixed(2) || '0.00';
+                const iva = p.Alicuota ?? 0;
 
-    tarjeta.innerHTML = `
+                // Mostramos todo en una sola línea, pero con \n forzamos nueva línea visual (en datalist solo para contenido visual interno)
+                return `<option value="${p.Id}">
+${nombre}
+→ ${detalle}
+💲 $${precio}
+IVA: ${iva}%
+</option>`;
+            }).join("");
+
+            tarjeta.innerHTML = `
         <div class="input-group">
             <label for="producto_select">Producto</label>
             <div class="input-icon">
@@ -468,8 +475,8 @@ function agregarProducto() {
         <button type="button" class="btn btn-aceptar" onclick="agregarProductoAPedidoDesdeUI(this)">Agregar</button>
     `;
 
-    contenedor.appendChild(tarjeta);
-}
+            contenedor.appendChild(tarjeta);
+        }
 
 
         function showAlert(tipo, mensaje, duracion = 4000) {
