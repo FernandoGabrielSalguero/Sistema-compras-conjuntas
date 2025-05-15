@@ -214,6 +214,9 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
         let pedidosCache = [];
         let productosDisponibles = [];
 
+        console.log("🛠️ Productos cargados...", productosDisponibles);
+        
+
         fetch("/controllers/CoopPedidoController.php?action=getProductos")
             .then(res => res.json())
             .then(data => {
