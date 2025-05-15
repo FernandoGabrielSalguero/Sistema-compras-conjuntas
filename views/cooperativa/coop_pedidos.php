@@ -72,16 +72,19 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
             <nav class="sidebar-menu">
                 <ul>
                     <li onclick="location.href='coop_dashboard.php'">
-                        <span class="material-icons">home</span><span class="link-text">Inicio</span>
+                        <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
                     </li>
                     <li onclick="location.href='coop_mercadoDigital.php'">
-                        <span class="material-icons">shopping_cart</span><span class="link-text">Mercado Digital</span>
+                        <span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
                     </li>
                     <li onclick="location.href='coop_pedidos.php'">
-                        <span class="material-icons">receipt_long</span><span class="link-text">Pedidos</span>
+                        <span class="material-icons" style="color: #5b21b6;">receipt_long</span><span class="link-text">Pedidos</span>
                     </li>
                     <li onclick="location.href='coop_productores.php'">
-                        <span class="material-icons">groups</span><span class="link-text">Productores</span>
+                        <span class="material-icons" style="color: #5b21b6;">groups</span><span class="link-text">Productores</span>
+                    </li>
+                    <li onclick="location.href='../../../logout.php'">
+                        <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
                     </li>
                 </ul>
             </nav>
