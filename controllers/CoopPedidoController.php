@@ -98,7 +98,6 @@ switch ($action) {
         }
         break;
 
-
     default:
         echo json_encode(['error' => 'Acción no válida']);
         break;

@@ -205,7 +205,6 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
     <!-- Contenedor para alertas -->
     <div class="alert-container" id="alertContainer"></div>
 
-
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
 
@@ -269,7 +268,6 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                     showAlert("error", "No se pudieron cargar los pedidos.");
                 });
         }
-
 
         function confirmarEliminacion(id) {
             pedidoIdAEliminar = id;
@@ -434,19 +432,19 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                 });
         }
 
-function agregarProducto() {
-    const contenedor = document.getElementById("contenedorDetallesPedido");
+        function agregarProducto() {
+            const contenedor = document.getElementById("contenedorDetallesPedido");
 
-    const tarjeta = document.createElement("div");
-    tarjeta.className = "card p-2 mb-2";
+            const tarjeta = document.createElement("div");
+            tarjeta.className = "card p-2 mb-2";
 
-    const opciones = productosDisponibles.map(p =>
-        `<option value="${p.Nombre_producto}"></option>`
-    ).join("");
+            const opciones = productosDisponibles.map(p =>
+                `<option value="${p.Nombre_producto}"></option>`
+            ).join("");
 
-    const index = document.querySelectorAll(".producto-input").length; // índice único por tarjeta
+            const index = document.querySelectorAll(".producto-input").length; // índice único por tarjeta
 
-    tarjeta.innerHTML = `
+            tarjeta.innerHTML = `
         <div class="input-group">
             <label>Producto</label>
             <div class="input-icon">
@@ -471,27 +469,25 @@ function agregarProducto() {
         <button type="button" class="btn btn-aceptar" onclick="agregarProductoAPedidoDesdeUI(this)">Agregar</button>
     `;
 
-    contenedor.appendChild(tarjeta);
+            contenedor.appendChild(tarjeta);
 
-    // Agregar listener de cambio al input recién creado
-    const input = tarjeta.querySelector(".producto-input");
-    input.addEventListener("change", function () {
-        const nombreSeleccionado = this.value.trim();
-        const prod = productosDisponibles.find(p => p.Nombre_producto === nombreSeleccionado);
+            // Agregar listener de cambio al input recién creado
+            const input = tarjeta.querySelector(".producto-input");
+            input.addEventListener("change", function() {
+                const nombreSeleccionado = this.value.trim();
+                const prod = productosDisponibles.find(p => p.Nombre_producto === nombreSeleccionado);
 
-        if (prod) {
-            const info = document.getElementById(`producto-info-${index}`);
-            info.innerHTML = `
+                if (prod) {
+                    const info = document.getElementById(`producto-info-${index}`);
+                    info.innerHTML = `
                 <strong>${prod.Nombre_producto}</strong><br>
                 <span style="color:#666">${prod.Detalle_producto || ''}</span><br>
                 <span>💲 <strong>$${parseFloat(prod.Precio_producto).toFixed(2)}</strong></span><br>
                 <span>IVA: ${prod.Alicuota ?? 0}%</span>
             `;
+                }
+            });
         }
-    });
-}
-
-
 
         function showAlert(tipo, mensaje, duracion = 4000) {
             const contenedor = document.getElementById("alertContainer");
@@ -560,6 +556,48 @@ function agregarProducto() {
                     } else {
                         showAlert("error", data.error || "❌ No se pudo agregar el producto.");
                     }
+                });
+        }
+
+        function agregarProductoAPedidoDesdeUI(btn) {
+            const tarjeta = btn.closest(".card");
+            const inputProducto = tarjeta.querySelector(".producto-input");
+            const inputCantidad = tarjeta.querySelector(".cantidad-input");
+
+            const nombre = inputProducto.value;
+            const cantidad = parseFloat(inputCantidad.value);
+
+            const producto = productosDisponibles.find(p => p.Nombre_producto.toLowerCase() === nombre.toLowerCase());
+            if (!producto) {
+                showAlert("error", "❌ Producto no encontrado");
+                return;
+            }
+
+            const pedidoId = document.getElementById("edit_id").value;
+
+            fetch("/controllers/CoopPedidoController.php?action=agregarProductoAPedido", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        pedido_id: pedidoId,
+                        producto_id: producto.id,
+                        cantidad
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert("success", "✅ Producto agregado correctamente");
+                        abrirModalEditarPedido(pedidoId); // Refrescar vista del modal
+                    } else {
+                        showAlert("error", data.error || "❌ No se pudo agregar el producto");
+                    }
+                })
+                .catch(err => {
+                    console.error("❌ Error al agregar producto:", err);
+                    showAlert("error", "❌ Error de red al agregar el producto");
                 });
         }
     </script>
@@ -637,7 +675,6 @@ function agregarProducto() {
             </form>
         </div>
     </div>
-
 
 </body>
 

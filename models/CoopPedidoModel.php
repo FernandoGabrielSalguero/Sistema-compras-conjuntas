@@ -133,7 +133,6 @@ class CoopPedidoModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-
     // Eliminar pedidos
     public static function eliminarPedido($id)
     {
@@ -220,33 +219,43 @@ class CoopPedidoModel
         $stmt->execute(['id' => $id_pedido]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
     public static function agregarProductoAPedido($pedido_id, $producto_id, $cantidad)
-    {
-        global $pdo;
+{
+    global $pdo;
 
-        try {
-            $stmt = $pdo->prepare("
-            INSERT INTO detalle_pedidos (
-                pedido_id, nombre_producto, detalle_producto, 
-                precio_producto, unidad_medida_venta, categoria, 
-                subtotal_por_categoria, alicuota, cantidad
-            )
-            SELECT 
-                :pedido_id, p.nombre_producto, p.detalle_producto,
-                p.precio_venta, p.unidad_medida_venta, p.categoria,
-                0, p.alicuota, :cantidad
-            FROM productos p WHERE p.id = :producto_id
-        ");
-            $stmt->execute([
-                'pedido_id' => $pedido_id,
-                'producto_id' => $producto_id,
-                'cantidad' => $cantidad
-            ]);
+    try {
+        // Validar que no exista ya el producto
+        $stmtCheck = $pdo->prepare("SELECT COUNT(*) FROM detalle_pedidos WHERE pedido_id = :pedido_id AND nombre_producto = (SELECT nombre_producto FROM productos WHERE id = :producto_id)");
+        $stmtCheck->execute([
+            'pedido_id' => $pedido_id,
+            'producto_id' => $producto_id
+        ]);
 
-            return ['success' => true];
-        } catch (Exception $e) {
-            return ['success' => false, 'error' => $e->getMessage()];
+        if ($stmtCheck->fetchColumn() > 0) {
+            return ['success' => false, 'error' => 'Producto ya existe en el pedido'];
         }
+
+        // Insertar producto al detalle del pedido
+        $stmt = $pdo->prepare("INSERT INTO detalle_pedidos (
+            pedido_id, nombre_producto, detalle_producto, 
+            precio_producto, unidad_medida_venta, categoria, 
+            subtotal_por_categoria, alicuota, cantidad
+        )
+        SELECT 
+            :pedido_id, p.nombre_producto, p.detalle_producto,
+            p.precio_venta, p.unidad_medida_venta, p.categoria,
+            0, p.alicuota, :cantidad
+        FROM productos p WHERE p.id = :producto_id");
+
+        $stmt->execute([
+            'pedido_id' => $pedido_id,
+            'producto_id' => $producto_id,
+            'cantidad' => $cantidad
+        ]);
+
+        return ['success' => true];
+    } catch (Exception $e) {
+        return ['success' => false, 'error' => $e->getMessage()];
     }
+}
 }
