@@ -440,30 +440,26 @@ function agregarProducto() {
     const tarjeta = document.createElement("div");
     tarjeta.className = "card p-2 mb-2";
 
-    const opciones = productosDisponibles.map(p => {
-        const nombre = p.Nombre_producto || '';
-        const detalle = p.Detalle_producto || '';
-        const precio = parseFloat(p.Precio_producto).toFixed(2) || '0.00';
-        const iva = p.Alicuota ?? 0;
+    const opciones = productosDisponibles.map(p =>
+        `<option value="${p.Nombre_producto}"></option>`
+    ).join("");
 
-        return `<option value="${p.Id}">
-${nombre} - ${detalle} - $${precio} + IVA ${iva}%
-</option>`;
-    }).join("");
+    const index = document.querySelectorAll(".producto-input").length; // índice único por tarjeta
 
     tarjeta.innerHTML = `
         <div class="input-group">
             <label>Producto</label>
             <div class="input-icon">
                 <span class="material-icons">search</span>
-                <select class="producto-input" required>
-                    <option disabled selected value="">Seleccione un producto</option>
-                    ${opciones}
-                </select>
+                <input list="listaProductos" class="producto-input" data-index="${index}" placeholder="Buscar producto" required />
+                <datalist id="listaProductos">${opciones}</datalist>
             </div>
         </div>
 
-        <div class="input-group">
+        <!-- Aquí se inyectará el resumen del producto -->
+        <div class="producto-info" id="producto-info-${index}" style="font-size: 0.85rem; color: #444; margin-top: 0.5rem;"></div>
+
+        <div class="input-group mt-2">
             <label>Cantidad</label>
             <div class="input-icon">
                 <span class="material-icons">inventory_2</span>
@@ -476,6 +472,23 @@ ${nombre} - ${detalle} - $${precio} + IVA ${iva}%
     `;
 
     contenedor.appendChild(tarjeta);
+
+    // Agregar listener de cambio al input recién creado
+    const input = tarjeta.querySelector(".producto-input");
+    input.addEventListener("change", function () {
+        const nombreSeleccionado = this.value.trim();
+        const prod = productosDisponibles.find(p => p.Nombre_producto === nombreSeleccionado);
+
+        if (prod) {
+            const info = document.getElementById(`producto-info-${index}`);
+            info.innerHTML = `
+                <strong>${prod.Nombre_producto}</strong><br>
+                <span style="color:#666">${prod.Detalle_producto || ''}</span><br>
+                <span>💲 <strong>$${parseFloat(prod.Precio_producto).toFixed(2)}</strong></span><br>
+                <span>IVA: ${prod.Alicuota ?? 0}%</span>
+            `;
+        }
+    });
 }
 
 
