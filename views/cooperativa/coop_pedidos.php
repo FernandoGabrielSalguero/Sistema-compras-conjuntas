@@ -399,7 +399,7 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
             <form id="formEditarPedido">
                 <input type="hidden" id="edit_id">
 
-                <div class="form-grid grid-3">
+                <div class="form-grid grid-4">
                     <div class="input-group">
                         <label for="edit_observaciones">Observaciones</label>
                         <div class="input-icon">
