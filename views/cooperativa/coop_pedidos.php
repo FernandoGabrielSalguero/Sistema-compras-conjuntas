@@ -523,14 +523,14 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                 </div>
 
                 <div class="form-buttons">
-                    <button type="button" class="btn btn-secundario" onclick="agregarProducto()">+ Añadir producto</button>
-                </div>
-
-                <!-- Contenedor dinámico de detalles del pedido -->
-                <h3>Productos</h3>
-                <div id="contenedorDetallesPedido" class="form-grid grid-3 mt-4"></div>
-
-                <div class="form-buttons">
+                    </div>
+                    
+                    <!-- Contenedor dinámico de detalles del pedido -->
+                    <h3>Productos</h3>
+                    <div id="contenedorDetallesPedido" class="form-grid grid-3 mt-4"></div>
+                    
+                    <div class="form-buttons">
+                    <button type="button" class="btn btn-info" onclick="agregarProducto()">+ Añadir producto</button>
                     <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
                     <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
                 </div>
