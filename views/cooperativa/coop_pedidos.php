@@ -212,6 +212,13 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
     <script>
         let pedidoIdAEliminar = null;
         let pedidosCache = [];
+        let productosDisponibles = [];
+
+        fetch("/controllers/CoopPedidoController.php?action=getProductos")
+            .then(res => res.json())
+            .then(data => {
+                productosDisponibles = Object.values(data).flat(); // aplanamos por categoría
+            });
 
         document.addEventListener("DOMContentLoaded", () => {
             cargarPedidosCoop();
@@ -298,25 +305,6 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                     cerrarModalConfirmacion();
                     pedidoIdAEliminar = null;
                 });
-        }
-
-        function showAlert(tipo, mensaje, duracion = 4000) {
-            const contenedor = document.getElementById("alertContainer");
-            if (!contenedor) return;
-
-            const alerta = document.createElement("div");
-            alerta.className = `alert alert-${tipo}`;
-            alerta.innerHTML = `
-            <span class="material-icons">${tipo === 'success' ? 'check_circle' : 'error'}</span>
-            <span>${mensaje}</span>
-            <button class="close-btn" onclick="this.parentElement.remove()">×</button>
-        `;
-
-            contenedor.appendChild(alerta);
-
-            setTimeout(() => {
-                alerta.remove();
-            }, duracion);
         }
 
         function cerrarModalEditarPedido() {
@@ -445,22 +433,97 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
         function agregarProducto() {
             const contenedor = document.getElementById("contenedorDetallesPedido");
 
-            const nuevo = document.createElement("div");
-            nuevo.className = "card p-2 mb-2";
+            const tarjeta = document.createElement("div");
+            tarjeta.className = "card p-2 mb-2";
 
-            nuevo.innerHTML = `
+            const opciones = productosDisponibles.map(p =>
+                `<option value="${p.id}">${p.nombre_producto}</option>`
+            ).join("");
+
+            tarjeta.innerHTML = `
         <div class="input-group">
-            <label>Producto (ID)</label>
-            <input type="number" name="productos_ids[]" placeholder="Ej: 12" required />
+            <label for="producto_select">Producto</label>
+            <input list="listaProductos" class="producto-input" required />
+            <datalist id="listaProductos">${opciones}</datalist>
         </div>
         <div class="input-group">
             <label>Cantidad</label>
-            <input type="number" name="cantidades[]" step="0.01" min="0" required />
+            <input type="number" step="0.01" min="0" class="cantidad-input" required />
         </div>
-        <button type="button" class="btn btn-cancelar" onclick="this.parentElement.remove()">Eliminar</button>
+        <button type="button" class="btn btn-aceptar" onclick="agregarProductoAPedidoDesdeUI(this)">Agregar</button>
     `;
 
-            contenedor.appendChild(nuevo);
+            contenedor.appendChild(tarjeta);
+        }
+
+        function showAlert(tipo, mensaje, duracion = 4000) {
+            const contenedor = document.getElementById("alertContainer");
+            if (!contenedor) return;
+
+            const alerta = document.createElement("div");
+            alerta.className = `alert alert-${tipo}`;
+            alerta.innerHTML = `
+            <span class="material-icons">${tipo === 'success' ? 'check_circle' : 'error'}</span>
+            <span>${mensaje}</span>
+            <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+        `;
+
+            contenedor.appendChild(alerta);
+
+            setTimeout(() => {
+                alerta.remove();
+            }, duracion);
+        }
+
+        function agregarProductoAPedidoDesdeUI(btn) {
+            const tarjeta = btn.closest(".card");
+            const inputProducto = tarjeta.querySelector(".producto-input");
+            const inputCantidad = tarjeta.querySelector(".cantidad-input");
+
+            const nombre = inputProducto.value;
+            const cantidad = parseFloat(inputCantidad.value);
+
+            // Buscar el producto por nombre
+            const producto = productosDisponibles.find(p =>
+                p.nombre_producto.toLowerCase() === nombre.toLowerCase()
+            );
+
+            if (!producto) {
+                showAlert("error", "❌ Producto no encontrado");
+                return;
+            }
+
+            const pedidoId = document.getElementById("edit_id").value;
+
+            // Validar duplicado
+            const yaExiste = window.detallesPedidoEditando.some(p => p.nombre_producto === producto.nombre_producto);
+            if (yaExiste) {
+                showAlert("error", "⚠️ Este producto ya está en el pedido.");
+                return;
+            }
+
+            // Llamar a backend
+            fetch("/controllers/CoopPedidoController.php?action=agregarProductoAPedido", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        pedido_id: pedidoId,
+                        producto_id: producto.id,
+                        cantidad
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert("success", "✅ Producto agregado.");
+                        cerrarModalEditarPedido();
+                        cargarPedidosCoop(); // Refrescar tabla
+                    } else {
+                        showAlert("error", data.error || "❌ No se pudo agregar el producto.");
+                    }
+                });
         }
     </script>
 
@@ -523,15 +586,15 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                 </div>
 
                 <div class="form-buttons">
-                    </div>
-                    
-                    <!-- Contenedor dinámico de detalles del pedido -->
-                    <h3>Productos</h3>
-                    <div id="contenedorDetallesPedido" class="form-grid grid-3 mt-4"></div>
-                    
-                    <div class="form-buttons">
-                    <button type="button" class="btn btn-info" onclick="agregarProducto()">+ Añadir producto</button>
+                </div>
+
+                <!-- Contenedor dinámico de detalles del pedido -->
+                <h3>Productos</h3>
+                <div id="contenedorDetallesPedido" class="form-grid grid-3 mt-4"></div>
+
+                <div class="form-buttons">
                     <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
+                    <button type="button" class="btn btn-info" onclick="agregarProducto()">+ Añadir producto</button>
                     <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
                 </div>
             </form>

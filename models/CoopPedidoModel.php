@@ -220,4 +220,33 @@ class CoopPedidoModel
         $stmt->execute(['id' => $id_pedido]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public static function agregarProductoAPedido($pedido_id, $producto_id, $cantidad)
+    {
+        global $pdo;
+
+        try {
+            $stmt = $pdo->prepare("
+            INSERT INTO detalle_pedidos (
+                pedido_id, nombre_producto, detalle_producto, 
+                precio_producto, unidad_medida_venta, categoria, 
+                subtotal_por_categoria, alicuota, cantidad
+            )
+            SELECT 
+                :pedido_id, p.nombre_producto, p.detalle_producto,
+                p.precio_venta, p.unidad_medida_venta, p.categoria,
+                0, p.alicuota, :cantidad
+            FROM productos p WHERE p.id = :producto_id
+        ");
+            $stmt->execute([
+                'pedido_id' => $pedido_id,
+                'producto_id' => $producto_id,
+                'cantidad' => $cantidad
+            ]);
+
+            return ['success' => true];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
 }

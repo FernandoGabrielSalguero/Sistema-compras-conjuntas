@@ -126,4 +126,24 @@ switch ($action) {
         $detalles = CoopPedidoModel::getDetallesPorPedido($id);
         echo json_encode($detalles);
         break;
+
+
+    case 'agregarProductoAPedido':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $data = json_decode(file_get_contents("php://input"), true);
+            $pedido_id = $data['pedido_id'] ?? null;
+            $producto_id = $data['producto_id'] ?? null;
+            $cantidad = $data['cantidad'] ?? null;
+
+            if (!$pedido_id || !$producto_id || !$cantidad) {
+                echo json_encode(['success' => false, 'error' => 'Datos incompletos']);
+                exit;
+            }
+
+            $res = CoopPedidoModel::agregarProductoAPedido($pedido_id, $producto_id, $cantidad);
+            echo json_encode($res);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
+        }
+        break;
 }
