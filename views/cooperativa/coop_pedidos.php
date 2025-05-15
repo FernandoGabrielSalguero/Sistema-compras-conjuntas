@@ -214,18 +214,15 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
         let pedidosCache = [];
         let productosDisponibles = [];
 
-        console.log("🛠️ Productos cargados...", productosDisponibles);
-        
-
-fetch("/controllers/CoopPedidoController.php?action=getProductos")
-    .then(res => res.json())
-    .then(data => {
-        productosDisponibles = Object.values(data).flat();
-        console.log("🛒 Productos disponibles:", productosDisponibles); // ✅ debug
-    })
-    .catch(err => {
-        console.error("❌ Error al cargar productos:", err);
-    });
+        fetch("/controllers/CoopPedidoController.php?action=getProductos")
+            .then(res => res.json())
+            .then(data => {
+                productosDisponibles = Object.values(data).flat();
+                console.log("🛒 Productos disponibles:", productosDisponibles); // ✅ debug
+            })
+            .catch(err => {
+                console.error("❌ Error al cargar productos:", err);
+            });
 
         document.addEventListener("DOMContentLoaded", () => {
             cargarPedidosCoop();
@@ -444,10 +441,10 @@ fetch("/controllers/CoopPedidoController.php?action=getProductos")
             tarjeta.className = "card p-2 mb-2";
 
             const opciones = productosDisponibles.map(p =>
-                `<option value="${p.id}">${p.nombre_producto}</option>`
+                `<option value="${p.id}">${p.Nombre_producto}</option>`
             ).join("");
 
-tarjeta.innerHTML = `
+            tarjeta.innerHTML = `
     <div class="input-group">
         <label for="producto_select">Producto</label>
         <div class="input-icon">
