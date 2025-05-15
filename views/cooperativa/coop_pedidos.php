@@ -57,6 +57,53 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 </head>
 
+<style>
+    #modalEditarPedido .modal-content {
+        width: 960px;
+        max-width: 100%;
+        height: 80vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #modalEditarPedido form {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    #modalEditarPedido .form-grid.grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    #modalEditarPedido .form-grid.grid-4 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    #contenedorDetallesPedido .card {
+        height: 100%;
+    }
+
+    #contenedorDetallesPedido {
+        max-height: 40vh;
+        overflow-y: auto;
+        padding: 0.5rem;
+    }
+
+    /* Botones al pie */
+    #modalEditarPedido .form-buttons {
+        margin-top: auto;
+        padding-top: 1rem;
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+</style>
+
 <body>
 
     <!-- 🔲 CONTENEDOR PRINCIPAL -->
