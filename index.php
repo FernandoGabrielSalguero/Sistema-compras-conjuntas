@@ -4,12 +4,27 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// Configurar duración de sesión en 20 minutos
+ini_set('session.gc_maxlifetime', 1200); // 20 minutos
+session_set_cookie_params([
+    'lifetime' => 1200, // también 20 minutos
+    'path' => '/',
+    'domain' => '',
+    'secure' => isset($_SERVER['HTTPS']),
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
 session_start();
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/models/AuthModel.php';
 
 $error = '';
+
+// Mensaje si viene por expiración
+if (isset($_GET['expired']) && $_GET['expired'] == 1) {
+    $error = "La sesión expiró por inactividad. Por favor, iniciá sesión nuevamente.";
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cuit = $_POST['cuit'];
@@ -26,11 +41,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['observaciones'] = $user['observaciones'];
         $_SESSION['rol'] = $user['rol'];
 
-        // Campos extras para cooperativa y $productores
+        // Campos extras para cooperativa y productores
         $_SESSION['id_cooperativa'] = $user['id_cooperativa'];
         $_SESSION['id_productor'] = $user['id_productor'];
         $_SESSION['direccion'] = $user['direccion'];
         $_SESSION['id_finca_asociada'] = $user['id_finca_asociada'];
+
+        // Guardamos tiempo de última actividad para control de expiración
+        $_SESSION['LAST_ACTIVITY'] = time();
 
         switch ($user['rol']) {
             case 'cooperativa':
