@@ -247,7 +247,7 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                     <td>${pedido.observaciones || ''}</td>
                     <td>
                         <button class="btn-icon" title="Editar" onclick="abrirModalEditarPedido(${pedido.id})"><span class="material-icons">edit</span></button>
-                        <button class="btn-icon" title="Eliminar" onclick="confirmarEliminacion(${pedido.id})"><span class="material-icons color: #5b21b6;">delete</span></button>
+                        <button class="btn-icon" title="Eliminar" onclick="confirmarEliminacion(${pedido.id})"><span class="material-icons color: rojo;">delete</span></button>
                     </td>
                 `;
                         tbody.appendChild(fila);
