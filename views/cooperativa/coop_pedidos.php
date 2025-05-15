@@ -217,11 +217,15 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
         console.log("🛠️ Productos cargados...", productosDisponibles);
         
 
-        fetch("/controllers/CoopPedidoController.php?action=getProductos")
-            .then(res => res.json())
-            .then(data => {
-                productosDisponibles = Object.values(data).flat(); // aplanamos por categoría
-            });
+fetch("/controllers/CoopPedidoController.php?action=getProductos")
+    .then(res => res.json())
+    .then(data => {
+        productosDisponibles = Object.values(data).flat();
+        console.log("🛒 Productos disponibles:", productosDisponibles); // ✅ debug
+    })
+    .catch(err => {
+        console.error("❌ Error al cargar productos:", err);
+    });
 
         document.addEventListener("DOMContentLoaded", () => {
             cargarPedidosCoop();
@@ -443,18 +447,24 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                 `<option value="${p.id}">${p.nombre_producto}</option>`
             ).join("");
 
-            tarjeta.innerHTML = `
-        <div class="input-group">
-            <label for="producto_select">Producto</label>
+tarjeta.innerHTML = `
+    <div class="input-group">
+        <label for="producto_select">Producto</label>
+        <div class="input-icon">
+            <span class="material-icons">search</span>
             <input list="listaProductos" class="producto-input" required />
             <datalist id="listaProductos">${opciones}</datalist>
         </div>
-        <div class="input-group">
-            <label>Cantidad</label>
+    </div>
+    <div class="input-group">
+        <label>Cantidad</label>
+        <div class="input-icon">
+            <span class="material-icons">inventory_2</span>
             <input type="number" step="0.01" min="0" class="cantidad-input" required />
         </div>
-        <button type="button" class="btn btn-aceptar" onclick="agregarProductoAPedidoDesdeUI(this)">Agregar</button>
-    `;
+    </div>
+    <button type="button" class="btn btn-aceptar" onclick="agregarProductoAPedidoDesdeUI(this)">Agregar</button>
+`;
 
             contenedor.appendChild(tarjeta);
         }
