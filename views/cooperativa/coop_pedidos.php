@@ -59,12 +59,13 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
 
 <style>
     #modalEditarPedido .modal-content {
-        width: 960px;
+        width: 790px;
         max-width: 100%;
         height: 80vh;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
+        background-color: #333333
     }
 
     #modalEditarPedido form {
