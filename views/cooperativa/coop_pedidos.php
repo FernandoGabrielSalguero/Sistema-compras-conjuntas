@@ -345,7 +345,8 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
 
             document.getElementById("edit_id").value = pedido.id;
             document.getElementById("edit_observaciones").value = pedido.observaciones || '';
-            document.getElementById("edit_hectareas").value = pedido.ha_cooperativa || '';
+            document.getElementById("edit_hectareas").value = parseInt(pedido.ha_cooperativa || 0);
+
 
             setValueIfExists("edit_persona_facturacion", (pedido.persona_facturacion || "").trim());
             setValueIfExists("edit_condicion_facturacion", (pedido.condicion_facturacion || "").trim());
@@ -415,7 +416,7 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                         <label for="edit_hectareas">Hectáreas</label>
                         <div class="input-icon">
                             <span class="material-icons">landscape</span>
-                            <input type="number" id="edit_hectareas" />
+                            <input type="number" id="edit_hectareas" step="1" min="0" />
                         </div>
                     </div>
 
