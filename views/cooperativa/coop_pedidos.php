@@ -339,6 +339,9 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                 if (el) el.value = value;
             };
 
+            // imprimimos en consola el pedido traido desde la base de datos
+            console.log("📝 Pedido cargado:", pedido);
+
 
             document.getElementById("edit_id").value = pedido.id;
             document.getElementById("edit_observaciones").value = pedido.observaciones || '';

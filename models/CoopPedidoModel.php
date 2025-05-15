@@ -105,29 +105,36 @@ class CoopPedidoModel
         }
     }
 
-    public static function getPedidosPorCooperativa($id_coop)
-    {
-        global $pdo;
-        $query = "
-    SELECT 
-        p.id, 
-        p.fecha_pedido, 
-        u.nombre AS productor, 
-        p.productor AS productor_id,  -- <- NUEVO
-        p.total_sin_iva, 
-        p.total_iva, 
-        p.total_pedido, 
-        p.observaciones
-    FROM pedidos p
-    LEFT JOIN usuarios u ON p.productor = u.id_productor
-    WHERE p.cooperativa = :id_coop
-    ORDER BY p.fecha_pedido DESC
-";
+public static function getPedidosPorCooperativa($id_coop)
+{
+    global $pdo;
+    $query = "
+        SELECT 
+            p.id, 
+            p.fecha_pedido, 
+            u.nombre AS productor, 
+            p.productor AS productor_id,
+            p.total_sin_iva, 
+            p.total_iva, 
+            p.total_pedido, 
+            p.observaciones,
+            p.persona_facturacion,
+            p.condicion_facturacion,
+            p.afiliacion,
+            p.ha_cooperativa
+        FROM pedidos p
+        LEFT JOIN usuarios u ON p.productor = u.id_productor
+        WHERE p.cooperativa = :id_coop
+        ORDER BY p.fecha_pedido DESC
+    ";
 
-        $stmt = $pdo->prepare($query);
-        $stmt->execute(['id_coop' => $id_coop]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    $stmt = $pdo->prepare($query);
+    $stmt->execute(['id_coop' => $id_coop]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    
+}
+
 
     // Eliminar pedidos
     public static function eliminarPedido($id)
