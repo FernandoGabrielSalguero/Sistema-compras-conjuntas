@@ -83,7 +83,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="material-icons">inventory</span><span class="link-text">Productos</span>
                     </li>
                     <li onclick="location.href='../../../logout.php'">
-                        <span class="material-icons">exit</span><span class="link-text">Salir</span>
+                        <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
                     </li>
                 </ul>
             </nav>
