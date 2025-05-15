@@ -105,10 +105,10 @@ class CoopPedidoModel
         }
     }
 
-public static function getPedidosPorCooperativa($id_coop)
-{
-    global $pdo;
-    $query = "
+    public static function getPedidosPorCooperativa($id_coop)
+    {
+        global $pdo;
+        $query = "
         SELECT 
             p.id, 
             p.fecha_pedido, 
@@ -128,12 +128,10 @@ public static function getPedidosPorCooperativa($id_coop)
         ORDER BY p.fecha_pedido DESC
     ";
 
-    $stmt = $pdo->prepare($query);
-    $stmt->execute(['id_coop' => $id_coop]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    
-}
+        $stmt = $pdo->prepare($query);
+        $stmt->execute(['id_coop' => $id_coop]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
 
     // Eliminar pedidos
@@ -155,18 +153,20 @@ public static function getPedidosPorCooperativa($id_coop)
     public static function actualizarPedido($id, $observaciones, $ha_cooperativa, $detalles = [], $persona_facturacion, $condicion_facturacion, $afiliacion)
     {
         global $pdo;
+
         try {
             $pdo->beginTransaction();
 
+            // Actualizar encabezado
             $stmt = $pdo->prepare("
-    UPDATE pedidos 
-    SET observaciones = :obs,
-        ha_cooperativa = :ha,
-        persona_facturacion = :pf,
-        condicion_facturacion = :cf,
-        afiliacion = :af
-    WHERE id = :id
-");
+            UPDATE pedidos 
+            SET observaciones = :obs,
+                ha_cooperativa = :ha,
+                persona_facturacion = :pf,
+                condicion_facturacion = :cf,
+                afiliacion = :af
+            WHERE id = :id
+        ");
 
             $stmt->execute([
                 'obs' => $observaciones,
@@ -177,29 +177,34 @@ public static function getPedidosPorCooperativa($id_coop)
                 'id' => $id
             ]);
 
-            foreach ($detalles as $detalle) {
-                $stmt = $pdo->prepare("
-    UPDATE pedidos 
-    SET observaciones = :obs,
-        ha_cooperativa = :ha,
-        persona_facturacion = :pf,
-        condicion_facturacion = :cf,
-        afiliacion = :af
-    WHERE id = :id
-");
+            // Eliminar detalles existentes
+            $stmt = $pdo->prepare("DELETE FROM detalle_pedidos WHERE pedido_id = :id");
+            $stmt->execute(['id' => $id]);
 
+            // Insertar nuevos detalles
+            $stmt = $pdo->prepare("
+            INSERT INTO detalle_pedidos (
+                pedido_id, nombre_producto, detalle_producto, 
+                precio_producto, unidad_medida_venta, categoria, subtotal_por_categoria, alicuota, cantidad
+            )
+            SELECT 
+                :pedido_id, p.nombre_producto, p.detalle_producto,
+                p.precio_venta AS precio_producto, p.unidad_medida_venta, p.categoria,
+                0 AS subtotal_por_categoria, p.alicuota, :cantidad
+            FROM productos p
+            WHERE p.id = :producto_id
+        ");
+
+            foreach ($detalles as $detalle) {
                 $stmt->execute([
-                    'obs' => $observaciones,
-                    'ha' => $ha_cooperativa,
-                    'pf' => $persona_facturacion,
-                    'cf' => $condicion_facturacion,
-                    'af' => $afiliacion,
-                    'id' => $id
+                    'pedido_id' => $id,
+                    'producto_id' => $detalle['id'],
+                    'cantidad' => $detalle['cantidad']
                 ]);
             }
 
             $pdo->commit();
-            return ['success' => true, 'message' => 'Pedido actualizado con productos'];
+            return ['success' => true, 'message' => '✅ Pedido actualizado con productos'];
         } catch (Exception $e) {
             $pdo->rollBack();
             return ['success' => false, 'error' => $e->getMessage()];

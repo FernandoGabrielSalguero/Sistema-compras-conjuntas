@@ -335,13 +335,12 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
 
 
             // Leer detalles editados
-            const inputs = document.querySelectorAll('#detallesPedidoContainer input');
-            const detalles = window.detallesPedidoEditando.map((d, index) => {
-                const inputsDeEste = [...inputs].filter(i => i.dataset.index == index);
-                inputsDeEste.forEach(input => {
-                    d[input.dataset.campo] = input.value;
-                });
-                return d;
+            const tarjetas = document.querySelectorAll('#contenedorDetallesPedido .card');
+            const detalles = Array.from(tarjetas).map(tarjeta => {
+                return {
+                    id: tarjeta.querySelector('input[name="productos_ids[]"]').value,
+                    cantidad: tarjeta.querySelector('input[name="cantidades[]"]').value
+                };
             });
 
             fetch("/controllers/CoopPedidoController.php?action=editarPedido", {
@@ -442,6 +441,27 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                     showAlert("error", "No se pudieron cargar los productos del pedido.");
                 });
         }
+
+        function agregarProducto() {
+            const contenedor = document.getElementById("contenedorDetallesPedido");
+
+            const nuevo = document.createElement("div");
+            nuevo.className = "card p-2 mb-2";
+
+            nuevo.innerHTML = `
+        <div class="input-group">
+            <label>Producto (ID)</label>
+            <input type="number" name="productos_ids[]" placeholder="Ej: 12" required />
+        </div>
+        <div class="input-group">
+            <label>Cantidad</label>
+            <input type="number" name="cantidades[]" step="0.01" min="0" required />
+        </div>
+        <button type="button" class="btn btn-cancelar" onclick="this.parentElement.remove()">Eliminar</button>
+    `;
+
+            contenedor.appendChild(nuevo);
+        }
     </script>
 
     <!-- Modal Editar Pedido -->
@@ -502,8 +522,12 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                     </div>
                 </div>
 
-                        <h3>Productos</h3>
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secundario" onclick="agregarProducto()">+ Añadir producto</button>
+                </div>
+
                 <!-- Contenedor dinámico de detalles del pedido -->
+                <h3>Productos</h3>
                 <div id="contenedorDetallesPedido" class="form-grid grid-3 mt-4"></div>
 
                 <div class="form-buttons">
