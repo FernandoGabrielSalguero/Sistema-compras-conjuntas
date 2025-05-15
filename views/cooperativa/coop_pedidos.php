@@ -434,37 +434,38 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                 });
         }
 
-        function agregarProducto() {
-            const contenedor = document.getElementById("contenedorDetallesPedido");
+function agregarProducto() {
+    const contenedor = document.getElementById("contenedorDetallesPedido");
 
-            const tarjeta = document.createElement("div");
-            tarjeta.className = "card p-2 mb-2";
+    const tarjeta = document.createElement("div");
+    tarjeta.className = "card p-2 mb-2";
 
-            const opciones = productosDisponibles.map(p =>
-                `<option value="${p.id}">${p.Nombre_producto}</option>`
-            ).join("");
+    const opciones = productosDisponibles.map(p =>
+        `<option value="${p.Id}">${p.Nombre_producto} - ${p.Detalle_producto || ''}</option>`
+    ).join("");
 
-            tarjeta.innerHTML = `
-    <div class="input-group">
-        <label for="producto_select">Producto</label>
-        <div class="input-icon">
-            <span class="material-icons">search</span>
-            <input list="listaProductos" class="producto-input" required />
-            <datalist id="listaProductos">${opciones}</datalist>
+    tarjeta.innerHTML = `
+        <div class="input-group">
+            <label for="producto_select">Producto</label>
+            <div class="input-icon">
+                <span class="material-icons">search</span>
+                <input list="listaProductos" class="producto-input" placeholder="Ej: Fosfato Diamónico" required />
+                <datalist id="listaProductos">${opciones}</datalist>
+            </div>
         </div>
-    </div>
-    <div class="input-group">
-        <label>Cantidad</label>
-        <div class="input-icon">
-            <span class="material-icons">inventory_2</span>
-            <input type="number" step="0.01" min="0" class="cantidad-input" required />
+        <div class="input-group">
+            <label>Cantidad</label>
+            <div class="input-icon">
+                <span class="material-icons">inventory_2</span>
+                <input type="number" step="0.01" min="0" class="cantidad-input" required />
+            </div>
         </div>
-    </div>
-    <button type="button" class="btn btn-aceptar" onclick="agregarProductoAPedidoDesdeUI(this)">Agregar</button>
-`;
+        <br>
+        <button type="button" class="btn btn-aceptar" onclick="agregarProductoAPedidoDesdeUI(this)">Agregar</button>
+    `;
 
-            contenedor.appendChild(tarjeta);
-        }
+    contenedor.appendChild(tarjeta);
+}
 
         function showAlert(tipo, mensaje, duracion = 4000) {
             const contenedor = document.getElementById("alertContainer");
