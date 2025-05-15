@@ -416,20 +416,38 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                         </div>
                     </div>
 
-                    <select id="edit_persona_facturacion" name="factura" class="input-icon" required>
-                        <option value="productor">Productor</option>
-                        <option value="cooperativa">Cooperativa</option>
-                    </select>
+                    <div class="input-group">
+                        <label for="edit_persona_facturacion">¿A quién facturamos?</label>
+                        <div class="input-icon">
+                            <span class="material-icons">receipt</span>
+                            <select id="edit_persona_facturacion" name="factura" required>
+                                <option value="productor">Productor</option>
+                                <option value="cooperativa">Cooperativa</option>
+                            </select>
+                        </div>
+                    </div>
 
-                    <select id="edit_condicion_facturacion" name="condicion" class="input-icon" required>
-                        <option value="responsable inscripto">Responsable Inscripto</option>
-                        <option value="monotributista">Monotributista</option>
-                    </select>
+                    <div class="input-group">
+                        <label for="edit_condicion_facturacion">Condición de facturación</label>
+                        <div class="input-icon">
+                            <span class="material-icons">description</span>
+                            <select id="edit_condicion_facturacion" name="condicion" required>
+                                <option value="responsable inscripto">Responsable Inscripto</option>
+                                <option value="monotributista">Monotributista</option>
+                            </select>
+                        </div>
+                    </div>
 
-                    <select id="edit_afiliacion" name="afiliacion" class="input-icon" required>
-                        <option value="socio">Sí, es socio</option>
-                        <option value="tercero">No, es tercero</option>
-                    </select>
+                    <div class="input-group">
+                        <label for="edit_afiliacion">Afiliación</label>
+                        <div class="input-icon">
+                            <span class="material-icons">badge</span>
+                            <select id="edit_afiliacion" name="afiliacion" required>
+                                <option value="socio">Sí, es socio</option>
+                                <option value="tercero">No, es tercero</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Contenedor dinámico de detalles del pedido -->
