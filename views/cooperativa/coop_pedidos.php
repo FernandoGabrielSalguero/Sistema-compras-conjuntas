@@ -479,8 +479,6 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                         </div>
                     </div>
 
-        <h3>Productos</h3>
-
                     <div class="input-group">
                         <label for="edit_condicion_facturacion">Condición de facturación</label>
                         <div class="input-icon">
@@ -504,6 +502,7 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                     </div>
                 </div>
 
+                        <h3>Productos</h3>
                 <!-- Contenedor dinámico de detalles del pedido -->
                 <div id="contenedorDetallesPedido" class="form-grid grid-3 mt-4"></div>
 
