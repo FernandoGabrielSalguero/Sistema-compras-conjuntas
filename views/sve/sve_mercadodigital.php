@@ -8,10 +8,21 @@ ob_start(); // Captura salida
 // Iniciar sesión y proteger acceso
 session_start();
 
+// ⚠️ Expiración por inactividad (20 minutos)
+if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 1200)) {
+    session_unset();
+    session_destroy();
+    header("Location: /index.php?expired=1");
+    exit;
+}
+$_SESSION['LAST_ACTIVITY'] = time(); // Actualiza el tiempo de actividad
+
+// 🚧 Protección de acceso general
 if (!isset($_SESSION['cuit'])) {
     die("⚠️ Acceso denegado. No has iniciado sesión.");
 }
 
+// 🔐 Protección por rol
 if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'sve') {
     die("🚫 Acceso restringido: esta página es solo para usuarios SVE.");
 }
