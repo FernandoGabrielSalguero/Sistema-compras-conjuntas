@@ -278,12 +278,19 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                 return;
             }
 
+            const setValueIfExists = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.value = value;
+            };
+
+
             document.getElementById("edit_id").value = pedido.id;
             document.getElementById("edit_observaciones").value = pedido.observaciones || '';
             document.getElementById("edit_hectareas").value = pedido.ha_cooperativa || '';
-            document.getElementById("edit_persona_facturacion").value = pedido.persona_facturacion || '';
-            document.getElementById("edit_condicion_facturacion").value = pedido.condicion_facturacion || '';
-            document.getElementById("edit_afiliacion").value = pedido.afiliacion || '';
+
+            setValueIfExists("edit_persona_facturacion", pedido.persona_facturacion);
+            setValueIfExists("edit_condicion_facturacion", pedido.condicion_facturacion);
+            setValueIfExists("edit_afiliacion", pedido.afiliacion);
 
             document.getElementById("modalEditarPedido").classList.remove("hidden");
 
@@ -409,29 +416,20 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                         </div>
                     </div>
 
-                    <div class="input-group">
-                        <label for="edit_persona_facturacion">¿A quién facturamos?</label>
-                        <select id="edit_persona_facturacion">
-                            <option value="productor">Productor</option>
-                            <option value="cooperativa">Cooperativa</option>
-                        </select>
-                    </div>
+                    <select id="edit_persona_facturacion" name="factura" class="input-icon" required>
+                        <option value="productor">Productor</option>
+                        <option value="cooperativa">Cooperativa</option>
+                    </select>
 
-                    <div class="input-group">
-                        <label for="edit_condicion_facturacion">Condición de facturación</label>
-                        <select id="edit_condicion_facturacion">
-                            <option value="responsable inscripto">Responsable Inscripto</option>
-                            <option value="monotributista">Monotributista</option>
-                        </select>
-                    </div>
+                    <select id="edit_condicion_facturacion" name="condicion" class="input-icon" required>
+                        <option value="responsable inscripto">Responsable Inscripto</option>
+                        <option value="monotributista">Monotributista</option>
+                    </select>
 
-                    <div class="input-group">
-                        <label for="edit_afiliacion">Afiliación</label>
-                        <select id="edit_afiliacion">
-                            <option value="socio">Socio</option>
-                            <option value="tercero">Tercero</option>
-                        </select>
-                    </div>
+                    <select id="edit_afiliacion" name="afiliacion" class="input-icon" required>
+                        <option value="socio">Sí, es socio</option>
+                        <option value="tercero">No, es tercero</option>
+                    </select>
                 </div>
 
                 <!-- Contenedor dinámico de detalles del pedido -->
