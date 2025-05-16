@@ -17,7 +17,7 @@ if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 
 $_SESSION['LAST_ACTIVITY'] = time(); // Actualiza el tiempo de actividad
 
 // 🚧 Protección de acceso general
-if (!isset($_SESSION['cuit'])) {
+if (!isset($_SESSION['usuario'])) {
     die("⚠️ Acceso denegado. No has iniciado sesión.");
 }
 
@@ -29,9 +29,11 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'sve') {
 // Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
-$cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
+$usuario = $_SESSION['usuario'] ?? 'Sin usuario';
 $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
-$observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
+
+echo '<pre>'; print_r($_SESSION); echo '</pre>';
+
 ?>
 
 <!DOCTYPE html>
