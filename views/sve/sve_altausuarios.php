@@ -1,10 +1,10 @@
 <?php
-// Mostrar errores en pantalla (útil en desarrollo)
+// Mostrar errores (solo en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesión y proteger acceso
+// Iniciar sesión
 session_start();
 
 // ⚠️ Expiración por inactividad (20 minutos)
@@ -14,26 +14,32 @@ if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 
     header("Location: /index.php?expired=1");
     exit;
 }
-$_SESSION['LAST_ACTIVITY'] = time(); // Actualiza el tiempo de actividad
+$_SESSION['LAST_ACTIVITY'] = time(); // Refresca la actividad
 
 // 🚧 Protección de acceso general
 if (!isset($_SESSION['usuario'])) {
     die("⚠️ Acceso denegado. No has iniciado sesión.");
 }
 
-// 🔐 Protección por rol
-if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'sve') {
+// 🔐 Protección específica por rol
+if ($_SESSION['rol'] !== 'sve') {
     die("🚫 Acceso restringido: esta página es solo para usuarios SVE.");
 }
 
+// Middleware adicional (si lo usás)
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesión
-$nombre = $_SESSION['nombre'] ?? 'Sin nombre';
-$correo = $_SESSION['correo'] ?? 'Sin correo';
-$usuario = $_SESSION['usuario'] ?? 'Sin usuario';
-$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
+// Datos del usuario desde la sesión
+$nombre     = $_SESSION['nombre'] ?? 'Sin nombre';
+$correo     = $_SESSION['correo'] ?? 'Sin correo';
+$usuario    = $_SESSION['usuario'] ?? 'Sin usuario';
+$telefono   = $_SESSION['telefono'] ?? 'Sin teléfono';
+$direccion  = $_SESSION['direccion'] ?? 'Sin dirección';
+$id_real    = $_SESSION['id_real'] ?? 'Sin ID real';
+
+// (Opcional para debug)
+echo "<script>console.log(" . json_encode($_SESSION) . ");</script>";
 ?>
 
 <!DOCTYPE html>
