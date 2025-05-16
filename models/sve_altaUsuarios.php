@@ -26,7 +26,7 @@ class UserModel {
         ");
         $stmt->execute([
             'usuario' => $data['usuario'],
-            'contrasena' => $data['contrasena'], // texto plano por ahora
+            'contrasena' => password_hash($data['contrasena'], PASSWORD_DEFAULT),
             'rol' => $data['rol'],
             'permiso_ingreso' => $data['permiso_ingreso'],
         ]);
