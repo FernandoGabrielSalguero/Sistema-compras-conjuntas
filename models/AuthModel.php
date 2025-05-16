@@ -9,9 +9,30 @@ class AuthModel {
         $this->db = $pdo;
     }
 
-    public function login($cuit, $contrasena) {
-        $stmt = $this->db->prepare("SELECT * FROM usuarios WHERE cuit = :cuit AND contrasena = :contrasena AND permiso_ingreso = 'Habilitado'");
-        $stmt->execute(['cuit' => $cuit, 'contrasena' => $contrasena]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+public function login($usuario, $contrasena) {
+    $sql = "SELECT 
+                u.id AS usuario_id,
+                u.usuario,
+                u.contrasena,
+                u.rol,
+                u.permiso_ingreso,
+                ui.id_real,
+                ui.nombre,
+                ui.direccion,
+                ui.telefono,
+                ui.correo
+            FROM usuarios u
+            JOIN usuarios_info ui ON u.id = ui.usuario_id
+            WHERE u.usuario = :usuario
+              AND u.contrasena = :contrasena
+              AND u.permiso_ingreso = 'Habilitado'";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([
+        'usuario' => $usuario,
+        'contrasena' => $contrasena
+    ]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
 }

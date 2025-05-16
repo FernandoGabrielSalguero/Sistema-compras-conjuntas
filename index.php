@@ -27,27 +27,21 @@ if (isset($_GET['expired']) && $_GET['expired'] == 1) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $cuit = $_POST['cuit'];
+    $usuario = $_POST['usuario'];
     $contrasena = $_POST['contrasena'];
 
     $auth = new AuthModel($pdo);
-    $user = $auth->login($cuit, $contrasena);
+    $user = $auth->login($usuario, $contrasena);
 
     if ($user) {
+        // Datos combinados
+        $_SESSION['usuario'] = $user['usuario'];
+        $_SESSION['rol'] = $user['rol'];
         $_SESSION['nombre'] = $user['nombre'];
         $_SESSION['correo'] = $user['correo'];
-        $_SESSION['cuit'] = $user['cuit'];
         $_SESSION['telefono'] = $user['telefono'];
-        $_SESSION['observaciones'] = $user['observaciones'];
-        $_SESSION['rol'] = $user['rol'];
-
-        // Campos extras para cooperativa y productores
-        $_SESSION['id_cooperativa'] = $user['id_cooperativa'];
-        $_SESSION['id_productor'] = $user['id_productor'];
         $_SESSION['direccion'] = $user['direccion'];
-        $_SESSION['id_finca_asociada'] = $user['id_finca_asociada'];
-
-        // Guardamos tiempo de última actividad para control de expiración
+        $_SESSION['id_real'] = $user['id_real'];
         $_SESSION['LAST_ACTIVITY'] = time();
 
         switch ($user['rol']) {
@@ -60,16 +54,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'sve':
                 header('Location: /views/sve/sve_dashboard.php');
                 break;
+            case 'ingeniero':
+                header('Location: /views/ingeniero/dashboard.php');
+                break;
         }
         exit;
     } else {
-        $error = "CUIT, contraseña inválidos o permiso no habilitado.";
+        $error = "Usuario o contraseña inválidos o permiso no habilitado.";
     }
 }
+
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -84,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             height: 100vh;
             margin: 0;
         }
+
         .login-container {
             background: white;
             padding: 30px;
@@ -92,29 +92,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             width: 100%;
             max-width: 400px;
         }
+
         .login-container h1 {
             text-align: center;
             color: #673ab7;
             margin-bottom: 20px;
         }
+
         .form-group {
             margin-bottom: 15px;
         }
+
         .form-group label {
             display: block;
             margin-bottom: 5px;
             color: #555;
         }
+
         .form-group input {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
         }
+
         .form-group input:focus {
             border-color: #673ab7;
             outline: none;
         }
+
         .form-group button {
             width: 100%;
             padding: 10px;
@@ -125,17 +131,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             cursor: pointer;
             transition: background-color 0.3s;
         }
+
         .form-group button:hover {
             background-color: #5e35b1;
         }
+
         .error {
             color: red;
             margin-bottom: 10px;
             text-align: center;
         }
+
         .password-container {
             position: relative;
         }
+
         .toggle-password {
             position: absolute;
             right: 10px;
@@ -145,6 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <h1>Iniciar Sesión</h1>
@@ -153,8 +164,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
         <form action="" method="POST">
             <div class="form-group">
-                <label for="cuit">CUIT:</label>
-                <input type="text" name="cuit" id="cuit" required>
+                <label for="usuario">Usuario:</label>
+                <input type="text" name="usuario" id="usuario" required>
+
             </div>
             <div class="form-group password-container">
                 <label for="contrasena">Contraseña:</label>
@@ -179,4 +191,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Spinner Global -->
     <script src="views/partials/spinner-global.js"></script>
 </body>
+
 </html>
