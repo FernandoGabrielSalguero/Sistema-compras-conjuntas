@@ -117,107 +117,72 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                 <!-- Formulario -->
                 <div class="card">
-                    <h2>Formulario para cargar un nuevo usuario</h2>
-                    <form class="form-modern" id="formUsuario" method="POST" action="ruta_al_backend.php">
-                        <div class="form-grid grid-3">
+    <h2>Crear nuevo usuario</h2>
+    <form class="form-modern" id="formUsuario" method="POST" action="ruta_al_backend.php">
+        <div class="form-grid grid-2">
 
-                            <!-- Usuario -->
-                            <div class="input-group">
-                                <label for="usuario">Usuario</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">person</span>
-                                    <input type="text" id="usuario" name="usuario" placeholder="usuario123" required>
-                                </div>
-                            </div>
-
-                            <!-- Contraseña -->
-                            <div class="input-group">
-                                <label for="contrasena">Contraseña</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">lock</span>
-                                    <input type="password" id="contrasena" name="contrasena" placeholder="********" required>
-                                </div>
-                            </div>
-
-                            <!-- Rol -->
-                            <div class="input-group">
-                                <label for="rol">Rol</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">supervisor_account</span>
-                                    <select id="rol" name="rol" required>
-                                        <option value="sve">SVE</option>
-                                        <option value="cooperativa">Cooperativa</option>
-                                        <option value="productor">Productor</option>
-                                        <option value="ingeniero">Ingeniero</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Permiso -->
-                            <div class="input-group">
-                                <label for="permiso_ingreso">Permiso</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">check_circle</span>
-                                    <select id="permiso_ingreso" name="permiso_ingreso" required>
-                                        <option value="Habilitado">Habilitado</option>
-                                        <option value="Deshabilitado">Deshabilitado</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- ID real -->
-                            <div class="input-group">
-                                <label for="id_real">ID Real (según base del cliente)</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">badge</span>
-                                    <input type="number" id="id_real" name="id_real" placeholder="1001" required>
-                                </div>
-                            </div>
-
-                            <!-- Nombre completo -->
-                            <div class="input-group">
-                                <label for="nombre">Nombre completo</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">person</span>
-                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required>
-                                </div>
-                            </div>
-
-                            <!-- Correo electrónico -->
-                            <div class="input-group">
-                                <label for="correo">Correo electrónico</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">mail</span>
-                                    <input type="email" id="correo" name="correo" placeholder="usuario@correo.com" required>
-                                </div>
-                            </div>
-
-                            <!-- Teléfono -->
-                            <div class="input-group">
-                                <label for="telefono">Teléfono</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">phone</span>
-                                    <input type="tel" id="telefono" name="telefono" placeholder="2616686065" required>
-                                </div>
-                            </div>
-
-                            <!-- Dirección -->
-                            <div class="input-group">
-                                <label for="direccion">Dirección</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">location_on</span>
-                                    <input type="text" id="direccion" name="direccion" placeholder="San Martín Sur 25" required>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <!-- Botones -->
-                        <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="submit">Crear usuario</button>
-                        </div>
-                    </form>
+            <!-- Usuario -->
+            <div class="input-group">
+                <label for="usuario">Usuario</label>
+                <div class="input-icon">
+                    <span class="material-icons">person</span>
+                    <input type="text" id="usuario" name="usuario" placeholder="usuario123" required>
                 </div>
+            </div>
+
+            <!-- Contraseña con ojo -->
+            <div class="input-group password-container">
+                <label for="contrasena">Contraseña</label>
+                <div class="input-icon">
+                    <span class="material-icons">lock</span>
+                    <input type="password" id="contrasena" name="contrasena" placeholder="********" required>
+                    <span class="material-icons toggle-password" onclick="togglePassword()">visibility</span>
+                </div>
+            </div>
+
+            <!-- Rol -->
+            <div class="input-group">
+                <label for="rol">Rol</label>
+                <div class="input-icon">
+                    <span class="material-icons">supervisor_account</span>
+                    <select id="rol" name="rol" required>
+                        <option value="sve">SVE</option>
+                        <option value="cooperativa">Cooperativa</option>
+                        <option value="productor">Productor</option>
+                        <option value="ingeniero">Ingeniero</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Permiso -->
+            <div class="input-group">
+                <label for="permiso_ingreso">Permiso</label>
+                <div class="input-icon">
+                    <span class="material-icons">check_circle</span>
+                    <select id="permiso_ingreso" name="permiso_ingreso" required>
+                        <option value="Habilitado">Habilitado</option>
+                        <option value="Deshabilitado">Deshabilitado</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ID Real -->
+            <div class="input-group">
+                <label for="id_real">ID Real</label>
+                <div class="input-icon">
+                    <span class="material-icons">badge</span>
+                    <input type="number" id="id_real" name="id_real" placeholder="1001" required>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Botones -->
+        <div class="form-buttons">
+            <button class="btn btn-aceptar" type="submit">Crear usuario</button>
+        </div>
+    </form>
+</div>
 
 
                 <!-- Tarjeta de buscador -->
@@ -327,7 +292,14 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
     <!-- Script para cargar los datos usando AJAX a la base -->
     <script>
-
+        // desocultar la contraseña
+    function togglePassword() {
+        const passwordInput = document.getElementById('contrasena');
+        const icon = document.querySelector('.toggle-password');
+        const isPassword = passwordInput.getAttribute('type') === 'password';
+        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+        icon.textContent = isPassword ? 'visibility_off' : 'visibility';
+    }
     </script>
 
     <!-- Spinner Global -->
