@@ -118,25 +118,24 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <!-- Formulario -->
                 <div class="card">
                     <h2>Formulario para cargar un nuevo usuario</h2>
-                    <form class="form-modern" id="formUsuario">
-                        <div class="form-grid grid-4">
+                    <form class="form-modern" id="formUsuario" method="POST" action="ruta_al_backend.php">
+                        <div class="form-grid grid-3">
 
-                            <!-- CUIT -->
+                            <!-- Usuario -->
                             <div class="input-group">
-                                <label for="cuit">CUIT</label>
+                                <label for="usuario">Usuario</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">fingerprint</span>
-                                    <input type="number" id="cuit" name="cuit" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" placeholder="20123456781" required>
+                                    <span class="material-icons">person</span>
+                                    <input type="text" id="usuario" name="usuario" placeholder="usuario123" required>
                                 </div>
                             </div>
 
                             <!-- Contraseña -->
                             <div class="input-group">
-                                <label for="contraseña">Contraseña
-                                </label>
+                                <label for="contrasena">Contraseña</label>
                                 <div class="input-icon">
                                     <span class="material-icons">lock</span>
-                                    <input type="number" id="contraseña" name="contraseña" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" placeholder="20123456781" required>
+                                    <input type="password" id="contrasena" name="contrasena" placeholder="********" required>
                                 </div>
                             </div>
 
@@ -149,19 +148,29 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                         <option value="sve">SVE</option>
                                         <option value="cooperativa">Cooperativa</option>
                                         <option value="productor">Productor</option>
+                                        <option value="ingeniero">Ingeniero</option>
                                     </select>
                                 </div>
                             </div>
 
                             <!-- Permiso -->
                             <div class="input-group">
-                                <label for="permiso">Permiso</label>
+                                <label for="permiso_ingreso">Permiso</label>
                                 <div class="input-icon">
                                     <span class="material-icons">check_circle</span>
-                                    <select id="permiso" name="permiso" required>
+                                    <select id="permiso_ingreso" name="permiso_ingreso" required>
                                         <option value="Habilitado">Habilitado</option>
                                         <option value="Deshabilitado">Deshabilitado</option>
                                     </select>
+                                </div>
+                            </div>
+
+                            <!-- ID real -->
+                            <div class="input-group">
+                                <label for="id_real">ID Real (según base del cliente)</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">badge</span>
+                                    <input type="number" id="id_real" name="id_real" placeholder="1001" required>
                                 </div>
                             </div>
 
@@ -170,23 +179,20 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="nombre">Nombre completo</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
-                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required
-                                        minlength="2" maxlength="60" aria-required="true">
+                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required>
                                 </div>
-                                <small class="error-message" aria-live="polite"></small>
                             </div>
 
                             <!-- Correo electrónico -->
                             <div class="input-group">
-                                <label for="email">Correo electrónico</label>
+                                <label for="correo">Correo electrónico</label>
                                 <div class="input-icon">
                                     <span class="material-icons">mail</span>
-                                    <input type="email" id="email" name="email" placeholder="usuario@correo.com" required aria-required="true">
+                                    <input type="email" id="correo" name="correo" placeholder="usuario@correo.com" required>
                                 </div>
-                                <small class="error-message" aria-live="polite"></small>
                             </div>
 
-                            <!-- Teléfono OK-->
+                            <!-- Teléfono -->
                             <div class="input-group">
                                 <label for="telefono">Teléfono</label>
                                 <div class="input-icon">
@@ -195,59 +201,24 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 </div>
                             </div>
 
-                            <!-- id_cooperativa OK-->
-                            <div class="input-group">
-                                <label for="id_cooperativa">ID Cooperativa</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">groups</span>
-                                    <input type="number" id="id_cooperativa" name="id_cooperativa" placeholder="1234" required>
-                                </div>
-                            </div>
-
-                            <!-- id_productor OK-->
-                            <div class="input-group">
-                                <label for="id_productor">ID Productor</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">agriculture</span>
-                                    <input type="tel" id="id_productor" name="id_productor" placeholder="1234" required>
-                                </div>
-                            </div>
-
-                            <!-- direccion OK-->
+                            <!-- Dirección -->
                             <div class="input-group">
                                 <label for="direccion">Dirección</label>
                                 <div class="input-icon">
                                     <span class="material-icons">location_on</span>
-                                    <input type="text" id="direccion" name="direccion" placeholder="San Martín Sur 25 Godoy Cruz" required>
+                                    <input type="text" id="direccion" name="direccion" placeholder="San Martín Sur 25" required>
                                 </div>
                             </div>
 
-                            <!-- id_finca_asociada OK-->
-                            <div class="input-group">
-                                <label for="finca_asociada">Finca Asociada</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">yard</span>
-                                    <input type="number" id="finca_asociada" name="finca_asociada" placeholder="1234">
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <!-- observaciones OK-->
-                        <div class="input-group">
-                            <label for="observaciones">Observaciones</label>
-                            <div class="input-icon">
-                                <span class="material-icons">notes</span>
-                                <input type="text" id="observaciones" name="observaciones" placeholder="1234">
-                            </div>
                         </div>
 
                         <!-- Botones -->
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="submit">Enviar</button>
+                            <button class="btn btn-aceptar" type="submit">Crear usuario</button>
                         </div>
                     </form>
                 </div>
+
 
                 <!-- Tarjeta de buscador -->
                 <div class="card">
