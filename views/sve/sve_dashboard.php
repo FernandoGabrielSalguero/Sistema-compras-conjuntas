@@ -32,7 +32,6 @@ $correo = $_SESSION['correo'] ?? 'Sin correo';
 $usuario = $_SESSION['usuario'] ?? 'Sin usuario';
 $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
-echo '<pre>'; print_r($_SESSION); echo '</pre>';
 
 ?>
 
@@ -154,6 +153,10 @@ echo '<pre>'; print_r($_SESSION); echo '</pre>';
     </div>
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
+
+    <script>
+    console.log(<?php echo json_encode($_SESSION); ?>);
+</script>
 </body>
 
 </html>
