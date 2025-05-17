@@ -204,12 +204,23 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                 <!-- Tarjeta de buscador -->
                 <div class="card">
-                    <h2>Busca un usuario por su CUIT</h2>
+                    <h2>Busca usuarios</h2>
+
+                    <!-- Buscar por CUIT -->
                     <div class="input-group">
                         <label for="buscarCuit">CUIT</label>
                         <div class="input-icon">
                             <span class="material-icons">fingerprint</span>
                             <input type="text" id="buscarCuit" name="buscarCuit" placeholder="20123456781">
+                        </div>
+                    </div>
+
+                    <!-- Buscar por Nombre -->
+                    <div class="input-group">
+                        <label for="buscarNombre">Nombre</label>
+                        <div class="input-icon">
+                            <span class="material-icons">person</span>
+                            <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
                         </div>
                     </div>
                 </div>
@@ -242,7 +253,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     </div>
                 </div>
 
-                <!-- Modal -->
                 <!-- Modal -->
                 <div id="modal" class="modal hidden">
                     <div class="modal-content">
@@ -547,6 +557,22 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         function cerrarModalEditar() {
             document.getElementById('modal').classList.add('hidden');
             document.getElementById('formEditarUsuario').reset();
+        }
+
+        // buscar tipeando nombre / cuit
+        document.getElementById('buscarCuit').addEventListener('input', cargarUsuarios);
+        document.getElementById('buscarNombre').addEventListener('input', cargarUsuarios);
+
+        function cargarUsuarios() {
+            const cuit = document.getElementById('buscarCuit').value.trim();
+            const nombre = document.getElementById('buscarNombre').value.trim();
+
+            fetch(`/controllers/sve_altaUsuariosTabla.php?cuit=${encodeURIComponent(cuit)}&nombre=${encodeURIComponent(nombre)}`)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('tablaUsuarios').innerHTML = html;
+                })
+                .catch(err => console.error('❌ Error al cargar usuarios:', err));
         }
     </script>
 
