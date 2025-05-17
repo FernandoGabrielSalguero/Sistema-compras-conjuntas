@@ -126,7 +126,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="usuario">Usuario</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
-                                    <input type="text" id="usuario" name="usuario" placeholder="usuario123" required>
+                                    <input type="text" id="usuario" name="usuario" placeholder="Asigna un usuario" required>
                                 </div>
                             </div>
 
@@ -135,7 +135,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="contrasena">Contraseña</label>
                                 <div class="input-icon">
                                     <span class="material-icons">lock</span>
-                                    <input type="password" id="contrasena" name="contrasena" placeholder="********" required>
+                                    <input type="password" id="contrasena" name="contrasena" placeholder="Asigna una contraseña" required>
                                     <span class="material-icons toggle-password" onclick="togglePassword()">visibility</span>
                                 </div>
                             </div>
@@ -172,6 +172,15 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <div class="input-icon">
                                     <span class="material-icons">badge</span>
                                     <input type="number" id="id_real" name="id_real" placeholder="1001" required>
+                                </div>
+                            </div>
+                            
+                            <!-- Cuit -->
+                            <div class="input-group">
+                                <label for="cuit">CUIT</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">fingerprint</span>
+                                    <input type="number" id="cuit" name="cuit" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" placeholder="20123456781" required>
                                 </div>
                             </div>
 
