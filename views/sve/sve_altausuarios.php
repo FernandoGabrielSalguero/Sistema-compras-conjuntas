@@ -452,6 +452,62 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     showAlert('error', 'Error inesperado al intentar actualizar la contraseña.');
                 });
         }
+
+        // funciones para el modal
+        function abrirModalEditar(id) {
+    fetch(`/controllers/sve_modificarUsuarioController.php?id=${id}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const u = data.user;
+                document.getElementById('edit_id').value = u.id || '';
+                document.getElementById('edit_usuario').value = u.usuario || '';
+                document.getElementById('edit_rol').value = u.rol || '';
+                document.getElementById('edit_permiso').value = u.permiso_ingreso || '';
+                document.getElementById('edit_cuit').value = u.cuit || '';
+                document.getElementById('edit_id_real').value = u.id_real || '';
+                document.getElementById('edit_nombre').value = u.nombre || '';
+                document.getElementById('edit_direccion').value = u.direccion || '';
+                document.getElementById('edit_telefono').value = u.telefono || '';
+                document.getElementById('edit_correo').value = u.correo || '';
+
+                document.getElementById('modal').classList.remove('hidden');
+            } else {
+                showAlert('error', data.message);
+            }
+        })
+        .catch(error => {
+            console.error("❌ Error al obtener usuario:", error);
+            showAlert('error', 'No se pudo cargar el usuario.');
+        });
+}
+
+document.getElementById('formEditarUsuario').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch('/controllers/sve_actualizarUsuarioController.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message);
+            document.getElementById('modal').classList.add('hidden');
+            cargarUsuarios(); // 🔁 recarga la tabla
+        } else {
+            showAlert('error', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('❌ Error al actualizar usuario:', error);
+        showAlert('error', 'No se pudo guardar los cambios.');
+    });
+});
+
+
     </script>
 
     <!-- Modal para restablecer contraseña -->
