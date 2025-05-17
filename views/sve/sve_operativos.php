@@ -163,7 +163,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="fecha_inicio">Fecha de inicio</label>
                                 <div class="input-icon">
                                     <span class="material-icons">event</span>
-                                    <input type="datetime-local" id="fecha_inicio" name="fecha_inicio" required>
+                                    <input type="date" id="fecha_inicio" name="fecha_inicio" required>
                                 </div>
                             </div>
 
@@ -172,7 +172,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="fecha_cierre">Fecha de cierre</label>
                                 <div class="input-icon">
                                     <span class="material-icons">event</span>
-                                    <input type="datetime-local" id="fecha_cierre" name="fecha_cierre" required>
+                                    <input type="date" id="fecha_cierre" name="fecha_cierre" required>
                                 </div>
                             </div>
 
@@ -294,8 +294,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     row.innerHTML = `
                 <td>${op.id}</td>
                 <td>${op.nombre}</td>
-                <td>${op.fecha_inicio}</td>
-                <td>${op.fecha_cierre}</td>
+                <td>${formatearFechaArg(op.fecha_inicio)}</td>
+                <td>${formatearFechaArg(op.fecha_cierre)}</td>
                 <td>${op.estado}</td>
                 <td>${op.created_at}</td>
                 <td>
@@ -412,6 +412,12 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
         // Inicial
         document.addEventListener('DOMContentLoaded', cargarOperativos);
+
+        // mostramos la fecha argentina
+        function formatearFechaArg(fechaISO) {
+    const [a, m, d] = fechaISO.split('-');
+    return `${d}/${m}/${a}`;
+}
     </script>
 
 
