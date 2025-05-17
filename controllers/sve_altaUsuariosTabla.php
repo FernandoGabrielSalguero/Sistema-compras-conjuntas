@@ -38,24 +38,25 @@ try {
 foreach ($usuarios as $usuario) {
     $permisoClass = $usuario['permiso_ingreso'] === 'Habilitado' ? 'success' : 'danger';
 
-    echo "<tr>
-<td>" . esc($usuario['id']) . "</td>
-<td>" . esc($usuario['usuario']) . "</td>
-<td>" . esc($usuario['rol']) . "</td>
-<td><span class='badge {$permisoClass}'>" . esc($usuario['permiso_ingreso']) . "</span></td>
-<td>" . esc($usuario['cuit']) . "</td>
-<td>" . esc($usuario['id_real']) . "</td>
-<td>" . esc($usuario['nombre']) . "</td>
-<td>" . esc($usuario['direccion']) . "</td>
-<td>" . esc($usuario['telefono']) . "</td>
-<td>" . esc($usuario['correo']) . "</td>
-        <td>
-            <button class='btn btn-info btn-sm' onclick='abrirModalEditar(" . $usuario['id'] . ")'>
-                <span class='material-icons'>edit</span>
-            </button>
-            <button class='btn btn-cancelar btn-sm' onclick='verContrasena(" . $usuario['id'] . ")'>
-               <span class='material-icons'>vpn_key</span>
-            </button>
-        </td>
-    </tr>";
+echo "<tr>
+    <td>" . esc($usuario['id']) . "</td>
+    <td>" . esc($usuario['usuario']) . "</td>
+    <td>" . esc($usuario['rol']) . "</td>
+    <td><span class='badge {$permisoClass}'>" . esc($usuario['permiso_ingreso']) . "</span></td>
+    <td>" . esc($usuario['cuit']) . "</td>
+    <td>" . esc($usuario['id_real']) . "</td>
+    <td>" . esc($usuario['nombre']) . "</td>
+    <td>" . esc($usuario['direccion']) . "</td>
+    <td>" . esc($usuario['telefono']) . "</td>
+    <td>" . esc($usuario['correo']) . "</td>
+    <td>
+        <button class='btn-icon' onclick='abrirModalEditar(" . $usuario['id'] . ")'>
+            <i class='material-icons'>edit</i>
+        </button>
+        <button class='btn-icon' onclick='verContrasena(" . $usuario['id'] . ")'>
+            <i class='material-icons'>vpn_key</i>
+        </button>
+    </td>
+</tr>";
+
 }
