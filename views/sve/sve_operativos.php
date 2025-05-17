@@ -236,7 +236,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="edit_fecha_inicio">Fecha de inicio</label>
                                 <div class="input-icon">
                                     <span class="material-icons">event</span>
-                                    <input type="datetime-local" name="fecha_inicio" id="edit_fecha_inicio" required>
+                                    <input type="date" name="fecha_inicio" id="edit_fecha_inicio" required>
                                 </div>
                             </div>
 
@@ -244,7 +244,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="edit_fecha_cierre">Fecha de cierre</label>
                                 <div class="input-icon">
                                     <span class="material-icons">event</span>
-                                    <input type="datetime-local" name="fecha_cierre" id="edit_fecha_cierre" required>
+                                    <input type="date" name="fecha_cierre" id="edit_fecha_cierre" required>
                                 </div>
                             </div>
 
