@@ -243,73 +243,110 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 </div>
 
                 <!-- Modal -->
+                <!-- Modal -->
                 <div id="modal" class="modal hidden">
                     <div class="modal-content">
                         <h3>Editar Usuario</h3>
-                        <form id="formEditarUsuario">
+
+                        <!-- Botón cerrar arriba a la derecha -->
+                        <button class="btn-icon" onclick="cerrarModalEditar()" style="position:absolute; top:10px; right:10px;">
+                            <span class="material-icons">close</span>
+                        </button>
+
+                        <form class="form-modern" id="formEditarUsuario">
                             <input type="hidden" name="id" id="edit_id">
 
                             <div class="form-grid grid-2">
                                 <div class="input-group">
                                     <label for="edit_usuario">Usuario</label>
-                                    <input type="text" name="usuario" id="edit_usuario" required>
+                                    <div class="input-icon">
+                                        <span class="material-icons">person</span>
+                                        <input type="text" name="usuario" id="edit_usuario" required>
+                                    </div>
                                 </div>
 
                                 <div class="input-group">
                                     <label for="edit_rol">Rol</label>
-                                    <select name="rol" id="edit_rol" required>
-                                        <option value="sve">SVE</option>
-                                        <option value="cooperativa">Cooperativa</option>
-                                        <option value="productor">Productor</option>
-                                        <option value="ingeniero">Ingeniero</option>
-                                    </select>
+                                    <div class="input-icon">
+                                        <span class="material-icons">supervisor_account</span>
+                                        <select name="rol" id="edit_rol" required>
+                                            <option value="sve">SVE</option>
+                                            <option value="cooperativa">Cooperativa</option>
+                                            <option value="productor">Productor</option>
+                                            <option value="ingeniero">Ingeniero</option>
+                                        </select>
+                                    </div>
                                 </div>
 
                                 <div class="input-group">
                                     <label for="edit_permiso">Permiso</label>
-                                    <select name="permiso_ingreso" id="edit_permiso" required>
-                                        <option value="Habilitado">Habilitado</option>
-                                        <option value="Deshabilitado">Deshabilitado</option>
-                                    </select>
+                                    <div class="input-icon">
+                                        <span class="material-icons">check_circle</span>
+                                        <select name="permiso_ingreso" id="edit_permiso" required>
+                                            <option value="Habilitado">Habilitado</option>
+                                            <option value="Deshabilitado">Deshabilitado</option>
+                                        </select>
+                                    </div>
                                 </div>
 
                                 <div class="input-group">
                                     <label for="edit_cuit">CUIT</label>
-                                    <input type="text" name="cuit" id="edit_cuit" required>
+                                    <div class="input-icon">
+                                        <span class="material-icons">fingerprint</span>
+                                        <input type="text" name="cuit" id="edit_cuit" inputmode="numeric" maxlength="11"
+                                            oninput="this.value = this.value.replace(/\\D/g, '')" required>
+                                    </div>
                                 </div>
 
                                 <div class="input-group">
                                     <label for="edit_id_real">ID Real</label>
-                                    <input type="number" name="id_real" id="edit_id_real" required>
+                                    <div class="input-icon">
+                                        <span class="material-icons">badge</span>
+                                        <input type="number" name="id_real" id="edit_id_real" required>
+                                    </div>
                                 </div>
 
                                 <div class="input-group">
                                     <label for="edit_nombre">Nombre</label>
-                                    <input type="text" name="nombre" id="edit_nombre">
+                                    <div class="input-icon">
+                                        <span class="material-icons">person</span>
+                                        <input type="text" name="nombre" id="edit_nombre">
+                                    </div>
                                 </div>
 
                                 <div class="input-group">
                                     <label for="edit_direccion">Dirección</label>
-                                    <input type="text" name="direccion" id="edit_direccion">
+                                    <div class="input-icon">
+                                        <span class="material-icons">location_on</span>
+                                        <input type="text" name="direccion" id="edit_direccion">
+                                    </div>
                                 </div>
 
                                 <div class="input-group">
                                     <label for="edit_telefono">Teléfono</label>
-                                    <input type="text" name="telefono" id="edit_telefono">
+                                    <div class="input-icon">
+                                        <span class="material-icons">phone</span>
+                                        <input type="text" name="telefono" id="edit_telefono">
+                                    </div>
                                 </div>
 
                                 <div class="input-group">
                                     <label for="edit_correo">Correo</label>
-                                    <input type="email" name="correo" id="edit_correo">
+                                    <div class="input-icon">
+                                        <span class="material-icons">mail</span>
+                                        <input type="email" name="correo" id="edit_correo">
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="form-buttons">
                                 <button class="btn btn-aceptar" type="submit">Guardar cambios</button>
+                                <button class="btn btn-cancelar" type="button" onclick="cerrarModalEditar()">Cancelar</button>
                             </div>
                         </form>
                     </div>
                 </div>
+
 
                 <!-- Alert -->
                 <div class="alert-container" id="alertContainer"></div>
@@ -455,59 +492,62 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
         // funciones para el modal
         function abrirModalEditar(id) {
-    fetch(`/controllers/sve_modificarUsuarioController.php?id=${id}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const u = data.user;
-                document.getElementById('edit_id').value = u.id || '';
-                document.getElementById('edit_usuario').value = u.usuario || '';
-                document.getElementById('edit_rol').value = u.rol || '';
-                document.getElementById('edit_permiso').value = u.permiso_ingreso || '';
-                document.getElementById('edit_cuit').value = u.cuit || '';
-                document.getElementById('edit_id_real').value = u.id_real || '';
-                document.getElementById('edit_nombre').value = u.nombre || '';
-                document.getElementById('edit_direccion').value = u.direccion || '';
-                document.getElementById('edit_telefono').value = u.telefono || '';
-                document.getElementById('edit_correo').value = u.correo || '';
+            fetch(`/controllers/sve_modificarUsuarioController.php?id=${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const u = data.user;
+                        document.getElementById('edit_id').value = u.id || '';
+                        document.getElementById('edit_usuario').value = u.usuario || '';
+                        document.getElementById('edit_rol').value = u.rol || '';
+                        document.getElementById('edit_permiso').value = u.permiso_ingreso || '';
+                        document.getElementById('edit_cuit').value = u.cuit || '';
+                        document.getElementById('edit_id_real').value = u.id_real || '';
+                        document.getElementById('edit_nombre').value = u.nombre || '';
+                        document.getElementById('edit_direccion').value = u.direccion || '';
+                        document.getElementById('edit_telefono').value = u.telefono || '';
+                        document.getElementById('edit_correo').value = u.correo || '';
 
-                document.getElementById('modal').classList.remove('hidden');
-            } else {
-                showAlert('error', data.message);
-            }
-        })
-        .catch(error => {
-            console.error("❌ Error al obtener usuario:", error);
-            showAlert('error', 'No se pudo cargar el usuario.');
-        });
-}
-
-document.getElementById('formEditarUsuario').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const formData = new FormData(this);
-
-    fetch('/controllers/sve_actualizarUsuarioController.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            showAlert('success', data.message);
-            document.getElementById('modal').classList.add('hidden');
-            cargarUsuarios(); // 🔁 recarga la tabla
-        } else {
-            showAlert('error', data.message);
+                        document.getElementById('modal').classList.remove('hidden');
+                    } else {
+                        showAlert('error', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("❌ Error al obtener usuario:", error);
+                    showAlert('error', 'No se pudo cargar el usuario.');
+                });
         }
-    })
-    .catch(error => {
-        console.error('❌ Error al actualizar usuario:', error);
-        showAlert('error', 'No se pudo guardar los cambios.');
-    });
-});
 
+        document.getElementById('formEditarUsuario').addEventListener('submit', function(e) {
+            e.preventDefault();
 
+            const formData = new FormData(this);
+
+            fetch('/controllers/sve_actualizarUsuarioController.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('success', data.message);
+                        document.getElementById('modal').classList.add('hidden');
+                        cargarUsuarios(); // 🔁 recarga la tabla
+                    } else {
+                        showAlert('error', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error al actualizar usuario:', error);
+                    showAlert('error', 'No se pudo guardar los cambios.');
+                });
+        });
+
+        function cerrarModalEditar() {
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('formEditarUsuario').reset();
+        }
     </script>
 
     <!-- Modal para restablecer contraseña -->
