@@ -185,7 +185,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         // cargar la tabla
         document.addEventListener('DOMContentLoaded', () => {
-            fetch('/controllers/tablaAsociacionesController.php')
+            fetch('/controllers/sve_asociarProductoresController.php')
                 .then(res => res.text())
                 .then(html => {
                     document.getElementById('tablaAsociaciones').innerHTML = html;
