@@ -171,16 +171,16 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="id_real">ID Real</label>
                                 <div class="input-icon">
                                     <span class="material-icons">badge</span>
-                                    <input type="number" id="id_real" name="id_real" placeholder="1001" required>
+                                    <input type="number" id="id_real" name="id_real" placeholder="Coloca el ID del usuario" required>
                                 </div>
                             </div>
-                            
+
                             <!-- Cuit -->
                             <div class="input-group">
                                 <label for="cuit">CUIT</label>
                                 <div class="input-icon">
                                     <span class="material-icons">fingerprint</span>
-                                    <input type="number" id="cuit" name="cuit" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" placeholder="20123456781" required>
+                                    <input type="number" id="cuit" name="cuit" pattern="[0-9]{2}-[0-9]{8}-[0-9]{1}" placeholder="Coloca el Cuit del usuario" required>
                                 </div>
                             </div>
 
