@@ -30,10 +30,10 @@ class OperativosModel {
 } 
 
 
-// ✅ CONTROLADOR: controllers/sve_operativos.php
+// ✅ CONTROLADOR: controllers/sve_operativosController.php
 
 require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../models/sve_operativos.php';
+require_once __DIR__ . '/../models/sve_operativosModel.php';
 header('Content-Type: application/json');
 
 $model = new OperativosModel($pdo);

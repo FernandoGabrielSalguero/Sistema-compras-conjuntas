@@ -282,7 +282,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             tabla.innerHTML = '<tr><td colspan="7">Cargando...</td></tr>';
 
             try {
-                const res = await fetch('/controllers/sve_operativos.php');
+                const res = await fetch('/controllers/sve_operativosController.php');
                 const data = await res.json();
 
                 if (!data.success) throw new Error(data.message || 'Error al obtener operativos.');
@@ -318,7 +318,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             const formData = new FormData(this);
 
             try {
-                const res = await fetch('/controllers/sve_operativos.php', {
+                const res = await fetch('/controllers/sve_operativosController.php', {
                     method: 'POST',
                     body: formData
                 });
@@ -341,7 +341,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         // Abrir modal con datos
         async function editarOperativo(id) {
             try {
-                const res = await fetch(`/controllers/sve_operativos.php?id=${id}`);
+                const res = await fetch(`/controllers/sve_operativosController.php?id=${id}`);
                 const result = await res.json();
 
                 if (!result.success) {
@@ -371,7 +371,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             const formData = new FormData(this);
 
             try {
-                const res = await fetch('/controllers/sve_operativos.php', {
+                const res = await fetch('/controllers/sve_operativosController.php', {
                     method: 'POST',
                     body: formData
                 });
