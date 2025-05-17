@@ -42,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['telefono'] = $user['telefono'];
         $_SESSION['direccion'] = $user['direccion'];
         $_SESSION['id_real'] = $user['id_real'];
+        $_SESSION['cuit'] = $user['cuit'];
         $_SESSION['LAST_ACTIVITY'] = time();
 
         switch ($user['rol']) {
@@ -179,6 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script>
+        // visualizador de contraseña
         const togglePassword = document.querySelector('.toggle-password');
         const passwordField = document.getElementById('contrasena');
 
@@ -186,6 +188,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordField.setAttribute('type', type);
         });
+
+        // imprirmir los datos de la sesion en la consola
+        <?php if (!empty($_SESSION)): ?>
+            const sessionData = <?= json_encode($_SESSION, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+            console.log("Datos de sesión:", sessionData);
+        <?php endif; ?>
     </script>
 
     <!-- Spinner Global -->
