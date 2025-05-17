@@ -409,6 +409,17 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             document.getElementById('modalResetPass').classList.add('hidden');
         }
 
+
+        // mostrar contraseña del modal
+        function togglePasswordReset() {
+            const input = document.getElementById('nuevaContrasena');
+            const icon = input.nextElementSibling;
+            const isHidden = input.type === 'password';
+
+            input.type = isHidden ? 'text' : 'password';
+            icon.textContent = isHidden ? 'visibility_off' : 'visibility';
+        }
+
         function guardarNuevaContrasena() {
             const nuevaPass = document.getElementById('nuevaContrasena').value;
 
