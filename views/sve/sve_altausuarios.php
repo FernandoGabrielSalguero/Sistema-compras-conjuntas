@@ -394,7 +394,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 const formData = new FormData(form);
 
                 try {
-                    const response = await fetch('/controllers/sve_altaUsuarios.php', {
+                    const response = await fetch('/controllers/sve_altaUsuariosController.php', {
                         method: 'POST',
                         body: formData
                     });
@@ -419,7 +419,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         // funcion para cargar la tabla de usuarios
         function cargarUsuarios() {
             const cuit = document.getElementById('buscarCuit')?.value || '';
-            const url = `/controllers/sve_altaUsuariosTabla.php?cuit=${encodeURIComponent(cuit)}`;
+            const url = `/controllers/sve_altaUsuariosTablaController.php?cuit=${encodeURIComponent(cuit)}`;
 
             fetch(url)
                 .then(response => response.text())
@@ -581,7 +581,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             const cuit = document.getElementById('buscarCuit').value.trim();
             const nombre = document.getElementById('buscarNombre').value.trim();
 
-            fetch(`/controllers/sve_altaUsuariosTabla.php?cuit=${encodeURIComponent(cuit)}&nombre=${encodeURIComponent(nombre)}`)
+            fetch(`/controllers/sve_altaUsuariosTablaController.php?cuit=${encodeURIComponent(cuit)}&nombre=${encodeURIComponent(nombre)}`)
                 .then(res => res.text())
                 .then(html => {
                     document.getElementById('tablaUsuarios').innerHTML = html;
