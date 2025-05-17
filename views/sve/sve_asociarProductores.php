@@ -195,6 +195,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     document.getElementById('tablaAsociaciones').innerHTML = "<tr><td colspan='4'>Error al cargar datos</td></tr>";
                 });
         });
+
+        async function cargarProductores() {
+            const tabla = document.getElementById('tablaProductos');
+            try {
+                const res = await fetch('/controllers/sve_asociarProductoresController.php');
+                const html = await res.text();
+                tabla.innerHTML = html;
+            } catch (err) {
+                tabla.innerHTML = '<tr><td colspan="4">Error al cargar datos.</td></tr>';
+                console.error('Error al cargar productores:', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarProductores);
     </script>
 
 
