@@ -10,35 +10,43 @@ function esc($value)
 }
 
 $cuit = $_GET['cuit'] ?? '';
+$nombre = $_GET['nombre'] ?? '';
 
-try {
-    $sql = "
-        SELECT u.id, u.usuario, u.rol, u.permiso_ingreso, u.cuit, u.id_real,
-               i.nombre, i.direccion, i.telefono, i.correo
-        FROM usuarios u
-        LEFT JOIN usuarios_info i ON u.id = i.usuario_id
-    ";
+$where = [];
+$params = [];
 
-    if ($cuit !== '') {
-        $sql .= " WHERE u.cuit LIKE :cuit";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute(['cuit' => "%{$cuit}%"]);
-    } else {
-        $sql .= " ORDER BY u.id DESC";
-        $stmt = $pdo->query($sql);
-    }
-
-    $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo "<tr><td colspan='10'>Error al cargar usuarios.</td></tr>";
-    exit;
+if ($cuit !== '') {
+    $where[] = "u.cuit LIKE ?";
+    $params[] = "%$cuit%";
 }
+
+if ($nombre !== '') {
+    $where[] = "i.nombre LIKE ?";
+    $params[] = "%$nombre%";
+}
+
+$sql = "
+    SELECT u.id, u.usuario, u.rol, u.permiso_ingreso, u.cuit, u.id_real,
+           i.nombre, i.direccion, i.telefono, i.correo
+    FROM usuarios u
+    LEFT JOIN usuarios_info i ON u.id = i.usuario_id
+";
+
+if (!empty($where)) {
+    $sql .= " WHERE " . implode(" AND ", $where);
+}
+
+$sql .= " ORDER BY u.id DESC";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 
 foreach ($usuarios as $usuario) {
     $permisoClass = $usuario['permiso_ingreso'] === 'Habilitado' ? 'success' : 'danger';
 
-echo "<tr>
+    echo "<tr>
     <td>" . esc($usuario['id']) . "</td>
     <td>" . esc($usuario['usuario']) . "</td>
     <td>" . esc($usuario['rol']) . "</td>
@@ -58,5 +66,4 @@ echo "<tr>
         </button>
     </td>
 </tr>";
-
 }
