@@ -416,7 +416,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
 
     <!-- 🛠️ SCRIPTS -->
-    <script src="/assets/js/sve_operativo.js" defer></script>
+    <!-- <script src="/assets/js/sve_operativo.js" defer></script> -->
 
     <style>
         @keyframes spin {
