@@ -20,16 +20,19 @@ class UserModel {
         }
 
         // Insertar en tabla usuarios
-        $stmt = $this->db->prepare("
-            INSERT INTO usuarios (usuario, contrasena, rol, permiso_ingreso)
-            VALUES (:usuario, :contrasena, :rol, :permiso_ingreso)
-        ");
-        $stmt->execute([
-            'usuario' => $data['usuario'],
-            'contrasena' => password_hash($data['contrasena'], PASSWORD_DEFAULT),
-            'rol' => $data['rol'],
-            'permiso_ingreso' => $data['permiso_ingreso'],
-        ]);
+$stmt = $this->db->prepare("
+    INSERT INTO usuarios (usuario, contrasena, rol, permiso_ingreso, cuit, id_real)
+    VALUES (:usuario, :contrasena, :rol, :permiso_ingreso, :cuit, :id_real)
+");
+$stmt->execute([
+    'usuario' => $data['usuario'],
+    'contrasena' => password_hash($data['contrasena'], PASSWORD_DEFAULT),
+    'rol' => $data['rol'],
+    'permiso_ingreso' => $data['permiso_ingreso'],
+    'cuit' => $data['cuit'],
+    'id_real' => $data['id_real'],
+]);
+
 
         // Obtener el ID generado
         $usuarioId = $this->db->lastInsertId();
