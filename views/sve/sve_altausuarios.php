@@ -325,7 +325,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     if (result.success) {
                         form.reset();
                         showAlert('success', result.message); // ✅ alerta verde
-                        cargarUsuarios(); // 👈 actualiza la tabla
+                        // cargarUsuarios(); // 👈 actualiza la tabla
                     } else {
                         showAlert('error', result.message); // ❌ alerta roja
                     }
