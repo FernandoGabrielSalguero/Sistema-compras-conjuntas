@@ -30,7 +30,7 @@ class OperativosModel {
 } 
 
 
-// ✅ CONTROLADOR: controllers/OperativosController.php
+// ✅ CONTROLADOR: controllers/sve_operativos.php
 
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/sve_operativos.php';
