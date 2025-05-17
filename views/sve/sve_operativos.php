@@ -300,6 +300,10 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <td>${op.created_at}</td>
                 <td>
                     <button class="btn btn-info" onclick="editarOperativo(${op.id})">Editar</button>
+
+                    <button class='btn btn-info' onclick='editarOperativo(${op.id})")'>
+                        <i class='material-icons'>edit</i>
+                    </button>
                 </td>
             `;
                     tabla.appendChild(row);
