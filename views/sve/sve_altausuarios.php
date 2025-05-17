@@ -388,7 +388,78 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
             icon.textContent = isPassword ? 'visibility_off' : 'visibility';
         }
+
+        // funcion restablecer contraseña
+        let usuarioResetID = null;
+
+        function verContrasena(id) {
+            usuarioResetID = id;
+
+            // Buscamos el nombre de usuario de la fila
+            const fila = document.querySelector(`button[onclick="verContrasena(${id})"]`).closest('tr');
+            const nombreUsuario = fila.children[1]?.textContent || 'Desconocido';
+            document.getElementById('usuarioResetLabel').textContent = nombreUsuario;
+
+            document.getElementById('modalResetPass').classList.remove('hidden');
+        }
+
+        function cerrarModalResetPass() {
+            usuarioResetID = null;
+            document.getElementById('nuevaContrasena').value = '';
+            document.getElementById('modalResetPass').classList.add('hidden');
+        }
+
+        function guardarNuevaContrasena() {
+            const nuevaPass = document.getElementById('nuevaContrasena').value;
+
+            if (!nuevaPass || !usuarioResetID) {
+                alert("La contraseña no puede estar vacía.");
+                return;
+            }
+
+            fetch('/controllers/restablecerContrasenaController.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: usuarioResetID,
+                        nueva_contrasena: nuevaPass
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('success', data.message);
+                        cerrarModalResetPass();
+                    } else {
+                        showAlert('error', data.message);
+                    }
+                })
+                .catch(err => {
+                    console.error('❌ Error al actualizar contraseña:', err);
+                    showAlert('error', 'Error inesperado al intentar actualizar la contraseña.');
+                });
+        }
     </script>
+
+    <!-- Modal para restablecer contraseña -->
+    <div id="modalResetPass" class="modal hidden">
+        <div class="modal-content">
+            <h3>Restablecer contraseña</h3>
+            <p>Estás por modificar la contraseña del usuario <span id="usuarioResetLabel" style="font-weight:bold;"></span>.</p>
+
+            <div class="input-group">
+                <label for="nuevaContrasena">Nueva contraseña</label>
+                <input type="password" id="nuevaContrasena" placeholder="Ingresá la nueva contraseña" required>
+            </div>
+
+            <div class="form-buttons">
+                <button class="btn btn-aceptar" onclick="guardarNuevaContrasena()">Guardar</button>
+                <button class="btn btn-cancelar" onclick="cerrarModalResetPass()">Cancelar</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>

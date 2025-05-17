@@ -53,6 +53,9 @@ foreach ($usuarios as $usuario) {
             <button class='btn btn-info btn-sm' onclick='abrirModalEditar(" . $usuario['id'] . ")'>
                 <span class='material-icons'>edit</span>
             </button>
+            <button class='btn btn-warning btn-sm' onclick='verContrasena(" . $usuario['id'] . ")'>
+               <span class='material-icons'>vpn_key</span>
+            </button>
         </td>
     </tr>";
 }
