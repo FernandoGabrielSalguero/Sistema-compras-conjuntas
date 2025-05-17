@@ -222,15 +222,16 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>CUIT</th>
+                                    <th>ID</th>
+                                    <th>Usuario</th>
                                     <th>Rol</th>
                                     <th>Permiso</th>
+                                    <th>CUIT</th>
+                                    <th>ID Real</th>
                                     <th>Nombre</th>
-                                    <th>Correo</th>
+                                    <th>Dirección</th>
                                     <th>Teléfono</th>
-                                    <th>ID Cooperativa</th>
-                                    <th>ID Productor</th>
-                                    <th>Observaciones</th>
+                                    <th>Correo</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -248,53 +249,63 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         <form id="formEditarUsuario">
                             <input type="hidden" name="id" id="edit_id">
 
-                            <div class="input-group">
-                                <label for="edit_nombre">Nombre</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">person</span>
-                                    <input type="text" name="nombre" id="edit_nombre" required>
+                            <div class="form-grid grid-2">
+                                <div class="input-group">
+                                    <label for="edit_usuario">Usuario</label>
+                                    <input type="text" name="usuario" id="edit_usuario" required>
                                 </div>
-                            </div>
 
-                            <div class="input-group">
-                                <label for="edit_correo">Correo</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">mail</span>
-                                    <input type="email" name="correo" id="edit_correo" required>
+                                <div class="input-group">
+                                    <label for="edit_rol">Rol</label>
+                                    <select name="rol" id="edit_rol" required>
+                                        <option value="sve">SVE</option>
+                                        <option value="cooperativa">Cooperativa</option>
+                                        <option value="productor">Productor</option>
+                                        <option value="ingeniero">Ingeniero</option>
+                                    </select>
                                 </div>
-                            </div>
 
-                            <div class="input-group">
-                                <label for="edit_telefono">Teléfono</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">phone</span>
-                                    <input type="text" name="telefono" id="edit_telefono" required>
-                                </div>
-                            </div>
-
-                            <div class="input-group">
-                                <label for="edit_observaciones">Observaciones</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">notes</span>
-                                    <input type="text" name="observaciones" id="edit_observaciones">
-                                </div>
-                            </div>
-
-                            <div class="input-group">
-                                <label for="edit_permiso">Permiso</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">check_circle</span>
-                                    <select name="permiso" id="edit_permiso" required>
+                                <div class="input-group">
+                                    <label for="edit_permiso">Permiso</label>
+                                    <select name="permiso_ingreso" id="edit_permiso" required>
                                         <option value="Habilitado">Habilitado</option>
                                         <option value="Deshabilitado">Deshabilitado</option>
                                     </select>
                                 </div>
+
+                                <div class="input-group">
+                                    <label for="edit_cuit">CUIT</label>
+                                    <input type="text" name="cuit" id="edit_cuit" required>
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="edit_id_real">ID Real</label>
+                                    <input type="number" name="id_real" id="edit_id_real" required>
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="edit_nombre">Nombre</label>
+                                    <input type="text" name="nombre" id="edit_nombre">
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="edit_direccion">Dirección</label>
+                                    <input type="text" name="direccion" id="edit_direccion">
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="edit_telefono">Teléfono</label>
+                                    <input type="text" name="telefono" id="edit_telefono">
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="edit_correo">Correo</label>
+                                    <input type="email" name="correo" id="edit_correo">
+                                </div>
                             </div>
 
                             <div class="form-buttons">
-                                <div class="form-buttons">
-                                    <button class="btn btn-aceptar" type="submit">Enviar</button>
-                                </div>
+                                <button class="btn btn-aceptar" type="submit">Guardar cambios</button>
                             </div>
                         </form>
                     </div>
@@ -362,12 +373,12 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
         // cargar usuarios para mostrarlos en la tabla
         document.addEventListener('DOMContentLoaded', () => {
-    cargarUsuarios(); // 👈 carga al entrar
+            cargarUsuarios(); // 👈 carga al entrar
 
-    document.getElementById('buscarCuit').addEventListener('input', () => {
-        cargarUsuarios(); // 👈 filtra en tiempo real
-    });
-});
+            document.getElementById('buscarCuit').addEventListener('input', () => {
+                cargarUsuarios(); // 👈 filtra en tiempo real
+            });
+        });
 
 
         function togglePassword() {
