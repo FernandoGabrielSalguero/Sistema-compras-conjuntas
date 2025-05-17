@@ -4,6 +4,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../config.php';
+
 function esc($value)
 {
     return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
@@ -38,32 +39,36 @@ if (!empty($where)) {
 
 $sql .= " ORDER BY u.id DESC";
 
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+try {
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    echo "<tr><td colspan='11'>❌ Error al obtener datos: " . esc($e->getMessage()) . "</td></tr>";
+    exit;
+}
 
 foreach ($usuarios as $usuario) {
     $permisoClass = $usuario['permiso_ingreso'] === 'Habilitado' ? 'success' : 'danger';
 
     echo "<tr>
-    <td>" . esc($usuario['id']) . "</td>
-    <td>" . esc($usuario['usuario']) . "</td>
-    <td>" . esc($usuario['rol']) . "</td>
-    <td><span class='badge {$permisoClass}'>" . esc($usuario['permiso_ingreso']) . "</span></td>
-    <td>" . esc($usuario['cuit']) . "</td>
-    <td>" . esc($usuario['id_real']) . "</td>
-    <td>" . esc($usuario['nombre']) . "</td>
-    <td>" . esc($usuario['direccion']) . "</td>
-    <td>" . esc($usuario['telefono']) . "</td>
-    <td>" . esc($usuario['correo']) . "</td>
-    <td>
-        <button class='btn-icon' onclick='abrirModalEditar(" . $usuario['id'] . ")'>
-            <i class='material-icons'>edit</i>
-        </button>
-        <button class='btn-icon' onclick='verContrasena(" . $usuario['id'] . ")'>
-            <i class='material-icons'>vpn_key</i>
-        </button>
-    </td>
-</tr>";
+        <td>" . esc($usuario['id']) . "</td>
+        <td>" . esc($usuario['usuario']) . "</td>
+        <td>" . esc($usuario['rol']) . "</td>
+        <td><span class='badge {$permisoClass}'>" . esc($usuario['permiso_ingreso']) . "</span></td>
+        <td>" . esc($usuario['cuit']) . "</td>
+        <td>" . esc($usuario['id_real']) . "</td>
+        <td>" . esc($usuario['nombre']) . "</td>
+        <td>" . esc($usuario['direccion']) . "</td>
+        <td>" . esc($usuario['telefono']) . "</td>
+        <td>" . esc($usuario['correo']) . "</td>
+        <td>
+            <button class='btn-icon' onclick='abrirModalEditar(" . $usuario['id'] . ")'>
+                <i class='material-icons'>edit</i>
+            </button>
+            <button class='btn-icon' onclick='verContrasena(" . $usuario['id'] . ")'>
+                <i class='material-icons'>vpn_key</i>
+            </button>
+        </td>
+    </tr>";
 }
