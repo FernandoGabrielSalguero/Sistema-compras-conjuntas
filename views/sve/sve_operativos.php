@@ -17,7 +17,7 @@ if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 
 $_SESSION['LAST_ACTIVITY'] = time(); // Actualiza el tiempo de actividad
 
 // 🚧 Protección de acceso general
-if (!isset($_SESSION['cuit'])) {
+if (!isset($_SESSION['usuario'])) {
     die("⚠️ Acceso denegado. No has iniciado sesión.");
 }
 
@@ -26,15 +26,11 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'sve') {
     die("🚫 Acceso restringido: esta página es solo para usuarios SVE.");
 }
 
-require_once '../../middleware/authMiddleware.php';
-checkAccess('sve');
-
 // Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
-$cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
+$usuario = $_SESSION['usuario'] ?? 'Sin usuario';
 $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
-$observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 ?>
 
 <!DOCTYPE html>
@@ -150,96 +146,69 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Formulario -->
                 <div class="card">
-                    <h2>Formulario para crear un operativo nuevo</h2>
+                    <h2>Crear nuevo operativo</h2>
                     <form class="form-modern" id="formOperativo">
-                        <div class="form-grid grid-4">
-
-                            <!-- nombre -->
+                        <div class="form-grid grid-2">
+                            <!-- Nombre -->
                             <div class="input-group">
                                 <label for="nombre">Nombre</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">person</span>
-                                    <input type="text" id="nombre" name="nombre" placeholder="Operativo 1" required
-                                        minlength="2" maxlength="60" aria-required="true">
+                                    <span class="material-icons">assignment</span>
+                                    <input type="text" id="nombre" name="nombre" required placeholder="Ej: Operativo de Mayo" minlength="2" maxlength="60">
                                 </div>
-                                <small class="error-message" aria-live="polite"></small>
                             </div>
 
-                            <!-- Fecha_inicio -->
+                            <!-- Fecha de inicio -->
                             <div class="input-group">
-                                <label for="fecha">Fecha de inicio</label>
-                                </span>
-                                </label>
+                                <label for="fecha_inicio">Fecha de inicio</label>
                                 <div class="input-icon">
                                     <span class="material-icons">event</span>
-                                    <input type="date" id="fecha" name="fecha" required>
+                                    <input type="datetime-local" id="fecha_inicio" name="fecha_inicio" required>
                                 </div>
                             </div>
 
-                            <!-- Fecha_cierre -->
+                            <!-- Fecha de cierre -->
                             <div class="input-group">
-                                <label for="fecha">Fecha de cierre</label>
-                                </span>
-                                </label>
+                                <label for="fecha_cierre">Fecha de cierre</label>
                                 <div class="input-icon">
                                     <span class="material-icons">event</span>
-                                    <input type="date" id="fecha" name="fecha" required>
+                                    <input type="datetime-local" id="fecha_cierre" name="fecha_cierre" required>
                                 </div>
                             </div>
 
-                            <!-- Botones -->
-                            <div class="form-buttons">
-                                <button class="btn btn-aceptar" type="submit">Enviar</button>
-                                <div id="advertenciaCampos" style="display:none; color: #c62828; font-weight: 500; margin-top: 10px;">
-                                    ⚠️ Debes seleccionar al menos una cooperativa, un productor y un producto para poder guardar el operativo.
+                            <!-- Estado -->
+                            <div class="input-group">
+                                <label for="estado">Estado</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">toggle_on</span>
+                                    <select name="estado" id="estado" required>
+                                        <option value="abierto">Abierto</option>
+                                        <option value="cerrado">Cerrado</option>
+                                    </select>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="card-grid grid-3">
-                                <!-- cooperativas_ids -->
-                                <div class="card input-group">
-                                    <label for="cooperativas">Cooperativas</label>
-                                    <div class="card smart-selector" id="selectorCooperativas">
-                                        <input type="text" class="smart-selector-search" placeholder="Buscar cooperativa...">
-                                        <div class="smart-selector-list" id="listaCooperativas"></div>
-                                    </div>
-                                </div>
-                                <!-- productores_ids -->
-                                <div class="card input-group">
-                                    <label for="productores">Productores</label>
-                                    <div class="card smart-selector" id="selectorProductores">
-                                        <input type="text" class="smart-selector-search" placeholder="Buscar productor...">
-                                        <div class="smart-selector-list" id="listaProductores"></div>
-                                    </div>
-                                </div>
-                                <!-- productos_ids -->
-                                <div class="card input-group">
-                                    <label for="productos">Productos</label>
-                                    <div class="card smart-selector" id="selectorProductos">
-                                        <input type="text" class="smart-selector-search" placeholder="Buscar producto...">
-                                        <div class="smart-selector-list" id="listaProductos"></div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="form-buttons" style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-aceptar">Guardar operativo</button>
                         </div>
                     </form>
                 </div>
 
+
                 <!-- Tabla -->
                 <div class="card">
-                    <h2>Listado de operativos registrados</h2>
+                    <h2>Listado de operativos</h2>
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>id</th>
-                                    <th>Nombre operativo</th>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
                                     <th>Fecha Inicio</th>
                                     <th>Fecha Cierre</th>
-                                    <th>Cooperativas</th>
-                                    <th>Productores</th>
-                                    <th>Productos</th>
-                                    <th>Fecha de creación</th>
+                                    <th>Estado</th>
+                                    <th>Creado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -260,7 +229,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </div>
                 </div>
 
-
                 <!-- Modal editar operativo -->
                 <div id="modalEditar" class="modal hidden">
                     <div class="modal-content">
@@ -271,7 +239,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="edit_nombre">Nombre</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">person</span>
+                                    <span class="material-icons">assignment</span>
                                     <input type="text" name="nombre" id="edit_nombre" required>
                                 </div>
                             </div>
@@ -280,7 +248,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="edit_fecha_inicio">Fecha de inicio</label>
                                 <div class="input-icon">
                                     <span class="material-icons">event</span>
-                                    <input type="date" name="fecha_inicio" id="edit_fecha_inicio" required>
+                                    <input type="datetime-local" name="fecha_inicio" id="edit_fecha_inicio" required>
                                 </div>
                             </div>
 
@@ -288,17 +256,29 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="edit_fecha_cierre">Fecha de cierre</label>
                                 <div class="input-icon">
                                     <span class="material-icons">event</span>
-                                    <input type="date" name="fecha_cierre" id="edit_fecha_cierre" required>
+                                    <input type="datetime-local" name="fecha_cierre" id="edit_fecha_cierre" required>
                                 </div>
                             </div>
 
-                            <div class="form-buttons">
+                            <div class="input-group">
+                                <label for="edit_estado">Estado</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">toggle_on</span>
+                                    <select name="estado" id="edit_estado" required>
+                                        <option value="abierto">Abierto</option>
+                                        <option value="cerrado">Cerrado</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-buttons" style="margin-top: 20px;">
                                 <button type="submit" class="btn btn-aceptar">Guardar</button>
                                 <button type="button" class="btn btn-cancelar" onclick="closeModalEditar()">Cancelar</button>
                             </div>
                         </form>
                     </div>
                 </div>
+
 
 
                 <!-- Alert -->
