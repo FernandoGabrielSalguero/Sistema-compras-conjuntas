@@ -201,29 +201,33 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     </form>
                 </div>
 
-
                 <!-- Tarjeta de buscador -->
                 <div class="card">
                     <h2>Busca usuarios</h2>
 
-                    <!-- Buscar por CUIT -->
-                    <div class="input-group">
-                        <label for="buscarCuit">CUIT</label>
-                        <div class="input-icon">
-                            <span class="material-icons">fingerprint</span>
-                            <input type="text" id="buscarCuit" name="buscarCuit" placeholder="20123456781">
-                        </div>
-                    </div>
+                    <form class="form-modern">
+                        <div class="form-grid grid-2">
+                            <!-- Buscar por CUIT -->
+                            <div class="input-group">
+                                <label for="buscarCuit">CUIT</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">fingerprint</span>
+                                    <input type="text" id="buscarCuit" name="buscarCuit" placeholder="20123456781">
+                                </div>
+                            </div>
 
-                    <!-- Buscar por Nombre -->
-                    <div class="input-group">
-                        <label for="buscarNombre">Nombre</label>
-                        <div class="input-icon">
-                            <span class="material-icons">person</span>
-                            <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
+                            <!-- Buscar por Nombre -->
+                            <div class="input-group">
+                                <label for="buscarNombre">Nombre</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">person</span>
+                                    <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
+
 
 
                 <!-- Tabla -->
