@@ -4,6 +4,10 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../config.php';
+function esc($value)
+{
+    return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
+}
 
 $cuit = $_GET['cuit'] ?? '';
 
@@ -35,16 +39,16 @@ foreach ($usuarios as $usuario) {
     $permisoClass = $usuario['permiso_ingreso'] === 'Habilitado' ? 'success' : 'danger';
 
     echo "<tr>
-        <td>" . htmlspecialchars($usuario['id']) . "</td>
-        <td>" . htmlspecialchars($usuario['usuario']) . "</td>
-        <td>" . htmlspecialchars($usuario['rol']) . "</td>
-        <td><span class='badge {$permisoClass}'>" . htmlspecialchars($usuario['permiso_ingreso']) . "</span></td>
-        <td>" . htmlspecialchars($usuario['cuit']) . "</td>
-        <td>" . htmlspecialchars($usuario['id_real']) . "</td>
-        <td>" . htmlspecialchars($usuario['nombre']) . "</td>
-        <td>" . htmlspecialchars($usuario['direccion']) . "</td>
-        <td>" . htmlspecialchars($usuario['telefono']) . "</td>
-        <td>" . htmlspecialchars($usuario['correo']) . "</td>
+<td>" . esc($usuario['id']) . "</td>
+<td>" . esc($usuario['usuario']) . "</td>
+<td>" . esc($usuario['rol']) . "</td>
+<td><span class='badge {$permisoClass}'>" . esc($usuario['permiso_ingreso']) . "</span></td>
+<td>" . esc($usuario['cuit']) . "</td>
+<td>" . esc($usuario['id_real']) . "</td>
+<td>" . esc($usuario['nombre']) . "</td>
+<td>" . esc($usuario['direccion']) . "</td>
+<td>" . esc($usuario['telefono']) . "</td>
+<td>" . esc($usuario['correo']) . "</td>
         <td>
             <button class='btn btn-info btn-sm' onclick='abrirModalEditar(" . $usuario['id'] . ")'>
                 <span class='material-icons'>edit</span>
