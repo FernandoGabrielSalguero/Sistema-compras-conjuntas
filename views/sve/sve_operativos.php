@@ -217,18 +217,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     </div>
                 </div>
 
-                <!-- Modal de detalle (cooperativas, productores, productos) -->
-                <div id="modalDetalle" class="modal hidden">
-                    <div class="modal-content">
-                        <h3 id="modalDetalleTitulo">Detalles</h3>
-                        <div id="modalDetalleContenido" style="max-height: 400px; overflow-y: auto; margin-top: 15px;"></div>
-
-                        <div class="form-buttons" style="margin-top: 20px;">
-                            <button type="button" class="btn btn-cancelar" onclick="cerrarModalDetalle()">Cerrar</button>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Modal editar operativo -->
                 <div id="modalEditar" class="modal hidden">
                     <div class="modal-content">
@@ -278,8 +266,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         </form>
                     </div>
                 </div>
-
-
 
                 <!-- Alert -->
                 <div class="alert-container" id="alertContainer"></div>
