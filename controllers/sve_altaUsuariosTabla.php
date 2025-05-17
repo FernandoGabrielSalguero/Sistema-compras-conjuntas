@@ -1,5 +1,4 @@
 <?php
-// Mostrar errores en pantalla (útil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -11,18 +10,13 @@ $cuit = $_GET['cuit'] ?? '';
 try {
     if ($cuit !== '') {
         $stmt = $pdo->prepare("
-            SELECT id, cuit, rol, permiso_ingreso, nombre, correo, telefono, id_cooperativa, id_productor, observaciones 
-            FROM usuarios 
+            SELECT * FROM usuarios
             WHERE cuit LIKE ?
             ORDER BY id DESC
         ");
         $stmt->execute(["%{$cuit}%"]);
     } else {
-        $stmt = $pdo->query("
-            SELECT id, cuit, rol, permiso_ingreso, nombre, correo, telefono, id_cooperativa, id_productor, observaciones 
-            FROM usuarios 
-            ORDER BY id DESC
-        ");
+        $stmt = $pdo->query("SELECT * FROM usuarios ORDER BY id DESC");
     }
 
     $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);

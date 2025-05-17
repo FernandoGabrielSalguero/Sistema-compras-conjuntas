@@ -309,7 +309,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
     <script>
         //   Script para cargar los datos usando AJAX a la base
-
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('formUsuario');
 
@@ -345,6 +344,30 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             });
         });
 
+        // funcion para cargar la tabla de usuarios
+        function cargarUsuarios() {
+            const cuit = document.getElementById('buscarCuit')?.value || '';
+            const url = `/controllers/sve_altaUsuariosTabla.php?cuit=${encodeURIComponent(cuit)}`;
+
+            fetch(url)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('tablaUsuarios').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('❌ Error al cargar usuarios:', error);
+                    document.getElementById('tablaUsuarios').innerHTML = "<tr><td colspan='10'>Error al cargar datos.</td></tr>";
+                });
+        }
+
+        // cargar usuarios para mostrarlos en la tabla
+        document.addEventListener('DOMContentLoaded', () => {
+    cargarUsuarios(); // 👈 carga al entrar
+
+    document.getElementById('buscarCuit').addEventListener('input', () => {
+        cargarUsuarios(); // 👈 filtra en tiempo real
+    });
+});
 
 
         function togglePassword() {
