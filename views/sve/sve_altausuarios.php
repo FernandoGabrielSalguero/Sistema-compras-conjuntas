@@ -209,7 +209,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         <div class="form-grid grid-2">
                             <!-- Buscar por CUIT -->
                             <div class="input-group">
-                                <label for="buscarCuit">CUIT</label>
+                                <label for="buscarCuit">Podes buscar por CUIT</label>
                                 <div class="input-icon">
                                     <span class="material-icons">fingerprint</span>
                                     <input type="text" id="buscarCuit" name="buscarCuit" placeholder="20123456781">
@@ -218,7 +218,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                             <!-- Buscar por Nombre -->
                             <div class="input-group">
-                                <label for="buscarNombre">Nombre</label>
+                                <label for="buscarNombre">Podes buscar por nombre</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
                                     <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
@@ -258,108 +258,98 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 </div>
 
                 <!-- Modal -->
-                <div id="modal" class="modal hidden">
-                    <div class="modal-content">
-                        <h3>Editar Usuario</h3>
+                <div class="form-grid grid-4">
+                    <!-- Usuario -->
+                    <div class="input-group">
+                        <label for="edit_usuario">Usuario</label>
+                        <div class="input-icon">
+                            <span class="material-icons">person</span>
+                            <input type="text" name="usuario" id="edit_usuario" required>
+                        </div>
+                    </div>
 
-                        <!-- Botón cerrar arriba a la derecha -->
-                        <button class="btn-icon" onclick="cerrarModalEditar()" style="position:absolute; top:10px; right:10px;">
-                            <span class="material-icons">close</span>
-                        </button>
+                    <!-- Rol -->
+                    <div class="input-group">
+                        <label for="edit_rol">Rol</label>
+                        <div class="input-icon">
+                            <span class="material-icons">supervisor_account</span>
+                            <select name="rol" id="edit_rol" required>
+                                <option value="sve">SVE</option>
+                                <option value="cooperativa">Cooperativa</option>
+                                <option value="productor">Productor</option>
+                                <option value="ingeniero">Ingeniero</option>
+                            </select>
+                        </div>
+                    </div>
 
-                        <form class="form-modern" id="formEditarUsuario">
-                            <input type="hidden" name="id" id="edit_id">
+                    <!-- Permiso -->
+                    <div class="input-group">
+                        <label for="edit_permiso">Permiso</label>
+                        <div class="input-icon">
+                            <span class="material-icons">check_circle</span>
+                            <select name="permiso_ingreso" id="edit_permiso" required>
+                                <option value="Habilitado">Habilitado</option>
+                                <option value="Deshabilitado">Deshabilitado</option>
+                            </select>
+                        </div>
+                    </div>
 
-                            <div class="form-grid grid-4">
-                                <div class="input-group">
-                                    <label for="edit_usuario">Usuario</label>
-                                    <div class="input-icon">
-                                        <span class="material-icons">person</span>
-                                        <input type="text" name="usuario" id="edit_usuario" required>
-                                    </div>
-                                </div>
+                    <!-- CUIT -->
+                    <div class="input-group">
+                        <label for="edit_cuit">CUIT</label>
+                        <div class="input-icon">
+                            <span class="material-icons">fingerprint</span>
+                            <input type="text" name="cuit" id="edit_cuit" inputmode="numeric" maxlength="11"
+                                oninput="this.value = this.value.replace(/\\D/g, '')" required>
+                        </div>
+                    </div>
 
-                                <div class="input-group">
-                                    <label for="edit_rol">Rol</label>
-                                    <div class="input-icon">
-                                        <span class="material-icons">supervisor_account</span>
-                                        <select name="rol" id="edit_rol" required>
-                                            <option value="sve">SVE</option>
-                                            <option value="cooperativa">Cooperativa</option>
-                                            <option value="productor">Productor</option>
-                                            <option value="ingeniero">Ingeniero</option>
-                                        </select>
-                                    </div>
-                                </div>
+                    <!-- ID Real -->
+                    <div class="input-group">
+                        <label for="edit_id_real">ID Real</label>
+                        <div class="input-icon">
+                            <span class="material-icons">badge</span>
+                            <input type="number" name="id_real" id="edit_id_real" required>
+                        </div>
+                    </div>
 
-                                <div class="input-group">
-                                    <label for="edit_permiso">Permiso</label>
-                                    <div class="input-icon">
-                                        <span class="material-icons">check_circle</span>
-                                        <select name="permiso_ingreso" id="edit_permiso" required>
-                                            <option value="Habilitado">Habilitado</option>
-                                            <option value="Deshabilitado">Deshabilitado</option>
-                                        </select>
-                                    </div>
-                                </div>
+                    <!-- Nombre (ocupa 2 columnas) -->
+                    <div class="input-group col-span-2">
+                        <label for="edit_nombre">Nombre</label>
+                        <div class="input-icon">
+                            <span class="material-icons">person</span>
+                            <input type="text" name="nombre" id="edit_nombre">
+                        </div>
+                    </div>
 
-                                <div class="input-group">
-                                    <label for="edit_cuit">CUIT</label>
-                                    <div class="input-icon">
-                                        <span class="material-icons">fingerprint</span>
-                                        <input type="text" name="cuit" id="edit_cuit" inputmode="numeric" maxlength="11"
-                                            oninput="this.value = this.value.replace(/\\D/g, '')" required>
-                                    </div>
-                                </div>
+                    <!-- Dirección (ocupa 2 columnas) -->
+                    <div class="input-group col-span-2">
+                        <label for="edit_direccion">Dirección</label>
+                        <div class="input-icon">
+                            <span class="material-icons">location_on</span>
+                            <input type="text" name="direccion" id="edit_direccion">
+                        </div>
+                    </div>
 
-                                <div class="input-group">
-                                    <label for="edit_id_real">ID Real</label>
-                                    <div class="input-icon">
-                                        <span class="material-icons">badge</span>
-                                        <input type="number" name="id_real" id="edit_id_real" required>
-                                    </div>
-                                </div>
+                    <!-- Teléfono -->
+                    <div class="input-group">
+                        <label for="edit_telefono">Teléfono</label>
+                        <div class="input-icon">
+                            <span class="material-icons">phone</span>
+                            <input type="text" name="telefono" id="edit_telefono">
+                        </div>
+                    </div>
 
-                                <div class="input-group">
-                                    <label for="edit_nombre">Nombre</label>
-                                    <div class="input-icon">
-                                        <span class="material-icons">person</span>
-                                        <input type="text" name="nombre" id="edit_nombre">
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="edit_direccion">Dirección</label>
-                                    <div class="input-icon">
-                                        <span class="material-icons">location_on</span>
-                                        <input type="text" name="direccion" id="edit_direccion">
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="edit_telefono">Teléfono</label>
-                                    <div class="input-icon">
-                                        <span class="material-icons">phone</span>
-                                        <input type="text" name="telefono" id="edit_telefono">
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="edit_correo">Correo</label>
-                                    <div class="input-icon">
-                                        <span class="material-icons">mail</span>
-                                        <input type="email" name="correo" id="edit_correo">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-buttons">
-                                <button class="btn btn-aceptar" type="submit">Guardar cambios</button>
-                                <button class="btn btn-cancelar" type="button" onclick="cerrarModalEditar()">Cancelar</button>
-                            </div>
-                        </form>
+                    <!-- Correo (ocupa 3 columnas) -->
+                    <div class="input-group col-span-3">
+                        <label for="edit_correo">Correo</label>
+                        <div class="input-icon">
+                            <span class="material-icons">mail</span>
+                            <input type="email" name="correo" id="edit_correo">
+                        </div>
                     </div>
                 </div>
+
 
 
                 <!-- Alert -->
