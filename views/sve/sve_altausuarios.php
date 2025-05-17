@@ -453,7 +453,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <label for="nuevaContrasena">Contraseña</label>
                 <div class="input-icon">
                     <span class="material-icons">lock</span>
-                    <input type="password" id="nuevaContrasena" placeholder="Asigna una contraseña" required>
+                    <input type="password" id="nuevaContrasena" placeholder="Coloca una nueva contraseña" required>
                     <span class="material-icons toggle-password" onclick="togglePasswordReset()">visibility</span>
                 </div>
             </div>
