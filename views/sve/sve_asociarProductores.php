@@ -121,6 +121,33 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <p>En esta página, vamos a asignar a los usuarios productores, sus ingenieros, tecnicos, cooperativas, etc.</p>
                 </div>
 
+
+                <!-- Tarjeta de buscador -->
+                <div class="card">
+                    <h2>Busca productores</h2>
+                    <form class="form-modern">
+                        <div class="form-grid grid-2">
+                            <!-- Buscar por CUIT -->
+                            <div class="input-group">
+                                <label for="buscarCuit">Podes buscar por CUIT</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">fingerprint</span>
+                                    <input type="text" id="buscarCuit" name="buscarCuit" placeholder="20123456781">
+                                </div>
+                            </div>
+
+                            <!-- Buscar por Nombre -->
+                            <div class="input-group">
+                                <label for="buscarNombre">Podes buscar por nombre</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">person</span>
+                                    <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
                 <!-- Tabla -->
                 <div class="card">
                     <h2>Asociar productores con cooperativas</h2>
@@ -209,6 +236,32 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         document.addEventListener('DOMContentLoaded', cargarProductores);
+
+
+        // buscador por cuit o nombre de productor
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cargar tabla al inicio
+            cargarProductores();
+
+            // Escuchar inputs
+            document.getElementById('buscarCuit').addEventListener('input', cargarProductores);
+            document.getElementById('buscarNombre').addEventListener('input', cargarProductores);
+        });
+
+        function cargarProductores() {
+            const cuit = document.getElementById('buscarCuit').value.trim();
+            const nombre = document.getElementById('buscarNombre').value.trim();
+
+            fetch(`/controllers/sve_asociarProductoresController.php?cuit=${encodeURIComponent(cuit)}&nombre=${encodeURIComponent(nombre)}`)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('tablaProductos').innerHTML = html;
+                })
+                .catch(err => {
+                    console.error('❌ Error al cargar productores:', err);
+                    document.getElementById('tablaProductos').innerHTML = '<tr><td colspan="6">Error al cargar datos.</td></tr>';
+                });
+        }
     </script>
 
 

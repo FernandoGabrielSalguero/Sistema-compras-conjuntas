@@ -36,15 +36,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         return htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
     }
 
+    $cuit = $_GET['cuit'] ?? '';
+    $nombre = $_GET['nombre'] ?? '';
+
+    $where = "u.rol = 'productor'";
+    $params = [];
+
+    if ($cuit !== '') {
+        $where .= " AND u.cuit LIKE ?";
+        $params[] = "%$cuit%";
+    }
+
+    if ($nombre !== '') {
+        $where .= " AND i.nombre LIKE ?";
+        $params[] = "%$nombre%";
+    }
+
     try {
         // Obtener productores
-        $stmt = $pdo->query("
-            SELECT u.id_real AS productor_id, u.cuit, i.nombre
-            FROM usuarios u
-            LEFT JOIN usuarios_info i ON u.id = i.usuario_id
-            WHERE u.rol = 'productor'
-            ORDER BY i.nombre ASC
-        ");
+        $sql = "
+    SELECT u.id_real AS productor_id, u.cuit, i.nombre
+    FROM usuarios u
+    LEFT JOIN usuarios_info i ON u.id = i.usuario_id
+    WHERE $where
+    ORDER BY i.nombre ASC
+";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
         $productores = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Obtener cooperativas
