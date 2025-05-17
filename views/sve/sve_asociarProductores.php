@@ -123,22 +123,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Tabla -->
                 <div class="card">
-                    <h2>Listado de productos</h2>
+                    <h2>Asociar productores con cooperativas</h2>
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
+                                    <th>ID Real</th>
                                     <th>Nombre</th>
-                                    <th>Detalle del producto</th>
-                                    <th>Precio</th>
-                                    <th>Unidad de venta</th>
-                                    <th>Categoria</th>
-                                    <th>Alicuota</th>
-                                    <th>Acciones</th>
+                                    <th>CUIT</th>
+                                    <th>Cooperativa</th>
                                 </tr>
                             </thead>
-                            <tbody id="tablaProductos">
+                            <tbody id="tablaAsociaciones">
                                 <!-- Contenido dinámico -->
                             </tbody>
                         </table>
@@ -155,30 +151,50 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- <script src="/assets/js/sve_productos.js"></script> -->
     <script src="/assets/js/sve_productos.js?v=<?= time() ?>"></script>
 
+
+    <!-- javascrip -->
     <script>
         function asociarProductor(select, id_productor) {
-    const id_cooperativa = select.value;
+            const id_cooperativa = select.value;
 
-    if (!id_cooperativa) return;
+            if (!id_cooperativa) return;
 
-    fetch('/controllers/sve_asociarProductoresController.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_productor, id_cooperativa })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            showAlert('success', data.message);
-        } else {
-            showAlert('error', data.message);
+            fetch('/controllers/sve_asociarProductoresController.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id_productor,
+                        id_cooperativa
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('success', data.message);
+                    } else {
+                        showAlert('error', data.message);
+                    }
+                })
+                .catch(err => {
+                    console.error('❌ Error en la asociaci\u00f3n:', err);
+                    showAlert('error', 'Error inesperado al asociar productor.');
+                });
         }
-    })
-    .catch(err => {
-        console.error('❌ Error en la asociaci\u00f3n:', err);
-        showAlert('error', 'Error inesperado al asociar productor.');
-    });
-}
+
+        // cargar la tabla
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/controllers/tablaAsociacionesController.php')
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('tablaAsociaciones').innerHTML = html;
+                })
+                .catch(err => {
+                    console.error('❌ Error al cargar asociaciones:', err);
+                    document.getElementById('tablaAsociaciones').innerHTML = "<tr><td colspan='4'>Error al cargar datos</td></tr>";
+                });
+        });
     </script>
 
 
