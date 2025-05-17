@@ -48,6 +48,14 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
+    <style>
+        ::placeholder {
+            color: red;
+            opacity: 1;
+            /* para mantener visibilidad en todos los navegadores */
+        }
+    </style>
 </head>
 
 <body>
