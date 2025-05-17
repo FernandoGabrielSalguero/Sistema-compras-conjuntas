@@ -315,7 +315,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 const formData = new FormData(form);
 
                 try {
-                    const response = await fetch('/controllers/altaUsuariosController.php', {
+                    const response = await fetch('/controllers/sve_altausuarios.php', {
                         method: 'POST',
                         body: formData
                     });
