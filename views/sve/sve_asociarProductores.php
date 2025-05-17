@@ -224,7 +224,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         });
 
         async function cargarProductores() {
-            const tabla = document.getElementById('tablaProductos');
+            const tabla = document.getElementById('tablaAsociaciones');
             try {
                 const res = await fetch('/controllers/sve_asociarProductoresController.php');
                 const html = await res.text();
@@ -255,11 +255,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             fetch(`/controllers/sve_asociarProductoresController.php?cuit=${encodeURIComponent(cuit)}&nombre=${encodeURIComponent(nombre)}`)
                 .then(res => res.text())
                 .then(html => {
-                    document.getElementById('tablaProductos').innerHTML = html;
+                    document.getElementById('tablaAsociaciones').innerHTML = html;
                 })
                 .catch(err => {
                     console.error('❌ Error al cargar productores:', err);
-                    document.getElementById('tablaProductos').innerHTML = '<tr><td colspan="6">Error al cargar datos.</td></tr>';
+                    document.getElementById('tablaAsociaciones').innerHTML = '<tr><td colspan="6">Error al cargar datos.</td></tr>';
                 });
         }
     </script>
