@@ -117,72 +117,72 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                 <!-- Formulario -->
                 <div class="card">
-    <h2>Crear nuevo usuario</h2>
-    <form class="form-modern" id="formUsuario" method="POST" action="ruta_al_backend.php">
-        <div class="form-grid grid-2">
+                    <h2>Crear nuevo usuario</h2>
+                    <form class="form-modern" id="formUsuario">
+                        <div class="form-grid grid-2">
 
-            <!-- Usuario -->
-            <div class="input-group">
-                <label for="usuario">Usuario</label>
-                <div class="input-icon">
-                    <span class="material-icons">person</span>
-                    <input type="text" id="usuario" name="usuario" placeholder="usuario123" required>
+                            <!-- Usuario -->
+                            <div class="input-group">
+                                <label for="usuario">Usuario</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">person</span>
+                                    <input type="text" id="usuario" name="usuario" placeholder="usuario123" required>
+                                </div>
+                            </div>
+
+                            <!-- Contraseña con ojo -->
+                            <div class="input-group password-container">
+                                <label for="contrasena">Contraseña</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">lock</span>
+                                    <input type="password" id="contrasena" name="contrasena" placeholder="********" required>
+                                    <span class="material-icons toggle-password" onclick="togglePassword()">visibility</span>
+                                </div>
+                            </div>
+
+                            <!-- Rol -->
+                            <div class="input-group">
+                                <label for="rol">Rol</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">supervisor_account</span>
+                                    <select id="rol" name="rol" required>
+                                        <option value="sve">SVE</option>
+                                        <option value="cooperativa">Cooperativa</option>
+                                        <option value="productor">Productor</option>
+                                        <option value="ingeniero">Ingeniero</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Permiso -->
+                            <div class="input-group">
+                                <label for="permiso_ingreso">Permiso</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">check_circle</span>
+                                    <select id="permiso_ingreso" name="permiso_ingreso" required>
+                                        <option value="Habilitado">Habilitado</option>
+                                        <option value="Deshabilitado">Deshabilitado</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- ID Real -->
+                            <div class="input-group">
+                                <label for="id_real">ID Real</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">badge</span>
+                                    <input type="number" id="id_real" name="id_real" placeholder="1001" required>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="form-buttons">
+                            <button class="btn btn-aceptar" type="submit">Crear usuario</button>
+                        </div>
+                    </form>
                 </div>
-            </div>
-
-            <!-- Contraseña con ojo -->
-            <div class="input-group password-container">
-                <label for="contrasena">Contraseña</label>
-                <div class="input-icon">
-                    <span class="material-icons">lock</span>
-                    <input type="password" id="contrasena" name="contrasena" placeholder="********" required>
-                    <span class="material-icons toggle-password" onclick="togglePassword()">visibility</span>
-                </div>
-            </div>
-
-            <!-- Rol -->
-            <div class="input-group">
-                <label for="rol">Rol</label>
-                <div class="input-icon">
-                    <span class="material-icons">supervisor_account</span>
-                    <select id="rol" name="rol" required>
-                        <option value="sve">SVE</option>
-                        <option value="cooperativa">Cooperativa</option>
-                        <option value="productor">Productor</option>
-                        <option value="ingeniero">Ingeniero</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Permiso -->
-            <div class="input-group">
-                <label for="permiso_ingreso">Permiso</label>
-                <div class="input-icon">
-                    <span class="material-icons">check_circle</span>
-                    <select id="permiso_ingreso" name="permiso_ingreso" required>
-                        <option value="Habilitado">Habilitado</option>
-                        <option value="Deshabilitado">Deshabilitado</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- ID Real -->
-            <div class="input-group">
-                <label for="id_real">ID Real</label>
-                <div class="input-icon">
-                    <span class="material-icons">badge</span>
-                    <input type="number" id="id_real" name="id_real" placeholder="1001" required>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Botones -->
-        <div class="form-buttons">
-            <button class="btn btn-aceptar" type="submit">Crear usuario</button>
-        </div>
-    </form>
-</div>
 
 
                 <!-- Tarjeta de buscador -->
@@ -275,8 +275,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             </div>
 
                             <div class="form-buttons">
-                                <button type="submit" class="btn btn-aceptar">Guardar</button>
-                                <button type="button" class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
+                                <div class="form-buttons">
+                                    <button class="btn btn-aceptar" type="submit">Enviar</button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -289,17 +290,53 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         </div>
     </div>
 
-
-    <!-- Script para cargar los datos usando AJAX a la base -->
     <script>
-        // desocultar la contraseña
-    function togglePassword() {
-        const passwordInput = document.getElementById('contrasena');
-        const icon = document.querySelector('.toggle-password');
-        const isPassword = passwordInput.getAttribute('type') === 'password';
-        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-        icon.textContent = isPassword ? 'visibility_off' : 'visibility';
-    }
+        //   Script para cargar los datos usando AJAX a la base
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('formUsuario');
+
+            if (!form) {
+                console.error("⚠️ No se encontró el formulario con id='formUsuario'");
+                return;
+            }
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+
+                try {
+                    const response = await fetch('/controllers/altaUsuariosController.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        form.reset();
+                        showAlert('success', result.message); // ✅ alerta verde
+                        cargarUsuarios(); // 👈 actualiza la tabla
+                    } else {
+                        showAlert('error', result.message); // ❌ alerta roja
+                    }
+
+                } catch (error) {
+                    showAlert('error', 'Error inesperado al enviar el formulario.');
+                    console.error('❌ Error en la solicitud AJAX:', error);
+                }
+            });
+        });
+
+
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('contrasena');
+            const icon = document.querySelector('.toggle-password');
+            const isPassword = passwordInput.getAttribute('type') === 'password';
+            passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+            icon.textContent = isPassword ? 'visibility_off' : 'visibility';
+        }
     </script>
 
     <!-- Spinner Global -->
