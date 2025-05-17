@@ -299,11 +299,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <td>${op.estado}</td>
                 <td>${op.created_at}</td>
                 <td>
-                    <button class="btn btn-info" onclick="editarOperativo(${op.id})">Editar</button>
-
-                    <button class='btn btn-info' onclick='editarOperativo(${op.id})")'>
-                        <i class='material-icons'>edit</i>
-                    </button>
+                       <button class="btn-icon" onclick="editarOperativo(${op.id})">
+                      <i class="material-icons">edit</i>
+                     </button>
                 </td>
             `;
                     tabla.appendChild(row);
@@ -419,9 +417,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
         // mostramos la fecha argentina
         function formatearFechaArg(fechaISO) {
-    const [a, m, d] = fechaISO.split('-');
-    return `${d}/${m}/${a}`;
-}
+            const [a, m, d] = fechaISO.split('-');
+            return `${d}/${m}/${a}`;
+        }
     </script>
 
 
