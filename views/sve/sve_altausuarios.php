@@ -449,9 +449,13 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             <h3>Restablecer contraseña</h3>
             <p>Estás por modificar la contraseña del usuario <span id="usuarioResetLabel" style="font-weight:bold;"></span>.</p>
 
-            <div class="input-group">
-                <label for="nuevaContrasena">Nueva contraseña</label>
-                <input type="password" id="nuevaContrasena" placeholder="Ingresá la nueva contraseña" required>
+            <div class="input-group password-container">
+                <label for="nuevaContrasena">Contraseña</label>
+                <div class="input-icon">
+                    <span class="material-icons">lock</span>
+                    <input type="password" id="nuevaContrasena" placeholder="Asigna una contraseña" required>
+                    <span class="material-icons toggle-password" onclick="togglePasswordReset()">visibility</span>
+                </div>
             </div>
 
             <div class="form-buttons">
