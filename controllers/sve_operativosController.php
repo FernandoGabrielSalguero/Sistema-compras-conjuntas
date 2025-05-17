@@ -1,29 +1,49 @@
 <?php
-// Mostrar todos los errores en pantalla mientras debugueamos
 ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../models/sve_operativosModel.php';
+header('Content-Type: application/json');
 
-header('Content-Type: text/html; charset=utf-8');
+$model = new OperativosModel($pdo);
 
-$stmt = $pdo->query("SELECT * FROM operativos ORDER BY id DESC");
-$operativos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$method = $_SERVER['REQUEST_METHOD'];
 
-foreach ($operativos as $op) {
-    echo "<tr>
-        <td>{$op['id']}</td>
-        <td>{$op['nombre']}</td>
-        <td>{$op['fecha_inicio']}</td>
-        <td>{$op['fecha_cierre']}</td>
-        
-<td><button class='btn btn-info' onclick=\"verDetalle('cooperativas', {$op['id']})\">Ver cooperativas</button></td>
-<td><button class='btn btn-info' onclick=\"verDetalle('productores', {$op['id']})\">Ver productores</button></td>
-<td><button class='btn btn-info' onclick=\"verDetalle('productos', {$op['id']})\">Ver productos</button></td>
+if ($method === 'POST') {
+    $id = $_POST['id'] ?? null;
+    $nombre = $_POST['nombre'] ?? '';
+    $fecha_inicio = $_POST['fecha_inicio'] ?? '';
+    $fecha_cierre = $_POST['fecha_cierre'] ?? '';
+    $estado = $_POST['estado'] ?? 'abierto';
 
+    if (!$nombre || !$fecha_inicio || !$fecha_cierre || !$estado) {
+        echo json_encode(['success' => false, 'message' => 'Faltan datos obligatorios.']);
+        exit;
+    }
 
-        <td>{$op['created_at']}</td>
-        <td><button class='btn btn-info' onclick='editarOperativo({$op['id']})'>Editar</button></td>
-    </tr>";
+    try {
+        if ($id) {
+            $model->actualizar($id, $nombre, $fecha_inicio, $fecha_cierre, $estado);
+            echo json_encode(['success' => true, 'message' => 'Operativo actualizado correctamente.']);
+        } else {
+            $model->crear($nombre, $fecha_inicio, $fecha_cierre, $estado);
+            echo json_encode(['success' => true, 'message' => 'Operativo creado correctamente.']);
+        }
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error al procesar: ' . $e->getMessage()]);
+    }
+    exit;
 }
+
+if (isset($_GET['id'])) {
+    $data = $model->obtenerPorId($_GET['id']);
+    if ($data) {
+        echo json_encode(['success' => true, 'operativo' => $data]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'No encontrado']);
+    }
+    exit;
+}
+
+echo json_encode(['success' => true, 'operativos' => $model->obtenerTodos()]);
