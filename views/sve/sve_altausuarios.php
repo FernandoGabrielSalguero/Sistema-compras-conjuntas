@@ -256,7 +256,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         <form class="form-modern" id="formEditarUsuario">
                             <input type="hidden" name="id" id="edit_id">
 
-                            <div class="form-grid grid-2">
+                            <div class="form-grid grid-4">
                                 <div class="input-group">
                                     <label for="edit_usuario">Usuario</label>
                                     <div class="input-icon">
