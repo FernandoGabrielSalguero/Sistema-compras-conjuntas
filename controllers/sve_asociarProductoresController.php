@@ -31,7 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Si es GET, devolvemos la tabla de productores
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    function esc($v) {
+    function esc($v)
+    {
         return htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
     }
 
@@ -70,18 +71,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 <td>" . esc($id_real) . "</td>
                 <td>{$nombre}</td>
                 <td>{$cuit}</td>
-                <td>
-                    <select onchange='asociarProductor(this, {$id_real})'>
-                        <option value=''>Seleccionar cooperativa</option>";
-                        foreach ($cooperativas as $coop) {
-                            $selected = ($coopActual == $coop['coop_id']) ? 'selected' : '';
-                            echo "<option value='{$coop['coop_id']}' {$selected}>" . esc($coop['nombre']) . "</option>";
-                        }
+<td>
+    <div class='input-icon'>
+        <span class='material-icons'>business</span>
+        <select onchange='asociarProductor(this, {$id_real})'>
+            <option value=''>Seleccionar cooperativa</option>";
+            foreach ($cooperativas as $coop) {
+                $selected = ($coopActual == $coop['coop_id']) ? 'selected' : '';
+                echo "<option value='{$coop['coop_id']}' {$selected}>" . esc($coop['nombre']) . "</option>";
+            }
             echo "  </select>
-                </td>
+    </div>
+</td>
             </tr>";
         }
-
     } catch (Exception $e) {
         echo "<tr><td colspan='4'>Error al cargar datos: " . esc($e->getMessage()) . "</td></tr>";
     }
