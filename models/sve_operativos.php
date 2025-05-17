@@ -33,7 +33,7 @@ class OperativosModel {
 // ✅ CONTROLADOR: controllers/OperativosController.php
 
 require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../models/OperativosModel.php';
+require_once __DIR__ . '/../models/sve_operativos.php';
 header('Content-Type: application/json');
 
 $model = new OperativosModel($pdo);
