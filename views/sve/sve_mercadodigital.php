@@ -98,6 +98,36 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             background-color: rgb(255, 240, 240);
             border: 1px solidrgb(233, 196, 196);
         }
+
+        /* tarjeta de resumen */
+        .resumen-item {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .resumen-item strong {
+            font-size: 1rem;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .resumen-item small {
+            display: block;
+            color: #555;
+            margin-bottom: 0.25rem;
+        }
+
+        .resumen-total {
+            font-weight: bold;
+            margin-top: 0.5rem;
+            color: #111;
+            border-top: 1px solid #ccc;
+            padding-top: 0.5rem;
+        }
     </style>
 
 
@@ -444,22 +474,35 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             totalConIva += total;
 
                             const item = document.createElement('div');
-                            item.classList.add('input-group');
+                            //                     item.classList.add('input-group');
+                            //                     item.innerHTML = `
+                            //     <strong>${texto}</strong><br>
+                            //     <small>Cantidad: ${cantidad} ${unidad}</small><br>
+                            //     <small>Subtotal: $${subtotal.toFixed(2)} + IVA (${alicuota}%): $${iva.toFixed(2)}</small><br>
+                            //     <strong>Total: $${total.toFixed(2)}</strong>
+                            //     <hr>
+                            // `;
+
+                            item.classList.add('resumen-item');
                             item.innerHTML = `
-            <strong>${texto}</strong><br>
-            <small>Cantidad: ${cantidad} ${unidad}</small><br>
-            <small>Subtotal: $${subtotal.toFixed(2)} + IVA (${alicuota}%): $${iva.toFixed(2)}</small><br>
-            <strong>Total: $${total.toFixed(2)}</strong>
-            <hr>
-        `;
+    <strong>🧾 ${texto}</strong>
+    <small>📦 Cantidad: ${cantidad} ${unidad}</small>
+    <small>💵 Subtotal: $${subtotal.toFixed(2)}</small>
+    <small>🧾 IVA (${alicuota}%): $${iva.toFixed(2)}</small>
+    <div class="resumen-total">Total: $${total.toFixed(2)}</div>
+`;
                             resumen.appendChild(item);
                         });
 
                         if (!hayProductos) {
                             resumen.innerHTML = `<p>No se han seleccionado productos.</p>`;
                         } else {
-                            const totalFinal = document.createElement('p');
-                            totalFinal.innerHTML = `<strong>Total final con IVA: $${totalConIva.toFixed(2)}</strong>`;
+                            const totalFinal = document.createElement('div');
+                            totalFinal.classList.add('resumen-item');
+                            totalFinal.innerHTML = `
+    <strong>🧮 Total final con IVA:</strong>
+    <div class="resumen-total" style="font-size: 1.2rem;">$${totalConIva.toFixed(2)}</div>
+`;
                             resumen.appendChild(totalFinal);
                         }
                     }
