@@ -91,7 +91,11 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
         .card-productos {
             background-color: #f3f0ff;
-            /* lavanda suave */
+            border: 1px solid #d1c4e9;
+        }
+
+        .card-resumen{
+            background-color:rgb(248, 255, 240);
             border: 1px solid #d1c4e9;
         }
     </style>
@@ -255,7 +259,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             <div id="acordeones-productos" class="card-grid grid-3"></div>
                         </div>
 
-                        <div class="card card-productos" id="resumenPedido" style="margin-top: 30px;">
+                        <div class="card card-resumen" id="resumenPedido" style="margin-top: 30px;">
                             <h2>Resumen del pedido</h2>
                             <div id="contenidoResumen">
                                 <p>No se han seleccionado productos.</p>
