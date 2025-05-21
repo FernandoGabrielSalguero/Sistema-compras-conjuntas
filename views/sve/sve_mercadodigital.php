@@ -381,6 +381,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 });
 
                                 productos.forEach(prod => {
+                                    console.log(prod);
                                     const grupo = document.createElement('div');
                                     grupo.className = 'input-group';
 
@@ -435,8 +436,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                             const unidad = texto.match(/\(([^-]+)-/i)?.[1]?.trim() || '';
                             const precio = parseFloat(texto.match(/\$([\d.]+)/)?.[1]) || 0;
-                            const alicuota = parseFloat(input.dataset.alicuota || 0);
-
+                            const alicuota = Number(input.dataset.alicuota);
+                            if (isNaN(alicuota)) alicuota = 0;
                             const subtotal = precio * cantidad;
                             const iva = subtotal * (alicuota / 100);
                             const total = subtotal + iva;
