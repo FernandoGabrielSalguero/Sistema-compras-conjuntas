@@ -46,11 +46,12 @@ class OperativosModel
     public function obtenerCooperativasPorOperativo($operativo_id)
     {
         $stmt = $this->pdo->prepare("
-        SELECT u.id_real, u.nombre
+        SELECT u.id_real, i.nombre
         FROM operativos_cooperativas_participacion ocp
         JOIN usuarios u ON ocp.cooperativa_id_real = u.id_real
+        JOIN usuarios_info i ON u.id = i.usuario_id
         WHERE ocp.operativo_id = ? AND ocp.participa = 'si'
-        ORDER BY u.nombre
+        ORDER BY i.nombre
     ");
         $stmt->execute([$operativo_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
