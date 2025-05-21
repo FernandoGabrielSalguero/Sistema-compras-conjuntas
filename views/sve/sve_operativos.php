@@ -270,6 +270,20 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     </div>
                 </div>
 
+                <!-- modal eliminar operativo -->
+                <div id="modalEliminar" class="modal hidden">
+                    <div class="modal-content">
+                        <h3>¿Eliminar operativo?</h3>
+                        <p>¿Estás seguro de que querés eliminar este operativo? Esta acción no se puede deshacer.</p>
+                        <input type="hidden" id="delete_id">
+
+                        <div class="form-buttons" style="margin-top: 20px;">
+                            <button class="btn btn-aceptar" onclick="confirmarEliminar()">Eliminar</button>
+                            <button class="btn btn-cancelar" onclick="closeModalEliminar()">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Alert -->
                 <div class="alert-container" id="alertContainer"></div>
             </section>
@@ -401,10 +415,13 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
 
         // Eliminar operativo
-        async function eliminarOperativo(id) {
-            if (!confirm('¿Estás seguro de que querés eliminar este operativo? Esta acción no se puede deshacer.')) {
-                return;
-            }
+        function eliminarOperativo(id) {
+            document.getElementById('delete_id').value = id;
+            openModalEliminar();
+        }
+
+        async function confirmarEliminar() {
+            const id = document.getElementById('delete_id').value;
 
             try {
                 const res = await fetch('/controllers/sve_operativosController.php', {
@@ -418,6 +435,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 const result = await res.json();
 
                 if (result.success) {
+                    closeModalEliminar();
                     showAlert('success', result.message);
                     cargarOperativos();
                 } else {
@@ -428,6 +446,15 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 showAlert('error', 'Error al eliminar el operativo.');
             }
         }
+
+        function openModalEliminar() {
+            document.getElementById('modalEliminar').classList.remove('hidden');
+        }
+
+        function closeModalEliminar() {
+            document.getElementById('modalEliminar').classList.add('hidden');
+        }
+
 
 
         // Utilidad para mostrar alertas

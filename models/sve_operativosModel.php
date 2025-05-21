@@ -8,6 +8,15 @@ class OperativosModel
         $this->pdo = $pdo;
     }
 
+        public function eliminar($id)
+    {
+        // Primero eliminar relaciones (si existen)
+        $this->pdo->prepare("DELETE FROM operativos_cooperativas_participacion WHERE operativo_id = ?")->execute([$id]);
+
+        // Luego eliminar el operativo
+        $this->pdo->prepare("DELETE FROM operativos WHERE id = ?")->execute([$id]);
+    }
+
     public function crear($nombre, $fecha_inicio, $fecha_cierre, $estado)
     {
         $stmt = $this->pdo->prepare("INSERT INTO operativos (nombre, fecha_inicio, fecha_cierre, estado) VALUES (?, ?, ?, ?)");
@@ -34,12 +43,4 @@ class OperativosModel
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function eliminar($id)
-    {
-        // Primero eliminar relaciones (si existen)
-        $this->pdo->prepare("DELETE FROM operativos_cooperativas_participacion WHERE operativo_id = ?")->execute([$id]);
-
-        // Luego eliminar el operativo
-        $this->pdo->prepare("DELETE FROM operativos WHERE id = ?")->execute([$id]);
-    }
 }
