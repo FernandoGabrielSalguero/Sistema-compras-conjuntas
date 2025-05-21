@@ -94,9 +94,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             border: 1px solid #d1c4e9;
         }
 
-        .card-resumen{
-            background-color:rgb(248, 255, 240);
-            border: 1px solid #d1c4e9;
+        .card-resumen {
+            background-color: rgb(255, 240, 240);
+            border: 1px solidrgb(233, 196, 196);
         }
     </style>
 
@@ -392,12 +392,13 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
     <div class="input-icon">
         <span class="material-icons">numbers</span>
         <input 
-            type="number" 
-            name="productos[${prod.producto_id}]" 
-            id="prod_${prod.producto_id}"
-            min="0" 
-            placeholder="Cantidad..." 
-            required
+    type="number" 
+    name="productos[${prod.producto_id}]" 
+    id="prod_${prod.producto_id}"
+    min="0" 
+    placeholder="Cantidad..." 
+    required
+    data-alicuota="${prod.alicuota}"
         />
     </div>
 `;
@@ -413,6 +414,61 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             console.error('❌ Error al cargar productos:', err);
                         }
                     }
+
+                    function actualizarResumen() {
+                        const inputs = document.querySelectorAll('#acordeones-productos input[type="number"]');
+                        const resumen = document.getElementById('contenidoResumen');
+                        resumen.innerHTML = '';
+
+                        let hayProductos = false;
+                        let totalConIva = 0;
+
+                        inputs.forEach(input => {
+                            const cantidad = parseFloat(input.value);
+                            if (!cantidad || cantidad <= 0) return;
+
+                            hayProductos = true;
+
+                            const prodId = input.name.match(/\[(\d+)\]/)[1];
+                            const label = input.closest('.input-group').querySelector('label');
+                            const texto = label?.textContent?.trim() || 'Producto';
+
+                            const unidad = texto.match(/\(([^-]+)-/i)?.[1]?.trim() || '';
+                            const precio = parseFloat(texto.match(/\$([\d.]+)/)?.[1]) || 0;
+                            const alicuota = parseFloat(input.dataset.alicuota || 0);
+
+                            const subtotal = precio * cantidad;
+                            const iva = subtotal * (alicuota / 100);
+                            const total = subtotal + iva;
+                            totalConIva += total;
+
+                            const item = document.createElement('div');
+                            item.classList.add('input-group');
+                            item.innerHTML = `
+            <strong>${texto}</strong><br>
+            <small>Cantidad: ${cantidad} ${unidad}</small><br>
+            <small>Subtotal: $${subtotal.toFixed(2)} + IVA (${alicuota}%): $${iva.toFixed(2)}</small><br>
+            <strong>Total: $${total.toFixed(2)}</strong>
+            <hr>
+        `;
+                            resumen.appendChild(item);
+                        });
+
+                        if (!hayProductos) {
+                            resumen.innerHTML = `<p>No se han seleccionado productos.</p>`;
+                        } else {
+                            const totalFinal = document.createElement('p');
+                            totalFinal.innerHTML = `<strong>Total final con IVA: $${totalConIva.toFixed(2)}</strong>`;
+                            resumen.appendChild(totalFinal);
+                        }
+                    }
+
+                    // Escuchar cambios
+                    document.addEventListener('input', function(e) {
+                        if (e.target.matches('#acordeones-productos input[type="number"]')) {
+                            actualizarResumen();
+                        }
+                    });
                 </script>
 
                 <!-- 🟢 Alertas -->
