@@ -25,8 +25,13 @@ if ($_GET['listar'] === 'productos_categorizados') {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'guardar_pedido') {
-    $data = $_POST;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['accion']) || $data['accion'] !== 'guardar_pedido') {
+        echo json_encode(['success' => false, 'message' => 'Acción no reconocida']);
+        exit;
+    }
 
     try {
         $resultado = $model->guardarPedidoConDetalles($data);
@@ -37,3 +42,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     }
     exit;
 }
+
+
