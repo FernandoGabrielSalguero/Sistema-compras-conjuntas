@@ -177,17 +177,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             });
         <?php endif; ?>
 
-        // toastify de operativo
-        <?php if (!empty($cierre_info) && !empty($cierre_info['pendientes'])): ?>
-                <script
-                script
-            script >
-                const pendientes = <?= json_encode($cierre_info['pendientes'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-            pendientes.forEach(op => {
-                showToast('info', `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`);
-            });
-    </script>
-<?php endif; ?>
 </script>
 </body>
 <!-- contenedor del toastify -->
