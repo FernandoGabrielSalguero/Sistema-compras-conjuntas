@@ -88,6 +88,12 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         .accordion-body.show {
             display: block;
         }
+
+        .card-productos {
+            background-color: #f3f0ff;
+            /* lavanda suave */
+            border: 1px solid #d1c4e9;
+        }
     </style>
 
 
@@ -244,7 +250,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             </div>
                         </div>
 
-<div class="card card-productos" style="margin-top: 10px;">
+                        <div class="card card-productos" style="margin-top: 10px;">
                             <h2>Seleccionar productos</h2>
                             <div id="acordeones-productos" class="card-grid grid-3"></div>
                         </div>
