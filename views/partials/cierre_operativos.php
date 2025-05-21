@@ -1,6 +1,6 @@
 <?php
+echo "<script>console.log('[DEBUG] Se está ejecutando cierre_operativos.php');</script>";
 require_once __DIR__ . '/../../config.php';
-
 function cerrarOperativosVencidos(PDO $pdo): array {
     $hoy = new DateTime();
     $cerrados = 0;

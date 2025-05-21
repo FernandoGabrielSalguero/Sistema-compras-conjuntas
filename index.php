@@ -16,11 +16,10 @@ session_set_cookie_params([
 ]);
 session_start();
 
-require_once __DIR__ . '/views/partials/cierre_operativos.php';
-$cierre_info = cerrarOperativosVencidos($pdo);
-
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/models/AuthModel.php';
+require_once __DIR__ . '/views/partials/cierre_operativos.php';
+$cierre_info = cerrarOperativosVencidos($pdo);
 
 $error = '';
 
