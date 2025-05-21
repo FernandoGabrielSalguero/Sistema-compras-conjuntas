@@ -50,66 +50,32 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
     <style>
-        #modalEditarPedido .modal-content {
-            max-width: 900px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        /* Si querés que los grupos de campos tengan 2 columnas */
-        #modalEditarPedido .form-grid.grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        #acordeones-productos .accordion {
-            width: 100%;
-        }
-
-        #acordeones-productos .accordion-body .input-group {
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 1rem;
-        }
-
-        #acordeones-productos .input-icon input {
+        .buscador-lista {
+            list-style: none;
+            margin: 0;
+            padding: 0;
             border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 0.5rem;
+            max-height: 150px;
+            overflow-y: auto;
+            background: white;
+            position: absolute;
+            z-index: 1000;
             width: 100%;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        #acordeones-productos .input-icon {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        .buscador-lista li {
+            padding: 8px;
+            cursor: pointer;
         }
 
-        .producto-icono {
-            font-size: 1.25rem;
-            margin-right: 0.5rem;
-            color: #8a2be2;
+        .buscador-lista li:hover {
+            background-color: #f0f0f0;
         }
 
-        #productosEditablesContainer {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        #productosEditablesContainer {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        #productosEditablesContainer .card {
-            background-color: rgb(213, 204, 250);
-            padding: 1rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        .input-group {
+            position: relative;
         }
     </style>
 
@@ -183,14 +149,150 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <h2>Hola 👋</h2>
                     <p>En esta página vamos a comprar y administrar las compras de los usuarios</p>
                 </div>
-                <div class="card">
 
+
+                <div class="card">
+                    <h2>Crear nuevo pedido</h2>
+                    <form id="formPedido" class="form-modern">
+                        <div class="form-grid grid-2">
+
+                            <!-- Cooperativa (Buscador personalizado) -->
+                            <div class="input-group">
+                                <label for="buscador_coop">Cooperativa</label>
+                                <input type="text" id="buscador_coop" placeholder="Buscar cooperativa..." autocomplete="off">
+                                <ul id="lista_coop" class="buscador-lista"></ul>
+                                <input type="hidden" name="cooperativa" id="cooperativa" required>
+                            </div>
+
+                            <!-- Productor (Buscador personalizado) -->
+                            <div class="input-group">
+                                <label for="buscador_prod">Productor</label>
+                                <input type="text" id="buscador_prod" placeholder="Buscar productor..." disabled autocomplete="off">
+                                <ul id="lista_prod" class="buscador-lista"></ul>
+                                <input type="hidden" name="productor" id="productor" required>
+                            </div>
+
+                            <!-- Fecha -->
+                            <div class="input-group">
+                                <label for="fecha_pedido">Fecha del pedido</label>
+                                <input type="date" id="fecha_pedido" name="fecha_pedido" required>
+                            </div>
+
+                            <!-- Persona de facturación -->
+                            <div class="input-group">
+                                <label for="persona_facturacion">Factura a nombre de</label>
+                                <select id="persona_facturacion" name="persona_facturacion" required>
+                                    <option value="cooperativa">Cooperativa</option>
+                                    <option value="productor">Productor</option>
+                                </select>
+                            </div>
+
+                            <!-- Condición de facturación -->
+                            <div class="input-group">
+                                <label for="condicion_facturacion">Condición de facturación</label>
+                                <select id="condicion_facturacion" name="condicion_facturacion" required>
+                                    <option value="responsable inscripto">Responsable Inscripto</option>
+                                    <option value="monotributista">Monotributista</option>
+                                </select>
+                            </div>
+
+                            <!-- Afiliación -->
+                            <div class="input-group">
+                                <label for="afiliacion">Afiliación</label>
+                                <select id="afiliacion" name="afiliacion" required>
+                                    <option value="socio">Socio</option>
+                                    <option value="tercero">Tercero</option>
+                                </select>
+                            </div>
+
+                            <!-- Observaciones -->
+                            <div class="input-group" style="grid-column: span 2;">
+                                <label for="observaciones">Observaciones</label>
+                                <textarea id="observaciones" name="observaciones" rows="4" placeholder="Notas adicionales..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-buttons" style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-aceptar">Guardar pedido</button>
+                        </div>
+                    </form>
                 </div>
+
 
                 <!-- 🛠️ SCRIPTS -->
                 <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        cargarCooperativas();
 
+                        const inputCoop = document.getElementById('buscador_coop');
+                        const listaCoop = document.getElementById('lista_coop');
+                        const hiddenCoop = document.getElementById('cooperativa');
 
+                        const inputProd = document.getElementById('buscador_prod');
+                        const listaProd = document.getElementById('lista_prod');
+                        const hiddenProd = document.getElementById('productor');
+
+                        let cooperativas = [];
+                        let productores = [];
+
+                        async function cargarCooperativas() {
+                            try {
+                                const res = await fetch('/controllers/sve_MercadoDigitalController.php?listar=cooperativas');
+                                cooperativas = await res.json();
+                                activarBuscador(inputCoop, listaCoop, cooperativas, hiddenCoop, (id) => {
+                                    // limpiar productor
+                                    inputProd.value = '';
+                                    hiddenProd.value = '';
+                                    listaProd.innerHTML = '';
+                                    inputProd.disabled = false;
+                                    cargarProductores(id);
+                                });
+                            } catch (err) {
+                                console.error('❌ Error al cargar cooperativas:', err);
+                            }
+                        }
+
+                        async function cargarProductores(coopId) {
+                            try {
+                                const res = await fetch(`/controllers/sve_MercadoDigitalController.php?listar=productores&coop_id=${coopId}`);
+                                productores = await res.json();
+                                activarBuscador(inputProd, listaProd, productores, hiddenProd);
+                            } catch (err) {
+                                console.error('❌ Error al cargar productores:', err);
+                            }
+                        }
+
+                        function activarBuscador(input, lista, dataArray, hiddenInput, onSelectCallback = null) {
+                            input.addEventListener('input', () => {
+                                const search = input.value.toLowerCase();
+                                lista.innerHTML = '';
+                                const resultados = dataArray.filter(item => item.nombre.toLowerCase().includes(search));
+                                if (resultados.length === 0) {
+                                    lista.style.display = 'none';
+                                    return;
+                                }
+                                resultados.forEach(item => {
+                                    const li = document.createElement('li');
+                                    li.textContent = item.nombre;
+                                    li.addEventListener('click', () => {
+                                        input.value = item.nombre;
+                                        hiddenInput.value = item.id_real;
+                                        lista.innerHTML = '';
+                                        lista.style.display = 'none';
+                                        if (onSelectCallback) onSelectCallback(item.id_real);
+                                    });
+                                    lista.appendChild(li);
+                                });
+                                lista.style.display = 'block';
+                            });
+
+                            document.addEventListener('click', (e) => {
+                                if (!input.contains(e.target) && !lista.contains(e.target)) {
+                                    lista.style.display = 'none';
+                                }
+                            });
+                        }
+                    });
                 </script>
 
                 <!-- 🟢 Alertas -->
