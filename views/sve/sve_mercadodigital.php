@@ -77,6 +77,17 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         .input-group {
             position: relative;
         }
+
+        /* acordeones */
+        .accordion-body {
+            display: none;
+            padding: 15px;
+            background: #fff;
+        }
+
+        .accordion-body.show {
+            display: block;
+        }
     </style>
 
 
@@ -235,7 +246,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                         <div class="card" style="margin-top: 30px;">
                             <h2>Seleccionar productos</h2>
-                            <div id="acordeones-productos" class="accordion"></div>
+                            <div id="acordeones-productos" class="card-grid grid-2"></div>
                         </div>
 
                         <div class="form-buttons" style="margin-top: 20px;">
@@ -338,11 +349,14 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 const productos = data[categoria];
 
                                 const acordeon = document.createElement('div');
-                                acordeon.classList.add('accordion-item');
+                                acordeon.classList.add('card'); // estilo de tarjeta
 
                                 const header = document.createElement('div');
                                 header.classList.add('accordion-header');
-                                header.innerHTML = `<strong>${categoria}</strong>`;
+                                body.classList.add('accordion-body'); // y luego .show si querés abierto
+
+
+                                // 👉 Al hacer clic, mostrar u ocultar el cuerpo
                                 header.addEventListener('click', () => {
                                     body.classList.toggle('show');
                                 });
