@@ -42,7 +42,8 @@ class SveMercadoDigitalModel
             Id as producto_id,
             Nombre_producto,
             Unidad_Medida_venta,
-            Precio_producto
+            Precio_producto,
+            alicuota
         FROM productos
         ORDER BY categoria, Nombre_producto
     ");
