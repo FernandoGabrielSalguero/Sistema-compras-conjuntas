@@ -156,59 +156,80 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <form id="formPedido" class="form-modern">
                         <div class="form-grid grid-2">
 
-                            <!-- Cooperativa (Buscador personalizado) -->
+                            <!-- Cooperativa -->
                             <div class="input-group">
                                 <label for="buscador_coop">Cooperativa</label>
-                                <input type="text" id="buscador_coop" placeholder="Buscar cooperativa..." autocomplete="off">
+                                <div class="input-icon">
+                                    <span class="material-icons">groups</span>
+                                    <input type="text" id="buscador_coop" placeholder="Buscar cooperativa..." autocomplete="off" required>
+                                </div>
                                 <ul id="lista_coop" class="buscador-lista"></ul>
-                                <input type="hidden" name="cooperativa" id="cooperativa" required>
+                                <input type="hidden" name="cooperativa" id="cooperativa">
                             </div>
 
-                            <!-- Productor (Buscador personalizado) -->
+                            <!-- Productor -->
                             <div class="input-group">
                                 <label for="buscador_prod">Productor</label>
-                                <input type="text" id="buscador_prod" placeholder="Buscar productor..." disabled autocomplete="off">
+                                <div class="input-icon">
+                                    <span class="material-icons">person</span>
+                                    <input type="text" id="buscador_prod" placeholder="Buscar productor..." autocomplete="off" disabled required>
+                                </div>
                                 <ul id="lista_prod" class="buscador-lista"></ul>
-                                <input type="hidden" name="productor" id="productor" required>
+                                <input type="hidden" name="productor" id="productor">
                             </div>
 
                             <!-- Fecha -->
                             <div class="input-group">
                                 <label for="fecha_pedido">Fecha del pedido</label>
-                                <input type="date" id="fecha_pedido" name="fecha_pedido" required>
+                                <div class="input-icon">
+                                    <span class="material-icons">event</span>
+                                    <input type="date" id="fecha_pedido" name="fecha_pedido" required>
+                                </div>
                             </div>
 
                             <!-- Persona de facturación -->
                             <div class="input-group">
                                 <label for="persona_facturacion">Factura a nombre de</label>
-                                <select id="persona_facturacion" name="persona_facturacion" required>
-                                    <option value="cooperativa">Cooperativa</option>
-                                    <option value="productor">Productor</option>
-                                </select>
+                                <div class="input-icon">
+                                    <span class="material-icons">receipt</span>
+                                    <select id="persona_facturacion" name="persona_facturacion" required>
+                                        <option value="cooperativa">Cooperativa</option>
+                                        <option value="productor">Productor</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <!-- Condición de facturación -->
                             <div class="input-group">
                                 <label for="condicion_facturacion">Condición de facturación</label>
-                                <select id="condicion_facturacion" name="condicion_facturacion" required>
-                                    <option value="responsable inscripto">Responsable Inscripto</option>
-                                    <option value="monotributista">Monotributista</option>
-                                </select>
+                                <div class="input-icon">
+                                    <span class="material-icons">assignment</span>
+                                    <select id="condicion_facturacion" name="condicion_facturacion" required>
+                                        <option value="responsable inscripto">Responsable Inscripto</option>
+                                        <option value="monotributista">Monotributista</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <!-- Afiliación -->
                             <div class="input-group">
                                 <label for="afiliacion">Afiliación</label>
-                                <select id="afiliacion" name="afiliacion" required>
-                                    <option value="socio">Socio</option>
-                                    <option value="tercero">Tercero</option>
-                                </select>
+                                <div class="input-icon">
+                                    <span class="material-icons">verified_user</span>
+                                    <select id="afiliacion" name="afiliacion" required>
+                                        <option value="socio">Socio</option>
+                                        <option value="tercero">Tercero</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <!-- Observaciones -->
                             <div class="input-group" style="grid-column: span 2;">
                                 <label for="observaciones">Observaciones</label>
-                                <textarea id="observaciones" name="observaciones" rows="4" placeholder="Notas adicionales..."></textarea>
+                                <div class="input-icon">
+                                    <span class="material-icons">note</span>
+                                    <textarea id="observaciones" name="observaciones" rows="3" placeholder="Notas adicionales..."></textarea>
+                                </div>
                             </div>
                         </div>
 
@@ -217,6 +238,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         </div>
                     </form>
                 </div>
+
 
 
                 <!-- 🛠️ SCRIPTS -->
