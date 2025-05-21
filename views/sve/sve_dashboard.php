@@ -26,6 +26,10 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'sve') {
     die("🚫 Acceso restringido: esta página es solo para usuarios SVE.");
 }
 
+//Cargamos los operativos cerrados
+$cierre_info = $_SESSION['cierre_info'] ?? null;
+unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
+
 // Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
@@ -158,8 +162,21 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
     <script src="../../views/partials/spinner-global.js"></script>
 
     <script>
-    console.log(<?php echo json_encode($_SESSION); ?>);
-</script>
+        console.log(<?php echo json_encode($_SESSION); ?>);
+
+        <?php if (!empty($cierre_info)): ?>
+            const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+            console.log("📦 Estado de operativos:");
+            console.log("Total:", cierreData.total_operativos);
+            console.log("Cerrados:", cierreData.cerrados);
+            console.log("Abiertos:", cierreData.abiertos);
+            console.log("Pendientes:", cierreData.pendientes);
+
+            cierreData.pendientes.forEach(op => {
+                console.log(`Operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`);
+            });
+        <?php endif; ?>
+    </script>
 </body>
 
 </html>
