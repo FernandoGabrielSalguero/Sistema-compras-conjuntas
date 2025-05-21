@@ -172,13 +172,15 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     const switchId = `switch_${op.id}`;
 
                     card.innerHTML = `
-                <h3>${op.nombre}</h3>
-                <p>¿Participarás?</p>
-                <label class="switch">
-                    <input type="checkbox" id="${switchId}" ${op.participa === 'si' ? 'checked' : ''}>
-                    <span class="slider round"></span>
-                </label>
-            `;
+    <h3>${op.nombre}</h3>
+    <p><strong>Inicio:</strong> ${formatearFechaArg(op.fecha_inicio)}</p>
+    <p><strong>Cierre:</strong> ${formatearFechaArg(op.fecha_cierre)}</p>
+    <p><strong>Participás:</strong></p>
+    <label class="switch">
+        <input type="checkbox" id="${switchId}" ${op.participa === 'si' ? 'checked' : ''}>
+        <span class="slider round"></span>
+    </label>
+`;
 
                     // Manejador de cambio
                     card.querySelector(`#${switchId}`).addEventListener('change', async (e) => {
@@ -215,6 +217,11 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         }
 
         document.addEventListener('DOMContentLoaded', cargarOperativos);
+
+        function formatearFechaArg(fechaISO) {
+            const [a, m, d] = fechaISO.split("-");
+            return `${d}/${m}/${a}`;
+        }
     </script>
 
 </body>
