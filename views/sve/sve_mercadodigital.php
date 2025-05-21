@@ -246,7 +246,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                         <div class="card" style="margin-top: 30px;">
                             <h2>Seleccionar productos</h2>
-                            <div id="acordeones-productos" class="card-grid grid-2"></div>
+                            <div id="acordeones-productos" class="card-grid grid-3"></div>
                         </div>
 
                         <div class="form-buttons" style="margin-top: 20px;">
@@ -346,28 +346,28 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             contenedor.innerHTML = '';
 
                             for (const categoria in data) {
-const productos = data[categoria];
+                                const productos = data[categoria];
 
-    const acordeon = document.createElement('div');
-    acordeon.classList.add('card'); // usa tu estilo de tarjeta
+                                const acordeon = document.createElement('div');
+                                acordeon.classList.add('card'); // usa tu estilo de tarjeta
 
-    const header = document.createElement('div');
-    header.classList.add('accordion-header');
-    header.innerHTML = `<strong>${categoria}</strong>`;
+                                const header = document.createElement('div');
+                                header.classList.add('accordion-header');
+                                header.innerHTML = `<strong>${categoria}</strong>`;
 
-    const body = document.createElement('div');
-    body.classList.add('accordion-body');
+                                const body = document.createElement('div');
+                                body.classList.add('accordion-body');
 
-    // Mostrar el cuerpo al hacer clic
-    header.addEventListener('click', () => {
-        body.classList.toggle('show');
-    });
+                                // Mostrar el cuerpo al hacer clic
+                                header.addEventListener('click', () => {
+                                    body.classList.toggle('show');
+                                });
 
-    productos.forEach(prod => {
-        const grupo = document.createElement('div');
-        grupo.className = 'input-group';
+                                productos.forEach(prod => {
+                                    const grupo = document.createElement('div');
+                                    grupo.className = 'input-group';
 
-grupo.innerHTML = `
+                                    grupo.innerHTML = `
     <label for="prod_${prod.producto_id}">
         <strong>${prod.Nombre_producto}</strong> 
         (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
@@ -385,12 +385,12 @@ grupo.innerHTML = `
     </div>
 `;
 
-        body.appendChild(grupo);
-    });
+                                    body.appendChild(grupo);
+                                });
 
-    acordeon.appendChild(header);
-    acordeon.appendChild(body);
-    contenedor.appendChild(acordeon);
+                                acordeon.appendChild(header);
+                                acordeon.appendChild(body);
+                                contenedor.appendChild(acordeon);
                             }
                         } catch (err) {
                             console.error('❌ Error al cargar productos:', err);
