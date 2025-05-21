@@ -61,4 +61,57 @@ class SveMercadoDigitalModel
 
         return $agrupados;
     }
+
+    public function guardarPedidoConDetalles($data)
+    {
+        $this->pdo->beginTransaction();
+
+        // 1. Insertar pedido principal
+        $stmt = $this->pdo->prepare("
+        INSERT INTO pedidos (cooperativa, productor, fecha_pedido, persona_facturacion, condicion_facturacion, afiliacion, observaciones, total_sin_iva, total_iva, total_pedido)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ");
+
+        $total_sin_iva = $data['totales']['sin_iva'] ?? 0;
+        $total_iva = $data['totales']['iva'] ?? 0;
+        $total_con_iva = $data['totales']['con_iva'] ?? 0;
+
+        $stmt->execute([
+            $data['cooperativa'],
+            $data['productor'],
+            $data['fecha_pedido'],
+            $data['persona_facturacion'],
+            $data['condicion_facturacion'],
+            $data['afiliacion'],
+            $data['observaciones'],
+            $total_sin_iva,
+            $total_iva,
+            $total_con_iva
+        ]);
+
+        $pedido_id = $this->pdo->lastInsertId();
+
+        // 2. Insertar productos
+        foreach ($data['productos'] as $producto) {
+            $stmtProd = $this->pdo->prepare("
+            INSERT INTO detalle_pedidos (pedido_id, producto_id, nombre_producto, detalle_producto, precio_producto, unidad_medida_venta, categoria, cantidad, alicuota)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+
+            $stmtProd->execute([
+                $pedido_id,
+                $producto['id'],
+                $producto['nombre'],
+                $producto['detalle'],
+                $producto['precio'],
+                $producto['unidad'],
+                $producto['categoria'],
+                $producto['cantidad'],
+                $producto['alicuota']
+            ]);
+        }
+
+        $this->pdo->commit();
+        return $pedido_id;
+    }
 }

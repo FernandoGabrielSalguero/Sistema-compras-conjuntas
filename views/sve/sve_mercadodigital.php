@@ -504,6 +504,83 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             actualizarResumen();
                         }
                     });
+
+                    // Guardar pedido
+                    document.getElementById('formPedido').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+
+                        const formData = new FormData(this);
+                        const productosSeleccionados = [];
+                        let totalSinIVA = 0;
+                        let totalIVA = 0;
+
+                        document.querySelectorAll('#acordeones-productos input[type="number"]').forEach(input => {
+                            const cantidad = parseFloat(input.value);
+                            if (!cantidad || cantidad <= 0) return;
+
+                            const label = input.closest('.input-group').querySelector('label')?.textContent?.trim() || '';
+                            const texto = label.match(/^(.*?)\s*\((.*?)\s*-\s*\$(.*?)\)/);
+                            const nombre = texto?.[1]?.trim() || 'Producto';
+                            const unidad = texto?.[2]?.trim() || '';
+                            const precio = parseFloat(texto?.[3]) || 0;
+                            const alicuota = parseFloat(input.dataset.alicuota || 0);
+
+                            const subtotal = precio * cantidad;
+                            const iva = subtotal * (alicuota / 100);
+
+                            totalSinIVA += subtotal;
+                            totalIVA += iva;
+
+                            productosSeleccionados.push({
+                                id: parseInt(input.name.match(/\[(\d+)\]/)[1]),
+                                nombre: nombre,
+                                detalle: '', // si lo querés traer después
+                                precio: precio,
+                                unidad: unidad,
+                                categoria: input.closest('.card')?.querySelector('.accordion-header')?.textContent.trim() || '',
+                                cantidad: cantidad,
+                                alicuota: alicuota
+                            });
+                        });
+
+                        const payload = {
+                            accion: 'guardar_pedido',
+                            cooperativa: formData.get('cooperativa'),
+                            productor: formData.get('productor'),
+                            fecha_pedido: formData.get('fecha_pedido'),
+                            persona_facturacion: formData.get('persona_facturacion'),
+                            condicion_facturacion: formData.get('condicion_facturacion'),
+                            afiliacion: formData.get('afiliacion'),
+                            observaciones: formData.get('observaciones'),
+                            productos: productosSeleccionados,
+                            totales: {
+                                sin_iva: totalSinIVA,
+                                iva: totalIVA,
+                                con_iva: totalSinIVA + totalIVA
+                            }
+                        };
+
+                        try {
+                            const res = await fetch('/controllers/sve_MercadoDigitalController.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(payload)
+                            });
+
+                            const json = await res.json();
+                            if (json.success) {
+                                alert('✅ Pedido guardado correctamente. ID: ' + json.pedido_id);
+                                location.reload();
+                            } else {
+                                alert('❌ Error: ' + json.message);
+                            }
+                        } catch (err) {
+                            console.error('Error al guardar:', err);
+                            alert('❌ Error inesperado al guardar el pedido.');
+                        }
+                    });
                 </script>
 
                 <!-- 🟢 Alertas -->

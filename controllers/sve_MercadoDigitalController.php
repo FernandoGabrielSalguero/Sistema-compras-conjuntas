@@ -24,3 +24,16 @@ if ($_GET['listar'] === 'productos_categorizados') {
     echo json_encode($data);
     exit;
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'guardar_pedido') {
+    $data = $_POST;
+
+    try {
+        $resultado = $model->guardarPedidoConDetalles($data);
+        echo json_encode(['success' => true, 'message' => 'Pedido guardado con éxito', 'pedido_id' => $resultado]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Error al guardar el pedido: ' . $e->getMessage()]);
+    }
+    exit;
+}
