@@ -16,6 +16,9 @@ session_set_cookie_params([
 ]);
 session_start();
 
+require_once __DIR__ . '/views/partials/cierre_operativos.php';
+$cierre_info = cerrarOperativosVencidos($pdo);
+
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/models/AuthModel.php';
 
@@ -193,6 +196,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php if (!empty($_SESSION)): ?>
             const sessionData = <?= json_encode($_SESSION, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
             console.log("Datos de sesión:", sessionData);
+        <?php endif; ?>
+
+        // imprimir los operativos cerrados en la consola
+        <?php if (!empty($cierre_info)): ?>
+            const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+            console.log("Cierre operativos:", cierreData);
         <?php endif; ?>
     </script>
 
