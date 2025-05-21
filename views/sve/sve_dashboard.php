@@ -50,9 +50,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
-    <!-- contenedor del toastify -->
-    <div id="toast-container"></div>
-
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
@@ -157,33 +154,43 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     </form>
                 </div>
 
+
+                <!-- contenedor del toastify -->
+                <div id="toast-container"></div>
+
+                <!-- Spinner Global -->
+                <script src="../../views/partials/spinner-global.js"></script>
+
             </section>
 
         </div>
     </div>
-    <!-- Spinner Global -->
-    <script src="../../views/partials/spinner-global.js"></script>
 
+    <!-- toast -->
     <script>
-        console.log(<?php echo json_encode($_SESSION); ?>);
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log(<?php echo json_encode($_SESSION); ?>);
 
-        <?php if (!empty($cierre_info)): ?>
-            const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-            console.log("📦 Estado de operativos:");
-            console.log("Total:", cierreData.total_operativos);
-            console.log("Cerrados:", cierreData.cerrados);
-            console.log("Abiertos:", cierreData.abiertos);
-            console.log("Pendientes:", cierreData.pendientes);
+            <?php if (!empty($cierre_info)): ?>
+                const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+                console.log("📦 Estado de operativos:");
+                console.log("Total:", cierreData.total_operativos);
+                console.log("Cerrados:", cierreData.cerrados);
+                console.log("Abiertos:", cierreData.abiertos);
+                console.log("Pendientes:", cierreData.pendientes);
 
-            cierreData.pendientes.forEach(op => {
-                const mensaje = `⚠️ El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
-                console.log(mensaje);
-                showToast('info', mensaje); // ✅ usa tu función personalizada
-            });
-        <?php endif; ?>
+                cierreData.pendientes.forEach(op => {
+                    const mensaje = `⚠️ El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
+                    console.log(mensaje);
+                    if (typeof showToast === 'function') {
+                        showToast('info', mensaje);
+                    } else {
+                        console.warn('⚠️ showToast no está definido aún.');
+                    }
+                });
+            <?php endif; ?>
+        });
     </script>
-
-
 
 </body>
 
