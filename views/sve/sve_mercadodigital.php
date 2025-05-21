@@ -255,6 +255,13 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             <div id="acordeones-productos" class="card-grid grid-3"></div>
                         </div>
 
+                        <div class="card card-productos" id="resumenPedido" style="margin-top: 30px;">
+                            <h2>Resumen del pedido</h2>
+                            <div id="contenidoResumen">
+                                <p>No se han seleccionado productos.</p>
+                            </div>
+                        </div>
+
                         <div class="form-buttons" style="margin-top: 20px;">
                             <button type="submit" class="btn btn-aceptar">Guardar pedido</button>
                         </div>
