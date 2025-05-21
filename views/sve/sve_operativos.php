@@ -305,6 +305,12 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                        <button class="btn-icon" onclick="editarOperativo(${op.id})">
                       <i class="material-icons">edit</i>
                      </button>
+                        <button class="btn-icon" onclick="editarOperativo(${op.id})">
+      <i class="material-icons">edit</i>
+   </button>
+   <button class="btn-icon" onclick="eliminarOperativo(${op.id})">
+      <i class="material-icons" style="color:red;">delete</i>
+   </button>
                 </td>
             `;
                     tabla.appendChild(row);
@@ -395,6 +401,37 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 showAlert('error', 'Error al guardar');
             }
         });
+
+
+        // Eliminar operativo
+        async function eliminarOperativo(id) {
+            if (!confirm('¿Estás seguro de que querés eliminar este operativo? Esta acción no se puede deshacer.')) {
+                return;
+            }
+
+            try {
+                const res = await fetch('/controllers/sve_operativosController.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `id=${id}&_method=delete`
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    showAlert('success', result.message);
+                    cargarOperativos();
+                } else {
+                    showAlert('error', result.message || 'No se pudo eliminar');
+                }
+            } catch (err) {
+                console.error('❌ Error al eliminar:', err);
+                showAlert('error', 'Error al eliminar el operativo.');
+            }
+        }
+
 
         // Utilidad para mostrar alertas
         function showAlert(tipo, mensaje) {

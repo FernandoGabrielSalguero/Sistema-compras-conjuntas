@@ -47,3 +47,21 @@ if (isset($_GET['id'])) {
 }
 
 echo json_encode(['success' => true, 'operativos' => $model->obtenerTodos()]);
+
+// Simulación de método DELETE via POST
+if ($method === 'POST' && ($_POST['_method'] ?? '') === 'delete') {
+    $id = $_POST['id'] ?? null;
+
+    if (!$id) {
+        echo json_encode(['success' => false, 'message' => 'ID faltante para eliminar.']);
+        exit;
+    }
+
+    try {
+        $model->eliminar($id);
+        echo json_encode(['success' => true, 'message' => 'Operativo eliminado correctamente.']);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error al eliminar: ' . $e->getMessage()]);
+    }
+    exit;
+}
