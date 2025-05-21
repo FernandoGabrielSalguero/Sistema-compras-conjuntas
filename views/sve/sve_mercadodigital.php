@@ -349,39 +349,38 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 const productos = data[categoria];
 
                                 const acordeon = document.createElement('div');
-                                acordeon.classList.add('card'); // estilo de tarjeta
+                                acordeon.classList.add('card'); // usa tu estilo de tarjeta
 
                                 const header = document.createElement('div');
                                 header.classList.add('accordion-header');
-                                body.classList.add('accordion-body'); // y luego .show si querés abierto
-
-
-                                // 👉 Al hacer clic, mostrar u ocultar el cuerpo
-                                header.addEventListener('click', () => {
-                                    body.classList.toggle('show');
-                                });
+                                header.innerHTML = `<strong>${categoria}</strong>`;
 
                                 const body = document.createElement('div');
                                 body.classList.add('accordion-body');
+
+                                // Mostrar el cuerpo al hacer clic
+                                header.addEventListener('click', () => {
+                                    body.classList.toggle('show');
+                                });
 
                                 productos.forEach(prod => {
                                     const grupo = document.createElement('div');
                                     grupo.className = 'input-group';
 
                                     grupo.innerHTML = `
-                    <label>
-                        <strong>${prod.Nombre_producto}</strong> 
-                        (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
-                    </label>
-                    <input 
-                        type="number" 
-                        name="productos[${prod.producto_id}]" 
-                        min="0" 
-                        placeholder="Cantidad..." 
-                        class="input" 
-                        style="margin-top: 4px;"
-                    />
-                `;
+            <label>
+                <strong>${prod.Nombre_producto}</strong> 
+                (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
+            </label>
+            <input 
+                type="number" 
+                name="productos[${prod.producto_id}]" 
+                min="0" 
+                placeholder="Cantidad..." 
+                class="input" 
+                style="margin-top: 4px;"
+            />
+        `;
 
                                     body.appendChild(grupo);
                                 });
