@@ -165,9 +165,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         console.log(<?php echo json_encode($_SESSION); ?>);
 
         <?php if (!empty($cierre_info)): ?>
-                <script
-                script >
-                const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+            const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
             console.log("📦 Estado de operativos:");
             console.log("Total:", cierreData.total_operativos);
             console.log("Cerrados:", cierreData.cerrados);
@@ -175,14 +173,10 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             console.log("Pendientes:", cierreData.pendientes);
 
             cierreData.pendientes.forEach(op => {
-                const mensaje = `⚠️ El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
-                console.log(mensaje);
-                showToast('info', mensaje); // ✅ Esto muestra el toast
+                console.log(`Operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`);
             });
+        <?php endif; ?>
     </script>
-<?php endif; ?>
-
-</script>
 </body>
 <!-- contenedor del toastify -->
 <div id="toast-container"></div>
