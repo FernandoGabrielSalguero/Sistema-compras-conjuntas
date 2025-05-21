@@ -474,22 +474,13 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             totalConIva += total;
 
                             const item = document.createElement('div');
-                            //                     item.classList.add('input-group');
-                            //                     item.innerHTML = `
-                            //     <strong>${texto}</strong><br>
-                            //     <small>Cantidad: ${cantidad} ${unidad}</small><br>
-                            //     <small>Subtotal: $${subtotal.toFixed(2)} + IVA (${alicuota}%): $${iva.toFixed(2)}</small><br>
-                            //     <strong>Total: $${total.toFixed(2)}</strong>
-                            //     <hr>
-                            // `;
-
                             item.classList.add('resumen-item');
                             item.innerHTML = `
-    <strong>🧾 ${texto}</strong>
-    <small>📦 Cantidad: ${cantidad} ${unidad}</small>
-    <small>💵 Subtotal: $${subtotal.toFixed(2)}</small>
-    <small>🧾 IVA (${alicuota}%): $${iva.toFixed(2)}</small>
-    <div class="resumen-total">Total: $${total.toFixed(2)}</div>
+                            <strong>🧾 ${texto}</strong>
+                            <small>📦 Cantidad: ${cantidad} ${unidad}</small>
+                            <small>💵 Subtotal: $${subtotal.toFixed(2)}</small>
+                            <small>🧾 IVA (${alicuota}%): $${iva.toFixed(2)}</small>
+                            <div class="resumen-total">Total: $${total.toFixed(2)}</div>
 `;
                             resumen.appendChild(item);
                         });
