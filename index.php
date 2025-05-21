@@ -38,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         //Analizamos los operativos cerrados
         require_once __DIR__ . '/views/partials/cierre_operativos.php';
         $cierre_info = cerrarOperativosVencidos($pdo);
+        $_SESSION['cierre_info'] = $cierre_info;
 
         // Datos combinados
         $_SESSION['usuario'] = $user['usuario'];
