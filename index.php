@@ -18,8 +18,6 @@ session_start();
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/models/AuthModel.php';
-require_once __DIR__ . '/views/partials/cierre_operativos.php';
-$cierre_info = cerrarOperativosVencidos($pdo);
 
 $error = '';
 
@@ -36,6 +34,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $auth->login($usuario, $contrasena);
 
     if ($user) {
+
+        //Analizamos los operativos cerrados
+        require_once __DIR__ . '/views/partials/cierre_operativos.php';
+        $cierre_info = cerrarOperativosVencidos($pdo);
+
         // Datos combinados
         $_SESSION['usuario'] = $user['usuario'];
         $_SESSION['rol'] = $user['rol'];
