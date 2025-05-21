@@ -373,7 +373,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
     </label>
     <div class="input-icon">
-        <span class="material-icons">shopping_cart</span>
+        <span class="material-icons">numbers</span>
         <input 
             type="number" 
             name="productos[${prod.producto_id}]" 
