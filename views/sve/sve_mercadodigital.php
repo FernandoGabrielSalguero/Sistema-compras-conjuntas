@@ -233,6 +233,11 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             </div>
                         </div>
 
+                        <div class="card" style="margin-top: 30px;">
+                            <h2>Seleccionar productos</h2>
+                            <div id="acordeones-productos" class="accordion"></div>
+                        </div>
+
                         <div class="form-buttons" style="margin-top: 20px;">
                             <button type="submit" class="btn btn-aceptar">Guardar pedido</button>
                         </div>
@@ -315,6 +320,66 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             });
                         }
                     });
+
+                    // acordeones
+                    document.addEventListener('DOMContentLoaded', () => {
+                        cargarProductosPorCategoria();
+                    });
+
+                    async function cargarProductosPorCategoria() {
+                        try {
+                            const res = await fetch('/controllers/sve_MercadoDigitalController.php?listar=productos_categorizados');
+                            const data = await res.json();
+
+                            const contenedor = document.getElementById('acordeones-productos');
+                            contenedor.innerHTML = '';
+
+                            for (const categoria in data) {
+                                const productos = data[categoria];
+
+                                const acordeon = document.createElement('div');
+                                acordeon.classList.add('accordion-item');
+
+                                const header = document.createElement('div');
+                                header.classList.add('accordion-header');
+                                header.innerHTML = `<strong>${categoria}</strong>`;
+                                header.addEventListener('click', () => {
+                                    body.classList.toggle('show');
+                                });
+
+                                const body = document.createElement('div');
+                                body.classList.add('accordion-body');
+
+                                productos.forEach(prod => {
+                                    const grupo = document.createElement('div');
+                                    grupo.className = 'input-group';
+
+                                    grupo.innerHTML = `
+                    <label>
+                        <strong>${prod.Nombre_producto}</strong> 
+                        (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
+                    </label>
+                    <input 
+                        type="number" 
+                        name="productos[${prod.producto_id}]" 
+                        min="0" 
+                        placeholder="Cantidad..." 
+                        class="input" 
+                        style="margin-top: 4px;"
+                    />
+                `;
+
+                                    body.appendChild(grupo);
+                                });
+
+                                acordeon.appendChild(header);
+                                acordeon.appendChild(body);
+                                contenedor.appendChild(acordeon);
+                            }
+                        } catch (err) {
+                            console.error('❌ Error al cargar productos:', err);
+                        }
+                    }
                 </script>
 
                 <!-- 🟢 Alertas -->

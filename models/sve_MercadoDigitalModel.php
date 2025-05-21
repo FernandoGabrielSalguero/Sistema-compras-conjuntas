@@ -1,12 +1,15 @@
 <?php
-class SveMercadoDigitalModel {
+class SveMercadoDigitalModel
+{
     private $pdo;
 
-    public function __construct($pdo) {
+    public function __construct($pdo)
+    {
         $this->pdo = $pdo;
     }
 
-    public function listarCooperativas() {
+    public function listarCooperativas()
+    {
         $stmt = $this->pdo->query("
             SELECT u.id_real, i.nombre
             FROM usuarios u
@@ -17,7 +20,8 @@ class SveMercadoDigitalModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function listarProductoresPorCooperativa($coop_id) {
+    public function listarProductoresPorCooperativa($coop_id)
+    {
         $stmt = $this->pdo->prepare("
             SELECT u.id_real, i.nombre
             FROM rel_productor_coop rel
@@ -28,5 +32,32 @@ class SveMercadoDigitalModel {
         ");
         $stmt->execute([$coop_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function obtenerProductosAgrupadosPorCategoria()
+    {
+        $stmt = $this->pdo->query("
+        SELECT 
+            categoria, 
+            Id as producto_id,
+            Nombre_producto,
+            Unidad_Medida_venta,
+            Precio_producto
+        FROM productos
+        ORDER BY categoria, Nombre_producto
+    ");
+
+        $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $agrupados = [];
+        foreach ($productos as $p) {
+            $categoria = $p['categoria'];
+            if (!isset($agrupados[$categoria])) {
+                $agrupados[$categoria] = [];
+            }
+            $agrupados[$categoria][] = $p;
+        }
+
+        return $agrupados;
     }
 }

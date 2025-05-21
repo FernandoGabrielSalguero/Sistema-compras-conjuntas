@@ -18,3 +18,9 @@ if ($_GET['listar'] === 'productores' && isset($_GET['coop_id'])) {
     echo json_encode($data);
     exit;
 }
+
+if ($_GET['listar'] === 'productos_categorizados') {
+    $data = $model->obtenerProductosAgrupadosPorCategoria();
+    echo json_encode($data);
+    exit;
+}
