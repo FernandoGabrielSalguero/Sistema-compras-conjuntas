@@ -368,19 +368,23 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                     grupo.className = 'input-group';
 
                                     grupo.innerHTML = `
-            <label>
-                <strong>${prod.Nombre_producto}</strong> 
-                (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
-            </label>
-            <input 
-                type="number" 
-                name="productos[${prod.producto_id}]" 
-                min="0" 
-                placeholder="Cantidad..." 
-                class="input" 
-                style="margin-top: 4px;"
-            />
-        `;
+grupo.innerHTML = `
+    <label for="prod_${prod.producto_id}">
+        <strong>${prod.Nombre_producto}</strong> 
+        (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
+    </label>
+    <div class="input-icon">
+        <span class="material-icons">shopping_cart</span>
+        <input 
+            type="number" 
+            name="productos[${prod.producto_id}]" 
+            id="prod_${prod.producto_id}"
+            min="0" 
+            placeholder="Cantidad..." 
+            required
+        />
+    </div>
+`;
 
                                     body.appendChild(grupo);
                                 });
