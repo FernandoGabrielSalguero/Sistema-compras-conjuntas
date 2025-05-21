@@ -411,7 +411,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 });
 
                                 productos.forEach(prod => {
-                                    console.log(prod);
+                                    // console.log(prod); //mirar los productos que vienen de la bbdd
                                     const grupo = document.createElement('div');
                                     grupo.className = 'input-group';
 
@@ -428,7 +428,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
     id="prod_${prod.producto_id}"
     min="0" 
     placeholder="Cantidad..." 
-    required
     data-alicuota="${prod.alicuota}"
         />
     </div>
