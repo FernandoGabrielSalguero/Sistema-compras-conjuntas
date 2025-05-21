@@ -50,6 +50,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
+    <!-- contenedor del toastify -->
+    <div id="toast-container"></div>
+
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
@@ -183,7 +186,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
 
 </body>
-<!-- contenedor del toastify -->
-<div id="toast-container"></div>
+
 
 </html>
