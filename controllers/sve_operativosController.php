@@ -7,9 +7,27 @@ require_once __DIR__ . '/../models/sve_operativosModel.php';
 header('Content-Type: application/json');
 
 $model = new OperativosModel($pdo);
-
 $method = $_SERVER['REQUEST_METHOD'];
 
+// 🛑 PRIMERO: Simulación de DELETE via POST
+if ($method === 'POST' && ($_POST['_method'] ?? '') === 'delete') {
+    $id = $_POST['id'] ?? null;
+
+    if (!$id) {
+        echo json_encode(['success' => false, 'message' => 'ID faltante para eliminar.']);
+        exit;
+    }
+
+    try {
+        $model->eliminar($id);
+        echo json_encode(['success' => true, 'message' => 'Operativo eliminado correctamente.']);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error al eliminar: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
+// ✅ LUEGO: Crear o actualizar
 if ($method === 'POST') {
     $id = $_POST['id'] ?? null;
     $nombre = $_POST['nombre'] ?? '';
@@ -36,6 +54,7 @@ if ($method === 'POST') {
     exit;
 }
 
+// ✅ OBTENER UNO SOLO
 if (isset($_GET['id'])) {
     $data = $model->obtenerPorId($_GET['id']);
     if ($data) {
@@ -46,22 +65,5 @@ if (isset($_GET['id'])) {
     exit;
 }
 
+// ✅ OBTENER TODOS
 echo json_encode(['success' => true, 'operativos' => $model->obtenerTodos()]);
-
-// Simulación de método DELETE via POST
-if ($method === 'POST' && ($_POST['_method'] ?? '') === 'delete') {
-    $id = $_POST['id'] ?? null;
-
-    if (!$id) {
-        echo json_encode(['success' => false, 'message' => 'ID faltante para eliminar.']);
-        exit;
-    }
-
-    try {
-        $model->eliminar($id);
-        echo json_encode(['success' => true, 'message' => 'Operativo eliminado correctamente.']);
-    } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => 'Error al eliminar: ' . $e->getMessage()]);
-    }
-    exit;
-}
