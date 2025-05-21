@@ -244,7 +244,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             </div>
                         </div>
 
-                        <div class="card" style="margin-top: 30px;">
+<div class="card card-productos" style="margin-top: 10px;">
                             <h2>Seleccionar productos</h2>
                             <div id="acordeones-productos" class="card-grid grid-3"></div>
                         </div>
