@@ -54,6 +54,19 @@ if ($method === 'POST') {
     exit;
 }
 
+// Obtener cooperativas participantes de un operativo
+if (isset($_GET['cooperativas']) && isset($_GET['id'])) {
+    $id = $_GET['id'];
+    try {
+        $coops = $model->obtenerCooperativasPorOperativo($id);
+        echo json_encode(['success' => true, 'cooperativas' => $coops]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error al obtener cooperativas: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
+
 // ✅ OBTENER UNO SOLO
 if (isset($_GET['id'])) {
     $data = $model->obtenerPorId($_GET['id']);

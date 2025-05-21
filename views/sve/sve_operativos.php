@@ -284,6 +284,17 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     </div>
                 </div>
 
+                <!-- Modal cooperativas -->
+                <div id="modalCooperativas" class="modal hidden">
+                    <div class="modal-content">
+                        <h3>Cooperativas participantes</h3>
+                        <ul id="listaCooperativas"></ul>
+                        <div class="form-buttons" style="margin-top: 20px;">
+                            <button class="btn btn-cancelar" onclick="closeModalCooperativas()">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Alert -->
                 <div class="alert-container" id="alertContainer"></div>
             </section>
@@ -318,6 +329,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <td>
                 <button class="btn-icon" onclick="editarOperativo(${op.id})">
                 <i class="material-icons">edit</i>
+                </button>
+                <button class="btn-icon" onclick="mostrarCooperativas(${op.id})">
+                <i class="material-icons" style="color:green;">description</i>
                 </button>
                 <button class="btn-icon" onclick="eliminarOperativo(${op.id})">
                 <i class="material-icons" style="color:red;">delete</i>
@@ -483,6 +497,47 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         function formatearFechaArg(fechaISO) {
             const [a, m, d] = fechaISO.split('-');
             return `${d}/${m}/${a}`;
+        }
+
+
+        // Mostrar cooperativas participantes
+        async function mostrarCooperativas(operativoId) {
+            const lista = document.getElementById('listaCooperativas');
+            lista.innerHTML = '<li>Cargando...</li>';
+
+            try {
+                const res = await fetch(`/controllers/sve_operativosController.php?cooperativas=1&id=${operativoId}`);
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.message || 'Error al obtener cooperativas');
+
+                lista.innerHTML = '';
+
+                if (data.cooperativas.length === 0) {
+                    lista.innerHTML = '<li>Sin cooperativas</li>';
+                } else {
+                    data.cooperativas.forEach(coop => {
+                        const li = document.createElement('li');
+                        li.textContent = `${coop.nombre} (ID: ${coop.id_real})`;
+                        lista.appendChild(li);
+                    });
+                }
+
+                openModalCooperativas();
+
+            } catch (err) {
+                console.error('❌ Error:', err);
+                lista.innerHTML = `<li style="color:red;">${err.message}</li>`;
+                openModalCooperativas();
+            }
+        }
+
+        function openModalCooperativas() {
+            document.getElementById('modalCooperativas').classList.remove('hidden');
+        }
+
+        function closeModalCooperativas() {
+            document.getElementById('modalCooperativas').classList.add('hidden');
         }
     </script>
 

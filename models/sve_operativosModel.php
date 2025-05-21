@@ -8,7 +8,7 @@ class OperativosModel
         $this->pdo = $pdo;
     }
 
-        public function eliminar($id)
+    public function eliminar($id)
     {
         // Primero eliminar relaciones (si existen)
         $this->pdo->prepare("DELETE FROM operativos_cooperativas_participacion WHERE operativo_id = ?")->execute([$id]);
@@ -43,4 +43,16 @@ class OperativosModel
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function obtenerCooperativasPorOperativo($operativo_id)
+    {
+        $stmt = $this->pdo->prepare("
+        SELECT u.id_real, u.nombre
+        FROM operativos_cooperativas_participacion ocp
+        JOIN usuarios u ON ocp.cooperativa_id_real = u.id_real
+        WHERE ocp.operativo_id = ? AND ocp.participa = 'si'
+        ORDER BY u.nombre
+    ");
+        $stmt->execute([$operativo_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
