@@ -25,21 +25,17 @@ if (!isset($_SESSION['cuit'])) {
 if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'cooperativa') {
     die("🚫 Acceso restringido: esta página es solo para usuarios cooperativa.");
 }
-// 🚧 Protección de acceso a cooperativa
 
+//Cargamos los operativos cerrados
+$cierre_info = $_SESSION['cierre_info'] ?? null;
+unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
 // Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
-$cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
+$usuario = $_SESSION['usuario'] ?? 'Sin usuario';
 $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
-$observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
-// Campos adicionales para cooperativa
-$id_cooperativa = $_SESSION['id_cooperativa'] ?? null;
-$id_productor = $_SESSION['id_productor'] ?? null;
-$direccion = $_SESSION['direccion'] ?? 'Sin dirección';
-$id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
 ?>
 
 <!DOCTYPE html>
@@ -136,12 +132,43 @@ $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
                     </div>
                 </div>
 
+
+                <!-- contenedor del toastify -->
+                <div id="toast-container"></div>
+                <!-- Spinner Global -->
+                <script src="../../views/partials/spinner-global.js"></script>
+
             </section>
 
         </div>
     </div>
-    <!-- Spinner Global -->
-    <script src="../../views/partials/spinner-global.js"></script>
+
+    <script>
+        // toast
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log(<?php echo json_encode($_SESSION); ?>);
+
+            <?php if (!empty($cierre_info)): ?>
+                const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+                console.log("📦 Estado de operativos:");
+                console.log("Total:", cierreData.total_operativos);
+                console.log("Cerrados:", cierreData.cerrados);
+                console.log("Abiertos:", cierreData.abiertos);
+                console.log("Pendientes:", cierreData.pendientes);
+
+                cierreData.pendientes.forEach(op => {
+                    const mensaje = `⚠️ El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
+                    console.log(mensaje);
+                    if (typeof showToast === 'function') {
+                        showToast('info', mensaje);
+                    } else {
+                        console.warn('⚠️ showToast no está definido aún.');
+                    }
+                });
+            <?php endif; ?>
+        });
+    </script>
+
 </body>
 
 </html>
