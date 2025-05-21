@@ -14,7 +14,7 @@ if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 
     header("Location: /index.php?expired=1");
     exit;
 }
-$_SESSION['LAST_ACTIVITY'] = time(); // Actualiza el tiempo de actividad
+$_SESSION['LAST_ACTIVITY'] = time();
 
 // 🚧 Protección de acceso general
 if (!isset($_SESSION['cuit'])) {
@@ -28,7 +28,7 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'cooperativa') {
 
 //Cargamos los operativos cerrados
 $cierre_info = $_SESSION['cierre_info'] ?? null;
-unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
+unset($_SESSION['cierre_info']);
 
 // Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
@@ -113,24 +113,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <p>En esta página, vas a conocer cuantos pedidos realizaron tus asociados, quien falta pedir y mucha información más. </p>
                 </div>
 
-                <div class="card-grid grid-4">
-                    <div class="card">
-                        <h3>KPI 1</h3>
-                        <p>Contenido 1</p>
-                    </div>
-                    <div class="card">
-                        <h3>KPI 2</h3>
-                        <p>Contenido 2</p>
-                    </div>
-                    <div class="card">
-                        <h3>KPI 3</h3>
-                        <p>Contenido 3</p>
-                    </div>
-                    <div class="card">
-                        <h3>KPI 4</h3>
-                        <p>Contenido 3</p>
-                    </div>
-                </div>
+                <!-- contenedor de operativos -->
+                <div class="card-grid grid-4" id="contenedorOperativos"></div>
 
 
                 <!-- contenedor del toastify -->
@@ -167,6 +151,70 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 });
             <?php endif; ?>
         });
+
+        // cargar operativos
+        async function cargarOperativos() {
+            const contenedor = document.getElementById('contenedorOperativos');
+            contenedor.innerHTML = '<p>Cargando operativos...</p>';
+
+            try {
+                const res = await fetch('/controllers/coop_dashboardController.php');
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.message);
+
+                contenedor.innerHTML = '';
+
+                data.operativos.forEach(op => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+
+                    const switchId = `switch_${op.id}`;
+
+                    card.innerHTML = `
+                <h3>${op.nombre}</h3>
+                <p>¿Participarás?</p>
+                <label class="switch">
+                    <input type="checkbox" id="${switchId}" ${op.participa === 'si' ? 'checked' : ''}>
+                    <span class="slider round"></span>
+                </label>
+            `;
+
+                    // Manejador de cambio
+                    card.querySelector(`#${switchId}`).addEventListener('change', async (e) => {
+                        const participa = e.target.checked ? 'si' : 'no';
+
+                        try {
+                            const res = await fetch('/controllers/coop_dashboardController.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    operativo_id: op.id,
+                                    participa: participa
+                                })
+                            });
+
+                            const result = await res.json();
+                            if (!result.success) {
+                                alert('❌ Error al guardar participación: ' + result.message);
+                            }
+                        } catch (err) {
+                            console.error('❌ Error en fetch:', err);
+                            alert('Error de red al actualizar participación.');
+                        }
+                    });
+
+                    contenedor.appendChild(card);
+                });
+
+            } catch (err) {
+                contenedor.innerHTML = `<p style="color:red;">${err.message}</p>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarOperativos);
     </script>
 
 </body>
