@@ -302,15 +302,12 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <td>${op.estado}</td>
                 <td>${op.created_at}</td>
                 <td>
-                       <button class="btn-icon" onclick="editarOperativo(${op.id})">
-                      <i class="material-icons">edit</i>
-                     </button>
-                        <button class="btn-icon" onclick="editarOperativo(${op.id})">
-      <i class="material-icons">edit</i>
-   </button>
-   <button class="btn-icon" onclick="eliminarOperativo(${op.id})">
-      <i class="material-icons" style="color:red;">delete</i>
-   </button>
+                <button class="btn-icon" onclick="editarOperativo(${op.id})">
+                <i class="material-icons">edit</i>
+                </button>
+                <button class="btn-icon" onclick="eliminarOperativo(${op.id})">
+                <i class="material-icons" style="color:red;">delete</i>
+                </button>
                 </td>
             `;
                     tabla.appendChild(row);
