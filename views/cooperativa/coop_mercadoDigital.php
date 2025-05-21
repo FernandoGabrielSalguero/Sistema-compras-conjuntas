@@ -366,7 +366,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
                 const alicuotaDecimal = parseFloat(prod.alicuota) / 100;
 
                 const item = document.createElement("div");
-                item.classList.add("input-group");
+                item.classList.add("input-group form-grid grid-4");
 
                 item.innerHTML = `
             <label><strong>${prod.Nombre_producto}</strong> - ${prod.Detalle_producto}</label>
