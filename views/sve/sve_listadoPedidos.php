@@ -356,51 +356,51 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                 this.value = ''; // limpiar input
             });
-        });
 
-        // eliminar pedidos
-        let pedidoAEliminar = null;
+            // eliminar pedidos
+            let pedidoAEliminar = null;
 
-        function confirmarEliminacion(id) {
-            pedidoAEliminar = id;
-            document.getElementById('textoPedidoEliminar').textContent = `Pedido #${id}`;
-            document.getElementById('modalEliminar').style.display = 'flex';
-        }
-        window.confirmarEliminacion = confirmarEliminacion; // 🔥 ESTA LÍNEA ES CLAVE
-
-        function cerrarModalEliminar() {
-            pedidoAEliminar = null;
-            document.getElementById('modalEliminar').style.display = 'none';
-        }
-        window.cerrarModalEliminar = cerrarModalEliminar; // por si lo usás con onclick
-
-
-        document.getElementById('btnConfirmarEliminar').addEventListener('click', async () => {
-            if (!pedidoAEliminar) return;
-            console.log('🧹 Eliminando pedido ID:', pedidoAEliminar);
-            try {
-                const res = await fetch('/controllers/sve_listadoPedidosController.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        accion: 'eliminar_pedido',
-                        id: pedidoAEliminar
-                    })
-                });
-
-                const json = await res.json();
-                if (!json.success) throw new Error(json.message);
-
-                showAlert('success', `Pedido eliminado correctamente ✅`);
-                cerrarModalEliminar();
-                setTimeout(() => location.reload(), 800);
-            } catch (err) {
-                showAlert('error', `❌ No se pudo eliminar: ${err.message}`);
-                console.error(err);
+            function confirmarEliminacion(id) {
+                pedidoAEliminar = id;
+                document.getElementById('textoPedidoEliminar').textContent = `Pedido #${id}`;
+                document.getElementById('modalEliminar').style.display = 'flex';
             }
-        });
+            window.confirmarEliminacion = confirmarEliminacion; // 🔥 ESTA LÍNEA ES CLAVE
+
+            function cerrarModalEliminar() {
+                pedidoAEliminar = null;
+                document.getElementById('modalEliminar').style.display = 'none';
+            }
+            window.cerrarModalEliminar = cerrarModalEliminar; // por si lo usás con onclick
+
+
+            document.getElementById('btnConfirmarEliminar').addEventListener('click', async () => {
+                if (!pedidoAEliminar) return;
+                console.log('🧹 Eliminando pedido ID:', pedidoAEliminar);
+                try {
+                    const res = await fetch('/controllers/sve_listadoPedidosController.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            accion: 'eliminar_pedido',
+                            id: pedidoAEliminar
+                        })
+                    });
+
+                    const json = await res.json();
+                    if (!json.success) throw new Error(json.message);
+
+                    showAlert('success', `Pedido eliminado correctamente ✅`);
+                    cerrarModalEliminar();
+                    setTimeout(() => location.reload(), 800);
+                } catch (err) {
+                    showAlert('error', `❌ No se pudo eliminar: ${err.message}`);
+                    console.error(err);
+                }
+            });
+        }); //end DOMContentLoaded
     </script>
 
     <!-- Formulario oculto para cargar la factura -->
