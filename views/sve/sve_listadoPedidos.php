@@ -26,17 +26,11 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'sve') {
     die("🚫 Acceso restringido: esta página es solo para usuarios SVE.");
 }
 
-//Cargamos los operativos cerrados
-$cierre_info = $_SESSION['cierre_info'] ?? null;
-unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
-
 // Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $usuario = $_SESSION['usuario'] ?? 'Sin usuario';
 $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
-
-
 ?>
 
 <!DOCTYPE html>
@@ -143,21 +137,59 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 </div>
 
 
+                <!-- Tarjeta de buscador -->
                 <div class="card">
+                    <h2>Busca usuarios</h2>
+
                     <form class="form-modern">
-                        <div class="input-group">
-                            <label>Correo</label>
-                            <div class="input-icon">
-                                <span class="material-icons">mail</span>
-                                <input type="email" placeholder="ejemplo@correo.com">
+                        <div class="form-grid grid-2">
+                            <!-- Buscar por CUIT -->
+                            <div class="input-group">
+                                <label for="buscarCuit">Podes buscar Cooperativa</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">fingerprint</span>
+                                    <input type="text" id="buscarCuit" name="buscarCuit" placeholder="20123456781">
+                                </div>
+                            </div>
+
+                            <!-- Buscar por Nombre -->
+                            <div class="input-group">
+                                <label for="buscarNombre">Podes buscar por Productor</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">person</span>
+                                    <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
+                                </div>
                             </div>
                         </div>
-
-                        <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="submit">Enviar</button>
-                            <button class="btn btn-cancelar" type="button">Cancelar</button>
-                        </div>
                     </form>
+                </div>
+
+                <!-- Tabla -->
+                <div class="card">
+                    <h2>Listado de pedidos realizados</h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cooperativa</th>
+                                    <th>Productor</th>
+                                    <th>Fecha de creación</th>
+                                    <th>A nombre de:</th>
+                                    <th>Condicion</th>
+                                    <th>Afiliación</th>
+                                    <th>Total sin IVA</th>
+                                    <th>IVA</th>
+                                    <th>Total pedido</th>
+                                    <th>Factura</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaPedidos">
+                                <!-- Contenido dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- Spinner Global -->
