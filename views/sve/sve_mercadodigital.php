@@ -576,11 +576,11 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 showAlert('success', 'Pedido guardado correctamente');
                                 location.reload();
                             } else {
-                                showAlert('error', result.message); 
+                                showAlert('error', json.message);
                             }
                         } catch (err) {
                             console.error('❌ Error al parsear JSON:', err);
-                            alert('❌ Error inesperado en la respuesta del servidor.');
+                            showAlert('error', '❌ Error inesperado en la respuesta del servidor.');
                         }
                     });
                 </script>
