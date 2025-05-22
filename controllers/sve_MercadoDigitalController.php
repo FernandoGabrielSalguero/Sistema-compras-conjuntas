@@ -7,24 +7,6 @@ require_once __DIR__ . '/../models/sve_MercadoDigitalModel.php';
 
 $model = new SveMercadoDigitalModel($pdo);
 
-if ($_GET['listar'] === 'cooperativas') {
-    $data = $model->listarCooperativas();
-    echo json_encode($data);
-    exit;
-}
-
-if ($_GET['listar'] === 'productores' && isset($_GET['coop_id'])) {
-    $data = $model->listarProductoresPorCooperativa($_GET['coop_id']);
-    echo json_encode($data);
-    exit;
-}
-
-if ($_GET['listar'] === 'productos_categorizados') {
-    $data = $model->obtenerProductosAgrupadosPorCategoria();
-    echo json_encode($data);
-    exit;
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     file_put_contents(__DIR__ . '/../debug_payload.log', print_r($data, true));
 
@@ -46,5 +28,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'message' => 'Error al guardar el pedido: ' . $e->getMessage()
         ]);
     }
+    exit;
+}
+
+if (isset($_GET['listar']) && $_GET['listar'] === 'cooperativas') {
+    $data = $model->listarCooperativas();
+    echo json_encode($data);
+    exit;
+}
+
+if (isset($_GET['listar']) && $_GET['listar'] === 'productores' && isset($_GET['coop_id'])) {
+    $data = $model->listarProductoresPorCooperativa($_GET['coop_id']);
+    echo json_encode($data);
+    exit;
+}
+
+if (isset($_GET['listar']) && $_GET['listar'] === 'productos_categorizados') {
+    $data = $model->obtenerProductosAgrupadosPorCategoria();
+    echo json_encode($data);
     exit;
 }
