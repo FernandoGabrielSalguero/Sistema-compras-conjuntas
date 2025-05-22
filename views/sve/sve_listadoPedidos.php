@@ -326,41 +326,41 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             // 🟢 Iniciar
             cargarResumen();
             cargarPedidos();
-        });
 
-        // funciones para subir la factura
-        window.cargarFactura = (pedidoId) => {
-            const input = document.getElementById('inputFactura');
-            const hidden = document.getElementById('pedidoFacturaId');
+            // funciones para subir la factura
+            window.cargarFactura = (pedidoId) => {
+                const input = document.getElementById('inputFactura');
+                const hidden = document.getElementById('pedidoFacturaId');
 
-            hidden.value = pedidoId;
-            input.click();
-        };
+                hidden.value = pedidoId;
+                input.click();
+            };
 
-        // Cuando el usuario selecciona el archivo
-        document.getElementById('inputFactura').addEventListener('change', async function() {
-            console.log('📦 Archivo seleccionado:', this.files[0]); 
-            const form = document.getElementById('formFactura');
-            const formData = new FormData(form);
-            console.log('📤 Enviando a servidor con FormData:', [...formData.entries()]);
-            
-            try {
-                const res = await fetch('/controllers/sve_facturaUploaderController.php', {
-                    method: 'POST',
-                    body: formData
-                });
+            // Cuando el usuario selecciona el archivo
+            document.getElementById('inputFactura').addEventListener('change', async function() {
+                console.log('📦 Archivo seleccionado:', this.files[0]);
+                const form = document.getElementById('formFactura');
+                const formData = new FormData(form);
+                console.log('📤 Enviando a servidor con FormData:', [...formData.entries()]);
 
-                const json = await res.json();
-                if (!json.success) throw new Error(json.message);
+                try {
+                    const res = await fetch('/controllers/sve_facturaUploaderController.php', {
+                        method: 'POST',
+                        body: formData
+                    });
 
-                showAlert('success', 'Factura cargada con éxito ✅');
-                setTimeout(() => location.reload(), 1000);
-            } catch (err) {
-                console.error('❌ Error al subir factura:', err);
-                showAlert('error', 'Error al subir la factura ❌');
-            }
+                    const json = await res.json();
+                    if (!json.success) throw new Error(json.message);
 
-            this.value = ''; // limpiar input
+                    showAlert('success', 'Factura cargada con éxito ✅');
+                    setTimeout(() => location.reload(), 1000);
+                } catch (err) {
+                    console.error('❌ Error al subir factura:', err);
+                    showAlert('error', 'Error al subir la factura ❌');
+                }
+
+                this.value = ''; // limpiar input
+            });
         });
     </script>
 
