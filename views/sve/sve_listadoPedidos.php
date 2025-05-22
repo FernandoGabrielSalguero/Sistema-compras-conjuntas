@@ -343,7 +343,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             const formData = new FormData(form);
 
             try {
-                const res = await fetch('/controllers/sve_facturaUploaderController.php', {  
+                const res = await fetch('/controllers/sve_facturaUploaderController.php', {
                     method: 'POST',
                     body: formData
                 });
@@ -352,7 +352,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 if (!json.success) throw new Error(json.message);
 
                 showAlert('success', 'Factura cargada con éxito ✅');
-                // recargar o volver a cargar pedidos si querés actualizar visualmente
                 setTimeout(() => location.reload(), 1000);
             } catch (err) {
                 console.error('❌ Error al subir factura:', err);
