@@ -317,11 +317,11 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             window.verPedido = (id) => alert(`Ver pedido completo ID ${id}`);
             window.editarPedido = (id) => alert(`Editar pedido ID ${id}`);
             window.imprimirPedido = (id) => alert(`Imprimir pedido ID ${id}`);
-            window.confirmarEliminacion = (id) => {
-                if (confirm(`¿Estás seguro que querés eliminar el pedido #${id}?`)) {
-                    alert('Pedido eliminado (simulado)');
-                }
-            };
+            // window.confirmarEliminacion = (id) => {
+            //     if (confirm(`¿Estás seguro que querés eliminar el pedido #${id}?`)) {
+            //         alert('Pedido eliminado (simulado)');
+            //     }
+            // };
 
             // 🟢 Iniciar
             cargarResumen();
