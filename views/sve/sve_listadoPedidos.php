@@ -1,4 +1,5 @@
 <?php
+// Mostrar errores en pantalla (útil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -16,7 +17,7 @@ if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 
 $_SESSION['LAST_ACTIVITY'] = time(); // Actualiza el tiempo de actividad
 
 // 🚧 Protección de acceso general
-if (!isset($_SESSION['cuit'])) {
+if (!isset($_SESSION['usuario'])) {
     die("⚠️ Acceso denegado. No has iniciado sesión.");
 }
 
@@ -25,12 +26,17 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'sve') {
     die("🚫 Acceso restringido: esta página es solo para usuarios SVE.");
 }
 
+//Cargamos los operativos cerrados
+$cierre_info = $_SESSION['cierre_info'] ?? null;
+unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
+
 // Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
-$cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
+$usuario = $_SESSION['usuario'] ?? 'Sin usuario';
 $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
-$observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
+
+
 ?>
 
 <!DOCTYPE html>
@@ -108,7 +114,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="navbar-title">Carga masiva de usuarios</div>
+                <div class="navbar-title">Listado de pedidos</div>
             </header>
 
             <!-- 📦 CONTENIDO -->
@@ -117,47 +123,61 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <!-- Bienvenida -->
                 <div class="card">
                     <h2>Hola 👋</h2>
-                    <p>En esta página vamos a cargar masivamente los usuarios en nuestro sistema. Recordá que solo podemos cargar archivos con extensión CSV.</p>
+                    <p>En esta página, vamos a asignar a los usuarios productores, sus ingenieros, tecnicos, cooperativas, etc.</p>
                 </div>
 
-                <div class="card-grid grid-3">
-                    <!-- Tarjeta: Carga de Cooperativas -->
-                    <div class="card">
-                        <h3>📁 Cargar cooperativas</h3>
-                        <input type="file" id="csvCooperativas" accept=".csv" />
-                        <button class="btn btn-info" onclick="previewCSV('cooperativas')">Previsualizar</button>
-                        <div id="previewCooperativas" class="csv-preview"></div>
-                        <button class="btn btn-aceptar" onclick="confirmarCarga('cooperativas')">Confirmar carga</button>
-                    </div>
 
-                    <!-- Tarjeta: Carga de Productores -->
+                <div class="card-grid grid-4">
                     <div class="card">
-                        <h3>📁 Cargar productores</h3>
-                        <input type="file" id="csvProductores" accept=".csv" />
-                        <button class="btn btn-info" onclick="previewCSV('productores')">Previsualizar</button>
-                        <div id="previewProductores" class="csv-preview"></div>
-                        <button class="btn btn-aceptar" onclick="confirmarCarga('productores')">Confirmar carga</button>
+                        <h3>KPI 1</h3>
+                        <p>Contenido 1</p>
                     </div>
-
-                    <!-- Tarjeta: Carga de relaciones -->
                     <div class="card">
-                        <h3>📁 Cargar relaciones productores ↔ cooperativas</h3>
-                        <input type="file" id="csvRelaciones" accept=".csv" />
-                        <button class="btn btn-info" onclick="previewCSV('relaciones')">Previsualizar</button>
-                        <div id="previewRelaciones" class="csv-preview"></div>
-                        <button class="btn btn-aceptar" onclick="confirmarCarga('relaciones')">Confirmar carga</button>
+                        <h3>KPI 2</h3>
+                        <p>Contenido 2</p>
+                    </div>
+                    <div class="card">
+                        <h3>KPI 3</h3>
+                        <p>Contenido 3</p>
+                    </div>
+                    <div class="card">
+                        <h3>KPI 4</h3>
+                        <p>Contenido 3</p>
                     </div>
                 </div>
+
+
+                <div class="card">
+                    <form class="form-modern">
+                        <div class="input-group">
+                            <label>Correo</label>
+                            <div class="input-icon">
+                                <span class="material-icons">mail</span>
+                                <input type="email" placeholder="ejemplo@correo.com">
+                            </div>
+                        </div>
+
+                        <div class="form-buttons">
+                            <button class="btn btn-aceptar" type="submit">Enviar</button>
+                            <button class="btn btn-cancelar" type="button">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Spinner Global -->
+                <script src="../../views/partials/spinner-global.js"></script>
+
             </section>
 
         </div>
     </div>
 
-    <!-- script principal  -->
-    <script src="../../assets/js/sve_cargasMasivas.js" defer></script>
 
-    <!-- Spinner Global -->
-    <script src="../../views/partials/spinner-global.js"></script>
+    <script>
+
+    </script>
+
 </body>
+
 
 </html>
