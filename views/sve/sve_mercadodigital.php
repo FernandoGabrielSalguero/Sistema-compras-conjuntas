@@ -546,7 +546,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             accion: 'guardar_pedido',
                             cooperativa: formData.get('cooperativa'),
                             productor: formData.get('productor'),
-                            fecha_pedido: formData.get('fecha_pedido'),
+                            hectareas: formData.get('hectareas'),
                             persona_facturacion: formData.get('persona_facturacion'),
                             condicion_facturacion: formData.get('condicion_facturacion'),
                             afiliacion: formData.get('afiliacion'),
@@ -567,16 +567,20 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             body: JSON.stringify(payload)
                         });
 
-                        const text = await res.text();
-                        console.log('🔎 Respuesta cruda:', text);
-
                         let json;
                         try {
-                            json = JSON.parse(text);
+                            json = await res.json();
+                            console.log('✅ Respuesta JSON:', json);
+
+                            if (json.success) {
+                                alert('✅ Pedido guardado correctamente. ID: ' + json.pedido_id);
+                                location.reload();
+                            } else {
+                                alert('❌ Error: ' + json.message);
+                            }
                         } catch (err) {
-                            console.error('❌ No se pudo parsear JSON:', err);
+                            console.error('❌ Error al parsear JSON:', err);
                             alert('❌ Error inesperado en la respuesta del servidor.');
-                            return;
                         }
                     });
                 </script>
