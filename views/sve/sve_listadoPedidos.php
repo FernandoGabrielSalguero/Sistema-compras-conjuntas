@@ -339,9 +339,11 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
         // Cuando el usuario selecciona el archivo
         document.getElementById('inputFactura').addEventListener('change', async function() {
+            console.log('📦 Archivo seleccionado:', this.files[0]); 
             const form = document.getElementById('formFactura');
             const formData = new FormData(form);
-
+            console.log('📤 Enviando a servidor con FormData:', [...formData.entries()]);
+            
             try {
                 const res = await fetch('/controllers/sve_facturaUploaderController.php', {
                     method: 'POST',
