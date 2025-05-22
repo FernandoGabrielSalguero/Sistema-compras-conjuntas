@@ -359,6 +359,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         });
 
         // eliminar pedidos
+        // eliminar pedidos
         let pedidoAEliminar = null;
 
         function confirmarEliminacion(id) {
@@ -366,11 +367,14 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             document.getElementById('textoPedidoEliminar').textContent = `Pedido #${id}`;
             document.getElementById('modalEliminar').style.display = 'flex';
         }
+        window.confirmarEliminacion = confirmarEliminacion; // 🔥 ESTA LÍNEA ES CLAVE
 
         function cerrarModalEliminar() {
             pedidoAEliminar = null;
             document.getElementById('modalEliminar').style.display = 'none';
         }
+        window.cerrarModalEliminar = cerrarModalEliminar; // por si lo usás con onclick
+
 
         document.getElementById('btnConfirmarEliminar').addEventListener('click', async () => {
             if (!pedidoAEliminar) return;
@@ -412,8 +416,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             <h3>¿Estás seguro de eliminar el pedido?</h3>
             <p id="textoPedidoEliminar"></p>
             <div class="modal-actions">
-                <button class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
-                <button class="btn btn-secundario" onclick="cerrarModalEliminar()">Cancelar</button>
+                <button class="btn btn-aceptar" id="btnConfirmarEliminar">Eliminar</button>
+                <button class="btn btn-cancela" onclick="cerrarModalEliminar()">Cancelar</button>
             </div>
         </div>
     </div>
