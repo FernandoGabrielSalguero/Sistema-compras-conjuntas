@@ -573,7 +573,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             console.log('✅ Respuesta JSON:', json);
 
                             if (json.success) {
-                                showAlert('success', 'Pedido guardado correctamente');
+                                showAlert('success', json.message);
                                 location.reload();
                             } else {
                                 showAlert('error', json.message);
