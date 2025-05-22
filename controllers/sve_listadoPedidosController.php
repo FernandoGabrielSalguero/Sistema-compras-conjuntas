@@ -79,6 +79,26 @@ if (isset($_GET['listar']) && $_GET['listar'] == 1) {
     exit;
 }
 
+// 🔎 Ver pedido completo por ID
+if (isset($_GET['ver']) && isset($_GET['id'])) {
+    $id = intval($_GET['id']);
+
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM pedidos WHERE id = ?");
+        $stmt->execute([$id]);
+        $pedido = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$pedido) {
+            echo json_encode(['success' => false, 'message' => 'Pedido no encontrado']);
+        } else {
+            echo json_encode(['success' => true, 'data' => $pedido]);
+        }
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error al consultar el pedido']);
+    }
+    exit;
+}
+
 
 // ❌ Si llega acá, no hay endpoint válido
 http_response_code(400);

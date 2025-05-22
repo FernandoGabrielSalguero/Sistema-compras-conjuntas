@@ -400,6 +400,48 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     console.error(err);
                 }
             });
+
+            // ver pedido completo
+            window.verPedido = async function(id) {
+                const modal = document.getElementById('modalVerPedido');
+                const contenedor = document.getElementById('contenidoPedido');
+
+                contenedor.innerHTML = '<p>🔄 Cargando pedido...</p>';
+                modal.style.display = 'flex';
+
+                try {
+                    const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
+                    const json = await res.json();
+
+                    if (!json.success) throw new Error(json.message);
+                    const p = json.data;
+
+                    contenedor.innerHTML = `
+            <p><strong>ID:</strong> ${p.id}</p>
+            <p><strong>Cooperativa:</strong> ${p.nombre_cooperativa || '-'}</p>
+            <p><strong>Productor:</strong> ${p.nombre_productor || '-'}</p>
+            <p><strong>Fecha pedido:</strong> ${p.fecha_pedido}</p>
+            <p><strong>A nombre de:</strong> ${p.persona_facturacion}</p>
+            <p><strong>Condición de facturación:</strong> ${p.condicion_facturacion}</p>
+            <p><strong>Afiliación:</strong> ${p.afiliacion}</p>
+            <p><strong>Total sin IVA:</strong> $${parseFloat(p.total_sin_iva).toFixed(2)}</p>
+            <p><strong>IVA:</strong> $${parseFloat(p.total_iva).toFixed(2)}</p>
+            <p><strong>Total Pedido:</strong> <strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></p>
+            ${p.factura 
+                ? `<p><strong>Factura:</strong> <a href="/uploads/tax_invoices/${p.factura}" target="_blank">Ver archivo</a></p>`
+                : `<p><strong>Factura:</strong> No cargada</p>`
+            }
+        `;
+                } catch (err) {
+                    contenedor.innerHTML = `<p style="color:red;">❌ Error al obtener el pedido: ${err.message}</p>`;
+                    console.error(err);
+                }
+            };
+
+            window.cerrarModalVerPedido = function() {
+                document.getElementById('modalVerPedido').style.display = 'none';
+            };
+
         }); //end DOMContentLoaded
     </script>
 
@@ -451,6 +493,18 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         }
     </style>
 
+    <!-- Modal Ver Pedido -->
+    <div id="modalVerPedido" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px; width: 90%;">
+            <h3>Detalle del pedido</h3>
+            <div id="contenidoPedido">
+                <p>Cargando información...</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-cancelar" onclick="cerrarModalVerPedido()">Cerrar</button>
+            </div>
+        </div>
+    </div>
 
 </body>
 
