@@ -147,8 +147,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             <div class="input-group">
                                 <label for="buscarCuit">Podes buscar Cooperativa</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">fingerprint</span>
-                                    <input type="text" id="buscarCuit" name="buscarCuit" placeholder="20123456781">
+                                    <span class="material-icons">person</span>
+                                    <input type="text" id="buscarCuit" name="buscarCuit" placeholder="Ej: cooperativa Algarroba">
                                 </div>
                             </div>
 
@@ -328,8 +328,47 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             cargarResumen();
             cargarPedidos();
         });
+
+        // funciones para subir la factura
+        window.cargarFactura = (pedidoId) => {
+            const input = document.getElementById('inputFactura');
+            const hidden = document.getElementById('pedidoFacturaId');
+
+            hidden.value = pedidoId;
+            input.click();
+        };
+
+        // Cuando el usuario selecciona el archivo
+        document.getElementById('inputFactura').addEventListener('change', async function() {
+            const form = document.getElementById('formFactura');
+            const formData = new FormData(form);
+
+            try {
+                const res = await fetch('/controllers/sve_facturaUploaderController.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const json = await res.json();
+                if (!json.success) throw new Error(json.message);
+
+                showAlert('success', 'Factura cargada con éxito ✅');
+                // recargar o volver a cargar pedidos si querés actualizar visualmente
+                setTimeout(() => location.reload(), 1000);
+            } catch (err) {
+                console.error('❌ Error al subir factura:', err);
+                showAlert('error', 'Error al subir la factura ❌');
+            }
+
+            this.value = ''; // limpiar input
+        });
     </script>
 
+    <!-- Formulario oculto para cargar la factura -->
+    <form id="formFactura" style="display: none;" enctype="multipart/form-data">
+        <input type="file" id="inputFactura" name="factura" accept=".pdf,.jpg,.jpeg,.png">
+        <input type="hidden" id="pedidoFacturaId" name="pedido_id">
+    </form>
 
 </body>
 
