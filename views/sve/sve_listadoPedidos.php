@@ -361,6 +361,48 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                 this.value = ''; // limpiar input
             });
+
+            // eliminar pedidos
+            let pedidoAEliminar = null;
+
+            function confirmarEliminacion(id) {
+                pedidoAEliminar = id;
+                document.getElementById('textoPedidoEliminar').textContent = `Pedido #${id}`;
+                document.getElementById('modalEliminar').style.display = 'flex';
+            }
+
+            function cerrarModalEliminar() {
+                pedidoAEliminar = null;
+                document.getElementById('modalEliminar').style.display = 'none';
+            }
+
+            document.getElementById('btnConfirmarEliminar').addEventListener('click', async () => {
+                if (!pedidoAEliminar) return;
+
+                try {
+                    const res = await fetch('/controllers/sve_listadoPedidosController.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            accion: 'eliminar_pedido',
+                            id: pedidoAEliminar
+                        })
+                    });
+
+                    const json = await res.json();
+                    if (!json.success) throw new Error(json.message);
+
+                    showAlert('success', `Pedido eliminado correctamente ✅`);
+                    cerrarModalEliminar();
+                    setTimeout(() => location.reload(), 800);
+                } catch (err) {
+                    showAlert('error', `❌ No se pudo eliminar: ${err.message}`);
+                    console.error(err);
+                }
+            });
+
         });
     </script>
 
@@ -369,6 +411,49 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         <input type="file" id="inputFactura" name="factura" accept=".pdf,.jpg,.jpeg,.png">
         <input type="hidden" id="pedidoFacturaId" name="pedido_id">
     </form>
+
+    <!-- Modal de confirmación para eliminar -->
+    <div id="modalEliminar" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>¿Estás seguro de eliminar el pedido?</h3>
+            <p id="textoPedidoEliminar"></p>
+            <div class="modal-actions">
+                <button class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
+                <button class="btn btn-secundario" onclick="cerrarModalEliminar()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .modal-actions {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-around;
+        }
+    </style>
+
 
 </body>
 

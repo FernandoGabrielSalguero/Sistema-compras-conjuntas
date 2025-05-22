@@ -59,3 +59,28 @@ if (isset($_GET['listar']) && $_GET['listar'] == 1) {
 http_response_code(400);
 echo json_encode(['success' => false, 'message' => 'Solicitud no válida']);
 exit;
+
+// ELIMINAR PEDIDO
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $json = json_decode(file_get_contents("php://input"), true);
+
+    if (isset($json['accion']) && $json['accion'] === 'eliminar_pedido') {
+        $id = intval($json['id'] ?? 0);
+
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'ID inválido']);
+            exit;
+        }
+
+        try {
+            $stmt = $pdo->prepare("DELETE FROM pedidos WHERE id = ?");
+            $stmt->execute([$id]);
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error al eliminar pedido']);
+        }
+
+        exit;
+    }
+}
+
