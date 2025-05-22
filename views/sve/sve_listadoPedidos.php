@@ -266,30 +266,30 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <td>$${parseFloat(p.total_sin_iva).toFixed(2)}</td>
                     <td>$${parseFloat(p.total_iva).toFixed(2)}</td>
                     <td><strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></td>
-<td>
-    ${p.factura 
-        ? `<button class="btn-icon" onclick="verFactura('${p.factura}')">
-                <i class="material-icons" style="color:green;">visibility</i>
-           </button>`
-        : `<button class="btn-icon" onclick="cargarFactura(${p.id})">
-                <i class="material-icons" style="color:orange;">upload_file</i>
-           </button>`
-    }
-</td>
-<td>
-    <button class="btn-icon" onclick="verPedido(${p.id})">
-        <i class="material-icons" style="color:blue;">description</i>
-    </button>
-    <button class="btn-icon" onclick="editarPedido(${p.id})">
-        <i class="material-icons">edit</i>
-    </button>
-    <button class="btn-icon" onclick="imprimirPedido(${p.id})">
-        <i class="material-icons">print</i>
-    </button>
-    <button class="btn-icon" onclick="confirmarEliminacion(${p.id})">
-        <i class="material-icons" style="color:red;">delete</i>
-    </button>
-</td>
+                    <td>
+                    ${p.factura 
+                        ? `<button class="btn-icon" onclick="verFactura('${p.factura}')">
+                        <i class="material-icons" style="color:green;">visibility</i>
+                        </button>`
+                        : `<button class="btn-icon" onclick="cargarFactura(${p.id})">
+                        <i class="material-icons" style="color:orange;">upload_file</i>
+                        </button>`
+                    }
+                    </td>
+                    <td>
+                        <button class="btn-icon" onclick="verPedido(${p.id})">
+                            <i class="material-icons" style="color:blue;">description</i>
+                        </button>
+                        <button class="btn-icon" onclick="editarPedido(${p.id})">
+                            <i class="material-icons">edit</i>
+                        </button>
+                        <button class="btn-icon" onclick="imprimirPedido(${p.id})">
+                            <i class="material-icons" style="color:green;">print</i>
+                        </button>
+                        <button class="btn-icon" onclick="confirmarEliminacion(${p.id})">
+                            <i class="material-icons" style="color:red;">delete</i>
+                        </button>
+                    </td>
                 `;
                         tablaPedidos.appendChild(fila);
                     });
