@@ -229,12 +229,12 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <input type="hidden" name="productor" id="productor">
                             </div>
 
-                            <!-- Fecha -->
+                            <!-- Hectáreas -->
                             <div class="input-group">
-                                <label for="fecha_pedido">Fecha del pedido</label>
+                                <label for="hectareas">Hectáreas</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">event</span>
-                                    <input type="date" id="fecha_pedido" name="fecha_pedido" required>
+                                    <span class="material-icons">agriculture</span>
+                                    <input type="number" id="hectareas" name="hectareas" min="0" step="0.01" placeholder="Cantidad de hectáreas..." required>
                                 </div>
                             </div>
 

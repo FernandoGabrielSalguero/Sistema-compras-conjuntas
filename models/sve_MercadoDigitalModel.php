@@ -68,8 +68,8 @@ class SveMercadoDigitalModel
 
         // 1. Insertar pedido principal
         $stmt = $this->pdo->prepare("
-        INSERT INTO pedidos (cooperativa, productor, fecha_pedido, persona_facturacion, condicion_facturacion, afiliacion, observaciones, total_sin_iva, total_iva, total_pedido)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO pedidos (cooperativa, productor, fecha_pedido, hectareas, persona_facturacion, condicion_facturacion, afiliacion, observaciones, total_sin_iva, total_iva, total_pedido)
+        VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
         $total_sin_iva = $data['totales']['sin_iva'] ?? 0;
@@ -79,9 +79,9 @@ class SveMercadoDigitalModel
         $stmt->execute([
             $data['cooperativa'],
             $data['productor'],
-            $data['fecha_pedido'],
             $data['persona_facturacion'],
             $data['condicion_facturacion'],
+            $data['hectareas'],
             $data['afiliacion'],
             $data['observaciones'],
             $total_sin_iva,
