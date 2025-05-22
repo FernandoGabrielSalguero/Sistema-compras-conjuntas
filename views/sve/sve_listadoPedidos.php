@@ -377,7 +377,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
         document.getElementById('btnConfirmarEliminar').addEventListener('click', async () => {
             if (!pedidoAEliminar) return;
-
+            console.log('🧹 Eliminando pedido ID:', pedidoAEliminar);
             try {
                 const res = await fetch('/controllers/sve_listadoPedidosController.php', {
                     method: 'POST',
