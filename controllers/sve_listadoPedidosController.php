@@ -9,6 +9,30 @@ require_once __DIR__ . '/../models/sve_MercadoDigitalModel.php';
 
 $model = new SveMercadoDigitalModel($pdo);
 
+// 🔸 ELIMINAR PEDIDO (manejar primero los POST)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $json = json_decode(file_get_contents("php://input"), true);
+
+    if (isset($json['accion']) && $json['accion'] === 'eliminar_pedido') {
+        $id = intval($json['id'] ?? 0);
+
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'ID inválido']);
+            exit;
+        }
+
+        try {
+            $stmt = $pdo->prepare("DELETE FROM pedidos WHERE id = ?");
+            $stmt->execute([$id]);
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error al eliminar pedido']);
+        }
+
+        exit;
+    }
+}
+
 // 🔹 Obtener resumen para tarjetas
 if (isset($_GET['resumen']) && $_GET['resumen'] == 1) {
     try {
@@ -55,29 +79,6 @@ if (isset($_GET['listar']) && $_GET['listar'] == 1) {
     exit;
 }
 
-// ELIMINAR PEDIDO
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $json = json_decode(file_get_contents("php://input"), true);
-
-    if (isset($json['accion']) && $json['accion'] === 'eliminar_pedido') {
-        $id = intval($json['id'] ?? 0);
-
-        if (!$id) {
-            echo json_encode(['success' => false, 'message' => 'ID inválido']);
-            exit;
-        }
-
-        try {
-            $stmt = $pdo->prepare("DELETE FROM pedidos WHERE id = ?");
-            $stmt->execute([$id]);
-            echo json_encode(['success' => true]);
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Error al eliminar pedido']);
-        }
-
-        exit;
-    }
-}
 
 // ❌ Si llega acá, no hay endpoint válido
 http_response_code(400);
