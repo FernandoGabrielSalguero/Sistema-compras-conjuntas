@@ -491,15 +491,29 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             display: flex;
             justify-content: space-around;
         }
+
+        .pedido-detalle {
+            display: grid;
+            grid-template-columns: max-content auto;
+            gap: 0.4rem 1rem;
+            text-align: left;
+            margin-top: 1rem;
+        }
+
+        .pedido-detalle p {
+            margin: 0;
+            padding: 0.2rem 0;
+        }
     </style>
 
     <!-- Modal Ver Pedido -->
     <div id="modalVerPedido" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 600px; width: 90%;">
             <h3>Detalle del pedido</h3>
-            <div id="contenidoPedido">
+            <div id="contenidoPedido" class="pedido-detalle">
                 <p>Cargando información...</p>
             </div>
+
             <div class="modal-actions">
                 <button class="btn btn-cancelar" onclick="cerrarModalVerPedido()">Cerrar</button>
             </div>
