@@ -82,7 +82,7 @@ VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)
             $data['productor'],
             $data['persona_facturacion'],
             $data['condicion_facturacion'],
-            $data['afiliacion'],    
+            $data['afiliacion'],
             $data['hectareas'],
             $data['observaciones'],
             $total_sin_iva,
@@ -114,5 +114,81 @@ VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)
 
         $this->pdo->commit();
         return $pedido_id;
+    }
+
+    // modelo de Listado de pedidos
+    // 🔢 Cuenta total de pedidos y resumen de facturas
+    public function obtenerResumenPedidos()
+    {
+        $stmt = $this->pdo->query("
+        SELECT 
+            COUNT(*) AS total,
+            SUM(CASE WHEN factura IS NOT NULL AND factura != '' THEN 1 ELSE 0 END) AS con_factura,
+            SUM(CASE WHEN factura IS NULL OR factura = '' THEN 1 ELSE 0 END) AS sin_factura
+        FROM pedidos
+    ");
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // 📄 Obtiene listado de pedidos con paginación y búsqueda opcional
+    public function obtenerListadoPedidos($search = '', $offset = 0, $limit = 25)
+    {
+        $sql = "
+        SELECT 
+            p.*,
+            i1.nombre AS nombre_cooperativa,
+            i2.nombre AS nombre_productor
+        FROM pedidos p
+        JOIN usuarios u1 ON u1.id_real = p.cooperativa
+        JOIN usuarios_info i1 ON i1.usuario_id = u1.id
+        JOIN usuarios u2 ON u2.id_real = p.productor
+        JOIN usuarios_info i2 ON i2.usuario_id = u2.id
+    ";
+
+        $params = [];
+
+        if (!empty($search)) {
+            $sql .= " WHERE i1.nombre LIKE :search OR i2.nombre LIKE :search ";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $sql .= " ORDER BY p.id DESC LIMIT :offset, :limit";
+
+        $stmt = $this->pdo->prepare($sql);
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val, PDO::PARAM_STR);
+        }
+
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // 🔁 Cuenta total de resultados para paginación
+    public function contarPedidosFiltrados($search = '')
+    {
+        $sql = "
+        SELECT COUNT(*) AS total
+        FROM pedidos p
+        JOIN usuarios u1 ON u1.id_real = p.cooperativa
+        JOIN usuarios_info i1 ON i1.usuario_id = u1.id
+        JOIN usuarios u2 ON u2.id_real = p.productor
+        JOIN usuarios_info i2 ON i2.usuario_id = u2.id
+    ";
+
+        $params = [];
+
+        if (!empty($search)) {
+            $sql .= " WHERE i1.nombre LIKE :search OR i2.nombre LIKE :search ";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
     }
 }

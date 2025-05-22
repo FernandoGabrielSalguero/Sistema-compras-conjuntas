@@ -121,18 +121,18 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 </div>
 
 
-                <div class="card-grid grid-3">
+                <div class="card-grid grid-3" id="tarjetasResumen">
                     <div class="card">
                         <h3>Pedidos realizados</h3>
-                        <p>Contenido 1</p>
+                        <p class="contador">Cargando...</p>
                     </div>
                     <div class="card">
                         <h3>Pedidos con facturas</h3>
-                        <p>Contenido 2</p>
+                        <p class="contador">Cargando...</p>
                     </div>
                     <div class="card">
                         <h3>Pedidos sin facturas</h3>
-                        <p>Contenido 2</p>
+                        <p class="contador">Cargando...</p>
                     </div>
                 </div>
 
@@ -202,8 +202,120 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let paginaActual = 1;
+            const limitePorPagina = 25;
 
+            const buscarCuit = document.getElementById('buscarCuit');
+            const buscarNombre = document.getElementById('buscarNombre');
+            const tablaPedidos = document.getElementById('tablaPedidos');
+
+            // 🔹 Cargar tarjetas resumen
+            async function cargarResumen() {
+                try {
+                    const res = await fetch('/controllers/sve_listadoPedidosController.php?resumen=1');
+                    const json = await res.json();
+                    if (!json.success) throw new Error(json.message);
+
+                    const {
+                        total,
+                        con_factura,
+                        sin_factura
+                    } = json.data;
+                    const tarjetas = document.querySelectorAll('.card-grid .card');
+
+                    tarjetas[0].querySelector('p').textContent = `${total} pedidos`;
+                    tarjetas[1].querySelector('p').textContent = `${con_factura} con factura`;
+                    tarjetas[2].querySelector('p').textContent = `${sin_factura} sin factura`;
+                } catch (err) {
+                    console.error('❌ Error al cargar resumen:', err);
+                }
+            }
+
+            // 🔹 Buscar y listar pedidos
+            async function cargarPedidos() {
+                const search = buscarNombre.value.trim() || buscarCuit.value.trim();
+                const url = `/controllers/sve_listadoPedidosController.php?listar=1&page=${paginaActual}&search=${encodeURIComponent(search)}`;
+
+                try {
+                    const res = await fetch(url);
+                    const json = await res.json();
+                    if (!json.success) throw new Error(json.message);
+
+                    const pedidos = json.data;
+                    const total = json.total;
+                    const paginasTotales = Math.ceil(total / limitePorPagina);
+
+                    tablaPedidos.innerHTML = '';
+
+                    if (pedidos.length === 0) {
+                        tablaPedidos.innerHTML = `<tr><td colspan="12">No se encontraron pedidos.</td></tr>`;
+                        return;
+                    }
+
+                    pedidos.forEach(p => {
+                        const fila = document.createElement('tr');
+                        fila.innerHTML = `
+                    <td>${p.id}</td>
+                    <td>${p.nombre_cooperativa || '-'}</td>
+                    <td>${p.nombre_productor || '-'}</td>
+                    <td>${p.fecha_pedido}</td>
+                    <td>${p.persona_facturacion}</td>
+                    <td>${p.condicion_facturacion}</td>
+                    <td>${p.afiliacion}</td>
+                    <td>$${parseFloat(p.total_sin_iva).toFixed(2)}</td>
+                    <td>$${parseFloat(p.total_iva).toFixed(2)}</td>
+                    <td><strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></td>
+                    <td>
+                        ${p.factura ? `<button onclick="verFactura('${p.factura}')">Ver factura</button>` 
+                                    : `<button onclick="cargarFactura(${p.id})">Cargar factura</button>`}
+                    </td>
+                    <td>
+                        <button onclick="verPedido(${p.id})"><span class="material-icons">description</span></button>
+                        <button onclick="editarPedido(${p.id})"><span class="material-icons">edit</span></button>
+                        <button onclick="imprimirPedido(${p.id})"><span class="material-icons">print</span></button>
+                        <button onclick="confirmarEliminacion(${p.id})"><span class="material-icons">delete</span></button>
+                    </td>
+                `;
+                        tablaPedidos.appendChild(fila);
+                    });
+
+                    // 🔁 Paginación futura (no implementada visualmente aún)
+                    console.log(`Mostrando página ${paginaActual} de ${paginasTotales}`);
+                } catch (err) {
+                    console.error('❌ Error al cargar pedidos:', err);
+                }
+            }
+
+            // 🔄 Buscar al escribir
+            buscarCuit.addEventListener('input', () => {
+                paginaActual = 1;
+                cargarPedidos();
+            });
+
+            buscarNombre.addEventListener('input', () => {
+                paginaActual = 1;
+                cargarPedidos();
+            });
+
+            // 🔹 Funciones de acciones (placeholder, las implementamos después)
+            window.verFactura = (ruta) => window.open(`/uploads/tax_invoices/${ruta}`, '_blank');
+            window.cargarFactura = (id) => alert(`Cargar factura para pedido #${id}`);
+            window.verPedido = (id) => alert(`Ver pedido completo ID ${id}`);
+            window.editarPedido = (id) => alert(`Editar pedido ID ${id}`);
+            window.imprimirPedido = (id) => alert(`Imprimir pedido ID ${id}`);
+            window.confirmarEliminacion = (id) => {
+                if (confirm(`¿Estás seguro que querés eliminar el pedido #${id}?`)) {
+                    alert('Pedido eliminado (simulado)');
+                }
+            };
+
+            // 🟢 Iniciar
+            cargarResumen();
+            cargarPedidos();
+        });
     </script>
+
 
 </body>
 
