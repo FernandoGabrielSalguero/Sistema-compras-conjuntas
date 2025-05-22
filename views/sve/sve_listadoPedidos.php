@@ -123,26 +123,22 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <!-- Bienvenida -->
                 <div class="card">
                     <h2>Hola 👋</h2>
-                    <p>En esta página, vamos a asignar a los usuarios productores, sus ingenieros, tecnicos, cooperativas, etc.</p>
+                    <p>En esta página, vamos a ver todos los pedidos realizados por las cooperativas y por nosotros, además de poder cargar sus facturas y modificarlos en caso de ser necesario</p>
                 </div>
 
 
-                <div class="card-grid grid-4">
+                <div class="card-grid grid-3">
                     <div class="card">
-                        <h3>KPI 1</h3>
+                        <h3>Pedidos realizados</h3>
                         <p>Contenido 1</p>
                     </div>
                     <div class="card">
-                        <h3>KPI 2</h3>
+                        <h3>Pedidos con facturas</h3>
                         <p>Contenido 2</p>
                     </div>
                     <div class="card">
-                        <h3>KPI 3</h3>
-                        <p>Contenido 3</p>
-                    </div>
-                    <div class="card">
-                        <h3>KPI 4</h3>
-                        <p>Contenido 3</p>
+                        <h3>Pedidos sin facturas</h3>
+                        <p>Contenido 2</p>
                     </div>
                 </div>
 
