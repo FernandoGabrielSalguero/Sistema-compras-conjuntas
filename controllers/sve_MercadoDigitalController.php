@@ -26,6 +26,8 @@ if ($_GET['listar'] === 'productos_categorizados') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    file_put_contents(__DIR__ . '/../debug_payload.log', print_r($data, true));
+
     $data = json_decode(file_get_contents('php://input'), true);
 
     if (!isset($data['accion']) || $data['accion'] !== 'guardar_pedido') {
@@ -38,9 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['success' => true, 'message' => 'Pedido guardado con éxito', 'pedido_id' => $resultado]);
     } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Error al guardar el pedido: ' . $e->getMessage()]);
+        error_log("🧨 Error al guardar pedido: " . $e->getMessage());
+        echo json_encode([
+            'success' => false,
+            'message' => 'Error al guardar el pedido: ' . $e->getMessage()
+        ]);
     }
     exit;
 }
-
-

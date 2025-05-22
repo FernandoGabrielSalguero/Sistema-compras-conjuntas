@@ -559,25 +559,28 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             }
                         };
 
-                        try {
-                            const res = await fetch('/controllers/sve_MercadoDigitalController.php', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify(payload)
-                            });
+                        const res = await fetch('/controllers/sve_MercadoDigitalController.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
 
-                            const json = await res.json();
+                        const text = await res.text();
+                        console.log("🔎 Respuesta cruda:", text);
+
+                        try {
+                            const json = JSON.parse(text);
                             if (json.success) {
                                 alert('✅ Pedido guardado correctamente. ID: ' + json.pedido_id);
                                 location.reload();
                             } else {
                                 alert('❌ Error: ' + json.message);
                             }
-                        } catch (err) {
-                            console.error('Error al guardar:', err);
-                            alert('❌ Error inesperado al guardar el pedido.');
+                        } catch (e) {
+                            console.error('❌ No se pudo parsear JSON:', e, text);
+                            alert('❌ Error inesperado en la respuesta del servidor.');
                         }
                     });
                 </script>
