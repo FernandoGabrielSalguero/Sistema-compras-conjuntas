@@ -568,23 +568,15 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         });
 
                         const text = await res.text();
-                        console.log("🔎 Respuesta cruda:", text);
+                        console.log('🔎 Respuesta cruda:', text);
 
+                        let json;
                         try {
-                            const text = await res.text();
-                            console.log('Respuesta cruda:', text);
-
-                            const json = JSON.parse(text); // Si falla, lanza error
-
-                            if (json.success) {
-                                alert('✅ Pedido guardado correctamente. ID: ' + json.pedido_id);
-                                location.reload();
-                            } else {
-                                alert('❌ Error: ' + json.message);
-                            }
+                            json = JSON.parse(text);
                         } catch (err) {
                             console.error('❌ No se pudo parsear JSON:', err);
                             alert('❌ Error inesperado en la respuesta del servidor.');
+                            return;
                         }
                     });
                 </script>
