@@ -84,16 +84,7 @@ if (isset($_GET['ver']) && isset($_GET['id'])) {
     $id = intval($_GET['id']);
 
     try {
-        $stmt = $pdo->prepare("
-            SELECT 
-                p.*, 
-                c.nombre AS nombre_cooperativa,
-                pr.nombre AS nombre_productor
-            FROM pedidos p
-            LEFT JOIN cooperativas c ON p.cooperativa_id = c.id
-            LEFT JOIN productores pr ON p.productor_id = pr.id
-            WHERE p.id = ?
-        ");
+        $stmt = $pdo->prepare("SELECT * FROM pedidos WHERE id = ?");
         $stmt->execute([$id]);
         $pedido = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -107,6 +98,7 @@ if (isset($_GET['ver']) && isset($_GET['id'])) {
     }
     exit;
 }
+
 
 
 
