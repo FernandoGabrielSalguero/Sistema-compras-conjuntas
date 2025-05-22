@@ -55,11 +55,6 @@ if (isset($_GET['listar']) && $_GET['listar'] == 1) {
     exit;
 }
 
-// ❌ Si llega acá, no hay endpoint válido
-http_response_code(400);
-echo json_encode(['success' => false, 'message' => 'Solicitud no válida']);
-exit;
-
 // ELIMINAR PEDIDO
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $json = json_decode(file_get_contents("php://input"), true);
@@ -84,3 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// ❌ Si llega acá, no hay endpoint válido
+http_response_code(400);
+echo json_encode(['success' => false, 'message' => 'Solicitud no válida']);
+exit;

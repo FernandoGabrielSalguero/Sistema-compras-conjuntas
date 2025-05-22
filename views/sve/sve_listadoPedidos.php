@@ -359,7 +359,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         });
 
         // eliminar pedidos
-        // eliminar pedidos
         let pedidoAEliminar = null;
 
         function confirmarEliminacion(id) {
@@ -417,7 +416,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             <p id="textoPedidoEliminar"></p>
             <div class="modal-actions">
                 <button class="btn btn-aceptar" id="btnConfirmarEliminar">Eliminar</button>
-                <button class="btn btn-cancela" onclick="cerrarModalEliminar()">Cancelar</button>
+                <button class="btn btn-cancelar" onclick="cerrarModalEliminar()">Cancelar</button>
             </div>
         </div>
     </div>
