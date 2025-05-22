@@ -343,7 +343,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             const formData = new FormData(form);
 
             try {
-                const res = await fetch('/controllers/sve_facturaUploaderController.php', {
+                const res = await fetch('/../contro', { // MODIFICAR ACÁ POR FACOR 
                     method: 'POST',
                     body: formData
                 });
