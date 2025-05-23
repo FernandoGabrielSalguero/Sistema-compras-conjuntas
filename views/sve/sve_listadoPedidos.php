@@ -598,6 +598,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 document.getElementById('editarAfiliacion').value = p.afiliacion;
                 document.getElementById('editarHectareas').value = p.ha_cooperativa || '';
                 document.getElementById('editarObservaciones').value = p.observaciones || '';
+                document.getElementById('editarCooperativa').value = p.nombre_cooperativa || '';
+                document.getElementById('editarProductor').value = p.nombre_productor || '';
 
                 // Limpiar productos
                 const tbody = document.getElementById('tbodyEditarProductos');
