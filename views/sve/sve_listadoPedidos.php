@@ -402,21 +402,21 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             });
 
             // ver pedido completo
-            window.verPedido = async function(id) {
-                const modal = document.getElementById('modalVerPedido');
-                const contenedor = document.getElementById('contenidoPedido');
+window.verPedido = async function(id) {
+    const modal = document.getElementById('modalVerPedido');
+    const contenedor = document.getElementById('contenidoPedido');
 
-                contenedor.innerHTML = '<p>🔄 Cargando pedido...</p>';
-                modal.style.display = 'flex';
+    contenedor.innerHTML = '<p>🔄 Cargando pedido...</p>';
+    modal.style.display = 'flex';
 
-                try {
-                    const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
-                    const json = await res.json();
+    try {
+        const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
+        const json = await res.json();
 
-                    if (!json.success) throw new Error(json.message);
-                    const p = json.data;
+        if (!json.success) throw new Error(json.message);
+        const p = json.data;
 
-                    contenedor.innerHTML = `
+        contenedor.innerHTML = `
             <p><strong>ID:</strong> ${p.id}</p>
             <p><strong>Cooperativa:</strong> ${p.nombre_cooperativa || '-'}</p>
             <p><strong>Productor:</strong> ${p.nombre_productor || '-'}</p>
@@ -432,15 +432,22 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 : `<p><strong>Factura:</strong> No cargada</p>`
             }
         `;
-                } catch (err) {
-                    contenedor.innerHTML = `<p style="color:red;">❌ Error al obtener el pedido: ${err.message}</p>`;
-                    console.error(err);
-                }
-            };
 
-            window.cerrarModalVerPedido = function() {
-                document.getElementById('modalVerPedido').style.display = 'none';
-            };
+        // 🧾 Agregar productos del pedido si existen
+        if (json.productos && json.productos.length > 0) {
+            contenedor.innerHTML += `<h4 style="margin-top:1rem;">Productos del pedido:</h4>`;
+            json.productos.forEach(prod => {
+                contenedor.innerHTML += `
+                    <p>- ${prod.nombre_producto} (${prod.categoria || ''}), ${prod.cantidad} ${prod.unidad_medida_venta || ''} - $${parseFloat(prod.precio_producto).toFixed(2)}</p>
+                `;
+            });
+        }
+
+    } catch (err) {
+        contenedor.innerHTML = `<p style="color:red;">❌ Error al obtener el pedido: ${err.message}</p>`;
+        console.error(err);
+    }
+};
 
         }); //end DOMContentLoaded
     </script>

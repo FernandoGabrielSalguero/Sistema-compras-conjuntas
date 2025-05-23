@@ -84,23 +84,40 @@ if (isset($_GET['ver']) && isset($_GET['id'])) {
     $id = intval($_GET['id']);
 
     try {
-        $stmt = $pdo->prepare("SELECT * FROM pedidos WHERE id = ?");
+        $stmt = $pdo->prepare("
+    SELECT 
+        p.*,
+        i1.nombre AS nombre_cooperativa,
+        i2.nombre AS nombre_productor
+    FROM pedidos p
+    JOIN usuarios u1 ON u1.id_real = p.cooperativa
+    JOIN usuarios_info i1 ON i1.usuario_id = u1.id
+    JOIN usuarios u2 ON u2.id_real = p.productor
+    JOIN usuarios_info i2 ON i2.usuario_id = u2.id
+    WHERE p.id = ?
+");
         $stmt->execute([$id]);
         $pedido = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$pedido) {
             echo json_encode(['success' => false, 'message' => 'Pedido no encontrado']);
         } else {
-            echo json_encode(['success' => true, 'data' => $pedido]);
+            // Cargar productos
+            $stmtProd = $pdo->prepare("SELECT * FROM detalle_pedidos WHERE pedido_id = ?");
+            $stmtProd->execute([$id]);
+            $productos = $stmtProd->fetchAll(PDO::FETCH_ASSOC);
+
+            echo json_encode([
+                'success' => true,
+                'data' => $pedido,
+                'productos' => $productos
+            ]);
         }
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'message' => 'Error al consultar el pedido']);
     }
     exit;
 }
-
-
-
 
 // ❌ Si llega acá, no hay endpoint válido
 http_response_code(400);
