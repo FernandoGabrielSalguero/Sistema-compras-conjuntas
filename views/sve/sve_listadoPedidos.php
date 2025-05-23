@@ -577,6 +577,62 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             }
         }); //end DOMContentLoaded
 
+        // otra funcion para editar pedidos
+        async function guardarProductoEnPedido(boton) {
+            const tr = boton.closest('tr');
+            const select = tr.querySelector('select');
+            const productoId = select.value;
+            const producto = productosDisponibles[productoId];
+            const cantidad = parseInt(tr.querySelector('input[name="cantidad"]').value);
+            const pedidoId = document.getElementById('formEditarPedido').getAttribute('data-id');
+
+            if (!producto || !cantidad || cantidad <= 0) {
+                showAlert('error', 'Debes seleccionar un producto y colocar una cantidad válida.');
+                return;
+            }
+
+            const data = {
+                accion: 'agregar_producto_pedido',
+                pedido_id: parseInt(pedidoId),
+                producto_id: parseInt(productoId),
+                cantidad: cantidad
+            };
+
+            try {
+                const res = await fetch('/controllers/sve_listadoPedidosController.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const json = await res.json();
+                if (!json.success) throw new Error(json.message);
+
+                // ✅ Reemplazar <select> por nombre del producto
+                tr.cells[0].innerHTML = `${producto.Nombre_producto}<input type="hidden" name="producto_id" value="${productoId}">`;
+
+                // ✅ Refrescar precio e IVA (ya estaba hecho, pero nos aseguramos)
+                tr.querySelector('.precio').textContent = `$${parseFloat(producto.Precio_producto).toFixed(2)}`;
+                tr.querySelector('.iva').textContent = `${parseFloat(producto.alicuota).toFixed(2)}%`;
+
+                // ✅ Reemplazar botón por eliminar
+                tr.cells[4].innerHTML = `
+                <button type="button" class="btn-icon" onclick="this.closest('tr').remove()">
+                    <span class="material-icons" style="color:red;">close</span>
+                </button>
+            `;
+
+                showAlert('success', 'Producto agregado correctamente ✅');
+
+            } catch (err) {
+                console.error(err);
+                showAlert('error', `❌ Error al guardar producto: ${err.message}`);
+            }
+        }
+
+
         // cargar productos en el modal de editar pedidos
         async function cargarSelectorProductos() {
             try {
@@ -1040,8 +1096,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <div id="contenedorAgregarProducto" style="margin-top: 1rem;">
                         <button type="button" class="btn btn-info" onclick="agregarProductoEditable()">+ Agregar producto</button>
                     </div>
-
-                    <button type="button" id="btnAgregarProductoEditar" class="btn btn-info" style="margin-top: 0.5rem;" disabled>+ Agregar producto</button>
                 </div>
                 <div class="modal-actions">
                     <button type="submit" class="btn btn-aceptar">Guardar cambios</button>

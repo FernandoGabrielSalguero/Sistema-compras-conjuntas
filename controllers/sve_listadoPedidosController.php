@@ -56,6 +56,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// agregar productos al pedido
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+
+    if ($input['accion'] === 'agregar_producto_pedido') {
+        require_once '../../config/conexion.php'; // Asegurate que esto conecta con PDO
+
+        $pedido_id = (int)$input['pedido_id'];
+        $producto_id = (int)$input['producto_id'];
+        $cantidad = (int)$input['cantidad'];
+
+        if (!$pedido_id || !$producto_id || $cantidad <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Datos inválidos.']);
+            exit;
+        }
+
+        try {
+            // Obtener el producto
+            $stmt = $pdo->prepare("SELECT * FROM productos WHERE Id = ?");
+            $stmt->execute([$producto_id]);
+            $producto = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$producto) {
+                echo json_encode(['success' => false, 'message' => 'Producto no encontrado.']);
+                exit;
+            }
+
+            // Calcular IVA y totales
+            $precio = floatval($producto['Precio_producto']);
+            $alicuota = floatval($producto['alicuota']);
+            $subtotal = $precio * $cantidad;
+            $iva = $subtotal * $alicuota / 100;
+            $total = $subtotal + $iva;
+
+            // Insertar en detalle_pedidos
+            $stmt = $pdo->prepare("
+                INSERT INTO detalle_pedidos (pedido_id, producto_id, nombre_producto, precio_producto, unidad_medida_venta, categoria, cantidad, alicuota)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            $stmt->execute([
+                $pedido_id,
+                $producto_id,
+                $producto['Nombre_producto'],
+                $precio,
+                $producto['Unidad_Medida_venta'],
+                $producto['categoria'],
+                $cantidad,
+                $alicuota
+            ]);
+
+            // Recalcular totales del pedido
+            $stmt = $pdo->prepare("
+                SELECT 
+                    SUM(precio_producto * cantidad) AS subtotal,
+                    SUM((precio_producto * cantidad) * (alicuota / 100)) AS iva
+                FROM detalle_pedidos
+                WHERE pedido_id = ?
+            ");
+            $stmt->execute([$pedido_id]);
+            $totales = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $total_sin_iva = round($totales['subtotal'], 2);
+            $total_iva = round($totales['iva'], 2);
+            $total_pedido = $total_sin_iva + $total_iva;
+
+            // Actualizar tabla pedidos
+            $stmt = $pdo->prepare("UPDATE pedidos SET total_sin_iva = ?, total_iva = ?, total_pedido = ? WHERE id = ?");
+            $stmt->execute([$total_sin_iva, $total_iva, $total_pedido, $pedido_id]);
+
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error en servidor: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+}
+
+
 // 🔹 Obtener resumen para tarjetas
 if (isset($_GET['resumen']) && $_GET['resumen'] == 1) {
     try {
