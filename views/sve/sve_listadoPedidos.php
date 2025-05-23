@@ -434,14 +434,41 @@ window.verPedido = async function(id) {
         `;
 
         // 🧾 Agregar productos del pedido si existen
-        if (json.productos && json.productos.length > 0) {
-            contenedor.innerHTML += `<h4 style="margin-top:1rem;">Productos del pedido:</h4>`;
-            json.productos.forEach(prod => {
-                contenedor.innerHTML += `
-                    <p>- ${prod.nombre_producto} (${prod.categoria || ''}), ${prod.cantidad} ${prod.unidad_medida_venta || ''} - $${parseFloat(prod.precio_producto).toFixed(2)}</p>
-                `;
-            });
-        }
+if (json.productos && json.productos.length > 0) {
+    let tablaHTML = `
+        <h4 style="margin-top: 1rem;">Productos del pedido:</h4>
+        <table style="width:100%; border-collapse: collapse; margin-top: 0.5rem;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; border-bottom:1px solid #ccc; padding: 4px;">Producto</th>
+                    <th style="text-align:left; border-bottom:1px solid #ccc; padding: 4px;">Categoría</th>
+                    <th style="text-align:right; border-bottom:1px solid #ccc; padding: 4px;">Cantidad</th>
+                    <th style="text-align:right; border-bottom:1px solid #ccc; padding: 4px;">Unidad</th>
+                    <th style="text-align:right; border-bottom:1px solid #ccc; padding: 4px;">Precio</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    json.productos.forEach(prod => {
+        tablaHTML += `
+            <tr>
+                <td style="padding: 4px;">${prod.nombre_producto}</td>
+                <td style="padding: 4px;">${prod.categoria || '-'}</td>
+                <td style="padding: 4px; text-align:right;">${prod.cantidad}</td>
+                <td style="padding: 4px; text-align:right;">${prod.unidad_medida_venta || '-'}</td>
+                <td style="padding: 4px; text-align:right;">$${parseFloat(prod.precio_producto).toFixed(2)}</td>
+            </tr>
+        `;
+    });
+
+    tablaHTML += `
+            </tbody>
+        </table>
+    `;
+
+    contenedor.innerHTML += tablaHTML;
+}
 
     } catch (err) {
         contenedor.innerHTML = `<p style="color:red;">❌ Error al obtener el pedido: ${err.message}</p>`;
