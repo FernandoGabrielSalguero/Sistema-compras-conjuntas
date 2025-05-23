@@ -402,40 +402,48 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             });
 
             // ver pedido completo
-window.verPedido = async function(id) {
-    const modal = document.getElementById('modalVerPedido');
-    const contenedor = document.getElementById('contenidoPedido');
+            window.verPedido = async function(id) {
+                const modal = document.getElementById('modalVerPedido');
+                const contenedor = document.getElementById('contenidoPedido');
 
-    contenedor.innerHTML = '<p>🔄 Cargando pedido...</p>';
-    modal.style.display = 'flex';
+                contenedor.innerHTML = '<p>🔄 Cargando pedido...</p>';
+                modal.style.display = 'flex';
 
-    try {
-        const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
-        const json = await res.json();
+                try {
+                    const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
+                    const json = await res.json();
 
-        if (!json.success) throw new Error(json.message);
-        const p = json.data;
+                    if (!json.success) throw new Error(json.message);
+                    const p = json.data;
 
-        contenedor.innerHTML = `
-            <p><strong>ID:</strong> ${p.id}</p>
-            <p><strong>Cooperativa:</strong> ${p.nombre_cooperativa || '-'}</p>
-            <p><strong>Productor:</strong> ${p.nombre_productor || '-'}</p>
-            <p><strong>Fecha pedido:</strong> ${p.fecha_pedido}</p>
-            <p><strong>A nombre de:</strong> ${p.persona_facturacion}</p>
-            <p><strong>Condición de facturación:</strong> ${p.condicion_facturacion}</p>
-            <p><strong>Afiliación:</strong> ${p.afiliacion}</p>
-            <p><strong>Total sin IVA:</strong> $${parseFloat(p.total_sin_iva).toFixed(2)}</p>
-            <p><strong>IVA:</strong> $${parseFloat(p.total_iva).toFixed(2)}</p>
-            <p><strong>Total Pedido:</strong> <strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></p>
-            ${p.factura 
-                ? `<p><strong>Factura:</strong> <a href="/uploads/tax_invoices/${p.factura}" target="_blank">Ver archivo</a></p>`
-                : `<p><strong>Factura:</strong> No cargada</p>`
-            }
-        `;
+                    contenedor.innerHTML = `
+    <div class="grid-datos">
+        <div><strong>ID:</strong> ${p.id}</div>
+        <div><strong>Cooperativa:</strong> ${p.nombre_cooperativa || '-'}</div>
 
-        // 🧾 Agregar productos del pedido si existen
-if (json.productos && json.productos.length > 0) {
-    let tablaHTML = `
+        <div><strong>Productor:</strong> ${p.nombre_productor || '-'}</div>
+        <div><strong>Fecha pedido:</strong> ${p.fecha_pedido}</div>
+
+        <div><strong>A nombre de:</strong> ${p.persona_facturacion}</div>
+        <div><strong>Condición de facturación:</strong> ${p.condicion_facturacion}</div>
+
+        <div><strong>Afiliación:</strong> ${p.afiliacion}</div>
+        <div><strong>Total sin IVA:</strong> $${parseFloat(p.total_sin_iva).toFixed(2)}</div>
+
+        <div><strong>IVA:</strong> $${parseFloat(p.total_iva).toFixed(2)}</div>
+        <div><strong>Total Pedido:</strong> <strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></div>
+
+        <div><strong>Factura:</strong> ${p.factura 
+            ? `<a href="/uploads/tax_invoices/${p.factura}" target="_blank">Ver archivo</a>` 
+            : 'No cargada'
+        }</div>
+        <div></div>
+    </div>
+`;
+
+                    // 🧾 Agregar productos del pedido si existen
+                    if (json.productos && json.productos.length > 0) {
+                        let tablaHTML = `
         <h4 style="margin-top: 1rem;">Productos del pedido:</h4>
         <table style="width:100%; border-collapse: collapse; margin-top: 0.5rem;">
             <thead>
@@ -450,8 +458,8 @@ if (json.productos && json.productos.length > 0) {
             <tbody>
     `;
 
-    json.productos.forEach(prod => {
-        tablaHTML += `
+                        json.productos.forEach(prod => {
+                            tablaHTML += `
             <tr>
                 <td style="padding: 4px;">${prod.nombre_producto}</td>
                 <td style="padding: 4px;">${prod.categoria || '-'}</td>
@@ -460,22 +468,26 @@ if (json.productos && json.productos.length > 0) {
                 <td style="padding: 4px; text-align:right;">$${parseFloat(prod.precio_producto).toFixed(2)}</td>
             </tr>
         `;
-    });
+                        });
 
-    tablaHTML += `
+                        tablaHTML += `
             </tbody>
         </table>
     `;
 
-    contenedor.innerHTML += tablaHTML;
-}
+                        contenedor.innerHTML += tablaHTML;
+                    }
 
-    } catch (err) {
-        contenedor.innerHTML = `<p style="color:red;">❌ Error al obtener el pedido: ${err.message}</p>`;
-        console.error(err);
-    }
-};
+                } catch (err) {
+                    contenedor.innerHTML = `<p style="color:red;">❌ Error al obtener el pedido: ${err.message}</p>`;
+                    console.error(err);
+                }
+            };
 
+            // funcion modal cerrar pedido
+            window.cerrarModalVerPedido = function() {
+                document.getElementById('modalVerPedido').style.display = 'none';
+            };
         }); //end DOMContentLoaded
     </script>
 
@@ -537,6 +549,17 @@ if (json.productos && json.productos.length > 0) {
         .pedido-detalle p {
             margin: 0;
             padding: 0.2rem 0;
+        }
+
+        .grid-datos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.4rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .grid-datos div {
+            font-size: 0.95rem;
         }
     </style>
 
