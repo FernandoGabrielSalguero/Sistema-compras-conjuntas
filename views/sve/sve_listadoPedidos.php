@@ -318,7 +318,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
             // 🔹 Funciones de acciones (placeholder, las implementamos después)
             window.verFactura = (ruta) => window.open(`/uploads/tax_invoices/${ruta}`, '_blank');
-            window.editarPedido = (id) => alert(`Editar pedido ID ${id}`);
 
             // 🟢 Iniciar
             cargarResumen();
