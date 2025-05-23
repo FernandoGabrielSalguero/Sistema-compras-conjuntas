@@ -527,9 +527,12 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             background: white;
             padding: 2rem;
             border-radius: 8px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
+            width: 95%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-sizing: border-box;
         }
 
         .modal-actions {
