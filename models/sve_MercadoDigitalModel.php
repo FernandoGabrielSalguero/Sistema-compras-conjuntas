@@ -191,5 +191,4 @@ VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)
         return $result['total'] ?? 0;
     }
 
-     
 }

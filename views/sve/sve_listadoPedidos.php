@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 
 // Iniciar sesión y proteger acceso
 session_start();
- 
+
 // ⚠️ Expiración por inactividad (20 minutos)
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 1200)) {
     session_unset();
@@ -284,7 +284,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         <button class="btn-icon" onclick="verPedido(${p.id})">
                             <i class="material-icons" style="color:blue;">description</i>
                         </button>
-                        <button class="btn-icon" onclick="editarPedido(${p.id})">
+                        <button class="btn-icon" onclick="abrirModalEdicion(${p.id})">
                             <i class="material-icons">edit</i>
                         </button>
                         <button class="btn-icon" onclick="imprimirPedido(${p.id})">
@@ -580,6 +580,21 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 console.error(err);
             }
         };
+
+        // funcion para abrir el modal de edición
+        function abrirModalEdicion(pedidoId) {
+    const modal = document.getElementById('iframeEditarModal');
+    const iframe = document.getElementById('iframeEditar');
+    iframe.src = `sve_editarPedido.php?id=${pedidoId}`;
+    modal.style.display = 'flex';
+}
+
+// permitir cerrar con ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === "Escape") {
+        document.getElementById('iframeEditarModal').style.display = 'none';
+    }
+});
     </script>
 
     <!-- Formulario oculto para cargar la factura -->
@@ -599,6 +614,13 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             </div>
         </div>
     </div>
+
+    <!-- Modal flotante para editar pedido -->
+<div id="iframeEditarModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center;">
+    <iframe id="iframeEditar" style="width:90%; height:90%; border:none; border-radius:8px; background:white;"></iframe>
+</div>
+
+
     <!-- imprimir el pedido -->
     <div id="printContainer" style="display: none;"></div>
     <style>

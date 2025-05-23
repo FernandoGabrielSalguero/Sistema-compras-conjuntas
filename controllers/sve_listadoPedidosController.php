@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
- 
+
 // 🔹 Obtener resumen para tarjetas
 if (isset($_GET['resumen']) && $_GET['resumen'] == 1) {
     try {
