@@ -584,17 +584,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         // funcion para actualizar el pedido
         window.editarPedido = async function(id) {
 
-            // ELIMINAR 
-            const campos = [
-  'editarCooperativa', 'editarProductor', 'editarPersonaFacturacion',
-  'editarCondicionFacturacion', 'editarAfiliacion',
-  'editarHectareas', 'editarObservaciones'
-];
-campos.forEach(id => {
-  if (!document.getElementById(id)) console.warn(`⚠️ Falta el campo: #${id}`);
-});
-
-
             try {
                 const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
                 const json = await res.json();
@@ -604,11 +593,11 @@ campos.forEach(id => {
                 const productos = json.productos || [];
 
                 // Cargar datos al formulario
-                document.getElementById('persona_facturacion').value = p.persona_facturacion;
-                document.getElementById('condicion_facturacion').value = p.condicion_facturacion;
-                document.getElementById('afiliacion').value = p.afiliacion;
-                document.getElementById('hectareas').value = p.ha_cooperativa || '';
-                document.getElementById('observaciones').value = p.observaciones || '';
+                document.getElementById('editarPersonaFacturacion').value = p.persona_facturacion;
+                document.getElementById('editarCondicionFacturacion').value = p.condicion_facturacion;
+                document.getElementById('editarAfiliacion').value = p.afiliacion;
+                document.getElementById('editarHectareas').value = p.ha_cooperativa || '';
+                document.getElementById('editarObservaciones').value = p.observaciones || '';
 
                 // Limpiar productos
                 const tbody = document.getElementById('tbodyEditarProductos');
