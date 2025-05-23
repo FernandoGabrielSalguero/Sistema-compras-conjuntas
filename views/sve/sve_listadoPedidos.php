@@ -634,40 +634,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             }
         }
 
-
-        // cargar productos en el modal de editar pedidos
-        async function cargarSelectorProductos() {
-            try {
-                const res = await fetch('/controllers/sve_listadoPedidosController.php?productos=1');
-                const json = await res.json();
-                if (!json.success) throw new Error(json.message);
-
-                const selector = document.getElementById('selectorProducto');
-                selector.innerHTML = `<option disabled selected>Seleccione un producto</option>`;
-                productosDisponibles = {}; // reseteamos
-
-                for (const categoria in json.data) {
-                    const optgroup = document.createElement('optgroup');
-                    optgroup.label = categoria;
-
-                    json.data[categoria].forEach(prod => {
-                        productosDisponibles[prod.producto_id] = prod;
-                        const option = document.createElement('option');
-                        option.value = prod.producto_id;
-                        option.textContent = prod.Nombre_producto;
-                        optgroup.appendChild(option);
-                    });
-
-                    selector.appendChild(optgroup);
-                }
-
-                document.getElementById('agregarProductoSeleccion').style.display = 'block';
-
-            } catch (err) {
-                console.error('❌ Error al cargar productos:', err);
-            }
-        }
-
+        // imprimir pedidos
         window.imprimirPedido = async function(id) {
             try {
                 // Obtener datos del pedido
@@ -758,64 +725,62 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
 
         // funcion para actualizar el pedido
-        window.editarPedido = async function(id) {
+ window.editarPedido = async function(id) {
+    try {
+        const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
+        const json = await res.json();
+        if (!json.success) throw new Error(json.message);
 
-            try {
-                const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
-                const json = await res.json();
-                if (!json.success) throw new Error(json.message);
+        const p = json.data;
+        const productos = json.productos || [];
 
-                const p = json.data;
-                const productos = json.productos || [];
+        // Cargar datos al formulario
+        document.getElementById('editarPersonaFacturacion').value = p.persona_facturacion;
+        document.getElementById('editarCondicionFacturacion').value = p.condicion_facturacion;
+        document.getElementById('editarAfiliacion').value = p.afiliacion;
+        document.getElementById('editarHectareas').value = p.ha_cooperativa || '';
+        document.getElementById('editarObservaciones').value = p.observaciones || '';
+        document.getElementById('editarCooperativa').value = p.nombre_cooperativa || '';
+        document.getElementById('editarProductor').value = p.nombre_productor || '';
 
-                // Cargar datos al formulario
-                document.getElementById('editarPersonaFacturacion').value = p.persona_facturacion;
-                document.getElementById('editarCondicionFacturacion').value = p.condicion_facturacion;
-                document.getElementById('editarAfiliacion').value = p.afiliacion;
-                document.getElementById('editarHectareas').value = p.ha_cooperativa || '';
-                document.getElementById('editarObservaciones').value = p.observaciones || '';
-                document.getElementById('editarCooperativa').value = p.nombre_cooperativa || '';
-                document.getElementById('editarProductor').value = p.nombre_productor || '';
+        // Limpiar productos
+        const tbody = document.getElementById('tbodyEditarProductos');
+        tbody.innerHTML = '';
 
-                // Limpiar productos
-                const tbody = document.getElementById('tbodyEditarProductos');
-                tbody.innerHTML = '';
+        productos.forEach(prod => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    ${prod.nombre_producto}
+                    <input type="hidden" name="producto_id" value="${prod.producto_id}">
+                </td>
+                <td>
+                    <div class="input-group" style="margin:0;">
+                        <div class="input-icon">
+                            <span class="material-icons">pin</span>
+                            <input type="number" class="input" name="cantidad" value="${prod.cantidad}" required style="width: 80px;">
+                        </div>
+                    </div>
+                </td>
+                <td style="text-align:right;">$${parseFloat(prod.precio_producto).toFixed(2)}</td>
+                <td style="text-align:right;">${parseFloat(prod.alicuota).toFixed(2)}%</td>
+                <td style="text-align:center;">
+                    <button type="button" class="btn-icon" onclick="this.closest('tr').remove()">❌</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
 
-                productos.forEach(prod => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-    <td>
-        ${prod.nombre_producto}
-        <input type="hidden" name="producto_id" value="${prod.producto_id}">
-    </td>
-    <td>
-        <div class="input-group" style="margin:0;">
-            <div class="input-icon">
-                <span class="material-icons">pin</span>
-                <input type="number" class="input" name="cantidad" value="${prod.cantidad}" required style="width: 80px;">
-            </div>
-        </div>
-    </td>
-    <td style="text-align:right;">$${parseFloat(prod.precio_producto).toFixed(2)}</td>
-    <td style="text-align:right;">${parseFloat(prod.alicuota).toFixed(2)}%</td>
-    <td style="text-align:center;">
-        <button type="button" class="btn-icon" onclick="this.closest('tr').remove()">❌</button>
-    </td>
-`;
-                    tbody.appendChild(tr);
-                });
+        // Guardar ID para uso posterior
+        document.getElementById('formEditarPedido').setAttribute('data-id', p.id);
+        document.getElementById('modalEditarPedido').style.display = 'flex';
 
-                // Guardar ID para uso posterior
-                document.getElementById('formEditarPedido').setAttribute('data-id', p.id);
-                cargarSelectorProductos();
+    } catch (err) {
+        console.error('❌ Error al cargar pedido para editar:', err);
+        showAlert('error', 'No se pudo cargar el pedido.');
+    }
+};
 
-                document.getElementById('modalEditarPedido').style.display = 'flex';
-
-            } catch (err) {
-                console.error('❌ Error al cargar pedido para editar:', err);
-                showAlert('error', 'No se pudo cargar el pedido.');
-            }
-        };
 
         // Agregar un producto nuevo al pedido
         function agregarProductoFila() {
