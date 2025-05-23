@@ -814,7 +814,6 @@ campos.forEach(id => {
     </div>
 
     <!-- Modal Editar Pedido -->
-    <!-- Modal Editar Pedido -->
     <div id="modalEditarPedido" class="modal" style="display: none;">
         <div class="modal-content">
             <h3>Editar Pedido</h3>
