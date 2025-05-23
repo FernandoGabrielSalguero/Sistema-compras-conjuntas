@@ -518,7 +518,63 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 this.selectedIndex = 0; // reset
             });
 
+            // funcion para actualizar pedidos
+            function agregarProductoEditable() {
+                const tbody = document.getElementById('tbodyEditarProductos');
+                const tr = document.createElement('tr');
 
+                tr.innerHTML = `
+            <td>
+                <select class="input" onchange="actualizarValoresProducto(this)">
+                    <option disabled selected>Seleccioná un producto</option>
+                    ${Object.entries(productosDisponiblesAgrupadosPorCategoria()).map(([categoria, productos]) =>
+                        `<optgroup label="${categoria}">` +
+                        productos.map(prod =>
+                            `<option value="${prod.producto_id}">${prod.Nombre_producto}</option>`
+                        ).join('') +
+                        `</optgroup>`
+                    ).join('')}
+                </select>
+            </td>
+            <td>
+                <div class="input-icon">
+                    <span class="material-icons">123</span>
+                    <input type="number" class="input" name="cantidad" value="1" required>
+                </div>
+            </td>
+            <td class="precio">$0.00</td>
+            <td class="iva">0.00%</td>
+            <td style="text-align:center;">
+                <button type="button" class="btn-icon" onclick="guardarProductoEnPedido(this)">
+                    <span class="material-icons" style="color:green;">save</span>
+                </button>
+            </td>
+        `;
+
+                tbody.appendChild(tr);
+            }
+
+            // Esta función ayuda a crear las opciones agrupadas
+            function productosDisponiblesAgrupadosPorCategoria() {
+                const agrupado = {};
+                for (const id in productosDisponibles) {
+                    const prod = productosDisponibles[id];
+                    if (!agrupado[prod.categoria]) agrupado[prod.categoria] = [];
+                    agrupado[prod.categoria].push(prod);
+                }
+                return agrupado;
+            }
+
+            function actualizarValoresProducto(selectEl) {
+                const selectedId = selectEl.value;
+                const producto = productosDisponibles[selectedId];
+                if (!producto) return;
+
+                const tr = selectEl.closest('tr');
+                tr.dataset.productoId = selectedId;
+                tr.querySelector('.precio').textContent = `$${parseFloat(producto.Precio_producto).toFixed(2)}`;
+                tr.querySelector('.iva').textContent = `${parseFloat(producto.alicuota).toFixed(2)}%`;
+            }
         }); //end DOMContentLoaded
 
         // cargar productos en el modal de editar pedidos
@@ -980,11 +1036,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         </table>
                     </div>
 
-                    <div id="agregarProductoSeleccion" style="margin-top: 1rem; display:none;">
-                        <label for="selectorProducto"><strong>Seleccionar producto:</strong></label>
-                        <select id="selectorProducto" class="input">
-                            <option disabled selected>Seleccione un producto</option>
-                        </select>
+                    <!-- Contenedor para agregar nuevo producto -->
+                    <div id="contenedorAgregarProducto" style="margin-top: 1rem;">
+                        <button type="button" class="btn btn-info" onclick="agregarProductoEditable()">+ Agregar producto</button>
                     </div>
 
                     <button type="button" id="btnAgregarProductoEditar" class="btn btn-info" style="margin-top: 0.5rem;" disabled>+ Agregar producto</button>
