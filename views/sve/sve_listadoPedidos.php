@@ -580,6 +580,126 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 console.error(err);
             }
         };
+
+
+        // funcion para actualizar el pedido
+        window.editarPedido = async function(id) {
+            try {
+                const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
+                const json = await res.json();
+                if (!json.success) throw new Error(json.message);
+
+                const p = json.data;
+                const productos = json.productos || [];
+
+                // Cargar datos al formulario
+                document.getElementById('persona_facturacion').value = p.persona_facturacion;
+                document.getElementById('condicion_facturacion').value = p.condicion_facturacion;
+                document.getElementById('afiliacion').value = p.afiliacion;
+                document.getElementById('hectareas').value = p.ha_cooperativa || '';
+                document.getElementById('observaciones').value = p.observaciones || '';
+
+                // Limpiar productos
+                const tbody = document.getElementById('tbodyEditarProductos');
+                tbody.innerHTML = '';
+
+                productos.forEach(prod => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                <td>${prod.nombre_producto}<input type="hidden" name="producto_id" value="${prod.producto_id}"></td>
+                <td><input type="number" name="cantidad" value="${prod.cantidad}" required style="width: 80px;"></td>
+                <td style="text-align:right;">$${parseFloat(prod.precio_producto).toFixed(2)}</td>
+                <td style="text-align:right;">${parseFloat(prod.alicuota).toFixed(2)}%</td>
+                <td style="text-align:center;"><button type="button" onclick="this.closest('tr').remove()">❌</button></td>
+            `;
+                    tbody.appendChild(tr);
+                });
+
+                // Guardar ID para uso posterior
+                document.getElementById('formEditarPedido').setAttribute('data-id', p.id);
+
+                document.getElementById('modalEditarPedido').style.display = 'flex';
+
+            } catch (err) {
+                console.error('❌ Error al cargar pedido para editar:', err);
+                showAlert('error', 'No se pudo cargar el pedido.');
+            }
+        };
+
+        // Agregar un producto nuevo al pedido
+        function agregarProductoFila() {
+            const tbody = document.getElementById('tbodyEditarProductos');
+            const tr = document.createElement('tr');
+
+            tr.innerHTML = `
+        <td><input type="text" name="nombre_manual" placeholder="Nuevo producto" required></td>
+        <td><input type="number" name="cantidad" value="1" required style="width: 80px;"></td>
+        <td style="text-align:right;">$0.00</td>
+        <td style="text-align:right;">0%</td>
+        <td style="text-align:center;"><button type="button" onclick="this.closest('tr').remove()">❌</button></td>
+    `;
+
+            tbody.appendChild(tr);
+        }
+
+        // Guardar cambios y enviar al servidor
+        document.getElementById('formEditarPedido').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const pedidoId = this.getAttribute('data-id');
+            const form = e.target;
+            const productos = [];
+
+            const rows = form.querySelectorAll('#tbodyEditarProductos tr');
+            for (let row of rows) {
+                const productoId = row.querySelector('input[name="producto_id"]')?.value || null;
+                const nombre = row.querySelector('input[name="nombre_manual"]')?.value || row.cells[0].textContent.trim();
+                const cantidad = parseInt(row.querySelector('input[name="cantidad"]').value);
+
+                productos.push({
+                    id: productoId,
+                    nombre,
+                    cantidad
+                });
+            }
+
+            const data = {
+                accion: 'editar_pedido',
+                id: parseInt(pedidoId),
+                persona_facturacion: form.persona_facturacion.value,
+                condicion_facturacion: form.condicion_facturacion.value,
+                afiliacion: form.afiliacion.value,
+                hectareas: parseFloat(form.hectareas.value) || 0,
+                observaciones: form.observaciones.value,
+                productos
+            };
+
+            try {
+                const res = await fetch('/controllers/sve_listadoPedidosController.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const json = await res.json();
+                if (!json.success) throw new Error(json.message);
+
+                showAlert('success', 'Pedido actualizado correctamente ✅');
+                cerrarModalEditarPedido();
+                cargarPedidos();
+
+            } catch (err) {
+                console.error('❌ Error al guardar edición:', err);
+                showAlert('error', 'No se pudo guardar el pedido.');
+            }
+        });
+
+        // Cerrar el modal
+        function cerrarModalEditarPedido() {
+            document.getElementById('modalEditarPedido').style.display = 'none';
+        }
     </script>
 
     <!-- Formulario oculto para cargar la factura -->
@@ -682,6 +802,71 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         </div>
     </div>
 
+    <!-- modal editar pedido -->
+    <!-- Modal Editar Pedido -->
+    <div id="modalEditarPedido" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px; width: 90%;">
+            <h3>Editar Pedido</h3>
+            <form id="formEditarPedido">
+                <div class="grid-datos">
+                    <div>
+                        <label for="persona_facturacion"><strong>A nombre de:</strong></label>
+                        <select id="persona_facturacion" name="persona_facturacion" required>
+                            <option value="productor">Productor</option>
+                            <option value="cooperativa">Cooperativa</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="condicion_facturacion"><strong>Condición:</strong></label>
+                        <select id="condicion_facturacion" name="condicion_facturacion" required>
+                            <option value="responsable inscripto">Responsable Inscripto</option>
+                            <option value="monotributista">Monotributista</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="afiliacion"><strong>Afiliación:</strong></label>
+                        <select id="afiliacion" name="afiliacion" required>
+                            <option value="socio">Socio</option>
+                            <option value="tercero">Tercero</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="hectareas"><strong>Ha. cooperativa:</strong></label>
+                        <input type="number" step="0.01" id="hectareas" name="hectareas">
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label for="observaciones"><strong>Observaciones:</strong></label>
+                        <textarea id="observaciones" name="observaciones" rows="2" style="width: 100%;"></textarea>
+                    </div>
+                </div>
+
+                <h4 style="margin-top: 1rem;">Productos</h4>
+                <table id="tablaEditarProductos" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding: 4px;">Producto</th>
+                            <th style="text-align:right; padding: 4px;">Cantidad</th>
+                            <th style="text-align:right; padding: 4px;">Precio</th>
+                            <th style="text-align:right; padding: 4px;">Alicuota</th>
+                            <th style="text-align:center; padding: 4px;">Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyEditarProductos">
+                        <!-- Se rellena por JS -->
+                    </tbody>
+                </table>
+
+                <div style="margin-top: 1rem;">
+                    <button type="button" class="btn" onclick="agregarProductoFila()">+ Agregar producto</button>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
+                    <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 
 

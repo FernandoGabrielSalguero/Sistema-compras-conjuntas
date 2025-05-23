@@ -33,6 +33,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Actualziar pedidos
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $json = json_decode(file_get_contents("php://input"), true);
+
+    // ... eliminar_pedido ya está definido ...
+
+    // 🔄 EDITAR PEDIDO
+    if (isset($json['accion']) && $json['accion'] === 'editar_pedido') {
+        $id = intval($json['id'] ?? 0);
+        if (!$id || !is_array($json['productos'])) {
+            echo json_encode(['success' => false, 'message' => 'Datos inválidos']);
+            exit;
+        }
+
+        try {
+            $model->actualizarPedido($id, $json);
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar: ' . $e->getMessage()]);
+        }
+
+        exit;
+    }
+}
+
 // 🔹 Obtener resumen para tarjetas
 if (isset($_GET['resumen']) && $_GET['resumen'] == 1) {
     try {
@@ -85,7 +110,7 @@ if (isset($_GET['ver']) && isset($_GET['id'])) {
 
     try {
         $stmt = $pdo->prepare("
-    SELECT 
+    SELECT
         p.*,
         i1.nombre AS nombre_cooperativa,
         i2.nombre AS nombre_productor
