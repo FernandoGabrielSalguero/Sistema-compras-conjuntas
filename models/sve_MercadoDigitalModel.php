@@ -116,7 +116,6 @@ VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)
         return $pedido_id;
     }
 
-    // modelo de Listado de pedidos
     // 🔢 Cuenta total de pedidos y resumen de facturas
     public function obtenerResumenPedidos()
     {
@@ -192,119 +191,5 @@ VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)
         return $result['total'] ?? 0;
     }
 
-    public function actualizarPedido($id, $data)
-    {
-        $this->pdo->beginTransaction();
-
-        try {
-            // 1. Calcular totales
-            $total_sin_iva = 0;
-            $total_iva = 0;
-
-            foreach ($data['productos'] as $prod) {
-                $producto_id = $prod['id'];
-
-                // Si es producto existente en la base
-                if ($producto_id) {
-                    $stmt = $this->pdo->prepare("SELECT Precio_producto, alicuota, Unidad_Medida_venta, categoria FROM productos WHERE Id = ?");
-                    $stmt->execute([$producto_id]);
-                    $info = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                    if (!$info) {
-                        throw new Exception("Producto no encontrado: ID $producto_id");
-                    }
-
-                    $precio = $info['Precio_producto'];
-                    $alicuota = (float)$info['alicuota'];
-                    $cantidad = (int)$prod['cantidad'];
-
-                    $sin_iva = $precio * $cantidad;
-                    $iva = $sin_iva * ($alicuota / 100);
-
-                    $total_sin_iva += $sin_iva;
-                    $total_iva += $iva;
-                }
-            }
-
-            $total_pedido = $total_sin_iva + $total_iva;
-
-            // 2. Actualizar pedido principal
-            $stmt = $this->pdo->prepare("
-            UPDATE pedidos SET 
-                persona_facturacion = ?, 
-                condicion_facturacion = ?, 
-                afiliacion = ?, 
-                ha_cooperativa = ?, 
-                observaciones = ?, 
-                total_sin_iva = ?, 
-                total_iva = ?, 
-                total_pedido = ?
-            WHERE id = ?
-        ");
-
-            $stmt->execute([
-                $data['persona_facturacion'],
-                $data['condicion_facturacion'],
-                $data['afiliacion'],
-                $data['hectareas'],
-                $data['observaciones'],
-                $total_sin_iva,
-                $total_iva,
-                $total_pedido,
-                $id
-            ]);
-
-            // 3. Eliminar productos actuales
-            $this->pdo->prepare("DELETE FROM detalle_pedidos WHERE pedido_id = ?")->execute([$id]);
-
-            // 4. Insertar nuevos productos
-            foreach ($data['productos'] as $prod) {
-                $producto_id = $prod['id'];
-                $nombre = $prod['nombre'];
-                $cantidad = $prod['cantidad'];
-
-                if ($producto_id) {
-                    $stmtProd = $this->pdo->prepare("SELECT * FROM productos WHERE Id = ?");
-                    $stmtProd->execute([$producto_id]);
-                    $producto = $stmtProd->fetch(PDO::FETCH_ASSOC);
-
-                    if (!$producto) continue;
-
-                    $this->pdo->prepare("
-                    INSERT INTO detalle_pedidos (
-                        pedido_id, producto_id, nombre_producto, detalle_producto, 
-                        precio_producto, unidad_medida_venta, categoria, cantidad, alicuota
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ")->execute([
-                        $id,
-                        $producto_id,
-                        $producto['Nombre_producto'],
-                        $producto['Detalle_producto'],
-                        $producto['Precio_producto'],
-                        $producto['Unidad_Medida_venta'],
-                        $producto['categoria'],
-                        $cantidad,
-                        $producto['alicuota']
-                    ]);
-                } else {
-                    // Producto manual (sin ID real)
-                    $this->pdo->prepare("
-                    INSERT INTO detalle_pedidos (
-                        pedido_id, producto_id, nombre_producto, detalle_producto, 
-                        precio_producto, unidad_medida_venta, categoria, cantidad, alicuota
-                    ) VALUES (?, NULL, ?, '', 0, '', '', ?, 0)
-                ")->execute([
-                        $id,
-                        $nombre,
-                        $cantidad
-                    ]);
-                }
-            }
-
-            $this->pdo->commit();
-        } catch (Exception $e) {
-            $this->pdo->rollBack();
-            throw $e;
-        }
-    }
+     
 }
