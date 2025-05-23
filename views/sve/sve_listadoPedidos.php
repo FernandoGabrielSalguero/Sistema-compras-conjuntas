@@ -845,28 +845,37 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <!-- A nombre de -->
                     <div class="input-group">
                         <label for="editarPersonaFacturacion">A nombre de:</label>
-                        <select id="editarPersonaFacturacion" name="persona_facturacion">
-                            <option value="cooperativa">Cooperativa</option>
-                            <option value="productor">Productor</option>
-                        </select>
+                        <div class="input-icon">
+                            <span class="material-icons">badge</span>
+                            <select id="editarPersonaFacturacion" name="persona_facturacion" class="input">
+                                <option value="cooperativa">Cooperativa</option>
+                                <option value="productor">Productor</option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Condición de facturación -->
                     <div class="input-group">
                         <label for="editarCondicionFacturacion">Condición:</label>
-                        <select id="editarCondicionFacturacion" name="condicion_facturacion">
-                            <option value="responsable inscripto">Responsable Inscripto</option>
-                            <option value="monotributista">Monotributista</option>
-                        </select>
+                        <div class="input-icon">
+                            <span class="material-icons">verified_user</span>
+                            <select id="editarCondicionFacturacion" name="condicion_facturacion" class="input">
+                                <option value="responsable inscripto">Responsable Inscripto</option>
+                                <option value="monotributista">Monotributista</option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Afiliación -->
                     <div class="input-group">
                         <label for="editarAfiliacion">Afiliación:</label>
-                        <select id="editarAfiliacion" name="afiliacion">
-                            <option value="socio">Socio</option>
-                            <option value="tercero">Tercero</option>
-                        </select>
+                        <div class="input-icon">
+                            <span class="material-icons">groups</span>
+                            <select id="editarAfiliacion" name="afiliacion" class="input">
+                                <option value="socio">Socio</option>
+                                <option value="tercero">Tercero</option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Hectáreas -->
