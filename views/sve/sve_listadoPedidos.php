@@ -583,6 +583,18 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
         // funcion para actualizar el pedido
         window.editarPedido = async function(id) {
+
+            // ELIMINAR 
+            const campos = [
+  'editarCooperativa', 'editarProductor', 'editarPersonaFacturacion',
+  'editarCondicionFacturacion', 'editarAfiliacion',
+  'editarHectareas', 'editarObservaciones'
+];
+campos.forEach(id => {
+  if (!document.getElementById(id)) console.warn(`⚠️ Falta el campo: #${id}`);
+});
+
+
             try {
                 const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
                 const json = await res.json();
@@ -802,88 +814,88 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
     </div>
 
     <!-- Modal Editar Pedido -->
-<!-- Modal Editar Pedido -->
-<div id="modalEditarPedido" class="modal" style="display: none;">
-    <div class="modal-content">
-        <h3>Editar Pedido</h3>
+    <!-- Modal Editar Pedido -->
+    <div id="modalEditarPedido" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Editar Pedido</h3>
 
-        <form id="formEditarPedido" class="form-modern">
-            <div class="form-grid grid-2">
+            <form id="formEditarPedido" class="form-modern">
+                <div class="form-grid grid-2">
 
-                <!-- Cooperativa (solo lectura) -->
-                <div class="input-group">
-                    <label for="editarCooperativa">Cooperativa</label>
-                    <div class="input-icon">
-                        <span class="material-icons">business</span>
-                        <input type="text" id="editarCooperativa" disabled>
+                    <!-- Cooperativa (solo lectura) -->
+                    <div class="input-group">
+                        <label for="editarCooperativa">Cooperativa</label>
+                        <div class="input-icon">
+                            <span class="material-icons">business</span>
+                            <input type="text" id="editarCooperativa" disabled>
+                        </div>
+                    </div>
+
+                    <!-- Productor (solo lectura) -->
+                    <div class="input-group">
+                        <label for="editarProductor">Productor</label>
+                        <div class="input-icon">
+                            <span class="material-icons">person</span>
+                            <input type="text" id="editarProductor" disabled>
+                        </div>
+                    </div>
+
+                    <!-- A nombre de -->
+                    <div class="input-group">
+                        <label for="editarPersonaFacturacion">A nombre de:</label>
+                        <select id="editarPersonaFacturacion" name="persona_facturacion">
+                            <option value="cooperativa">Cooperativa</option>
+                            <option value="productor">Productor</option>
+                        </select>
+                    </div>
+
+                    <!-- Condición de facturación -->
+                    <div class="input-group">
+                        <label for="editarCondicionFacturacion">Condición:</label>
+                        <select id="editarCondicionFacturacion" name="condicion_facturacion">
+                            <option value="responsable inscripto">Responsable Inscripto</option>
+                            <option value="monotributista">Monotributista</option>
+                        </select>
+                    </div>
+
+                    <!-- Afiliación -->
+                    <div class="input-group">
+                        <label for="editarAfiliacion">Afiliación:</label>
+                        <select id="editarAfiliacion" name="afiliacion">
+                            <option value="socio">Socio</option>
+                            <option value="tercero">Tercero</option>
+                        </select>
+                    </div>
+
+                    <!-- Hectáreas -->
+                    <div class="input-group">
+                        <label for="editarHectareas">Ha. cooperativa:</label>
+                        <input type="number" id="editarHectareas" name="hectareas" step="0.01">
                     </div>
                 </div>
 
-                <!-- Productor (solo lectura) -->
+                <!-- Observaciones -->
                 <div class="input-group">
-                    <label for="editarProductor">Productor</label>
-                    <div class="input-icon">
-                        <span class="material-icons">person</span>
-                        <input type="text" id="editarProductor" disabled>
+                    <label for="editarObservaciones">Observaciones:</label>
+                    <textarea id="editarObservaciones" name="observaciones" rows="2"></textarea>
+                </div>
+
+                <!-- Productos -->
+                <div style="margin-top: 1rem;">
+                    <h4>Productos</h4>
+                    <div id="editarProductosContainer">
+                        <!-- 🧾 Los productos se renderizan dinámicamente aquí -->
                     </div>
+                    <button type="button" id="btnAgregarProductoEditar" class="btn btn-info" style="margin-top: 0.5rem;" disabled>+ Agregar producto</button>
                 </div>
 
-                <!-- A nombre de -->
-                <div class="input-group">
-                    <label for="editarPersonaFacturacion">A nombre de:</label>
-                    <select id="editarPersonaFacturacion" name="persona_facturacion">
-                        <option value="cooperativa">Cooperativa</option>
-                        <option value="productor">Productor</option>
-                    </select>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
+                    <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
                 </div>
-
-                <!-- Condición de facturación -->
-                <div class="input-group">
-                    <label for="editarCondicionFacturacion">Condición:</label>
-                    <select id="editarCondicionFacturacion" name="condicion_facturacion">
-                        <option value="responsable inscripto">Responsable Inscripto</option>
-                        <option value="monotributista">Monotributista</option>
-                    </select>
-                </div>
-
-                <!-- Afiliación -->
-                <div class="input-group">
-                    <label for="editarAfiliacion">Afiliación:</label>
-                    <select id="editarAfiliacion" name="afiliacion">
-                        <option value="socio">Socio</option>
-                        <option value="tercero">Tercero</option>
-                    </select>
-                </div>
-
-                <!-- Hectáreas -->
-                <div class="input-group">
-                    <label for="editarHectareas">Ha. cooperativa:</label>
-                    <input type="number" id="editarHectareas" name="hectareas" step="0.01">
-                </div>
-            </div>
-
-            <!-- Observaciones -->
-            <div class="input-group">
-                <label for="editarObservaciones">Observaciones:</label>
-                <textarea id="editarObservaciones" name="observaciones" rows="2"></textarea>
-            </div>
-
-            <!-- Productos -->
-            <div style="margin-top: 1rem;">
-                <h4>Productos</h4>
-                <div id="editarProductosContainer">
-                    <!-- 🧾 Los productos se renderizan dinámicamente aquí -->
-                </div>
-                <button type="button" id="btnAgregarProductoEditar" class="btn btn-info" style="margin-top: 0.5rem;" disabled>+ Agregar producto</button>
-            </div>
-
-            <div class="modal-actions">
-                <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
-                <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 
 </body>
 
