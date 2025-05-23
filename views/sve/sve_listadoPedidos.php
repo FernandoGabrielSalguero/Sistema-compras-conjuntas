@@ -569,6 +569,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
 
+                // Confirmar operación al usuario
+                showAlert('success', `Pedido #${p.id} descargado como imagen ✅`);
+
                 // Limpiar
                 contenedor.style.display = 'none';
                 contenedor.innerHTML = '';
