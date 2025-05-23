@@ -528,7 +528,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             padding: 2rem;
             border-radius: 8px;
             width: 95%;
-            max-width: 600px;
+            max-width: 750px;
             max-height: 90vh;
             overflow-y: auto;
             overflow-x: hidden;
