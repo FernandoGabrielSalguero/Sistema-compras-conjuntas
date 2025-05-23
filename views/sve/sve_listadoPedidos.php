@@ -518,6 +518,31 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 this.selectedIndex = 0; // reset
             });
 
+
+            // Esta función ayuda a crear las opciones agrupadas
+            function productosDisponiblesAgrupadosPorCategoria() {
+                const agrupado = {};
+                for (const id in productosDisponibles) {
+                    const prod = productosDisponibles[id];
+                    if (!agrupado[prod.categoria]) agrupado[prod.categoria] = [];
+                    agrupado[prod.categoria].push(prod);
+                }
+                return agrupado;
+            }
+
+            function actualizarValoresProducto(selectEl) {
+                const selectedId = selectEl.value;
+                const producto = productosDisponibles[selectedId];
+                if (!producto) return;
+
+                const tr = selectEl.closest('tr');
+                tr.dataset.productoId = selectedId;
+                tr.querySelector('.precio').textContent = `$${parseFloat(producto.Precio_producto).toFixed(2)}`;
+                tr.querySelector('.iva').textContent = `${parseFloat(producto.alicuota).toFixed(2)}%`;
+            }
+        }); //end DOMContentLoaded
+
+        
             // funcion para actualizar pedidos
             function agregarProductoEditable() {
                 const tbody = document.getElementById('tbodyEditarProductos');
@@ -553,29 +578,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                 tbody.appendChild(tr);
             }
-
-            // Esta función ayuda a crear las opciones agrupadas
-            function productosDisponiblesAgrupadosPorCategoria() {
-                const agrupado = {};
-                for (const id in productosDisponibles) {
-                    const prod = productosDisponibles[id];
-                    if (!agrupado[prod.categoria]) agrupado[prod.categoria] = [];
-                    agrupado[prod.categoria].push(prod);
-                }
-                return agrupado;
-            }
-
-            function actualizarValoresProducto(selectEl) {
-                const selectedId = selectEl.value;
-                const producto = productosDisponibles[selectedId];
-                if (!producto) return;
-
-                const tr = selectEl.closest('tr');
-                tr.dataset.productoId = selectedId;
-                tr.querySelector('.precio').textContent = `$${parseFloat(producto.Precio_producto).toFixed(2)}`;
-                tr.querySelector('.iva').textContent = `${parseFloat(producto.alicuota).toFixed(2)}%`;
-            }
-        }); //end DOMContentLoaded
 
         // otra funcion para editar pedidos
         async function guardarProductoEnPedido(boton) {
