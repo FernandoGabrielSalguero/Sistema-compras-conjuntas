@@ -895,32 +895,32 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             <textarea id="editarObservaciones" name="observaciones" rows="2" class="input"></textarea>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Productos -->
-                    <div style="margin-top: 1rem;">
-                        <h4>Productos</h4>
-                        <div id="editarProductosContainer">
-                            <table class="data-table" style="width: 100%;">
-                                <thead>
-                                    <tr>
-                                        <th>Producto</th>
-                                        <th>Cantidad</th>
-                                        <th>Precio</th>
-                                        <th>IVA</th>
-                                        <th>Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbodyEditarProductos">
-                                    <!-- Se llena dinámicamente -->
-                                </tbody>
-                            </table>
-                        </div>
-                        <button type="button" id="btnAgregarProductoEditar" class="btn btn-info" style="margin-top: 0.5rem;" disabled>+ Agregar producto</button>
+                <!-- Productos -->
+                <div style="margin-top: 1rem;">
+                    <h4>Productos</h4>
+                    <div id="editarProductosContainer">
+                        <table class="data-table" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio</th>
+                                    <th>IVA</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyEditarProductos">
+                                <!-- Se llena dinámicamente -->
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="modal-actions">
-                        <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
-                        <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
-                    </div>
+                    <button type="button" id="btnAgregarProductoEditar" class="btn btn-info" style="margin-top: 0.5rem;" disabled>+ Agregar producto</button>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
+                    <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
                 </div>
             </form>
         </div>
