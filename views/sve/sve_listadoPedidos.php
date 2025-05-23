@@ -917,12 +917,11 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         </div>
                         <button type="button" id="btnAgregarProductoEditar" class="btn btn-info" style="margin-top: 0.5rem;" disabled>+ Agregar producto</button>
                     </div>
-
-
                     <div class="modal-actions">
                         <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
                         <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
                     </div>
+                </div>
             </form>
         </div>
     </div>
