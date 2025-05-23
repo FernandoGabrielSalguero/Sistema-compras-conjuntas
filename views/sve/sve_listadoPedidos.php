@@ -47,6 +47,10 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
+    <!-- descargar imagen  -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 </head>
 
 <body>
@@ -489,6 +493,92 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 document.getElementById('modalVerPedido').style.display = 'none';
             };
         }); //end DOMContentLoaded
+
+
+        window.imprimirPedido = async function(id) {
+            try {
+                // Obtener datos del pedido
+                const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
+                const json = await res.json();
+
+                if (!json.success) throw new Error(json.message);
+                const p = json.data;
+                const productos = json.productos || [];
+
+                // Generar HTML de impresión
+                const html = `
+        <div style="font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background: white; color: #000;">
+            <h2 style="text-align: center;">Detalle del pedido</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; margin-bottom: 1rem;">
+                <div><strong>ID:</strong> ${p.id}</div>
+                <div><strong>Cooperativa:</strong> ${p.nombre_cooperativa || '-'}</div>
+                <div><strong>Productor:</strong> ${p.nombre_productor || '-'}</div>
+                <div><strong>Fecha pedido:</strong> ${p.fecha_pedido}</div>
+                <div><strong>A nombre de:</strong> ${p.persona_facturacion}</div>
+                <div><strong>Condición de facturación:</strong> ${p.condicion_facturacion}</div>
+                <div><strong>Afiliación:</strong> ${p.afiliacion}</div>
+                <div><strong>Total sin IVA:</strong> $${parseFloat(p.total_sin_iva).toFixed(2)}</div>
+                <div><strong>IVA:</strong> $${parseFloat(p.total_iva).toFixed(2)}</div>
+                <div><strong>Total Pedido:</strong> $${parseFloat(p.total_pedido).toFixed(2)}</div>
+                <div><strong>Factura:</strong> ${p.factura 
+                    ? `<span>✓ cargada</span>` 
+                    : 'No cargada'}
+                </div>
+            </div>
+
+            ${productos.length > 0 ? `
+                <h4 style="margin-top: 1rem;">Productos del pedido:</h4>
+                <table style="width:100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; border-bottom:1px solid #ccc; padding: 4px;">Producto</th>
+                            <th style="text-align:left; border-bottom:1px solid #ccc; padding: 4px;">Categoría</th>
+                            <th style="text-align:right; border-bottom:1px solid #ccc; padding: 4px;">Cantidad</th>
+                            <th style="text-align:right; border-bottom:1px solid #ccc; padding: 4px;">Unidad</th>
+                            <th style="text-align:right; border-bottom:1px solid #ccc; padding: 4px;">Precio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${productos.map(prod => `
+                            <tr>
+                                <td style="padding: 4px;">${prod.nombre_producto}</td>
+                                <td style="padding: 4px;">${prod.categoria || '-'}</td>
+                                <td style="padding: 4px; text-align:right;">${prod.cantidad}</td>
+                                <td style="padding: 4px; text-align:right;">${prod.unidad_medida_venta || '-'}</td>
+                                <td style="padding: 4px; text-align:right;">$${parseFloat(prod.precio_producto).toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            ` : ''}
+        </div>
+        `;
+
+                // Insertar en el contenedor oculto
+                const contenedor = document.getElementById('printContainer');
+                contenedor.innerHTML = html;
+                contenedor.style.display = 'block';
+
+                // Esperar a que se renderice
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                // Capturar imagen
+                const canvas = await html2canvas(contenedor, {
+                    scale: 2
+                });
+                const link = document.createElement('a');
+                link.download = `pedido-${p.id}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                // Limpiar
+                contenedor.style.display = 'none';
+                contenedor.innerHTML = '';
+            } catch (err) {
+                alert(`❌ Error al imprimir: ${err.message}`);
+                console.error(err);
+            }
+        };
     </script>
 
     <!-- Formulario oculto para cargar la factura -->
@@ -508,7 +598,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             </div>
         </div>
     </div>
-
+    <!-- imprimir el pedido -->
+    <div id="printContainer" style="display: none;"></div>
     <style>
         .modal {
             position: fixed;
