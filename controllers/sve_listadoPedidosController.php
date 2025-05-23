@@ -142,6 +142,17 @@ if (isset($_GET['ver']) && isset($_GET['id'])) {
     exit;
 }
 
+// Obtener todos los productos
+if (isset($_GET['productos']) && $_GET['productos'] == 1) {
+    try {
+        $productos = $model->obtenerProductosAgrupadosPorCategoria();
+        echo json_encode(['success' => true, 'data' => $productos]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error al obtener productos']);
+    }
+    exit;
+}
+
 // ❌ Si llega acá, no hay endpoint válido
 http_response_code(400);
 echo json_encode(['success' => false, 'message' => 'Solicitud no válida']);

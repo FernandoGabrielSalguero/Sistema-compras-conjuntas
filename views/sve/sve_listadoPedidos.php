@@ -489,6 +489,68 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             window.cerrarModalVerPedido = function() {
                 document.getElementById('modalVerPedido').style.display = 'none';
             };
+
+
+
+            let productosDisponibles = {};
+
+async function cargarSelectorProductos() {
+    try {
+        const res = await fetch('/controllers/sve_listadoPedidosController.php?productos=1');
+        const json = await res.json();
+        if (!json.success) throw new Error(json.message);
+
+        const selector = document.getElementById('selectorProducto');
+        selector.innerHTML = `<option disabled selected>Seleccione un producto</option>`;
+        productosDisponibles = {}; // reseteamos
+
+        for (const categoria in json.data) {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = categoria;
+
+            json.data[categoria].forEach(prod => {
+                productosDisponibles[prod.producto_id] = prod;
+                const option = document.createElement('option');
+                option.value = prod.producto_id;
+                option.textContent = prod.Nombre_producto;
+                optgroup.appendChild(option);
+            });
+
+            selector.appendChild(optgroup);
+        }
+
+        document.getElementById('agregarProductoSeleccion').style.display = 'block';
+
+    } catch (err) {
+        console.error('❌ Error al cargar productos:', err);
+    }
+}
+
+// Cuando seleccionan un producto del selector
+document.getElementById('selectorProducto').addEventListener('change', function() {
+    const id = this.value;
+    const prod = productosDisponibles[id];
+    if (!prod) return;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>${prod.Nombre_producto}<input type="hidden" name="producto_id" value="${id}"></td>
+        <td>
+            <div class="input-icon">
+                <span class="material-icons">123</span>
+                <input type="number" name="cantidad" value="1" required class="input">
+            </div>
+        </td>
+        <td style="text-align:right;">$${parseFloat(prod.Precio_producto).toFixed(2)}</td>
+        <td style="text-align:right;">${parseFloat(prod.alicuota).toFixed(2)}%</td>
+        <td style="text-align:center;"><button type="button" onclick="this.closest('tr').remove()">❌</button></td>
+    `;
+
+    document.getElementById('tbodyEditarProductos').appendChild(tr);
+    this.selectedIndex = 0; // reset
+});
+
+
         }); //end DOMContentLoaded
 
 
@@ -631,6 +693,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                 // Guardar ID para uso posterior
                 document.getElementById('formEditarPedido').setAttribute('data-id', p.id);
+cargarSelectorProductos();
 
                 document.getElementById('modalEditarPedido').style.display = 'flex';
 
@@ -667,7 +730,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             const rows = form.querySelectorAll('#tbodyEditarProductos tr');
             for (let row of rows) {
                 const productoId = row.querySelector('input[name="producto_id"]')?.value || null;
-                const nombre = row.querySelector('input[name="nombre_manual"]')?.value || row.cells[0].textContent.trim();
+                const nombre = row.cells[0].textContent.trim();
                 const cantidad = parseInt(row.querySelector('input[name="cantidad"]').value);
 
                 productos.push({
@@ -888,14 +951,14 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     </div>
                 </div>
 
-                    <!-- Observaciones -->
-                    <div class="input-group">
-                        <label for="editarObservaciones">Observaciones:</label>
-                        <div class="input-icon">
-                            <span class="material-icons">notes</span>
-                            <textarea id="editarObservaciones" name="observaciones" rows="2" class="input"></textarea>
-                        </div>
+                <!-- Observaciones -->
+                <div class="input-group">
+                    <label for="editarObservaciones">Observaciones:</label>
+                    <div class="input-icon">
+                        <span class="material-icons">notes</span>
+                        <textarea id="editarObservaciones" name="observaciones" rows="2" class="input"></textarea>
                     </div>
+                </div>
 
                 <!-- Productos -->
                 <div style="margin-top: 1rem;">
@@ -916,6 +979,14 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             </tbody>
                         </table>
                     </div>
+
+                    <div id="agregarProductoSeleccion" style="margin-top: 1rem; display:none;">
+                        <label for="selectorProducto"><strong>Seleccionar producto:</strong></label>
+                        <select id="selectorProducto" class="input">
+                            <option disabled selected>Seleccione un producto</option>
+                        </select>
+                    </div>
+
                     <button type="button" id="btnAgregarProductoEditar" class="btn btn-info" style="margin-top: 0.5rem;" disabled>+ Agregar producto</button>
                 </div>
                 <div class="modal-actions">
