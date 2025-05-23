@@ -886,6 +886,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             <input type="number" id="editarHectareas" name="hectareas" step="0.01" class="input">
                         </div>
                     </div>
+                </div>
 
                     <!-- Observaciones -->
                     <div class="input-group">
@@ -895,7 +896,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             <textarea id="editarObservaciones" name="observaciones" rows="2" class="input"></textarea>
                         </div>
                     </div>
-                </div>
 
                 <!-- Productos -->
                 <div style="margin-top: 1rem;">
