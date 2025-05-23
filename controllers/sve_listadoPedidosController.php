@@ -37,8 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $json = json_decode(file_get_contents("php://input"), true);
 
-    // ... eliminar_pedido ya está definido ...
-
     // 🔄 EDITAR PEDIDO
     if (isset($json['accion']) && $json['accion'] === 'editar_pedido') {
         $id = intval($json['id'] ?? 0);
