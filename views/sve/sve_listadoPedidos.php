@@ -527,8 +527,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             background: white;
             padding: 2rem;
             border-radius: 8px;
-            width: 95%;
-            max-width: 750px;
+            width: 90%;
+            max-width: 800px;
             max-height: 90vh;
             overflow-y: auto;
             overflow-x: hidden;
@@ -541,28 +541,38 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             justify-content: space-around;
         }
 
-        .pedido-detalle {
-            display: grid;
-            grid-template-columns: max-content auto;
-            gap: 0.4rem 1rem;
-            text-align: left;
-            margin-top: 1rem;
+        .pedido-detalle table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+            font-size: 0.95rem;
         }
 
-        .pedido-detalle p {
-            margin: 0;
-            padding: 0.2rem 0;
+        .pedido-detalle th,
+        .pedido-detalle td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #ccc;
+            text-align: left;
+            word-break: break-word;
         }
 
         .grid-datos {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.4rem 1rem;
+            gap: 0.5rem 1.5rem;
             margin-bottom: 1rem;
+            word-break: break-word;
         }
 
         .grid-datos div {
             font-size: 0.95rem;
+        }
+
+
+        @media (max-width: 600px) {
+            .grid-datos {
+                grid-template-columns: 1fr !important;
+            }
         }
     </style>
 
