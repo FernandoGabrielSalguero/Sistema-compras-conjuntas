@@ -608,12 +608,24 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 productos.forEach(prod => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                <td>${prod.nombre_producto}<input type="hidden" name="producto_id" value="${prod.producto_id}"></td>
-                <td><input type="number" name="cantidad" value="${prod.cantidad}" required style="width: 80px;"></td>
-                <td style="text-align:right;">$${parseFloat(prod.precio_producto).toFixed(2)}</td>
-                <td style="text-align:right;">${parseFloat(prod.alicuota).toFixed(2)}%</td>
-                <td style="text-align:center;"><button type="button" onclick="this.closest('tr').remove()">❌</button></td>
-            `;
+    <td>
+        ${prod.nombre_producto}
+        <input type="hidden" name="producto_id" value="${prod.producto_id}">
+    </td>
+    <td>
+        <div class="input-group" style="margin:0;">
+            <div class="input-icon">
+                <span class="material-icons">pin</span>
+                <input type="number" class="input" name="cantidad" value="${prod.cantidad}" required style="width: 80px;">
+            </div>
+        </div>
+    </td>
+    <td style="text-align:right;">$${parseFloat(prod.precio_producto).toFixed(2)}</td>
+    <td style="text-align:right;">${parseFloat(prod.alicuota).toFixed(2)}%</td>
+    <td style="text-align:center;">
+        <button type="button" class="btn-icon" onclick="this.closest('tr').remove()">❌</button>
+    </td>
+`;
                     tbody.appendChild(tr);
                 });
 
