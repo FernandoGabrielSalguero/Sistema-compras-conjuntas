@@ -494,46 +494,14 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
             let productosDisponibles = {};
 
-async function cargarSelectorProductos() {
-    try {
-        const res = await fetch('/controllers/sve_listadoPedidosController.php?productos=1');
-        const json = await res.json();
-        if (!json.success) throw new Error(json.message);
+            // Cuando seleccionan un producto del selector
+            document.getElementById('selectorProducto').addEventListener('change', function() {
+                const id = this.value;
+                const prod = productosDisponibles[id];
+                if (!prod) return;
 
-        const selector = document.getElementById('selectorProducto');
-        selector.innerHTML = `<option disabled selected>Seleccione un producto</option>`;
-        productosDisponibles = {}; // reseteamos
-
-        for (const categoria in json.data) {
-            const optgroup = document.createElement('optgroup');
-            optgroup.label = categoria;
-
-            json.data[categoria].forEach(prod => {
-                productosDisponibles[prod.producto_id] = prod;
-                const option = document.createElement('option');
-                option.value = prod.producto_id;
-                option.textContent = prod.Nombre_producto;
-                optgroup.appendChild(option);
-            });
-
-            selector.appendChild(optgroup);
-        }
-
-        document.getElementById('agregarProductoSeleccion').style.display = 'block';
-
-    } catch (err) {
-        console.error('❌ Error al cargar productos:', err);
-    }
-}
-
-// Cuando seleccionan un producto del selector
-document.getElementById('selectorProducto').addEventListener('change', function() {
-    const id = this.value;
-    const prod = productosDisponibles[id];
-    if (!prod) return;
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
         <td>${prod.Nombre_producto}<input type="hidden" name="producto_id" value="${id}"></td>
         <td>
             <div class="input-icon">
@@ -546,13 +514,45 @@ document.getElementById('selectorProducto').addEventListener('change', function(
         <td style="text-align:center;"><button type="button" onclick="this.closest('tr').remove()">❌</button></td>
     `;
 
-    document.getElementById('tbodyEditarProductos').appendChild(tr);
-    this.selectedIndex = 0; // reset
-});
+                document.getElementById('tbodyEditarProductos').appendChild(tr);
+                this.selectedIndex = 0; // reset
+            });
 
 
         }); //end DOMContentLoaded
 
+        // cargar productos en el modal de editar pedidos
+        async function cargarSelectorProductos() {
+            try {
+                const res = await fetch('/controllers/sve_listadoPedidosController.php?productos=1');
+                const json = await res.json();
+                if (!json.success) throw new Error(json.message);
+
+                const selector = document.getElementById('selectorProducto');
+                selector.innerHTML = `<option disabled selected>Seleccione un producto</option>`;
+                productosDisponibles = {}; // reseteamos
+
+                for (const categoria in json.data) {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = categoria;
+
+                    json.data[categoria].forEach(prod => {
+                        productosDisponibles[prod.producto_id] = prod;
+                        const option = document.createElement('option');
+                        option.value = prod.producto_id;
+                        option.textContent = prod.Nombre_producto;
+                        optgroup.appendChild(option);
+                    });
+
+                    selector.appendChild(optgroup);
+                }
+
+                document.getElementById('agregarProductoSeleccion').style.display = 'block';
+
+            } catch (err) {
+                console.error('❌ Error al cargar productos:', err);
+            }
+        }
 
         window.imprimirPedido = async function(id) {
             try {
@@ -693,7 +693,7 @@ document.getElementById('selectorProducto').addEventListener('change', function(
 
                 // Guardar ID para uso posterior
                 document.getElementById('formEditarPedido').setAttribute('data-id', p.id);
-cargarSelectorProductos();
+                cargarSelectorProductos();
 
                 document.getElementById('modalEditarPedido').style.display = 'flex';
 
