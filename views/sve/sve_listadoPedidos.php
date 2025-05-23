@@ -872,43 +872,48 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <!-- Hectáreas -->
                     <div class="input-group">
                         <label for="editarHectareas">Ha. cooperativa:</label>
-                        <input type="number" id="editarHectareas" name="hectareas" step="0.01">
+                        <div class="input-icon">
+                            <span class="material-icons">agriculture</span>
+                            <input type="number" id="editarHectareas" name="hectareas" step="0.01" class="input">
+                        </div>
                     </div>
-                </div>
 
-                <!-- Observaciones -->
-                <div class="input-group">
-                    <label for="editarObservaciones">Observaciones:</label>
-                    <textarea id="editarObservaciones" name="observaciones" rows="2"></textarea>
-                </div>
-
-                <!-- Productos -->
-                <div style="margin-top: 1rem;">
-                    <h4>Productos</h4>
-                    <div id="editarProductosContainer">
-                        <table class="data-table" style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th>Cantidad</th>
-                                    <th>Precio</th>
-                                    <th>IVA</th>
-                                    <th>Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbodyEditarProductos">
-                                <!-- Se llena dinámicamente -->
-                            </tbody>
-                        </table>
+                    <!-- Observaciones -->
+                    <div class="input-group">
+                        <label for="editarObservaciones">Observaciones:</label>
+                        <div class="input-icon">
+                            <span class="material-icons">notes</span>
+                            <textarea id="editarObservaciones" name="observaciones" rows="2" class="input"></textarea>
+                        </div>
                     </div>
-                    <button type="button" id="btnAgregarProductoEditar" class="btn btn-info" style="margin-top: 0.5rem;" disabled>+ Agregar producto</button>
-                </div>
+
+                    <!-- Productos -->
+                    <div style="margin-top: 1rem;">
+                        <h4>Productos</h4>
+                        <div id="editarProductosContainer">
+                            <table class="data-table" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio</th>
+                                        <th>IVA</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyEditarProductos">
+                                    <!-- Se llena dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <button type="button" id="btnAgregarProductoEditar" class="btn btn-info" style="margin-top: 0.5rem;" disabled>+ Agregar producto</button>
+                    </div>
 
 
-                <div class="modal-actions">
-                    <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
-                    <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
-                </div>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
+                        <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditarPedido()">Cancelar</button>
+                    </div>
             </form>
         </div>
     </div>
