@@ -354,14 +354,16 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             input.addEventListener('input', () => {
                                 const search = input.value.toLowerCase();
                                 lista.innerHTML = '';
-                                const resultados = dataArray.filter(item => item.nombre.toLowerCase().includes(search));
-                                if (resultados.length === 0) {
+                                const resultados = dataArray.filter(item => {
+                                    return item.nombre.toLowerCase().includes(search) || 
+                                        item.id_real.toString().includes(search);
+                                });                                if (resultados.length === 0) {
                                     lista.style.display = 'none';
                                     return;
                                 }
                                 resultados.forEach(item => {
                                     const li = document.createElement('li');
-                                    li.textContent = item.nombre;
+                                    li.textContent = `${item.id_real} - ${item.nombre}`;
                                     li.addEventListener('click', () => {
                                         input.value = item.nombre;
                                         hiddenInput.value = item.id_real;
