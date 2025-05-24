@@ -44,7 +44,12 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
 <head>
     <meta charset="UTF-8">
     <title>Editar Pedido</title>
+    <!-- Íconos de Material Design -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+    <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
+    <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 </head>
 
 <body style="padding: 2rem; background: #f9fafb;">
