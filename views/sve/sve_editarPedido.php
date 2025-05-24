@@ -184,18 +184,27 @@ $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </thead>
                     <tbody>
                         <?php foreach ($productos as $prod): ?>
+                            <?php
+                            $nombre_producto = htmlspecialchars($prod['nombre_producto'] ?? 'Sin nombre');
+                            $categoria = $prod['categoria'] ?? '-';
+                            $unidad = $prod['unidad_medida_venta'] ?? '-';
+                            $precio = is_numeric($prod['precio_producto']) ? floatval($prod['precio_producto']) : 0;
+                            $alicuota = $prod['alicuota'] ?? '0';
+                            $cantidad = is_numeric($prod['cantidad']) ? intval($prod['cantidad']) : 0;
+                            $subtotal = $precio * $cantidad;
+                            ?>
                             <tr>
                                 <td>
-                                    <?= htmlspecialchars($prod['nombre_producto']) ?>
-                                    <input type="hidden" name="productos[][id]" value="<?= $prod['producto_id'] ?>">
-                                    <input type="hidden" name="productos[][nombre]" value="<?= $prod['nombre_producto'] ?>">
+                                    <?= $nombre_producto ?>
+                                    <input type="hidden" name="productos[][id]" value="<?= $prod['producto_id'] ?? '' ?>">
+                                    <input type="hidden" name="productos[][nombre]" value="<?= $nombre_producto ?>">
                                 </td>
-                                <td><?= $prod['categoria'] ?></td>
-                                <td><?= $prod['unidad_medida_venta'] ?></td>
-                                <td><input type="number" class="input" name="productos[][cantidad]" value="<?= $prod['cantidad'] ?>"></td>
-                                <td>$<?= number_format($prod['precio_producto'], 2) ?></td>
-                                <td><?= $prod['alicuota'] ?>%</td>
-                                <td>$<?= number_format($prod['precio_producto'] * $prod['cantidad'], 2) ?></td>
+                                <td><?= $categoria ?></td>
+                                <td><?= $unidad ?></td>
+                                <td><input type="number" class="input" name="productos[][cantidad]" value="<?= $cantidad ?>"></td>
+                                <td>$<?= number_format($precio, 2) ?></td>
+                                <td><?= $alicuota ?>%</td>
+                                <td>$<?= number_format($subtotal, 2) ?></td>
                                 <td><button type="button" onclick="this.closest('tr').remove()">❌</button></td>
                             </tr>
                         <?php endforeach; ?>
