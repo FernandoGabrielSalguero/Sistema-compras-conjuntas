@@ -54,110 +54,131 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
     <form id="formEditarPedido" class="form-modern">
         <input type="hidden" name="id" value="<?= $pedido_id ?>">
 
-        <div class="form-grid grid-2">
+        <div class="form-grid grid-3">
             <div class="input-group">
-                <label>Cooperativa</label>
-                <input class="input" value="<?= htmlspecialchars($pedido['nombre_cooperativa']) ?>" disabled>
-            </div>
-            <div class="input-group">
-                <label>Productor</label>
-                <input class="input" value="<?= htmlspecialchars($pedido['nombre_productor']) ?>" disabled>
+                <label for="cooperativa">Cooperativa</label>
+                <div class="input-icon">
+                    <span class="material-icons">business</span>
+                    <input type="text" id="cooperativa" class="input" value="<?= htmlspecialchars($pedido['nombre_cooperativa']) ?>" disabled>
+                </div>
             </div>
 
             <div class="input-group">
-                <label>A nombre de</label>
-                <select name="persona_facturacion" class="input">
-                    <option value="cooperativa" <?= $pedido['persona_facturacion'] === 'cooperativa' ? 'selected' : '' ?>>Cooperativa</option>
-                    <option value="productor" <?= $pedido['persona_facturacion'] === 'productor' ? 'selected' : '' ?>>Productor</option>
+                <label for="productor">Productor</label>
+                <div class="input-icon">
+                    <span class="material-icons">person</span>
+                    <input type="text" id="productor" class="input" value="<?= htmlspecialchars($pedido['nombre_productor']) ?>" disabled>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="persona_facturacion">A nombre de</label>
+                <div class="input-icon">
+                    <span class="material-icons">badge</span>
+                    <select id="persona_facturacion" name="persona_facturacion" class="input">
+                        <option value="cooperativa">Cooperativa</option>
+                        <option value="productor">Productor</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="condicion_facturacion">Condición</label>
+                <div class="input-icon">
+                    <span class="material-icons">verified_user</span>
+                    <select id="condicion_facturacion" name="condicion_facturacion" class="input">
+                        <option value="responsable inscripto">Responsable Inscripto</option>
+                        <option value="monotributista">Monotributista</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="afiliacion">Afiliación</label>
+                <div class="input-icon">
+                    <span class="material-icons">groups</span>
+                    <select id="afiliacion" name="afiliacion" class="input">
+                        <option value="socio">Socio</option>
+                        <option value="tercero">Tercero</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="hectareas">Ha. cooperativa</label>
+                <div class="input-icon">
+                    <span class="material-icons">agriculture</span>
+                    <input type="number" name="hectareas" id="hectareas" step="0.01" class="input" placeholder="Cantidad de hectáreas...">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="observaciones">Observaciones</label>
+                <div class="input-icon">
+                    <span class="material-icons">notes</span>
+                    <textarea id="observaciones" name="observaciones" rows="2" class="input" placeholder="Notas adicionales..."></textarea>
+                </div>
+            </div>
+
+            <hr style="margin: 2rem 0;">
+
+            <h3>Agregar producto</h3>
+            <div class="form-grid grid-2">
+                <select id="selectorProducto" class="input">
+                    <option disabled selected>Seleccioná un producto</option>
+                    <?php foreach ($productosDisponibles as $categoria => $lista): ?>
+                        <optgroup label="<?= htmlspecialchars($categoria) ?>">
+                            <?php foreach ($lista as $p): ?>
+                                <option value="<?= $p['producto_id'] ?>" data-json='<?= json_encode($p) ?>'>
+                                    <?= htmlspecialchars($p['Nombre_producto']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </optgroup>
+                    <?php endforeach; ?>
                 </select>
+                <button type="button" class="btn btn-info" onclick="agregarProducto()">+ Agregar</button>
             </div>
 
-            <div class="input-group">
-                <label>Condición</label>
-                <select name="condicion_facturacion" class="input">
-                    <option value="responsable inscripto" <?= $pedido['condicion_facturacion'] === 'responsable inscripto' ? 'selected' : '' ?>>Responsable inscripto</option>
-                    <option value="monotributista" <?= $pedido['condicion_facturacion'] === 'monotributista' ? 'selected' : '' ?>>Monotributista</option>
-                </select>
-            </div>
-
-            <div class="input-group">
-                <label>Afiliación</label>
-                <select name="afiliacion" class="input">
-                    <option value="socio" <?= $pedido['afiliacion'] === 'socio' ? 'selected' : '' ?>>Socio</option>
-                    <option value="tercero" <?= $pedido['afiliacion'] === 'tercero' ? 'selected' : '' ?>>Tercero</option>
-                </select>
-            </div>
-
-            <div class="input-group">
-                <label>Ha. cooperativa</label>
-                <input type="number" step="0.01" name="hectareas" value="<?= $pedido['ha_cooperativa'] ?>" class="input">
-            </div>
-        </div>
-
-        <div class="input-group">
-            <label>Observaciones</label>
-            <textarea name="observaciones" class="input"><?= htmlspecialchars($pedido['observaciones']) ?></textarea>
-        </div>
-
-        <hr style="margin: 2rem 0;">
-
-        <h3>Agregar producto</h3>
-        <div class="form-grid grid-2">
-            <select id="selectorProducto" class="input">
-                <option disabled selected>Seleccioná un producto</option>
-                <?php foreach ($productosDisponibles as $categoria => $lista): ?>
-                    <optgroup label="<?= htmlspecialchars($categoria) ?>">
-                        <?php foreach ($lista as $p): ?>
-                            <option value="<?= $p['producto_id'] ?>" data-json='<?= json_encode($p) ?>'>
-                                <?= htmlspecialchars($p['Nombre_producto']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </optgroup>
-                <?php endforeach; ?>
-            </select>
-            <button type="button" class="btn btn-info" onclick="agregarProducto()">+ Agregar</button>
-        </div>
-
-        <h3 style="margin-top: 2rem;">Productos del pedido</h3>
-        <table class="data-table" id="tablaProductos">
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Categoría</th>
-                    <th>Unidad</th>
-                    <th>Cantidad</th>
-                    <th>Precio</th>
-                    <th>IVA</th>
-                    <th>Subtotal</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($productos as $p): ?>
+            <h3 style="margin-top: 2rem;">Productos del pedido</h3>
+            <table class="data-table" id="tablaProductos">
+                <thead>
                     <tr>
-                        <td><?= htmlspecialchars($p['nombre_producto']) ?><input type="hidden" name="productos[][id]" value="<?= $p['producto_id'] ?>"></td>
-                        <td><?= $p['categoria'] ?></td>
-                        <td><?= $p['unidad_medida_venta'] ?></td>
-                        <td><input type="number" name="productos[][cantidad]" value="<?= $p['cantidad'] ?>" class="input" onchange="actualizarTotales()"></td>
-                        <td>$<?= number_format($p['precio_producto'], 2) ?></td>
-                        <td><?= $p['alicuota'] ?>%</td>
-                        <td class="subtotal">$<?= number_format($p['precio_producto'] * $p['cantidad'], 2) ?></td>
-                        <td><button type="button" class="btn-icon" onclick="this.closest('tr').remove(); actualizarTotales()">❌</button></td>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Unidad</th>
+                        <th>Cantidad</th>
+                        <th>Precio</th>
+                        <th>IVA</th>
+                        <th>Subtotal</th>
+                        <th></th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php foreach ($productos as $p): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($p['nombre_producto']) ?><input type="hidden" name="productos[][id]" value="<?= $p['producto_id'] ?>"></td>
+                            <td><?= $p['categoria'] ?></td>
+                            <td><?= $p['unidad_medida_venta'] ?></td>
+                            <td><input type="number" name="productos[][cantidad]" value="<?= $p['cantidad'] ?>" class="input" onchange="actualizarTotales()"></td>
+                            <td>$<?= number_format($p['precio_producto'], 2) ?></td>
+                            <td><?= $p['alicuota'] ?>%</td>
+                            <td class="subtotal">$<?= number_format($p['precio_producto'] * $p['cantidad'], 2) ?></td>
+                            <td><button type="button" class="btn-icon" onclick="this.closest('tr').remove(); actualizarTotales()">❌</button></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
 
-        <div class="form-grid grid-3" style="margin-top: 1rem;">
-            <p><strong>Total sin IVA:</strong> $<span id="totalSinIva">0.00</span></p>
-            <p><strong>IVA:</strong> $<span id="totalIva">0.00</span></p>
-            <p><strong>Total Pedido:</strong> $<span id="totalConIva">0.00</span></p>
-        </div>
+            <div class="form-grid grid-3" style="margin-top: 1rem;">
+                <p><strong>Total sin IVA:</strong> $<span id="totalSinIva">0.00</span></p>
+                <p><strong>IVA:</strong> $<span id="totalIva">0.00</span></p>
+                <p><strong>Total Pedido:</strong> $<span id="totalConIva">0.00</span></p>
+            </div>
 
-        <div class="modal-actions" style="margin-top: 1.5rem;">
-            <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
-            <button type="button" class="btn btn-cancelar" onclick="window.parent.document.getElementById('iframeEditarModal').style.display='none'">Cancelar</button>
-        </div>
+            <div class="modal-actions" style="margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
+                <button type="button" class="btn btn-cancelar" onclick="window.parent.document.getElementById('iframeEditarModal').style.display='none'">Cancelar</button>
+            </div>
     </form>
 
     <script>
