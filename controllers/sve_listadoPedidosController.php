@@ -39,7 +39,7 @@ if (isset($json['accion']) && $json['accion'] === 'editar_pedido') {
     $persona = $json['persona_facturacion'] ?? '';
     $condicion = $json['condicion_facturacion'] ?? '';
     $afiliacion = $json['afiliacion'] ?? '';
-    $hectareas = floatval($json['hectareas'] ?? 0);
+    $ha_cooperativa = floatval($json['hectareas'] ?? 0);
     $obs = $json['observaciones'] ?? '';
     $productos = $json['productos'] ?? [];
 
@@ -50,8 +50,8 @@ if (isset($json['accion']) && $json['accion'] === 'editar_pedido') {
 
     try {
         // Actualizar encabezado de pedido
-        $stmt = $pdo->prepare("UPDATE pedidos SET persona_facturacion = ?, condicion_facturacion = ?, afiliacion = ?, hectareas = ?, observaciones = ? WHERE id = ?");
-        $stmt->execute([$persona, $condicion, $afiliacion, $hectareas, $obs, $id]);
+        $stmt = $pdo->prepare("UPDATE pedidos SET persona_facturacion = ?, condicion_facturacion = ?, afiliacion = ?, ha_cooperativa = ?, observaciones = ? WHERE id = ?");
+        $stmt->execute([$persona, $condicion, $afiliacion, $ha_cooperativa, $obs, $id]);
 
         // Eliminar productos actuales
         $stmt = $pdo->prepare("DELETE FROM detalle_pedidos WHERE pedido_id = ?");

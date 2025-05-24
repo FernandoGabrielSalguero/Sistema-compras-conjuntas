@@ -292,13 +292,18 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                 const json = await res.json();
                 if (!json.success) throw new Error(json.message);
 
-                alert('Pedido actualizado correctamente');
+                showAlert('success', 'Pedido actualizado correctamente');
                 window.parent.location.reload();
             } catch (err) {
                 alert('Error al guardar: ' + err.message);
+                showAlert('error', 'Error al subir la factura ❌' + err.message);
+
             }
         });
     </script>
+
+    <!-- Alert -->
+    <div class="alert-container" id="alertContainer"></div>
 </body>
 
 </html>
