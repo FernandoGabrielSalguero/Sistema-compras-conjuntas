@@ -211,7 +211,8 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
             let subtotal = 0;
             let iva = 0;
             document.querySelectorAll('#tablaProductos tbody tr').forEach(tr => {
-                const cantidad = parseFloat(tr.querySelector('input').value) || 0;
+                const cantidadInput = tr.querySelector('input[name="productos[][cantidad]"]');
+                const cantidad = parseFloat(cantidadInput.value) || 0;
                 const precio = parseFloat(tr.children[4].textContent.replace('$', '')) || 0;
                 const alicuota = parseFloat(tr.children[5].textContent.replace('%', '')) || 0;
                 const sub = cantidad * precio;
