@@ -31,10 +31,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         exit;
     }
+
+    if (isset($json['accion']) && $json['accion'] === 'eliminar_factura') {
+    $pedidoId = intval($json['id']);
+    if (!$pedidoId) {
+        echo json_encode(['success' => false, 'message' => 'ID inválido']);
+        exit;
+    }
+
+    try {
+        // Buscar la factura para eliminar físicamente
+        $stmt = $pdo->prepare("SELECT factura FROM pedidos WHERE id = ?");
+        $stmt->execute([$pedidoId]);
+        $factura = $stmt->fetchColumn();
+
+        if ($factura && file_exists(__DIR__ . '/../uploads/tax_invoices/' . $factura)) {
+            unlink(__DIR__ . '/../uploads/tax_invoices/' . $factura);
+        }
+
+        // Eliminar referencia en DB
+        $pdo->prepare("UPDATE pedidos SET factura = NULL WHERE id = ?")->execute([$pedidoId]);
+
+        echo json_encode(['success' => true]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error al eliminar factura']);
+    }
+    exit;
+}
 }
 
 // 🔸 EDITAR PEDIDO
 if (isset($json['accion']) && $json['accion'] === 'editar_pedido') {
+    error_log("🟡 JSON recibido:");
+    error_log(print_r($json, true));
     $pedidoId = intval($json['id']);
     $productos = $json['productos'] ?? [];
 
@@ -55,10 +84,10 @@ if (isset($json['accion']) && $json['accion'] === 'editar_pedido') {
             total_iva = ?, 
             total_pedido = ?
             WHERE id = ?");
-        
+
         $totalSinIva = 0;
         $totalIva = 0;
-        
+
         foreach ($productos as $prod) {
             $sub = floatval($prod['precio']) * intval($prod['cantidad']);
             $ivaCalc = $sub * (floatval($prod['alicuota']) / 100);

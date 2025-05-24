@@ -200,6 +200,18 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
             <p><strong>Total Pedido:</strong> $<span id="totalConIva">0.00</span></p>
         </div>
 
+        <?php if (!empty($pedido['factura'])): ?>
+            <div class="input-group">
+                <label>Factura cargada:</label>
+                <div>
+                    <a href="/uploads/tax_invoices/<?= htmlspecialchars($pedido['factura']) ?>" target="_blank">
+                        Ver factura
+                    </a>
+                    <button type="button" class="btn btn-cancelar" onclick="eliminarFactura()">Eliminar factura</button>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <div class="modal-actions" style="margin-top: 1.5rem;">
             <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
             <button type="button" class="btn btn-cancelar" onclick="window.parent.document.getElementById('iframeEditarModal').style.display='none'">Cancelar</button>
@@ -207,6 +219,29 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
     </form>
 
     <script>
+        function eliminarFactura() {
+            if (!confirm("¿Seguro que querés eliminar la factura adjunta?")) return;
+
+            fetch('/controllers/sve_listadoPedidosController.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        accion: 'eliminar_factura',
+                        id: <?= $pedido_id ?>
+                    })
+                }).then(res => res.json())
+                .then(json => {
+                    if (json.success) {
+                        alert("Factura eliminada correctamente.");
+                        window.location.reload();
+                    } else {
+                        alert("Error al eliminar factura: " + json.message);
+                    }
+                });
+        }
+
         function actualizarTotales() {
             let subtotal = 0;
             let iva = 0;
@@ -285,6 +320,7 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
             };
 
             try {
+                console.log("Payload enviado al servidor:", payload);
                 const res = await fetch('/controllers/sve_listadoPedidosController.php', {
                     method: 'POST',
                     headers: {
