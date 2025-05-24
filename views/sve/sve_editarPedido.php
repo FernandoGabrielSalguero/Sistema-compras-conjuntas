@@ -169,6 +169,20 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                     <th></th>
                 </tr>
             </thead>
+
+                    <?php if (!empty($pedido['factura'])): ?>
+            <div class="input-group">
+                <label>Factura cargada:</label>
+                <div>
+                    <a href="/uploads/tax_invoices/<?= htmlspecialchars($pedido['factura']) ?>" target="_blank">
+                        Ver factura
+                    </a>
+                    <button type="button" class="btn btn-cancelar" onclick="eliminarFactura()">Eliminar factura</button>
+                </div>
+            </div>
+        <?php endif; ?>
+
+
             <tbody>
                 <?php foreach ($productos as $p): ?>
                     <tr>
@@ -200,17 +214,7 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
             <p><strong>Total Pedido:</strong> $<span id="totalConIva">0.00</span></p>
         </div>
 
-        <?php if (!empty($pedido['factura'])): ?>
-            <div class="input-group">
-                <label>Factura cargada:</label>
-                <div>
-                    <a href="/uploads/tax_invoices/<?= htmlspecialchars($pedido['factura']) ?>" target="_blank">
-                        Ver factura
-                    </a>
-                    <button type="button" class="btn btn-cancelar" onclick="eliminarFactura()">Eliminar factura</button>
-                </div>
-            </div>
-        <?php endif; ?>
+
 
         <div class="modal-actions" style="margin-top: 1.5rem;">
             <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
@@ -333,7 +337,7 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                 if (!json.success) throw new Error(json.message);
 
                 showAlert('success', 'Pedido actualizado correctamente');
-                window.parent.location.reload();
+                // window.parent.location.reload();
             } catch (err) {
                 alert('Error al guardar: ' + err.message);
                 showAlert('error', 'Error al subir la factura ❌' + err.message);
