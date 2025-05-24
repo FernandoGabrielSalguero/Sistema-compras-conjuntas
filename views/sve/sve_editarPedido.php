@@ -10,11 +10,11 @@ require_once __DIR__ . '/../../models/sve_MercadoDigitalModel.php';
 
 
 if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'sve') {
-die("Acceso denegado");
+    die("Acceso denegado");
 }
 
 if (!isset($_GET['id'])) {
-die("Falta ID de pedido");
+    die("Falta ID de pedido");
 }
 
 $pedido_id = (int) $_GET['id'];
@@ -40,92 +40,77 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
 
 <!DOCTYPE html>
 <html lang="es">
-    
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Editar Pedido</title>
-        <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
-    <style>
-        body {
-            padding: 2rem;
-            background: #f3f4f6;
-            font-family: sans-serif;
-        }
 
-        table th,
-        table td {
-            text-align: left;
-            padding: 6px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-    </style>
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Pedido</title>
+    <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
 </head>
 
-<body>
-    <h2>Editar Pedido #<?= $pedido_id ?></h2>
+<body style="padding: 2rem; background: #f9fafb;">
+
+    <h2 style="margin-bottom: 1rem;">Editar Pedido #<?= $pedido_id ?></h2>
 
     <form id="formEditarPedido" class="form-modern">
         <input type="hidden" name="id" value="<?= $pedido_id ?>">
 
-        <div class="grid">
-            <div>
-                <label>Cooperativa:</label>
+        <div class="form-grid grid-2">
+            <div class="input-group">
+                <label>Cooperativa</label>
                 <input class="input" value="<?= htmlspecialchars($pedido['nombre_cooperativa']) ?>" disabled>
             </div>
-            <div>
-                <label>Productor:</label>
+            <div class="input-group">
+                <label>Productor</label>
                 <input class="input" value="<?= htmlspecialchars($pedido['nombre_productor']) ?>" disabled>
             </div>
 
-            <div>
-                <label>A nombre de:</label>
-                <select class="input" name="persona_facturacion">
+            <div class="input-group">
+                <label>A nombre de</label>
+                <select name="persona_facturacion" class="input">
                     <option value="cooperativa" <?= $pedido['persona_facturacion'] === 'cooperativa' ? 'selected' : '' ?>>Cooperativa</option>
                     <option value="productor" <?= $pedido['persona_facturacion'] === 'productor' ? 'selected' : '' ?>>Productor</option>
                 </select>
             </div>
-            <div>
-                <label>Condición:</label>
-                <select class="input" name="condicion_facturacion">
+
+            <div class="input-group">
+                <label>Condición</label>
+                <select name="condicion_facturacion" class="input">
                     <option value="responsable inscripto" <?= $pedido['condicion_facturacion'] === 'responsable inscripto' ? 'selected' : '' ?>>Responsable inscripto</option>
                     <option value="monotributista" <?= $pedido['condicion_facturacion'] === 'monotributista' ? 'selected' : '' ?>>Monotributista</option>
                 </select>
             </div>
 
-            <div>
-                <label>Afiliación:</label>
-                <select class="input" name="afiliacion">
+            <div class="input-group">
+                <label>Afiliación</label>
+                <select name="afiliacion" class="input">
                     <option value="socio" <?= $pedido['afiliacion'] === 'socio' ? 'selected' : '' ?>>Socio</option>
                     <option value="tercero" <?= $pedido['afiliacion'] === 'tercero' ? 'selected' : '' ?>>Tercero</option>
                 </select>
             </div>
-            <div>
-                <label>Ha. cooperativa:</label>
-                <input type="number" step="0.01" class="input" name="hectareas" value="<?= $pedido['ha_cooperativa'] ?>">
+
+            <div class="input-group">
+                <label>Ha. cooperativa</label>
+                <input type="number" step="0.01" name="hectareas" value="<?= $pedido['ha_cooperativa'] ?>" class="input">
             </div>
         </div>
 
         <div class="input-group">
-            <label>Observaciones:</label>
-            <textarea class="input" name="observaciones" rows="2"><?= htmlspecialchars($pedido['observaciones']) ?></textarea>
+            <label>Observaciones</label>
+            <textarea name="observaciones" class="input"><?= htmlspecialchars($pedido['observaciones']) ?></textarea>
         </div>
 
-        <hr>
+        <hr style="margin: 2rem 0;">
+
         <h3>Agregar producto</h3>
-        <div class="grid">
-            <select class="input" id="selectorProducto">
-                <option disabled selected>Seleccione un producto</option>
-                <?php foreach ($productosDisponibles as $categoria => $grupo): ?>
-                    <optgroup label="<?= $categoria ?>">
-                        <?php foreach ($grupo as $prod): ?>
-                            <option value="<?= $prod['producto_id'] ?>" data-json='<?= json_encode($prod) ?>'><?= $prod['Nombre_producto'] ?></option>
+        <div class="form-grid grid-2">
+            <select id="selectorProducto" class="input">
+                <option disabled selected>Seleccioná un producto</option>
+                <?php foreach ($productosDisponibles as $categoria => $lista): ?>
+                    <optgroup label="<?= htmlspecialchars($categoria) ?>">
+                        <?php foreach ($lista as $p): ?>
+                            <option value="<?= $p['producto_id'] ?>" data-json='<?= json_encode($p) ?>'>
+                                <?= htmlspecialchars($p['Nombre_producto']) ?>
+                            </option>
                         <?php endforeach; ?>
                     </optgroup>
                 <?php endforeach; ?>
@@ -133,7 +118,7 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
             <button type="button" class="btn btn-info" onclick="agregarProducto()">+ Agregar</button>
         </div>
 
-        <h3>Productos del pedido</h3>
+        <h3 style="margin-top: 2rem;">Productos del pedido</h3>
         <table class="data-table" id="tablaProductos">
             <thead>
                 <tr>
@@ -142,33 +127,34 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                     <th>Unidad</th>
                     <th>Cantidad</th>
                     <th>Precio</th>
-                    <th>Alicuota</th>
+                    <th>IVA</th>
                     <th>Subtotal</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($productos as $p):
-                    $subtotal = $p['precio_producto'] * $p['cantidad']; ?>
+                <?php foreach ($productos as $p): ?>
                     <tr>
                         <td><?= htmlspecialchars($p['nombre_producto']) ?><input type="hidden" name="productos[][id]" value="<?= $p['producto_id'] ?>"></td>
                         <td><?= $p['categoria'] ?></td>
                         <td><?= $p['unidad_medida_venta'] ?></td>
-                        <td><input type="number" class="input" name="productos[][cantidad]" value="<?= $p['cantidad'] ?>" onchange="actualizarTotales()"></td>
+                        <td><input type="number" name="productos[][cantidad]" value="<?= $p['cantidad'] ?>" class="input" onchange="actualizarTotales()"></td>
                         <td>$<?= number_format($p['precio_producto'], 2) ?></td>
                         <td><?= $p['alicuota'] ?>%</td>
-                        <td class="subtotal">$<?= number_format($subtotal, 2) ?></td>
-                        <td><button type="button" onclick="this.closest('tr').remove(); actualizarTotales()">❌</button></td>
+                        <td class="subtotal">$<?= number_format($p['precio_producto'] * $p['cantidad'], 2) ?></td>
+                        <td><button type="button" class="btn-icon" onclick="this.closest('tr').remove(); actualizarTotales()">❌</button></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
 
-        <p><strong>Total sin IVA:</strong> $<span id="totalSinIva">0.00</span></p>
-        <p><strong>IVA:</strong> $<span id="totalIva">0.00</span></p>
-        <p><strong>Total Pedido:</strong> $<span id="totalConIva">0.00</span></p>
+        <div class="form-grid grid-3" style="margin-top: 1rem;">
+            <p><strong>Total sin IVA:</strong> $<span id="totalSinIva">0.00</span></p>
+            <p><strong>IVA:</strong> $<span id="totalIva">0.00</span></p>
+            <p><strong>Total Pedido:</strong> $<span id="totalConIva">0.00</span></p>
+        </div>
 
-        <div class="modal-actions">
+        <div class="modal-actions" style="margin-top: 1.5rem;">
             <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
             <button type="button" class="btn btn-cancelar" onclick="window.parent.document.getElementById('iframeEditarModal').style.display='none'">Cancelar</button>
         </div>
@@ -179,14 +165,14 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
             let subtotal = 0;
             let iva = 0;
             document.querySelectorAll('#tablaProductos tbody tr').forEach(tr => {
-                const cantidad = parseFloat(tr.querySelector('input[name*="cantidad"]').value) || 0;
+                const cantidad = parseFloat(tr.querySelector('input').value) || 0;
                 const precio = parseFloat(tr.children[4].textContent.replace('$', '')) || 0;
                 const alicuota = parseFloat(tr.children[5].textContent.replace('%', '')) || 0;
                 const sub = cantidad * precio;
                 const ivaCalc = sub * (alicuota / 100);
                 subtotal += sub;
                 iva += ivaCalc;
-                tr.querySelector('.subtotal').textContent = "$" + (sub).toFixed(2);
+                tr.querySelector('.subtotal').textContent = "$" + sub.toFixed(2);
             });
             document.getElementById('totalSinIva').textContent = subtotal.toFixed(2);
             document.getElementById('totalIva').textContent = iva.toFixed(2);
@@ -196,17 +182,19 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
         function agregarProducto() {
             const selector = document.getElementById('selectorProducto');
             const option = selector.options[selector.selectedIndex];
-            const prod = JSON.parse(option.dataset.json);
+            if (!option || !option.dataset.json) return;
+
+            const p = JSON.parse(option.dataset.json);
             const tr = document.createElement('tr');
             tr.innerHTML = `
-        <td>${prod.Nombre_producto}<input type="hidden" name="productos[][id]" value="${prod.producto_id}"></td>
-        <td>${prod.categoria}</td>
-        <td>${prod.Unidad_Medida_venta}</td>
+        <td>${p.Nombre_producto}<input type="hidden" name="productos[][id]" value="${p.producto_id}"></td>
+        <td>${p.categoria}</td>
+        <td>${p.Unidad_Medida_venta}</td>
         <td><input type="number" class="input" name="productos[][cantidad]" value="1" onchange="actualizarTotales()"></td>
-        <td>$${parseFloat(prod.Precio_producto).toFixed(2)}</td>
-        <td>${prod.alicuota}%</td>
-        <td class="subtotal">$${parseFloat(prod.Precio_producto).toFixed(2)}</td>
-        <td><button type="button" onclick="this.closest('tr').remove(); actualizarTotales()">❌</button></td>
+        <td>$${parseFloat(p.Precio_producto).toFixed(2)}</td>
+        <td>${p.alicuota}%</td>
+        <td class="subtotal">$${parseFloat(p.Precio_producto).toFixed(2)}</td>
+        <td><button type="button" class="btn-icon" onclick="this.closest('tr').remove(); actualizarTotales()">❌</button></td>
       `;
             document.querySelector('#tablaProductos tbody').appendChild(tr);
             selector.selectedIndex = 0;
@@ -220,12 +208,11 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
             const data = new FormData(this);
 
             const productos = [];
-            const filas = document.querySelectorAll('#tablaProductos tbody tr');
-            filas.forEach(tr => {
+            document.querySelectorAll('#tablaProductos tbody tr').forEach(tr => {
                 productos.push({
-                    id: tr.querySelector('input[type="hidden"]').value,
+                    id: tr.querySelector('input[type=\"hidden\"]').value,
                     nombre: tr.children[0].textContent.trim(),
-                    cantidad: tr.querySelector('input[name*="cantidad"]').value
+                    cantidad: tr.querySelector('input').value
                 });
             });
 
