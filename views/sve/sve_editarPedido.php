@@ -338,7 +338,7 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                 if (!json.success) throw new Error(json.message);
 
                 showAlert('success', 'Pedido actualizado correctamente');
-                // window.parent.location.reload();
+                window.parent.location.reload();
             } catch (err) {
                 alert('Error al guardar: ' + err.message);
                 showAlert('error', 'Error al subir la factura ❌' + err.message);
