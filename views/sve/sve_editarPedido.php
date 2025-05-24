@@ -81,8 +81,8 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                 <div class="input-icon">
                     <span class="material-icons">badge</span>
                     <select id="persona_facturacion" name="persona_facturacion" class="input">
-                        <option value="cooperativa">Cooperativa</option>
-                        <option value="productor">Productor</option>
+                        <option value="cooperativa" <?= $pedido['persona_facturacion'] === 'cooperativa' ? 'selected' : '' ?>>Cooperativa</option>
+                        <option value="productor" <?= $pedido['persona_facturacion'] === 'productor' ? 'selected' : '' ?>>Productor</option>
                     </select>
                 </div>
             </div>
@@ -92,8 +92,8 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                 <div class="input-icon">
                     <span class="material-icons">verified_user</span>
                     <select id="condicion_facturacion" name="condicion_facturacion" class="input">
-                        <option value="responsable inscripto">Responsable Inscripto</option>
-                        <option value="monotributista">Monotributista</option>
+                        <option value="responsable inscripto" <?= $pedido['condicion_facturacion'] === 'responsable inscripto' ? 'selected' : '' ?>>Responsable Inscripto</option>
+                        <option value="monotributista" <?= $pedido['condicion_facturacion'] === 'monotributista' ? 'selected' : '' ?>>Monotributista</option>
                     </select>
                 </div>
             </div>
@@ -103,8 +103,8 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                 <div class="input-icon">
                     <span class="material-icons">groups</span>
                     <select id="afiliacion" name="afiliacion" class="input">
-                        <option value="socio">Socio</option>
-                        <option value="tercero">Tercero</option>
+                        <option value="socio" <?= $pedido['afiliacion'] === 'socio' ? 'selected' : '' ?>>Socio</option>
+                        <option value="tercero" <?= $pedido['afiliacion'] === 'tercero' ? 'selected' : '' ?>>Tercero</option>
                     </select>
                 </div>
             </div>
@@ -113,7 +113,8 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                 <label for="hectareas">Ha. cooperativa</label>
                 <div class="input-icon">
                     <span class="material-icons">agriculture</span>
-                    <input type="number" name="hectareas" id="hectareas" step="0.01" class="input" placeholder="Cantidad de hectáreas...">
+                    <input type="number" name="hectareas" id="hectareas" step="0.01" class="input"
+                        value="<?= htmlspecialchars($pedido['ha_cooperativa']) ?>" placeholder="Cantidad de hectáreas...">
                 </div>
             </div>
         </div>
@@ -121,7 +122,7 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
             <label for="observaciones">Observaciones</label>
             <div class="input-icon">
                 <span class="material-icons">notes</span>
-                <textarea id="observaciones" name="observaciones" rows="2" class="input" placeholder="Notas adicionales..."></textarea>
+                <textarea id="observaciones" name="observaciones" rows="2" class="input" placeholder="Notas adicionales..."><?= htmlspecialchars($pedido['observaciones']) ?></textarea>
             </div>
         </div>
 
@@ -170,17 +171,17 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                 </tr>
             </thead>
 
-                    <?php if (!empty($pedido['factura'])): ?>
-            <div class="input-group">
-                <label>Factura cargada:</label>
-                <div>
-                    <a href="/uploads/tax_invoices/<?= htmlspecialchars($pedido['factura']) ?>" target="_blank">
-                        Ver factura
-                    </a>
-                    <button type="button" class="btn btn-cancelar" onclick="eliminarFactura()">Eliminar factura</button>
+            <?php if (!empty($pedido['factura'])): ?>
+                <div class="input-group">
+                    <label>Factura cargada:</label>
+                    <div>
+                        <a href="/uploads/tax_invoices/<?= htmlspecialchars($pedido['factura']) ?>" target="_blank">
+                            Ver factura
+                        </a>
+                        <button type="button" class="btn btn-cancelar" onclick="eliminarFactura()">Eliminar factura</button>
+                    </div>
                 </div>
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
 
 
             <tbody>
@@ -304,7 +305,7 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                 productos.push({
                     id: tr.querySelector('input[type="hidden"]').value,
                     nombre: tr.children[0].textContent.trim(),
-                    cantidad: tr.querySelector('input').value,
+                    cantidad: tr.querySelector('input[name="productos[][cantidad]"]').value,
                     categoria: tr.children[1].textContent.trim(),
                     unidad: tr.children[2].textContent.trim(),
                     precio: parseFloat(tr.children[4].textContent.replace('$', '')),
