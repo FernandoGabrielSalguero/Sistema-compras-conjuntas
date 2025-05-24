@@ -263,9 +263,13 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
             const productos = [];
             document.querySelectorAll('#tablaProductos tbody tr').forEach(tr => {
                 productos.push({
-                    id: tr.querySelector('input[type=\"hidden\"]').value,
+                    id: tr.querySelector('input[type="hidden"]').value,
                     nombre: tr.children[0].textContent.trim(),
-                    cantidad: tr.querySelector('input').value
+                    cantidad: tr.querySelector('input').value,
+                    categoria: tr.children[1].textContent.trim(),
+                    unidad: tr.children[2].textContent.trim(),
+                    precio: parseFloat(tr.children[4].textContent.replace('$', '')),
+                    alicuota: parseFloat(tr.children[5].textContent.replace('%', ''))
                 });
             });
 

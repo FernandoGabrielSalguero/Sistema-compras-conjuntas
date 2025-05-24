@@ -35,44 +35,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // 🔸 EDITAR PEDIDO
 if (isset($json['accion']) && $json['accion'] === 'editar_pedido') {
-    $id = intval($json['id'] ?? 0);
-    $persona = $json['persona_facturacion'] ?? '';
-    $condicion = $json['condicion_facturacion'] ?? '';
-    $afiliacion = $json['afiliacion'] ?? '';
-    $ha_cooperativa = floatval($json['hectareas'] ?? 0);
-    $obs = $json['observaciones'] ?? '';
+    $pedidoId = intval($json['id']);
     $productos = $json['productos'] ?? [];
 
-    if (!$id || !$persona || !$condicion || !$afiliacion || empty($productos)) {
+    if (!$pedidoId || empty($productos)) {
         echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
         exit;
     }
 
     try {
-        // Actualizar encabezado de pedido
-        $stmt = $pdo->prepare("UPDATE pedidos SET persona_facturacion = ?, condicion_facturacion = ?, afiliacion = ?, ha_cooperativa = ?, observaciones = ? WHERE id = ?");
-        $stmt->execute([$persona, $condicion, $afiliacion, $ha_cooperativa, $obs, $id]);
+        // 1. Actualizar encabezado del pedido
+        $stmt = $pdo->prepare("UPDATE pedidos SET 
+            persona_facturacion = ?, 
+            condicion_facturacion = ?, 
+            afiliacion = ?, 
+            ha_cooperativa = ?, 
+            observaciones = ?, 
+            total_sin_iva = ?, 
+            total_iva = ?, 
+            total_pedido = ?
+            WHERE id = ?");
+        
+        $totalSinIva = 0;
+        $totalIva = 0;
+        
+        foreach ($productos as $prod) {
+            $sub = floatval($prod['precio']) * intval($prod['cantidad']);
+            $ivaCalc = $sub * (floatval($prod['alicuota']) / 100);
+            $totalSinIva += $sub;
+            $totalIva += $ivaCalc;
+        }
 
-        // Eliminar productos actuales
-        $stmt = $pdo->prepare("DELETE FROM detalle_pedidos WHERE pedido_id = ?");
-        $stmt->execute([$id]);
+        $stmt->execute([
+            $json['persona_facturacion'],
+            $json['condicion_facturacion'],
+            $json['afiliacion'],
+            $json['hectareas'],
+            $json['observaciones'],
+            $totalSinIva,
+            $totalIva,
+            $totalSinIva + $totalIva,
+            $pedidoId
+        ]);
 
-        // Insertar productos nuevos
-        $stmt = $pdo->prepare("INSERT INTO detalle_pedidos (pedido_id, producto_id, nombre_producto, cantidad) VALUES (?, ?, ?, ?)");
+        // 2. Eliminar productos anteriores
+        $pdo->prepare("DELETE FROM detalle_pedidos WHERE pedido_id = ?")->execute([$pedidoId]);
+
+        // 3. Insertar los nuevos productos
+        $stmtProd = $pdo->prepare("INSERT INTO detalle_pedidos 
+            (pedido_id, producto_id, nombre_producto, categoria, unidad_medida_venta, cantidad, precio_producto, alicuota)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+
         foreach ($productos as $p) {
-            $pid = intval($p['id']);
-            $nombre = $p['nombre'];
-            $cantidad = floatval($p['cantidad']);
-            $stmt->execute([$id, $pid, $nombre, $cantidad]);
+            $stmtProd->execute([
+                $pedidoId,
+                intval($p['id']),
+                $p['nombre'],
+                $p['categoria'],
+                $p['unidad'],
+                intval($p['cantidad']),
+                floatval($p['precio']),
+                floatval($p['alicuota'])
+            ]);
         }
 
         echo json_encode(['success' => true]);
+        exit;
     } catch (Exception $e) {
+        http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Error al actualizar pedido: ' . $e->getMessage()]);
+        exit;
     }
-
-    exit;
 }
+
 
 
 // 🔹 Obtener resumen para tarjetas
