@@ -116,74 +116,74 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                     <input type="number" name="hectareas" id="hectareas" step="0.01" class="input" placeholder="Cantidad de hectáreas...">
                 </div>
             </div>
-
-            <div class="input-group">
-                <label for="observaciones">Observaciones</label>
-                <div class="input-icon">
-                    <span class="material-icons">notes</span>
-                    <textarea id="observaciones" name="observaciones" rows="2" class="input" placeholder="Notas adicionales..."></textarea>
-                </div>
+        </div>
+        <div class="input-group">
+            <label for="observaciones">Observaciones</label>
+            <div class="input-icon">
+                <span class="material-icons">notes</span>
+                <textarea id="observaciones" name="observaciones" rows="2" class="input" placeholder="Notas adicionales..."></textarea>
             </div>
+        </div>
 
-            <hr style="margin: 2rem 0;">
+        <hr style="margin: 2rem 0;">
 
-            <h3>Agregar producto</h3>
-            <div class="form-grid grid-2">
-                <select id="selectorProducto" class="input">
-                    <option disabled selected>Seleccioná un producto</option>
-                    <?php foreach ($productosDisponibles as $categoria => $lista): ?>
-                        <optgroup label="<?= htmlspecialchars($categoria) ?>">
-                            <?php foreach ($lista as $p): ?>
-                                <option value="<?= $p['producto_id'] ?>" data-json='<?= json_encode($p) ?>'>
-                                    <?= htmlspecialchars($p['Nombre_producto']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </optgroup>
-                    <?php endforeach; ?>
-                </select>
-                <button type="button" class="btn btn-info" onclick="agregarProducto()">+ Agregar</button>
-            </div>
+        <h3>Agregar producto</h3>
+        <div class="form-grid grid-2">
+            <select id="selectorProducto" class="input">
+                <option disabled selected>Seleccioná un producto</option>
+                <?php foreach ($productosDisponibles as $categoria => $lista): ?>
+                    <optgroup label="<?= htmlspecialchars($categoria) ?>">
+                        <?php foreach ($lista as $p): ?>
+                            <option value="<?= $p['producto_id'] ?>" data-json='<?= json_encode($p) ?>'>
+                                <?= htmlspecialchars($p['Nombre_producto']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </optgroup>
+                <?php endforeach; ?>
+            </select>
+            <button type="button" class="btn btn-info" onclick="agregarProducto()">+ Agregar</button>
+        </div>
 
-            <h3 style="margin-top: 2rem;">Productos del pedido</h3>
-            <table class="data-table" id="tablaProductos">
-                <thead>
+        <h3 style="margin-top: 2rem;">Productos del pedido</h3>
+        <table class="data-table" id="tablaProductos">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Unidad</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>IVA</th>
+                    <th>Subtotal</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($productos as $p): ?>
                     <tr>
-                        <th>Producto</th>
-                        <th>Categoría</th>
-                        <th>Unidad</th>
-                        <th>Cantidad</th>
-                        <th>Precio</th>
-                        <th>IVA</th>
-                        <th>Subtotal</th>
-                        <th></th>
+                        <td><?= htmlspecialchars($p['nombre_producto']) ?><input type="hidden" name="productos[][id]" value="<?= $p['producto_id'] ?>"></td>
+                        <td><?= $p['categoria'] ?></td>
+                        <td><?= $p['unidad_medida_venta'] ?></td>
+                        <td><input type="number" name="productos[][cantidad]" value="<?= $p['cantidad'] ?>" class="input" onchange="actualizarTotales()"></td>
+                        <td>$<?= number_format($p['precio_producto'], 2) ?></td>
+                        <td><?= $p['alicuota'] ?>%</td>
+                        <td class="subtotal">$<?= number_format($p['precio_producto'] * $p['cantidad'], 2) ?></td>
+                        <td><button type="button" class="btn-icon" onclick="this.closest('tr').remove(); actualizarTotales()">❌</button></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($productos as $p): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($p['nombre_producto']) ?><input type="hidden" name="productos[][id]" value="<?= $p['producto_id'] ?>"></td>
-                            <td><?= $p['categoria'] ?></td>
-                            <td><?= $p['unidad_medida_venta'] ?></td>
-                            <td><input type="number" name="productos[][cantidad]" value="<?= $p['cantidad'] ?>" class="input" onchange="actualizarTotales()"></td>
-                            <td>$<?= number_format($p['precio_producto'], 2) ?></td>
-                            <td><?= $p['alicuota'] ?>%</td>
-                            <td class="subtotal">$<?= number_format($p['precio_producto'] * $p['cantidad'], 2) ?></td>
-                            <td><button type="button" class="btn-icon" onclick="this.closest('tr').remove(); actualizarTotales()">❌</button></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
 
-            <div class="form-grid grid-3" style="margin-top: 1rem;">
-                <p><strong>Total sin IVA:</strong> $<span id="totalSinIva">0.00</span></p>
-                <p><strong>IVA:</strong> $<span id="totalIva">0.00</span></p>
-                <p><strong>Total Pedido:</strong> $<span id="totalConIva">0.00</span></p>
-            </div>
+        <div class="form-grid grid-3" style="margin-top: 1rem;">
+            <p><strong>Total sin IVA:</strong> $<span id="totalSinIva">0.00</span></p>
+            <p><strong>IVA:</strong> $<span id="totalIva">0.00</span></p>
+            <p><strong>Total Pedido:</strong> $<span id="totalConIva">0.00</span></p>
+        </div>
 
-            <div class="modal-actions" style="margin-top: 1.5rem;">
-                <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
-                <button type="button" class="btn btn-cancelar" onclick="window.parent.document.getElementById('iframeEditarModal').style.display='none'">Cancelar</button>
-            </div>
+        <div class="modal-actions" style="margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-aceptar">Guardar cambios</button>
+            <button type="button" class="btn btn-cancelar" onclick="window.parent.document.getElementById('iframeEditarModal').style.display='none'">Cancelar</button>
+        </div>
     </form>
 
     <script>
