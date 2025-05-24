@@ -135,7 +135,17 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                     <span class="material-icons">add_shopping_cart</span>
                     <select id="selectorProducto" class="input">
                         <option disabled selected>Seleccioná un producto</option>
-                        <!-- opciones dinámicas -->
+                        <?php foreach ($productosDisponibles as $categoria => $items): ?>
+                            <optgroup label="<?= htmlspecialchars($categoria) ?>">
+                                <?php foreach ($items as $prod): ?>
+                                    <option
+                                        value="<?= $prod['producto_id'] ?>"
+                                        data-json='<?= json_encode($prod) ?>'>
+                                        <?= htmlspecialchars($prod['Nombre_producto']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </optgroup>
+                        <?php endforeach; ?>
                     </select>
                 </div>
             </div>
@@ -174,7 +184,11 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                         <td>$<?= number_format($p['precio_producto'], 2) ?></td>
                         <td><?= $p['alicuota'] ?>%</td>
                         <td class="subtotal">$<?= number_format($p['precio_producto'] * $p['cantidad'], 2) ?></td>
-                        <td><button type="button" class="btn-icon" onclick="this.closest('tr').remove(); actualizarTotales()">❌</button></td>
+                        <td>
+                            <button type="button" class="btn-icon" onclick="this.closest('tr').remove(); actualizarTotales()">
+                                <span class="material-icons" style="color: red;">delete</span>
+                            </button>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
