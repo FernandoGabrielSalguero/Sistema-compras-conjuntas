@@ -33,6 +33,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// 🔸 EDITAR PEDIDO
+if (isset($json['accion']) && $json['accion'] === 'editar_pedido') {
+    $id = intval($json['id'] ?? 0);
+    $persona = $json['persona_facturacion'] ?? '';
+    $condicion = $json['condicion_facturacion'] ?? '';
+    $afiliacion = $json['afiliacion'] ?? '';
+    $hectareas = floatval($json['hectareas'] ?? 0);
+    $obs = $json['observaciones'] ?? '';
+    $productos = $json['productos'] ?? [];
+
+    if (!$id || !$persona || !$condicion || !$afiliacion || empty($productos)) {
+        echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
+        exit;
+    }
+
+    try {
+        // Actualizar encabezado de pedido
+        $stmt = $pdo->prepare("UPDATE pedidos SET persona_facturacion = ?, condicion_facturacion = ?, afiliacion = ?, hectareas = ?, observaciones = ? WHERE id = ?");
+        $stmt->execute([$persona, $condicion, $afiliacion, $hectareas, $obs, $id]);
+
+        // Eliminar productos actuales
+        $stmt = $pdo->prepare("DELETE FROM detalle_pedidos WHERE pedido_id = ?");
+        $stmt->execute([$id]);
+
+        // Insertar productos nuevos
+        $stmt = $pdo->prepare("INSERT INTO detalle_pedidos (pedido_id, producto_id, nombre_producto, cantidad) VALUES (?, ?, ?, ?)");
+        foreach ($productos as $p) {
+            $pid = intval($p['id']);
+            $nombre = $p['nombre'];
+            $cantidad = floatval($p['cantidad']);
+            $stmt->execute([$id, $pid, $nombre, $cantidad]);
+        }
+
+        echo json_encode(['success' => true]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error al actualizar pedido: ' . $e->getMessage()]);
+    }
+
+    exit;
+}
+
+
 // 🔹 Obtener resumen para tarjetas
 if (isset($_GET['resumen']) && $_GET['resumen'] == 1) {
     try {
