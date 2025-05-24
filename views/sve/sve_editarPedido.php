@@ -129,19 +129,20 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
 
         <h3>Agregar producto</h3>
         <div class="form-grid grid-2">
-            <select id="selectorProducto" class="input">
-                <option disabled selected>Seleccioná un producto</option>
-                <?php foreach ($productosDisponibles as $categoria => $lista): ?>
-                    <optgroup label="<?= htmlspecialchars($categoria) ?>">
-                        <?php foreach ($lista as $p): ?>
-                            <option value="<?= $p['producto_id'] ?>" data-json='<?= json_encode($p) ?>'>
-                                <?= htmlspecialchars($p['Nombre_producto']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </optgroup>
-                <?php endforeach; ?>
-            </select>
-            <button type="button" class="btn btn-info" onclick="agregarProducto()">+ Agregar</button>
+            <div class="input-group">
+                <label for="selectorProducto">Seleccioná un producto</label>
+                <div class="input-icon">
+                    <span class="material-icons">add_shopping_cart</span>
+                    <select id="selectorProducto" class="input">
+                        <option disabled selected>Seleccioná un producto</option>
+                        <!-- opciones dinámicas -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group" style="align-self: flex-end;">
+                <button type="button" class="btn btn-info" onclick="agregarProducto()">+ Agregar</button>
+            </div>
         </div>
 
         <h3 style="margin-top: 2rem;">Productos del pedido</h3>
@@ -164,7 +165,12 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                         <td><?= htmlspecialchars($p['nombre_producto']) ?><input type="hidden" name="productos[][id]" value="<?= $p['producto_id'] ?>"></td>
                         <td><?= $p['categoria'] ?></td>
                         <td><?= $p['unidad_medida_venta'] ?></td>
-                        <td><input type="number" name="productos[][cantidad]" value="<?= $p['cantidad'] ?>" class="input" onchange="actualizarTotales()"></td>
+                        <td>
+                            <div class="input-icon">
+                                <span class="material-icons">123</span>
+                                <input type="number" class="input" name="productos[][cantidad]" value="<?= $p['cantidad'] ?>" onchange="actualizarTotales()">
+                            </div>
+                        </td>
                         <td>$<?= number_format($p['precio_producto'], 2) ?></td>
                         <td><?= $p['alicuota'] ?>%</td>
                         <td class="subtotal">$<?= number_format($p['precio_producto'] * $p['cantidad'], 2) ?></td>
@@ -216,12 +222,18 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
         <td>${p.Nombre_producto}<input type="hidden" name="productos[][id]" value="${p.producto_id}"></td>
         <td>${p.categoria}</td>
         <td>${p.Unidad_Medida_venta}</td>
-        <td><input type="number" class="input" name="productos[][cantidad]" value="1" onchange="actualizarTotales()"></td>
-        <td>$${parseFloat(p.Precio_producto).toFixed(2)}</td>
+<td>
+  <div class="input-icon">
+    <span class="material-icons">123</span>
+    <input type="number" class="input" name="productos[][cantidad]" value="1" onchange="actualizarTotales()">
+  </div>
+</td>        <td>$${parseFloat(p.Precio_producto).toFixed(2)}</td>
         <td>${p.alicuota}%</td>
         <td class="subtotal">$${parseFloat(p.Precio_producto).toFixed(2)}</td>
-        <td><button type="button" class="btn-icon" onclick="this.closest('tr').remove(); actualizarTotales()">❌</button></td>
-      `;
+        <button type="button" class="btn-icon" onclick="this.closest('tr').remove(); actualizarTotales()">
+        <span class="material-icons" style="color:red;">delete</span>
+        </button>
+        `;
             document.querySelector('#tablaProductos tbody').appendChild(tr);
             selector.selectedIndex = 0;
             actualizarTotales();
