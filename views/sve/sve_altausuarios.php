@@ -194,7 +194,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="cuit">CUIT</label>
                                 <div class="input-icon">
                                     <span class="material-icons">fingerprint</span>
-                                    <input type="text" id="cuit" name="cuit" inputmode="numeric" pattern="\d*" maxlength="11" placeholder="Coloca el CUIT sin guiones" required oninput="this.value = this.value.replace(/\D/g, '')">
+                                    <input type="text" id="cuit" name="cuit" inputmode="numeric" pattern="\d*" maxlength="11" placeholder="Coloca el CUIT sin guiones" oninput="this.value = this.value.replace(/\D/g, '')">
                                 </div>
                             </div>
 
