@@ -129,7 +129,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <div class="card">
                     <h2>Busca productores</h2>
                     <form class="form-modern">
-                        <div class="form-grid grid-2">
+                        <div class="form-grid grid-3">
                             <!-- Buscar por CUIT -->
                             <div class="input-group">
                                 <label for="buscarCuit">Podes buscar por CUIT</label>
@@ -145,6 +145,19 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
                                     <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
+                                </div>
+                            </div>
+
+                            <!-- Filtro por asociación -->
+                            <div class="input-group">
+                                <label for="filtroAsociacion">Filtrar por asociación</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">filter_list</span>
+                                    <select id="filtroAsociacion">
+                                        <option value="">Todos</option>
+                                        <option value="asociado">Solo asociados</option>
+                                        <option value="no_asociado">Solo no asociados</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -224,6 +237,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     console.error('❌ Error al cargar asociaciones:', err);
                     document.getElementById('tablaAsociaciones').innerHTML = "<tr><td colspan='4'>Error al cargar datos</td></tr>";
                 });
+
+                // filtro para los productores que tienen una cooperativa asociada
+                document.getElementById('filtroAsociacion').addEventListener('change', cargarProductores);
+
         });
 
         async function cargarProductores() {
@@ -254,8 +271,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         function cargarProductores() {
             const cuit = document.getElementById('buscarCuit').value.trim();
             const nombre = document.getElementById('buscarNombre').value.trim();
+            const filtroAsociacion = document.getElementById('filtroAsociacion').value;
 
-            fetch(`/controllers/sve_asociarProductoresController.php?cuit=${encodeURIComponent(cuit)}&nombre=${encodeURIComponent(nombre)}`)
+            fetch(`/controllers/sve_asociarProductoresController.php?cuit=${encodeURIComponent(cuit)}&nombre=${encodeURIComponent(nombre)}&filtro=${encodeURIComponent(filtroAsociacion)}`)
                 .then(res => res.text())
                 .then(html => {
                     document.getElementById('tablaAsociaciones').innerHTML = html;

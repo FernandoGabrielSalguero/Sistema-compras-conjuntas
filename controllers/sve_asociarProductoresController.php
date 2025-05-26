@@ -28,12 +28,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Si es GET, devolvemos la tabla de productores en HTML
-function esc($v) {
+function esc($v)
+{
     return htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
 }
 
 $cuit = $_GET['cuit'] ?? '';
 $nombre = $_GET['nombre'] ?? '';
+$filtro = $_GET['filtro'] ?? '';
+
 
 $where = "u.rol = 'productor'";
 $params = [];
@@ -72,7 +75,12 @@ try {
     $cooperativas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Asociaciones actuales
-    $asociaciones = $pdo->query("SELECT productor_id_real, cooperativa_id_real FROM rel_productor_coop")->fetchAll(PDO::FETCH_KEY_PAIR);
+    $asociacionesStmt = $pdo->query("SELECT productor_id_real, cooperativa_id_real FROM rel_productor_coop");
+    $asociaciones = [];
+    while ($row = $asociacionesStmt->fetch(PDO::FETCH_ASSOC)) {
+        $asociaciones[$row['productor_id_real']] = $row['cooperativa_id_real'];
+    }
+
 
     // Render tabla HTML
     foreach ($productores as $prod) {
@@ -80,6 +88,13 @@ try {
         $cuit = esc($prod['cuit']);
         $nombre = esc($prod['nombre']);
         $coopActual = $asociaciones[$id_real] ?? '';
+
+        if (
+            ($filtro === 'asociado' && !$coopActual) ||
+            ($filtro === 'no_asociado' && $coopActual)
+        ) {
+            continue;
+        }
 
         echo "<tr>
             <td>" . esc($id_real) . "</td>
@@ -90,10 +105,10 @@ try {
                     <span class='material-icons'>business</span>
                     <select onchange='asociarProductor(this, {$id_real})'>
                         <option value=''>Seleccionar cooperativa</option>";
-                        foreach ($cooperativas as $coop) {
-                            $selected = ($coopActual == $coop['coop_id']) ? 'selected' : '';
-                            echo "<option value='{$coop['coop_id']}' {$selected}>" . esc($coop['nombre']) . "</option>";
-                        }
+        foreach ($cooperativas as $coop) {
+            $selected = ($coopActual == $coop['coop_id']) ? 'selected' : '';
+            echo "<option value='{$coop['coop_id']}' {$selected}>" . esc($coop['nombre']) . "</option>";
+        }
         echo "      </select>
                 </div>
             </td>
