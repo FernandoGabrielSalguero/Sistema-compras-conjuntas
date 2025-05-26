@@ -278,7 +278,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             </div>
 
                             <!-- Observaciones -->
-                            <div class="input-group" style="grid-column: span 2;">
+                            <div class="input-group">
                                 <label for="observaciones">Observaciones</label>
                                 <div class="input-icon">
                                     <span class="material-icons">note</span>
