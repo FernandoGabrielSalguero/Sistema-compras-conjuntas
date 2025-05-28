@@ -177,6 +177,8 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
 
     <script>
+        console.log("🟢 Estos son los datos de sesión del usuario:");
+        console.log(<?php echo json_encode($_SESSION, JSON_PRETTY_PRINT); ?>);
         document.addEventListener('DOMContentLoaded', () => {
             let paginaActual = 1;
             const limitePorPagina = 25;
