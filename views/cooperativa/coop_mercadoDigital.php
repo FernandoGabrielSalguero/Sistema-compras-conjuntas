@@ -36,12 +36,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 // Campos adicionales para cooperativa
 $id_cooperativa = $_SESSION['id_cooperativa'] ?? null;
+$idReal_cooperativa = $_SESSION['id_real'] ?? null;
 $id_productor = $_SESSION['id_productor'] ?? null;
 $direccion = $_SESSION['direccion'] ?? 'Sin dirección';
 $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
 
 // Verificar si el ID de la cooperativa está disponible
-echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . "');</script>";
+echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $idReal_cooperativa . "');</script>";
 ?>
 
 <!DOCTYPE html>
