@@ -304,6 +304,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
 
                 <!-- 🛠️ SCRIPTS -->
                 <script>
+                    console.log(<?php echo json_encode($_SESSION); ?>);
                     document.addEventListener('DOMContentLoaded', () => {
                         cargarCooperativas();
 
