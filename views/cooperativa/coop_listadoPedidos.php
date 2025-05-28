@@ -216,7 +216,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
             // 🔹 Cargar tarjetas resumen
             async function cargarResumen() {
                 try {
-                    const res = await fetch('/controllers/sve_listadoPedidosController.php?resumen=1');
+                    const res = await fetch('/controllers/coop_listadoPedidosController.php?resumen=1');
                     const json = await res.json();
                     if (!json.success) throw new Error(json.message);
 
@@ -238,7 +238,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
             // 🔹 Buscar y listar pedidos
             async function cargarPedidos() {
                 const search = buscarNombre.value.trim() || buscarCuit.value.trim();
-                const url = `/controllers/sve_listadoPedidosController.php?listar=1&page=${paginaActual}&search=${encodeURIComponent(search)}`;
+                const url = `/controllers/coop_listadoPedidosController.php?listar=1&page=${paginaActual}&search=${encodeURIComponent(search)}`;
 
                 try {
                     const res = await fetch(url);
@@ -379,7 +379,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                 if (!pedidoAEliminar) return;
                 console.log('🧹 Eliminando pedido ID:', pedidoAEliminar);
                 try {
-                    const res = await fetch('/controllers/sve_listadoPedidosController.php', {
+                    const res = await fetch('/controllers/coop_listadoPedidosController.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -411,7 +411,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                 modal.style.display = 'flex';
 
                 try {
-                    const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
+                    const res = await fetch(`/controllers/coop_listadoPedidosController.php?ver=1&id=${id}`);
                     const json = await res.json();
 
                     if (!json.success) throw new Error(json.message);
@@ -495,7 +495,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         window.imprimirPedido = async function(id) {
             try {
                 // Obtener datos del pedido
-                const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
+                const res = await fetch(`/controllers/coop_listadoPedidosController.php?ver=1&id=${id}`);
                 const json = await res.json();
 
                 if (!json.success) throw new Error(json.message);
