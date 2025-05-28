@@ -142,6 +142,7 @@ INSERT INTO pedidos (
         p.*,
         i1.nombre AS nombre_cooperativa,
         i2.nombre AS nombre_productor,
+        o.nombre AS nombre_operativo
         o.estado AS estado_operativo
     FROM pedidos p
     JOIN usuarios u1 ON u1.id_real = p.cooperativa
