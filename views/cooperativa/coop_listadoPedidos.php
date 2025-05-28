@@ -157,6 +157,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                     <th>IVA</th>
                                     <th>Total pedido</th>
                                     <th>Factura</th>
+                                    <th>Operativo</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -229,6 +230,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         : `Sin factura`
                     }
                     </td>
+                    <td>${p.nombre_operativo || '-'}</td>
                     <td>
                         <button class="btn-icon" onclick="verPedido(${p.id})">
                             <i class="material-icons" style="color:blue;">description</i>

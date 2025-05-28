@@ -149,6 +149,7 @@ INSERT INTO pedidos (
     JOIN usuarios u2 ON u2.id_real = p.productor
     JOIN usuarios_info i2 ON i2.usuario_id = u2.id
     LEFT JOIN operativos o ON o.id = p.operativo_id
+    
     WHERE p.cooperativa = :coop_id
 ";
 
@@ -199,19 +200,20 @@ INSERT INTO pedidos (
         return $result['total'] ?? 0;
     }
 
-
-
-
     // obtenemos los operativos de la bbdd
     public function obtenerOperativosActivosPorCooperativa($coopId)
     {
+        if (!is_numeric($coopId)) {
+            throw new InvalidArgumentException("ID de cooperativa inválido");
+        }
+
         $stmt = $this->pdo->prepare("
         SELECT o.id, o.nombre, o.fecha_inicio, o.fecha_cierre
         FROM operativos o
         INNER JOIN operativos_cooperativas_participacion ocp ON o.id = ocp.operativo_id
         WHERE ocp.cooperativa_id_real = ? 
-          AND ocp.participa = 'si'
-          AND o.estado = 'abierto'
+        AND ocp.participa = 'si'
+        AND o.estado = 'abierto'
         ORDER BY o.fecha_inicio DESC
     ");
         $stmt->execute([$coopId]);
