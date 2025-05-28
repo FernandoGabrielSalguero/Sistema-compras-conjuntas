@@ -272,12 +272,24 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $idReal_cooperativ
                                     </select>
                                 </div>
                             </div>
+
                             <!-- Observaciones -->
                             <div class="input-group">
                                 <label for="observaciones">Observaciones</label>
                                 <div class="input-icon">
                                     <span class="material-icons">note</span>
                                     <textarea id="observaciones" name="observaciones" rows="4" placeholder="Notas adicionales..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Operativo -->
+                            <div class="input-group">
+                                <label for="operativo">Operativo</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">event</span>
+                                    <select id="operativo" name="operativo" required>
+                                        <option value="">Seleccionar operativo...</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -392,6 +404,26 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $idReal_cooperativ
                     // acordeones
                     document.addEventListener('DOMContentLoaded', () => {
                         cargarProductosPorCategoria();
+
+                        async function cargarOperativos() {
+                            const coopId = "<?php echo $idReal_cooperativa; ?>";
+                            try {
+                                const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=operativos_abiertos&coop_id=${coopId}`);
+                                const data = await res.json();
+                                const selectOperativo = document.getElementById('operativo');
+                                data.forEach(op => {
+                                    const option = document.createElement('option');
+                                    option.value = op.id;
+                                    option.textContent = `${op.nombre} (${op.fecha_inicio} - ${op.fecha_cierre})`;
+                                    selectOperativo.appendChild(option);
+                                });
+                            } catch (err) {
+                                console.error("❌ Error al cargar operativos:", err);
+                            }
+                        }
+
+                        cargarOperativos();
+
                     });
 
                     async function cargarProductosPorCategoria() {
@@ -561,6 +593,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $idReal_cooperativ
                             condicion_facturacion: formData.get('condicion_facturacion'),
                             afiliacion: formData.get('afiliacion'),
                             observaciones: formData.get('observaciones'),
+                            operativo_id: formData.get('operativo'),
                             productos: productosSeleccionados,
                             totales: {
                                 sin_iva: totalSinIVA,

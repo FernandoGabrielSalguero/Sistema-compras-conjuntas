@@ -51,3 +51,9 @@ if (isset($_GET['listar']) && $_GET['listar'] === 'productos_categorizados') {
     echo json_encode($data);
     exit;
 }
+
+if (isset($_GET['listar']) && $_GET['listar'] === 'operativos_abiertos' && isset($_GET['coop_id'])) {
+    $data = $model->obtenerOperativosActivosPorCooperativa($_GET['coop_id']);
+    echo json_encode($data);
+    exit;
+}

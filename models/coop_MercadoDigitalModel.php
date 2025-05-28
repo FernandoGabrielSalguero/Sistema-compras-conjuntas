@@ -68,8 +68,12 @@ class CoopMercadoDigitalModel
 
         // 1. Insertar pedido principal
         $stmt = $this->pdo->prepare("
-INSERT INTO pedidos (cooperativa, productor, fecha_pedido, persona_facturacion, condicion_facturacion, afiliacion, ha_cooperativa, observaciones, total_sin_iva, total_iva, total_pedido)
-VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO pedidos (
+    cooperativa, productor, fecha_pedido, persona_facturacion, 
+    condicion_facturacion, afiliacion, ha_cooperativa, 
+    observaciones, total_sin_iva, total_iva, total_pedido,
+    operativo_id
+) VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
     ");
 
@@ -87,7 +91,8 @@ VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)
             $data['observaciones'],
             $total_sin_iva,
             $total_iva,
-            $total_con_iva
+            $total_con_iva,
+            $data['operativo_id'] ?? null
         ]);
 
         $pedido_id = $this->pdo->lastInsertId();
@@ -191,4 +196,20 @@ VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)
         return $result['total'] ?? 0;
     }
 
+
+    // obtenemos los operativos de la bbdd
+    public function obtenerOperativosActivosPorCooperativa($coopId)
+    {
+        $stmt = $this->pdo->prepare("
+        SELECT o.id, o.nombre, o.fecha_inicio, o.fecha_cierre
+        FROM operativos o
+        INNER JOIN operativos_cooperativas_participacion ocp ON o.id = ocp.operativo_id
+        WHERE ocp.cooperativa_id_real = ? 
+          AND ocp.participa = 'si'
+          AND o.estado = 'abierto'
+        ORDER BY o.fecha_inicio DESC
+    ");
+        $stmt->execute([$coopId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
