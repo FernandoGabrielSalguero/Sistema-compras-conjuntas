@@ -33,31 +33,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (isset($json['accion']) && $json['accion'] === 'eliminar_factura') {
-    $pedidoId = intval($json['id']);
-    if (!$pedidoId) {
-        echo json_encode(['success' => false, 'message' => 'ID inválido']);
-        exit;
-    }
-
-    try {
-        // Buscar la factura para eliminar físicamente
-        $stmt = $pdo->prepare("SELECT factura FROM pedidos WHERE id = ?");
-        $stmt->execute([$pedidoId]);
-        $factura = $stmt->fetchColumn();
-
-        if ($factura && file_exists(__DIR__ . '/../uploads/tax_invoices/' . $factura)) {
-            unlink(__DIR__ . '/../uploads/tax_invoices/' . $factura);
+        $pedidoId = intval($json['id']);
+        if (!$pedidoId) {
+            echo json_encode(['success' => false, 'message' => 'ID inválido']);
+            exit;
         }
 
-        // Eliminar referencia en DB
-        $pdo->prepare("UPDATE pedidos SET factura = NULL WHERE id = ?")->execute([$pedidoId]);
+        try {
+            // Buscar la factura para eliminar físicamente
+            $stmt = $pdo->prepare("SELECT factura FROM pedidos WHERE id = ?");
+            $stmt->execute([$pedidoId]);
+            $factura = $stmt->fetchColumn();
 
-        echo json_encode(['success' => true]);
-    } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => 'Error al eliminar factura']);
+            if ($factura && file_exists(__DIR__ . '/../uploads/tax_invoices/' . $factura)) {
+                unlink(__DIR__ . '/../uploads/tax_invoices/' . $factura);
+            }
+
+            // Eliminar referencia en DB
+            $pdo->prepare("UPDATE pedidos SET factura = NULL WHERE id = ?")->execute([$pedidoId]);
+
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error al eliminar factura']);
+        }
+        exit;
     }
-    exit;
-}
 }
 
 // 🔸 EDITAR PEDIDO
@@ -166,6 +166,9 @@ if (isset($_GET['listar']) && $_GET['listar'] == 1) {
 
     try {
         $pedidos = $model->obtenerListadoPedidos($search, $offset, $limit);
+        session_start();
+        $id_cooperativa = $_SESSION['id_real'] ?? null;
+
         $total = $model->contarPedidosFiltrados($search);
 
         echo json_encode([

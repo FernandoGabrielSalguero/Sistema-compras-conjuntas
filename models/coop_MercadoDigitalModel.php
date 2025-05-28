@@ -135,24 +135,27 @@ INSERT INTO pedidos (
     }
 
     // 📄 Obtiene listado de pedidos con paginación y búsqueda opcional
-    public function obtenerListadoPedidos($search = '', $offset = 0, $limit = 25)
+    public function obtenerListadoPedidos($search = '', $offset = 0, $limit = 25, $coop_id = null)
     {
         $sql = "
-        SELECT 
-            p.*,
-            i1.nombre AS nombre_cooperativa,
-            i2.nombre AS nombre_productor
-        FROM pedidos p
-        JOIN usuarios u1 ON u1.id_real = p.cooperativa
-        JOIN usuarios_info i1 ON i1.usuario_id = u1.id
-        JOIN usuarios u2 ON u2.id_real = p.productor
-        JOIN usuarios_info i2 ON i2.usuario_id = u2.id
-    ";
+    SELECT 
+        p.*,
+        i1.nombre AS nombre_cooperativa,
+        i2.nombre AS nombre_productor,
+        o.estado AS estado_operativo
+    FROM pedidos p
+    JOIN usuarios u1 ON u1.id_real = p.cooperativa
+    JOIN usuarios_info i1 ON i1.usuario_id = u1.id
+    JOIN usuarios u2 ON u2.id_real = p.productor
+    JOIN usuarios_info i2 ON i2.usuario_id = u2.id
+    LEFT JOIN operativos o ON o.id = p.operativo_id
+    WHERE p.cooperativa = :coop_id
+";
 
-        $params = [];
+        $params = [':coop_id' => $coop_id];
 
         if (!empty($search)) {
-            $sql .= " WHERE i1.nombre LIKE :search OR i2.nombre LIKE :search ";
+            $sql .= " AND i2.nombre LIKE :search";
             $params[':search'] = '%' . $search . '%';
         }
 
@@ -165,7 +168,6 @@ INSERT INTO pedidos (
 
         $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
         $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

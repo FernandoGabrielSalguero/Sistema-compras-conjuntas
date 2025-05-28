@@ -123,45 +123,17 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     <p>En esta página, vamos a ver todos los pedidos realizados por las cooperativas y por nosotros, además de poder cargar sus facturas y modificarlos en caso de ser necesario</p>
                 </div>
 
-
-                <div class="card-grid grid-3" id="tarjetasResumen">
-                    <div class="card">
-                        <h3>Pedidos realizados</h3>
-                        <p class="contador">Cargando...</p>
-                    </div>
-                    <div class="card">
-                        <h3>Pedidos con facturas</h3>
-                        <p class="contador">Cargando...</p>
-                    </div>
-                    <div class="card">
-                        <h3>Pedidos sin facturas</h3>
-                        <p class="contador">Cargando...</p>
-                    </div>
-                </div>
-
-
                 <!-- Tarjeta de buscador -->
                 <div class="card">
                     <h2>Busca usuarios</h2>
 
                     <form class="form-modern">
-                        <div class="form-grid grid-2">
-                            <!-- Buscar por CUIT -->
-                            <div class="input-group">
-                                <label for="buscarCuit">Podes buscar Cooperativa</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">person</span>
-                                    <input type="text" id="buscarCuit" name="buscarCuit" placeholder="Ej: cooperativa Algarroba">
-                                </div>
-                            </div>
-
-                            <!-- Buscar por Nombre -->
-                            <div class="input-group">
-                                <label for="buscarNombre">Podes buscar por Productor</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">person</span>
-                                    <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
-                                </div>
+                        <!-- Buscar por Nombre -->
+                        <div class="input-group">
+                            <label for="buscarNombre">Podes buscar por Productor</label>
+                            <div class="input-icon">
+                                <span class="material-icons">person</span>
+                                <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
                             </div>
                         </div>
                     </form>
@@ -209,35 +181,13 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
             let paginaActual = 1;
             const limitePorPagina = 25;
 
-            const buscarCuit = document.getElementById('buscarCuit');
             const buscarNombre = document.getElementById('buscarNombre');
             const tablaPedidos = document.getElementById('tablaPedidos');
 
-            // 🔹 Cargar tarjetas resumen
-            async function cargarResumen() {
-                try {
-                    const res = await fetch('/controllers/coop_listadoPedidosController.php?resumen=1');
-                    const json = await res.json();
-                    if (!json.success) throw new Error(json.message);
-
-                    const {
-                        total,
-                        con_factura,
-                        sin_factura
-                    } = json.data;
-                    const tarjetas = document.querySelectorAll('.card-grid .card');
-
-                    tarjetas[0].querySelector('p').textContent = `${total} pedidos`;
-                    tarjetas[1].querySelector('p').textContent = `${con_factura} con factura`;
-                    tarjetas[2].querySelector('p').textContent = `${sin_factura} sin factura`;
-                } catch (err) {
-                    console.error('❌ Error al cargar resumen:', err);
-                }
-            }
 
             // 🔹 Buscar y listar pedidos
             async function cargarPedidos() {
-                const search = buscarNombre.value.trim() || buscarCuit.value.trim();
+                const search = buscarNombre.value.trim();
                 const url = `/controllers/coop_listadoPedidosController.php?listar=1&page=${paginaActual}&search=${encodeURIComponent(search)}`;
 
                 try {
@@ -272,20 +222,21 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     <td>
                     ${p.factura 
                         ? `<button class="btn-icon" onclick="verFactura('${p.factura}')">
-                        <i class="material-icons" style="color:green;">visibility</i>
+                            <i class="material-icons" style="color:green;">visibility</i>
                         </button>`
-                        : `<button class="btn-icon" onclick="cargarFactura(${p.id})">
-                        <i class="material-icons" style="color:orange;">upload_file</i>
-                        </button>`
+                        : `Sin factura`
                     }
                     </td>
                     <td>
                         <button class="btn-icon" onclick="verPedido(${p.id})">
                             <i class="material-icons" style="color:blue;">description</i>
                         </button>
-                        <button class="btn-icon" onclick="abrirModalEdicion(${p.id})">
-                            <i class="material-icons">edit</i>
-                        </button>
+                        ${p.estado_operativo === 'abierto' 
+                            ? `<button class="btn-icon" onclick="abrirModalEdicion(${p.id})">
+                                <i class="material-icons">edit</i>
+                            </button>`
+                            : `<span style="color:gray;">No editable</span>`
+                        }
                         <button class="btn-icon" onclick="imprimirPedido(${p.id})">
                             <i class="material-icons" style="color:green;">print</i>
                         </button>
@@ -305,11 +256,6 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
             }
 
             // 🔄 Buscar al escribir
-            buscarCuit.addEventListener('input', () => {
-                paginaActual = 1;
-                cargarPedidos();
-            });
-
             buscarNombre.addEventListener('input', () => {
                 paginaActual = 1;
                 cargarPedidos();
@@ -582,18 +528,18 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
         // funcion para abrir el modal de edición
         function abrirModalEdicion(pedidoId) {
-    const modal = document.getElementById('iframeEditarModal');
-    const iframe = document.getElementById('iframeEditar');
-    iframe.src = `coop_editarPedido.php?id=${pedidoId}`;
-    modal.style.display = 'flex';
-}
+            const modal = document.getElementById('iframeEditarModal');
+            const iframe = document.getElementById('iframeEditar');
+            iframe.src = `coop_editarPedido.php?id=${pedidoId}`;
+            modal.style.display = 'flex';
+        }
 
-// permitir cerrar con ESC
-document.addEventListener('keydown', function(e) {
-    if (e.key === "Escape") {
-        document.getElementById('iframeEditarModal').style.display = 'none';
-    }
-});
+        // permitir cerrar con ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === "Escape") {
+                document.getElementById('iframeEditarModal').style.display = 'none';
+            }
+        });
     </script>
 
     <!-- Formulario oculto para cargar la factura -->
@@ -615,9 +561,9 @@ document.addEventListener('keydown', function(e) {
     </div>
 
     <!-- Modal flotante para editar pedido -->
-<div id="iframeEditarModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center;">
-    <iframe id="iframeEditar" style="width:90%; height:90%; border:none; border-radius:8px; background:white;"></iframe>
-</div>
+    <div id="iframeEditarModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center;">
+        <iframe id="iframeEditar" style="width:90%; height:90%; border:none; border-radius:8px; background:white;"></iframe>
+    </div>
 
 
     <!-- imprimir el pedido -->
