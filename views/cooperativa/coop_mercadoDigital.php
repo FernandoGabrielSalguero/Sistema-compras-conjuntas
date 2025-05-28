@@ -204,7 +204,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
                 <div class="card">
                     <h2>Crear nuevo pedido</h2>
                     <form id="formPedido" class="form-modern">
-                        <div class="form-grid grid-2">
+                        <div class="form-grid grid-3">
 
                             <!-- Cooperativa -->
                             <div class="input-group">
@@ -272,7 +272,8 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
                                     </select>
                                 </div>
                             </div>
-
+                        </div>
+                        
                             <!-- Observaciones -->
                             <div class="input-group">
                                 <label for="observaciones">Observaciones</label>
@@ -281,7 +282,6 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
                                     <textarea id="observaciones" name="observaciones" rows="4" placeholder="Notas adicionales..."></textarea>
                                 </div>
                             </div>
-                        </div>
 
                         <div class="card card-productos" style="margin-top: 10px;">
                             <h2>Seleccionar productos</h2>
