@@ -320,7 +320,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
 
                         async function cargarCooperativas() {
                             try {
-                                const res = await fetch('/controllers/sve_MercadoDigitalController.php?listar=cooperativas');
+                                const res = await fetch('/controllers/coop_MercadoDigitalController.php?listar=cooperativas');
                                 cooperativas = await res.json();
                                 activarBuscador(inputCoop, listaCoop, cooperativas, hiddenCoop, (id) => {
                                     // limpiar productor
@@ -337,7 +337,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
 
                         async function cargarProductores(coopId) {
                             try {
-                                const res = await fetch(`/controllers/sve_MercadoDigitalController.php?listar=productores&coop_id=${coopId}`);
+                                const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=productores&coop_id=${coopId}`);
                                 productores = await res.json();
                                 activarBuscador(inputProd, listaProd, productores, hiddenProd);
                             } catch (err) {
@@ -387,7 +387,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
 
                     async function cargarProductosPorCategoria() {
                         try {
-                            const res = await fetch('/controllers/sve_MercadoDigitalController.php?listar=productos_categorizados');
+                            const res = await fetch('/controllers/coop_MercadoDigitalController.php?listar=productos_categorizados');
                             const data = await res.json();
 
                             const contenedor = document.getElementById('acordeones-productos');
@@ -560,7 +560,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
                             }
                         };
 
-                        const res = await fetch('/controllers/sve_MercadoDigitalController.php', {
+                        const res = await fetch('/controllers/coop_MercadoDigitalController.php', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
