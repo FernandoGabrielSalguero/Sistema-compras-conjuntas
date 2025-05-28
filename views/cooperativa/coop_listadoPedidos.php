@@ -143,18 +143,8 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                 <!-- Tarjeta de buscador -->
                 <div class="card">
                     <h2>Busca usuarios</h2>
-
                     <form class="form-modern">
-                        <div class="form-grid grid-2">
-                            <!-- Buscar por CUIT -->
-                            <div class="input-group">
-                                <label for="buscarCuit">Podes buscar Cooperativa</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">person</span>
-                                    <input type="text" id="buscarCuit" name="buscarCuit" placeholder="Ej: cooperativa Algarroba">
-                                </div>
-                            </div>
-
+                        <div class="form-grid grid-1">
                             <!-- Buscar por Nombre -->
                             <div class="input-group">
                                 <label for="buscarNombre">Podes buscar por Productor</label>
