@@ -9,6 +9,9 @@ require_once __DIR__ . '/../models/coop_MercadoDigitalModel.php';
 
 $model = new CoopMercadoDigitalModel($pdo);
 
+error_log("🔎 ID cooperativa desde sesión: $id_cooperativa");
+error_log("🔢 Pedidos obtenidos: " . count($pedidos));
+
 // 🔸 ELIMINAR PEDIDO (manejar primero los POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $json = json_decode(file_get_contents("php://input"), true);
