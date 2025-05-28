@@ -272,16 +272,17 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $idReal_cooperativ
                                     </select>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Observaciones -->
-                        <div class="input-group">
-                            <label for="observaciones">Observaciones</label>
-                            <div class="input-icon">
-                                <span class="material-icons">note</span>
-                                <textarea id="observaciones" name="observaciones" rows="4" placeholder="Notas adicionales..."></textarea>
+                            <!-- Observaciones -->
+                            <div class="input-group">
+                                <label for="observaciones">Observaciones</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">note</span>
+                                    <textarea id="observaciones" name="observaciones" rows="4" placeholder="Notas adicionales..."></textarea>
+                                </div>
                             </div>
                         </div>
+
+
 
                         <div class="card card-productos" style="margin-top: 10px;">
                             <h2>Seleccionar productos</h2>
