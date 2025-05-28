@@ -4,6 +4,8 @@ ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/../logs/errores.log');
 error_reporting(E_ALL);
 
+session_start();
+
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/coop_MercadoDigitalModel.php';
 
@@ -160,7 +162,6 @@ if (isset($_GET['resumen']) && $_GET['resumen'] == 1) {
 
 // 🔹 Obtener listado de pedidos con paginación y búsqueda
 if (isset($_GET['listar']) && $_GET['listar'] == 1) {
-    session_start(); // ✅ esto primero
     $id_cooperativa = $_SESSION['id_real'] ?? null;
 
     if (!$id_cooperativa) {
