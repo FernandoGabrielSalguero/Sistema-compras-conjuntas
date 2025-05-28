@@ -144,8 +144,6 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                 <div class="card">
                     <h2>Busca usuarios</h2>
                     <form class="form-modern">
-                        <div class="form-grid grid-1">
-                            <!-- Buscar por Nombre -->
                             <div class="input-group">
                                 <label for="buscarNombre">Podes buscar por Productor</label>
                                 <div class="input-icon">
@@ -153,7 +151,6 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                     <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
                                 </div>
                             </div>
-                        </div>
                     </form>
                 </div>
 
