@@ -325,9 +325,10 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         const nombreCoopSesion = "<?php echo htmlspecialchars($nombre); ?>";
 
                         // Cargar directamente los productores de la cooperativa del usuario
-                        document.getElementById('cooperativa').value = coopIdSesion;
-                        document.getElementById('buscador_prod').disabled = false;
-                        cargarProductores(coopIdSesion);
+                        document.getElementById('cooperativa').value = coopId;
+                        cargarProductores(coopId);
+                        console.log("🔄 Cargando productores para coopId:", coopId);
+
 
                         const inputCoop = document.getElementById('buscador_coop');
                         const listaCoop = document.getElementById('lista_coop');
