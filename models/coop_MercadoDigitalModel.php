@@ -173,9 +173,9 @@ INSERT INTO pedidos (
     }
 
     // 🔁 Cuenta total de resultados para paginación
-public function contarPedidosFiltrados($search = '', $coop_id = null)
-{
-    $sql = "
+    public function contarPedidosFiltrados($search = '', $coop_id = null)
+    {
+        $sql = "
         SELECT COUNT(*) AS total
         FROM pedidos p
         JOIN usuarios u1 ON u1.id_real = p.cooperativa
@@ -185,19 +185,19 @@ public function contarPedidosFiltrados($search = '', $coop_id = null)
         WHERE p.cooperativa = :coop_id
     ";
 
-    $params = [':coop_id' => $coop_id];
+        $params = [':coop_id' => $coop_id];
 
-    if (!empty($search)) {
-        $sql .= " AND i2.nombre LIKE :search";
-        $params[':search'] = '%' . $search . '%';
+        if (!empty($search)) {
+            $sql .= " AND i2.nombre LIKE :search";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
     }
-
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->execute($params);
-
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    return $result['total'] ?? 0;
-}
 
 
 
