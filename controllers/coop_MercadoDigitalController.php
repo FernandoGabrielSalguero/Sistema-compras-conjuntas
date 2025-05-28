@@ -6,7 +6,7 @@ ini_set('error_log', __DIR__ . '/../logs/errores.log');
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../models/sve_MercadoDigitalModel.php';
+require_once __DIR__ . '/../models/coop_MercadoDigitalModel.php';
 
 $model = new CoopMercadoDigitalModel($pdo);
 
