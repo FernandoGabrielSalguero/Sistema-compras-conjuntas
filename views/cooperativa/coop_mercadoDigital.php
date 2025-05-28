@@ -278,7 +278,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
                                 <label for="observaciones">Observaciones</label>
                                 <div class="input-icon">
                                     <span class="material-icons">note</span>
-                                    <textarea id="observaciones" name="observaciones" rows="3" placeholder="Notas adicionales..."></textarea>
+                                    <textarea id="observaciones" name="observaciones" rows="4" placeholder="Notas adicionales..."></textarea>
                                 </div>
                             </div>
                         </div>
