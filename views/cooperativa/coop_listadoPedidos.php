@@ -124,22 +124,6 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                 </div>
 
 
-                <div class="card-grid grid-3" id="tarjetasResumen">
-                    <div class="card">
-                        <h3>Pedidos realizados</h3>
-                        <p class="contador">Cargando...</p>
-                    </div>
-                    <div class="card">
-                        <h3>Pedidos con facturas</h3>
-                        <p class="contador">Cargando...</p>
-                    </div>
-                    <div class="card">
-                        <h3>Pedidos sin facturas</h3>
-                        <p class="contador">Cargando...</p>
-                    </div>
-                </div>
-
-
                 <!-- Tarjeta de buscador -->
                 <div class="card">
                     <h2>Busca usuarios</h2>
