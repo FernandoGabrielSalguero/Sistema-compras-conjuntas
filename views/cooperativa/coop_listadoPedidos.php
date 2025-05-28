@@ -233,7 +233,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         <button class="btn-icon" onclick="verPedido(${p.id})">
                             <i class="material-icons" style="color:blue;">description</i>
                         </button>
-                        ${p.estado === 'abierto' 
+                        ${p.estado_operativo === 'abierto' 
                             ? `<button class="btn-icon" onclick="abrirModalEdicion(${p.id})">
                                 <i class="material-icons">edit</i>
                             </button>`
@@ -268,7 +268,6 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
             window.editarPedido = (id) => alert(`Editar pedido ID ${id}`);
 
             // 🟢 Iniciar
-            cargarResumen();
             cargarPedidos();
 
             // funciones para subir la factura
