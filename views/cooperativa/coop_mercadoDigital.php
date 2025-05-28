@@ -162,6 +162,9 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     <li onclick="location.href='coop_mercadoDigital.php'">
                         <span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
                     </li>
+                    <li onclick="location.href='coop_listadoPedidos.php'">
+                        <span class="material-icons" style="color: #5b21b6;">assignment_turned_in</span><span class="link-text">Listado Pedidos</span>
+                    </li>
                     <li onclick="location.href='coop_pedidos.php'">
                         <span class="material-icons" style="color: #5b21b6;">receipt_long</span><span class="link-text">Pedidos</span>
                     </li>
