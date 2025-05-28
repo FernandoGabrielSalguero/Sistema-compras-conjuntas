@@ -235,9 +235,11 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         </button>
                         ${p.estado_operativo === 'abierto' 
                             ? `<button class="btn-icon" onclick="abrirModalEdicion(${p.id})">
-                                <i class="material-icons">edit</i>
+                                <i class="material-icons" style="color:blue;">edit</i>
                             </button>`
-                            : `<span style="color:gray;">No editable</span>`
+                            : `<button class="btn-icon" disabled title="Pedido cerrado">
+                                <i class="material-icons" style="color:gray; opacity: 0.5;">edit</i>
+                            </button>`
                         }
                         <button class="btn-icon" onclick="imprimirPedido(${p.id})">
                             <i class="material-icons" style="color:green;">print</i>
