@@ -173,30 +173,32 @@ INSERT INTO pedidos (
     }
 
     // 🔁 Cuenta total de resultados para paginación
-    public function contarPedidosFiltrados($search = '')
-    {
-        $sql = "
+public function contarPedidosFiltrados($search = '', $coop_id = null)
+{
+    $sql = "
         SELECT COUNT(*) AS total
         FROM pedidos p
         JOIN usuarios u1 ON u1.id_real = p.cooperativa
         JOIN usuarios_info i1 ON i1.usuario_id = u1.id
         JOIN usuarios u2 ON u2.id_real = p.productor
         JOIN usuarios_info i2 ON i2.usuario_id = u2.id
+        WHERE p.cooperativa = :coop_id
     ";
 
-        $params = [];
+    $params = [':coop_id' => $coop_id];
 
-        if (!empty($search)) {
-            $sql .= " WHERE i1.nombre LIKE :search OR i2.nombre LIKE :search ";
-            $params[':search'] = '%' . $search . '%';
-        }
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result['total'] ?? 0;
+    if (!empty($search)) {
+        $sql .= " AND i2.nombre LIKE :search";
+        $params[':search'] = '%' . $search . '%';
     }
+
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute($params);
+
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $result['total'] ?? 0;
+}
+
 
 
     // obtenemos los operativos de la bbdd

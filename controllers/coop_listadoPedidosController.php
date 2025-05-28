@@ -177,7 +177,7 @@ if (isset($_GET['listar']) && $_GET['listar'] == 1) {
         $pedidos = $model->obtenerListadoPedidos($search, $offset, $limit, $id_cooperativa);
 
         // ⚠️ Para que el total coincida, deberías adaptar este método también
-        $total = count($pedidos); // TEMPORAL para que la paginación no rompa
+$total = $model->contarPedidosFiltrados($search, $id_cooperativa);
 
         echo json_encode([
             'success' => true,
