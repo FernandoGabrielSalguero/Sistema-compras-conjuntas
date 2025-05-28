@@ -206,15 +206,14 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
                     <form id="formPedido" class="form-modern">
                         <div class="form-grid grid-3">
 
-                            <!-- Cooperativa -->
+                            <!-- Cooperativa (auto-seleccionada desde sesión) -->
                             <div class="input-group">
-                                <label for="buscador_coop">Cooperativa</label>
+                                <label>Cooperativa</label>
                                 <div class="input-icon">
                                     <span class="material-icons">groups</span>
-                                    <input type="text" id="buscador_coop" placeholder="Buscar cooperativa..." autocomplete="off" required>
+                                    <input type="text" value="<?php echo htmlspecialchars($nombre); ?>" disabled>
                                 </div>
-                                <ul id="lista_coop" class="buscador-lista"></ul>
-                                <input type="hidden" name="cooperativa" id="cooperativa">
+                                <input type="hidden" name="cooperativa" id="cooperativa" value="<?php echo htmlspecialchars($id_cooperativa); ?>">
                             </div>
 
                             <!-- Productor -->
@@ -273,15 +272,15 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
                                 </div>
                             </div>
                         </div>
-                        
-                            <!-- Observaciones -->
-                            <div class="input-group">
-                                <label for="observaciones">Observaciones</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">note</span>
-                                    <textarea id="observaciones" name="observaciones" rows="4" placeholder="Notas adicionales..."></textarea>
-                                </div>
+
+                        <!-- Observaciones -->
+                        <div class="input-group">
+                            <label for="observaciones">Observaciones</label>
+                            <div class="input-icon">
+                                <span class="material-icons">note</span>
+                                <textarea id="observaciones" name="observaciones" rows="4" placeholder="Notas adicionales..."></textarea>
                             </div>
+                        </div>
 
                         <div class="card card-productos" style="margin-top: 10px;">
                             <h2>Seleccionar productos</h2>
@@ -304,9 +303,16 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa . 
 
                 <!-- 🛠️ SCRIPTS -->
                 <script>
-                    console.log(<?php echo json_encode($_SESSION); ?>);
+                    console.log("🟢 Estos son los datos de sesión del usuario:");
+                    console.log(<?php echo json_encode($_SESSION, JSON_PRETTY_PRINT); ?>);
                     document.addEventListener('DOMContentLoaded', () => {
-                        cargarCooperativas();
+                        const coopIdSesion = "<?php echo $id_cooperativa; ?>";
+                        const nombreCoopSesion = "<?php echo htmlspecialchars($nombre); ?>";
+
+                        // Cargar directamente los productores de la cooperativa del usuario
+                        document.getElementById('cooperativa').value = coopIdSesion;
+                        document.getElementById('buscador_prod').disabled = false;
+                        cargarProductores(coopIdSesion);
 
                         const inputCoop = document.getElementById('buscador_coop');
                         const listaCoop = document.getElementById('lista_coop');
