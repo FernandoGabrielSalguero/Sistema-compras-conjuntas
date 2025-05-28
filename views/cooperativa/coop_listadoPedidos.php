@@ -584,7 +584,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         function abrirModalEdicion(pedidoId) {
     const modal = document.getElementById('iframeEditarModal');
     const iframe = document.getElementById('iframeEditar');
-    iframe.src = `sve_editarPedido.php?id=${pedidoId}`;
+    iframe.src = `coop_editarPedido.php?id=${pedidoId}`;
     modal.style.display = 'flex';
 }
 
