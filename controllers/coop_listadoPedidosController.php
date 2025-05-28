@@ -9,10 +9,10 @@ session_start();
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/coop_MercadoDigitalModel.php';
 
+$id_cooperativa = $_SESSION['id_real'] ?? null;
 $model = new CoopMercadoDigitalModel($pdo);
 
 error_log("🔎 ID cooperativa desde sesión: $id_cooperativa");
-error_log("🔢 Pedidos obtenidos: " . count($pedidos));
 
 // 🔸 ELIMINAR PEDIDO (manejar primero los POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -162,8 +162,6 @@ if (isset($_GET['resumen']) && $_GET['resumen'] == 1) {
 
 // 🔹 Obtener listado de pedidos con paginación y búsqueda
 if (isset($_GET['listar']) && $_GET['listar'] == 1) {
-    $id_cooperativa = $_SESSION['id_real'] ?? null;
-
     if (!$id_cooperativa) {
         echo json_encode(['success' => false, 'message' => 'Cooperativa no identificada']);
         exit;
@@ -175,10 +173,8 @@ if (isset($_GET['listar']) && $_GET['listar'] == 1) {
     $offset = ($page - 1) * $limit;
 
     try {
-        // ✅ Ahora sí, pasamos el filtro de cooperativa
         $pedidos = $model->obtenerListadoPedidos($search, $offset, $limit, $id_cooperativa);
-
-        // ⚠️ Para que el total coincida, deberías adaptar este método también
+        error_log("🔢 Pedidos obtenidos: " . count($pedidos));
         $total = $model->contarPedidosFiltrados($search, $id_cooperativa);
 
         echo json_encode([
