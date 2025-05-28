@@ -222,7 +222,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                 <label for="buscador_prod">Productor</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
-                                    <input type="text" id="buscador_prod" placeholder="Buscar productor..." autocomplete="off" disabled required>
+                                    <input type="text" id="buscador_prod" placeholder="Buscar productor..." autocomplete="off" required>
                                 </div>
                                 <ul id="lista_prod" class="buscador-lista"></ul>
                                 <input type="hidden" name="productor" id="productor">
