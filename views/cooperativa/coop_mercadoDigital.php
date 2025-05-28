@@ -42,7 +42,7 @@ $direccion = $_SESSION['direccion'] ?? 'Sin dirección';
 $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
 
 // Verificar si el ID de la cooperativa está disponible
-echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $idReal_cooperativa . "');</script>";
+echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_real . "');</script>";
 ?>
 
 <!DOCTYPE html>
@@ -321,7 +321,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $idReal_cooperativ
                     console.log("🟢 Estos son los datos de sesión del usuario:");
                     console.log(<?php echo json_encode($_SESSION, JSON_PRETTY_PRINT); ?>);
                     document.addEventListener('DOMContentLoaded', () => {
-                        const coopIdSesion = "<?php echo $id_cooperativa_real; ?>";
+                        const coopId = "<?php echo $id_cooperativa_real; ?>";
                         const nombreCoopSesion = "<?php echo htmlspecialchars($nombre); ?>";
 
                         // Cargar directamente los productores de la cooperativa del usuario
@@ -410,7 +410,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $idReal_cooperativ
                     });
 
                     async function cargarOperativos() {
-                        const coopId = "<?php echo $idReal_cooperativa; ?>";
+                        const coopId = "<?php echo $id_cooperativa_real; ?>";
                         try {
                             const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=operativos_abiertos&coop_id=${coopId}`);
                             const data = await res.json();
