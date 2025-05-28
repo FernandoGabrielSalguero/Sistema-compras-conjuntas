@@ -137,12 +137,12 @@ INSERT INTO pedidos (
     // 📄 Obtiene listado de pedidos con paginación y búsqueda opcional
     public function obtenerListadoPedidos($search = '', $offset = 0, $limit = 25, $coop_id = null)
     {
-        $sql = "
+$sql = "
     SELECT 
         p.*,
         i1.nombre AS nombre_cooperativa,
         i2.nombre AS nombre_productor,
-        o.nombre AS nombre_operativo
+        o.nombre AS nombre_operativo,
         o.estado AS estado_operativo
     FROM pedidos p
     JOIN usuarios u1 ON u1.id_real = p.cooperativa
@@ -150,7 +150,6 @@ INSERT INTO pedidos (
     JOIN usuarios u2 ON u2.id_real = p.productor
     JOIN usuarios_info i2 ON i2.usuario_id = u2.id
     LEFT JOIN operativos o ON o.id = p.operativo_id
-    
     WHERE p.cooperativa = :coop_id
 ";
 
