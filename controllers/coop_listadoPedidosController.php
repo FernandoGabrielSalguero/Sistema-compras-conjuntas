@@ -137,8 +137,6 @@ if (isset($json['accion']) && $json['accion'] === 'editar_pedido') {
     }
 }
 
-
-
 // 🔹 Obtener resumen para tarjetas
 if (isset($_GET['resumen']) && $_GET['resumen'] == 1) {
     try {

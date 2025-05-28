@@ -201,6 +201,7 @@ public function contarPedidosFiltrados($search = '', $coop_id = null)
 
 
 
+
     // obtenemos los operativos de la bbdd
     public function obtenerOperativosActivosPorCooperativa($coopId)
     {
