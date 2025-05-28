@@ -292,6 +292,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $idReal_cooperativ
                                     </select>
                                 </div>
                             </div>
+
                         </div>
 
 
@@ -404,27 +405,27 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $idReal_cooperativ
                     // acordeones
                     document.addEventListener('DOMContentLoaded', () => {
                         cargarProductosPorCategoria();
-
-                        async function cargarOperativos() {
-                            const coopId = "<?php echo $idReal_cooperativa; ?>";
-                            try {
-                                const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=operativos_abiertos&coop_id=${coopId}`);
-                                const data = await res.json();
-                                const selectOperativo = document.getElementById('operativo');
-                                data.forEach(op => {
-                                    const option = document.createElement('option');
-                                    option.value = op.id;
-                                    option.textContent = `${op.nombre} (${op.fecha_inicio} - ${op.fecha_cierre})`;
-                                    selectOperativo.appendChild(option);
-                                });
-                            } catch (err) {
-                                console.error("❌ Error al cargar operativos:", err);
-                            }
-                        }
-
                         cargarOperativos();
 
                     });
+
+                    async function cargarOperativos() {
+                        const coopId = "<?php echo $idReal_cooperativa; ?>";
+                        try {
+                            const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=operativos_abiertos&coop_id=${coopId}`);
+                            const data = await res.json();
+                            const selectOperativo = document.getElementById('operativo');
+                            data.forEach(op => {
+                                const option = document.createElement('option');
+                                option.value = op.id;
+                                option.textContent = `${op.nombre} (${op.fecha_inicio} - ${op.fecha_cierre})`;
+                                selectOperativo.appendChild(option);
+                            });
+                        } catch (err) {
+                            console.error("❌ Error al cargar operativos:", err);
+                        }
+                    }
+
 
                     async function cargarProductosPorCategoria() {
                         try {
