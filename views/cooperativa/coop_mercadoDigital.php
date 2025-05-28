@@ -35,8 +35,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 // Campos adicionales para cooperativa
+$id_cooperativa_real = $_SESSION['id_real'] ?? null; // usamos el ID real de la sesión
 $id_cooperativa = $_SESSION['id_cooperativa'] ?? null;
-$idReal_cooperativa = $_SESSION['id_real'] ?? null;
 $id_productor = $_SESSION['id_productor'] ?? null;
 $direccion = $_SESSION['direccion'] ?? 'Sin dirección';
 $id_finca_asociada = $_SESSION['id_finca_asociada'] ?? null;
@@ -214,7 +214,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $idReal_cooperativ
                                     <span class="material-icons">groups</span>
                                     <input type="text" value="<?php echo htmlspecialchars($nombre); ?>" disabled>
                                 </div>
-                                <input type="hidden" name="cooperativa" id="cooperativa" value="<?php echo htmlspecialchars($id_cooperativa); ?>">
+                                <input type="hidden" name="cooperativa" id="cooperativa" value="<?php echo htmlspecialchars($id_cooperativa_real); ?>">
                             </div>
 
                             <!-- Productor -->
@@ -307,7 +307,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $idReal_cooperativ
                     console.log("🟢 Estos son los datos de sesión del usuario:");
                     console.log(<?php echo json_encode($_SESSION, JSON_PRETTY_PRINT); ?>);
                     document.addEventListener('DOMContentLoaded', () => {
-                        const coopIdSesion = "<?php echo $id_cooperativa; ?>";
+                        const coopIdSesion = "<?php echo $id_cooperativa_real; ?>";
                         const nombreCoopSesion = "<?php echo htmlspecialchars($nombre); ?>";
 
                         // Cargar directamente los productores de la cooperativa del usuario
