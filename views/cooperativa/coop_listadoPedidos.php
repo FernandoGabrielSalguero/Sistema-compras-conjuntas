@@ -233,7 +233,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         <button class="btn-icon" onclick="verPedido(${p.id})">
                             <i class="material-icons" style="color:blue;">description</i>
                         </button>
-                        ${p.estado_operativo === 'abierto' 
+                        ${p.estado === 'abierto' 
                             ? `<button class="btn-icon" onclick="abrirModalEdicion(${p.id})">
                                 <i class="material-icons">edit</i>
                             </button>`
