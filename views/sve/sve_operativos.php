@@ -164,34 +164,51 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             <nav class="sidebar-menu">
                 <ul>
                     <li class="sidebar-item" onclick="location.href='sve_dashboard.php'" data-tooltip="Inicio">
-                        <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
+                        <span class="material-icons" style="color: #5b21b6;">home</span>
+                        <span class="link-text">Inicio</span>
                     </li>
+
                     <li class="sidebar-item" onclick="location.href='sve_altausuarios.php'" data-tooltip="Alta de nuevos usuarios">
-                        <span class="material-icons" style="color: #5b21b6;">person</span><span class="link-text">Alta usuarios</span>
+                        <span class="material-icons" style="color: #5b21b6;">person</span>
+                        <span class="link-text">Alta usuarios</span>
                     </li>
+
                     <li class="sidebar-item" onclick="location.href='sve_asociarProductores.php'" data-tooltip="Asociar productores con cooperativas">
-                        <span class="material-icons" style="color: #5b21b6;">link</span><span class="link-text">Asociaciones</span>
+                        <span class="material-icons" style="color: #5b21b6;">link</span>
+                        <span class="link-text">Asociaciones</span>
                     </li>
+
                     <li class="sidebar-item" onclick="location.href='sve_cargaMasiva.php'" data-tooltip="Importar datos masivamente">
-                        <span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Carga masiva</span>
+                        <span class="material-icons" style="color: #5b21b6;">upload_file</span>
+                        <span class="link-text">Carga masiva</span>
                     </li>
+
                     <li class="sidebar-item" onclick="location.href='sve_operativos.php'" data-tooltip="Administrar operativos">
-                        <span class="material-icons" style="color: #5b21b6;">assignment</span><span class="link-text">Operativos</span>
+                        <span class="material-icons" style="color: #5b21b6;">assignment</span>
+                        <span class="link-text">Operativos</span>
                     </li>
+
                     <li class="sidebar-item" onclick="location.href='sve_mercadodigital.php'" data-tooltip="Ver mercado digital">
-                        <span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
+                        <span class="material-icons" style="color: #5b21b6;">shopping_cart</span>
+                        <span class="link-text">Mercado Digital</span>
                     </li>
+
                     <li class="sidebar-item" onclick="location.href='sve_listadoPedidos.php'" data-tooltip="Ver todos los pedidos">
-                        <span class="material-icons" style="color: #5b21b6;">assignment_turned_in</span><span class="link-text">Listado Pedidos</span>
+                        <span class="material-icons" style="color: #5b21b6;">assignment_turned_in</span>
+                        <span class="link-text">Listado Pedidos</span>
                     </li>
-                    <li class="sidebar-item" data-tooltip="Gestionar productos" onclick="location.href='sve_productos.php'">
+
+                    <li class="sidebar-item" onclick="location.href='sve_productos.php'" data-tooltip="Gestionar productos">
                         <span class="material-icons" style="color: #5b21b6;">inventory</span>
                         <span class="link-text">Productos</span>
                     </li>
+
                     <li class="sidebar-item" onclick="location.href='../../../logout.php'" data-tooltip="Salir del sistema">
-                        <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
+                        <span class="material-icons" style="color: red;">logout</span>
+                        <span class="link-text">Salir</span>
                     </li>
                 </ul>
+
             </nav>
 
             <div class="sidebar-footer">
