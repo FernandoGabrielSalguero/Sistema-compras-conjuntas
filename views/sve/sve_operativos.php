@@ -353,6 +353,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <button class="btn-icon" onclick="mostrarCooperativas(${op.id})" data-tooltip="Cooperativas participantes">
                 <i class="material-icons" style="color:green;">supervisor_account</i>
                 </button>
+                <button class="btn-icon" onclick="editarProductos(${op.id})" data-tooltip="Ver productos del operativo">
+                <i class="material-icons" style="color:orange;">inventory</i>
+                </button>
                 <button class="btn-icon" onclick="eliminarOperativo(${op.id})" data-tooltip="Eliminar operativo">
                 <i class="material-icons" style="color:red;">delete</i>
                 </button>
