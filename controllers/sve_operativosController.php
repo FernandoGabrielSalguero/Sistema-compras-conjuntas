@@ -43,7 +43,7 @@ if ($method === 'POST') {
 
     try {
         if ($id) {
-            $model->actualizar($id, $nombre, $fecha_inicio, $fecha_cierre, $estado);
+            $model->actualizar($id, $nombre, $fecha_inicio, $fecha_cierre, $estado, $descripcion);
             echo json_encode(['success' => true, 'message' => 'Operativo actualizado correctamente.']);
         } else {
             $model->crear($nombre, $fecha_inicio, $fecha_cierre, $estado, $descripcion);

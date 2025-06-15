@@ -274,6 +274,14 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 </div>
                             </div>
 
+                            <div class="input-group">
+                                <label for="edit_descripcion">Descripción</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">notes</span>
+                                    <input type="text" name="descripcion" id="edit_descripcion" placeholder="Ej: Operativo de cosecha invierno" maxlength="255">
+                                </div>
+                            </div>
+
                             <div class="form-buttons" style="margin-top: 20px;">
                                 <button type="submit" class="btn btn-aceptar">Guardar</button>
                                 <button type="button" class="btn btn-cancelar" onclick="closeModalEditar()">Cancelar</button>
@@ -404,6 +412,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 document.getElementById('edit_fecha_inicio').value = op.fecha_inicio;
                 document.getElementById('edit_fecha_cierre').value = op.fecha_cierre;
                 document.getElementById('edit_estado').value = op.estado;
+                document.getElementById('edit_descripcion').value = op.descripcion ?? '';
 
                 openModalEditar();
             } catch (err) {

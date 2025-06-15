@@ -17,17 +17,17 @@ class OperativosModel
         $this->pdo->prepare("DELETE FROM operativos WHERE id = ?")->execute([$id]);
     }
 
- public function crear($nombre, $fecha_inicio, $fecha_cierre, $estado, $descripcion)
-{
-    $stmt = $this->pdo->prepare("INSERT INTO operativos (nombre, fecha_inicio, fecha_cierre, estado, descripcion) VALUES (?, ?, ?, ?, ?)");
-    $stmt->execute([$nombre, $fecha_inicio, $fecha_cierre, $estado, $descripcion]);
-    return $this->pdo->lastInsertId();
-}
-
-    public function actualizar($id, $nombre, $fecha_inicio, $fecha_cierre, $estado)
+    public function crear($nombre, $fecha_inicio, $fecha_cierre, $estado, $descripcion)
     {
-        $stmt = $this->pdo->prepare("UPDATE operativos SET nombre = ?, fecha_inicio = ?, fecha_cierre = ?, estado = ? WHERE id = ?");
-        return $stmt->execute([$nombre, $fecha_inicio, $fecha_cierre, $estado, $id]);
+        $stmt = $this->pdo->prepare("INSERT INTO operativos (nombre, fecha_inicio, fecha_cierre, estado, descripcion) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$nombre, $fecha_inicio, $fecha_cierre, $estado, $descripcion]);
+        return $this->pdo->lastInsertId();
+    }
+
+    public function actualizar($id, $nombre, $fecha_inicio, $fecha_cierre, $estado, $descripcion)
+    {
+        $stmt = $this->pdo->prepare("UPDATE operativos SET nombre = ?, fecha_inicio = ?, fecha_cierre = ?, estado = ?, descripcion = ? WHERE id = ?");
+        return $stmt->execute([$nombre, $fecha_inicio, $fecha_cierre, $estado, $descripcion, $id]);
     }
 
     public function obtenerTodos()
