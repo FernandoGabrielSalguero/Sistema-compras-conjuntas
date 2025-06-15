@@ -124,12 +124,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             max-width: none;
         }
 
-        /* Por si el contenedor tiene overflow */
-        .sidebar {
-            overflow: visible !important;
-            z-index: 1;
-        }
-
         /* Evita corte por contenedores padres */
         .sidebar-menu,
         .sidebar-menu ul {
