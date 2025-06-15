@@ -17,12 +17,12 @@ class OperativosModel
         $this->pdo->prepare("DELETE FROM operativos WHERE id = ?")->execute([$id]);
     }
 
-    public function crear($nombre, $fecha_inicio, $fecha_cierre, $estado)
-    {
-        $stmt = $this->pdo->prepare("INSERT INTO operativos (nombre, fecha_inicio, fecha_cierre, estado) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$nombre, $fecha_inicio, $fecha_cierre, $estado]);
-        return $this->pdo->lastInsertId();
-    }
+ public function crear($nombre, $fecha_inicio, $fecha_cierre, $estado, $descripcion)
+{
+    $stmt = $this->pdo->prepare("INSERT INTO operativos (nombre, fecha_inicio, fecha_cierre, estado, descripcion) VALUES (?, ?, ?, ?, ?)");
+    $stmt->execute([$nombre, $fecha_inicio, $fecha_cierre, $estado, $descripcion]);
+    return $this->pdo->lastInsertId();
+}
 
     public function actualizar($id, $nombre, $fecha_inicio, $fecha_cierre, $estado)
     {

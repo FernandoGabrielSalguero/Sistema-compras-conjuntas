@@ -195,6 +195,15 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             </div>
                         </div>
 
+                        <!-- Descripción -->
+                        <div class="input-group">
+                            <label for="descripcion">Descripción</label>
+                            <div class="input-icon">
+                                <span class="material-icons">notes</span>
+                                <input type="text" id="descripcion" name="descripcion" placeholder="Ej: Operativo correspondiente a la campaña invierno" maxlength="255">
+                            </div>
+                        </div>
+
                         <div class="form-buttons" style="margin-top: 20px;">
                             <button type="submit" class="btn btn-aceptar">Guardar operativo</button>
                         </div>
@@ -330,13 +339,13 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <td>${op.estado}</td>
                 <td>${op.created_at}</td>
                 <td>
-                <button class="btn-icon" onclick="editarOperativo(${op.id})">
+                <button class="btn-icon" onclick="editarOperativo(${op.id})" data-tooltip="Editar operativo">
                 <i class="material-icons">edit</i>
                 </button>
-                <button class="btn-icon" onclick="mostrarCooperativas(${op.id})" data-tooltip="Botón para guardar">
+                <button class="btn-icon" onclick="mostrarCooperativas(${op.id})" data-tooltip="Cooperativas participantes">
                 <i class="material-icons" style="color:green;">supervisor_account</i>
                 </button>
-                <button class="btn-icon" onclick="eliminarOperativo(${op.id})">
+                <button class="btn-icon" onclick="eliminarOperativo(${op.id})" data-tooltip="Eliminar operativo">
                 <i class="material-icons" style="color:red;">delete</i>
                 </button>
                 </td>

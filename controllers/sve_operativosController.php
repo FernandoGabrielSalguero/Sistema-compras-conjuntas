@@ -34,6 +34,7 @@ if ($method === 'POST') {
     $fecha_inicio = $_POST['fecha_inicio'] ?? '';
     $fecha_cierre = $_POST['fecha_cierre'] ?? '';
     $estado = $_POST['estado'] ?? 'abierto';
+    $descripcion = $_POST['descripcion'] ?? 'Sin descripción';
 
     if (!$nombre || !$fecha_inicio || !$fecha_cierre || !$estado) {
         echo json_encode(['success' => false, 'message' => 'Faltan datos obligatorios.']);
@@ -45,7 +46,7 @@ if ($method === 'POST') {
             $model->actualizar($id, $nombre, $fecha_inicio, $fecha_cierre, $estado);
             echo json_encode(['success' => true, 'message' => 'Operativo actualizado correctamente.']);
         } else {
-            $model->crear($nombre, $fecha_inicio, $fecha_cierre, $estado);
+            $model->crear($nombre, $fecha_inicio, $fecha_cierre, $estado, $descripcion);
             echo json_encode(['success' => true, 'message' => 'Operativo creado correctamente.']);
         }
     } catch (Exception $e) {
