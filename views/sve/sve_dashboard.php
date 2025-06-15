@@ -160,7 +160,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                 <!-- contenedor del toastify -->
                 <div id="toast-container"></div>
-
+                <div id="toast-container-boton"></div>
                 <!-- Spinner Global -->
                 <script src="../../views/partials/spinner-global.js"></script>
 
