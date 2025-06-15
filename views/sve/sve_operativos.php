@@ -184,8 +184,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <li class="sidebar-item" onclick="location.href='sve_listadoPedidos.php'" data-tooltip="Ver todos los pedidos">
                         <span class="material-icons" style="color: #5b21b6;">assignment_turned_in</span><span class="link-text">Listado Pedidos</span>
                     </li>
-                    <li class="sidebar-item" onclick="location.href='sve_productos.php'" data-tooltip="Gestionar productos">
-                        <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
+                    <li class="sidebar-item" data-tooltip="Gestionar productos" onclick="location.href='sve_productos.php'">
+                        <span class="material-icons" style="color: #5b21b6;">inventory</span>
+                        <span class="link-text">Productos</span>
                     </li>
                     <li class="sidebar-item" onclick="location.href='../../../logout.php'" data-tooltip="Salir del sistema">
                         <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
