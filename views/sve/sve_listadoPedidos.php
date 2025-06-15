@@ -175,9 +175,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                     <th>Cooperativa</th>
                                     <th>Productor</th>
                                     <th>Fecha de creación</th>
-                                    <th>A nombre de:</th>
-                                    <th>Condicion</th>
-                                    <th>Afiliación</th>
                                     <th>Total sin IVA</th>
                                     <th>IVA</th>
                                     <th>Total pedido</th>
