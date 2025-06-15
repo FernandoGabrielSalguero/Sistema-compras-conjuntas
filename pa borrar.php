@@ -56,6 +56,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
     <!-- 🔲 CONTENEDOR PRINCIPAL -->
     <div class="layout">
+
         <!-- 🧭 SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -115,12 +116,84 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
             <!-- 📦 CONTENIDO -->
             <section class="content">
+
                 <!-- Bienvenida -->
                 <div class="card">
                     <h2>Hola 👋</h2>
                     <p>En esta página, vamos a ver todos los pedidos realizados por las cooperativas y por nosotros, además de poder cargar sus facturas y modificarlos en caso de ser necesario</p>
                 </div>
 
+
+                <div class="card-grid grid-3" id="tarjetasResumen">
+                    <div class="card">
+                        <h3>Pedidos realizados</h3>
+                        <p class="contador">Cargando...</p>
+                    </div>
+                    <div class="card">
+                        <h3>Pedidos con facturas</h3>
+                        <p class="contador">Cargando...</p>
+                    </div>
+                    <div class="card">
+                        <h3>Pedidos sin facturas</h3>
+                        <p class="contador">Cargando...</p>
+                    </div>
+                </div>
+
+
+                <!-- Tarjeta de buscador -->
+                <div class="card">
+                    <h2>Busca usuarios</h2>
+
+                    <form class="form-modern">
+                        <div class="form-grid grid-2">
+                            <!-- Buscar por CUIT -->
+                            <div class="input-group">
+                                <label for="buscarCuit">Podes buscar Cooperativa</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">person</span>
+                                    <input type="text" id="buscarCuit" name="buscarCuit" placeholder="Ej: cooperativa Algarroba">
+                                </div>
+                            </div>
+
+                            <!-- Buscar por Nombre -->
+                            <div class="input-group">
+                                <label for="buscarNombre">Podes buscar por Productor</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">person</span>
+                                    <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tabla -->
+                <div class="card">
+                    <h2>Listado de pedidos realizados</h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cooperativa</th>
+                                    <th>Productor</th>
+                                    <th>Fecha de creación</th>
+                                    <th>A nombre de:</th>
+                                    <th>Condicion</th>
+                                    <th>Afiliación</th>
+                                    <th>Total sin IVA</th>
+                                    <th>IVA</th>
+                                    <th>Total pedido</th>
+                                    <th>Factura</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaPedidos">
+                                <!-- Contenido dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
                 <!-- Spinner Global -->
                 <script src="../../views/partials/spinner-global.js"></script>
