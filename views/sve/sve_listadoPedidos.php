@@ -185,9 +185,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="tablaPedidos">
+                            <!-- <tbody id="tablaPedidos">
                                 <!-- Contenido dinámico -->
-                            </tbody>
+                            </tbody> -->
                         </table>
                     </div>
                 </div>
