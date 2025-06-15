@@ -176,19 +176,13 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
             <?php if (!empty($cierre_info)): ?>
                 const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-                console.log("📦 Estado de operativos:");
-                console.log("Total:", cierreData.total_operativos);
-                console.log("Cerrados:", cierreData.cerrados);
-                console.log("Abiertos:", cierreData.abiertos);
-                console.log("Pendientes:", cierreData.pendientes);
-
                 cierreData.pendientes.forEach(op => {
-                    const mensaje = `⚠️ El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
+                    const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
                     console.log(mensaje);
-                    if (typeof showToast === 'function') {
-                        showToast('info', mensaje);
+                    if (typeof showToastBoton === 'function') {
+                        showToastBoton('info', mensaje);
                     } else {
-                        console.warn('⚠️ showToast no está definido aún.');
+                        console.warn('⚠️ showToastBoton no está definido aún.');
                     }
                 });
             <?php endif; ?>
