@@ -115,6 +115,28 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         #contenedorCategorias {
             margin-top: 15px;
         }
+
+        /* Asegura que tooltips dentro del sidebar se muestren por encima de todo */
+        .sidebar [data-tooltip]::after {
+            z-index: 9999 !important;
+            position: fixed !important;
+            white-space: nowrap;
+            max-width: none;
+        }
+
+        /* Por si el contenedor tiene overflow */
+        .sidebar {
+            overflow: visible !important;
+            z-index: 1;
+        }
+
+        /* Evita corte por contenedores padres */
+        .sidebar-menu,
+        .sidebar-menu ul {
+            overflow: visible !important;
+            position: relative;
+            z-index: 2;
+        }
     </style>
 
 </head>
