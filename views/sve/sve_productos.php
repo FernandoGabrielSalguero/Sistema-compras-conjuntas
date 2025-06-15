@@ -376,7 +376,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         async function cargarProductos() {
             const tabla = document.getElementById('tablaProductos');
             try {
-                const res = await fetch('/controllers/sve_productosController.php');
+                const res = await fetch('/controllers/sve_productosController.php?accion=listar');
                 const html = await res.text();
                 tabla.innerHTML = html;
             } catch (err) {
