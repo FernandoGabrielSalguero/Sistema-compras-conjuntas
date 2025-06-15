@@ -320,32 +320,27 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                 <!-- 🛠️ SCRIPTS -->
                 <script>
+                    // Cargamos operativos
+                    async function cargarOperativos() {
+                        try {
+                            const res = await fetch('/controllers/sve_MercadoDigitalController.php?listar=operativos');
+                            const operativos = await res.json();
+                            const select = document.getElementById('operativo_id');
+
+                            operativos.forEach(op => {
+                                const option = document.createElement('option');
+                                option.value = op.id;
+                                option.textContent = `${op.nombre} (${op.fecha_inicio} → ${op.fecha_cierre})`;
+                                select.appendChild(option);
+                            });
+                        } catch (err) {
+                            console.error('❌ Error al cargar operativos:', err);
+                        }
+                    }
+
                     document.addEventListener('DOMContentLoaded', () => {
                         cargarCooperativas();
                         cargarOperativos();
-
-                        async function cargarOperativos() {
-                            try {
-                                const res = await fetch('/controllers/sve_MercadoDigitalController.php?listar=operativos');
-                                const data = await res.json();
-                                const selectOperativo = document.getElementById('operativo');
-
-                                data.forEach(op => {
-                                    const option = document.createElement('option');
-                                    option.value = op.id;
-                                    option.textContent = `${op.nombre} (${op.fecha_inicio} al ${op.fecha_cierre})`;
-                                    selectOperativo.appendChild(option);
-                                });
-
-                                selectOperativo.addEventListener('change', () => {
-                                    if (selectOperativo.value) {
-                                        cargarProductosPorOperativo(selectOperativo.value);
-                                    }
-                                });
-                            } catch (err) {
-                                console.error('❌ Error al cargar operativos:', err);
-                            }
-                        }
 
                         const inputCoop = document.getElementById('buscador_coop');
                         const listaCoop = document.getElementById('lista_coop');
@@ -357,23 +352,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                         let cooperativas = [];
                         let productores = [];
-
-                        async function cargarOperativos() {
-                            try {
-                                const res = await fetch('/controllers/sve_MercadoDigitalController.php?listar=operativos');
-                                const operativos = await res.json();
-                                const select = document.getElementById('operativo_id');
-
-                                operativos.forEach(op => {
-                                    const option = document.createElement('option');
-                                    option.value = op.id;
-                                    option.textContent = `${op.nombre} (${op.fecha_inicio} → ${op.fecha_cierre})`;
-                                    select.appendChild(option);
-                                });
-                            } catch (err) {
-                                console.error('❌ Error al cargar operativos:', err);
-                            }
-                        }
 
                         async function cargarCooperativas() {
                             try {
@@ -439,8 +417,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                     // Cargar productos por operativo
                     document.addEventListener('DOMContentLoaded', () => {
-                        cargarOperativos();
-
                         const selectorOperativo = document.getElementById('operativo_id');
                         selectorOperativo.addEventListener('change', () => {
                             const id = selectorOperativo.value;
