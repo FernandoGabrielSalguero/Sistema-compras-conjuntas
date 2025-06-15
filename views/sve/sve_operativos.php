@@ -116,20 +116,21 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             margin-top: 15px;
         }
 
-        /* Asegura que tooltips dentro del sidebar se muestren por encima de todo */
-        .sidebar [data-tooltip]::after {
-            z-index: 9999 !important;
-            position: fixed !important;
-            white-space: nowrap;
-            max-width: none;
+        /* Asegura que tooltips del sidebar estén visibles y por encima */
+        .sidebar-menu [data-tooltip] {
+            z-index: 100 !important;
         }
 
-        /* Evita corte por contenedores padres */
-        .sidebar-menu,
-        .sidebar-menu ul {
-            overflow: visible !important;
-            position: relative;
-            z-index: 2;
+        /* Si la librería usa divs flotantes (.tooltip, .tip, etc) */
+        .sidebar-menu .tooltip,
+        .sidebar-menu .tip {
+            z-index: 9999 !important;
+            white-space: nowrap !important;
+        }
+
+        .sidebar.collapsed [data-tooltip] {
+            /* Fuerza la posición hacia la derecha */
+            --tooltip-position: right !important;
         }
     </style>
 
