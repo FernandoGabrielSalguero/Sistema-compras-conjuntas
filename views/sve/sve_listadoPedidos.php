@@ -270,16 +270,16 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     }
                     </td>
                     <td>
-                        <button class="btn-icon" onclick="verPedido(${p.id})">
+                        <button class="btn-icon" onclick="verPedido(${p.id})" data-tooltip="Ver detalle">
                             <i class="material-icons" style="color:blue;">description</i>
                         </button>
-                        <button class="btn-icon" onclick="abrirModalEdicion(${p.id})">
+                        <button class="btn-icon" onclick="abrirModalEdicion(${p.id})" data-tooltip="Editar pedido">
                             <i class="material-icons">edit</i>
                         </button>
-                        <button class="btn-icon" onclick="imprimirPedido(${p.id})">
+                        <button class="btn-icon" onclick="imprimirPedido(${p.id})" data-tooltip="Imprimir pedido">
                             <i class="material-icons" style="color:green;">print</i>
                         </button>
-                        <button class="btn-icon" onclick="confirmarEliminacion(${p.id})">
+                        <button class="btn-icon" onclick="confirmarEliminacion(${p.id})" data-tooltip="Eliminar pedido">
                             <i class="material-icons" style="color:red;">delete</i>
                         </button>
                     </td>
