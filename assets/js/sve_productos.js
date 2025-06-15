@@ -58,7 +58,7 @@ async function cargarProductos() {
 function abrirModalEditar(id) {
     console.log("👉 Abrir modal para ID:", id);
 
-    fetch(`/controllers/obtenerProductoController.php?id=${id}`)
+    fetch(`/controllers/sve_productosController.php?id=${id}`)
         .then(async (res) => {
             if (!res.ok) {
                 const errorData = await res.json();
