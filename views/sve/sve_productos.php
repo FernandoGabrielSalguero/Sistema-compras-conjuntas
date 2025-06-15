@@ -419,7 +419,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         function abrirModalEditar(id) {
             console.log("🔍 Abrir modal (función abrirModalEditar) para producto ID:", id);
 
-            fetch(`/controllers/sve_productosController.php?id=${id}`)
+            fetch(`/controllers/sve_productosController.php?accion=obtener&id=${id}`)
                 .then(res => {
                     if (!res.ok) {
                         throw new Error(`❌ Error HTTP: ${res.status}`);
@@ -427,7 +427,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     return res.json();
                 })
                 .then(data => {
-                    // console.log("📦 Datos recibidos del backend:", data);
+                    console.log("📦 Datos recibidos del backend:", data);
 
                     if (!data.success) {
                         throw new Error('⚠️ Backend no devolvió success = true');
