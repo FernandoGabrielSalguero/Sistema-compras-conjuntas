@@ -137,6 +137,33 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     </div>
                 </div>
 
+                <!-- Tarjeta de buscador -->
+                <div class="card">
+                    <h2>Busca usuarios</h2>
+
+                    <form class="form-modern">
+                        <div class="form-grid grid-2">
+                            <!-- Buscar por CUIT -->
+                            <div class="input-group">
+                                <label for="buscarCuit">Podes buscar Cooperativa</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">person</span>
+                                    <input type="text" id="buscarCuit" name="buscarCuit" placeholder="Ej: cooperativa Algarroba">
+                                </div>
+                            </div>
+
+                            <!-- Buscar por Nombre -->
+                            <div class="input-group">
+                                <label for="buscarNombre">Podes buscar por Productor</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">person</span>
+                                    <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
                 <!-- Spinner Global -->
                 <script src="../../views/partials/spinner-global.js"></script>
 
