@@ -51,3 +51,43 @@ if (isset($_GET['listar']) && $_GET['listar'] === 'productos_categorizados') {
     echo json_encode($data);
     exit;
 }
+
+// ✅ Lista todos los operativos activos
+if (isset($_GET['listar']) && $_GET['listar'] === 'operativos') {
+    $stmt = $pdo->query("SELECT id, nombre, fecha_inicio, fecha_cierre FROM operativos WHERE estado = 'abierto' ORDER BY fecha_inicio DESC");
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode($data);
+    exit;
+}
+
+// ✅ Lista productos de un operativo específico
+if (isset($_GET['listar']) && $_GET['listar'] === 'productos_operativo' && isset($_GET['id'])) {
+    $operativoId = (int) $_GET['id'];
+    $stmt = $pdo->prepare("
+        SELECT 
+            p.Id as producto_id,
+            p.Nombre_producto,
+            p.Unidad_Medida_venta,
+            p.Precio_producto,
+            p.alicuota,
+            p.categoria
+        FROM productos p
+        JOIN operativos_productos op ON op.producto_id = p.Id
+        WHERE op.operativo_id = ?
+        ORDER BY p.categoria, p.Nombre_producto
+    ");
+    $stmt->execute([$operativoId]);
+    $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $agrupados = [];
+    foreach ($productos as $p) {
+        $categoria = $p['categoria'];
+        if (!isset($agrupados[$categoria])) {
+            $agrupados[$categoria] = [];
+        }
+        $agrupados[$categoria][] = $p;
+    }
+
+    echo json_encode($agrupados);
+    exit;
+}

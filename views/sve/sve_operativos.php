@@ -115,23 +115,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         #contenedorCategorias {
             margin-top: 15px;
         }
-
-        /* Asegura que tooltips del sidebar estén visibles y por encima */
-        .sidebar-menu [data-tooltip] {
-            z-index: 100 !important;
-        }
-
-        /* Si la librería usa divs flotantes (.tooltip, .tip, etc) */
-        .sidebar-menu .tooltip,
-        .sidebar-menu .tip {
-            z-index: 9999 !important;
-            white-space: nowrap !important;
-        }
-
-        .sidebar.collapsed [data-tooltip] {
-            /* Fuerza la posición hacia la derecha */
-            --tooltip-position: right !important;
-        }
     </style>
 
 </head>
@@ -150,31 +133,31 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
             <nav class="sidebar-menu">
                 <ul>
-                    <li onclick="location.href='sve_dashboard.php'" data-tooltip="Inicio">
+                    <li onclick="location.href='sve_dashboard.php'">
                         <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
                     </li>
-                    <li onclick="location.href='sve_altausuarios.php'" data-tooltip="Alta de nuevos usuarios">
+                    <li onclick="location.href='sve_altausuarios.php'">
                         <span class="material-icons" style="color: #5b21b6;">person</span><span class="link-text">Alta usuarios</span>
                     </li>
-                    <li onclick="location.href='sve_asociarProductores.php'" data-tooltip="Asociar productores con cooperativas">
+                    <li onclick="location.href='sve_asociarProductores.php'">
                         <span class="material-icons" style="color: #5b21b6;">link</span><span class="link-text">Asociaciones</span>
                     </li>
-                    <li onclick="location.href='sve_cargaMasiva.php'" data-tooltip="Importar datos masivamente">
+                    <li onclick="location.href='sve_cargaMasiva.php'">
                         <span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Carga masiva</span>
                     </li>
-                    <li onclick="location.href='sve_operativos.php'" data-tooltip="Administrar operativos">
+                    <li onclick="location.href='sve_operativos.php'">
                         <span class="material-icons" style="color: #5b21b6;">assignment</span><span class="link-text">Operativos</span>
                     </li>
-                    <li onclick="location.href='sve_mercadodigital.php'" data-tooltip="Ver mercado digital">
+                    <li onclick="location.href='sve_mercadodigital.php'">
                         <span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
                     </li>
-                    <li onclick="location.href='sve_listadoPedidos.php'" data-tooltip="Ver todos los pedidos">
+                    <li onclick="location.href='sve_listadoPedidos.php'">
                         <span class="material-icons" style="color: #5b21b6;">assignment_turned_in</span><span class="link-text">Listado Pedidos</span>
                     </li>
-                    <li onclick="location.href='sve_productos.php'" data-tooltip="Gestionar productos">
+                    <li onclick="location.href='sve_productos.php'">
                         <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
                     </li>
-                    <li onclick="location.href='../../../logout.php'" data-tooltip="Salir del sistema">
+                    <li onclick="location.href='../../../logout.php'">
                         <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
                     </li>
                 </ul>

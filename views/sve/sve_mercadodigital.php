@@ -210,6 +210,16 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <form id="formPedido" class="form-modern">
                         <div class="form-grid grid-2">
 
+                            <!-- Operativo -->
+                            <div class="input-group">
+                                <label for="operativo">Operativo vigente</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">event</span>
+                                    <select id="operativo" name="operativo" required>
+                                        <option value="">Seleccioná un operativo...</option>
+                                    </select>
+                                </div>
+                            </div>
                             <!-- Cooperativa -->
                             <div class="input-group">
                                 <label for="buscador_coop">Cooperativa</label>
@@ -287,6 +297,18 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             </div>
                         </div>
 
+                        <!-- Operativo -->
+                        <div class="input-group">
+                            <label for="operativo_id">Operativo</label>
+                            <div class="input-icon">
+                                <span class="material-icons">assignment</span>
+                                <select id="operativo_id" name="operativo_id" required>
+                                    <option value="">Seleccionar operativo...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- productos -->
                         <div class="card card-productos" style="margin-top: 10px;">
                             <h2>Seleccionar productos</h2>
                             <div id="acordeones-productos" class="card-grid grid-3"></div>
@@ -311,6 +333,30 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <script>
                     document.addEventListener('DOMContentLoaded', () => {
                         cargarCooperativas();
+                        cargarOperativos();
+
+                        async function cargarOperativos() {
+                            try {
+                                const res = await fetch('/controllers/sve_MercadoDigitalController.php?listar=operativos');
+                                const data = await res.json();
+                                const selectOperativo = document.getElementById('operativo');
+
+                                data.forEach(op => {
+                                    const option = document.createElement('option');
+                                    option.value = op.id;
+                                    option.textContent = `${op.nombre} (${op.fecha_inicio} al ${op.fecha_cierre})`;
+                                    selectOperativo.appendChild(option);
+                                });
+
+                                selectOperativo.addEventListener('change', () => {
+                                    if (selectOperativo.value) {
+                                        cargarProductosPorOperativo(selectOperativo.value);
+                                    }
+                                });
+                            } catch (err) {
+                                console.error('❌ Error al cargar operativos:', err);
+                            }
+                        }
 
                         const inputCoop = document.getElementById('buscador_coop');
                         const listaCoop = document.getElementById('lista_coop');
@@ -322,6 +368,23 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                         let cooperativas = [];
                         let productores = [];
+
+                        async function cargarOperativos() {
+                            try {
+                                const res = await fetch('/controllers/sve_MercadoDigitalController.php?listar=operativos');
+                                const operativos = await res.json();
+                                const select = document.getElementById('operativo_id');
+
+                                operativos.forEach(op => {
+                                    const option = document.createElement('option');
+                                    option.value = op.id;
+                                    option.textContent = `${op.nombre} (${op.fecha_inicio} → ${op.fecha_cierre})`;
+                                    select.appendChild(option);
+                                });
+                            } catch (err) {
+                                console.error('❌ Error al cargar operativos:', err);
+                            }
+                        }
 
                         async function cargarCooperativas() {
                             try {
@@ -355,9 +418,10 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 const search = input.value.toLowerCase();
                                 lista.innerHTML = '';
                                 const resultados = dataArray.filter(item => {
-                                    return item.nombre.toLowerCase().includes(search) || 
+                                    return item.nombre.toLowerCase().includes(search) ||
                                         item.id_real.toString().includes(search);
-                                });                                if (resultados.length === 0) {
+                                });
+                                if (resultados.length === 0) {
                                     lista.style.display = 'none';
                                     return;
                                 }
@@ -384,14 +448,24 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         }
                     });
 
-                    // acordeones
+                    // Cargar productos por operativo
                     document.addEventListener('DOMContentLoaded', () => {
-                        cargarProductosPorCategoria();
+                        cargarOperativos();
+
+                        const selectorOperativo = document.getElementById('operativo_id');
+                        selectorOperativo.addEventListener('change', () => {
+                            const id = selectorOperativo.value;
+                            if (id) {
+                                cargarProductosPorOperativo(id);
+                            } else {
+                                document.getElementById('acordeones-productos').innerHTML = '<p>Seleccioná un operativo para ver productos.</p>';
+                            }
+                        });
                     });
 
-                    async function cargarProductosPorCategoria() {
+                    async function cargarProductosPorOperativo(operativoId) {
                         try {
-                            const res = await fetch('/controllers/sve_MercadoDigitalController.php?listar=productos_categorizados');
+                            const res = await fetch(`/controllers/sve_MercadoDigitalController.php?listar=productos_operativo&id=${operativoId}`);
                             const data = await res.json();
 
                             const contenedor = document.getElementById('acordeones-productos');
@@ -401,7 +475,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 const productos = data[categoria];
 
                                 const acordeon = document.createElement('div');
-                                acordeon.classList.add('card'); // usa tu estilo de tarjeta
+                                acordeon.classList.add('card');
 
                                 const header = document.createElement('div');
                                 header.classList.add('accordion-header');
@@ -410,17 +484,75 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 const body = document.createElement('div');
                                 body.classList.add('accordion-body');
 
-                                // Mostrar el cuerpo al hacer clic
                                 header.addEventListener('click', () => {
                                     body.classList.toggle('show');
                                 });
 
                                 productos.forEach(prod => {
-                                    // console.log(prod); //mirar los productos que vienen de la bbdd
                                     const grupo = document.createElement('div');
                                     grupo.className = 'input-group';
 
                                     grupo.innerHTML = `
+<label for="prod_${prod.producto_id}">
+    <strong>${prod.Nombre_producto}</strong> 
+    (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
+</label>
+<div class="input-icon">
+    <span class="material-icons">numbers</span>
+    <input 
+        type="number" 
+        name="productos[${prod.producto_id}]" 
+        id="prod_${prod.producto_id}"
+        min="0" 
+        placeholder="Cantidad..." 
+        data-alicuota="${prod.alicuota}"
+    />
+</div>
+`;
+
+                                    body.appendChild(grupo);
+                                });
+
+                                acordeon.appendChild(header);
+                                acordeon.appendChild(body);
+                                contenedor.appendChild(acordeon);
+                            }
+                        } catch (err) {
+                            console.error('❌ Error al cargar productos del operativo:', err);
+                        }
+                    }
+
+                    try {
+                        const res = await fetch('/controllers/sve_MercadoDigitalController.php?listar=productos_categorizados');
+                        const data = await res.json();
+
+                        const contenedor = document.getElementById('acordeones-productos');
+                        contenedor.innerHTML = '';
+
+                        for (const categoria in data) {
+                            const productos = data[categoria];
+
+                            const acordeon = document.createElement('div');
+                            acordeon.classList.add('card'); // usa tu estilo de tarjeta
+
+                            const header = document.createElement('div');
+                            header.classList.add('accordion-header');
+                            header.innerHTML = `<strong>${categoria}</strong>`;
+
+                            const body = document.createElement('div');
+                            body.classList.add('accordion-body');
+
+                            // Mostrar el cuerpo al hacer clic
+                            header.addEventListener('click', () => {
+                                body.classList.toggle('show');
+                            });
+
+                            productos.forEach(prod => {
+                                // console.log(prod); //mirar los productos que vienen de la bbdd
+                                const grupo = document.createElement('div');
+                                grupo.className = 'input-group';
+
+                                grupo.innerHTML = `
     <label for="prod_${prod.producto_id}">
         <strong>${prod.Nombre_producto}</strong> 
         (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
@@ -438,16 +570,15 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
     </div>
 `;
 
-                                    body.appendChild(grupo);
-                                });
+                                body.appendChild(grupo);
+                            });
 
-                                acordeon.appendChild(header);
-                                acordeon.appendChild(body);
-                                contenedor.appendChild(acordeon);
-                            }
-                        } catch (err) {
-                            console.error('❌ Error al cargar productos:', err);
+                            acordeon.appendChild(header);
+                            acordeon.appendChild(body);
+                            contenedor.appendChild(acordeon);
                         }
+                    } catch (err) {
+                        console.error('❌ Error al cargar productos:', err);
                     }
 
                     function actualizarResumen() {
@@ -557,6 +688,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             afiliacion: formData.get('afiliacion'),
                             observaciones: formData.get('observaciones'),
                             productos: productosSeleccionados,
+                            operativo_id: formData.get('operativo'),
                             totales: {
                                 sin_iva: totalSinIVA,
                                 iva: totalIVA,
