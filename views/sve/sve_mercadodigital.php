@@ -208,8 +208,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <div class="card">
                     <h2>Crear nuevo pedido</h2>
                     <form id="formPedido" class="form-modern">
-                        <div class="form-grid grid-2">
-
+                        <div class="form-grid grid-3">
                             <!-- Operativo -->
                             <div class="input-group">
                                 <label for="operativo">Operativo vigente</label>
@@ -220,6 +219,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                     </select>
                                 </div>
                             </div>
+
                             <!-- Cooperativa -->
                             <div class="input-group">
                                 <label for="buscador_coop">Cooperativa</label>
