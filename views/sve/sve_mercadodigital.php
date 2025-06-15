@@ -204,17 +204,17 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <p>En esta página vamos a comprar y administrar las compras de los usuarios</p>
                 </div>
 
-
                 <div class="card">
                     <h2>Crear nuevo pedido</h2>
                     <form id="formPedido" class="form-modern">
                         <div class="form-grid grid-3">
+
                             <!-- Operativo -->
                             <div class="input-group">
-                                <label for="operativo">Operativo vigente</label>
+                                <label for="operativo_id">Operativo vigente</label>
                                 <div class="input-icon">
                                     <span class="material-icons">event</span>
-                                    <select id="operativo" name="operativo" required>
+                                    <select id="operativo_id" name="operativo_id" required>
                                         <option value="">Seleccioná un operativo...</option>
                                     </select>
                                 </div>
@@ -294,17 +294,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                     <span class="material-icons">note</span>
                                     <textarea id="observaciones" name="observaciones" rows="3" placeholder="Notas adicionales..."></textarea>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Operativo -->
-                        <div class="input-group">
-                            <label for="operativo_id">Operativo</label>
-                            <div class="input-icon">
-                                <span class="material-icons">assignment</span>
-                                <select id="operativo_id" name="operativo_id" required>
-                                    <option value="">Seleccionar operativo...</option>
-                                </select>
                             </div>
                         </div>
 
