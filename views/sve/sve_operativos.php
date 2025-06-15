@@ -75,6 +75,46 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             display: block;
             margin: 2px 0;
         }
+
+        #modalProductos .smart-selector {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.05);
+            text-align: left;
+        }
+
+        #modalProductos .smart-selector strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        #modalProductos .smart-selector label {
+            display: block;
+            margin: 5px 0;
+            font-size: 0.95rem;
+            color: #222;
+        }
+
+        #modalProductos input[type="checkbox"] {
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        #modalProductos .modal-content {
+            padding: 20px;
+            max-width: 600px;
+        }
+
+        #contenedorCategorias {
+            margin-top: 15px;
+        }
     </style>
 
 </head>
