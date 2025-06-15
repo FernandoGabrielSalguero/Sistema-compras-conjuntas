@@ -26,7 +26,7 @@ foreach ($productos as $producto) {
     echo '<td style="text-align: center;">';
     
     // Botón Editar
-    echo '<button class="btn-icon" onclick="abrirModalEditar(' . intval($producto['Id']) . ')">';
+    echo '<button class="btn-icon" onclick="abrirModalEditar(' . intval($producto['Id']) . ')" data-tooltip="Editar Producto">';
     echo '<i class="material-icons">edit</i>';
     echo '</button> ';
     

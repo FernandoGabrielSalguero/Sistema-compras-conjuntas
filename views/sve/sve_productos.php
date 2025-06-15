@@ -427,7 +427,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     return res.json();
                 })
                 .then(data => {
-                    console.log("📦 Datos recibidos del backend:", data);
+                    // console.log("📦 Datos recibidos del backend:", data);
 
                     if (!data.success) {
                         throw new Error('⚠️ Backend no devolvió success = true');
