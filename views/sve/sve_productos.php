@@ -419,7 +419,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         function abrirModalEditar(id) {
             console.log("🔍 Abrir modal (función abrirModalEditar) para producto ID:", id);
 
-            fetch(`/controllers/obtenerProductoController.php?id=${id}`)
+            fetch(`/controllers/sve_productosController.php?id=${id}`)
                 .then(res => {
                     if (!res.ok) {
                         throw new Error(`❌ Error HTTP: ${res.status}`);
