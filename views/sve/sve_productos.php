@@ -224,19 +224,19 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <div class="form-grid grid-2">
                         <!-- Nombre -->
                         <div class="input-group">
-                            <label for="Nombre_producto">Nombre</label>
+                            <label for="filtro_nombre">Nombre</label>
                             <div class="input-icon">
                                 <span class="material-icons">label</span>
-                                <input type="text" id="Nombre_producto" name="Nombre_producto" placeholder="Nombre producto" required>
+                                <input type="text" id="filtro_nombre" placeholder="Ej: PUFFER LB... ">
                             </div>
                         </div>
 
                         <!-- Categoria -->
                         <div class="input-group">
-                            <label for="Nombre_producto">Nombre</label>
+                            <label for="filtro_categoria">Categoria</label>
                             <div class="input-icon">
                                 <span class="material-icons">category</span>
-                                <input type="text" id="Nombre_producto" name="Nombre_producto" placeholder="Nombre producto" required>
+                                <input type="text" id="filtro_categoria" placeholder="Difusor Feromona">
                             </div>
                         </div>
                     </div>
@@ -386,6 +386,35 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         document.addEventListener('DOMContentLoaded', cargarProductos);
+
+        // Filtrar productos por nombre o categoría
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputNombre = document.getElementById('filtro_nombre');
+            const inputCategoria = document.getElementById('filtro_categoria');
+
+            function filtrarTabla() {
+                const nombreValor = inputNombre.value.toLowerCase();
+                const categoriaValor = inputCategoria.value.toLowerCase();
+                const filas = document.querySelectorAll('#tablaProductos tr');
+
+                filas.forEach(fila => {
+                    const nombre = fila.children[1]?.textContent.toLowerCase() || '';
+                    const categoria = fila.children[5]?.textContent.toLowerCase() || '';
+
+                    const coincideNombre = nombre.includes(nombreValor);
+                    const coincideCategoria = categoria.includes(categoriaValor);
+
+                    if (coincideNombre && coincideCategoria) {
+                        fila.style.display = '';
+                    } else {
+                        fila.style.display = 'none';
+                    }
+                });
+            }
+
+            inputNombre.addEventListener('input', filtrarTabla);
+            inputCategoria.addEventListener('input', filtrarTabla);
+        });
 
         function abrirModalEditar(id) {
             console.log("🔍 Abrir modal (función abrirModalEditar) para producto ID:", id);
