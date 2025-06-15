@@ -133,7 +133,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
             <nav class="sidebar-menu">
                 <ul>
-                    <li onclick="location.href='sve_dashboard.php'">
+                    <li onclick="location.href='sve_dashboard.php'" data-tooltip="Ir al inicio">
                         <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
                     </li>
                     <li onclick="location.href='sve_altausuarios.php'">
@@ -154,8 +154,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <li onclick="location.href='sve_listadoPedidos.php'">
                         <span class="material-icons" style="color: #5b21b6;">assignment_turned_in</span><span class="link-text">Listado Pedidos</span>
                     </li>
-                    <li onclick="location.href='sve_productos.php'" data-tooltip="Editar operativo">
-                        <span class="material-icons" style="color: #5b21b6;" data-tooltip="Editar operativo2">inventory</span><span class="link-text">Productos</span>
+                    <li onclick="location.href='sve_productos.php'">
+                        <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
                     </li>
                     <li onclick="location.href='../../../logout.php'">
                         <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
