@@ -333,8 +333,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <button class="btn-icon" onclick="editarOperativo(${op.id})">
                 <i class="material-icons">edit</i>
                 </button>
-                <button class="btn-icon" onclick="mostrarCooperativas(${op.id})">
-                <i class="material-icons" style="color:green;">description</i>
+                <button class="btn-icon" onclick="mostrarCooperativas(${op.id})" data-tooltip="Botón para guardar">
+                <i class="material-icons" style="color:green;">supervisor_account</i>
                 </button>
                 <button class="btn-icon" onclick="eliminarOperativo(${op.id})">
                 <i class="material-icons" style="color:red;">delete</i>
