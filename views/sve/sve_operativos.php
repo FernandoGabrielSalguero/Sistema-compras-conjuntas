@@ -377,7 +377,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             </section>
         </div>
     </div>
-    </div>
 
     <script>
         console.log('✅ sve_operativo.js cargado correctamente');
