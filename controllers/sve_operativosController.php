@@ -27,8 +27,29 @@ if ($method === 'POST' && ($_POST['_method'] ?? '') === 'delete') {
     exit;
 }
 
-// ✅ LUEGO: Crear o actualizar
 if ($method === 'POST') {
+
+    // ✅ 1. Primero: guardar productos para operativo (tiene prioridad)
+    if (isset($_POST['productos']) && isset($_POST['operativo_id'])) {
+        $id = $_POST['operativo_id'];
+        $productos = $_POST['productos'];
+
+        try {
+            $pdo->prepare("DELETE FROM operativos_productos WHERE operativo_id = ?")->execute([$id]);
+
+            $insert = $pdo->prepare("INSERT INTO operativos_productos (operativo_id, producto_id) VALUES (?, ?)");
+            foreach ($productos as $prod_id) {
+                $insert->execute([$id, $prod_id]);
+            }
+
+            echo json_encode(['success' => true, 'message' => 'Productos guardados correctamente.']);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error al guardar productos: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+
+    // ✅ 2. Después: crear o editar operativo
     $id = $_POST['id'] ?? null;
     $nombre = $_POST['nombre'] ?? '';
     $fecha_inicio = $_POST['fecha_inicio'] ?? '';
@@ -55,25 +76,6 @@ if ($method === 'POST') {
     exit;
 }
 
-// Guardar productos seleccionados para operativo
-if (isset($_POST['productos']) && isset($_POST['operativo_id'])) {
-    $id = $_POST['operativo_id'];
-    $productos = $_POST['productos'];
-
-    try {
-        $pdo->prepare("DELETE FROM operativos_productos WHERE operativo_id = ?")->execute([$id]);
-
-        $insert = $pdo->prepare("INSERT INTO operativos_productos (operativo_id, producto_id) VALUES (?, ?)");
-        foreach ($productos as $prod_id) {
-            $insert->execute([$id, $prod_id]);
-        }
-
-        echo json_encode(['success' => true, 'message' => 'Productos guardados correctamente.']);
-    } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => 'Error al guardar productos: ' . $e->getMessage()]);
-    }
-    exit;
-}
 
 // Obtener cooperativas participantes de un operativo
 if (isset($_GET['cooperativas']) && isset($_GET['id'])) {
