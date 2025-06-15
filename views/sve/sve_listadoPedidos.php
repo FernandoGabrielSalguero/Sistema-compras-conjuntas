@@ -261,10 +261,10 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <td><strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></td>
                     <td>
                     ${p.factura 
-                        ? `<button class="btn-icon" onclick="verFactura('${p.factura}')">
+                        ? `<button class="btn-icon" onclick="verFactura('${p.factura}')" data-tooltip="Ver factura">
                         <i class="material-icons" style="color:green;">visibility</i>
                         </button>`
-                        : `<button class="btn-icon" onclick="cargarFactura(${p.id})">
+                        : `<button class="btn-icon" onclick="cargarFactura(${p.id})" data-tooltip="Subir factura">
                         <i class="material-icons" style="color:orange;">upload_file</i>
                         </button>`
                     }
