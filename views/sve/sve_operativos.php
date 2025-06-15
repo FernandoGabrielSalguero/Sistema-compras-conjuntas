@@ -115,36 +115,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         #contenedorCategorias {
             margin-top: 15px;
         }
-
-        /* estilos tooltip */
-        .sidebar-item {
-            position: relative;
-        }
-
-        /* Tooltip visual personalizado */
-        .sidebar-item::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            left: 100%;
-            top: 50%;
-            transform: translateY(-50%);
-            margin-left: 12px;
-            background: #333;
-            color: white;
-            font-size: 12px;
-            white-space: nowrap;
-            padding: 4px 8px;
-            border-radius: 4px;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-            z-index: 999;
-        }
-
-        /* Solo mostrar tooltip cuando sidebar está colapsado */
-        .sidebar.collapsed .sidebar-item:hover::after {
-            opacity: 1;
-        }
     </style>
 
 </head>
@@ -163,52 +133,34 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
             <nav class="sidebar-menu">
                 <ul>
-                    <li class="sidebar-item" onclick="location.href='sve_dashboard.php'" data-tooltip="Inicio">
-                        <span class="material-icons" style="color: #5b21b6;">home</span>
-                        <span class="link-text">Inicio</span>
+                    <li onclick="location.href='sve_dashboard.php'" data-tooltip="Inicio">
+                        <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
                     </li>
-
-                    <li class="sidebar-item" onclick="location.href='sve_altausuarios.php'" data-tooltip="Alta de nuevos usuarios">
-                        <span class="material-icons" style="color: #5b21b6;">person</span>
-                        <span class="link-text">Alta usuarios</span>
+                    <li onclick="location.href='sve_altausuarios.php'" data-tooltip="Alta de nuevos usuarios">
+                        <span class="material-icons" style="color: #5b21b6;">person</span><span class="link-text">Alta usuarios</span>
                     </li>
-
-                    <li class="sidebar-item" onclick="location.href='sve_asociarProductores.php'" data-tooltip="Asociar productores con cooperativas">
-                        <span class="material-icons" style="color: #5b21b6;">link</span>
-                        <span class="link-text">Asociaciones</span>
+                    <li onclick="location.href='sve_asociarProductores.php'" data-tooltip="Asociar productores con cooperativas">
+                        <span class="material-icons" style="color: #5b21b6;">link</span><span class="link-text">Asociaciones</span>
                     </li>
-
-                    <li class="sidebar-item" onclick="location.href='sve_cargaMasiva.php'" data-tooltip="Importar datos masivamente">
-                        <span class="material-icons" style="color: #5b21b6;">upload_file</span>
-                        <span class="link-text">Carga masiva</span>
+                    <li onclick="location.href='sve_cargaMasiva.php'" data-tooltip="Importar datos masivamente">
+                        <span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Carga masiva</span>
                     </li>
-
-                    <li class="sidebar-item" onclick="location.href='sve_operativos.php'" data-tooltip="Administrar operativos">
-                        <span class="material-icons" style="color: #5b21b6;">assignment</span>
-                        <span class="link-text">Operativos</span>
+                    <li onclick="location.href='sve_operativos.php'" data-tooltip="Administrar operativos">
+                        <span class="material-icons" style="color: #5b21b6;">assignment</span><span class="link-text">Operativos</span>
                     </li>
-
-                    <li class="sidebar-item" onclick="location.href='sve_mercadodigital.php'" data-tooltip="Ver mercado digital">
-                        <span class="material-icons" style="color: #5b21b6;">shopping_cart</span>
-                        <span class="link-text">Mercado Digital</span>
+                    <li onclick="location.href='sve_mercadodigital.php'" data-tooltip="Ver mercado digital">
+                        <span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
                     </li>
-
-                    <li class="sidebar-item" onclick="location.href='sve_listadoPedidos.php'" data-tooltip="Ver todos los pedidos">
-                        <span class="material-icons" style="color: #5b21b6;">assignment_turned_in</span>
-                        <span class="link-text">Listado Pedidos</span>
+                    <li onclick="location.href='sve_listadoPedidos.php'" data-tooltip="Ver todos los pedidos">
+                        <span class="material-icons" style="color: #5b21b6;">assignment_turned_in</span><span class="link-text">Listado Pedidos</span>
                     </li>
-
-                    <li class="sidebar-item" onclick="location.href='sve_productos.php'" data-tooltip="Gestionar productos">
-                        <span class="material-icons" style="color: #5b21b6;">inventory</span>
-                        <span class="link-text">Productos</span>
+                    <li onclick="location.href='sve_productos.php'" data-tooltip="Gestionar productos">
+                        <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
                     </li>
-
-                    <li class="sidebar-item" onclick="location.href='../../../logout.php'" data-tooltip="Salir del sistema">
-                        <span class="material-icons" style="color: red;">logout</span>
-                        <span class="link-text">Salir</span>
+                    <li onclick="location.href='../../../logout.php'" data-tooltip="Salir del sistema">
+                        <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
                     </li>
                 </ul>
-
             </nav>
 
             <div class="sidebar-footer">
