@@ -315,6 +315,23 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     </div>
                 </div>
 
+                <!-- Modal productos -->
+                <div id="modalProductos" class="modal hidden">
+                    <div class="modal-content" style="max-height: 80vh; overflow-y:auto;">
+                        <h3>Productos del operativo</h3>
+                        <form id="formProductos">
+                            <input type="hidden" id="producto_operativo_id" name="operativo_id" />
+
+                            <div id="contenedorCategorias"></div>
+
+                            <div class="form-buttons" style="margin-top: 20px;">
+                                <button type="submit" class="btn btn-aceptar">Guardar productos</button>
+                                <button type="button" class="btn btn-cancelar" onclick="closeModalProductos()">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- Alert -->
                 <div class="alert-container" id="alertContainer"></div>
             </section>
@@ -563,6 +580,80 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         function closeModalCooperativas() {
             document.getElementById('modalCooperativas').classList.add('hidden');
         }
+
+        // funcion modal para editar productos
+        async function editarProductos(operativoId) {
+            document.getElementById('producto_operativo_id').value = operativoId;
+            const contenedor = document.getElementById('contenedorCategorias');
+            contenedor.innerHTML = 'Cargando...';
+
+            try {
+                const res = await fetch(`/controllers/sve_operativosController.php?productos=1&id=${operativoId}`);
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.message);
+
+                contenedor.innerHTML = '';
+
+                const seleccionados = new Set(data.seleccionados.map(p => p.id));
+
+                data.categorias.forEach(categoria => {
+                    const div = document.createElement('div');
+                    div.classList.add('smart-selector');
+                    div.innerHTML = `<strong>${categoria.categoria}</strong><hr/>`;
+
+                    categoria.productos.forEach(prod => {
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.name = 'productos[]';
+                        checkbox.value = prod.Id;
+                        if (seleccionados.has(prod.Id)) checkbox.checked = true;
+
+                        const label = document.createElement('label');
+                        label.appendChild(checkbox);
+                        label.appendChild(document.createTextNode(` ${prod.Nombre_producto}`));
+
+                        div.appendChild(label);
+                    });
+
+                    contenedor.appendChild(div);
+                });
+
+                openModalProductos();
+            } catch (err) {
+                contenedor.innerHTML = `<p style="color:red;">${err.message}</p>`;
+            }
+        }
+
+        function openModalProductos() {
+            document.getElementById('modalProductos').classList.remove('hidden');
+        }
+
+        function closeModalProductos() {
+            document.getElementById('modalProductos').classList.add('hidden');
+        }
+
+        document.getElementById('formProductos').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            try {
+                const res = await fetch('/controllers/sve_operativosController.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    closeModalProductos();
+                    showAlert('success', result.message);
+                } else {
+                    showAlert('error', result.message || 'No se pudo guardar');
+                }
+            } catch (err) {
+                showAlert('error', 'Error al guardar productos');
+            }
+        });
     </script>
 
 

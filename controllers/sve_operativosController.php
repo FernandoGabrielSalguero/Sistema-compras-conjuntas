@@ -55,6 +55,26 @@ if ($method === 'POST') {
     exit;
 }
 
+// Guardar productos seleccionados para operativo
+if (isset($_POST['productos']) && isset($_POST['operativo_id'])) {
+    $id = $_POST['operativo_id'];
+    $productos = $_POST['productos'];
+
+    try {
+        $pdo->prepare("DELETE FROM operativos_productos WHERE operativo_id = ?")->execute([$id]);
+
+        $insert = $pdo->prepare("INSERT INTO operativos_productos (operativo_id, producto_id) VALUES (?, ?)");
+        foreach ($productos as $prod_id) {
+            $insert->execute([$id, $prod_id]);
+        }
+
+        echo json_encode(['success' => true, 'message' => 'Productos guardados correctamente.']);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error al guardar productos: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
 // Obtener cooperativas participantes de un operativo
 if (isset($_GET['cooperativas']) && isset($_GET['id'])) {
     $id = $_GET['id'];
@@ -63,6 +83,33 @@ if (isset($_GET['cooperativas']) && isset($_GET['id'])) {
         echo json_encode(['success' => true, 'cooperativas' => $coops]);
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'message' => 'Error al obtener cooperativas: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
+// Obtener productos del operativo por categoría
+if (isset($_GET['productos']) && isset($_GET['id'])) {
+    $id = $_GET['id'];
+    try {
+        $seleccionados = $pdo->prepare("SELECT producto_id as id FROM operativos_productos WHERE operativo_id = ?");
+        $seleccionados->execute([$id]);
+        $seleccionados = $seleccionados->fetchAll(PDO::FETCH_ASSOC);
+
+        $productos = $pdo->query("SELECT * FROM productos")->fetchAll(PDO::FETCH_ASSOC);
+        $agrupados = [];
+
+        foreach ($productos as $p) {
+            $agrupados[$p['categoria']][] = $p;
+        }
+
+        $res = [];
+        foreach ($agrupados as $cat => $items) {
+            $res[] = ['categoria' => $cat, 'productos' => $items];
+        }
+
+        echo json_encode(['success' => true, 'categorias' => $res, 'seleccionados' => $seleccionados]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error al cargar productos: ' . $e->getMessage()]);
     }
     exit;
 }
