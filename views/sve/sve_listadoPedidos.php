@@ -199,7 +199,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <script src="../../views/partials/spinner-global.js"></script>
 
             </section>
-
         </div>
     </div>
 
