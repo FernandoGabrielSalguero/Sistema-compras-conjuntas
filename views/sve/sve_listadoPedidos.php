@@ -256,9 +256,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <td>${p.nombre_cooperativa || '-'}</td>
                     <td>${p.nombre_productor || '-'}</td>
                     <td>${p.fecha_pedido}</td>
-                    <td>${p.persona_facturacion}</td>
-                    <td>${p.condicion_facturacion}</td>
-                    <td>${p.afiliacion}</td>
                     <td>$${parseFloat(p.total_sin_iva).toFixed(2)}</td>
                     <td>$${parseFloat(p.total_iva).toFixed(2)}</td>
                     <td><strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></td>
