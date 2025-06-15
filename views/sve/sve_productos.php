@@ -218,6 +218,29 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </form>
                 </div>
 
+                <!-- Tarjeta buscadora -->
+                <div class="card">
+                    <h2>Busca el producto</h2>
+                    <div class="form-grid grid-2">
+                        <!-- Nombre -->
+                        <div class="input-group">
+                            <label for="Nombre_producto">Nombre</label>
+                            <div class="input-icon">
+                                <span class="material-icons">label</span>
+                                <input type="text" id="Nombre_producto" name="Nombre_producto" placeholder="Nombre producto" required>
+                            </div>
+                        </div>
+
+                        <!-- Categoria -->
+                        <div class="input-group">
+                            <label for="Nombre_producto">Nombre</label>
+                            <div class="input-icon">
+                                <span class="material-icons">category</span>
+                                <input type="text" id="Nombre_producto" name="Nombre_producto" placeholder="Nombre producto" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Tabla -->
                 <div class="card">
