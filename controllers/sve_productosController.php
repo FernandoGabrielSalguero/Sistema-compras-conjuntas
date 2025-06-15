@@ -27,11 +27,11 @@ foreach ($productos as $producto) {
     
     // Botón Editar
     echo '<button class="btn-icon" onclick="abrirModalEditar(' . intval($producto['Id']) . ')" data-tooltip="Editar Producto">';
-    echo '<i class="material-icons" style="color:orange;">edit</i>';
+    echo '<i class="material-icons">edit</i>';
     echo '</button> ';
     
     // Botón Eliminar
-    echo '<button class="btn-icon" onclick="confirmarEliminacion(' . intval($producto['Id']) . ')" data-tooltip="Eliminar Producto">>';
+    echo '<button class="btn-icon" onclick="confirmarEliminacion(' . intval($producto['Id']) . ')" data-tooltip="Eliminar Producto">';
     echo '<i class="material-icons" style="color:red;">delete</i>';
     echo '</button>';
 
