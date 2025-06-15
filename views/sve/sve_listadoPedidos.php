@@ -164,6 +164,34 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     </form>
                 </div>
 
+                <!-- Tabla -->
+                <div class="card">
+                    <h2>Listado de pedidos realizados</h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cooperativa</th>
+                                    <th>Productor</th>
+                                    <th>Fecha de creación</th>
+                                    <th>A nombre de:</th>
+                                    <th>Condicion</th>
+                                    <th>Afiliación</th>
+                                    <th>Total sin IVA</th>
+                                    <th>IVA</th>
+                                    <th>Total pedido</th>
+                                    <th>Factura</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaPedidos">
+                                <!-- Contenido dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- Spinner Global -->
                 <script src="../../views/partials/spinner-global.js"></script>
 
