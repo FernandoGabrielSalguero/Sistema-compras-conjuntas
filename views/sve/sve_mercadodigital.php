@@ -594,7 +594,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             afiliacion: formData.get('afiliacion'),
                             observaciones: formData.get('observaciones'),
                             productos: productosSeleccionados,
-                            operativo_id: formData.get('operativo'),
+                            operativo_id: formData.get('operativo_id'),
                             totales: {
                                 sin_iva: totalSinIVA,
                                 iva: totalIVA,
