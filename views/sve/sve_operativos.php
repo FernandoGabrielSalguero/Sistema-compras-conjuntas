@@ -375,8 +375,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <!-- Alert -->
                 <div class="alert-container" id="alertContainer"></div>
             </section>
-
         </div>
+    </div>
     </div>
 
     <script>
