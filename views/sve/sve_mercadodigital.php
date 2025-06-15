@@ -511,65 +511,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         }
                     }
 
-                    try {
-                        const res = await fetch('/controllers/sve_MercadoDigitalController.php?listar=productos_categorizados');
-                        const data = await res.json();
-
-                        const contenedor = document.getElementById('acordeones-productos');
-                        contenedor.innerHTML = '';
-
-                        for (const categoria in data) {
-                            const productos = data[categoria];
-
-                            const acordeon = document.createElement('div');
-                            acordeon.classList.add('card'); // usa tu estilo de tarjeta
-
-                            const header = document.createElement('div');
-                            header.classList.add('accordion-header');
-                            header.innerHTML = `<strong>${categoria}</strong>`;
-
-                            const body = document.createElement('div');
-                            body.classList.add('accordion-body');
-
-                            // Mostrar el cuerpo al hacer clic
-                            header.addEventListener('click', () => {
-                                body.classList.toggle('show');
-                            });
-
-                            productos.forEach(prod => {
-                                // console.log(prod); //mirar los productos que vienen de la bbdd
-                                const grupo = document.createElement('div');
-                                grupo.className = 'input-group';
-
-                                grupo.innerHTML = `
-    <label for="prod_${prod.producto_id}">
-        <strong>${prod.Nombre_producto}</strong> 
-        (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
-    </label>
-    <div class="input-icon">
-        <span class="material-icons">numbers</span>
-        <input 
-    type="number" 
-    name="productos[${prod.producto_id}]" 
-    id="prod_${prod.producto_id}"
-    min="0" 
-    placeholder="Cantidad..." 
-    data-alicuota="${prod.alicuota}"
-        />
-    </div>
-`;
-
-                                body.appendChild(grupo);
-                            });
-
-                            acordeon.appendChild(header);
-                            acordeon.appendChild(body);
-                            contenedor.appendChild(acordeon);
-                        }
-                    } catch (err) {
-                        console.error('❌ Error al cargar productos:', err);
-                    }
-
                     function actualizarResumen() {
                         const inputs = document.querySelectorAll('#acordeones-productos input[type="number"]');
                         const resumen = document.getElementById('contenidoResumen');
