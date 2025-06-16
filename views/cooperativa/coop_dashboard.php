@@ -117,19 +117,24 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 </div>
 
                 <!-- contenedor de operativos -->
-                <div class="card-grid grid-4" id="contenedorOperativos">
+                <div class="card">
+                    <h2>Operativos disponibles</h2>
+                    <p>Seleccioná en qué operativos querés participar para habilitar la compra a tus productores.</p>
+
+                    <div class="card-grid grid-4" id="contenedorOperativos"></div>
                 </div>
-
-
-                <!-- contenedor del toastify -->
-                <div id="toast-container"></div>
-                <div id="toast-container-boton"></div>
-                <!-- Spinner Global -->
-                <script src="../../views/partials/spinner-global.js"></script>
-
-            </section>
-
         </div>
+
+
+        <!-- contenedor del toastify -->
+        <div id="toast-container"></div>
+        <div id="toast-container-boton"></div>
+        <!-- Spinner Global -->
+        <script src="../../views/partials/spinner-global.js"></script>
+
+        </section>
+
+    </div>
     </div>
 
     <script>
@@ -170,7 +175,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                     const switchId = `switch_${op.id}`;
 
-card.innerHTML = `
+                    card.innerHTML = `
     <h3 class="user-name">${op.nombre}</h3>
 
     <div class="user-info">
