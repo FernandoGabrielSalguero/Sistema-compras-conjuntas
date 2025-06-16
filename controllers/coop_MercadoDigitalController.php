@@ -57,3 +57,10 @@ if (isset($_GET['listar']) && $_GET['listar'] === 'operativos_abiertos' && isset
     echo json_encode($data);
     exit;
 }
+
+if (isset($_GET['listar']) && $_GET['listar'] === 'productos_por_operativo' && isset($_GET['operativo_id'])) {
+    $operativoId = (int)$_GET['operativo_id'];
+    $data = $model->obtenerProductosPorOperativo($operativoId);
+    echo json_encode($data);
+    exit;
+}

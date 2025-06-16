@@ -219,4 +219,34 @@ $sql = "
         $stmt->execute([$coopId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    // obtener productos por operativo
+    public function obtenerProductosPorOperativo($operativoId)
+{
+    $stmt = $this->pdo->prepare("
+        SELECT 
+            p.categoria, 
+            p.Id as producto_id,
+            p.Nombre_producto,
+            p.Unidad_Medida_venta,
+            p.Precio_producto,
+            p.alicuota
+        FROM productos p
+        INNER JOIN operativos_productos op ON op.producto_id = p.Id
+        WHERE op.operativo_id = ?
+        ORDER BY p.categoria, p.Nombre_producto
+    ");
+    $stmt->execute([$operativoId]);
+    
+    $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $agrupados = [];
+    foreach ($productos as $p) {
+        $categoria = $p['categoria'];
+        if (!isset($agrupados[$categoria])) {
+            $agrupados[$categoria] = [];
+        }
+        $agrupados[$categoria][] = $p;
+    }
+    return $agrupados;
+}
 }

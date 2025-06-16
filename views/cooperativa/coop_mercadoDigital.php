@@ -166,7 +166,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         <span class="material-icons" style="color: #5b21b6;">receipt_long</span><span class="link-text">Listado Pedidos</span>
                     </li>
                     <li onclick="location.href='coop_usuarioInformación.php'">
-                        <ure class="material-icons" style="color: #5b21b6;">agriculture</ure><span class="link-text">Productores</span>
+                        <span class="material-icons" style="color: #5b21b6;">agriculture</span><span class="link-text">Productores</span>
                     </li>
                     <li onclick="location.href='coop_productores.php'">
                         <span class="material-icons" style="color: #5b21b6;">link</span><span class="link-text">Asociar Prod</span>
@@ -408,11 +408,19 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
                     // acordeones
                     document.addEventListener('DOMContentLoaded', () => {
-                        cargarProductosPorCategoria();
                         cargarOperativos();
 
+                        document.getElementById('operativo').addEventListener('change', () => {
+                            const operativoId = document.getElementById('operativo').value;
+                            if (operativoId) {
+                                cargarProductosPorOperativo(operativoId);
+                            } else {
+                                document.getElementById('acordeones-productos').innerHTML = '<p style="padding:10px;">Seleccioná un operativo para ver los productos disponibles.</p>';
+                            }
+                        });
                     });
 
+                    // Cargamos los opeartivos
                     async function cargarOperativos() {
                         const coopId = "<?php echo $id_cooperativa_real; ?>";
                         try {
@@ -431,6 +439,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     }
 
 
+                    // Cargamos los productos por categoria
                     async function cargarProductosPorCategoria() {
                         try {
                             const res = await fetch('/controllers/coop_MercadoDigitalController.php?listar=productos_categorizados');
@@ -464,17 +473,17 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
                                     grupo.innerHTML = `
     <label for="prod_${prod.producto_id}">
-        <strong>${prod.Nombre_producto}</strong> 
+        <strong>${prod.Nombre_producto}</strong>
         (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
     </label>
     <div class="input-icon">
         <span class="material-icons">numbers</span>
-        <input 
-    type="number" 
-    name="productos[${prod.producto_id}]" 
+        <input
+    type="number"
+    name="productos[${prod.producto_id}]"
     id="prod_${prod.producto_id}"
-    min="0" 
-    placeholder="Cantidad..." 
+    min="0"
+    placeholder="Cantidad..."
     data-alicuota="${prod.alicuota}"
         />
     </div>
@@ -631,6 +640,64 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             showAlert('error', '❌ Error inesperado en la respuesta del servidor.');
                         }
                     });
+
+                    // cargamos los productos por operativo
+                    async function cargarProductosPorOperativo(operativoId) {
+                        try {
+                            const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=productos_por_operativo&operativo_id=${operativoId}`);
+                            const data = await res.json();
+
+                            const contenedor = document.getElementById('acordeones-productos');
+                            contenedor.innerHTML = '';
+
+                            for (const categoria in data) {
+                                const productos = data[categoria];
+
+                                const acordeon = document.createElement('div');
+                                acordeon.classList.add('card');
+
+                                const header = document.createElement('div');
+                                header.classList.add('accordion-header');
+                                header.innerHTML = `<strong>${categoria}</strong>`;
+
+                                const body = document.createElement('div');
+                                body.classList.add('accordion-body');
+
+                                header.addEventListener('click', () => {
+                                    body.classList.toggle('show');
+                                });
+
+                                productos.forEach(prod => {
+                                    const grupo = document.createElement('div');
+                                    grupo.className = 'input-group';
+
+                                    grupo.innerHTML = `
+                    <label for="prod_${prod.producto_id}">
+                        <strong>${prod.Nombre_producto}</strong> 
+                        (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
+                    </label>
+                    <div class="input-icon">
+                        <span class="material-icons">numbers</span>
+                        <input 
+                            type="number" 
+                            name="productos[${prod.producto_id}]" 
+                            id="prod_${prod.producto_id}"
+                            min="0" 
+                            placeholder="Cantidad..." 
+                            data-alicuota="${prod.alicuota}" />
+                    </div>
+                `;
+                                    body.appendChild(grupo);
+                                });
+
+                                acordeon.appendChild(header);
+                                acordeon.appendChild(body);
+                                contenedor.appendChild(acordeon);
+                            }
+                        } catch (err) {
+                            console.error('❌ Error al cargar productos del operativo:', err);
+                        }
+                    }
                 </script>
 
                 <!-- Alert -->
