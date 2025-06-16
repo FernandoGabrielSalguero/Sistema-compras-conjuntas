@@ -121,7 +121,14 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             <section class="content">
 
                 <div class="card">
-                    <iframe title="Cooperativa de Servicios Vitícolas y Enológicos" width="600" height="373.5" src="https://app.powerbi.com/view?r=eyJrIjoiODFkOTdlMDEtMDk4Yi00ZGIwLWEzZGYtZDgwODRkMTE3ZTExIiwidCI6ImU0ODIxNjE4LTk3Y2ItNDA4YS05YzkwLWM4MWZlMmM1YjExMiIsImMiOjR9" frameborder="0" allowFullScreen="true"></iframe>
+                    <div style="position: relative; width: 100%; padding-top: 56.25%;">
+                        <iframe title="Cooperativa de Servicios Vitícolas y Enológicos"
+                            src="https://app.powerbi.com/view?r=eyJrIjoiODFkOTdlMDEtMDk4Yi00ZGIwLWEzZGYtZDgwODRkMTE3ZTExIiwidCI6ImU0ODIxNjE4LTk3Y2ItNDA4YS05YzkwLWM4MWZlMmM1YjExMiIsImMiOjR9"
+                            frameborder="0"
+                            allowfullscreen="true"
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                        </iframe>
+                    </div>
                 </div>
 
                 <!-- contenedor del toastify -->
