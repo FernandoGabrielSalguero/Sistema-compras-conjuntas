@@ -380,7 +380,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 console.error('Error cargando productos:', err);
             }
         }
-
         document.addEventListener('DOMContentLoaded', cargarProductos);
 
         // Filtrar productos por nombre o categoría
@@ -412,6 +411,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             inputCategoria.addEventListener('input', filtrarTabla);
         });
 
+        // Abrir modal para editar
         function openModalEditar(id) {
             console.log("🔍 Abrir modal (openModalEditar) para producto ID:", id);
 
@@ -453,7 +453,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     openModalEditar();
                 })
                 .catch((err) => {
-                    console.error('⛔ Error en abrirModalEditar:', err);
+                    console.error('⛔ Error en openModalEditar:', err);
                     showAlert('error', 'Error al cargar datos del producto.');
                 });
         }
@@ -487,32 +487,78 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         });
 
-        // ➕ Crear nuevo producto
-    document.getElementById('formProducto').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        formData.append('accion', 'crear');
+        // Crear nuevo producto
+        document.getElementById('formProducto').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('accion', 'crear');
 
-        try {
-            const res = await fetch('/controllers/sve_productosController.php', {
-                method: 'POST',
-                body: formData
-            });
+            try {
+                const res = await fetch('/controllers/sve_productosController.php', {
+                    method: 'POST',
+                    body: formData
+                });
 
-            const data = await res.json();
+                const data = await res.json();
 
-            if (data.success) {
-                showAlert('success', data.message);
-                this.reset();
-                cargarProductos();
-            } else {
-                showAlert('error', data.message);
+                if (data.success) {
+                    showAlert('success', data.message);
+                    this.reset();
+                    cargarProductos();
+                } else {
+                    showAlert('error', data.message);
+                }
+            } catch (err) {
+                console.error(err);
+                showAlert('error', 'Error inesperado al enviar el formulario.');
             }
-        } catch (err) {
-            console.error(err);
-            showAlert('error', 'Error inesperado al enviar el formulario.');
+        });
+
+        // Eliminar producto
+        let productoAEliminar = null;
+
+        function confirmarEliminacion(id) {
+            productoAEliminar = id;
+            const modal = document.getElementById('modalConfirmacion');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
         }
-    });
+
+        function closeModalConfirmacion() {
+            const modal = document.getElementById('modalConfirmacion');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('btnConfirmarEliminar').addEventListener('click', async () => {
+            if (!productoAEliminar) return;
+
+            try {
+                const res = await fetch('/controllers/sve_productosController.php?accion=eliminar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `id=${productoAEliminar}`
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    showAlert('success', result.message);
+                    cargarProductos();
+                } else {
+                    showAlert('error', result.message);
+                }
+            } catch (error) {
+                console.error('❌ Error eliminando producto:', error);
+                showAlert('error', 'Error inesperado al eliminar el producto.');
+            } finally {
+                closeModalConfirmacion();
+            }
+        });
     </script>
 
     <div id="modalConfirmacion" class="modal hidden">
