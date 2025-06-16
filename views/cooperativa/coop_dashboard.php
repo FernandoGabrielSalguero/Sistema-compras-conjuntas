@@ -113,11 +113,12 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <!-- Bienvenida -->
                 <div class="card">
                     <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
-                    <p>En esta página, vas a conocer cuantos pedidos realizaron tus asociados, quien falta pedir y mucha información más. </p>
+                    <p>En esta página, vas a poder seleccionar en que oerativos participar. Esto es importante porque te va a permitir realizar compras a tus productores.</p>
                 </div>
 
                 <!-- contenedor de operativos -->
-                <div class="card-grid grid-4" id="contenedorOperativos"></div>
+                <div class="card-grid grid-4" id="contenedorOperativos">
+                </div>
 
 
                 <!-- contenedor del toastify -->
@@ -170,15 +171,20 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     const switchId = `switch_${op.id}`;
 
                     card.innerHTML = `
-                        <h3>${op.nombre}</h3>
-                    <p><strong>Inicio:</strong> ${formatearFechaArg(op.fecha_inicio)}</p>
-                    <p><strong>Cierre:</strong> ${formatearFechaArg(op.fecha_cierre)}</p>
-                    <p><strong>Participás:</strong></p>
-                    <label class="switch">
-                        <input type="checkbox" id="${switchId}" ${op.participa === 'si' ? 'checked' : ''}>
-                        <span class="slider round"></span>
-                    </label>
-                    `;
+    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+        <h3 style="margin-bottom: 0;">${op.nombre}</h3>
+        <p style="margin: 0;">📝 ${op.descripcion || 'Sin descripción.'}</p>
+        <p style="margin: 0;"><strong>Inicio:</strong> ${formatearFechaArg(op.fecha_inicio)}</p>
+        <p style="margin: 0;"><strong>Cierre:</strong> ${formatearFechaArg(op.fecha_cierre)}</p>
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+            <strong>Participás:</strong>
+            <label class="switch" style="margin-bottom: 0;">
+                <input type="checkbox" id="${switchId}" ${op.participa === 'si' ? 'checked' : ''}>
+                <span class="slider round"></span>
+            </label>
+        </div>
+    </div>
+`;
 
                     // Manejador de cambio
                     card.querySelector(`#${switchId}`).addEventListener('change', async (e) => {

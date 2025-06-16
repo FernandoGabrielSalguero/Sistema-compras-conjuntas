@@ -10,11 +10,11 @@ class CoopDashboardModel
 
 public function obtenerOperativosConParticipacion($cooperativa_id) {
     $stmt = $this->pdo->prepare("
-        SELECT o.id, o.nombre, o.fecha_inicio, o.fecha_cierre,
-               COALESCE(p.participa, 'no') as participa
+        SELECT o.id, o.nombre, o.descripcion, o.fecha_inicio, o.fecha_cierre,
+            COALESCE(p.participa, 'no') as participa
         FROM operativos o
         LEFT JOIN operativos_cooperativas_participacion p
-          ON o.id = p.operativo_id AND p.cooperativa_id_real = ?
+            ON o.id = p.operativo_id AND p.cooperativa_id_real = ?
         WHERE o.estado = 'abierto'
         ORDER BY o.fecha_inicio DESC
     ");
