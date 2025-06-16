@@ -468,7 +468,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             e.preventDefault();
 
             const formData = new FormData(this);
-
+            formData.append('accion', 'crear');
+            
             try {
                 const response = await fetch('/controllers/actualizarProductoController.php', {
                     method: 'POST',
