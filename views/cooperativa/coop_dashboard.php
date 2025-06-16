@@ -166,23 +166,35 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                 data.operativos.forEach(op => {
                     const card = document.createElement('div');
-                    card.className = 'card';
+                    card.className = 'user-card';
 
                     const switchId = `switch_${op.id}`;
 
-                    card.innerHTML = `
-    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-        <h3 style="margin-bottom: 0;">${op.nombre}</h3>
-        <p style="margin: 0;">📝 ${op.descripcion || 'Sin descripción.'}</p>
-        <p style="margin: 0;"><strong>Inicio:</strong> ${formatearFechaArg(op.fecha_inicio)}</p>
-        <p style="margin: 0;"><strong>Cierre:</strong> ${formatearFechaArg(op.fecha_cierre)}</p>
-        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
-            <strong>Participás:</strong>
-            <label class="switch" style="margin-bottom: 0;">
-                <input type="checkbox" id="${switchId}" ${op.participa === 'si' ? 'checked' : ''}>
-                <span class="slider round"></span>
-            </label>
-        </div>
+card.innerHTML = `
+    <h3 class="user-name">${op.nombre}</h3>
+
+    <div class="user-info">
+        <span class="material-icons icon-email">description</span>
+        <span class="user-email">${op.descripcion || 'Sin descripción.'}</span>
+    </div>
+
+    <div class="user-info">
+        <span class="material-icons icon-email">event</span>
+        <span class="user-email"><strong>Inicio:</strong> ${formatearFechaArg(op.fecha_inicio)}</span>
+    </div>
+
+    <div class="user-info">
+        <span class="material-icons icon-email">event_busy</span>
+        <span class="user-email"><strong>Cierre:</strong> ${formatearFechaArg(op.fecha_cierre)}</span>
+    </div>
+
+    <div class="user-info">
+        <span class="material-icons icon-email">how_to_reg</span>
+        <span class="user-email"><strong>Participás:</strong></span>
+        <label class="switch" style="margin-left: 0.5rem;">
+            <input type="checkbox" id="${switchId}" ${op.participa === 'si' ? 'checked' : ''}>
+            <span class="slider round"></span>
+        </label>
     </div>
 `;
 
