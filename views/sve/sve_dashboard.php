@@ -120,43 +120,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             <!-- 📦 CONTENIDO -->
             <section class="content">
 
-                <div class="card-grid grid-4">
-                    <div class="card">
-                        <h3>KPI 1</h3>
-                        <p>Contenido 1</p>
-                    </div>
-                    <div class="card">
-                        <h3>KPI 2</h3>
-                        <p>Contenido 2</p>
-                    </div>
-                    <div class="card">
-                        <h3>KPI 3</h3>
-                        <p>Contenido 3</p>
-                    </div>
-                    <div class="card">
-                        <h3>KPI 4</h3>
-                        <p>Contenido 3</p>
-                    </div>
-                </div>
-
-
                 <div class="card">
-                    <form class="form-modern">
-                        <div class="input-group">
-                            <label>Correo</label>
-                            <div class="input-icon">
-                                <span class="material-icons">mail</span>
-                                <input type="email" placeholder="ejemplo@correo.com">
-                            </div>
-                        </div>
-
-                        <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="submit">Enviar</button>
-                            <button class="btn btn-cancelar" type="button">Cancelar</button>
-                        </div>
-                    </form>
+                    <iframe title="Cooperativa de Servicios Vitícolas y Enológicos" width="600" height="373.5" src="https://app.powerbi.com/view?r=eyJrIjoiODFkOTdlMDEtMDk4Yi00ZGIwLWEzZGYtZDgwODRkMTE3ZTExIiwidCI6ImU0ODIxNjE4LTk3Y2ItNDA4YS05YzkwLWM4MWZlMmM1YjExMiIsImMiOjR9" frameborder="0" allowFullScreen="true"></iframe>
                 </div>
-
 
                 <!-- contenedor del toastify -->
                 <div id="toast-container"></div>

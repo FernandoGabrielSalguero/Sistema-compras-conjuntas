@@ -413,7 +413,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         // Abrir modal para editar
         function abrirModalEditar(id) {
-            console.log("👉 Abrir modal para ID:", id);
+            // console.log("👉 Abrir modal para ID:", id);
 
             fetch(`/controllers/sve_productosController.php?accion=obtener&id=${id}`)
                 .then(async (res) => {
@@ -424,7 +424,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     return res.json();
                 })
                 .then(data => {
-                    console.log("✅ Producto recibido:", data);
+                    // console.log("✅ Producto recibido:", data);
 
                     document.getElementById('edit_id').value = data.producto.id;
                     document.getElementById('edit_Nombre_producto').value = data.producto.Nombre_producto;
@@ -503,7 +503,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         let productoIdAEliminar = null;
 
         function confirmarEliminacion(id) {
-            console.log("Quiero eliminar el producto ID:", id);
+            // console.log("Quiero eliminar el producto ID:", id);
             productoIdAEliminar = id;
 
             const modal = document.getElementById('modalConfirmacion');
@@ -523,7 +523,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
 
             try {
-                console.log("👉 Eliminando producto ID:", productoIdAEliminar);
+                // console.log("👉 Eliminando producto ID:", productoIdAEliminar);
 
                 const response = await fetch('/controllers/sve_productosController.php', {
                     method: 'POST',
@@ -537,18 +537,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
 
                 const result = await response.json();
-                console.log("✅ Producto eliminado:", result);
+                // console.log("✅ Producto eliminado:", result);
 
                 if (result.success) {
                     showAlert('success', result.message);
                     closeModalConfirmacion();
                     cargarProductos();
                 } else {
-                    console.log("❌ Error al eliminar producto:", result);
+                    // console.log("❌ Error al eliminar producto:", result);
                     showAlert('error', result.message);
                 }
             } catch (error) {
-                console.error('⛔ Error capturado:', error);
+                // console.error('⛔ Error capturado:', error);
                 showAlert('error', error.message || 'Error inesperado.');
             }
         }
