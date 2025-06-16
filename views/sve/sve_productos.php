@@ -451,7 +451,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             formData.append('accion', 'crear');
 
             try {
-                const response = await fetch('/controllers/actualizarProductoController.php', {
+                const response = await fetch('/controllers/sve_productosController.php', {
                     method: 'POST',
                     body: formData
                 });
