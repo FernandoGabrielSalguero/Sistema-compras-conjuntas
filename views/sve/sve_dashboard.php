@@ -120,6 +120,12 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             <!-- 📦 CONTENIDO -->
             <section class="content">
 
+                <!-- Bienvenida -->
+                <div class="card">
+                    <h2>Hola</h2>
+                    <p>Te presentamos el tablero Power BI. Vas a poder consultar todas las metricas desde esta página</p>
+                </div>
+            <!-- Tablero Power BI -->
                 <div class="card">
                     <div style="position: relative; width: 100%; padding-top: 56.25%;">
                         <iframe title="Cooperativa de Servicios Vitícolas y Enológicos"
