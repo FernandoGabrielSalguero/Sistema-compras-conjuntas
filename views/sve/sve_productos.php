@@ -572,6 +572,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const form = document.getElementById('formEditarProducto');
             if (form) form.reset();
         }
+
+        // Asociar evento al botón de confirmar eliminación
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnEliminar = document.getElementById('btnConfirmarEliminar');
+            if (btnEliminar) {
+                btnEliminar.addEventListener('click', eliminarProductoConfirmado);
+            } else {
+                console.warn("⚠️ No se encontró el botón con ID 'btnConfirmarEliminar'");
+            }
+        });
     </script>
 
     <div id="modalConfirmacion" class="modal hidden">
