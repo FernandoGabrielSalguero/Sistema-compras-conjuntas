@@ -412,8 +412,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             inputCategoria.addEventListener('input', filtrarTabla);
         });
 
-        function abrirModalEditar(id) {
-            console.log("🔍 Abrir modal (función abrirModalEditar) para producto ID:", id);
+        function openModalEditar(id) {
+            console.log("🔍 Abrir modal (openModalEditar) para producto ID:", id);
 
             fetch(`/controllers/sve_productosController.php?accion=obtener&id=${id}`)
                 .then(res => {
