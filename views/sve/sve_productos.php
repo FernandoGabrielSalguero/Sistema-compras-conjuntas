@@ -412,49 +412,33 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         });
 
         // Abrir modal para editar
-        function openModalEditar(id) {
-            console.log("🔍 Abrir modal (openModalEditar) para producto ID:", id);
+        function abrirModalEditar(id) {
+            console.log("👉 Abrir modal para ID:", id);
 
-            fetch(`/controllers/sve_productosController.php?accion=obtener&id=${id}`)
-                .then(res => {
+            fetch(`/controllers/sve_productosController.php?id=${id}`)
+                .then(async (res) => {
                     if (!res.ok) {
-                        throw new Error(`❌ Error HTTP: ${res.status}`);
+                        const errorData = await res.json();
+                        throw new Error(errorData.message || 'Error al obtener producto.');
                     }
                     return res.json();
                 })
                 .then(data => {
-                    console.log("📦 Datos recibidos del backend:", data);
+                    console.log("✅ Producto recibido:", data);
 
-                    if (!data.success) {
-                        throw new Error('⚠️ Backend no devolvió success = true');
-                    }
-
-                    const campos = {
-                        'edit_id': data.producto.Id,
-                        'edit_Nombre_producto': data.producto.Nombre_producto,
-                        'edit_Detalle_producto': data.producto.Detalle_producto,
-                        'edit_Precio_producto': data.producto.Precio_producto,
-                        'edit_Unidad_medida_venta': data.producto.Unidad_Medida_venta,
-                        'edit_categoria': data.producto.categoria,
-                        'edit_alicuota': data.producto.alicuota
-                    };
-
-                    // Recorremos y asignamos campo por campo
-                    for (const [id, valor] of Object.entries(campos)) {
-                        const input = document.getElementById(id);
-                        if (!input) {
-                            console.error(`❌ No se encontró el input con ID: ${id}`);
-                            continue;
-                        }
-                        input.value = valor;
-                        console.log(`✅ Asignado: ${id} =`, valor);
-                    }
+                    document.getElementById('edit_id').value = data.producto.Id;
+                    document.getElementById('edit_Nombre_producto').value = data.producto.Nombre_producto;
+                    document.getElementById('edit_Detalle_producto').value = data.producto.Detalle_producto;
+                    document.getElementById('edit_Precio_producto').value = data.producto.Precio_producto;
+                    document.getElementById('edit_Unidad_Medida_venta').value = data.producto.Unidad_Medida_venta;
+                    document.getElementById('edit_categoria').value = data.producto.categoria;
+                    document.getElementById('edit_alicuota').value = data.producto.alicuota;
 
                     openModalEditar();
                 })
                 .catch((err) => {
-                    console.error('⛔ Error en openModalEditar:', err);
-                    showAlert('error', 'Error al cargar datos del producto.');
+                    console.error('⛔ Error capturado:', err);
+                    showAlert('error', err.message);
                 });
         }
 
@@ -515,50 +499,73 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         });
 
         // Eliminar producto
-        let productoAEliminar = null;
+        // abrir modal para confirmación
+        let productoIdAEliminar = null;
 
         function confirmarEliminacion(id) {
-            productoAEliminar = id;
+            console.log("Quiero eliminar el producto ID:", id);
+            productoIdAEliminar = id;
+
             const modal = document.getElementById('modalConfirmacion');
-            if (modal) {
-                modal.classList.remove('hidden');
-            }
+            modal.classList.remove('hidden');
         }
 
         function closeModalConfirmacion() {
-            const modal = document.getElementById('modalConfirmacion');
-            if (modal) {
-                modal.classList.add('hidden');
-            }
+            document.getElementById('modalConfirmacion').classList.add('hidden');
+            productoIdAEliminar = null;
         }
 
-        document.getElementById('btnConfirmarEliminar').addEventListener('click', async () => {
-            if (!productoAEliminar) return;
+        async function eliminarProductoConfirmado() {
+            if (!productoIdAEliminar) {
+                showAlert('error', 'ID no proporcionado para eliminar.');
+                return;
+            }
 
             try {
-                const res = await fetch('/controllers/sve_productosController.php?accion=eliminar', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `id=${productoAEliminar}`
-                });
+                console.log("👉 Eliminando producto ID:", productoIdAEliminar);
 
-                const result = await res.json();
+                const response = await fetch(`/controllers/eliminarProductoController.php?id=${productoIdAEliminar}`);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.log('⛔ Error en la respuesta:', errorData);
+                    throw new Error(errorData.message || 'Error al eliminar producto.');
+                }
+
+                const result = await response.json();
+                console.log("✅ Producto eliminado:", result);
 
                 if (result.success) {
                     showAlert('success', result.message);
+                    closeModalConfirmacion();
                     cargarProductos();
                 } else {
+                    console.log("❌ Error al eliminar producto:", result);
                     showAlert('error', result.message);
                 }
             } catch (error) {
-                console.error('❌ Error eliminando producto:', error);
-                showAlert('error', 'Error inesperado al eliminar el producto.');
-            } finally {
-                closeModalConfirmacion();
+                console.error('⛔ Error capturado:', error);
+                showAlert('error', error.message || 'Error inesperado.');
             }
-        });
+        }
+
+        function openModalEditar() {
+            const modal = document.getElementById('modalEditar');
+            if (modal) {
+                modal.classList.remove('hidden');
+            } else {
+                console.error('❌ No se encontró el modal con ID modalEditar');
+            }
+        }
+
+        function closeModalEditar() {
+            const modal = document.getElementById('modalEditar');
+            modal.classList.add('hidden');
+
+            // Limpiar campos del formulario
+            const form = document.getElementById('formEditarProducto');
+            if (form) form.reset();
+        }
     </script>
 
     <div id="modalConfirmacion" class="modal hidden">
