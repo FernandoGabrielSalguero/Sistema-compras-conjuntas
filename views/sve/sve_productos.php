@@ -366,10 +366,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-    <!-- <script src="/assets/js/sve_productos.js"></script> -->
-    <script src="/assets/js/sve_productos.js?v=<?= time() ?>"></script>
-
-
     <!-- Script para cargar los datos usando AJAX a la base -->
     <script>
         // carga de datos de la tabla
@@ -469,7 +465,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             const formData = new FormData(this);
             formData.append('accion', 'crear');
-            
+
             try {
                 const response = await fetch('/controllers/actualizarProductoController.php', {
                     method: 'POST',
@@ -490,6 +486,33 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 showAlert('error', 'Error inesperado al guardar los cambios.');
             }
         });
+
+        // ➕ Crear nuevo producto
+    document.getElementById('formProducto').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        formData.append('accion', 'crear');
+
+        try {
+            const res = await fetch('/controllers/sve_productosController.php', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                showAlert('success', data.message);
+                this.reset();
+                cargarProductos();
+            } else {
+                showAlert('error', data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            showAlert('error', 'Error inesperado al enviar el formulario.');
+        }
+    });
     </script>
 
     <div id="modalConfirmacion" class="modal hidden">
