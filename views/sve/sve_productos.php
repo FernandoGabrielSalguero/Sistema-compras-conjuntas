@@ -430,7 +430,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     document.getElementById('edit_Nombre_producto').value = data.producto.Nombre_producto;
                     document.getElementById('edit_Detalle_producto').value = data.producto.Detalle_producto;
                     document.getElementById('edit_Precio_producto').value = data.producto.Precio_producto;
-                    document.getElementById('edit_Unidad_Medida_venta').value = data.producto.Unidad_Medida_venta;
+                    document.getElementById('edit_Unidad_medida_venta').value = data.producto.Unidad_Medida_venta;
                     document.getElementById('edit_categoria').value = data.producto.categoria;
                     document.getElementById('edit_alicuota').value = data.producto.alicuota;
 
