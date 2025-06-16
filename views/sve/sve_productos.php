@@ -515,6 +515,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             productoIdAEliminar = null;
         }
 
+        // Eliminar pedido
         async function eliminarProductoConfirmado() {
             if (!productoIdAEliminar) {
                 showAlert('error', 'ID no proporcionado para eliminar.');
@@ -524,13 +525,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             try {
                 console.log("👉 Eliminando producto ID:", productoIdAEliminar);
 
-                const response = await fetch(`/controllers/eliminarProductoController.php?id=${productoIdAEliminar}`);
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.log('⛔ Error en la respuesta:', errorData);
-                    throw new Error(errorData.message || 'Error al eliminar producto.');
-                }
+                const response = await fetch('/controllers/sve_productosController.php', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    body: new URLSearchParams({
+                        accion: 'eliminar',
+                        id: productoIdAEliminar
+                    })
+                });
 
                 const result = await response.json();
                 console.log("✅ Producto eliminado:", result);
@@ -549,6 +553,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
+
+        // Modal para editar un producto
         function openModalEditar() {
             const modal = document.getElementById('modalEditar');
             if (modal) {
