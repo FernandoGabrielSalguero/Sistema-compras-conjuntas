@@ -113,14 +113,14 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <!-- Bienvenida -->
                 <div class="card">
                     <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
-                    <p>En esta página, vas a poder seleccionar en que oerativos participar. Esto es importante porque te va a permitir realizar compras a tus productores.</p>
+                    <p>En esta página, vas a encontrar herramientas muy utiles para vos</p>
                 </div>
 
                 <!-- contenedor de operativos -->
                 <div class="card">
                     <h2>Operativos disponibles</h2>
                     <p>Seleccioná en qué operativos querés participar para habilitar la compra a tus productores.</p>
-
+                    <br>
                     <div class="card-grid grid-4" id="contenedorOperativos"></div>
                 </div>
         </div>
