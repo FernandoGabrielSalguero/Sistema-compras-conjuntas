@@ -27,8 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $rango = $model->obtenerRangoCooperativa($cooperativaIdReal);
     $proximoId = $model->obtenerProximoIdRealDisponible($rango['rango_productores_inicio'], $rango['rango_productores_fin']);
 
-    echo json_encode(['success' => true, 'id_real' => $proximoId]);
     ob_end_clean();
+    echo json_encode(['success' => true, 'id_real' => $proximoId]);
     exit;
 }
 
