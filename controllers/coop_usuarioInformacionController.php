@@ -1,4 +1,5 @@
 <?php
+ob_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 session_start();
@@ -27,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $proximoId = $model->obtenerProximoIdRealDisponible($rango['rango_productores_inicio'], $rango['rango_productores_fin']);
 
     echo json_encode(['success' => true, 'id_real' => $proximoId]);
+    ob_end_clean();
     exit;
 }
 
