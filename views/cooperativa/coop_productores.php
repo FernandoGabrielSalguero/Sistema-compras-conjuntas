@@ -120,7 +120,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                 <!-- Bienvenida -->
                 <div class="card">
                     <h4><?php echo htmlspecialchars($nombre); ?>, estas es la página "Productores"</h4>
-                    <p>Te mostramos de forma clara la información de tus productores asociados. Vas a poder modificar sus datos, asociar nuevos productores y mucho más</p>
+                    <p>Podes inscribir a un nuevo productor a tu cooperativa y además, modificar sus datos</p>
                 </div>
 
                 <!-- Tarjeta de buscador -->
