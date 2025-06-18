@@ -141,57 +141,58 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 </div>
                             </div>
 
-                            <!-- Rol -->
+                            <!-- Rol fijo -->
                             <div class="input-group">
                                 <label for="rol">Rol</label>
                                 <div class="input-icon">
                                     <span class="material-icons">supervisor_account</span>
-                                    <select id="rol" name="rol" required>
-                                        <option value="sve">SVE</option>
-                                        <option value="cooperativa">Cooperativa</option>
-                                        <option value="productor">Productor</option>
-                                        <option value="ingeniero">Ingeniero</option>
-                                    </select>
+                                    <input type="text" id="rol" name="rol" value="productor" disabled>
                                 </div>
                             </div>
 
-                            <!-- Permiso -->
+                            <!-- Permiso fijo -->
                             <div class="input-group">
                                 <label for="permiso_ingreso">Permiso</label>
                                 <div class="input-icon">
                                     <span class="material-icons">check_circle</span>
-                                    <select id="permiso_ingreso" name="permiso_ingreso" required>
-                                        <option value="Habilitado">Habilitado</option>
-                                        <option value="Deshabilitado">Deshabilitado</option>
-                                    </select>
+                                    <input type="text" id="permiso_ingreso" name="permiso_ingreso" value="Habilitado" disabled>
                                 </div>
                             </div>
 
-                            <!-- ID Real -->
+                            <!-- ID Real auto -->
                             <div class="input-group">
-                                <label for="id_real">ID Real</label>
+                                <label for="id_real">ID Real (auto)</label>
                                 <div class="input-icon">
                                     <span class="material-icons">badge</span>
-                                    <input type="number" id="id_real" name="id_real" placeholder="Coloca el ID del usuario" required>
+                                    <input type="text" id="id_real" name="id_real" readonly>
                                 </div>
                             </div>
 
-                            <!-- Cuit -->
+                            <!-- CUIT -->
                             <div class="input-group">
                                 <label for="cuit">CUIT</label>
                                 <div class="input-icon">
                                     <span class="material-icons">fingerprint</span>
-                                    <input type="text" id="cuit" name="cuit" inputmode="numeric" pattern="\d*" maxlength="11" placeholder="Coloca el CUIT sin guiones" oninput="this.value = this.value.replace(/\D/g, '')">
+                                    <input type="text" id="cuit" name="cuit" inputmode="numeric" pattern="\d*" maxlength="11" placeholder="Coloca el CUIT sin guiones" oninput="this.value = this.value.replace(/\D/g, '')" required>
                                 </div>
                             </div>
 
+                            <!-- Cooperativa -->
+                            <div class="input-group">
+                                <label for="cooperativa">Cooperativa</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">store</span>
+                                    <input type="text" id="cooperativa" name="cooperativa" value="<?php echo htmlspecialchars($nombre); ?>" readonly>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Botones -->
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="submit">Crear usuario</button>
+                            <button class="btn btn-aceptar" type="submit">Crear productor</button>
                         </div>
                     </form>
+
                 </div>
 
                 <!-- Tarjeta de buscador -->
@@ -235,6 +236,40 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
                         icon.textContent = isPassword ? 'visibility_off' : 'visibility';
                     }
+
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const form = document.getElementById('formUsuario');
+                        const idRealInput = document.getElementById('id_real');
+
+                        // Obtener ID real disponible al cargar
+                        fetch('coop_usuarioInformaciónController.php')
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.id_real) {
+                                    idRealInput.value = data.id_real;
+                                }
+                            });
+
+                        form.addEventListener('submit', async (e) => {
+                            e.preventDefault();
+
+                            const formData = new FormData(form);
+                            const response = await fetch('coop_usuarioInformaciónController.php', {
+                                method: 'POST',
+                                body: formData
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                alert('✅ ' + result.message);
+                                idRealInput.value = result.id_real;
+                                form.reset();
+                            } else {
+                                alert('⚠️ ' + result.message);
+                            }
+                        });
+                    });
                 </script>
 
             </section>
