@@ -242,7 +242,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         const idRealInput = document.getElementById('id_real');
 
                         // Obtener ID real disponible al cargar
-                        fetch('coop_usuarioInformacionController.php')
+                        fetch('../../controllers/coop_usuarioInformacionController.php')
                             .then(res => res.json())
                             .then(data => {
                                 if (data.id_real) {
@@ -254,7 +254,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             e.preventDefault();
 
                             const formData = new FormData(form);
-                            const response = await fetch('coop_usuarioInformacionController.php', {
+                            const response = await fetch('../../controllers/coop_usuarioInformacionController.php', {
                                 method: 'POST',
                                 body: formData
                             });

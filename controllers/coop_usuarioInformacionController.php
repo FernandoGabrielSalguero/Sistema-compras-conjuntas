@@ -9,11 +9,26 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'cooperativa') {
 }
 
 require_once '../../config/conexion.php';
-require_once 'coop_usuarioInformacionModel.php';
+require_once '../models/coop_usuarioInformacionModel.php';
 
 $model = new UsuarioInformacionModel();
-
 $cooperativaIdReal = $_SESSION['id_real'] ?? null;
+
+// 🔄 GET: obtener ID real disponible
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (!$cooperativaIdReal) {
+        echo json_encode(['success' => false, 'message' => 'No hay sesión activa']);
+        exit;
+    }
+
+    $rango = $model->obtenerRangoCooperativa($cooperativaIdReal);
+    $proximoId = $model->obtenerProximoIdRealDisponible($rango['rango_productores_inicio'], $rango['rango_productores_fin']);
+
+    echo json_encode(['success' => true, 'id_real' => $proximoId]);
+    exit;
+}
+
+// 📝 POST: crear productor
 $usuario = $_POST['usuario'] ?? '';
 $contrasena = $_POST['contrasena'] ?? '';
 $cuit = $_POST['cuit'] ?? '';
