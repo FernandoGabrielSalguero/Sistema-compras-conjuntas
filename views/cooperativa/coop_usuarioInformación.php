@@ -226,6 +226,17 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 <!-- Spinner Global -->
                 <script src="../../views/partials/spinner-global.js"></script>
 
+                <script>
+                    // Funcion togglePassword
+                    function togglePassword() {
+                        const passwordInput = document.getElementById('contrasena');
+                        const icon = document.querySelector('.toggle-password');
+                        const isPassword = passwordInput.getAttribute('type') === 'password';
+                        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+                        icon.textContent = isPassword ? 'visibility_off' : 'visibility';
+                    }
+                </script>
+
             </section>
 
         </div>
