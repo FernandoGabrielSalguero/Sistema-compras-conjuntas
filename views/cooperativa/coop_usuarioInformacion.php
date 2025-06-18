@@ -127,7 +127,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="usuario">Usuario</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
-                                    <input type="text" id="usuario" name="usuario" placeholder="Asigna un usuario" autocomplete="off" required>
+                                    <input type="text" id="usuario" name="usuario" placeholder="Asigna un usuario" autocomplete="Asigna un usuario" required>
                                 </div>
                             </div>
 
@@ -136,7 +136,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="contrasena">Contraseña</label>
                                 <div class="input-icon">
                                     <span class="material-icons">lock</span>
-                                    <input type="password" id="contrasena" name="contrasena" placeholder="Asigna una contraseña" autocomplete="off" required>
+                                    <input type="password" id="contrasena" name="contrasena" placeholder="Asigna una contraseña" autocomplete="Asigna una contraseña" required>
                                     <span class="material-icons toggle-password" onclick="togglePassword()">visibility</span>
                                 </div>
                             </div>
