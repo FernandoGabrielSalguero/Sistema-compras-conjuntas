@@ -9,7 +9,7 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'cooperativa') {
 }
 
 require_once '../../config/conexion.php';
-require_once 'coop_usuarioInformaciónModel.php';
+require_once 'coop_usuarioInformacionModel.php';
 
 $model = new UsuarioInformacionModel();
 

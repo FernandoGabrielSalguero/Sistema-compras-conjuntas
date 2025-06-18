@@ -84,7 +84,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     <li onclick="location.href='coop_listadoPedidos.php'">
                         <span class="material-icons" style="color: #5b21b6;">receipt_long</span><span class="link-text">Listado Pedidos</span>
                     </li>
-                    <li onclick="location.href='coop_usuarioInformación.php'">
+                    <li onclick="location.href='coop_usuarioInformacion.php'">
                         <ure class="material-icons" style="color: #5b21b6;">agriculture</ure><span class="link-text">Productores</span>
                     </li>
                     <li onclick="location.href='coop_productores.php'">

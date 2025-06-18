@@ -77,7 +77,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <li onclick="location.href='coop_listadoPedidos.php'">
                         <span class="material-icons" style="color: #5b21b6;">receipt_long</span><span class="link-text">Listado Pedidos</span>
                     </li>
-                    <li onclick="location.href='coop_usuarioInformación.php'">
+                    <li onclick="location.href='coop_usuarioInformacion.php'">
                         <ure class="material-icons" style="color: #5b21b6;">agriculture</ure><span class="link-text">Productores</span>
                     </li>
                     <li onclick="location.href='coop_productores.php'">
@@ -141,6 +141,24 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 </div>
                             </div>
 
+                            <!-- CUIT -->
+                            <div class="input-group">
+                                <label for="cuit">CUIT</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">fingerprint</span>
+                                    <input type="text" id="cuit" name="cuit" inputmode="numeric" pattern="\d*" maxlength="11" placeholder="Coloca el CUIT sin guiones" oninput="this.value = this.value.replace(/\D/g, '')" required>
+                                </div>
+                            </div>
+
+                            <!-- ID Real auto -->
+                            <div class="input-group">
+                                <label for="id_real">ID Real (auto)</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">badge</span>
+                                    <input type="text" id="id_real" name="id_real" readonly>
+                                </div>
+                            </div>
+
                             <!-- Rol fijo -->
                             <div class="input-group">
                                 <label for="rol">Rol</label>
@@ -156,24 +174,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <div class="input-icon">
                                     <span class="material-icons">check_circle</span>
                                     <input type="text" id="permiso_ingreso" name="permiso_ingreso" value="Habilitado" disabled>
-                                </div>
-                            </div>
-
-                            <!-- ID Real auto -->
-                            <div class="input-group">
-                                <label for="id_real">ID Real (auto)</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">badge</span>
-                                    <input type="text" id="id_real" name="id_real" readonly>
-                                </div>
-                            </div>
-
-                            <!-- CUIT -->
-                            <div class="input-group">
-                                <label for="cuit">CUIT</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">fingerprint</span>
-                                    <input type="text" id="cuit" name="cuit" inputmode="numeric" pattern="\d*" maxlength="11" placeholder="Coloca el CUIT sin guiones" oninput="this.value = this.value.replace(/\D/g, '')" required>
                                 </div>
                             </div>
 
@@ -242,7 +242,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         const idRealInput = document.getElementById('id_real');
 
                         // Obtener ID real disponible al cargar
-                        fetch('coop_usuarioInformaciónController.php')
+                        fetch('coop_usuarioInformacionController.php')
                             .then(res => res.json())
                             .then(data => {
                                 if (data.id_real) {
@@ -254,7 +254,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             e.preventDefault();
 
                             const formData = new FormData(form);
-                            const response = await fetch('coop_usuarioInformaciónController.php', {
+                            const response = await fetch('coop_usuarioInformacionController.php', {
                                 method: 'POST',
                                 body: formData
                             });
