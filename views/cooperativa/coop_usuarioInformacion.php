@@ -262,11 +262,11 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             const result = await response.json();
 
                             if (result.success) {
-                                alert('✅ ' + result.message);
+                                showAlert('success', result.message);
                                 idRealInput.value = result.id_real;
                                 form.reset();
                             } else {
-                                alert('⚠️ ' + result.message);
+                                showAlert('error', result.message);
                             }
                         });
                     });
