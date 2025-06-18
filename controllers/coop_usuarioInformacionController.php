@@ -11,8 +11,8 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'cooperativa') {
     exit;
 }
 
-require_once '../../config/conexion.php';
-require_once '../models/coop_usuarioInformacionModel.php';
+require_once __DIR__ . '/../config/conexion.php';
+require_once __DIR__ . '/../models/coop_usuarioInformacionModel.php';
 
 $model = new UsuarioInformacionModel();
 $cooperativaIdReal = $_SESSION['id_real'] ?? null;
