@@ -222,6 +222,44 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     </form>
                 </div>
 
+                <!-- contenedor de productores -->
+                <div class="card">
+                    <h2>Productores asociados</h2>
+                    <p>Listado de productores asociados a tu cooperativa. Podés editar su información.</p>
+                    <br>
+                    <div class="card-grid grid-4" id="contenedorProductores"></div>
+                </div>
+
+                <!-- Modal de edición -->
+                <div class="modal" id="modalEditarProductor" style="display:none;">
+                    <div class="modal-content">
+                        <span class="material-icons close" onclick="cerrarModal()">close</span>
+                        <h3>Editar productor</h3>
+                        <form id="formEditarProductor">
+                            <input type="hidden" name="usuario_id" id="usuario_id">
+                            <div class="input-group">
+                                <label for="nombre">Nombre</label>
+                                <input type="text" id="nombre" name="nombre">
+                            </div>
+                            <div class="input-group">
+                                <label for="telefono">Teléfono</label>
+                                <input type="text" id="telefono" name="telefono">
+                            </div>
+                            <div class="input-group">
+                                <label for="correo">Correo</label>
+                                <input type="email" id="correo" name="correo">
+                            </div>
+                            <div class="input-group">
+                                <label for="direccion">Dirección</label>
+                                <input type="text" id="direccion" name="direccion">
+                            </div>
+                            <div class="form-buttons">
+                                <button type="submit" class="btn btn-editar">Guardar cambios</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- contenedor del toastify -->
                 <div id="toast-container"></div>
                 <!-- Spinner Global -->
@@ -270,6 +308,73 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             }
                         });
                     });
+
+                    // funcion para cargar productores
+                    async function cargarProductores() {
+                        const contenedor = document.getElementById('contenedorProductores');
+                        contenedor.innerHTML = '<p>Cargando productores...</p>';
+
+                        try {
+                            const res = await fetch('../../controllers/coop_usuarioInformacionController.php?action=listar_productores');
+                            const data = await res.json();
+                            if (!data.success) throw new Error(data.message);
+
+                            contenedor.innerHTML = '';
+
+                            data.productores.forEach(p => {
+                                const card = document.createElement('div');
+                                card.className = 'user-card';
+
+                                card.innerHTML = `
+                <h3 class="user-name">${p.usuario}</h3>
+                <div class="user-info">
+                    <span class="material-icons">fingerprint</span>
+                    <span class="user-email">${p.cuit}</span>
+                </div>
+                <button class="btn btn-editar" onclick='abrirModal(${JSON.stringify(p)})'>Editar</button>
+            `;
+                                contenedor.appendChild(card);
+                            });
+
+                        } catch (err) {
+                            contenedor.innerHTML = `<p style="color:red;">${err.message}</p>`;
+                        }
+                    }
+
+                    function abrirModal(prod) {
+                        document.getElementById('modalEditarProductor').style.display = 'block';
+                        document.getElementById('usuario_id').value = prod.usuario_id;
+                        document.getElementById('nombre').value = prod.nombre || '';
+                        document.getElementById('telefono').value = prod.telefono || '';
+                        document.getElementById('correo').value = prod.correo || '';
+                        document.getElementById('direccion').value = prod.direccion || '';
+                    }
+
+                    function cerrarModal() {
+                        document.getElementById('modalEditarProductor').style.display = 'none';
+                    }
+
+                    document.getElementById('formEditarProductor').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.target);
+                        formData.append('action', 'editar_productor');
+                        
+                        const res = await fetch('../../controllers/coop_productoresController.php', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const result = await res.json();
+                        if (result.success) {
+                            showAlert('success', result.message);
+                            cerrarModal();
+                            cargarProductores();
+                        } else {
+                            showAlert('error', result.message);
+                        }
+                    });
+
+                    document.addEventListener('DOMContentLoaded', cargarProductores);
                 </script>
 
             </section>

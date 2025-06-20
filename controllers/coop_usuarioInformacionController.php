@@ -71,3 +71,33 @@ try {
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => 'Error al crear usuario: ' . $e->getMessage()]);
 }
+
+// 🔄 GET: listar productores asociados
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'listar_productores') {
+    $productores = $model->obtenerProductoresPorCooperativa($cooperativaIdReal);
+    echo json_encode(['success' => true, 'productores' => $productores]);
+    exit;
+}
+
+// 📝 POST: editar datos de productor
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'editar_productor') {
+    $usuarioId = $_POST['usuario_id'] ?? null;
+    $nombre = $_POST['nombre'] ?? '';
+    $telefono = $_POST['telefono'] ?? '';
+    $correo = $_POST['correo'] ?? '';
+    $direccion = $_POST['direccion'] ?? '';
+
+    if (!$usuarioId) {
+        echo json_encode(['success' => false, 'message' => 'ID de usuario faltante']);
+        exit;
+    }
+
+    $ok = $model->guardarInfoProductor($usuarioId, $nombre, $telefono, $correo, $direccion);
+
+    if ($ok) {
+        echo json_encode(['success' => true, 'message' => 'Información actualizada correctamente']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'No se pudo guardar la información']);
+    }
+    exit;
+}
