@@ -358,8 +358,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         e.preventDefault();
                         const formData = new FormData(e.target);
                         formData.append('action', 'editar_productor');
-                        
-                        const res = await fetch('../../controllers/coop_productoresController.php', {
+
+                        const res = await fetch('../../controllers/coop_usuarioInformacionController.php', {
                             method: 'POST',
                             body: formData
                         });
