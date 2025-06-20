@@ -319,8 +319,14 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                             if (result.success) {
                                 showAlert('success', result.message);
-                                idRealInput.value = result.id_real;
+                                // Obtener nuevo ID real tras creación
+                                fetch('../../controllers/coop_usuarioInformacionController.php')
+                                    .then(r => r.json())
+                                    .then(d => {
+                                        if (d.id_real) idRealInput.value = d.id_real;
+                                    });
                                 form.reset();
+                                cargarProductores(); // 👈 Actualiza tarjetas en tiempo real
                             } else {
                                 showAlert('error', result.message);
                             }
@@ -344,13 +350,20 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 card.className = 'user-card';
 
                                 card.innerHTML = `
-                <h3 class="user-name">${p.usuario}</h3>
-                <div class="user-info">
-                    <span class="material-icons">fingerprint</span>
-                    <span class="user-email">${p.cuit}</span>
-                </div>
-                <button class="btn btn-aceptar" onclick='abrirModal(${JSON.stringify(p)})'>Editar</button>
-            `;
+    <h2 class="user-name">${p.usuario}</h2>
+
+    <div class="user-info">
+        <span class="material-icons">badge</span>
+        <span class="user-email"><strong>ID:</strong> ${p.id_real}</span>
+    </div>
+
+    <div class="user-info">
+        <span class="material-icons">fingerprint</span>
+        <span class="user-email">${p.cuit}</span>
+    </div>
+
+    <button class="btn btn-aceptar" onclick='abrirModal(${JSON.stringify(p)})'>Editar</button>
+`;
                                 contenedor.appendChild(card);
                             });
 
@@ -395,6 +408,27 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     });
 
                     document.addEventListener('DOMContentLoaded', cargarProductores);
+
+                    // Filtro por nombre o ID Real
+                    document.getElementById('buscarNombre').addEventListener('input', filtrarProductores);
+                    document.getElementById('buscarCuit').addEventListener('input', filtrarProductores);
+
+                    function filtrarProductores() {
+                        const nombre = document.getElementById('buscarNombre').value.toLowerCase();
+                        const cuit = document.getElementById('buscarCuit').value;
+
+                        document.querySelectorAll('#contenedorProductores .user-card').forEach(card => {
+                            const texto = card.innerText.toLowerCase().replace(/\s+/g, ' ');
+                            if (
+                                (!nombre || texto.includes(nombre)) &&
+                                (!cuit || texto.includes(cuit))
+                            ) {
+                                card.style.display = '';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+                    }
                 </script>
 
             </section>
