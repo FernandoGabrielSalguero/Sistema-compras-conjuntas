@@ -206,7 +206,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="buscarCuit">Podes buscar por CUIT</label>
                                 <div class="input-icon">
                                     <span class="material-icons">fingerprint</span>
-                                    <input type="text" id="buscarCuit" name="buscarCuit" placeholder="20123456781">
+                                    <input type="number" id="buscarCuit" name="buscarCuit" placeholder="20123456781">
                                 </div>
                             </div>
 
