@@ -365,7 +365,12 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                             data.productores.forEach(p => {
                                 const card = document.createElement('div');
-                                const datosCompletos = p.nombre && p.telefono && p.correo && p.direccion;
+                                const datosCompletos = (
+                                    p.nombre && p.nombre.trim() !== '' &&
+                                    p.telefono && p.telefono.trim() !== '' && p.telefono.trim().toLowerCase() !== 'sin teléfono' &&
+                                    p.correo && p.correo.trim() !== '' && p.correo.trim().toLowerCase() !== 'sin-correo@sve.com' &&
+                                    p.direccion && p.direccion.trim() !== '' && p.direccion.trim().toLowerCase() !== 'sin dirección'
+                                );
                                 card.className = `user-card ${datosCompletos ? 'completo' : 'incompleto'}`;
 
 
