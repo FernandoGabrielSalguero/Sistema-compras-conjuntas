@@ -40,43 +40,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && !isset($_GET['action'])) {
 }
 
 // 📝 POST: crear productor
-$usuario = $_POST['usuario'] ?? '';
-$contrasena = $_POST['contrasena'] ?? '';
-$cuit = $_POST['cuit'] ?? '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['action'])) {
+    $usuario = $_POST['usuario'] ?? '';
+    $contrasena = $_POST['contrasena'] ?? '';
+    $cuit = $_POST['cuit'] ?? '';
 
-if (!$cooperativaIdReal || !$usuario || !$contrasena || !$cuit) {
-    echo json_encode(['success' => false, 'message' => 'Faltan datos requeridos']);
+    if (!$cooperativaIdReal || !$usuario || !$contrasena || !$cuit) {
+        echo json_encode(['success' => false, 'message' => 'Faltan datos requeridos']);
+        exit;
+    }
+
+    // Obtener rango permitido para esta cooperativa
+    $rango = $model->obtenerRangoCooperativa($cooperativaIdReal);
+    if (!$rango) {
+        echo json_encode(['success' => false, 'message' => 'No se encontró el rango de esta cooperativa']);
+        exit;
+    }
+
+    // Obtener el próximo id_real libre dentro del rango de productores
+    $proximoId = $model->obtenerProximoIdRealDisponible($rango['rango_productores_inicio'], $rango['rango_productores_fin']);
+    if (!$proximoId) {
+        echo json_encode(['success' => false, 'message' => 'No hay IDs disponibles en tu rango de productores']);
+        exit;
+    }
+
+    // Crear usuario productor
+    try {
+        $nuevoId = $model->crearUsuarioProductor($usuario, $contrasena, $cuit, $proximoId);
+
+        // Asociar al productor con la cooperativa
+        $model->asociarProductorCooperativa($proximoId, $cooperativaIdReal);
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Productor creado correctamente',
+            'id_real' => $proximoId
+        ]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error al crear usuario: ' . $e->getMessage()]);
+    }
+
     exit;
-}
-
-// Obtener rango permitido para esta cooperativa
-$rango = $model->obtenerRangoCooperativa($cooperativaIdReal);
-if (!$rango) {
-    echo json_encode(['success' => false, 'message' => 'No se encontró el rango de esta cooperativa']);
-    exit;
-}
-
-// Obtener el próximo id_real libre dentro del rango de productores
-$proximoId = $model->obtenerProximoIdRealDisponible($rango['rango_productores_inicio'], $rango['rango_productores_fin']);
-if (!$proximoId) {
-    echo json_encode(['success' => false, 'message' => 'No hay IDs disponibles en tu rango de productores']);
-    exit;
-}
-
-// Crear usuario productor
-try {
-    $nuevoId = $model->crearUsuarioProductor($usuario, $contrasena, $cuit, $proximoId);
-
-    // Asociar al productor con la cooperativa
-    $model->asociarProductorCooperativa($proximoId, $cooperativaIdReal);
-
-    echo json_encode([
-        'success' => true,
-        'message' => 'Productor creado correctamente',
-        'id_real' => $proximoId
-    ]);
-} catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Error al crear usuario: ' . $e->getMessage()]);
 }
 
 
