@@ -52,6 +52,23 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
+    <style>
+        .user-card {
+            border: 2px solid #5b21b6;
+            border-radius: 12px;
+            padding: 1rem;
+            transition: border 0.3s ease;
+        }
+
+        .user-card.completo {
+            border: 2px solid green;
+        }
+
+        .user-card.incompleto {
+            border: 2px solid red;
+        }
+    </style>
 </head>
 
 <body>
@@ -347,10 +364,19 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                             data.productores.forEach(p => {
                                 const card = document.createElement('div');
-                                card.className = 'user-card';
+                                const datosCompletos = p.nombre && p.telefono && p.correo && p.direccion;
+                                card.className = `user-card ${datosCompletos ? 'completo' : 'incompleto'}`;
+
+
 
                                 card.innerHTML = `
-    <h2 class="user-name">${p.usuario}</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 class="user-name">${p.usuario}</h3>
+        <span class="material-icons" title="${datosCompletos ? 'Datos completos' : 'Datos incompletos'}"
+            style="color: ${datosCompletos ? 'green' : 'orange'};">
+            ${datosCompletos ? 'check_circle' : 'error_outline'}
+        </span>
+    </div>
 
     <div class="user-info">
         <span class="material-icons">badge</span>
