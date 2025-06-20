@@ -394,8 +394,11 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         <span class="user-email">${p.cuit}</span>
     </div>
 
-    <button class="btn btn-aceptar" onclick='abrirModal(${JSON.stringify(p)})'>Editar</button>
-`;
+<button class="btn-icon tooltip-icon"
+        data-tooltip="Editar productor"
+        onclick='abrirModal(${JSON.stringify(p)})'>
+    <span class="material-icons">edit</span>
+</button>`;
                                 contenedor.appendChild(card);
                             });
 
