@@ -152,7 +152,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                             <!-- ID Real auto -->
                             <div class="input-group">
-                                <label for="id_real">ID Real (auto)</label>
+                                <label for="id_real">ID Real (Automático)</label>
                                 <div class="input-icon">
                                     <span class="material-icons">badge</span>
                                     <input type="text" id="id_real" name="id_real" readonly>
@@ -331,7 +331,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <span class="material-icons">fingerprint</span>
                     <span class="user-email">${p.cuit}</span>
                 </div>
-                <button class="btn btn-editar" onclick='abrirModal(${JSON.stringify(p)})'>Editar</button>
+                <button class="btn btn-aceptar" onclick='abrirModal(${JSON.stringify(p)})'>Editar</button>
             `;
                                 contenedor.appendChild(card);
                             });
