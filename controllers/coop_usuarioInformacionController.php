@@ -17,8 +17,15 @@ require_once __DIR__ . '/../models/coop_usuarioInformacionModel.php';
 $model = new UsuarioInformacionModel();
 $cooperativaIdReal = $_SESSION['id_real'] ?? null;
 
-// 🔄 GET: obtener ID real disponible
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+// 🔄 GET: listar productores asociados
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'listar_productores') {
+    $productores = $model->obtenerProductoresPorCooperativa($cooperativaIdReal);
+    echo json_encode(['success' => true, 'productores' => $productores]);
+    exit;
+}
+
+// 🔄 GET: obtener ID real disponible (solo si NO hay action)
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && !isset($_GET['action'])) {
     if (!$cooperativaIdReal) {
         echo json_encode(['success' => false, 'message' => 'No hay sesión activa']);
         exit;
@@ -72,12 +79,7 @@ try {
     echo json_encode(['success' => false, 'message' => 'Error al crear usuario: ' . $e->getMessage()]);
 }
 
-// 🔄 GET: listar productores asociados
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'listar_productores') {
-    $productores = $model->obtenerProductoresPorCooperativa($cooperativaIdReal);
-    echo json_encode(['success' => true, 'productores' => $productores]);
-    exit;
-}
+
 
 // 📝 POST: editar datos de productor
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'editar_productor') {
