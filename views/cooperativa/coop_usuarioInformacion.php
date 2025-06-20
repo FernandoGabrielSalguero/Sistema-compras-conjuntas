@@ -360,7 +360,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     }
 
                     function abrirModal(prod) {
-                        document.getElementById('modalEditarProductor').style.display = 'block';
+                        const modal = document.getElementById('modalEditarProductor');
+                        modal.classList.remove('hidden');
+
                         document.getElementById('usuario_id').value = prod.usuario_id;
                         document.getElementById('nombre').value = prod.nombre || '';
                         document.getElementById('telefono').value = prod.telefono || '';
@@ -369,7 +371,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     }
 
                     function cerrarModal() {
-                        document.getElementById('modalEditarProductor').style.display = 'none';
+                        document.getElementById('modalEditarProductor').classList.add('hidden');
                     }
 
                     document.getElementById('formEditarProductor').addEventListener('submit', async (e) => {
