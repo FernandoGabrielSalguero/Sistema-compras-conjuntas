@@ -397,7 +397,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 <button class="btn-icon tooltip-icon"
         data-tooltip="Editar productor"
         onclick='abrirModal(${JSON.stringify(p)})'>
-    <span class="material-icons" style="color: green;" >edit</span>
+    <span class="material-icons" style="color: blue;" >edit</span>
 </button>`;
                                 contenedor.appendChild(card);
                             });
