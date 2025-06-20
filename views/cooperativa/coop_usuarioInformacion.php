@@ -54,6 +54,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
     <style>
+        /* Estilos tarjetas */
         .user-card {
             border: 2px solid #5b21b6;
             border-radius: 12px;
@@ -67,6 +68,39 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
         .user-card.incompleto {
             border: 2px solid red;
+        }
+
+        /* estilos tooltip */
+        .tooltip-icon {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .tooltip-icon[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            font-size: 0.75rem;
+            z-index: 1000;
+            opacity: 1;
+        }
+
+        .tooltip-icon[data-tooltip]:hover::before {
+            content: "";
+            position: absolute;
+            bottom: 115%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #333;
+            z-index: 1001;
         }
     </style>
 </head>
