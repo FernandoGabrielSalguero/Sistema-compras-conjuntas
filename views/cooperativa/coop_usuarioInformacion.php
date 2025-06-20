@@ -230,35 +230,53 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <div class="card-grid grid-4" id="contenedorProductores"></div>
                 </div>
 
-                <!-- Modal de edición -->
-                <div class="modal" id="modalEditarProductor" style="display:none;">
+                <!-- Modal editar productor -->
+                <div id="modalEditarProductor" class="modal hidden">
                     <div class="modal-content">
-                        <span class="material-icons close" onclick="cerrarModal()">close</span>
-                        <h3>Editar productor</h3>
+                        <h3>Editar Productor</h3>
                         <form id="formEditarProductor">
                             <input type="hidden" name="usuario_id" id="usuario_id">
+
                             <div class="input-group">
                                 <label for="nombre">Nombre</label>
-                                <input type="text" id="nombre" name="nombre">
+                                <div class="input-icon">
+                                    <span class="material-icons">badge</span>
+                                    <input type="text" id="nombre" name="nombre" required>
+                                </div>
                             </div>
+
                             <div class="input-group">
                                 <label for="telefono">Teléfono</label>
-                                <input type="text" id="telefono" name="telefono">
+                                <div class="input-icon">
+                                    <span class="material-icons">call</span>
+                                    <input type="text" id="telefono" name="telefono">
+                                </div>
                             </div>
+
                             <div class="input-group">
                                 <label for="correo">Correo</label>
-                                <input type="email" id="correo" name="correo">
+                                <div class="input-icon">
+                                    <span class="material-icons">email</span>
+                                    <input type="email" id="correo" name="correo">
+                                </div>
                             </div>
+
                             <div class="input-group">
                                 <label for="direccion">Dirección</label>
-                                <input type="text" id="direccion" name="direccion">
+                                <div class="input-icon">
+                                    <span class="material-icons">home</span>
+                                    <input type="text" id="direccion" name="direccion">
+                                </div>
                             </div>
-                            <div class="form-buttons">
-                                <button type="submit" class="btn btn-editar">Guardar cambios</button>
+
+                            <div class="form-buttons" style="margin-top: 20px;">
+                                <button type="submit" class="btn btn-aceptar">Guardar</button>
+                                <button type="button" class="btn btn-cancelar" onclick="cerrarModal()">Cancelar</button>
                             </div>
                         </form>
                     </div>
                 </div>
+
 
                 <!-- contenedor del toastify -->
                 <div id="toast-container"></div>
