@@ -371,11 +371,12 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                                 card.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 class="user-name">${p.usuario}</h3>
-        <span class="material-icons" title="${datosCompletos ? 'Datos completos' : 'Datos incompletos'}"
-            style="color: ${datosCompletos ? 'green' : 'orange'};">
-            ${datosCompletos ? 'check_circle' : 'error_outline'}
-        </span>
+        <h4 class="user-name">${p.usuario}</h4>
+<span class="material-icons tooltip-icon"
+    data-tooltip="${datosCompletos ? 'Datos completos' : 'Datos incompletos'}"
+    style="color: ${datosCompletos ? 'green' : 'orange'};">
+    ${datosCompletos ? 'check_circle' : 'error_outline'}
+</span>
     </div>
 
     <div class="user-info">
