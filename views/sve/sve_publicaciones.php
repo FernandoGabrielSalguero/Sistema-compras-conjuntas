@@ -237,7 +237,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 </div>
                                 <div class="product-body">
                                     <div class="user-info">
-                                        <img src="https://randomuser.me/api/portraits/men/32.jpg" class="avatar" />
+                                        <span class="material-icons avatar download-icon">download</span>
                                         <div>
                                             <strong>Autor</strong>
                                             <div class="role">Fecha de publicación</div>
