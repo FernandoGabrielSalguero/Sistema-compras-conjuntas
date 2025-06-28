@@ -237,7 +237,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 </div>
                                 <div class="product-body">
                                     <div class="user-info">
-                                        <span class="material-icons avatar download-icon">download</span>
+                                        <span class="material-icons avatar download-icon" data-tooltip="Bajar documento">download</span>
                                         <div>
                                             <strong>Autor</strong>
                                             <div class="role">Fecha de publicación</div>
