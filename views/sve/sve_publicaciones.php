@@ -232,37 +232,28 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         <div class="triple-tarjetas card-grid grid-3">
                             <div class="product-card">
                                 <div class="product-header">
-                                    <h4>UI/UX Design Team</h4>
-                                    <p>Contrary to popular belief, lorem Ipsum is not simply</p>
+                                    <h4>Titulo</h4>
+                                    <p>Subtitulo</p>
                                 </div>
                                 <div class="product-body">
                                     <div class="user-info">
                                         <img src="https://randomuser.me/api/portraits/men/32.jpg" class="avatar" />
                                         <div>
-                                            <strong>Jason Haston</strong>
-                                            <div class="role">Team Leader</div>
-                                        </div>
-                                        <div class="team-avatars">
-                                            <img src="https://randomuser.me/api/portraits/women/65.jpg"
-                                                class="avatar-sm" />
-                                            <img src="https://randomuser.me/api/portraits/men/23.jpg"
-                                                class="avatar-sm" />
-                                            <img src="https://randomuser.me/api/portraits/men/45.jpg"
-                                                class="avatar-sm" />
-                                            <span class="extra-count">+4</span>
+                                            <strong>Autor</strong>
+                                            <div class="role">Fecha de publicación</div>
                                         </div>
                                     </div>
                                     <hr />
                                     <div class="product-footer">
                                         <div class="metric">
                                             <strong>245</strong>
-                                            <span>Design Project</span>
+                                            <span>Vistas</span>
                                         </div>
                                         <div class="metric">
-                                            <strong>1085/765</strong>
-                                            <span>Task Reports</span>
+                                            <strong>1085</strong>
+                                            <span>Descargas</span>
                                         </div>
-                                        <button class="btn-view">View Details</button>
+                                        <button class="btn-view">Ver publicación</button>
                                     </div>
                                 </div>
                             </div>
