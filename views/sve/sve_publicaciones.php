@@ -298,17 +298,38 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 function toggleSubcategoriasLocal(btn, categoria_id) {
     const ul = document.getElementById('subcat-' + categoria_id);
 
-    if (!ul.classList.contains('visible')) {
+    if (!ul) {
+        console.error('No se encontró el UL con id subcat-' + categoria_id);
+        return;
+    }
+
+    // Mostrar u ocultar
+    const mostrar = !ul.classList.contains('visible');
+    
+    if (mostrar) {
+        // Vacía y carga
         ul.innerHTML = '';
         fetch('../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=' + categoria_id)
             .then(r => r.json())
             .then(data => {
-                data.forEach(sub => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `${sub.nombre} <button onclick="eliminarSubcategoria(${sub.id})" class="btn-icon small red"><span class="material-icons">delete</span></button>`;
-                    ul.appendChild(li);
-                });
+                if (data.length === 0) {
+                    ul.innerHTML = '<li><em>No hay subcategorías</em></li>';
+                } else {
+                    data.forEach(sub => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            ${sub.nombre}
+                            <button onclick="eliminarSubcategoria(${sub.id})" class="btn-icon small red">
+                                <span class="material-icons">delete</span>
+                            </button>`;
+                        ul.appendChild(li);
+                    });
+                }
                 ul.classList.add('visible');
+            })
+            .catch(err => {
+                ul.innerHTML = '<li>Error al cargar subcategorías</li>';
+                console.error(err);
             });
     } else {
         ul.classList.remove('visible');
