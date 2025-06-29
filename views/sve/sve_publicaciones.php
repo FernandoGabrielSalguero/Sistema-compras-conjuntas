@@ -260,4 +260,4 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 </body>
 
 
-</html>
+</html> 
