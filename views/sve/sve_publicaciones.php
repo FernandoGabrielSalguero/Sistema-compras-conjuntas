@@ -55,6 +55,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
     <style>
+        /* Oculta/expande subcategorías */
         ul.subcategorias {
             display: none;
             margin: 0;
@@ -65,36 +66,40 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             display: block;
         }
 
+        /* Tarjeta de categoría */
         .categoria-card {
-            background: #fff;
+            background: #f3f0ff;
+            /* Color primario claro */
             border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
         }
 
+        /* Encabezado con nombre + botón eliminar */
         .categoria-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
-        .categoria-header h4 {
-            margin: 0;
-            font-size: 16px;
-            color: #333;
+        .categoria-header strong {
+            font-size: 15px;
+            color: #4b0082;
         }
 
+        /* Lista de subcategorías como badges */
         .subcategorias-list {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .badge-subcat {
-            background: #eee;
+            background: #fff;
+            border: 1px solid #ddd;
             color: #333;
             padding: 4px 8px;
             border-radius: 20px;
@@ -104,16 +109,36 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             gap: 4px;
         }
 
-        .subcat-form {
-            display: flex;
+        /* Formulario para agregar subcategoría */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr auto;
             gap: 6px;
-            align-items: center;
         }
 
-        .subcat-form input {
-            flex: 1;
+        input.input {
+            border: 1px solid #ccc;
             border-radius: 8px;
-            padding: 4px 8px;
+            padding: 6px 10px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button.btn-aceptar {
+            background-color: #22c55e;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        button.btn-aceptar:hover {
+            background-color: #16a34a;
         }
     </style>
 </head>
@@ -197,11 +222,18 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <!-- Columna izquierda: categorías -->
                     <div class="triple-categorias">
                         <h3>Categorías</h3>
-                        <div class="input-group">
-                            <input type="text" id="nueva-categoria" placeholder="Nueva categoría" />
-                            <button class="btn" onclick="crearCategoria()">+</button>
+
+                        <!-- Tarjeta para crear nueva categoría -->
+                        <div class="categoria-card" style="margin-bottom: 16px;">
+                            <strong>Nueva categoría</strong>
+                            <div class="form-grid grid-2" style="margin-top: 8px;">
+                                <input type="text" id="nueva-categoria" class="input" placeholder="Nombre categoría" />
+                                <button class="btn-aceptar" onclick="crearCategoria()">+</button>
+                            </div>
                         </div>
-                        <ul id="lista-categorias" class="accordion-categorias"></ul>
+
+                        <!-- Contenedor de categorías dinámico -->
+                        <div id="lista-categorias"></div>
                     </div>
 
 
@@ -345,27 +377,32 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                     data.forEach(cat => {
                         const div = document.createElement('div');
-                        div.classList.add('categoria-card'); // nuevo estilo
+                        div.classList.add('categoria-card');
 
                         div.innerHTML = `
                     <div class="categoria-header">
-                        <h4>${cat.nombre}</h4>
-                        <button onclick="eliminarCategoria(${cat.id})" class="btn-icon small red">
+                        <strong>${cat.nombre}</strong>
+                        <button onclick="eliminarCategoria(${cat.id})" class="btn-icon red">
                             <span class="material-icons">delete</span>
                         </button>
                     </div>
-                    <div id="subcat-${cat.id}" class="subcategorias-list"></div>
-                    <div class="subcat-form">
-                        <input type="text" id="input-subcat-${cat.id}" placeholder="Nueva subcategoría">
-                        <button onclick="crearSubcategoria(${cat.id})" class="btn small">+</button>
+
+                    <div id="subcat-${cat.id}" class="subcategorias-list">Cargando...</div>
+
+                    <div class="form-grid grid-2">
+                        <div class="input-group">
+                            <input type="text" id="input-subcat-${cat.id}" class="input" placeholder="Nueva subcategoría" />
+                        </div>
+                        <button onclick="crearSubcategoria(${cat.id})" class="btn-aceptar">+</button>
                     </div>
                 `;
 
                         lista.appendChild(div);
-                        cargarSubcategorias(cat.id); // carga automática
+                        cargarSubcategorias(cat.id);
                     });
                 });
         }
+
 
         function cargarSubcategorias(categoria_id) {
             const ul = document.getElementById('subcat-' + categoria_id);
