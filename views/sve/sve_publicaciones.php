@@ -140,6 +140,17 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         button.btn-aceptar:hover {
             background-color: #16a34a;
         }
+
+        .subcat-form {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .full-width {
+            width: 100%;
+        }
     </style>
 </head>
 
@@ -226,9 +237,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         <!-- Tarjeta para crear nueva categoría -->
                         <div class="categoria-card" style="margin-bottom: 16px;">
                             <strong>Nueva categoría</strong>
-                            <div class="form-grid grid-2" style="margin-top: 8px;">
+                            <div class="subcat-form">
                                 <input type="text" id="nueva-categoria" class="input" placeholder="Nombre categoría" />
-                                <button class="btn-aceptar" onclick="crearCategoria()">+</button>
+                                <button class="btn-aceptar full-width" onclick="crearCategoria()">Agregar</button>
                             </div>
                         </div>
 
@@ -389,13 +400,11 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                     <div id="subcat-${cat.id}" class="subcategorias-list">Cargando...</div>
 
-                    <div class="form-grid grid-2">
-                        <div class="input-group">
-                            <input type="text" id="input-subcat-${cat.id}" class="input" placeholder="Nueva subcategoría" />
-                        </div>
-                        <button onclick="crearSubcategoria(${cat.id})" class="btn-aceptar">+</button>
+                    <div class="subcat-form">
+                        <input type="text" id="input-subcat-${cat.id}" class="input" placeholder="Nueva subcategoría" />
+                        <button onclick="crearSubcategoria(${cat.id})" class="btn-aceptar full-width">Agregar</button>
                     </div>
-                `;
+                    `;
 
                         lista.appendChild(div);
                         cargarSubcategorias(cat.id);
