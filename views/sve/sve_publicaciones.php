@@ -299,21 +299,22 @@ function toggleSubcategoriasLocal(btn, categoria_id) {
     const ul = document.getElementById('subcat-' + categoria_id);
 
     if (!ul) {
-        console.error('No se encontró el UL con id subcat-' + categoria_id);
+        console.error('❌ No se encontró el UL con id subcat-' + categoria_id);
         return;
     }
 
-    // Mostrar u ocultar
     const mostrar = !ul.classList.contains('visible');
-    
+
     if (mostrar) {
-        // Vacía y carga
-        ul.innerHTML = '';
+        ul.innerHTML = '⏳ Cargando...';
         fetch('../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=' + categoria_id)
             .then(r => r.json())
             .then(data => {
+                console.log('📦 Subcategorías recibidas para categoría ID ' + categoria_id, data); // ⬅️ DEBUG
+
+                ul.innerHTML = ''; // limpia el loading
                 if (data.length === 0) {
-                    ul.innerHTML = '<li><em>No hay subcategorías</em></li>';
+                    ul.innerHTML = '<li><em>Sin subcategorías aún</em></li>';
                 } else {
                     data.forEach(sub => {
                         const li = document.createElement('li');
@@ -328,8 +329,8 @@ function toggleSubcategoriasLocal(btn, categoria_id) {
                 ul.classList.add('visible');
             })
             .catch(err => {
-                ul.innerHTML = '<li>Error al cargar subcategorías</li>';
-                console.error(err);
+                console.error('⚠️ Error al cargar subcategorías:', err);
+                ul.innerHTML = '<li><em>Error al cargar subcategorías</em></li>';
             });
     } else {
         ul.classList.remove('visible');
