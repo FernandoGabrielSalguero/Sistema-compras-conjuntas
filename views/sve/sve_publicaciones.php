@@ -297,7 +297,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
         function toggleSubcategorias(btn, categoria_id) {
             const ul = document.getElementById('subcat-' + categoria_id);
-            if (ul.childNodes.length === 0) {
+
+            if (!ul.classList.contains('visible')) {
+                ul.innerHTML = '';
                 fetch('../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=' + categoria_id)
                     .then(r => r.json())
                     .then(data => {
@@ -306,9 +308,11 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             li.innerHTML = `${sub.nombre} <button onclick="eliminarSubcategoria(${sub.id})" class="btn-icon small red"><span class="material-icons">delete</span></button>`;
                             ul.appendChild(li);
                         });
+                        ul.classList.add('visible');
                     });
+            } else {
+                ul.classList.remove('visible');
             }
-            ul.classList.toggle('visible');
         }
 
         function crearCategoria() {
@@ -359,7 +363,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 })
             }).then(() => {
                 input.value = '';
-                document.getElementById('subcat-' + categoria_id).innerHTML = '';
+                const ul = document.getElementById('subcat-' + categoria_id);
+                ul.classList.remove('visible');
                 toggleSubcategorias(null, categoria_id);
             });
         }
