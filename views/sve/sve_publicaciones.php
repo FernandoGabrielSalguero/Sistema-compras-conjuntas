@@ -603,7 +603,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 .then(r => r.json())
                 .then(resp => {
                     if (resp.success) {
-                        showToast('success', '✅ Publicación guardada correctamente.');
+                        showToast('success', 'Publicación guardada correctamente.');
+                        cargarPublicaciones();
                         form.reset();
                         document.getElementById('select-subcategoria').innerHTML = '<option value="">Seleccionar subcategoría</option>';
                         document.getElementById('select-subcategoria').disabled = true;
@@ -643,7 +644,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <div class="product-header">
                         <h4>${pub.titulo}</h4>
                         <p>${pub.subtitulo || ''}</p>
-                        < hr/>
+                        <hr/>
                         <p class="breadcrumb-cat">Categoría 1 &gt; Subcategoría 1</p>
                     </div>
                     <div class="product-body">
