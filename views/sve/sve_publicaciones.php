@@ -128,7 +128,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <h2>Hola</h2>
                     <p>En esta página vamos a poder publicar investigaciones publicas</p>
                 </div>
-            
+
                 <!-- Tarjetas tipo layout 3 secciones -->
                 <div class="triple-layout">
                     <!-- Columna izquierda: categorías -->
@@ -177,89 +177,122 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             </li>
                         </ul>
                     </div>
-
-                    <!-- Columna derecha -->
-                    <div class="triple-derecha">
-                        <!-- Fila superior: formulario -->
-                        <div class="triple-form">
-                            <h3>Filtrar productos</h3>
-                            <form class="form-grid grid-4">
-                                <!-- Nombre -->
-                                <div class="input-group">
-                                    <label for="filtro-nombre">Nombre</label>
-                                    <div class="input-icon">
-                                        <span class="material-icons">search</span>
-                                        <input type="text" id="filtro-nombre" placeholder="Nombre">
-                                    </div>
-                                </div>
-
-                                <!-- Categoría -->
-                                <div class="input-group">
-                                    <label for="filtro-categoria">Categoría</label>
-                                    <div class="input-icon">
-                                        <span class="material-icons">category</span>
-                                        <select id="filtro-categoria">
-                                            <option value="">Todas</option>
-                                            <option value="electronica">Electrónica</option>
-                                            <option value="moda">Moda</option>
-                                            <option value="hogar">Hogar</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <!-- Precio mínimo -->
-                                <div class="input-group">
-                                    <label for="precio-min">Precio mínimo</label>
-                                    <div class="input-icon">
-                                        <span class="material-icons">attach_money</span>
-                                        <input type="number" id="precio-min" placeholder="0">
-                                    </div>
-                                </div>
-
-                                <!-- Precio máximo -->
-                                <div class="input-group">
-                                    <label for="precio-max">Precio máximo</label>
-                                    <div class="input-icon">
-                                        <span class="material-icons">attach_money</span>
-                                        <input type="number" id="precio-max" placeholder="10000">
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-
-
-                        <!-- Fila inferior: tarjetas -->
-                        <div class="triple-tarjetas card-grid grid-3">
-                            <div class="product-card">
-                                <div class="product-header">
-                                    <h4>Titulo</h4>
-                                    <p>Subtitulo</p>
-                                </div>
-                                <div class="product-body">
-                                    <div class="user-info">
-                                        <span class="material-icons avatar download-icon" data-tooltip="Descargar documento">download</span>
-                                        <div>
-                                            <strong>Autor</strong>
-                                            <div class="role">Fecha de publicación</div>
-                                        </div>
-                                    </div>
-                                    <hr />
-                                    <div class="product-footer">
-                                        <div class="metric">
-                                            <strong>245</strong>
-                                            <span>Vistas</span>
-                                        </div>
-                                        <div class="metric">
-                                            <strong>1085</strong>
-                                            <span>Descargas</span>
-                                        </div>
-                                        <button class="btn-view">Ver publicación</button>
-                                    </div>
+                    <!-- 📝 Formulario para nueva publicación -->
+                    <div class="triple-form">
+                        <h3>Publicar nueva entrada</h3>
+                        <form class="form-grid grid-4" id="form-publicacion" enctype="multipart/form-data">
+                            <!-- Título -->
+                            <div class="input-group">
+                                <label for="titulo">Título</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">title</span>
+                                    <input type="text" name="titulo" id="titulo" required>
                                 </div>
                             </div>
 
-                        </div>
+                            <!-- Subtítulo -->
+                            <div class="input-group">
+                                <label for="subtitulo">Subtítulo</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">subtitles</span>
+                                    <input type="text" name="subtitulo" id="subtitulo">
+                                </div>
+                            </div>
+
+                            <!-- Autor -->
+                            <div class="input-group">
+                                <label for="autor">Autor</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">person</span>
+                                    <input type="text" name="autor" id="autor" required value="<?php echo htmlspecialchars($nombre); ?>">
+                                </div>
+                            </div>
+
+                            <!-- Fecha -->
+                            <div class="input-group">
+                                <label for="fecha_publicacion">Fecha</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">event</span>
+                                    <input type="date" name="fecha_publicacion" id="fecha_publicacion" required value="<?= date('Y-m-d'); ?>">
+                                </div>
+                            </div>
+
+                            <!-- Categoría -->
+                            <div class="input-group">
+                                <label for="categoria">Categoría</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">category</span>
+                                    <select name="categoria_id" id="categoria-select" required></select>
+                                </div>
+                                <button type="button" onclick="nuevaCategoria()" style="margin-top: 5px;">+ Agregar</button>
+                            </div>
+
+                            <!-- Subcategoría -->
+                            <div class="input-group">
+                                <label for="subcategoria">Subcategoría</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">label</span>
+                                    <select name="subcategoria_id" id="subcategoria-select" required></select>
+                                </div>
+                                <button type="button" onclick="nuevaSubcategoria()" style="margin-top: 5px;">+ Agregar</button>
+                            </div>
+
+                            <!-- Archivo -->
+                            <div class="input-group">
+                                <label for="archivo">Archivo</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">attach_file</span>
+                                    <input type="file" name="archivo" id="archivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip">
+                                </div>
+                            </div>
+
+                            <!-- Descripción -->
+                            <div class="input-group" style="grid-column: span 4;">
+                                <label for="descripcion">Descripción</label>
+                                <textarea name="descripcion" id="descripcion" rows="4" placeholder="Descripción de la publicación..."></textarea>
+                            </div>
+
+                            <!-- Botón guardar -->
+                            <div style="grid-column: span 4; text-align: right;">
+                                <button type="submit" class="btn">Guardar publicación</button>
+                            </div>
+                        </form>
                     </div>
+
+
+
+                    <!-- Fila inferior: tarjetas -->
+                    <div class="triple-tarjetas card-grid grid-3">
+                        <div class="product-card">
+                            <div class="product-header">
+                                <h4>Titulo</h4>
+                                <p>Subtitulo</p>
+                            </div>
+                            <div class="product-body">
+                                <div class="user-info">
+                                    <span class="material-icons avatar download-icon">download</span>
+                                    <div>
+                                        <strong>Autor</strong>
+                                        <div class="role">Fecha de publicación</div>
+                                    </div>
+                                </div>
+                                <hr />
+                                <div class="product-footer">
+                                    <div class="metric">
+                                        <strong>245</strong>
+                                        <span>Vistas</span>
+                                    </div>
+                                    <div class="metric">
+                                        <strong>1085</strong>
+                                        <span>Descargas</span>
+                                    </div>
+                                    <button class="btn-view">Ver publicación</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
 
                 <!-- contenedor del toastify -->
                 <div id="toast-container"></div>
