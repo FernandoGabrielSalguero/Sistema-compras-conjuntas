@@ -643,7 +643,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <div class="product-header">
                         <h4>${pub.titulo}</h4>
                         <p>${pub.subtitulo || ''}</p>
-                        <hr />
+                        < hr/>
                         <p class="breadcrumb-cat">Categoría 1 &gt; Subcategoría 1</p>
                     </div>
                     <div class="product-body">
