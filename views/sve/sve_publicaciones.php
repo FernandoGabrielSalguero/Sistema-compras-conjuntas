@@ -649,7 +649,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         <h4>${pub.titulo}</h4>
                         <p>${pub.subtitulo || ''}</p>
                         <hr/>
-                        <p class="breadcrumb-cat">Categoría 1 &gt; Subcategoría 1</p>
+                        <p class="breadcrumb-cat">${pub.categoria} &gt; ${pub.subcategoria}</p>
                         <button class="btn-icon red" style="position: absolute; top: 12px; right: 12px;" onclick="eliminarPublicacion(${pub.id})">
                         <span class="material-icons">delete</span>
                         </button>
