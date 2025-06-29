@@ -158,6 +158,10 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             margin-top: 4px;
             margin-bottom: 8px;
         }
+
+        .product-card {
+            position: relative;
+        }
     </style>
 </head>
 
