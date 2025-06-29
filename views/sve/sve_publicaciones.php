@@ -280,6 +280,28 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                     </div>
                                 </div>
 
+                                <!-- Categoría -->
+                                <div class="input-group">
+                                    <label for="categoria_id">Categoría</label>
+                                    <div class="input-icon">
+                                        <span class="material-icons">category</span>
+                                        <select name="categoria_id" id="select-categoria" required>
+                                            <option value="">Seleccionar categoría</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Subcategoría -->
+                                <div class="input-group">
+                                    <label for="subcategoria_id">Subcategoría</label>
+                                    <div class="input-icon">
+                                        <span class="material-icons">category</span>
+                                        <select name="subcategoria_id" id="select-subcategoria" required disabled>
+                                            <option value="">Seleccionar subcategoría</option>
+                                        </select>
+                                    </div>
+                                </div>
+
                                 <!-- Archivo -->
                                 <div class="input-group">
                                     <label for="archivo">Archivo</label>
@@ -374,8 +396,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     }
                 });
             <?php endif; ?>
-            // Cargar Categorias al inicio
+
             cargarCategorias();
+            cargarCategoriasSelect();
         });
 
         // Función para crear una nueva categoría
@@ -548,6 +571,47 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 })
             }).then(() => cargarCategorias());
         }
+
+        // Funciones para cargar categorias en el formulario de publicación
+        function cargarCategoriasSelect() {
+            fetch('../../controllers/sve_publicacionesController.php?action=get_categorias')
+                .then(r => r.json())
+                .then(data => {
+                    const select = document.getElementById('select-categoria');
+                    select.innerHTML = '<option value="">Seleccionar categoría</option>';
+                    data.forEach(cat => {
+                        const opt = document.createElement('option');
+                        opt.value = cat.id;
+                        opt.textContent = cat.nombre;
+                        select.appendChild(opt);
+                    });
+                });
+        }
+
+        document.getElementById('select-categoria').addEventListener('change', function() {
+            const catId = this.value;
+            const subSelect = document.getElementById('select-subcategoria');
+            subSelect.disabled = true;
+            subSelect.innerHTML = '<option value="">Cargando...</option>';
+
+            if (!catId) {
+                subSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
+                return;
+            }
+
+            fetch(`../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=${catId}`)
+                .then(r => r.json())
+                .then(data => {
+                    subSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
+                    data.forEach(sub => {
+                        const opt = document.createElement('option');
+                        opt.value = sub.id;
+                        opt.textContent = sub.nombre;
+                        subSelect.appendChild(opt);
+                    });
+                    subSelect.disabled = false;
+                });
+        });
     </script>
 
 </body>
