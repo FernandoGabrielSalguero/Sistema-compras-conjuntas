@@ -639,7 +639,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     </div>
                     <div class="product-body">
                         <div class="user-info">
-                            <span class="material-icons avatar download-icon">description</span>
                             <div>
                                 <strong>${pub.autor}</strong>
                                 <div class="role">${pub.fecha_publicacion}</div>
@@ -662,7 +661,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <span>Descargas</span>
                             </div>
                             ${pub.archivo
-                                ? `<a href="../../uploads/publications/${pub.archivo}" target="_blank" class="btn-view">Ver publicación</a>`
+                                ? `<a href="../../uploads/publications/${pub.archivo}" target="_blank" class="btn-view">Ver archivo</a>`
                                 : '<span class="muted">Sin archivo</span>'}
                         </div>
                     </div>
