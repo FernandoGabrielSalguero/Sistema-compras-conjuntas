@@ -11,7 +11,7 @@ class PublicacionesModel
 
     public function __construct()
     {
-        global $pdo; // Usamos la conexión creada en config.php
+        global $pdo;
         $this->conn = $pdo;
     }
 
@@ -51,5 +51,21 @@ class PublicacionesModel
     {
         $stmt = $this->conn->prepare("DELETE FROM subcategorias_publicaciones WHERE id = ?");
         return $stmt->execute([$id]);
+    }
+
+    public function guardarPublicacion($data)
+    {
+        $sql = "INSERT INTO publicaciones (titulo, subtitulo, autor, descripcion, categoria_id, subcategoria_id, archivo, fecha_publicacion)
+            VALUES (:titulo, :subtitulo, :autor, :descripcion, :categoria_id, :subcategoria_id, :archivo, CURDATE())";
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([
+            ':titulo' => $data['titulo'],
+            ':subtitulo' => $data['subtitulo'],
+            ':autor' => $data['autor'],
+            ':descripcion' => $data['descripcion'],
+            ':categoria_id' => $data['categoria_id'],
+            ':subcategoria_id' => $data['subcategoria_id'],
+            ':archivo' => $data['archivo']
+        ]);
     }
 }

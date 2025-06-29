@@ -320,8 +320,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                                 <!-- Botón guardar -->
                                 <div style="grid-column: span 4; text-align: right;">
-                                    <button type="submit" class="btn btn-disabled" id="btn-guardar" disabled>Guardar
-                                        publicación</button>
+                                    <button type="submit" class="btn btn-disabled" id="btn-guardar" disabled>Guardar publicación</button>
                                 </div>
                             </form>
                         </div>
@@ -610,6 +609,43 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         subSelect.appendChild(opt);
                     });
                     subSelect.disabled = false;
+                });
+        });
+
+        // funciones para enviar el formulario de publicación a la base de datos
+        document.getElementById('form-publicacion').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const form = this;
+            const btn = document.getElementById('btn-guardar');
+            const formData = new FormData(form);
+
+            btn.disabled = true;
+            btn.textContent = 'Guardando...';
+
+            fetch('../../controllers/sve_publicacionesController.php?action=guardar_publicacion', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(r => r.json())
+                .then(resp => {
+                    if (resp.success) {
+                        showToast('success', '✅ Publicación guardada correctamente.');
+                        form.reset();
+                        document.getElementById('select-subcategoria').innerHTML = '<option value="">Seleccionar subcategoría</option>';
+                        document.getElementById('select-subcategoria').disabled = true;
+                    } else {
+                        showToast('error', '❌ Error al guardar publicación.');
+                        console.error(resp.error || 'Error desconocido');
+                    }
+                })
+                .catch(err => {
+                    showToast('error', '❌ Error en la solicitud AJAX');
+                    console.error(err);
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = 'Guardar publicación';
                 });
         });
     </script>

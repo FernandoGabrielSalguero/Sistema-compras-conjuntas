@@ -47,4 +47,40 @@ switch ($action) {
     default:
         echo json_encode(['error' => 'Acción no válida']);
         break;
+
+    case 'guardar_publicacion':
+        // Validaciones básicas
+        $titulo = $_POST['titulo'] ?? '';
+        $subtitulo = $_POST['subtitulo'] ?? '';
+        $autor = $_POST['autor'] ?? '';
+        $descripcion = $_POST['descripcion'] ?? '';
+        $categoria_id = $_POST['categoria_id'] ?? 0;
+        $subcategoria_id = $_POST['subcategoria_id'] ?? 0;
+
+        $archivo = $_FILES['archivo'] ?? null;
+        $nombreArchivo = null;
+
+        if ($archivo && $archivo['error'] === 0) {
+            $ext = pathinfo($archivo['name'], PATHINFO_EXTENSION);
+            $nombreArchivo = uniqid('pub_') . '.' . $ext;
+            $destino = __DIR__ . '/../uploads/publications/' . $nombreArchivo;
+
+            if (!move_uploaded_file($archivo['tmp_name'], $destino)) {
+                echo json_encode(['success' => false, 'error' => 'No se pudo guardar el archivo']);
+                exit;
+            }
+        }
+
+        $success = $publicacionesModel->guardarPublicacion([
+            'titulo' => $titulo,
+            'subtitulo' => $subtitulo,
+            'autor' => $autor,
+            'descripcion' => $descripcion,
+            'categoria_id' => $categoria_id,
+            'subcategoria_id' => $subcategoria_id,
+            'archivo' => $nombreArchivo
+        ]);
+
+        echo json_encode(['success' => $success]);
+        break;
 }
