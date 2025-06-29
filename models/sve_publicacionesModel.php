@@ -80,4 +80,10 @@ class PublicacionesModel
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function eliminarPublicacion($id)
+    {
+        $stmt = $this->conn->prepare("DELETE FROM publicaciones WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
 }

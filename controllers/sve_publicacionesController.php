@@ -87,4 +87,9 @@ switch ($action) {
     case 'get_publicaciones':
         echo json_encode($publicacionesModel->obtenerPublicaciones());
         break;
+
+    case 'eliminar_publicacion':
+        $id = $_POST['id'] ?? 0;
+        echo json_encode(['success' => $publicacionesModel->eliminarPublicacion($id)]);
+        break;
 }

@@ -646,6 +646,9 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         <p>${pub.subtitulo || ''}</p>
                         <hr/>
                         <p class="breadcrumb-cat">Categoría 1 &gt; Subcategoría 1</p>
+                        <button class="btn-icon red" style="position: absolute; top: 12px; right: 12px;" onclick="eliminarPublicacion(${pub.id})">
+                        <span class="material-icons">delete</span>
+                        </button>
                     </div>
                     <div class="product-body">
                         <div class="user-info">
@@ -678,6 +681,35 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 `;
                         contenedor.appendChild(card);
                     });
+                });
+        }
+
+        // funcion para eliminar una publicación
+        function eliminarPublicacion(id) {
+            if (!confirm('¿Seguro que querés eliminar esta publicación?')) return;
+
+            fetch('../../controllers/sve_publicacionesController.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        action: 'eliminar_publicacion',
+                        id
+                    })
+                })
+                .then(r => r.json())
+                .then(resp => {
+                    if (resp.success) {
+                        showToast('success', '✅ Publicación eliminada correctamente');
+                        cargarPublicaciones();
+                    } else {
+                        showToast('error', '❌ Error al eliminar publicación');
+                    }
+                })
+                .catch(err => {
+                    showToast('error', '❌ Error inesperado');
+                    console.error(err);
                 });
         }
     </script>
