@@ -650,8 +650,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         <p>${pub.subtitulo || ''}</p>
                         <hr/>
                         <p class="breadcrumb-cat">${pub.categoria} &gt; ${pub.subcategoria}</p>
-                        <button class="btn-icon red" style="position: absolute; top: 12px; right: 12px;" onclick="eliminarPublicacion(${pub.id})">
-                        <span class="material-icons">delete</span>
+                        <button class="btn-icon red" style="position: absolute; top: 12px; right: 12px;" onclick="mostrarModalEliminar(${pub.id})">
+                            <span class="material-icons">delete</span>
                         </button>
                     </div>
                     <div class="product-body">
@@ -716,8 +716,59 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     console.error(err);
                 });
         }
+
+        let publicacionAEliminar = null;
+
+        function mostrarModalEliminar(id) {
+            publicacionAEliminar = id;
+            document.getElementById('modalEliminarPublicacion').classList.remove('hidden');
+        }
+
+        function cerrarModalEliminar() {
+            publicacionAEliminar = null;
+            document.getElementById('modalEliminarPublicacion').classList.add('hidden');
+        }
+
+        document.getElementById('btnConfirmarEliminar').addEventListener('click', () => {
+            if (!publicacionAEliminar) return;
+
+            fetch('../../controllers/sve_publicacionesController.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        action: 'eliminar_publicacion',
+                        id: publicacionAEliminar
+                    })
+                })
+                .then(res => res.json())
+                .then(resp => {
+                    if (resp.success) {
+                        showToast('success', 'Publicación eliminada correctamente.');
+                        cargarPublicaciones();
+                    } else {
+                        showToast('error', 'No se pudo eliminar la publicación.');
+                    }
+                })
+                .catch(err => {
+                    console.error('❌ Error al eliminar publicación:', err);
+                    showToast('error', 'Error en la solicitud.');
+                })
+                .finally(() => cerrarModalEliminar());
+        });
     </script>
 
+    <!-- Modal de confirmación para eliminar publicación -->
+    <div id="modalEliminarPublicacion" class="modal hidden">
+        <div class="modal-content">
+            <h3>¿Estás seguro de eliminar esta publicación?</h3>
+            <div class="form-buttons">
+                <button id="btnConfirmarEliminar" class="btn btn-aceptar">Eliminar</button>
+                <button class="btn btn-cancelar" onclick="cerrarModalEliminar()">Cancelar</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 
