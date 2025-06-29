@@ -64,6 +64,57 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         ul.subcategorias.visible {
             display: block;
         }
+
+        .categoria-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .categoria-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .categoria-header h4 {
+            margin: 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .subcategorias-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .badge-subcat {
+            background: #eee;
+            color: #333;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .subcat-form {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .subcat-form input {
+            flex: 1;
+            border-radius: 8px;
+            padding: 4px 8px;
+        }
     </style>
 </head>
 
@@ -291,19 +342,54 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 .then(data => {
                     const lista = document.getElementById('lista-categorias');
                     lista.innerHTML = '';
+
                     data.forEach(cat => {
-                        const li = document.createElement('li');
-                        li.innerHTML = `
-                    <button class="categoria-btn" onclick="toggleSubcategoriasLocal(this, ${cat.id})">${cat.nombre}</button>
-                    <button onclick="eliminarCategoria(${cat.id})" class="btn-icon small red"><span class="material-icons">delete</span></button>
-                    <ul class="subcategorias" id="subcat-${cat.id}"></ul>
-                    <div class="input-group">
-                        <input type="text" placeholder="Nueva subcategoría" id="input-subcat-${cat.id}">
+                        const div = document.createElement('div');
+                        div.classList.add('categoria-card'); // nuevo estilo
+
+                        div.innerHTML = `
+                    <div class="categoria-header">
+                        <h4>${cat.nombre}</h4>
+                        <button onclick="eliminarCategoria(${cat.id})" class="btn-icon small red">
+                            <span class="material-icons">delete</span>
+                        </button>
+                    </div>
+                    <div id="subcat-${cat.id}" class="subcategorias-list"></div>
+                    <div class="subcat-form">
+                        <input type="text" id="input-subcat-${cat.id}" placeholder="Nueva subcategoría">
                         <button onclick="crearSubcategoria(${cat.id})" class="btn small">+</button>
                     </div>
                 `;
-                        lista.appendChild(li);
+
+                        lista.appendChild(div);
+                        cargarSubcategorias(cat.id); // carga automática
                     });
+                });
+        }
+
+        function cargarSubcategorias(categoria_id) {
+            const ul = document.getElementById('subcat-' + categoria_id);
+            if (!ul) return;
+
+            fetch('../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=' + categoria_id)
+                .then(r => r.json())
+                .then(data => {
+                    ul.innerHTML = '';
+                    if (data.length === 0) {
+                        ul.innerHTML = '<span class="muted">Sin subcategorías</span>';
+                    } else {
+                        data.forEach(sub => {
+                            const span = document.createElement('span');
+                            span.classList.add('badge-subcat');
+                            span.innerHTML = `
+                        ${sub.nombre}
+                        <button onclick="eliminarSubcategoria(${sub.id})" class="btn-icon xxsmall red">
+                            <span class="material-icons" style="font-size: 14px;">close</span>
+                        </button>
+                    `;
+                            ul.appendChild(span);
+                        });
+                    }
                 });
         }
 
