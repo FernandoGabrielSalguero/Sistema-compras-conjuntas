@@ -129,100 +129,151 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <p>En esta página vamos a poder publicar investigaciones publicas</p>
                 </div>
 
-                <!-- 📝 Formulario para nueva publicación -->
-                <div class="triple-derecha">
-                    <div class="triple-form">
-                        <h3>Publicar nueva entrada</h3>
-                        <form class="form-grid grid-4" id="form-publicacion" enctype="multipart/form-data">
-                            <!-- Título -->
-                            <div class="input-group">
-                                <label for="titulo">Título</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">title</span>
-                                    <input type="text" name="titulo" id="titulo" required>
-                                </div>
-                            </div>
-
-                            <!-- Subtítulo -->
-                            <div class="input-group">
-                                <label for="subtitulo">Subtítulo</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">subtitles</span>
-                                    <input type="text" name="subtitulo" id="subtitulo" required>
-                                </div>
-                            </div>
-
-                            <!-- Autor -->
-                            <div class="input-group">
-                                <label for="autor">Autor</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">person</span>
-                                    <input type="text" name="autor" id="autor" required>
-                                </div>
-                            </div>
-
-                            <!-- Archivo -->
-                            <div class="input-group">
-                                <label for="archivo">Archivo</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">attach_file</span>
-                                    <input type="file" name="archivo" id="archivo" accept=".pdf">
-                                </div>
-                            </div>
-
-                            <!-- Descripción -->
-                            <div class="input-group" style="grid-column: span 4;">
-                                <label for="descripcion">Descripción</label>
-                                <textarea name="descripcion" id="descripcion" rows="4"
-                                    placeholder="Descripción de la publicación..." required></textarea>
-                            </div>
-
-                            <!-- Botón guardar -->
-                            <div style="grid-column: span 4; text-align: right;">
-                                <button type="submit" class="btn btn-disabled" id="btn-guardar" disabled>Guardar
-                                    publicación</button>
-                            </div>
-                        </form>
+                <!-- SECCIÓN TRIPLE PARA CREAR PUBLICACIONES Y PREVISUALIZARLAS -->
+                <div class="triple-layout">
+                    <!-- Columna izquierda: categorías -->
+                    <div class="triple-categorias">
+                        <h3>Categorías</h3>
+                        <ul class="accordion-categorias">
+                            <li>
+                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Electrónica</button>
+                                <ul class="subcategorias">
+                                    <li>Celulares</li>
+                                    <li>TVs</li>
+                                    <li>Audio</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Moda</button>
+                                <ul class="subcategorias">
+                                    <li>Hombre</li>
+                                    <li>Mujer</li>
+                                    <li>Niños</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Hogar</button>
+                                <ul class="subcategorias">
+                                    <li>Cocina</li>
+                                    <li>Deco</li>
+                                    <li>Muebles</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Juguetes</button>
+                                <ul class="subcategorias">
+                                    <li>Muñecos</li>
+                                    <li>Didácticos</li>
+                                    <li>Exterior</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Libros</button>
+                                <ul class="subcategorias">
+                                    <li>Infantiles</li>
+                                    <li>Novelas</li>
+                                    <li>Técnicos</li>
+                                </ul>
+                            </li>
+                        </ul>
                     </div>
 
-                    <!-- Fila inferior: tarjetas -->
-                    <div class="triple-tarjetas card-grid grid-3">
-                        <div class="product-card">
-                            <div class="product-header">
-                                <h4>Titulo</h4>
-                                <p>Subtitulo</p>
-                            </div>
-                            <div class="product-body">
-                                <div class="user-info">
-                                    <span class="material-icons avatar download-icon">download</span>
-                                    <div>
-                                        <strong>Autor</strong>
-                                        <div class="role">Fecha de publicación</div>
+
+                    <!-- 📝 Formulario para nueva publicación -->
+                    <div class="triple-derecha">
+                        <div class="triple-form">
+                            <h3>Publicar nueva entrada</h3>
+                            <form class="form-grid grid-4" id="form-publicacion" enctype="multipart/form-data">
+                                <!-- Título -->
+                                <div class="input-group">
+                                    <label for="titulo">Título</label>
+                                    <div class="input-icon">
+                                        <span class="material-icons">title</span>
+                                        <input type="text" name="titulo" id="titulo" required>
+                                    </div>
+                                </div>
+
+                                <!-- Subtítulo -->
+                                <div class="input-group">
+                                    <label for="subtitulo">Subtítulo</label>
+                                    <div class="input-icon">
+                                        <span class="material-icons">subtitles</span>
+                                        <input type="text" name="subtitulo" id="subtitulo" required>
+                                    </div>
+                                </div>
+
+                                <!-- Autor -->
+                                <div class="input-group">
+                                    <label for="autor">Autor</label>
+                                    <div class="input-icon">
+                                        <span class="material-icons">person</span>
+                                        <input type="text" name="autor" id="autor" required>
+                                    </div>
+                                </div>
+
+                                <!-- Archivo -->
+                                <div class="input-group">
+                                    <label for="archivo">Archivo</label>
+                                    <div class="input-icon">
+                                        <span class="material-icons">attach_file</span>
+                                        <input type="file" name="archivo" id="archivo" accept=".pdf">
                                     </div>
                                 </div>
 
                                 <!-- Descripción -->
-                                <p class="description">
-                                    Esta es una descripción resumida de la publicación que se mostrará en la tarjeta. Solo se mostrarán las
-                                    primeras líneas.
-                                </p>
-
-                                <hr />
-
-                                <div class="product-footer">
-                                    <div class="metric">
-                                        <strong>245</strong>
-                                        <span>Vistas</span>
-                                    </div>
-                                    <div class="metric">
-                                        <strong>1085</strong>
-                                        <span>Descargas</span>
-                                    </div>
-                                    <button class="btn-view">Ver publicación</button>
+                                <div class="input-group" style="grid-column: span 4;">
+                                    <label for="descripcion">Descripción</label>
+                                    <textarea name="descripcion" id="descripcion" rows="4"
+                                        placeholder="Descripción de la publicación..." required></textarea>
                                 </div>
-                            </div>
+
+                                <!-- Botón guardar -->
+                                <div style="grid-column: span 4; text-align: right;">
+                                    <button type="submit" class="btn btn-disabled" id="btn-guardar" disabled>Guardar
+                                        publicación</button>
+                                </div>
+                            </form>
                         </div>
 
+                        <!-- Fila inferior: tarjetas -->
+                        <div class="triple-tarjetas card-grid grid-3">
+                            <div class="product-card">
+                                <div class="product-header">
+                                    <h4>Titulo</h4>
+                                    <p>Subtitulo</p>
+                                </div>
+                                <div class="product-body">
+                                    <div class="user-info">
+                                        <span class="material-icons avatar download-icon">download</span>
+                                        <div>
+                                            <strong>Autor</strong>
+                                            <div class="role">Fecha de publicación</div>
+                                        </div>
+                                    </div>
+                            
+                                    <!-- Descripción -->
+                                    <p class="description">
+                                        Esta es una descripción resumida de la publicación que se mostrará en la tarjeta. Solo se mostrarán las
+                                        primeras líneas.
+                                    </p>
+                            
+                                    <hr />
+                            
+                                    <div class="product-footer">
+                                        <div class="metric">
+                                            <strong>245</strong>
+                                            <span>Vistas</span>
+                                        </div>
+                                        <div class="metric">
+                                            <strong>1085</strong>
+                                            <span>Descargas</span>
+                                        </div>
+                                        <button class="btn-view">Ver publicación</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            </div>
                     </div>
                 </div>
 
