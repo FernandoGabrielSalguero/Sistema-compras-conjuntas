@@ -282,7 +282,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     data.forEach(cat => {
                         const li = document.createElement('li');
                         li.innerHTML = `
-                    <button class="categoria-btn" onclick="toggleSubcategorias(this, ${cat.id})">${cat.nombre}</button>
+                    <button class="categoria-btn" onclick="toggleSubcategoriasLocal(this, ${cat.id})">${cat.nombre}</button>
                     <button onclick="eliminarCategoria(${cat.id})" class="btn-icon small red"><span class="material-icons">delete</span></button>
                     <ul class="subcategorias" id="subcat-${cat.id}"></ul>
                     <div class="input-group">
@@ -295,25 +295,25 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 });
         }
 
-        function toggleSubcategorias(btn, categoria_id) {
-            const ul = document.getElementById('subcat-' + categoria_id);
+function toggleSubcategoriasLocal(btn, categoria_id) {
+    const ul = document.getElementById('subcat-' + categoria_id);
 
-            if (!ul.classList.contains('visible')) {
-                ul.innerHTML = '';
-                fetch('../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=' + categoria_id)
-                    .then(r => r.json())
-                    .then(data => {
-                        data.forEach(sub => {
-                            const li = document.createElement('li');
-                            li.innerHTML = `${sub.nombre} <button onclick="eliminarSubcategoria(${sub.id})" class="btn-icon small red"><span class="material-icons">delete</span></button>`;
-                            ul.appendChild(li);
-                        });
-                        ul.classList.add('visible');
-                    });
-            } else {
-                ul.classList.remove('visible');
-            }
-        }
+    if (!ul.classList.contains('visible')) {
+        ul.innerHTML = '';
+        fetch('../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=' + categoria_id)
+            .then(r => r.json())
+            .then(data => {
+                data.forEach(sub => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `${sub.nombre} <button onclick="eliminarSubcategoria(${sub.id})" class="btn-icon small red"><span class="material-icons">delete</span></button>`;
+                    ul.appendChild(li);
+                });
+                ul.classList.add('visible');
+            });
+    } else {
+        ul.classList.remove('visible');
+    }
+}
 
         function crearCategoria() {
             const nombre = document.getElementById('nueva-categoria').value.trim();
@@ -365,7 +365,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 input.value = '';
                 const ul = document.getElementById('subcat-' + categoria_id);
                 ul.classList.remove('visible');
-                toggleSubcategorias(null, categoria_id);
+                toggleSubcategoriasLocal(null, categoria_id);
             });
         }
 
