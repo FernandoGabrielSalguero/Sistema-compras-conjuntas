@@ -53,6 +53,18 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
+    <style>
+        ul.subcategorias {
+            display: none;
+            margin: 0;
+            padding-left: 1rem;
+        }
+
+        ul.subcategorias.visible {
+            display: block;
+        }
+    </style>
 </head>
 
 <body>
@@ -295,47 +307,47 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                 });
         }
 
-function toggleSubcategoriasLocal(btn, categoria_id) {
-    const ul = document.getElementById('subcat-' + categoria_id);
+        function toggleSubcategoriasLocal(btn, categoria_id) {
+            const ul = document.getElementById('subcat-' + categoria_id);
 
-    if (!ul) {
-        console.error('❌ No se encontró el UL con id subcat-' + categoria_id);
-        return;
-    }
+            if (!ul) {
+                console.error('❌ No se encontró el UL con id subcat-' + categoria_id);
+                return;
+            }
 
-    const mostrar = !ul.classList.contains('visible');
+            const mostrar = !ul.classList.contains('visible');
 
-    if (mostrar) {
-        ul.innerHTML = '⏳ Cargando...';
-        fetch('../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=' + categoria_id)
-            .then(r => r.json())
-            .then(data => {
-                console.log('📦 Subcategorías recibidas para categoría ID ' + categoria_id, data); // ⬅️ DEBUG
+            if (mostrar) {
+                ul.innerHTML = '⏳ Cargando...';
+                fetch('../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=' + categoria_id)
+                    .then(r => r.json())
+                    .then(data => {
+                        console.log('📦 Subcategorías recibidas para categoría ID ' + categoria_id, data); // ⬅️ DEBUG
 
-                ul.innerHTML = ''; // limpia el loading
-                if (data.length === 0) {
-                    ul.innerHTML = '<li><em>Sin subcategorías aún</em></li>';
-                } else {
-                    data.forEach(sub => {
-                        const li = document.createElement('li');
-                        li.innerHTML = `
+                        ul.innerHTML = ''; // limpia el loading
+                        if (data.length === 0) {
+                            ul.innerHTML = '<li><em>Sin subcategorías aún</em></li>';
+                        } else {
+                            data.forEach(sub => {
+                                const li = document.createElement('li');
+                                li.innerHTML = `
                             ${sub.nombre}
                             <button onclick="eliminarSubcategoria(${sub.id})" class="btn-icon small red">
                                 <span class="material-icons">delete</span>
                             </button>`;
-                        ul.appendChild(li);
+                                ul.appendChild(li);
+                            });
+                        }
+                        ul.classList.add('visible');
+                    })
+                    .catch(err => {
+                        console.error('⚠️ Error al cargar subcategorías:', err);
+                        ul.innerHTML = '<li><em>Error al cargar subcategorías</em></li>';
                     });
-                }
-                ul.classList.add('visible');
-            })
-            .catch(err => {
-                console.error('⚠️ Error al cargar subcategorías:', err);
-                ul.innerHTML = '<li><em>Error al cargar subcategorías</em></li>';
-            });
-    } else {
-        ul.classList.remove('visible');
-    }
-}
+            } else {
+                ul.classList.remove('visible');
+            }
+        }
 
         function crearCategoria() {
             const nombre = document.getElementById('nueva-categoria').value.trim();
