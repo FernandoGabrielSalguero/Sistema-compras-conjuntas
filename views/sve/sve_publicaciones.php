@@ -134,55 +134,18 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <!-- Columna izquierda: categorías -->
                     <div class="triple-categorias">
                         <h3>Categorías</h3>
-                        <ul class="accordion-categorias">
-                            <li>
-                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Electrónica</button>
-                                <ul class="subcategorias">
-                                    <li>Celulares</li>
-                                    <li>TVs</li>
-                                    <li>Audio</li>
-                                </ul>
-                            </li>
-                            <li>
-                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Moda</button>
-                                <ul class="subcategorias">
-                                    <li>Hombre</li>
-                                    <li>Mujer</li>
-                                    <li>Niños</li>
-                                </ul>
-                            </li>
-                            <li>
-                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Hogar</button>
-                                <ul class="subcategorias">
-                                    <li>Cocina</li>
-                                    <li>Deco</li>
-                                    <li>Muebles</li>
-                                </ul>
-                            </li>
-                            <li>
-                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Juguetes</button>
-                                <ul class="subcategorias">
-                                    <li>Muñecos</li>
-                                    <li>Didácticos</li>
-                                    <li>Exterior</li>
-                                </ul>
-                            </li>
-                            <li>
-                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Libros</button>
-                                <ul class="subcategorias">
-                                    <li>Infantiles</li>
-                                    <li>Novelas</li>
-                                    <li>Técnicos</li>
-                                </ul>
-                            </li>
-                        </ul>
+                        <div class="input-group">
+                            <input type="text" id="nueva-categoria" placeholder="Nueva categoría" />
+                            <button class="btn" onclick="crearCategoria()">+</button>
+                        </div>
+                        <ul id="lista-categorias" class="accordion-categorias"></ul>
                     </div>
 
 
                     <!-- 📝 Formulario para nueva publicación -->
                     <div class="triple-derecha">
                         <div class="triple-form">
-                            <h3>Publicar nueva entrada</h3>
+                            <h3>Realicemos una nueva publicación</h3>
                             <form class="form-grid grid-4" id="form-publicacion" enctype="multipart/form-data">
                                 <!-- Título -->
                                 <div class="input-group">
@@ -250,15 +213,15 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                             <div class="role">Fecha de publicación</div>
                                         </div>
                                     </div>
-                            
+
                                     <!-- Descripción -->
                                     <p class="description">
                                         Esta es una descripción resumida de la publicación que se mostrará en la tarjeta. Solo se mostrarán las
                                         primeras líneas.
                                     </p>
-                            
+
                                     <hr />
-                            
+
                                     <div class="product-footer">
                                         <div class="metric">
                                             <strong>245</strong>
@@ -272,8 +235,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                     </div>
                                 </div>
                             </div>
-                            
-                            </div>
+
+                        </div>
                     </div>
                 </div>
 
@@ -305,10 +268,118 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     }
                 });
             <?php endif; ?>
+            // Cargar Categorias al inicio
+            cargarCategorias();
         });
+
+        // Función para crear una nueva categoría
+        function cargarCategorias() {
+            fetch('sve_publicacionesController.php?action=get_categorias')
+                .then(r => r.json())
+                .then(data => {
+                    const lista = document.getElementById('lista-categorias');
+                    lista.innerHTML = '';
+                    data.forEach(cat => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                    <button class="categoria-btn" onclick="toggleSubcategorias(this, ${cat.id})">${cat.nombre}</button>
+                    <button onclick="eliminarCategoria(${cat.id})" class="btn-icon small red"><span class="material-icons">delete</span></button>
+                    <ul class="subcategorias" id="subcat-${cat.id}"></ul>
+                    <div class="input-group">
+                        <input type="text" placeholder="Nueva subcategoría" id="input-subcat-${cat.id}">
+                        <button onclick="crearSubcategoria(${cat.id})" class="btn small">+</button>
+                    </div>
+                `;
+                        lista.appendChild(li);
+                    });
+                });
+        }
+
+        function toggleSubcategorias(btn, categoria_id) {
+            const ul = document.getElementById('subcat-' + categoria_id);
+            if (ul.childNodes.length === 0) {
+                fetch('sve_publicacionesController.php?action=get_subcategorias&categoria_id=' + categoria_id)
+                    .then(r => r.json())
+                    .then(data => {
+                        data.forEach(sub => {
+                            const li = document.createElement('li');
+                            li.innerHTML = `${sub.nombre} <button onclick="eliminarSubcategoria(${sub.id})" class="btn-icon small red"><span class="material-icons">delete</span></button>`;
+                            ul.appendChild(li);
+                        });
+                    });
+            }
+            ul.classList.toggle('visible');
+        }
+
+        function crearCategoria() {
+            const nombre = document.getElementById('nueva-categoria').value.trim();
+            if (!nombre) return;
+            fetch('sve_publicacionesController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    action: 'crear_categoria',
+                    nombre
+                })
+            }).then(() => {
+                document.getElementById('nueva-categoria').value = '';
+                cargarCategorias();
+            });
+        }
+
+        function eliminarCategoria(id) {
+            if (!confirm('¿Eliminar esta categoría?')) return;
+            fetch('sve_publicacionesController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    action: 'eliminar_categoria',
+                    id
+                })
+            }).then(() => cargarCategorias());
+        }
+
+        function crearSubcategoria(categoria_id) {
+            const input = document.getElementById('input-subcat-' + categoria_id);
+            const nombre = input.value.trim();
+            if (!nombre) return;
+            fetch('sve_publicacionesController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    action: 'crear_subcategoria',
+                    nombre,
+                    categoria_id
+                })
+            }).then(() => {
+                input.value = '';
+                document.getElementById('subcat-' + categoria_id).innerHTML = '';
+                toggleSubcategorias(null, categoria_id);
+            });
+        }
+
+        function eliminarSubcategoria(id) {
+            if (!confirm('¿Eliminar esta subcategoría?')) return;
+            fetch('sve_publicacionesController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    action: 'eliminar_subcategoria',
+                    id
+                })
+            }).then(() => cargarCategorias());
+        }
     </script>
 
 </body>
 
 
-</html> 
+</html>
