@@ -129,57 +129,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <p>En esta página vamos a poder publicar investigaciones publicas</p>
                 </div>
 
-                <!-- Tarjetas tipo layout 3 secciones -->
-                <div class="triple-layout">
-                    <!-- Columna izquierda: categorías -->
-                    <div class="triple-categorias">
-                        <h3>Categorías</h3>
-                        <ul class="accordion-categorias">
-                            <li>
-                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Electrónica</button>
-                                <ul class="subcategorias">
-                                    <li>Celulares</li>
-                                    <li>TVs</li>
-                                    <li>Audio</li>
-                                </ul>
-                            </li>
-                            <li>
-                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Moda</button>
-                                <ul class="subcategorias">
-                                    <li>Hombre</li>
-                                    <li>Mujer</li>
-                                    <li>Niños</li>
-                                </ul>
-                            </li>
-                            <li>
-                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Hogar</button>
-                                <ul class="subcategorias">
-                                    <li>Cocina</li>
-                                    <li>Deco</li>
-                                    <li>Muebles</li>
-                                </ul>
-                            </li>
-                            <li>
-                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Juguetes</button>
-                                <ul class="subcategorias">
-                                    <li>Muñecos</li>
-                                    <li>Didácticos</li>
-                                    <li>Exterior</li>
-                                </ul>
-                            </li>
-                            <li>
-                                <button class="categoria-btn" onclick="toggleSubcategorias(this)">Libros</button>
-                                <ul class="subcategorias">
-                                    <li>Infantiles</li>
-                                    <li>Novelas</li>
-                                    <li>Técnicos</li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
-
-                    
-                    <!-- 📝 Formulario para nueva publicación -->
+                <!-- 📝 Formulario para nueva publicación -->
+                <div class="triple-derecha">
                     <div class="triple-form">
                         <h3>Publicar nueva entrada</h3>
                         <form class="form-grid grid-4" id="form-publicacion" enctype="multipart/form-data">
@@ -197,7 +148,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="subtitulo">Subtítulo</label>
                                 <div class="input-icon">
                                     <span class="material-icons">subtitles</span>
-                                    <input type="text" name="subtitulo" id="subtitulo">
+                                    <input type="text" name="subtitulo" id="subtitulo" required>
                                 </div>
                             </div>
 
@@ -206,7 +157,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="autor">Autor</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
-                                    <input type="text" name="autor" id="autor" required value="<?php echo htmlspecialchars($nombre); ?>">
+                                    <input type="text" name="autor" id="autor" required>
                                 </div>
                             </div>
 
@@ -215,19 +166,21 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 <label for="archivo">Archivo</label>
                                 <div class="input-icon">
                                     <span class="material-icons">attach_file</span>
-                                    <input type="file" name="archivo" id="archivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip">
+                                    <input type="file" name="archivo" id="archivo" accept=".pdf">
                                 </div>
                             </div>
 
                             <!-- Descripción -->
                             <div class="input-group" style="grid-column: span 4;">
                                 <label for="descripcion">Descripción</label>
-                                <textarea name="descripcion" id="descripcion" rows="4" placeholder="Descripción de la publicación..."></textarea>
+                                <textarea name="descripcion" id="descripcion" rows="4"
+                                    placeholder="Descripción de la publicación..." required></textarea>
                             </div>
 
                             <!-- Botón guardar -->
                             <div style="grid-column: span 4; text-align: right;">
-                                <button type="submit" class="btn">Guardar publicación</button>
+                                <button type="submit" class="btn btn-disabled" id="btn-guardar" disabled>Guardar
+                                    publicación</button>
                             </div>
                         </form>
                     </div>
@@ -247,7 +200,15 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                         <div class="role">Fecha de publicación</div>
                                     </div>
                                 </div>
+
+                                <!-- Descripción -->
+                                <p class="description">
+                                    Esta es una descripción resumida de la publicación que se mostrará en la tarjeta. Solo se mostrarán las
+                                    primeras líneas.
+                                </p>
+
                                 <hr />
+
                                 <div class="product-footer">
                                     <div class="metric">
                                         <strong>245</strong>
