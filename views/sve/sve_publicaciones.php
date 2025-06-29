@@ -208,35 +208,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                 </div>
                             </div>
 
-                            <!-- Fecha -->
-                            <div class="input-group">
-                                <label for="fecha_publicacion">Fecha</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">event</span>
-                                    <input type="date" name="fecha_publicacion" id="fecha_publicacion" required value="<?= date('Y-m-d'); ?>">
-                                </div>
-                            </div>
-
-                            <!-- Categoría -->
-                            <div class="input-group">
-                                <label for="categoria">Categoría</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">category</span>
-                                    <select name="categoria_id" id="categoria-select" required></select>
-                                </div>
-                                <button type="button" onclick="nuevaCategoria()" style="margin-top: 5px;">+ Agregar</button>
-                            </div>
-
-                            <!-- Subcategoría -->
-                            <div class="input-group">
-                                <label for="subcategoria">Subcategoría</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">label</span>
-                                    <select name="subcategoria_id" id="subcategoria-select" required></select>
-                                </div>
-                                <button type="button" onclick="nuevaSubcategoria()" style="margin-top: 5px;">+ Agregar</button>
-                            </div>
-
                             <!-- Archivo -->
                             <div class="input-group">
                                 <label for="archivo">Archivo</label>
