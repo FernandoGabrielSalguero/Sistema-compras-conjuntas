@@ -3,14 +3,16 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+require_once __DIR__ . '/../config.php';
+
 class PublicacionesModel
 {
     private $conn;
 
     public function __construct()
     {
-        require_once __DIR__ . '/../config.php';
-        $this->conn = $conn;
+        global $pdo; // Usamos la conexión creada en config.php
+        $this->conn = $pdo;
     }
 
     public function obtenerCategorias()
