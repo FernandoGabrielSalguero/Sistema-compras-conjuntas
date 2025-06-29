@@ -274,7 +274,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
         // Función para crear una nueva categoría
         function cargarCategorias() {
-            fetch('sve_publicacionesController.php?action=get_categorias')
+            fetch('../../controllers/sve_publicacionesController.php?action=get_categorias')
                 .then(r => r.json())
                 .then(data => {
                     const lista = document.getElementById('lista-categorias');
@@ -298,7 +298,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         function toggleSubcategorias(btn, categoria_id) {
             const ul = document.getElementById('subcat-' + categoria_id);
             if (ul.childNodes.length === 0) {
-                fetch('sve_publicacionesController.php?action=get_subcategorias&categoria_id=' + categoria_id)
+                fetch('../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=' + categoria_id)
                     .then(r => r.json())
                     .then(data => {
                         data.forEach(sub => {
@@ -314,7 +314,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         function crearCategoria() {
             const nombre = document.getElementById('nueva-categoria').value.trim();
             if (!nombre) return;
-            fetch('sve_publicacionesController.php', {
+            fetch('../../controllers/sve_publicacionesController.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -331,7 +331,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
         function eliminarCategoria(id) {
             if (!confirm('¿Eliminar esta categoría?')) return;
-            fetch('sve_publicacionesController.php', {
+            fetch('../../controllers/sve_publicacionesController.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -347,7 +347,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             const input = document.getElementById('input-subcat-' + categoria_id);
             const nombre = input.value.trim();
             if (!nombre) return;
-            fetch('sve_publicacionesController.php', {
+            fetch('../../controllers/sve_publicacionesController.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -366,7 +366,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
         function eliminarSubcategoria(id) {
             if (!confirm('¿Eliminar esta subcategoría?')) return;
-            fetch('sve_publicacionesController.php', {
+            fetch('../../controllers/sve_publicacionesController.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
