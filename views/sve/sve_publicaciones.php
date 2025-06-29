@@ -177,6 +177,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             </li>
                         </ul>
                     </div>
+
+                    
                     <!-- 📝 Formulario para nueva publicación -->
                     <div class="triple-form">
                         <h3>Publicar nueva entrada</h3>
@@ -229,8 +231,6 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             </div>
                         </form>
                     </div>
-
-
 
                     <!-- Fila inferior: tarjetas -->
                     <div class="triple-tarjetas card-grid grid-3">
