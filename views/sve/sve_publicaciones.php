@@ -151,6 +151,13 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         .full-width {
             width: 100%;
         }
+
+        .breadcrumb-cat {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 
@@ -636,6 +643,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <div class="product-header">
                         <h4>${pub.titulo}</h4>
                         <p>${pub.subtitulo || ''}</p>
+                        <p class="breadcrumb-cat">Categoría 1 &gt; Subcategoría 1</p>
                     </div>
                     <div class="product-body">
                         <div class="user-info">
