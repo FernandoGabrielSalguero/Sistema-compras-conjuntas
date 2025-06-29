@@ -83,4 +83,8 @@ switch ($action) {
 
         echo json_encode(['success' => $success]);
         break;
+
+    case 'get_publicaciones':
+        echo json_encode($publicacionesModel->obtenerPublicaciones());
+        break;
 }

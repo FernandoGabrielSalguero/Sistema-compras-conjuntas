@@ -326,43 +326,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         </div>
 
                         <!-- Fila inferior: tarjetas -->
-                        <div class="triple-tarjetas card-grid grid-3">
-                            <div class="product-card">
-                                <div class="product-header">
-                                    <h4>Titulo</h4>
-                                    <p>Subtitulo</p>
-                                </div>
-                                <div class="product-body">
-                                    <div class="user-info">
-                                        <span class="material-icons avatar download-icon">download</span>
-                                        <div>
-                                            <strong>Autor</strong>
-                                            <div class="role">Fecha de publicación</div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Descripción -->
-                                    <p class="description">
-                                        Esta es una descripción resumida de la publicación que se mostrará en la tarjeta. Solo se mostrarán las
-                                        primeras líneas.
-                                    </p>
-
-                                    <hr />
-
-                                    <div class="product-footer">
-                                        <div class="metric">
-                                            <strong>245</strong>
-                                            <span>Vistas</span>
-                                        </div>
-                                        <div class="metric">
-                                            <strong>1085</strong>
-                                            <span>Descargas</span>
-                                        </div>
-                                        <button class="btn-view">Ver publicación</button>
-                                    </div>
-                                </div>
-                            </div>
-
+                        <div class="triple-tarjetas card-grid grid-3" id="contenedor-publicaciones">
+                            <!-- Las tarjetas se insertarán dinámicamente con JS -->
                         </div>
                     </div>
                 </div>
@@ -398,6 +363,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
             cargarCategorias();
             cargarCategoriasSelect();
+            cargarPublicaciones();
         });
 
         // Función para crear una nueva categoría
@@ -648,6 +614,63 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     btn.textContent = 'Guardar publicación';
                 });
         });
+
+        // funciones para cargar las tarjetas de publicaciones
+        function cargarPublicaciones() {
+            fetch('../../controllers/sve_publicacionesController.php?action=get_publicaciones')
+                .then(r => r.json())
+                .then(data => {
+                    const contenedor = document.getElementById('contenedor-publicaciones');
+                    contenedor.innerHTML = '';
+
+                    if (data.length === 0) {
+                        contenedor.innerHTML = '<p>No hay publicaciones disponibles.</p>';
+                        return;
+                    }
+
+                    data.forEach(pub => {
+                        const card = document.createElement('div');
+                        card.classList.add('product-card');
+
+                        card.innerHTML = `
+                    <div class="product-header">
+                        <h4>${pub.titulo}</h4>
+                        <p>${pub.subtitulo || ''}</p>
+                    </div>
+                    <div class="product-body">
+                        <div class="user-info">
+                            <span class="material-icons avatar download-icon">description</span>
+                            <div>
+                                <strong>${pub.autor}</strong>
+                                <div class="role">${pub.fecha_publicacion}</div>
+                            </div>
+                        </div>
+
+                        <p class="description">
+                            ${pub.descripcion?.slice(0, 150) || ''}...
+                        </p>
+
+                        <hr />
+
+                        <div class="product-footer">
+                            <div class="metric">
+                                <strong>${pub.vistas}</strong>
+                                <span>Vistas</span>
+                            </div>
+                            <div class="metric">
+                                <strong>${pub.descargas}</strong>
+                                <span>Descargas</span>
+                            </div>
+                            ${pub.archivo
+                                ? `<a href="../../uploads/publications/${pub.archivo}" target="_blank" class="btn-view">Ver publicación</a>`
+                                : '<span class="muted">Sin archivo</span>'}
+                        </div>
+                    </div>
+                `;
+                        contenedor.appendChild(card);
+                    });
+                });
+        }
     </script>
 
 </body>
