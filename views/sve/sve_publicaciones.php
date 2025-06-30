@@ -256,6 +256,13 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                         <!-- Contenedor de categorías dinámico -->
                         <div id="lista-categorias"></div>
+
+                        <!-- Botón para ver página pública -->
+                        <div style="margin-top: 24px; text-align: center;">
+                            <a href="/publicaciones.php" target="_blank" class="btn btn-aceptar full-width">
+                                Ver página
+                            </a>
+                        </div>
                     </div>
 
 
