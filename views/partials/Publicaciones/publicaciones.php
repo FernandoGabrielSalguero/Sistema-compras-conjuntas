@@ -3,10 +3,8 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Cargar configuración y conexión PDO
 require_once __DIR__ . '/../../../config.php';
 
-// Obtener categorías desde la tabla correcta
 try {
     $stmt = $pdo->query("SELECT id, nombre FROM categorias_publicaciones ORDER BY nombre");
     $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -22,18 +20,20 @@ try {
     <title>Publicaciones</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Framework visual -->
+    <!-- Framework CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 </head>
-<body>
-    <div class="layout" style="padding: 2rem; max-width: 1000px; margin: auto;">
-        <h1>📚 Publicaciones</h1>
+<body style="background-color: #f9f9f9;">
+    <div class="layout" style="padding: 3rem 1.5rem; max-width: 1100px; margin: auto;">
+        <h1 style="font-size: 2rem; font-weight: 600; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.5rem;">
+            📚 Publicaciones
+        </h1>
 
         <!-- FILTROS -->
-        <div class="grid-2" style="margin-bottom: 2rem;">
+        <div class="grid-3" style="margin-bottom: 2rem; gap: 1rem;">
             <div>
-                <label>Categoría:</label>
+                <label class="muted">Categoría:</label>
                 <select id="filtro-categoria" class="input">
                     <option value="">Todas</option>
                     <?php foreach ($categorias as $cat): ?>
@@ -42,22 +42,27 @@ try {
                 </select>
             </div>
             <div>
-                <label>Subcategoría:</label>
+                <label class="muted">Subcategoría:</label>
                 <select id="filtro-subcategoria" class="input" disabled>
                     <option value="">Todas</option>
                 </select>
             </div>
+            <div>
+                <label class="muted">Buscar:</label>
+                <input type="text" id="filtro-busqueda" class="input" placeholder="Buscar publicación...">
+            </div>
         </div>
 
         <!-- CONTENEDOR DE PUBLICACIONES -->
-        <div id="contenedor-publicaciones" class="card-grid grid-2">
-            <!-- JS insertará aquí -->
+        <div id="contenedor-publicaciones" class="grid-2" style="gap: 1.5rem;">
+            <!-- Carga dinámica JS -->
         </div>
     </div>
 
     <script>
         const filtroCategoria = document.getElementById('filtro-categoria');
         const filtroSubcategoria = document.getElementById('filtro-subcategoria');
+        const filtroBusqueda = document.getElementById('filtro-busqueda');
         const contenedor = document.getElementById('contenedor-publicaciones');
 
         filtroCategoria.addEventListener('change', () => {
@@ -88,15 +93,21 @@ try {
         });
 
         filtroSubcategoria.addEventListener('change', cargarPublicaciones);
+        filtroBusqueda.addEventListener('input', () => {
+            clearTimeout(filtroBusqueda._timeout);
+            filtroBusqueda._timeout = setTimeout(cargarPublicaciones, 300);
+        });
 
         function cargarPublicaciones() {
             const cat = filtroCategoria.value;
             const subcat = filtroSubcategoria.value;
+            const search = filtroBusqueda.value.trim();
 
             const params = new URLSearchParams();
             params.append('action', 'get_publicaciones');
             if (cat) params.append('categoria_id', cat);
             if (subcat) params.append('subcategoria_id', subcat);
+            if (search) params.append('search', search);
 
             fetch(`../../controllers/sve_publicacionesController.php?${params.toString()}`)
                 .then(r => r.json())
@@ -104,7 +115,7 @@ try {
                     contenedor.innerHTML = '';
 
                     if (!data.length) {
-                        contenedor.innerHTML = '<p>No se encontraron publicaciones.</p>';
+                        contenedor.innerHTML = '<p class="muted">No se encontraron publicaciones.</p>';
                         return;
                     }
 
@@ -113,14 +124,18 @@ try {
                         card.classList.add('card');
 
                         card.innerHTML = `
-                            <h3>${pub.titulo}</h3>
-                            <p><strong>${pub.autor}</strong> · ${pub.fecha_publicacion}</p>
-                            <p class="muted">${pub.categoria} > ${pub.subcategoria}</p>
-                            <p>${pub.descripcion.slice(0, 150)}...</p>
-                            <div style="margin-top: 8px;">
-                                ${pub.archivo
-                                    ? `<a href="../../uploads/publications/${pub.archivo}" class="btn" target="_blank">Ver archivo</a>`
-                                    : '<span class="muted">Sin archivo</span>'}
+                            <div style="display: flex; flex-direction: column; height: 100%;">
+                                <div style="flex-grow: 1;">
+                                    <h3 style="margin-bottom: 0.5rem;">${pub.titulo}</h3>
+                                    <p style="margin: 0 0 0.5rem 0; font-weight: 500;">${pub.autor} · <span class="muted">${pub.fecha_publicacion}</span></p>
+                                    <p class="muted" style="margin: 0 0 0.5rem 0;">${pub.categoria} &gt; ${pub.subcategoria}</p>
+                                    <p style="font-size: 0.95rem; color: #444;">${pub.descripcion?.slice(0, 150) || ''}...</p>
+                                </div>
+                                <div style="margin-top: 1rem;">
+                                    ${pub.archivo
+                                        ? `<a href="../../uploads/publications/${pub.archivo}" class="btn btn-outline full-width" target="_blank">Ver archivo</a>`
+                                        : '<span class="muted">Sin archivo</span>'}
+                                </div>
                             </div>
                         `;
                         contenedor.appendChild(card);
@@ -128,7 +143,6 @@ try {
                 });
         }
 
-        // Primera carga
         cargarPublicaciones();
     </script>
 </body>
