@@ -681,15 +681,17 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         <h4>${pub.titulo}</h4>
                         <p>${pub.subtitulo || ''}</p>
                         <hr/>
-                            <!-- Botón de editar -->
-                        <button class="btn-icon blue" style="position: absolute; top: 12px; left: 12px;" onclick="editarPublicacion(${pub.id})">
-                            <span class="material-icons">edit</span>
-                        </button>
-                        <!-- Botón de eliminar -->
-                        <p class="breadcrumb-cat">${pub.categoria} &gt; ${pub.subcategoria}</p>
-                        <button class="btn-icon red" style="position: absolute; top: 12px; right: 12px; color="red"" onclick="mostrarModalEliminar(${pub.id})">
-                            <span class="material-icons">delete</span>
-                        </button>
+<p class="breadcrumb-cat">${pub.categoria} &gt; ${pub.subcategoria}</p>
+
+<!-- Botones de acción -->
+<div style="position: absolute; top: 12px; right: 12px; display: flex; gap: 6px;">
+    <button class="btn-icon blue" onclick="editarPublicacion(${pub.id})">
+        <span class="material-icons">edit</span>
+    </button>
+    <button class="btn-icon red" onclick="mostrarModalEliminar(${pub.id})" style="color: red;">
+        <span class="material-icons">delete</span>
+    </button>
+</div>
                     </div>
                     <div class="product-body">
                         <div class="user-info">
