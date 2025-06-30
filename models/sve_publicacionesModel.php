@@ -69,6 +69,37 @@ class PublicacionesModel
         ]);
     }
 
+    public function obtenerPublicacionPorId($id)
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM publicaciones WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function editarPublicacion($data)
+    {
+        $sql = "UPDATE publicaciones SET 
+                titulo = :titulo,
+                subtitulo = :subtitulo,
+                autor = :autor,
+                descripcion = :descripcion,
+                categoria_id = :categoria_id,
+                subcategoria_id = :subcategoria_id,
+                archivo = :archivo
+            WHERE id = :id";
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([
+            ':titulo' => $data['titulo'],
+            ':subtitulo' => $data['subtitulo'],
+            ':autor' => $data['autor'],
+            ':descripcion' => $data['descripcion'],
+            ':categoria_id' => $data['categoria_id'],
+            ':subcategoria_id' => $data['subcategoria_id'],
+            ':archivo' => $data['archivo'],
+            ':id' => $data['id']
+        ]);
+    }
+
     public function obtenerPublicaciones()
     {
         $sql = "SELECT p.*, c.nombre AS categoria, s.nombre AS subcategoria

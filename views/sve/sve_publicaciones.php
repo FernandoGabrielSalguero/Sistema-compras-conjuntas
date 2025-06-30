@@ -629,7 +629,10 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             btn.disabled = true;
             btn.textContent = 'Guardando...';
 
-            fetch('../../controllers/sve_publicacionesController.php?action=guardar_publicacion', {
+            const idPublicacion = form.querySelector('#id_publicacion')?.value;
+            const action = idPublicacion ? 'editar_publicacion' : 'guardar_publicacion';
+
+            fetch(`../../controllers/sve_publicacionesController.php?action=${action}`, {
                     method: 'POST',
                     body: formData
                 })
@@ -678,6 +681,11 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         <h4>${pub.titulo}</h4>
                         <p>${pub.subtitulo || ''}</p>
                         <hr/>
+                            <!-- Botón de editar -->
+                        <button class="btn-icon blue" style="position: absolute; top: 12px; left: 12px;" onclick="editarPublicacion(${pub.id})">
+                            <span class="material-icons">edit</span>
+                        </button>
+                        <!-- Botón de eliminar -->
                         <p class="breadcrumb-cat">${pub.categoria} &gt; ${pub.subcategoria}</p>
                         <button class="btn-icon red" style="position: absolute; top: 12px; right: 12px;" onclick="mostrarModalEliminar(${pub.id})">
                             <span class="material-icons">delete</span>
@@ -761,6 +769,56 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
         function cerrarModalEliminar() {
             publicacionAEliminar = null;
             document.getElementById('modalEliminarPublicacion').classList.add('hidden');
+        }
+
+        function editarPublicacion(id) {
+            fetch(`../../controllers/sve_publicacionesController.php?action=get_publicacion&id=${id}`)
+                .then(r => r.json())
+                .then(data => {
+                    // Completar campos del formulario
+                    document.getElementById('titulo').value = data.titulo;
+                    document.getElementById('subtitulo').value = data.subtitulo;
+                    document.getElementById('autor').value = data.autor;
+                    document.getElementById('descripcion').value = data.descripcion;
+                    document.getElementById('select-categoria').value = data.categoria_id;
+
+                    // Cargar subcategorías y seleccionar la actual
+                    fetch(`../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=${data.categoria_id}`)
+                        .then(r => r.json())
+                        .then(subs => {
+                            const subSelect = document.getElementById('select-subcategoria');
+                            subSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
+                            subs.forEach(sub => {
+                                const opt = document.createElement('option');
+                                opt.value = sub.id;
+                                opt.textContent = sub.nombre;
+                                subSelect.appendChild(opt);
+                            });
+                            subSelect.value = data.subcategoria_id;
+                            subSelect.disabled = false;
+                        });
+
+                    // Insertar campo hidden con el ID si no existe
+                    let inputHidden = document.getElementById('id_publicacion');
+                    if (!inputHidden) {
+                        inputHidden = document.createElement('input');
+                        inputHidden.type = 'hidden';
+                        inputHidden.name = 'id_publicacion';
+                        inputHidden.id = 'id_publicacion';
+                        document.getElementById('form-publicacion').appendChild(inputHidden);
+                    }
+                    inputHidden.value = data.id;
+
+                    // Cambiar botón a modo edición
+                    const btn = document.getElementById('btn-guardar');
+                    btn.textContent = 'Guardar cambios';
+                    btn.classList.remove('btn-disabled');
+                    btn.disabled = false;
+                })
+                .catch(err => {
+                    showToast('error', 'No se pudo cargar la publicación');
+                    console.error('Error cargando publicación:', err);
+                });
         }
     </script>
 

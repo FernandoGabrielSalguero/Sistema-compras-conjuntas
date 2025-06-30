@@ -84,6 +84,55 @@ switch ($action) {
         echo json_encode(['success' => $success]);
         break;
 
+    case 'editar_publicacion':
+        $id = $_POST['id_publicacion'] ?? 0;
+        $titulo = $_POST['titulo'] ?? '';
+        $subtitulo = $_POST['subtitulo'] ?? '';
+        $autor = $_POST['autor'] ?? '';
+        $descripcion = $_POST['descripcion'] ?? '';
+        $categoria_id = $_POST['categoria_id'] ?? 0;
+        $subcategoria_id = $_POST['subcategoria_id'] ?? 0;
+
+        $archivo = $_FILES['archivo'] ?? null;
+        $nombreArchivo = null;
+
+        // Traemos la publicación actual para borrar archivo viejo si hace falta
+        $publicacionActual = $publicacionesModel->obtenerPublicacionPorId($id);
+        $archivoActual = $publicacionActual['archivo'] ?? null;
+
+        if ($archivo && $archivo['error'] === 0) {
+            $ext = pathinfo($archivo['name'], PATHINFO_EXTENSION);
+            $nombreArchivo = uniqid('pub_') . '.' . $ext;
+            $destino = __DIR__ . '/../uploads/publications/' . $nombreArchivo;
+
+            if (!move_uploaded_file($archivo['tmp_name'], $destino)) {
+                echo json_encode(['success' => false, 'error' => 'No se pudo guardar el archivo nuevo']);
+                exit;
+            }
+
+            // Borrar el archivo anterior si existía
+            if ($archivoActual && file_exists(__DIR__ . '/../uploads/publications/' . $archivoActual)) {
+                unlink(__DIR__ . '/../uploads/publications/' . $archivoActual);
+            }
+        } else {
+            // Si no se subió archivo nuevo, mantenemos el viejo
+            $nombreArchivo = $archivoActual;
+        }
+
+        $success = $publicacionesModel->editarPublicacion([
+            'id' => $id,
+            'titulo' => $titulo,
+            'subtitulo' => $subtitulo,
+            'autor' => $autor,
+            'descripcion' => $descripcion,
+            'categoria_id' => $categoria_id,
+            'subcategoria_id' => $subcategoria_id,
+            'archivo' => $nombreArchivo
+        ]);
+
+        echo json_encode(['success' => $success]);
+        break;
+
     case 'get_publicaciones':
         echo json_encode($publicacionesModel->obtenerPublicaciones());
         break;
@@ -91,5 +140,10 @@ switch ($action) {
     case 'eliminar_publicacion':
         $id = $_POST['id'] ?? 0;
         echo json_encode(['success' => $publicacionesModel->eliminarPublicacion($id)]);
+        break;
+
+    case 'get_publicacion':
+        $id = $_GET['id'] ?? 0;
+        echo json_encode($publicacionesModel->obtenerPublicacionPorId($id));
         break;
 }
