@@ -3,7 +3,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once('../../../config/db.php'); // Ajustá si la conexión está en otro archivo
+require_once __DIR__ . '/../../../config.php';
 
 // Obtener categorías y subcategorías
 $categorias = $conn->query("SELECT id, nombre FROM sve_categorias ORDER BY nombre")->fetch_all(MYSQLI_ASSOC);
