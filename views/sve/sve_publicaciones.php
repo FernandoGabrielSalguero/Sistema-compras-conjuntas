@@ -259,8 +259,8 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
                         <!-- Botón para ver página pública -->
                         <div style="margin-top: 24px; text-align: center;">
-                            <a href="/publicaciones.php" target="_blank" class="btn btn-aceptar full-width">
-                                Ver página
+                            <a href="/publicaciones" target="_blank" class="btn btn-aceptar full-width">
+                                Ir a la página
                             </a>
                         </div>
                     </div>
