@@ -3,12 +3,16 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Conexión usando tu config.php que define $pdo
+// Cargar configuración y conexión PDO
 require_once __DIR__ . '/../../../config.php';
 
-// Obtener categorías
-$stmt = $pdo->query("SELECT id, nombre FROM sve_categorias ORDER BY nombre");
-$categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Obtener categorías desde la tabla correcta
+try {
+    $stmt = $pdo->query("SELECT id, nombre FROM categorias_publicaciones ORDER BY nombre");
+    $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Error al obtener categorías: " . $e->getMessage());
+}
 ?>
 
 <!DOCTYPE html>
@@ -17,6 +21,8 @@ $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <title>Publicaciones</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Framework visual -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 </head>
@@ -24,14 +30,14 @@ $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="layout" style="padding: 2rem; max-width: 1000px; margin: auto;">
         <h1>📚 Publicaciones</h1>
 
-        <!-- Filtros -->
+        <!-- FILTROS -->
         <div class="grid-2" style="margin-bottom: 2rem;">
             <div>
                 <label>Categoría:</label>
                 <select id="filtro-categoria" class="input">
                     <option value="">Todas</option>
                     <?php foreach ($categorias as $cat): ?>
-                        <option value="<?= htmlspecialchars($cat['id']) ?>"><?= htmlspecialchars($cat['nombre']) ?></option>
+                        <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -43,9 +49,9 @@ $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
 
-        <!-- Contenedor de publicaciones -->
+        <!-- CONTENEDOR DE PUBLICACIONES -->
         <div id="contenedor-publicaciones" class="card-grid grid-2">
-            <!-- Contenido dinámico -->
+            <!-- JS insertará aquí -->
         </div>
     </div>
 
@@ -105,6 +111,7 @@ $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     data.forEach(pub => {
                         const card = document.createElement('div');
                         card.classList.add('card');
+
                         card.innerHTML = `
                             <h3>${pub.titulo}</h3>
                             <p><strong>${pub.autor}</strong> · ${pub.fecha_publicacion}</p>
@@ -121,7 +128,7 @@ $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 });
         }
 
-        // Carga inicial
+        // Primera carga
         cargarPublicaciones();
     </script>
 </body>
