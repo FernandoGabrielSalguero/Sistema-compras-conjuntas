@@ -3,10 +3,12 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// Conexión usando tu config.php que define $pdo
 require_once __DIR__ . '/../../../config.php';
 
-// Obtener categorías y subcategorías
-$categorias = $conn->query("SELECT id, nombre FROM sve_categorias ORDER BY nombre")->fetch_all(MYSQLI_ASSOC);
+// Obtener categorías
+$stmt = $pdo->query("SELECT id, nombre FROM sve_categorias ORDER BY nombre");
+$categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -15,8 +17,6 @@ $categorias = $conn->query("SELECT id, nombre FROM sve_categorias ORDER BY nombr
     <meta charset="UTF-8">
     <title>Publicaciones</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Framework CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 </head>
@@ -24,14 +24,14 @@ $categorias = $conn->query("SELECT id, nombre FROM sve_categorias ORDER BY nombr
     <div class="layout" style="padding: 2rem; max-width: 1000px; margin: auto;">
         <h1>📚 Publicaciones</h1>
 
-        <!-- FILTROS -->
+        <!-- Filtros -->
         <div class="grid-2" style="margin-bottom: 2rem;">
             <div>
                 <label>Categoría:</label>
                 <select id="filtro-categoria" class="input">
                     <option value="">Todas</option>
                     <?php foreach ($categorias as $cat): ?>
-                        <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['nombre']) ?></option>
+                        <option value="<?= htmlspecialchars($cat['id']) ?>"><?= htmlspecialchars($cat['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -43,9 +43,9 @@ $categorias = $conn->query("SELECT id, nombre FROM sve_categorias ORDER BY nombr
             </div>
         </div>
 
-        <!-- PUBLICACIONES -->
+        <!-- Contenedor de publicaciones -->
         <div id="contenedor-publicaciones" class="card-grid grid-2">
-            <!-- Aquí se cargan dinámicamente -->
+            <!-- Contenido dinámico -->
         </div>
     </div>
 
@@ -105,7 +105,6 @@ $categorias = $conn->query("SELECT id, nombre FROM sve_categorias ORDER BY nombr
                     data.forEach(pub => {
                         const card = document.createElement('div');
                         card.classList.add('card');
-
                         card.innerHTML = `
                             <h3>${pub.titulo}</h3>
                             <p><strong>${pub.autor}</strong> · ${pub.fecha_publicacion}</p>
@@ -122,7 +121,7 @@ $categorias = $conn->query("SELECT id, nombre FROM sve_categorias ORDER BY nombr
                 });
         }
 
-        // Inicializar
+        // Carga inicial
         cargarPublicaciones();
     </script>
 </body>
