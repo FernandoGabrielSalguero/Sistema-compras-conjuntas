@@ -687,7 +687,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                         </button>
                         <!-- Botón de eliminar -->
                         <p class="breadcrumb-cat">${pub.categoria} &gt; ${pub.subcategoria}</p>
-                        <button class="btn-icon red" style="position: absolute; top: 12px; right: 12px;" onclick="mostrarModalEliminar(${pub.id})">
+                        <button class="btn-icon red" style="position: absolute; top: 12px; right: 12px; color="red"" onclick="mostrarModalEliminar(${pub.id})">
                             <span class="material-icons">delete</span>
                         </button>
                     </div>
