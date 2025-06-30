@@ -23,46 +23,67 @@ try {
     <!-- Framework CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
+    <style>
+        .filtros-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+        .filtros-bar label {
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+            color: #666;
+        }
+        .card h3 {
+            margin-bottom: 0.5rem;
+        }
+        .card p {
+            margin: 0 0 0.5rem;
+        }
+        @media (max-width: 768px) {
+            .filtros-bar {
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body style="background-color: #f9f9f9;">
-    <div class="layout" style="padding: 3rem 1.5rem; max-width: 1100px; margin: auto;">
-        <h1 style="font-size: 2rem; font-weight: 600; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.5rem;">
-            📚 Publicaciones
-        </h1>
-
-        <!-- FILTROS -->
-        <div class="grid-3" style="margin-bottom: 2rem; gap: 1rem;">
-            <div>
-                <label class="muted">Categoría:</label>
-                <select id="filtro-categoria" class="input">
-                    <option value="">Todas</option>
-                    <?php foreach ($categorias as $cat): ?>
-                        <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['nombre']) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div>
-                <label class="muted">Subcategoría:</label>
-                <select id="filtro-subcategoria" class="input" disabled>
-                    <option value="">Todas</option>
-                </select>
-            </div>
-            <div>
-                <label class="muted">Buscar:</label>
-                <input type="text" id="filtro-busqueda" class="input" placeholder="Buscar publicación...">
+    <div class="layout" style="padding: 2rem; max-width: 1100px; margin: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+            <h1 style="font-size: 2rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                📚 Publicaciones
+            </h1>
+            <div class="filtros-bar">
+                <div>
+                    <label for="filtro-categoria">Categoría:</label>
+                    <select id="filtro-categoria" class="input">
+                        <option value="">Todas</option>
+                        <?php foreach ($categorias as $cat): ?>
+                            <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['nombre']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label for="filtro-subcategoria">Subcategoría:</label>
+                    <select id="filtro-subcategoria" class="input" disabled>
+                        <option value="">Todas</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <!-- CONTENEDOR DE PUBLICACIONES -->
         <div id="contenedor-publicaciones" class="grid-2" style="gap: 1.5rem;">
-            <!-- Carga dinámica JS -->
+            <!-- Publicaciones cargadas por JS -->
         </div>
     </div>
 
     <script>
         const filtroCategoria = document.getElementById('filtro-categoria');
         const filtroSubcategoria = document.getElementById('filtro-subcategoria');
-        const filtroBusqueda = document.getElementById('filtro-busqueda');
         const contenedor = document.getElementById('contenedor-publicaciones');
 
         filtroCategoria.addEventListener('change', () => {
@@ -93,21 +114,15 @@ try {
         });
 
         filtroSubcategoria.addEventListener('change', cargarPublicaciones);
-        filtroBusqueda.addEventListener('input', () => {
-            clearTimeout(filtroBusqueda._timeout);
-            filtroBusqueda._timeout = setTimeout(cargarPublicaciones, 300);
-        });
 
         function cargarPublicaciones() {
             const cat = filtroCategoria.value;
             const subcat = filtroSubcategoria.value;
-            const search = filtroBusqueda.value.trim();
 
             const params = new URLSearchParams();
             params.append('action', 'get_publicaciones');
             if (cat) params.append('categoria_id', cat);
             if (subcat) params.append('subcategoria_id', subcat);
-            if (search) params.append('search', search);
 
             fetch(`../../controllers/sve_publicacionesController.php?${params.toString()}`)
                 .then(r => r.json())
@@ -126,9 +141,9 @@ try {
                         card.innerHTML = `
                             <div style="display: flex; flex-direction: column; height: 100%;">
                                 <div style="flex-grow: 1;">
-                                    <h3 style="margin-bottom: 0.5rem;">${pub.titulo}</h3>
-                                    <p style="margin: 0 0 0.5rem 0; font-weight: 500;">${pub.autor} · <span class="muted">${pub.fecha_publicacion}</span></p>
-                                    <p class="muted" style="margin: 0 0 0.5rem 0;">${pub.categoria} &gt; ${pub.subcategoria}</p>
+                                    <h3>${pub.titulo}</h3>
+                                    <p><strong>${pub.autor}</strong> · <span class="muted">${pub.fecha_publicacion}</span></p>
+                                    <p class="muted">${pub.categoria} > ${pub.subcategoria}</p>
                                     <p style="font-size: 0.95rem; color: #444;">${pub.descripcion?.slice(0, 150) || ''}...</p>
                                 </div>
                                 <div style="margin-top: 1rem;">
