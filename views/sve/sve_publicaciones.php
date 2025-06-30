@@ -375,6 +375,35 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             cargarCategorias();
             cargarCategoriasSelect();
             cargarPublicaciones();
+
+            document.getElementById('btnConfirmarEliminar').addEventListener('click', () => {
+                if (!publicacionAEliminar) return;
+
+                fetch('../../controllers/sve_publicacionesController.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: new URLSearchParams({
+                            action: 'eliminar_publicacion',
+                            id: publicacionAEliminar
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(resp => {
+                        if (resp.success) {
+                            showToast('success', 'Publicación eliminada correctamente.');
+                            cargarPublicaciones();
+                        } else {
+                            showToast('error', 'No se pudo eliminar la publicación.');
+                        }
+                    })
+                    .catch(err => {
+                        console.error('❌ Error al eliminar publicación:', err);
+                        showToast('error', 'Error en la solicitud.');
+                    })
+                    .finally(() => cerrarModalEliminar());
+            });
         });
 
         // Función para crear una nueva categoría
@@ -721,42 +750,18 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
         function mostrarModalEliminar(id) {
             publicacionAEliminar = id;
-            document.getElementById('modalEliminarPublicacion').classList.remove('hidden');
+            const modal = document.getElementById('modalEliminarPublicacion');
+            if (modal) {
+                modal.classList.remove('hidden');
+            } else {
+                console.error('No se encontró el modal de eliminación.');
+            }
         }
 
         function cerrarModalEliminar() {
             publicacionAEliminar = null;
             document.getElementById('modalEliminarPublicacion').classList.add('hidden');
         }
-
-        document.getElementById('btnConfirmarEliminar').addEventListener('click', () => {
-            if (!publicacionAEliminar) return;
-
-            fetch('../../controllers/sve_publicacionesController.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: new URLSearchParams({
-                        action: 'eliminar_publicacion',
-                        id: publicacionAEliminar
-                    })
-                })
-                .then(res => res.json())
-                .then(resp => {
-                    if (resp.success) {
-                        showToast('success', 'Publicación eliminada correctamente.');
-                        cargarPublicaciones();
-                    } else {
-                        showToast('error', 'No se pudo eliminar la publicación.');
-                    }
-                })
-                .catch(err => {
-                    console.error('❌ Error al eliminar publicación:', err);
-                    showToast('error', 'Error en la solicitud.');
-                })
-                .finally(() => cerrarModalEliminar());
-        });
     </script>
 
     <!-- Modal de confirmación para eliminar publicación -->
