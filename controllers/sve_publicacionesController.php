@@ -133,17 +133,14 @@ switch ($action) {
         echo json_encode(['success' => $success]);
         break;
 
-    case 'get_publicaciones':
-        echo json_encode($publicacionesModel->obtenerPublicaciones());
-        break;
-
     case 'eliminar_publicacion':
         $id = $_POST['id'] ?? 0;
         echo json_encode(['success' => $publicacionesModel->eliminarPublicacion($id)]);
         break;
 
-    case 'get_publicacion':
-        $id = $_GET['id'] ?? 0;
-        echo json_encode($publicacionesModel->obtenerPublicacionPorId($id));
+    case 'get_publicaciones':
+        $categoria_id = $_GET['categoria_id'] ?? null;
+        $subcategoria_id = $_GET['subcategoria_id'] ?? null;
+        echo json_encode($publicacionesModel->obtenerPublicaciones($categoria_id, $subcategoria_id));
         break;
 }

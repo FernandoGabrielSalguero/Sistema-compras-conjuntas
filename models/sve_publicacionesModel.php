@@ -100,17 +100,32 @@ class PublicacionesModel
         ]);
     }
 
-    public function obtenerPublicaciones()
-    {
-        $sql = "SELECT p.*, c.nombre AS categoria, s.nombre AS subcategoria
-            FROM publicaciones p
-            JOIN categorias_publicaciones c ON p.categoria_id = c.id
-            JOIN subcategorias_publicaciones s ON p.subcategoria_id = s.id
-            ORDER BY p.created_at DESC";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+public function obtenerPublicaciones($categoria_id = null, $subcategoria_id = null)
+{
+    $sql = "SELECT p.*, c.nombre AS categoria, s.nombre AS subcategoria
+        FROM publicaciones p
+        JOIN categorias_publicaciones c ON p.categoria_id = c.id
+        JOIN subcategorias_publicaciones s ON p.subcategoria_id = s.id
+        WHERE 1=1";
+    
+    $params = [];
+
+    if (!empty($categoria_id)) {
+        $sql .= " AND p.categoria_id = :categoria_id";
+        $params[':categoria_id'] = $categoria_id;
     }
+
+    if (!empty($subcategoria_id)) {
+        $sql .= " AND p.subcategoria_id = :subcategoria_id";
+        $params[':subcategoria_id'] = $subcategoria_id;
+    }
+
+    $sql .= " ORDER BY p.created_at DESC";
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
     public function eliminarPublicacion($id)
     {
