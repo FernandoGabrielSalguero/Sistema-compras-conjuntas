@@ -284,6 +284,20 @@ try {
         const contenedor = document.getElementById('contenedor-publicaciones');
         const modal = document.getElementById('modal-lectura');
 
+            // Definir Framework solo si no existe
+    if (typeof Framework === 'undefined') {
+        window.Framework = {
+            openModal(id) {
+                const modal = document.getElementById(id);
+                if (modal) modal.classList.remove('hidden');
+            },
+            closeModal(id) {
+                const modal = document.getElementById(id);
+                if (modal) modal.classList.add('hidden');
+            }
+        };
+    }
+
         document.querySelectorAll('.accordion-toggle').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const catId = btn.dataset.cat;
