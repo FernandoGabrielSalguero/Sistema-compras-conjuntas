@@ -25,220 +25,222 @@ try {
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
     <style>
-body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-}
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
 
-/* HEADER */
-header {
-    background-color: #fff;
-    margin: 1rem;
-    padding: 1rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-    font-size: 1.3rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    z-index: 10;
-    position: relative;
-}
+        /* HEADER */
+        header {
+            background-color: #fff;
+            margin: 1rem;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.3rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+            position: relative;
+        }
 
-.menu-toggle {
-    display: none;
-    background: none;
-    border: none;
-    font-size: 1.4rem;
-    cursor: pointer;
-}
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+        }
 
-/* LAYOUT */
-.layout {
-    display: flex;
-    gap: 1rem;
-    padding: 0 1rem 1rem;
-    margin-top: 0;
-}
+        /* LAYOUT */
+        .layout {
+            display: flex;
+            gap: 1rem;
+            padding: 0 1rem 1rem;
+            margin-top: 0;
+        }
 
-/* SIDEBAR */
-.sidebar {
-    width: 250px;
-    background: #fff;
-    border-right: 1px solid #eee;
-    overflow-y: auto;
-    padding: 1rem 1rem 2rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    position: sticky;
-    top: 1rem;
-    height: fit-content;
-    z-index: 1;
-}
+        /* SIDEBAR */
+        .sidebar {
+            width: 250px;
+            background: #fff;
+            border-right: 1px solid #eee;
+            overflow-y: auto;
+            padding: 1rem 1rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 1rem;
+            height: fit-content;
+            z-index: 1;
+        }
 
-.sidebar.hidden {
-    transform: translateX(-100%);
-}
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
 
-/* MAIN */
-.main {
-    flex: 1;
-    overflow-y: auto;
-    background: #f9f9f9;
-    padding: 2rem 1rem;
-    margin: 0; /* Asegura que no se centre automáticamente */
-    max-width: 100%; /* Rompe cualquier centrado o limitación de ancho */
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
+        /* MAIN */
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            background: #f9f9f9;
+            padding: 2rem 1rem;
+            margin: 0;
+            /* Asegura que no se centre automáticamente */
+            max-width: 100%;
+            /* Rompe cualquier centrado o limitación de ancho */
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
 
 
 
-/* ACCORDION */
-.accordion-item {
-    margin-bottom: 1rem;
-}
+        /* ACCORDION */
+        .accordion-item {
+            margin-bottom: 1rem;
+        }
 
-.accordion-toggle {
-    background: none;
-    border: none;
-    font-weight: 600;
-    font-size: 0.95rem;
-    width: 100%;
-    text-align: left;
-    padding: 0.4rem 0;
-    text-transform: uppercase;
-    color: #333;
-    border-bottom: 1px solid #eee;
-    transition: all 0.2s ease;
-}
+        .accordion-toggle {
+            background: none;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            width: 100%;
+            text-align: left;
+            padding: 0.4rem 0;
+            text-transform: uppercase;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            transition: all 0.2s ease;
+        }
 
-.accordion-toggle:hover {
-    color: #6c5ce7;
-}
+        .accordion-toggle:hover {
+            color: #6c5ce7;
+        }
 
-.accordion-content {
-    padding-left: 1rem;
-    margin-top: 0.5rem;
-}
+        .accordion-content {
+            padding-left: 1rem;
+            margin-top: 0.5rem;
+        }
 
-.accordion-content.hidden {
-    display: none;
-}
+        .accordion-content.hidden {
+            display: none;
+        }
 
-/* SUBCATEGORÍA LINK */
-.subcat-link {
-    background: none;
-    border: none;
-    color: #6c5ce7;
-    font-size: 0.9rem;
-    padding: 0.3rem 0;
-    text-align: left;
-    width: 100%;
-    display: block;
-    border-radius: 6px;
-    transition: background 0.2s, color 0.2s;
-}
+        /* SUBCATEGORÍA LINK */
+        .subcat-link {
+            background: none;
+            border: none;
+            color: #6c5ce7;
+            font-size: 0.9rem;
+            padding: 0.3rem 0;
+            text-align: left;
+            width: 100%;
+            display: block;
+            border-radius: 6px;
+            transition: background 0.2s, color 0.2s;
+        }
 
-.subcat-link:hover {
-    background: #f2f2ff;
-    color: #5943d2;
-}
+        .subcat-link:hover {
+            background: #f2f2ff;
+            color: #5943d2;
+        }
 
-/* GRID Y CARD */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
-}
+        /* GRID Y CARD */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
 
-.card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
 
-.card h3 {
-    margin: 0;
-    font-size: 1rem;
-}
+        .card h3 {
+            margin: 0;
+            font-size: 1rem;
+        }
 
-.card .muted {
-    color: #999;
-    font-size: 0.9rem;
-}
+        .card .muted {
+            color: #999;
+            font-size: 0.9rem;
+        }
 
-.card .btn {
-    margin-top: auto;
-    background: #6c5ce7;
-    color: #fff;
-    border: none;
-    padding: 0.6rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    width: 100%;
-    transition: background 0.2s;
-}
+        .card .btn {
+            margin-top: auto;
+            background: #6c5ce7;
+            color: #fff;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
 
-.card .btn:hover {
-    background: #5943d2;
-}
+        .card .btn:hover {
+            background: #5943d2;
+        }
 
-/* MODAL */
-.modal-content {
-    max-width: 600px;
-    padding: 2rem;
-}
+        /* MODAL */
+        .modal-content {
+            max-width: 600px;
+            padding: 2rem;
+        }
 
-.modal-content h2 {
-    margin-top: 0;
-}
+        .modal-content h2 {
+            margin-top: 0;
+        }
 
-/* RESPONSIVE (MOBILE) */
-@media (max-width: 768px) {
-    .layout {
-        flex-direction: column;
-        height: auto;
-        gap: 0;
-    }
+        /* RESPONSIVE (MOBILE) */
+        @media (max-width: 768px) {
+            .layout {
+                flex-direction: column;
+                height: auto;
+                gap: 0;
+            }
 
-    .sidebar {
-        position: absolute;
-        top: 70px;
-        left: 0;
-        width: 220px;
-        height: calc(100vh - 70px);
-        z-index: 15;
-        transform: translateX(-100%);
-        box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
-        border-radius: 0;
-    }
+            .sidebar {
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 220px;
+                height: calc(100vh - 70px);
+                z-index: 15;
+                transform: translateX(-100%);
+                box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+                border-radius: 0;
+            }
 
-    .sidebar.visible {
-        transform: translateX(0);
-    }
+            .sidebar.visible {
+                transform: translateX(0);
+            }
 
-    .menu-toggle {
-        display: block;
-    }
+            .menu-toggle {
+                display: block;
+            }
 
-    .main {
-        padding: 1rem;
-    }
+            .main {
+                padding: 1rem;
+            }
 
-    .grid {
-        grid-template-columns: 1fr;
-    }
+            .grid {
+                grid-template-columns: 1fr;
+            }
 
-    .card {
-        margin-bottom: 1rem;
-    }
-}
+            .card {
+                margin-bottom: 1rem;
+            }
+        }
     </style>
 </head>
 
@@ -271,19 +273,22 @@ header {
         </main>
     </div>
 
-    <!-- Modal -->
-<!-- Modal personalizado del framework -->
-<div class="modal" id="modal-lectura">
-    <div class="modal-box">
-        <button class="modal-close btn-close" onclick="Framework.closeModal('modal-lectura')" style="float:right;">✖</button>
-        <h2 id="modal-titulo" class="text-lg font-bold mb-2"></h2>
-        <p id="modal-subtitulo" class="muted mb-1"></p>
-        <p id="modal-cat-subcat" class="muted mb-1"></p>
-        <p id="modal-autor-fecha" class="muted mb-2"></p>
-        <p id="modal-descripcion" class="mb-4"></p>
-        <a id="modal-archivo" href="#" target="_blank" class="btn">Descargar archivo</a>
+    <!-- Modal lectura del framework -->
+    <div class="modal" id="modal-lectura">
+        <div class="modal-box">
+            <h3 id="modal-titulo" class="modal-title">Título del modal</h3>
+            <p id="modal-subtitulo" class="muted"></p>
+            <p id="modal-cat-subcat" class="muted"></p>
+            <p id="modal-autor-fecha" class="muted"></p>
+            <p id="modal-descripcion" class="my-2"></p>
+            <a id="modal-archivo" href="#" target="_blank" class="btn btn-primary mb-3">Descargar archivo</a>
+
+            <div class="flex justify-end gap-2">
+                <button class="btn btn-success" onclick="Framework.closeModal('modal-lectura')">Aceptar</button>
+                <button class="btn btn-danger" onclick="Framework.closeModal('modal-lectura')">Cancelar</button>
+            </div>
+        </div>
     </div>
-</div>
 
     <script>
         const contenedor = document.getElementById('contenedor-publicaciones');
@@ -319,7 +324,9 @@ header {
         let publicaciones = [];
 
         function cargarPublicaciones(categoria_id = '', subcategoria_id = '') {
-            const params = new URLSearchParams({ action: 'get_publicaciones' });
+            const params = new URLSearchParams({
+                action: 'get_publicaciones'
+            });
             if (categoria_id) params.append('categoria_id', categoria_id);
             if (subcategoria_id) params.append('subcategoria_id', subcategoria_id);
 
@@ -381,4 +388,5 @@ header {
         cargarPublicaciones();
     </script>
 </body>
+
 </html>
