@@ -46,15 +46,14 @@ try {
 
         .container {
             display: flex;
+            flex-wrap: nowrap;
             min-height: calc(100vh - 70px);
+            width: 100%;
         }
 
         .sidebar {
             width: 240px;
-            background: #fff;
-            border-right: 1px solid #eee;
-            padding: 1.5rem;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.03);
+            flex-shrink: 0;
         }
 
         .sidebar h3 {
@@ -86,7 +85,7 @@ try {
 
         .content {
             flex: 1;
-            padding: 2rem;
+            width: 100%;
         }
 
         .grid {
@@ -166,6 +165,16 @@ try {
         }
 
         @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+
             .content {
                 width: 100%;
                 padding: 1rem;
@@ -225,6 +234,22 @@ try {
         }
 
         .accordion-content button:hover {
+            color: #5943d2;
+        }
+
+        .subcat-link {
+            background: none;
+            border: none;
+            color: #6c5ce7;
+            padding: 0.3rem 0;
+            font-size: 0.95rem;
+            text-align: left;
+            width: 100%;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .subcat-link:hover {
             color: #5943d2;
         }
     </style>
@@ -290,7 +315,7 @@ try {
 
                     data.forEach(sub => {
                         const subBtn = document.createElement('button');
-                        subBtn.className = 'btn small full muted';
+                        subBtn.className = 'subcat-link';
                         subBtn.style.marginBottom = '0.5rem';
                         subBtn.textContent = sub.nombre;
                         subBtn.onclick = () => cargarPublicaciones(catId, sub.id);
