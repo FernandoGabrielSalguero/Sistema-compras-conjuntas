@@ -264,21 +264,22 @@ try {
     </div>
 
     <!-- Modal lectura del framework -->
-    <div class="modal hidden" id="modal-lectura">
-        <div class="modal-box">
-            <h3 id="modal-titulo" class="modal-title">Título de la publicación</h3>
-            <p id="modal-subtitulo" class="muted"></p>
-            <p id="modal-cat-subcat" class="muted"></p>
-            <p id="modal-autor-fecha" class="muted"></p>
-            <p id="modal-descripcion" class="my-2"></p>
-            <a id="modal-archivo" href="#" target="_blank" class="btn btn-primary mb-4">Descargar archivo</a>
+<div class="modal hidden" id="modal-lectura">
+    <div class="modal-overlay" onclick="Framework.closeModal('modal-lectura')"></div>
+    <div class="modal-box">
+        <h3 class="modal-title" id="modal-titulo">Título de la publicación</h3>
+        <p id="modal-subtitulo" class="muted"></p>
+        <p id="modal-cat-subcat" class="muted"></p>
+        <p id="modal-autor-fecha" class="muted"></p>
+        <p id="modal-descripcion" class="my-2"></p>
+        <a id="modal-archivo" href="#" target="_blank" class="btn btn-primary mb-4">Descargar archivo</a>
 
-            <div class="flex justify-end gap-2">
-                <button class="btn btn-success" onclick="Framework.closeModal('modal-lectura')">Aceptar</button>
-                <button class="btn btn-danger" onclick="Framework.closeModal('modal-lectura')">Cancelar</button>
-            </div>
+        <div class="flex justify-end gap-2">
+            <button class="btn btn-success" onclick="Framework.closeModal('modal-lectura')">Aceptar</button>
+            <button class="btn btn-danger" onclick="Framework.closeModal('modal-lectura')">Cancelar</button>
         </div>
     </div>
+</div>
 
     <script>
         const contenedor = document.getElementById('contenedor-publicaciones');
