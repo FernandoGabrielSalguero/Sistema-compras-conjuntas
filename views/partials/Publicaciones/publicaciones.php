@@ -2,7 +2,6 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-
 require_once __DIR__ . '/../../../config.php';
 
 try {
@@ -31,18 +30,45 @@ try {
             font-family: 'Segoe UI', sans-serif;
         }
 
+        header {
+            background-color: #fff;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.3rem;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+        }
+
         .layout {
             display: flex;
-            height: 100vh;
+            height: calc(100vh - 70px);
             overflow: hidden;
         }
 
         .sidebar {
-            width: 240px;
-            background-color: #fff;
+            width: 250px;
+            background: #fff;
             border-right: 1px solid #eee;
             overflow-y: auto;
-            padding-top: 1rem;
+            padding: 1rem 1rem 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
         }
 
         .main {
@@ -52,16 +78,22 @@ try {
             padding: 2rem;
         }
 
+        .accordion-item {
+            margin-bottom: 1rem;
+        }
+
         .accordion-toggle {
             background: none;
             border: none;
-            width: 100%;
-            cursor: pointer;
-            padding: 0.3rem 0;
-            color: #333;
+            font-weight: 600;
             font-size: 0.95rem;
+            width: 100%;
             text-align: left;
-            transition: color 0.2s;
+            padding: 0.4rem 0;
+            text-transform: uppercase;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            transition: all 0.2s ease;
         }
 
         .accordion-toggle:hover {
@@ -70,7 +102,7 @@ try {
 
         .accordion-content {
             padding-left: 1rem;
-            margin-top: 0.3rem;
+            margin-top: 0.5rem;
         }
 
         .accordion-content.hidden {
@@ -82,14 +114,16 @@ try {
             border: none;
             color: #6c5ce7;
             font-size: 0.9rem;
-            padding: 0.2rem 0;
+            padding: 0.3rem 0;
             text-align: left;
             width: 100%;
-            cursor: pointer;
-            transition: color 0.2s;
+            display: block;
+            border-radius: 6px;
+            transition: background 0.2s, color 0.2s;
         }
 
         .subcat-link:hover {
+            background: #f2f2ff;
             color: #5943d2;
         }
 
@@ -144,24 +178,30 @@ try {
             margin-top: 0;
         }
 
-        .modal-content .muted {
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-
-        .modal-content a {
-            margin-top: 1.5rem;
-        }
-
         @media (max-width: 768px) {
             .layout {
                 flex-direction: column;
+                height: auto;
             }
 
             .sidebar {
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid #eee;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                background: #fff;
+                height: calc(100vh - 70px);
+                z-index: 15;
+                transform: translateX(-100%);
+                width: 220px;
+                box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+            }
+
+            .sidebar.visible {
+                transform: translateX(0);
+            }
+
+            .menu-toggle {
+                display: block;
             }
 
             .main {
@@ -180,17 +220,22 @@ try {
 </head>
 
 <body>
+    <header>
+        <span>SVE</span>
+        <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('visible')">☰</button>
+    </header>
+
     <div class="layout">
         <aside class="sidebar">
-            <h3 class="px-3 py-2 text-lg font-semibold border-b">Categorías</h3>
-            <div class="menu px-3" id="menu-categorias">
+            <h3 class="text-md font-semibold mb-2">Categorías</h3>
+            <div class="menu" id="menu-categorias">
                 <?php foreach ($categorias as $cat): ?>
-                    <div class="accordion-item py-2 border-b">
+                    <div class="accordion-item">
                         <button class="accordion-toggle" data-cat="<?= $cat['id'] ?>">
                             <?= htmlspecialchars($cat['nombre']) ?>
                         </button>
                         <div class="accordion-content hidden" id="subcat-<?= $cat['id'] ?>">
-                            <p class="muted px-2">Cargando...</p>
+                            <p class="muted">Cargando...</p>
                         </div>
                     </div>
                 <?php endforeach; ?>
