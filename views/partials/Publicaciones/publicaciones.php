@@ -15,6 +15,7 @@ try {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Publicaciones</title>
@@ -37,7 +38,7 @@ try {
             text-align: center;
             font-size: 1.5rem;
             font-weight: bold;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 0;
             z-index: 10;
@@ -53,7 +54,7 @@ try {
             background: #fff;
             border-right: 1px solid #eee;
             padding: 1.5rem;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.03);
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.03);
         }
 
         .sidebar h3 {
@@ -98,7 +99,7 @@ try {
             background: #fff;
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -152,61 +153,100 @@ try {
             display: none;
         }
 
-        .accordion-item {
-    margin-bottom: 1rem;
-}
-
-.accordion-toggle {
-    background: none;
-    border: none;
-    font-weight: bold;
-    font-size: 1rem;
-    width: 100%;
-    text-align: left;
-    padding: 0.5rem 0;
-    cursor: pointer;
-    border-bottom: 1px solid #eee;
-}
-
-.accordion-content {
-    display: none;
-    padding-left: 1rem;
-    margin-top: 0.5rem;
-}
-
-.accordion-content.visible {
-    display: block;
-}
-
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
             }
+
             .sidebar {
                 width: 100%;
                 border-right: none;
                 border-bottom: 1px solid #eee;
             }
         }
+
+        @media (max-width: 768px) {
+            .content {
+                width: 100%;
+                padding: 1rem;
+            }
+
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            }
+
+            .card {
+                margin-bottom: 1rem;
+            }
+        }
+
+        .accordion-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .accordion-toggle {
+            background: none;
+            border: none;
+            font-weight: 500;
+            font-size: 1rem;
+            width: 100%;
+            text-align: left;
+            padding: 0.4rem 0;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            transition: color 0.2s;
+        }
+
+        .accordion-toggle:hover {
+            color: #6c5ce7;
+        }
+
+        .accordion-content {
+            display: none;
+            padding-left: 0.75rem;
+            padding-top: 0.3rem;
+        }
+
+        .accordion-content.visible {
+            display: block;
+        }
+
+        .accordion-content button {
+            display: block;
+            width: 100%;
+            background: none;
+            border: none;
+            color: #6c5ce7;
+            text-align: left;
+            padding: 0.3rem 0;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .accordion-content button:hover {
+            color: #5943d2;
+        }
     </style>
 </head>
+
 <body>
     <header>SVE</header>
     <div class="container">
         <aside class="sidebar">
             <h3>Categorías</h3>
-<div class="accordion" id="menu-categorias">
-    <?php foreach ($categorias as $cat): ?>
-        <div class="accordion-item">
-            <button class="accordion-toggle" data-cat="<?= $cat['id'] ?>">
-                <?= htmlspecialchars($cat['nombre']) ?>
-            </button>
-            <div class="accordion-content" id="subcat-<?= $cat['id'] ?>">
-                <p class="muted" style="padding: 0.5rem;">Cargando...</p>
+            <div class="accordion" id="menu-categorias">
+                <?php foreach ($categorias as $cat): ?>
+                    <div class="accordion-item">
+                        <button class="accordion-toggle" data-cat="<?= $cat['id'] ?>">
+                            <?= htmlspecialchars($cat['nombre']) ?>
+                        </button>
+                        <div class="accordion-content" id="subcat-<?= $cat['id'] ?>">
+                            <p class="muted" style="padding: 0.5rem;">Cargando...</p>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
             </div>
-        </div>
-    <?php endforeach; ?>
-</div>
         </aside>
         <main class="content">
             <div class="grid" id="contenedor-publicaciones"></div>
@@ -231,43 +271,45 @@ try {
         const menuCategorias = document.getElementById('menu-categorias');
         const modal = document.getElementById('modal-lectura');
 
-document.querySelectorAll('.accordion-toggle').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        const catId = btn.dataset.cat;
-        const content = document.getElementById(`subcat-${catId}`);
+        document.querySelectorAll('.accordion-toggle').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const catId = btn.dataset.cat;
+                const content = document.getElementById(`subcat-${catId}`);
 
-        // Alternar clase visible
-        content.classList.toggle('visible');
+                // Alternar clase visible
+                content.classList.toggle('visible');
 
-        // Si ya cargó, no vuelve a pedir
-        if (content.dataset.loaded === "1") return;
+                // Si ya cargó, no vuelve a pedir
+                if (content.dataset.loaded === "1") return;
 
-        try {
-            const res = await fetch(`../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=${catId}`);
-            const data = await res.json();
+                try {
+                    const res = await fetch(`../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=${catId}`);
+                    const data = await res.json();
 
-            content.innerHTML = '';
+                    content.innerHTML = '';
 
-            data.forEach(sub => {
-                const subBtn = document.createElement('button');
-                subBtn.className = 'btn small full muted';
-                subBtn.style.marginBottom = '0.5rem';
-                subBtn.textContent = sub.nombre;
-                subBtn.onclick = () => cargarPublicaciones(catId, sub.id);
-                content.appendChild(subBtn);
+                    data.forEach(sub => {
+                        const subBtn = document.createElement('button');
+                        subBtn.className = 'btn small full muted';
+                        subBtn.style.marginBottom = '0.5rem';
+                        subBtn.textContent = sub.nombre;
+                        subBtn.onclick = () => cargarPublicaciones(catId, sub.id);
+                        content.appendChild(subBtn);
+                    });
+
+                    content.dataset.loaded = "1";
+                } catch (e) {
+                    content.innerHTML = '<p class="muted">Error al cargar.</p>';
+                }
             });
-
-            content.dataset.loaded = "1";
-        } catch (e) {
-            content.innerHTML = '<p class="muted">Error al cargar.</p>';
-        }
-    });
-});
+        });
 
         let publicaciones = [];
 
         function cargarPublicaciones(categoria_id = '', subcategoria_id = '') {
-            const params = new URLSearchParams({ action: 'get_publicaciones' });
+            const params = new URLSearchParams({
+                action: 'get_publicaciones'
+            });
             if (categoria_id) params.append('categoria_id', categoria_id);
             if (subcategoria_id) params.append('subcategoria_id', subcategoria_id);
 
@@ -351,4 +393,5 @@ document.querySelectorAll('.accordion-toggle').forEach(btn => {
         cargarPublicaciones();
     </script>
 </body>
+
 </html>
