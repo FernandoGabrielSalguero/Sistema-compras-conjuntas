@@ -272,9 +272,10 @@ header {
     </div>
 
     <!-- Modal -->
+<!-- Modal personalizado del framework -->
 <div class="modal" id="modal-lectura">
     <div class="modal-box">
-        <button class="modal-close btn-close" onclick="Framework.closeModal('modal-lectura')">✖</button>
+        <button class="modal-close btn-close" onclick="Framework.closeModal('modal-lectura')" style="float:right;">✖</button>
         <h2 id="modal-titulo" class="text-lg font-bold mb-2"></h2>
         <p id="modal-subtitulo" class="muted mb-1"></p>
         <p id="modal-cat-subcat" class="muted mb-1"></p>
@@ -374,7 +375,7 @@ header {
                 archivoBtn.style.display = 'none';
             }
 
-            modal.showModal();
+            Framework.openModal('modal-lectura');
         }
 
         cargarPublicaciones();
