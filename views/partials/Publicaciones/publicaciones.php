@@ -86,10 +86,14 @@ header {
     flex: 1;
     overflow-y: auto;
     background: #f9f9f9;
-    padding: 2rem;
+    padding: 2rem 1rem;
+    margin: 0; /* Asegura que no se centre automáticamente */
+    max-width: 100%; /* Rompe cualquier centrado o limitación de ancho */
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
+
 
 /* ACCORDION */
 .accordion-item {
@@ -207,7 +211,7 @@ header {
         position: absolute;
         top: 70px;
         left: 0;
-        /* width: 220px; */
+        width: 220px;
         height: calc(100vh - 70px);
         z-index: 15;
         transform: translateX(-100%);
