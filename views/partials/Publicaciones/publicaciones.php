@@ -39,7 +39,7 @@ try {
             font-weight: bold;
             font-size: 1.3rem;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-            position: relative;
+            position: sticky;
             top: 0;
             z-index: 20;
         }
