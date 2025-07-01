@@ -39,7 +39,7 @@ try {
             font-weight: bold;
             font-size: 1.3rem;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-            position: sticky;
+            position: relative;
             top: 0;
             z-index: 20;
         }
@@ -52,11 +52,12 @@ try {
             cursor: pointer;
         }
 
-        .layout {
-            display: flex;
-            height: calc(100vh - 70px);
-            overflow: hidden;
-        }
+.layout {
+    display: flex;
+    height: calc(100vh - 64px); /* mismo alto que el header */
+    margin-top: 64px; /* compensar sticky */
+    overflow: hidden;
+}
 
         .sidebar {
             width: 250px;
