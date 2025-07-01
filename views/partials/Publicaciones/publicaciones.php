@@ -272,17 +272,17 @@ header {
     </div>
 
     <!-- Modal -->
-    <dialog id="modal-lectura">
-        <div class="modal-content">
-            <button class="btn-close" onclick="modal.close()" style="float:right;">✖</button>
-            <h2 id="modal-titulo"></h2>
-            <p class="muted" id="modal-subtitulo"></p>
-            <p class="muted" id="modal-cat-subcat"></p>
-            <p class="muted" id="modal-autor-fecha"></p>
-            <p id="modal-descripcion"></p>
-            <a id="modal-archivo" href="#" target="_blank" class="btn">Descargar archivo</a>
-        </div>
-    </dialog>
+<div class="modal" id="modal-lectura">
+    <div class="modal-box">
+        <button class="modal-close btn-close" onclick="Framework.closeModal('modal-lectura')">✖</button>
+        <h2 id="modal-titulo" class="text-lg font-bold mb-2"></h2>
+        <p id="modal-subtitulo" class="muted mb-1"></p>
+        <p id="modal-cat-subcat" class="muted mb-1"></p>
+        <p id="modal-autor-fecha" class="muted mb-2"></p>
+        <p id="modal-descripcion" class="mb-4"></p>
+        <a id="modal-archivo" href="#" target="_blank" class="btn">Descargar archivo</a>
+    </div>
+</div>
 
     <script>
         const contenedor = document.getElementById('contenedor-publicaciones');
