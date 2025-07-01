@@ -152,6 +152,32 @@ try {
             display: none;
         }
 
+        .accordion-item {
+    margin-bottom: 1rem;
+}
+
+.accordion-toggle {
+    background: none;
+    border: none;
+    font-weight: bold;
+    font-size: 1rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.accordion-content {
+    display: none;
+    padding-left: 1rem;
+    margin-top: 0.5rem;
+}
+
+.accordion-content.visible {
+    display: block;
+}
+
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
@@ -169,12 +195,18 @@ try {
     <div class="container">
         <aside class="sidebar">
             <h3>Categorías</h3>
-            <ul id="menu-categorias">
-                <?php foreach ($categorias as $cat): ?>
-                    <li data-categoria="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['nombre']) ?></li>
-                    <ul class="subcategorias" id="subcat-<?= $cat['id'] ?>"></ul>
-                <?php endforeach; ?>
-            </ul>
+<div class="accordion" id="menu-categorias">
+    <?php foreach ($categorias as $cat): ?>
+        <div class="accordion-item">
+            <button class="accordion-toggle" data-cat="<?= $cat['id'] ?>">
+                <?= htmlspecialchars($cat['nombre']) ?>
+            </button>
+            <div class="accordion-content" id="subcat-<?= $cat['id'] ?>">
+                <p class="muted" style="padding: 0.5rem;">Cargando...</p>
+            </div>
+        </div>
+    <?php endforeach; ?>
+</div>
         </aside>
         <main class="content">
             <div class="grid" id="contenedor-publicaciones"></div>
@@ -198,6 +230,39 @@ try {
         const contenedor = document.getElementById('contenedor-publicaciones');
         const menuCategorias = document.getElementById('menu-categorias');
         const modal = document.getElementById('modal-lectura');
+
+document.querySelectorAll('.accordion-toggle').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const catId = btn.dataset.cat;
+        const content = document.getElementById(`subcat-${catId}`);
+
+        // Alternar clase visible
+        content.classList.toggle('visible');
+
+        // Si ya cargó, no vuelve a pedir
+        if (content.dataset.loaded === "1") return;
+
+        try {
+            const res = await fetch(`../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=${catId}`);
+            const data = await res.json();
+
+            content.innerHTML = '';
+
+            data.forEach(sub => {
+                const subBtn = document.createElement('button');
+                subBtn.className = 'btn small full muted';
+                subBtn.style.marginBottom = '0.5rem';
+                subBtn.textContent = sub.nombre;
+                subBtn.onclick = () => cargarPublicaciones(catId, sub.id);
+                content.appendChild(subBtn);
+            });
+
+            content.dataset.loaded = "1";
+        } catch (e) {
+            content.innerHTML = '<p class="muted">Error al cargar.</p>';
+        }
+    });
+});
 
         let publicaciones = [];
 
