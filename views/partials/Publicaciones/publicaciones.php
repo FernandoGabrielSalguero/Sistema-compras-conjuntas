@@ -191,16 +191,6 @@ try {
             background: #5943d2;
         }
 
-        /* MODAL */
-        .modal-content {
-            max-width: 600px;
-            padding: 2rem;
-        }
-
-        .modal-content h2 {
-            margin-top: 0;
-        }
-
         /* RESPONSIVE (MOBILE) */
         @media (max-width: 768px) {
             .layout {
