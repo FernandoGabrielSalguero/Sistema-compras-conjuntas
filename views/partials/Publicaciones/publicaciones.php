@@ -207,7 +207,7 @@ header {
         position: absolute;
         top: 70px;
         left: 0;
-        width: 220px;
+        /* width: 220px; */
         height: calc(100vh - 70px);
         z-index: 15;
         transform: translateX(-100%);
