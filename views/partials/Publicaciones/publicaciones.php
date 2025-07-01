@@ -30,19 +30,18 @@ try {
             font-family: 'Segoe UI', sans-serif;
         }
 
-        header {
-            background-color: #fff;
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            font-size: 1.3rem;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-            position: sticky;
-            top: 0;
-            z-index: 20;
-        }
+header {
+    background-color: #fff;
+    margin: 1rem;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.3rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
 
         .menu-toggle {
             display: none;
@@ -52,11 +51,11 @@ try {
             cursor: pointer;
         }
 
-        .layout {
-            display: flex;
-            height: calc(100vh - 70px);
-            overflow: hidden;
-        }
+.layout {
+    display: flex;
+    gap: 1rem;
+    padding: 0 1rem 1rem;
+}
 
         .sidebar {
             width: 250px;
@@ -71,12 +70,14 @@ try {
             transform: translateX(-100%);
         }
 
-        .main {
-            flex: 1;
-            overflow-y: auto;
-            background: #f9f9f9;
-            padding: 2rem;
-        }
+.main {
+    flex: 1;
+    overflow-y: auto;
+    background: #f9f9f9;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
 
         .accordion-item {
             margin-bottom: 1rem;
