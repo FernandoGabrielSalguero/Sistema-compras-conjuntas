@@ -146,17 +146,21 @@ switch ($action) {
 
     case 'incrementar_vista':
         $id = intval($_GET['id'] ?? 0);
+        $ok = false;
         if ($id > 0) {
             $stmt = $pdo->prepare("UPDATE publicaciones SET vistas = vistas + 1 WHERE id = ?");
-            $stmt->execute([$id]);
+            $ok = $stmt->execute([$id]);
         }
+        echo json_encode(['success' => $ok]);
         exit;
 
     case 'incrementar_descarga':
         $id = intval($_GET['id'] ?? 0);
+        $ok = false;
         if ($id > 0) {
             $stmt = $pdo->prepare("UPDATE publicaciones SET descargas = descargas + 1 WHERE id = ?");
-            $stmt->execute([$id]);
+            $ok = $stmt->execute([$id]);
         }
+        echo json_encode(['success' => $ok]);
         exit;
 }
