@@ -23,194 +23,233 @@ try {
     <!-- Framework CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
     <style>
         body {
             background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
         }
+
         header {
             background: #fff;
-            padding: 1rem;
+            padding: 1rem 2rem;
             text-align: center;
+            font-size: 1.8rem;
             font-weight: bold;
-            font-size: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
         }
-        .layout {
+
+        .layout-container {
             display: flex;
-            max-width: 1300px;
+            flex: 1;
+            max-width: 1200px;
             margin: auto;
             padding: 2rem;
-            gap: 2rem;
         }
+
         aside {
-            width: 250px;
-            background: #fff;
-            border-radius: 12px;
-            padding: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            width: 200px;
+            padding-right: 2rem;
+            border-right: 1px solid #eee;
         }
-        .sidebar h3 {
+
+        aside h3 {
             margin-bottom: 1rem;
         }
-        .sidebar ul {
-            list-style: none;
-            padding: 0;
-        }
-        .sidebar li {
-            margin-bottom: 8px;
+
+        aside .categoria, aside .subcategoria {
             cursor: pointer;
-            color: #555;
+            padding: 0.3rem 0;
+            transition: all 0.2s;
         }
-        .sidebar li:hover {
-            color: var(--primary);
+
+        aside .categoria:hover,
+        aside .subcategoria:hover {
+            color: #4b0082;
         }
-        main {
-            flex-grow: 1;
-        }
-        .card-grid {
+
+        .publicaciones {
+            flex: 1;
+            padding-left: 2rem;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 1.5rem;
         }
+
         .card {
-            background: #fff;
+            border-radius: 8px;
             padding: 1rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
-        .card h4 {
-            margin-bottom: 0.25rem;
+
+        .card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
         }
-        .card p {
-            margin: 0.25rem 0;
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
-        .modal .body {
-            white-space: pre-wrap;
+
+        .modal.activo {
+            display: flex;
+        }
+
+        .modal .card {
+            max-width: 600px;
+            width: 90%;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .modal .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
     <header>SVE</header>
-    <div class="layout">
-        <aside class="sidebar">
+
+    <div class="layout-container">
+        <!-- Menú lateral -->
+        <aside>
             <h3>Categorías</h3>
-            <ul id="lista-categorias"></ul>
+            <div id="menu-categorias">
+                <?php foreach ($categorias as $cat): ?>
+                    <div class="categoria" data-id="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['nombre']) ?></div>
+                <?php endforeach; ?>
+            </div>
+            <div id="menu-subcategorias" style="margin-top: 1rem;"></div>
         </aside>
-        <main>
-            <div id="contenedor-publicaciones" class="card-grid"></div>
-        </main>
+
+        <!-- Contenido -->
+        <div class="publicaciones" id="contenedor-publicaciones"></div>
     </div>
 
-    <div class="modal" id="modal-publicacion">
-        <div class="modal-overlay" onclick="cerrarModal()"></div>
-        <div class="modal-content">
-            <div class="header">
-                <h3 id="modal-titulo"></h3>
-                <button class="close" onclick="cerrarModal()">&times;</button>
-            </div>
-            <div class="body" id="modal-contenido"></div>
-            <div class="footer" id="modal-footer"></div>
+    <!-- Modal -->
+    <div id="modal-publicacion" class="modal">
+        <div class="card">
+            <div class="close" onclick="cerrarModal()">✖</div>
+            <h2 id="modal-titulo"></h2>
+            <h4 id="modal-subtitulo" class="muted"></h4>
+            <p id="modal-categoria" class="muted"></p>
+            <p id="modal-autor-fecha" class="muted"></p>
+            <p id="modal-descripcion" style="margin-top: 1rem;"></p>
+            <div id="modal-archivo" style="margin-top: 1rem;"></div>
         </div>
     </div>
 
     <script>
-        let publicaciones = [];
-        let categorias = <?= json_encode($categorias) ?>;
+        const publicacionesContenedor = document.getElementById('contenedor-publicaciones');
+        const menuCategorias = document.getElementById('menu-categorias');
+        const menuSubcategorias = document.getElementById('menu-subcategorias');
 
-        const listaCategorias = document.getElementById('lista-categorias');
-        const contenedor = document.getElementById('contenedor-publicaciones');
+        let categoriaSeleccionada = null;
+        let subcategoriaSeleccionada = null;
 
-        function cerrarModal() {
-            document.getElementById('modal-publicacion').classList.remove('show');
+        menuCategorias.addEventListener('click', e => {
+            if (e.target.classList.contains('categoria')) {
+                categoriaSeleccionada = e.target.dataset.id;
+                subcategoriaSeleccionada = null;
+                cargarSubcategorias(categoriaSeleccionada);
+                cargarPublicaciones();
+            }
+        });
+
+        menuSubcategorias.addEventListener('click', e => {
+            if (e.target.classList.contains('subcategoria')) {
+                subcategoriaSeleccionada = e.target.dataset.id;
+                cargarPublicaciones();
+            }
+        });
+
+        function cargarSubcategorias(catId) {
+            menuSubcategorias.innerHTML = '';
+            fetch(`../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=${catId}`)
+                .then(res => res.json())
+                .then(data => {
+                    data.forEach(sub => {
+                        const div = document.createElement('div');
+                        div.classList.add('subcategoria');
+                        div.dataset.id = sub.id;
+                        div.textContent = '↳ ' + sub.nombre;
+                        menuSubcategorias.appendChild(div);
+                    });
+                });
+        }
+
+        function cargarPublicaciones() {
+            const params = new URLSearchParams();
+            params.append('action', 'get_publicaciones');
+            if (categoriaSeleccionada) params.append('categoria_id', categoriaSeleccionada);
+            if (subcategoriaSeleccionada) params.append('subcategoria_id', subcategoriaSeleccionada);
+
+            fetch(`../../controllers/sve_publicacionesController.php?${params.toString()}`)
+                .then(res => res.json())
+                .then(data => {
+                    publicacionesContenedor.innerHTML = '';
+
+                    if (!data.length) {
+                        publicacionesContenedor.innerHTML = '<p class="muted">No se encontraron publicaciones.</p>';
+                        return;
+                    }
+
+                    data.forEach(pub => {
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        card.innerHTML = `
+                            <h3>${pub.titulo}</h3>
+                            <p class="muted">${pub.subtitulo || ''}</p>
+                            <p class="muted">${pub.categoria} > ${pub.subcategoria}</p>
+                            <p style="font-size: 0.9rem; color: #444;">${pub.descripcion.slice(0, 100)}...</p>
+                            <div style="margin-top: auto;">
+                                <button class="btn btn-outline full-width" onclick='abrirModal(${JSON.stringify(pub)})'>Leer</button>
+                            </div>
+                        `;
+                        publicacionesContenedor.appendChild(card);
+                    });
+                });
         }
 
         function abrirModal(pub) {
             document.getElementById('modal-titulo').textContent = pub.titulo;
-            document.getElementById('modal-contenido').innerHTML = `
-                <p><strong>${pub.autor}</strong> · ${pub.fecha_publicacion}</p>
-                <p><em>${pub.subtitulo || ''}</em></p>
-                <p><strong>${pub.categoria} > ${pub.subcategoria}</strong></p>
-                <p>${pub.descripcion}</p>
-            `;
-            document.getElementById('modal-footer').innerHTML = pub.archivo 
-                ? `<a href="../../uploads/publications/${pub.archivo}" class="btn" target="_blank">Descargar archivo</a>`
-                : '<span class="muted">Sin archivo</span>';
-            document.getElementById('modal-publicacion').classList.add('show');
+            document.getElementById('modal-subtitulo').textContent = pub.subtitulo || '';
+            document.getElementById('modal-categoria').textContent = `${pub.categoria} > ${pub.subcategoria}`;
+            document.getElementById('modal-autor-fecha').textContent = `${pub.autor} · ${pub.fecha_publicacion}`;
+            document.getElementById('modal-descripcion').textContent = pub.descripcion;
+
+            const archivoDiv = document.getElementById('modal-archivo');
+            archivoDiv.innerHTML = pub.archivo
+                ? `<a class="btn" href="../../uploads/publications/${pub.archivo}" target="_blank">Descargar archivo</a>`
+                : `<span class="muted">Sin archivo</span>`;
+
+            document.getElementById('modal-publicacion').classList.add('activo');
         }
 
-        function renderPublicaciones(lista) {
-            contenedor.innerHTML = '';
-            if (!lista.length) {
-                contenedor.innerHTML = '<p class="muted">No se encontraron publicaciones.</p>';
-                return;
-            }
-            lista.forEach(pub => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <div>
-                        <h4>${pub.titulo}</h4>
-                        <p class="muted">${pub.subtitulo || ''}</p>
-                        <p class="muted">${pub.categoria} > ${pub.subcategoria}</p>
-                        <p>${pub.descripcion.slice(0, 100)}...</p>
-                    </div>
-                    <button class="btn btn-outline" onclick='abrirModal(${JSON.stringify(pub)})'>Leer</button>
-                `;
-                contenedor.appendChild(card);
-            });
+        function cerrarModal() {
+            document.getElementById('modal-publicacion').classList.remove('activo');
         }
 
-        function cargarCategorias() {
-            listaCategorias.innerHTML = '';
-            categorias.forEach(cat => {
-                const li = document.createElement('li');
-                li.textContent = cat.nombre;
-                li.onclick = () => {
-                    fetch(`../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=${cat.id}`)
-                        .then(r => r.json())
-                        .then(subs => {
-                            listaCategorias.innerHTML = '';
-                            const back = document.createElement('li');
-                            back.textContent = '← Volver';
-                            back.style.fontWeight = 'bold';
-                            back.onclick = cargarCategorias;
-                            listaCategorias.appendChild(back);
-                            subs.forEach(sub => {
-                                const subLi = document.createElement('li');
-                                subLi.textContent = sub.nombre;
-                                subLi.style.paddingLeft = '1rem';
-                                subLi.style.color = 'purple';
-                                subLi.onclick = () => filtrar(cat.id, sub.id);
-                                listaCategorias.appendChild(subLi);
-                            });
-                        });
-                    filtrar(cat.id);
-                }
-                listaCategorias.appendChild(li);
-            });
-        }
-
-        function filtrar(categoriaId, subcategoriaId = '') {
-            let filtradas = publicaciones.filter(p => p.categoria_id == categoriaId);
-            if (subcategoriaId) {
-                filtradas = filtradas.filter(p => p.subcategoria_id == subcategoriaId);
-            }
-            renderPublicaciones(filtradas);
-        }
-
-        function cargarPublicaciones() {
-            fetch('../../controllers/sve_publicacionesController.php?action=get_publicaciones')
-                .then(r => r.json())
-                .then(data => {
-                    publicaciones = data;
-                    renderPublicaciones(publicaciones);
-                    cargarCategorias();
-                });
-        }
-
+        // Inicial
         cargarPublicaciones();
     </script>
 </body>
