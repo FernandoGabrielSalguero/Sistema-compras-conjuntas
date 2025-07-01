@@ -26,230 +26,263 @@ try {
 
     <style>
         body {
-            background-color: #f9f9f9;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
             margin: 0;
+            background-color: #f9f9f9;
+            font-family: 'Segoe UI', sans-serif;
         }
 
         header {
-            background: #fff;
-            padding: 1rem 2rem;
+            background-color: #fff;
+            padding: 1rem;
             text-align: center;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: bold;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        .layout-container {
+        .container {
             display: flex;
-            flex: 1;
-            max-width: 1200px;
-            margin: auto;
-            padding: 2rem;
+            min-height: calc(100vh - 70px);
         }
 
-        aside {
-            width: 200px;
-            padding-right: 2rem;
+        .sidebar {
+            width: 240px;
+            background: #fff;
             border-right: 1px solid #eee;
+            padding: 1.5rem;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.03);
         }
 
-        aside h3 {
+        .sidebar h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
             margin-bottom: 1rem;
         }
 
-        aside .categoria, aside .subcategoria {
-            cursor: pointer;
+        .sidebar ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .sidebar li {
             padding: 0.3rem 0;
-            transition: all 0.2s;
+            cursor: pointer;
+            transition: color 0.2s;
         }
 
-        aside .categoria:hover,
-        aside .subcategoria:hover {
-            color: #4b0082;
+        .sidebar li:hover {
+            color: #6c5ce7;
         }
 
-        .publicaciones {
+        .sidebar .sub {
+            margin-left: 1rem;
+            color: #6c5ce7;
+            font-size: 0.95rem;
+        }
+
+        .content {
             flex: 1;
-            padding-left: 2rem;
+            padding: 2rem;
+        }
+
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 1.5rem;
         }
 
         .card {
-            border-radius: 8px;
-            padding: 1rem;
             background: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
 
         .card h3 {
-            font-size: 1.1rem;
-            margin-bottom: 0.2rem;
+            margin: 0;
+            font-size: 1rem;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0,0,0,0.6);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+        .card .muted {
+            color: #999;
+            font-size: 0.9rem;
         }
 
-        .modal.activo {
-            display: flex;
-        }
-
-        .modal .card {
-            max-width: 600px;
-            width: 90%;
-            padding: 2rem;
-            position: relative;
-        }
-
-        .modal .close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 1.2rem;
+        .card .btn {
+            margin-top: auto;
+            background: #6c5ce7;
+            color: #fff;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
             cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .card .btn:hover {
+            background: #5943d2;
+        }
+
+        .modal-content {
+            max-width: 600px;
+            padding: 2rem;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+        }
+
+        .modal-content .muted {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-content a {
+            margin-top: 1.5rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
         }
     </style>
 </head>
 <body>
     <header>SVE</header>
-
-    <div class="layout-container">
-        <!-- Menú lateral -->
-        <aside>
+    <div class="container">
+        <aside class="sidebar">
             <h3>Categorías</h3>
-            <div id="menu-categorias">
+            <ul id="menu-categorias">
                 <?php foreach ($categorias as $cat): ?>
-                    <div class="categoria" data-id="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['nombre']) ?></div>
+                    <li data-categoria="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['nombre']) ?></li>
+                    <ul class="subcategorias" id="subcat-<?= $cat['id'] ?>"></ul>
                 <?php endforeach; ?>
-            </div>
-            <div id="menu-subcategorias" style="margin-top: 1rem;"></div>
+            </ul>
         </aside>
-
-        <!-- Contenido -->
-        <div class="publicaciones" id="contenedor-publicaciones"></div>
+        <main class="content">
+            <div class="grid" id="contenedor-publicaciones"></div>
+        </main>
     </div>
 
     <!-- Modal -->
-    <div id="modal-publicacion" class="modal">
-        <div class="card">
-            <div class="close" onclick="cerrarModal()">✖</div>
+    <dialog id="modal-lectura">
+        <div class="modal-content">
+            <button class="btn-close" onclick="modal.close()" style="float:right;">✖</button>
             <h2 id="modal-titulo"></h2>
-            <h4 id="modal-subtitulo" class="muted"></h4>
-            <p id="modal-categoria" class="muted"></p>
-            <p id="modal-autor-fecha" class="muted"></p>
-            <p id="modal-descripcion" style="margin-top: 1rem;"></p>
-            <div id="modal-archivo" style="margin-top: 1rem;"></div>
+            <p class="muted" id="modal-subtitulo"></p>
+            <p class="muted" id="modal-cat-subcat"></p>
+            <p class="muted" id="modal-autor-fecha"></p>
+            <p id="modal-descripcion"></p>
+            <a id="modal-archivo" href="#" target="_blank" class="btn">Descargar archivo</a>
         </div>
-    </div>
+    </dialog>
 
     <script>
-        const publicacionesContenedor = document.getElementById('contenedor-publicaciones');
+        const contenedor = document.getElementById('contenedor-publicaciones');
         const menuCategorias = document.getElementById('menu-categorias');
-        const menuSubcategorias = document.getElementById('menu-subcategorias');
+        const modal = document.getElementById('modal-lectura');
 
-        let categoriaSeleccionada = null;
-        let subcategoriaSeleccionada = null;
+        let publicaciones = [];
 
-        menuCategorias.addEventListener('click', e => {
-            if (e.target.classList.contains('categoria')) {
-                categoriaSeleccionada = e.target.dataset.id;
-                subcategoriaSeleccionada = null;
-                cargarSubcategorias(categoriaSeleccionada);
-                cargarPublicaciones();
-            }
-        });
-
-        menuSubcategorias.addEventListener('click', e => {
-            if (e.target.classList.contains('subcategoria')) {
-                subcategoriaSeleccionada = e.target.dataset.id;
-                cargarPublicaciones();
-            }
-        });
-
-        function cargarSubcategorias(catId) {
-            menuSubcategorias.innerHTML = '';
-            fetch(`../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=${catId}`)
-                .then(res => res.json())
-                .then(data => {
-                    data.forEach(sub => {
-                        const div = document.createElement('div');
-                        div.classList.add('subcategoria');
-                        div.dataset.id = sub.id;
-                        div.textContent = '↳ ' + sub.nombre;
-                        menuSubcategorias.appendChild(div);
-                    });
-                });
-        }
-
-        function cargarPublicaciones() {
-            const params = new URLSearchParams();
-            params.append('action', 'get_publicaciones');
-            if (categoriaSeleccionada) params.append('categoria_id', categoriaSeleccionada);
-            if (subcategoriaSeleccionada) params.append('subcategoria_id', subcategoriaSeleccionada);
+        function cargarPublicaciones(categoria_id = '', subcategoria_id = '') {
+            const params = new URLSearchParams({ action: 'get_publicaciones' });
+            if (categoria_id) params.append('categoria_id', categoria_id);
+            if (subcategoria_id) params.append('subcategoria_id', subcategoria_id);
 
             fetch(`../../controllers/sve_publicacionesController.php?${params.toString()}`)
                 .then(res => res.json())
                 .then(data => {
-                    publicacionesContenedor.innerHTML = '';
-
-                    if (!data.length) {
-                        publicacionesContenedor.innerHTML = '<p class="muted">No se encontraron publicaciones.</p>';
-                        return;
-                    }
-
-                    data.forEach(pub => {
-                        const card = document.createElement('div');
-                        card.className = 'card';
-                        card.innerHTML = `
-                            <h3>${pub.titulo}</h3>
-                            <p class="muted">${pub.subtitulo || ''}</p>
-                            <p class="muted">${pub.categoria} > ${pub.subcategoria}</p>
-                            <p style="font-size: 0.9rem; color: #444;">${pub.descripcion.slice(0, 100)}...</p>
-                            <div style="margin-top: auto;">
-                                <button class="btn btn-outline full-width" onclick='abrirModal(${JSON.stringify(pub)})'>Leer</button>
-                            </div>
-                        `;
-                        publicacionesContenedor.appendChild(card);
-                    });
+                    publicaciones = data;
+                    renderPublicaciones();
                 });
         }
 
-        function abrirModal(pub) {
+        function renderPublicaciones() {
+            contenedor.innerHTML = '';
+
+            if (!publicaciones.length) {
+                contenedor.innerHTML = '<p class="muted">No se encontraron publicaciones.</p>';
+                return;
+            }
+
+            publicaciones.forEach(pub => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+
+                card.innerHTML = `
+                    <div>
+                        <h3>${pub.titulo}</h3>
+                        <p class="muted">${pub.subtitulo || ''}</p>
+                        <p class="muted">${pub.categoria} > ${pub.subcategoria}</p>
+                        <p style="font-size: 0.95rem; color: #444;">${pub.descripcion?.slice(0, 120)}...</p>
+                    </div>
+                    <button class="btn" onclick="abrirModal(${pub.id})">Leer</button>
+                `;
+
+                contenedor.appendChild(card);
+            });
+        }
+
+        function abrirModal(id) {
+            const pub = publicaciones.find(p => p.id == id);
+            if (!pub) return;
+
             document.getElementById('modal-titulo').textContent = pub.titulo;
             document.getElementById('modal-subtitulo').textContent = pub.subtitulo || '';
-            document.getElementById('modal-categoria').textContent = `${pub.categoria} > ${pub.subcategoria}`;
+            document.getElementById('modal-cat-subcat').textContent = `${pub.categoria} > ${pub.subcategoria}`;
             document.getElementById('modal-autor-fecha').textContent = `${pub.autor} · ${pub.fecha_publicacion}`;
-            document.getElementById('modal-descripcion').textContent = pub.descripcion;
+            document.getElementById('modal-descripcion').textContent = pub.descripcion || '';
+            const archivoBtn = document.getElementById('modal-archivo');
 
-            const archivoDiv = document.getElementById('modal-archivo');
-            archivoDiv.innerHTML = pub.archivo
-                ? `<a class="btn" href="../../uploads/publications/${pub.archivo}" target="_blank">Descargar archivo</a>`
-                : `<span class="muted">Sin archivo</span>`;
+            if (pub.archivo) {
+                archivoBtn.href = `../../uploads/publications/${pub.archivo}`;
+                archivoBtn.style.display = 'inline-block';
+            } else {
+                archivoBtn.style.display = 'none';
+            }
 
-            document.getElementById('modal-publicacion').classList.add('activo');
+            modal.showModal();
         }
 
-        function cerrarModal() {
-            document.getElementById('modal-publicacion').classList.remove('activo');
-        }
+        // Cargar subcategorías dinámicamente
+        document.querySelectorAll('#menu-categorias li[data-categoria]').forEach(cat => {
+            cat.addEventListener('click', () => {
+                const categoriaId = cat.dataset.categoria;
+                cargarPublicaciones(categoriaId);
 
-        // Inicial
+                fetch(`../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=${categoriaId}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        const ul = document.getElementById(`subcat-${categoriaId}`);
+                        ul.innerHTML = '';
+                        data.forEach(sub => {
+                            const li = document.createElement('li');
+                            li.classList.add('sub');
+                            li.textContent = `↳ ${sub.nombre}`;
+                            li.onclick = () => cargarPublicaciones(categoriaId, sub.id);
+                            ul.appendChild(li);
+                        });
+                    });
+            });
+        });
+
         cargarPublicaciones();
     </script>
 </body>
