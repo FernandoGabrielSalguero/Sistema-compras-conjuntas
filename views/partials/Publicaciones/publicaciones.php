@@ -52,12 +52,11 @@ try {
             cursor: pointer;
         }
 
-.layout {
-    display: flex;
-    height: calc(100vh - 64px); /* mismo alto que el header */
-    margin-top: 64px; /* compensar sticky */
-    overflow: hidden;
-}
+        .layout {
+            display: flex;
+            height: calc(100vh - 70px);
+            overflow: hidden;
+        }
 
         .sidebar {
             width: 250px;
