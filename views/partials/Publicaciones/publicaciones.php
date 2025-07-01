@@ -372,18 +372,29 @@ try {
             const pub = publicaciones.find(p => p.id == id);
             if (!pub) return;
 
+            // 1. Incrementar vistas
+            fetch(`../../controllers/sve_publicacionesController.php?action=incrementar_vista&id=${id}`);
+
             document.getElementById('modal-titulo').textContent = pub.titulo;
             document.getElementById('modal-subtitulo').textContent = pub.subtitulo || '';
             document.getElementById('modal-cat-subcat').textContent = `${pub.categoria} > ${pub.subcategoria}`;
             document.getElementById('modal-autor-fecha').textContent = `${pub.autor} · ${pub.fecha_publicacion}`;
             document.getElementById('modal-descripcion').textContent = pub.descripcion || '';
+
             const archivoBtn = document.getElementById('modal-archivo');
 
             if (pub.archivo) {
                 archivoBtn.href = `../../uploads/publications/${pub.archivo}`;
                 archivoBtn.style.display = 'inline-block';
+
+                // 2. Incrementar descargas al hacer clic
+                archivoBtn.onclick = () => {
+                    fetch(`../../controllers/sve_publicacionesController.php?action=incrementar_descarga&id=${id}`);
+                };
+
             } else {
                 archivoBtn.style.display = 'none';
+                archivoBtn.onclick = null;
             }
 
             Framework.openModal('modal-lectura');

@@ -143,4 +143,20 @@ switch ($action) {
         $subcategoria_id = $_GET['subcategoria_id'] ?? null;
         echo json_encode($publicacionesModel->obtenerPublicaciones($categoria_id, $subcategoria_id));
         break;
+
+    case 'incrementar_vista':
+        $id = intval($_GET['id'] ?? 0);
+        if ($id > 0) {
+            $stmt = $pdo->prepare("UPDATE publicaciones SET vistas = vistas + 1 WHERE id = ?");
+            $stmt->execute([$id]);
+        }
+        exit;
+
+    case 'incrementar_descarga':
+        $id = intval($_GET['id'] ?? 0);
+        if ($id > 0) {
+            $stmt = $pdo->prepare("UPDATE publicaciones SET descargas = descargas + 1 WHERE id = ?");
+            $stmt->execute([$id]);
+        }
+        exit;
 }
