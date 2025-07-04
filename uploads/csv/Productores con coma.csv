@@ -1,288 +1,589 @@
-cuit;contrasena;rol;permiso_ingreso;nombre;correo;telefono;id_cooperativa;id_productor;direccion;id_finca_asociada;observaciones
-11;11;productor;Habilitado;AZNAR  MIGUEL;;;;2;;;
-12;12;productor;Habilitado;AGUILERA   LILIANA FAUSTINA;;;;3;;;
-14;14;productor;Habilitado;CANNISTRACCI  ANTONIO;;;;5;;;
-15;15;productor;Habilitado;CHIARADINI  MARCELINO;;;;6;;;
-16;16;productor;Habilitado;COOPERATIVA BELTRAN;;;;7;;;
-17;17;productor;Habilitado;DEMIRAS  CARLOS JOSE;;;;8;;;
-19;19;productor;Habilitado;FERRE DE FRACHIA  ANA;;;;10;;;
-20;20;productor;Habilitado;FIDEICOMISO UNIR;;;;11;;;
-21;21;productor;Habilitado;GALDEANO  PABLO DANIEL;;;;12;;;
-23;23;productor;Habilitado;GARCIA  ANIBAL  ROBERTO;;;;14;;;
-24;24;productor;Habilitado;GAYO  FELIX;;;;15;;;
-25;25;productor;Habilitado;GENNA  DANIEL SIGIFREDO;;;;16;;;
-26;26;productor;Habilitado;GONZALEZ  JOSE LUIS;;;;17;;;
-28;28;productor;Habilitado;"JOVANI JUAN E.; JOVANI ANABEL L; ANTEQUERA M ISABEL";;;;19;;;
-30;30;productor;Habilitado;MAC INTOSH   CARLOS;;;;21;;;
-31;31;productor;Habilitado;MARTIN  ANTONIO;;;;22;;;
-32;32;productor;Habilitado;MARTIN  MARIA VICTORIA;;;;23;;;
-33;33;productor;Habilitado;MARTINEZ  MERCEDEZ;;;;24;;;
-34;34;productor;Habilitado;MARTINEZ  RAFAEL;;;;25;;;
-35;35;productor;Habilitado;MESAS  JOSE MIGUEL;;;;26;;;
-36;36;productor;Habilitado;MORENO  CLAUDIO MARCELO;;;;27;;;
-37;37;productor;Habilitado;MORENO  HUMBERTO;;;;28;;;
-39;39;productor;Habilitado;OPASO  ROBERTO PAEZ;;;;30;;;
-40;40;productor;Habilitado;PANELLA  HUGO ARNALDO;;;;31;;;
-41;41;productor;Habilitado;PEPA  ADRIANA MARIA;;;;32;;;
-43;43;productor;Habilitado;RICCO  ROGELIO AURELIO;;;;34;;;
-44;44;productor;Habilitado;RINALDI  EDUARDO DANIEL;;;;35;;;
-45;45;productor;Habilitado;RIVERO  ROBERTO ;;;;36;;;
-46;46;productor;Habilitado;RIVERO  MARTIN BONIFACIO;;;;37;;;
-49;49;productor;Habilitado;VARELA  JOSE BENJAMIN;;;;40;;;
-50;50;productor;Habilitado;VELAZCO  JOSE;;;;41;;;
-110;110;productor;Habilitado;Acosta  Antonio;;;;101;;;
-328;328;productor;Habilitado;Agostini  Franco;;;;319;;;
-329;329;productor;Habilitado;Agostini  Luciana;;;;320;;;
-111;111;productor;Habilitado;Agostini  Sergio Luis;;;;102;;;
-330;330;productor;Habilitado;Agropecuaria Fernandez S.A.;;;;321;;;
-331;331;productor;Habilitado;Aguera  Jose Luis;;;;322;;;
-332;332;productor;Habilitado;Agüero  Jose Maria;;;;323;;;
-333;333;productor;Habilitado;Alamino  Daniel;;;;324;;;
-112;112;productor;Habilitado;Alferez  Alberto;;;;103;;;
-113;113;productor;Habilitado;Alferez  Ruben;;;;104;;;
-334;334;productor;Habilitado;Alladio  Jose Ariel;;;;325;;;
-115;115;productor;Habilitado;Alonso  Adolfo;;;;106;;;
-325;325;productor;Habilitado;Alonso  Edgardo;;;;316;;;
-116;116;productor;Habilitado;Alonso  Sergio David;;;;107;;;
-117;117;productor;Habilitado;Alonso  Sergio Javier;;;;108;;;
-118;118;productor;Habilitado;Alvarez  Juan Carlos;;;;109;;;
-119;119;productor;Habilitado;Ambrosini  Beatriz Maria;;;;110;;;
-335;335;productor;Habilitado;Amoros  Fabian Ernesto;;;;326;;;
-120;120;productor;Habilitado;Aranda  Juan Alberto;;;;111;;;
-121;121;productor;Habilitado;Arrieta  Nancy;;;;112;;;
-336;336;productor;Habilitado;Arrom  Gabriel;;;;327;;;
-122;122;productor;Habilitado;Asencio  Cesar;;;;113;;;
-123;123;productor;Habilitado;Astudillo  Jose Oscar;;;;114;;;
-124;124;productor;Habilitado;Astudillo  Narciso;;;;115;;;
-126;126;productor;Habilitado;Balaguer  Joaquín;;;;117;;;
-337;337;productor;Habilitado;Barreto  Hector;;;;328;;;
-128;128;productor;Habilitado;Bauza  Miguel Angel ;;;;119;;;
-338;338;productor;Habilitado;Belmonte  Marcelo;;;;329;;;
-129;129;productor;Habilitado;Belmonte  Oscar;;;;120;;;
-131;131;productor;Habilitado;Bolpato  Alberto;;;;122;;;
-132;132;productor;Habilitado;Bonet  Pablo;;;;123;;;
-133;133;productor;Habilitado;Borda  Ruben;;;;124;;;
-134;134;productor;Habilitado;Browka  Claudio;;;;125;;;
-136;136;productor;Habilitado;Caimi  Norma;;;;127;;;
-138;138;productor;Habilitado;Candela  Luis;;;;129;;;
-188;188;productor;Habilitado;Cano  Enrique;;;;179;;;
-139;139;productor;Habilitado;Cano  Raul ;;;;130;;;
-140;140;productor;Habilitado;Cañadas  Miguel Angel;;;;131;;;
-339;339;productor;Habilitado;Cañadas  Nelly;;;;330;;;
-141;141;productor;Habilitado;Carbone  Angel Ruben;;;;132;;;
-142;142;productor;Habilitado;Carfagna  Claudia;;;;133;;;
-143;143;productor;Habilitado;Cargnelutti  Daniela;;;;134;;;
-144;144;productor;Habilitado;Cargnelutti  Mauricio;;;;135;;;
-145;145;productor;Habilitado;Cargnelutti  Ricardo;;;;136;;;
-340;340;productor;Habilitado;Carracedo  Pablo Martin;;;;331;;;
-146;146;productor;Habilitado;Carrascull  Susana;;;;137;;;
-147;147;productor;Habilitado;Casado  Nestor (Suc.);;;;138;;;
-148;148;productor;Habilitado;Casanova  Alberto;;;;139;;;
-149;149;productor;Habilitado;Centurión  Miguel;;;;140;;;
-150;150;productor;Habilitado;Chamula  Antonio;;;;141;;;
-151;151;productor;Habilitado;Chilczuk  Maria Rosa;;;;142;;;
-152;152;productor;Habilitado;Cichocki  Pedro ;;;;143;;;
-153;153;productor;Habilitado;Comendatore S. A.;;;;144;;;
-154;154;productor;Habilitado;Copado  Antonio;;;;145;;;
-155;155;productor;Habilitado;Copado  Raul Roberto;;;;146;;;
-156;156;productor;Habilitado;Coronel  Andrea;;;;147;;;
-157;157;productor;Habilitado;Coveperthwaite  Ricardo;;;;148;;;
-341;341;productor;Habilitado;Cuello  Sixto Seferino;;;;332;;;
-160;160;productor;Habilitado;Czayka  Juan Carlos;;;;151;;;
-161;161;productor;Habilitado;Dadda  Marcelo;;;;152;;;
-162;162;productor;Habilitado;Dadda  Orestes;;;;153;;;
-163;163;productor;Habilitado;De Bernardi   Eduardo;;;;154;;;
-164;164;productor;Habilitado;De Bernardi  Edgardo;;;;155;;;
-165;165;productor;Habilitado;De Miguel  Ruben ;;;;156;;;
-166;166;productor;Habilitado;De Nardi  Jorge;;;;157;;;
-167;167;productor;Habilitado;Del Pozo  Antonio Benjamin;;;;158;;;
-168;168;productor;Habilitado;Del Rio  Aldo;;;;159;;;
-170;170;productor;Habilitado;Del Río  Lucia;;;;161;;;
-171;171;productor;Habilitado;Di Prieto Raúl;;;;162;;;
-172;172;productor;Habilitado;Domingo  Joaquín;;;;163;;;
-342;342;productor;Habilitado;Dominguez  Eduardo ;;;;333;;;
-173;173;productor;Habilitado;Duran  Jorge;;;;164;;;
-343;343;productor;Habilitado;El Tallador S.R.L.;;;;334;;;
-344;344;productor;Habilitado;Elias Rumis  Federico;;;;335;;;
-176;176;productor;Habilitado;Emprendimientos Agropecuarios Sur S.R.L.;;;;167;;;
-177;177;productor;Habilitado;Emprendimientos Bribo S.A. ;;;;168;;;
-178;178;productor;Habilitado;Eraso  Esteban ;;;;169;;;
-345;345;productor;Habilitado;Esperon  Victor;;;;336;;;
-180;180;productor;Habilitado;Estrella  Jesica;;;;171;;;
-181;181;productor;Habilitado;Fanjul  Carlos;;;;172;;;
-182;182;productor;Habilitado;Farina  Armando;;;;173;;;
-346;346;productor;Habilitado;Fen  Ramon;;;;337;;;
-347;347;productor;Habilitado;Fernandez  Carlos;;;;338;;;
-184;184;productor;Habilitado;Ferrer  Rolando Ignacio;;;;175;;;
-185;185;productor;Habilitado;Figueroa  Jose;;;;176;;;
-187;187;productor;Habilitado;Finca El Cortijo S.A. ;;;;178;;;
-348;348;productor;Habilitado;Forsat  Veronica;;;;339;;;
-189;189;productor;Habilitado;Galamba  Julia;;;;180;;;
-349;349;productor;Habilitado;Garcia  Patricia;;;;340;;;
-192;192;productor;Habilitado;Garcia  Pedro;;;;183;;;
-193;193;productor;Habilitado;Gasques  Domingo Jose;;;;184;;;
-326;326;productor;Habilitado;Gasques  Jesús;;;;317;;;
-194;194;productor;Habilitado;Gatica  Mario Gustavo;;;;185;;;
-195;195;productor;Habilitado;Gianetto  Mirtha ;;;;186;;;
-196;196;productor;Habilitado;Giardina  Margarita;;;;187;;;
-350;350;productor;Habilitado;Gil  Nelson;;;;341;;;
-197;197;productor;Habilitado;Giménez  Laura;;;;188;;;
-198;198;productor;Habilitado;Golebiowski  Pedro;;;;189;;;
-199;199;productor;Habilitado;Gomez  Oscar;;;;190;;;
-200;200;productor;Habilitado;Gonzalez  Hilario;;;;191;;;
-201;201;productor;Habilitado;Gonzalez  Nicolas;;;;192;;;
-351;351;productor;Habilitado;Gonzalez  Olga Edith;;;;342;;;
-202;202;productor;Habilitado;Gorbano  Manuel;;;;193;;;
-205;205;productor;Habilitado;Grimaldi  Ricardo;;;;196;;;
-352;352;productor;Habilitado;Gruppuso  Maria Rosa;;;;343;;;
-206;206;productor;Habilitado;Guidarelli  Francisco;;;;197;;;
-207;207;productor;Habilitado;Guillermito S.R.L.;;;;198;;;
-353;353;productor;Habilitado;Guizzado  Elida Ester;;;;344;;;
-208;208;productor;Habilitado;Guizzardi  Mario;;;;199;;;
-209;209;productor;Habilitado;Haarth  Flavia;;;;200;;;
-354;354;productor;Habilitado;Herbst  German;;;;345;;;
-210;210;productor;Habilitado;Honorato  Ricardo;;;;201;;;
-211;211;productor;Habilitado;Huczak  Juan;;;;202;;;
-212;212;productor;Habilitado;Huryn  Dario;;;;203;;;
-355;355;productor;Habilitado;Icuza  Juana Luisa;;;;346;;;
-356;356;productor;Habilitado;Icuza  Magdalena Maria;;;;347;;;
-213;213;productor;Habilitado;Iriarte  Beatriz;;;;204;;;
-357;357;productor;Habilitado;Iriarte  Jose Salvador;;;;348;;;
-214;214;productor;Habilitado;Iriarte  Laura;;;;205;;;
-358;358;productor;Habilitado;Iriarte  Roberto;;;;349;;;
-215;215;productor;Habilitado;Juarez  Antonio;;;;206;;;
-216;216;productor;Habilitado;Kasjan  Raul Alberto;;;;207;;;
-218;218;productor;Habilitado;Klita  Dario Fernando;;;;209;;;
-359;359;productor;Habilitado;Klita  Luciano;;;;350;;;
-219;219;productor;Habilitado;Komaszczuk  Jorge;;;;210;;;
-220;220;productor;Habilitado;La Fruticola S.R.L. ;;;;211;;;
-222;222;productor;Habilitado;La Tercer Copa S. A.;;;;213;;;
-223;223;productor;Habilitado;Lana  Rodolfo;;;;214;;;
-224;224;productor;Habilitado;Lardet Andres (Suc.);;;;215;;;
-225;225;productor;Habilitado;Lardet Lafi  Juan;;;;216;;;
-227;227;productor;Habilitado;Leschuk  Exel;;;;218;;;
-360;360;productor;Habilitado;Liria  Hugo Alberto;;;;351;;;
-361;361;productor;Habilitado;Lopaczuk  Jose Ruben;;;;352;;;
-228;228;productor;Habilitado;Lopez  Daniel;;;;219;;;
-229;229;productor;Habilitado;Lopez  Elbio ;;;;220;;;
-363;363;productor;Habilitado;Lopez  Juan;;;;354;;;
-362;362;productor;Habilitado;Lopez  Mauricio;;;;353;;;
-230;230;productor;Habilitado;Lopez  Roberto;;;;221;;;
-231;231;productor;Habilitado;Lopez  Walter;;;;222;;;
-232;232;productor;Habilitado;Lorente  Enrique;;;;223;;;
-233;233;productor;Habilitado;Lorente  Javier;;;;224;;;
-364;364;productor;Habilitado;Los Angeles S.R.L.;;;;355;;;
-234;234;productor;Habilitado;Lucero  Beatriz;;;;225;;;
-235;235;productor;Habilitado;Mansilla  Norma;;;;226;;;
-236;236;productor;Habilitado;Mantovani  Pedro Jesus;;;;227;;;
-365;365;productor;Habilitado;Marin  Roberto Oscar;;;;356;;;
-237;237;productor;Habilitado;Marnetti  Luciano;;;;228;;;
-238;238;productor;Habilitado;Martinez  Alberto;;;;229;;;
-240;240;productor;Habilitado;Martinez  Guillermo;;;;231;;;
-241;241;productor;Habilitado;Martinez  Ivan ;;;;232;;;
-242;242;productor;Habilitado;Martinez  Ruben ;;;;233;;;
-366;366;productor;Habilitado;Martos Sanchez  Marta;;;;357;;;
-243;243;productor;Habilitado;Matellanes  Jose Luis;;;;234;;;
-244;244;productor;Habilitado;Matellanes  Miguel Angel;;;;235;;;
-245;245;productor;Habilitado;Maurin  Ruben;;;;236;;;
-367;367;productor;Habilitado;Maydan  Mariela;;;;358;;;
-247;247;productor;Habilitado;Mellado Lopez  Jose;;;;238;;;
-248;248;productor;Habilitado;Merlo  Jose;;;;239;;;
-249;249;productor;Habilitado;Mesas  Jose;;;;240;;;
-250;250;productor;Habilitado;Mielnik  Abel Horacio;;;;241;;;
-251;251;productor;Habilitado;Mielnik  Matias;;;;242;;;
-252;252;productor;Habilitado;Miguel  Daniel Omar;;;;243;;;
-368;368;productor;Habilitado;Miranda  Alberto;;;;359;;;
-369;369;productor;Habilitado;Miranda  Irma Mercedes;;;;360;;;
-370;370;productor;Habilitado;Morales  Daniel Horacio;;;;361;;;
-371;371;productor;Habilitado;Moran  Anibal Ruben;;;;362;;;
-372;372;productor;Habilitado;Moyano  Rosa;;;;363;;;
-255;255;productor;Habilitado;Muñoz  Jose;;;;246;;;
-256;256;productor;Habilitado;Nicanoff  Leandro;;;;247;;;
-257;257;productor;Habilitado;Nieto Carrasco  Jose;;;;248;;;
-258;258;productor;Habilitado;Nieto  Juan Carlos;;;;249;;;
-259;259;productor;Habilitado;Noguerol  Alberto;;;;250;;;
-260;260;productor;Habilitado;Noguerol  Antonio;;;;251;;;
-261;261;productor;Habilitado;Noguerol  Blanca;;;;252;;;
-262;262;productor;Habilitado;Noguerol  Jorge;;;;253;;;
-263;263;productor;Habilitado;Ojcius  Ruben;;;;254;;;
-264;264;productor;Habilitado;Olivas  Juan (Suc.);;;;255;;;
-373;373;productor;Habilitado;Oller Alonso  Ana Maria;;;;364;;;
-374;374;productor;Habilitado;Oller  Jose Maria;;;;365;;;
-375;375;productor;Habilitado;Oller  Liliana;;;;366;;;
-376;376;productor;Habilitado;Ordienco  Eduardo Alexis;;;;367;;;
-377;377;productor;Habilitado;Ortega  Angel Guillermo;;;;368;;;
-265;265;productor;Habilitado;Ortega  Francisco ;;;;256;;;
-378;378;productor;Habilitado;Oses  Maria Magdalena;;;;369;;;
-379;379;productor;Habilitado;Otero  Veronica;;;;370;;;
-267;267;productor;Habilitado;Parra  Jose Antonio ;;;;258;;;
-268;268;productor;Habilitado;Parra  Jose Raul;;;;259;;;
-270;270;productor;Habilitado;Perez  Claudio;;;;261;;;
-271;271;productor;Habilitado;Perez  Juan Carlos;;;;262;;;
-380;380;productor;Habilitado;Perez  Juan Jose;;;;371;;;
-272;272;productor;Habilitado;Pescatori  Pedro;;;;263;;;
-274;274;productor;Habilitado;Pires  Bernardo Anibal;;;;265;;;
-275;275;productor;Habilitado;Polo  Juan Carlos;;;;266;;;
-276;276;productor;Habilitado;Ponce  Jorge;;;;267;;;
-277;277;productor;Habilitado;Ponzina  Daniel;;;;268;;;
-278;278;productor;Habilitado;Potanski  Norma;;;;269;;;
-279;279;productor;Habilitado;Pozzebon  Ana Rosa;;;;270;;;
-280;280;productor;Habilitado;Prieto  Luis;;;;271;;;
-281;281;productor;Habilitado;Pringles  Hugo Hector;;;;272;;;
-282;282;productor;Habilitado;Pungitore  Roberto;;;;273;;;
-283;283;productor;Habilitado;Raich  Melva;;;;274;;;
-284;284;productor;Habilitado;Rivas  Carlos;;;;275;;;
-285;285;productor;Habilitado;Roca  Antonio (Suc.);;;;276;;;
-286;286;productor;Habilitado;Rodeghiero  Aldo Oscar ;;;;277;;;
-288;288;productor;Habilitado;Rojas  Antonio Cristian;;;;279;;;
-381;381;productor;Habilitado;Rojas  Raul Hernan;;;;372;;;
-382;382;productor;Habilitado;Romano  Silvio Hernan;;;;373;;;
-289;289;productor;Habilitado;Romero  Daniela;;;;280;;;
-290;290;productor;Habilitado;Rousseu Salet  Pedro;;;;281;;;
-327;327;productor;Habilitado;Ruiz  Gladys;;;;318;;;
-291;291;productor;Habilitado;Ruiz  Marcelo;;;;282;;;
-383;383;productor;Habilitado;Ruiz  Miguel Angel;;;;374;;;
-292;292;productor;Habilitado;Rumiz  Humberto;;;;283;;;
-293;293;productor;Habilitado;Salcedo  Antonio;;;;284;;;
-294;294;productor;Habilitado;Salice  Alberto Raul;;;;285;;;
-295;295;productor;Habilitado;Salice  Daniel;;;;286;;;
-296;296;productor;Habilitado;Salmon  Anahi;;;;287;;;
-297;297;productor;Habilitado;Salomone   Silvana;;;;288;;;
-384;384;productor;Habilitado;Sanchez  Eduardo;;;;375;;;
-298;298;productor;Habilitado;Sanchez  Jorge;;;;289;;;
-385;385;productor;Habilitado;Sanchez  Nelson;;;;376;;;
-299;299;productor;Habilitado;Sanz  Juan Antonio;;;;290;;;
-386;386;productor;Habilitado;Sarale  Ruben Juan;;;;377;;;
-300;300;productor;Habilitado;Semeniuk  Javier;;;;291;;;
-301;301;productor;Habilitado;Seniuk  Pedro;;;;292;;;
-302;302;productor;Habilitado;Seniuk  Walter;;;;293;;;
-387;387;productor;Habilitado;Silvestre  Leandro;;;;378;;;
-388;388;productor;Habilitado;Sinchuk  Juan;;;;379;;;
-389;389;productor;Habilitado;Smalko  Norma Alicia;;;;380;;;
-303;303;productor;Habilitado;Solowiej  Sebastian;;;;294;;;
-304;304;productor;Habilitado;Sorichetti  Carlos;;;;295;;;
-305;305;productor;Habilitado;Sosa  Gonzalo;;;;296;;;
-390;390;productor;Habilitado;Sutter  Bruno Oscar;;;;381;;;
-307;307;productor;Habilitado;Tabladini  Maria Elena;;;;298;;;
-391;391;productor;Habilitado;Tarpinian  Carlos Armando;;;;382;;;
-309;309;productor;Habilitado;Tellez  Cristian Francisco;;;;300;;;
-392;392;productor;Habilitado;Tellez  Francisco;;;;383;;;
-310;310;productor;Habilitado;Tellez  Miguel;;;;301;;;
-311;311;productor;Habilitado;Tellez  Viviana;;;;302;;;
-393;393;productor;Habilitado;Torrecilla  Angela Graciela;;;;384;;;
-313;313;productor;Habilitado;Twerda  Jose Luis;;;;304;;;
-314;314;productor;Habilitado;Twerda  Juan Carlos;;;;305;;;
-315;315;productor;Habilitado;Twerda  Samuel;;;;306;;;
-316;316;productor;Habilitado;Valdes  Lucas;;;;307;;;
-394;394;productor;Habilitado;Vallcaneras  Jaime;;;;385;;;
-317;317;productor;Habilitado;Valverde  Estela;;;;308;;;
-318;318;productor;Habilitado;Vega  Alberto;;;;309;;;
-319;319;productor;Habilitado;Vega  Eugenio ;;;;310;;;
-320;320;productor;Habilitado;Velasquez  Luisa;;;;311;;;
-395;395;productor;Habilitado;Verrecchia  Lidia;;;;386;;;
-396;396;productor;Habilitado;Verrecchia  Olga;;;;387;;;
-322;322;productor;Habilitado;Vilche  Julian;;;;313;;;
-323;323;productor;Habilitado;Villegas  Esther;;;;314;;;
-324;324;productor;Habilitado;Wariyczuk  Juan Carlos;;;;315;;;
-397;397;productor;Habilitado;Williams  Alfredo;;;;388;;;
-398;398;productor;Habilitado;Zabala  Ceferino;;;;389;;;
+usuario;contrasena;rol;permiso_ingreso;cuit;id_real
+Diaz  Jose Martin;P3410;productor;Habilitado;Sin Cuit;P3410
+Estevez  Jose Luis;P3411;productor;Habilitado;Sin Cuit;P3411
+Familia Chiroli;P3412;productor;Habilitado;Sin Cuit;P3412
+Felici Carlosvanina;P3413;productor;Habilitado;Sin Cuit;P3413
+Fernandez Maria Isabel Y Otros Fernandez Mario;P3414;productor;Habilitado;Sin Cuit;P3414
+Ferreira Carlos Ernesto;P3415;productor;Habilitado;Sin Cuit;P3415
+Gimenez  Argentina Nelly;P3416;productor;Habilitado;Sin Cuit;P3416
+Gimenez  Juan Jose ;P3417;productor;Habilitado;Sin Cuit;P3417
+Menicheti Albertina;P3418;productor;Habilitado;Sin Cuit;P3418
+Moron Alberto Enrique;P3419;productor;Habilitado;Sin Cuit;P3419
+Moron Antonio;P3420;productor;Habilitado;Sin Cuit;P3420
+Panonto Norma;P3421;productor;Habilitado;Sin Cuit;P3421
+Rodriguez  Jose Eusebio;P3422;productor;Habilitado;Sin Cuit;P3422
+Salinas  Argentina Irene;P3423;productor;Habilitado;Sin Cuit;P3423
+Sanchez  Nelida Silvia;P3424;productor;Habilitado;Sin Cuit;P3424
+Santoni Hugo;P3425;productor;Habilitado;Sin Cuit;P3425
+Suc Aguirre  Jose;P3426;productor;Habilitado;Sin Cuit;P3426
+Suc Fantino Andres;P3427;productor;Habilitado;Sin Cuit;P3427
+Suc Zammito Pedro Rafael;P3428;productor;Habilitado;Sin Cuit;P3428
+Vitorino Sa;P3429;productor;Habilitado;Sin Cuit;P3429
+Abrahan Ariel;P3501;productor;Habilitado;Sin Cuit;P3501
+Abrahan Dario;P3502;productor;Habilitado;Sin Cuit;P3502
+Abrahan Emilio;P3503;productor;Habilitado;Sin Cuit;P3503
+Abrahan Sergio;P3505;productor;Habilitado;Sin Cuit;P3505
+Aguirre Federico;P3506;productor;Habilitado;Sin Cuit;P3506
+Alsina De Testasecca Elisa;P3508;productor;Habilitado;Sin Cuit;P3508
+Basabe Nancy;P3510;productor;Habilitado;Sin Cuit;P3510
+Beningaza Fanny;P3511;productor;Habilitado;Sin Cuit;P3511
+Bocardo Celmira Y Rocio;P3512;productor;Habilitado;Sin Cuit;P3512
+Bonacorsi Oscar;P3513;productor;Habilitado;Sin Cuit;P3513
+Calderon Abel;P3514;productor;Habilitado;Sin Cuit;P3514
+Cerezo Carmelo Raul;P3515;productor;Habilitado;Sin Cuit;P3515
+Coppari  Gaston Guillero;P3516;productor;Habilitado;Sin Cuit;P3516
+Cortes Horacio;P3517;productor;Habilitado;Sin Cuit;P3517
+De Arriba De Garcia Maria Elena;P3518;productor;Habilitado;Sin Cuit;P3518
+Don Salvador;P3519;productor;Habilitado;Sin Cuit;P3519
+Dube Carlos;P3520;productor;Habilitado;Sin Cuit;P3520
+Forzani Olga;P3521;productor;Habilitado;Sin Cuit;P3521
+Forzani Olga De Cortes Y Otros;P3522;productor;Habilitado;Sin Cuit;P3522
+Garnero Pedro;P3523;productor;Habilitado;Sin Cuit;P3523
+Gimenez Ruben;P3524;productor;Habilitado;Sin Cuit;P3524
+Gonzalez Adriana;P3525;productor;Habilitado;Sin Cuit;P3525
+Gonzalez Ana;P3526;productor;Habilitado;Sin Cuit;P3526
+Gonzalez Gustavo;P3527;productor;Habilitado;Sin Cuit;P3527
+Gonzalez Matias;P3529;productor;Habilitado;Sin Cuit;P3529
+Gonzalez Patricia;P3530;productor;Habilitado;Sin Cuit;P3530
+Gonzalez Sergio ;P3531;productor;Habilitado;Sin Cuit;P3531
+Grando Gisela;P3532;productor;Habilitado;Sin Cuit;P3532
+Gutierrez  Antonio;P3534;productor;Habilitado;Sin Cuit;P3534
+Gutierrez Ariel Y Sergio;P3535;productor;Habilitado;Sin Cuit;P3535
+Hernan Gladys;P3536;productor;Habilitado;Sin Cuit;P3536
+Irusta Marta;P3538;productor;Habilitado;Sin Cuit;P3538
+Jofre Manuel Julio;P3539;productor;Habilitado;Sin Cuit;P3539
+Jose Jorge;P3540;productor;Habilitado;Sin Cuit;P3540
+Labella Mariana;P3541;productor;Habilitado;Sin Cuit;P3541
+Labella Gregorio ;P3542;productor;Habilitado;Sin Cuit;P3542
+Labella Jose;P3543;productor;Habilitado;Sin Cuit;P3543
+Labella Susana;P3544;productor;Habilitado;Sin Cuit;P3544
+Leda Aldo;P3545;productor;Habilitado;Sin Cuit;P3545
+Lopez Antonio;P3546;productor;Habilitado;Sin Cuit;P3546
+Martin Juan Carlos ;P3547;productor;Habilitado;Sin Cuit;P3547
+Maza Guillermo;P3548;productor;Habilitado;Sin Cuit;P3548
+Molina  Jose;P3549;productor;Habilitado;Sin Cuit;P3549
+Montoya Gladys;P3551;productor;Habilitado;Sin Cuit;P3551
+Moron Mario;P3552;productor;Habilitado;Sin Cuit;P3552
+Pedroza Alejandra;P3553;productor;Habilitado;Sin Cuit;P3553
+Pedroza Daniel;P3554;productor;Habilitado;Sin Cuit;P3554
+Portera  Eugenio;P3555;productor;Habilitado;Sin Cuit;P3555
+Grupo Alta Vision;P3558;productor;Habilitado;Sin Cuit;P3558
+Salvador Carlos Alberto;P3559;productor;Habilitado;Sin Cuit;P3559
+Squadrito Felipe;P3560;productor;Habilitado;Sin Cuit;P3560
+Squadrito Hugo;P3561;productor;Habilitado;Sin Cuit;P3561
+Suc Alonso Alfonso;P3562;productor;Habilitado;Sin Cuit;P3562
+Alonso J Y Zaragoza J;P3563;productor;Habilitado;Sin Cuit;P3563
+Suc De Libertino Antonio Luis;P3564;productor;Habilitado;Sin Cuit;P3564
+Suc Garcia Cipriano;P3565;productor;Habilitado;Sin Cuit;P3565
+Suc Luis Horacio Fernandez;P3566;productor;Habilitado;Sin Cuit;P3566
+Testasecca Aldo;P3568;productor;Habilitado;Sin Cuit;P3568
+Vaquer Susana;P3569;productor;Habilitado;Sin Cuit;P3569
+Vanucci Jose;P3570;productor;Habilitado;Sin Cuit;P3570
+Zaragoza Graciela;P3571;productor;Habilitado;Sin Cuit;P3571
+Suc Zaragoza Julia;P3572;productor;Habilitado;Sin Cuit;P3572
+Zarpellon Felix;P3573;productor;Habilitado;Sin Cuit;P3573
+Moreno Manuel;P3574;productor;Habilitado;Sin Cuit;P3574
+Suc Rodas Roberto;P3575;productor;Habilitado;Sin Cuit;P3575
+Labella Antonia;P3576;productor;Habilitado;Sin Cuit;P3576
+Ruiz Maria Isabel;P3577;productor;Habilitado;Sin Cuit;P3577
+Baretta Roberto;P3601;productor;Habilitado;Sin Cuit;P3601
+Camerucci Armando  Y Camerucci;P3602;productor;Habilitado;Sin Cuit;P3602
+Casas Gregorio;P3603;productor;Habilitado;Sin Cuit;P3603
+Casati Nelson Gustavo;P3604;productor;Habilitado;Sin Cuit;P3604
+Coniglione Emilio;P3605;productor;Habilitado;Sin Cuit;P3605
+Crescitelli José ;P3606;productor;Habilitado;Sin Cuit;P3606
+El Fique Srl ;P3607;productor;Habilitado;Sin Cuit;P3607
+Escudero Ana María;P3608;productor;Habilitado;Sin Cuit;P3608
+Escudero Fernandez Juan;P3609;productor;Habilitado;Sin Cuit;P3609
+Lara Mario Raúl;P3610;productor;Habilitado;Sin Cuit;P3610
+Palacios De Genovese Elisa;P3611;productor;Habilitado;Sin Cuit;P3611
+Ravalle Ariel Vicente;P3612;productor;Habilitado;Sin Cuit;P3612
+Ravalle Mario Emilio;P3613;productor;Habilitado;Sin Cuit;P3613
+Rodriguez Acacio Juan A E Hijos;P3614;productor;Habilitado;Sin Cuit;P3614
+Rodriguez Perez Angel;P3615;productor;Habilitado;Sin Cuit;P3615
+Santarossa Rodolfo;P3616;productor;Habilitado;Sin Cuit;P3616
+Suc Ramón Cortéz;P3617;productor;Habilitado;Sin Cuit;P3617
+Martinez De Rubio María;P3618;productor;Habilitado;Sin Cuit;P3618
+Ahumada De Cano Nilda;P3701;productor;Habilitado;Sin Cuit;P3701
+Compan Mauro Gabriel;P3702;productor;Habilitado;Sin Cuit;P3702
+Alonso Suganuma Omar;P3703;productor;Habilitado;Sin Cuit;P3703
+Tao Sa Mariano Alonso;P3704;productor;Habilitado;Sin Cuit;P3704
+Alonso Gaspar;P3705;productor;Habilitado;Sin Cuit;P3705
+Alonso Graciela ;P3706;productor;Habilitado;Sin Cuit;P3706
+Alonso Hugo Javier;P3707;productor;Habilitado;Sin Cuit;P3707
+Alonso Walter ;P3708;productor;Habilitado;Sin Cuit;P3708
+Barre Raul Rolando;P3709;productor;Habilitado;Sin Cuit;P3709
+Cano Guillermo Julio;P3710;productor;Habilitado;Sin Cuit;P3710
+Cano Guillermo Ruben;P3711;productor;Habilitado;Sin Cuit;P3711
+Cazorla Fernandez Julian;P3712;productor;Habilitado;Sin Cuit;P3712
+Cazorla Juan;P3713;productor;Habilitado;Sin Cuit;P3713
+Cazorla Julian;P3714;productor;Habilitado;Sin Cuit;P3714
+De Massa Vicenta;P3715;productor;Habilitado;Sin Cuit;P3715
+Del Piccolo Elida;P3716;productor;Habilitado;Sin Cuit;P3716
+Del Pozo Roberto;P3717;productor;Habilitado;Sin Cuit;P3717
+Fuentelsaz Jose;P3718;productor;Habilitado;Sin Cuit;P3718
+Garrido Liliana Mabel;P3719;productor;Habilitado;Sin Cuit;P3719
+Gomez Marcelo;P3720;productor;Habilitado;Sin Cuit;P3720
+Gomez Oscar Y Walter ;P3721;productor;Habilitado;Sin Cuit;P3721
+Jurado Juan Pedro;P3722;productor;Habilitado;Sin Cuit;P3722
+Losilla Hernán;P3723;productor;Habilitado;Sin Cuit;P3723
+Martinello Salvador;P3724;productor;Habilitado;Sin Cuit;P3724
+Martinez Aznar Ruben Rogelio;P3725;productor;Habilitado;Sin Cuit;P3725
+Martinez Sebastian;P3726;productor;Habilitado;Sin Cuit;P3726
+Martinez De Massa Vicenta;P3727;productor;Habilitado;Sin Cuit;P3727
+Pelaez Julio;P3728;productor;Habilitado;Sin Cuit;P3728
+Perez Emilio;P3729;productor;Habilitado;Sin Cuit;P3729
+Poli Orlando Y Gustavo;P3730;productor;Habilitado;Sin Cuit;P3730
+Reta Bernardino ;P3731;productor;Habilitado;Sin Cuit;P3731
+Visedo Gustavo;P3732;productor;Habilitado;Sin Cuit;P3732
+Alvarez Jose Lorenzo;P4002;productor;Habilitado;Sin Cuit;P4002
+Amescua Francisco;P4004;productor;Habilitado;Sin Cuit;P4004
+Amos Verónica Ines  ;P4006;productor;Habilitado;Sin Cuit;P4006
+Anaya Monica Susana;P4007;productor;Habilitado;Sin Cuit;P4007
+Arano Audelina Cisterna José;P4010;productor;Habilitado;Sin Cuit;P4010
+Asis Carina;P4011;productor;Habilitado;Sin Cuit;P4011
+Balbus Noemi;P4012;productor;Habilitado;Sin Cuit;P4012
+Ban Carlos Humberto;P4013;productor;Habilitado;Sin Cuit;P4013
+Barbadillo De Rubio Miriam;P4014;productor;Habilitado;Sin Cuit;P4014
+Barbadillo Jorge Carlos;P4015;productor;Habilitado;Sin Cuit;P4015
+Battochia Claudio;P4016;productor;Habilitado;Sin Cuit;P4016
+Bielli Angelica E;P4017;productor;Habilitado;Sin Cuit;P4017
+Bielli Lorenzo Francisco Y Carlos Angel;P4018;productor;Habilitado;Sin Cuit;P4018
+Biondi Norma Esther;P4019;productor;Habilitado;Sin Cuit;P4019
+Bombal Agropecuaria Aldao Carolina;P4020;productor;Habilitado;Sin Cuit;P4020
+Bonino Claudia Coniglione Nelson;P4022;productor;Habilitado;Sin Cuit;P4022
+Brion Laura Sandra;P4023;productor;Habilitado;Sin Cuit;P4023
+Brocal Jacinto;P4024;productor;Habilitado;Sin Cuit;P4024
+Bugai Miguel;P4025;productor;Habilitado;Sin Cuit;P4025
+Camilletti Elpidio;P4027;productor;Habilitado;Sin Cuit;P4027
+Casado Aurelio;P4032;productor;Habilitado;Sin Cuit;P4032
+Casado José;P4033;productor;Habilitado;Sin Cuit;P4033
+Castellano Eduardo Osvaldo;P4034;productor;Habilitado;Sin Cuit;P4034
+Cateura Christian Bruno;P4037;productor;Habilitado;Sin Cuit;P4037
+Cervantes Manuel;P4038;productor;Habilitado;Sin Cuit;P4038
+Cintas Jose Aníbal;P4040;productor;Habilitado;Sin Cuit;P4040
+Codutti Pablo Felipe;P4041;productor;Habilitado;Sin Cuit;P4041
+Conde Charles;P4043;productor;Habilitado;Sin Cuit;P4043
+Cozzari Luis Alberto;P4044;productor;Habilitado;Sin Cuit;P4044
+Crescitelli Ricardo Gabriel;P4045;productor;Habilitado;Sin Cuit;P4045
+Croce Walter Vicente;P4046;productor;Habilitado;Sin Cuit;P4046
+Moyano Gregorio Cruz;P4047;productor;Habilitado;Sin Cuit;P4047
+Orlando Luis Cruz Y Otro;P4048;productor;Habilitado;Sin Cuit;P4048
+David Miguel Jose ;P4049;productor;Habilitado;Sin Cuit;P4049
+Del Pozzi De Garcia Maria C;P4052;productor;Habilitado;Sin Cuit;P4052
+Dietzel Rainer;P4054;productor;Habilitado;Sin Cuit;P4054
+Dimenza Hugo Oscar;P4055;productor;Habilitado;Sin Cuit;P4055
+Divito Y Darfatis Srl;P4056;productor;Habilitado;Sin Cuit;P4056
+Don D'Angelo;P4057;productor;Habilitado;Sin Cuit;P4057
+Don Doménico Sa;P4058;productor;Habilitado;Sin Cuit;P4058
+Don Fidel;P4059;productor;Habilitado;Sin Cuit;P4059
+Dottori Noma;P4060;productor;Habilitado;Sin Cuit;P4060
+Dueñas Alberto Raul;P4062;productor;Habilitado;Sin Cuit;P4062
+Romera María Del Pilar Y Egea Jorge;P4063;productor;Habilitado;Sin Cuit;P4063
+Fagherazzi Angel Y Fortunato;P4065;productor;Habilitado;Sin Cuit;P4065
+Farina Horacio Samuel;P4066;productor;Habilitado;Sin Cuit;P4066
+Farina Josè Carlos;P4067;productor;Habilitado;Sin Cuit;P4067
+Farina Ricardo Y Farina Silvia;P4068;productor;Habilitado;Sin Cuit;P4068
+Fernandez Gladys Avergara;P4069;productor;Habilitado;Sin Cuit;P4069
+Ferreira Luis Marcos;P4070;productor;Habilitado;Sin Cuit;P4070
+Ficcardi Nora Haydee;P4071;productor;Habilitado;Sin Cuit;P4071
+Fincris Agro Srl;P4072;productor;Habilitado;Sin Cuit;P4072
+Galdeano José Manuel;P4073;productor;Habilitado;Sin Cuit;P4073
+Galdeano Marcelo;P4074;productor;Habilitado;Sin Cuit;P4074
+Galdeano Marcelo Darìo;P4075;productor;Habilitado;Sin Cuit;P4075
+Galdeano Miguel Valentin;P4076;productor;Habilitado;Sin Cuit;P4076
+Galdeano Mónica;P4077;productor;Habilitado;Sin Cuit;P4077
+Galera Daniel Alejandro;P4078;productor;Habilitado;Sin Cuit;P4078
+Galera Hugo;P4079;productor;Habilitado;Sin Cuit;P4079
+Galera Hugo Emilio;P4080;productor;Habilitado;Sin Cuit;P4080
+Galera José Luis;P4081;productor;Habilitado;Sin Cuit;P4081
+Galera Martin ;P4082;productor;Habilitado;Sin Cuit;P4082
+Galiano Pompeya Isidora;P4083;productor;Habilitado;Sin Cuit;P4083
+Gallardo Jorge;P4084;productor;Habilitado;Sin Cuit;P4084
+Gallucci Angel Ruben;P4085;productor;Habilitado;Sin Cuit;P4085
+Garcia Marin Juana Gustavo;P4086;productor;Habilitado;Sin Cuit;P4086
+Garcia Marin Luis;P4087;productor;Habilitado;Sin Cuit;P4087
+García Muñoz José;P4088;productor;Habilitado;Sin Cuit;P4088
+García Alejandro José Walter;P4089;productor;Habilitado;Sin Cuit;P4089
+Garcia  Carmen Maria Pedro Sini;P4090;productor;Habilitado;Sin Cuit;P4090
+Garcia Fernando Meschio;P4091;productor;Habilitado;Sin Cuit;P4091
+Garcia Gustavo Y Leandro;P4093;productor;Habilitado;Sin Cuit;P4093
+García Leonardo Javier;P4094;productor;Habilitado;Sin Cuit;P4094
+Garcia Patricia Monica;P4095;productor;Habilitado;Sin Cuit;P4095
+Gattas Felipe;P4097;productor;Habilitado;Sin Cuit;P4097
+Gennaro Noemí Lavado;P4098;productor;Habilitado;Sin Cuit;P4098
+Ghiretti Hugo Y Mario;P4099;productor;Habilitado;Sin Cuit;P4099
+Gijon Antonio Suc De;P4100;productor;Habilitado;Sin Cuit;P4100
+Gimenez Analia;P4101;productor;Habilitado;Sin Cuit;P4101
+Gonzalez Daniel Hijo Ginestar;P4102;productor;Habilitado;Sin Cuit;P4102
+Di Genaro Giusseppe  Blasco;P4104;productor;Habilitado;Sin Cuit;P4104
+Gjurich Juan Diego;P4105;productor;Habilitado;Sin Cuit;P4105
+Gomez Alejandro Ivan;P4106;productor;Habilitado;Sin Cuit;P4106
+Gonzalez Jorge Cristobal;P4108;productor;Habilitado;Sin Cuit;P4108
+Gonzalez Oscar Antonio;P4110;productor;Habilitado;Sin Cuit;P4110
+Gonzalez Pablo Sebastian;P4111;productor;Habilitado;Sin Cuit;P4111
+Gonzalez Ruben;P4112;productor;Habilitado;Sin Cuit;P4112
+Grosso Herminio;P4113;productor;Habilitado;Sin Cuit;P4113
+Guerrero Manuel;P4114;productor;Habilitado;Sin Cuit;P4114
+Guerrero Monica Edith;P4115;productor;Habilitado;Sin Cuit;P4115
+Guijarro Pedro;P4116;productor;Habilitado;Sin Cuit;P4116
+Guijarro Sandra E;P4117;productor;Habilitado;Sin Cuit;P4117
+Guillen Alida Elena;P4118;productor;Habilitado;Sin Cuit;P4118
+Gurrieri Angel;P4119;productor;Habilitado;Sin Cuit;P4119
+Gutierrez Julio César;P4120;productor;Habilitado;Sin Cuit;P4120
+Gutierrez Ramón;P4121;productor;Habilitado;Sin Cuit;P4121
+Heredia Marcelo;P4122;productor;Habilitado;Sin Cuit;P4122
+Heredia Maria Natividad Romo;P4123;productor;Habilitado;Sin Cuit;P4123
+Homola Alfredo Wenceslao;P4124;productor;Habilitado;Sin Cuit;P4124
+Iannuzzi Jorge Dario A;P4125;productor;Habilitado;Sin Cuit;P4125
+Jofre Marcos Livio;P4126;productor;Habilitado;Sin Cuit;P4126
+Juarez Carlos Jose;P4127;productor;Habilitado;Sin Cuit;P4127
+Kelley Michael Julio Sotelo;P4128;productor;Habilitado;Sin Cuit;P4128
+Kancelposky Mario Y Julio;P4129;productor;Habilitado;Sin Cuit;P4129
+Kancepolsky Martha Beatriz;P4130;productor;Habilitado;Sin Cuit;P4130
+Lacam Leborato Emilio Y García María;P4131;productor;Habilitado;Sin Cuit;P4131
+Landette Gilberto;P4132;productor;Habilitado;Sin Cuit;P4132
+Lanfrancci José;P4133;productor;Habilitado;Sin Cuit;P4133
+Lattandi Agustin;P4134;productor;Habilitado;Sin Cuit;P4134
+Lipparelli Armando;P4135;productor;Habilitado;Sin Cuit;P4135
+Llorente Ernesto;P4136;productor;Habilitado;Sin Cuit;P4136
+Lucatto Hector;P4138;productor;Habilitado;Sin Cuit;P4138
+Lucchini Gianfranco;P4139;productor;Habilitado;Sin Cuit;P4139
+Lujan Sara Blanca Graciela;P4140;productor;Habilitado;Sin Cuit;P4140
+Malizia Mario;P4141;productor;Habilitado;Sin Cuit;P4141
+Mandrilli Elda Olinda Piastrellini N;P4142;productor;Habilitado;Sin Cuit;P4142
+Mannuccia Francisco Felipe;P4144;productor;Habilitado;Sin Cuit;P4144
+Manrique José;P4145;productor;Habilitado;Sin Cuit;P4145
+Manuel Gaspar Eduardo;P4146;productor;Habilitado;Sin Cuit;P4146
+Mañas Jose Alberto ;P4147;productor;Habilitado;Sin Cuit;P4147
+Mañas De Orlando Matilde;P4148;productor;Habilitado;Sin Cuit;P4148
+Mañas Rosa Esther;P4149;productor;Habilitado;Sin Cuit;P4149
+Martinez De Bonino Nelly;P4150;productor;Habilitado;Sin Cuit;P4150
+Martinez Juan Jose;P4152;productor;Habilitado;Sin Cuit;P4152
+Martinez Osvaldo Rafael;P4153;productor;Habilitado;Sin Cuit;P4153
+Massolin Julia Beatriz;P4154;productor;Habilitado;Sin Cuit;P4154
+Matteucci Oscar Pedro Suc De;P4155;productor;Habilitado;Sin Cuit;P4155
+Membrive Gabriel;P4156;productor;Habilitado;Sin Cuit;P4156
+Mercado Estela Irma;P4159;productor;Habilitado;Sin Cuit;P4159
+Missair Andres Y Casado José;P4161;productor;Habilitado;Sin Cuit;P4161
+Molina Carmelo Ernesto;P4162;productor;Habilitado;Sin Cuit;P4162
+Montaña Florencio Ramón;P4163;productor;Habilitado;Sin Cuit;P4163
+Montaña Pascual Julian;P4164;productor;Habilitado;Sin Cuit;P4164
+Morbidelli Cesar  Y Cristian ;P4165;productor;Habilitado;Sin Cuit;P4165
+Morbidelli Enrique G;P4166;productor;Habilitado;Sin Cuit;P4166
+Moreno Haydee;P4167;productor;Habilitado;Sin Cuit;P4167
+Morgan Barry Wayne;P4169;productor;Habilitado;Sin Cuit;P4169
+Morici Norma Lidia;P4170;productor;Habilitado;Sin Cuit;P4170
+Morza Sa El Cerrito;P4171;productor;Habilitado;Sin Cuit;P4171
+Figueroa Pablo Jesús Natoli Carmen;P4172;productor;Habilitado;Sin Cuit;P4172
+Oliveri Eduardo Antonio;P4173;productor;Habilitado;Sin Cuit;P4173
+Olmedo Raul;P4174;productor;Habilitado;Sin Cuit;P4174
+Orozco Miguel Angel;P4175;productor;Habilitado;Sin Cuit;P4175
+Ortiz Jorge Daniel;P4176;productor;Habilitado;Sin Cuit;P4176
+Osorio Nelida Gladys;P4177;productor;Habilitado;Sin Cuit;P4177
+Pampa Del Sur Sa;P4178;productor;Habilitado;Sin Cuit;P4178
+Pellegrini Graciela;P4180;productor;Habilitado;Sin Cuit;P4180
+Penacino Ernesto;P4181;productor;Habilitado;Sin Cuit;P4181
+Perez Gloria;P4182;productor;Habilitado;Sin Cuit;P4182
+Piastrellini Blanca Lidia Verdini;P4184;productor;Habilitado;Sin Cuit;P4184
+Piastrellini Dante José;P4185;productor;Habilitado;Sin Cuit;P4185
+Pisarello Jorge Benito;P4187;productor;Habilitado;Sin Cuit;P4187
+Ponce Ernesto;P4188;productor;Habilitado;Sin Cuit;P4188
+Pretel Mirta Mabel Y Manuel Oscar Enrique;P4189;productor;Habilitado;Sin Cuit;P4189
+Reimdel Siegfried Harry;P4190;productor;Habilitado;Sin Cuit;P4190
+Ramos Marcos Exequiel;P4191;productor;Habilitado;Sin Cuit;P4191
+Rausch  Juan Gustavo;P4192;productor;Habilitado;Sin Cuit;P4192
+Rey Sergio Gregorio;P4193;productor;Habilitado;Sin Cuit;P4193
+Reyes Carlos;P4194;productor;Habilitado;Sin Cuit;P4194
+Riera Hilario Y Fernandez Nora;P4195;productor;Habilitado;Sin Cuit;P4195
+Rodano Mario Francisco;P4196;productor;Habilitado;Sin Cuit;P4196
+Rodriguez Ismael Ramón;P4197;productor;Habilitado;Sin Cuit;P4197
+Rodriguez Juan Rafael;P4198;productor;Habilitado;Sin Cuit;P4198
+Rodriguez Maria Remedios;P4199;productor;Habilitado;Sin Cuit;P4199
+Rodriguez Sergio Andres Y Otro;P4200;productor;Habilitado;Sin Cuit;P4200
+Rogatto Sandra Beatriz;P4201;productor;Habilitado;Sin Cuit;P4201
+Rossi Bruno;P4202;productor;Habilitado;Sin Cuit;P4202
+Rubio Oscar Hugo;P4203;productor;Habilitado;Sin Cuit;P4203
+Ruiz Izuel Delia P E Hijos;P4204;productor;Habilitado;Sin Cuit;P4204
+Ruiz Juan Pedro;P4205;productor;Habilitado;Sin Cuit;P4205
+Ruiz Oscar Hugo;P4206;productor;Habilitado;Sin Cuit;P4206
+Sabio Dario;P4207;productor;Habilitado;Sin Cuit;P4207
+Salafia Roberto;P4208;productor;Habilitado;Sin Cuit;P4208
+Saldaña Francisco Omar;P4209;productor;Habilitado;Sin Cuit;P4209
+Saldaña Pedro Luis;P4210;productor;Habilitado;Sin Cuit;P4210
+Samos Antonio;P4211;productor;Habilitado;Sin Cuit;P4211
+Samos Orlando Ruben;P4212;productor;Habilitado;Sin Cuit;P4212
+Sanchez Ocaña  Eduardo;P4213;productor;Habilitado;Sin Cuit;P4213
+Sanchez Antonio;P4214;productor;Habilitado;Sin Cuit;P4214
+Sanz Juez Susana;P4217;productor;Habilitado;Sin Cuit;P4217
+Schoeder Bernardo;P4220;productor;Habilitado;Sin Cuit;P4220
+Scopel Ubaldo;P4222;productor;Habilitado;Sin Cuit;P4222
+Segura Juan Suc De;P4224;productor;Habilitado;Sin Cuit;P4224
+Seitz Viviana;P4225;productor;Habilitado;Sin Cuit;P4225
+Sepúlveda Anibal Juan Hijo;P4226;productor;Habilitado;Sin Cuit;P4226
+Sepúlveda Candido Juan Hijo;P4227;productor;Habilitado;Sin Cuit;P4227
+Sepulveda Juan Antonio;P4228;productor;Habilitado;Sin Cuit;P4228
+Muñoz Rosa Agustina Madre Rolando Sepulveda;P4229;productor;Habilitado;Sin Cuit;P4229
+Sini Juan Carlos Y Otros;P4231;productor;Habilitado;Sin Cuit;P4231
+Soratto Hugo Alejandro;P4232;productor;Habilitado;Sin Cuit;P4232
+Soratto Juan;P4233;productor;Habilitado;Sin Cuit;P4233
+Soria Ernesto Ignacio;P4234;productor;Habilitado;Sin Cuit;P4234
+Strologo Haydee Del Carmen;P4235;productor;Habilitado;Sin Cuit;P4235
+Strologo Pedro;P4236;productor;Habilitado;Sin Cuit;P4236
+Boschin Carlos  Suc De;P4237;productor;Habilitado;Sin Cuit;P4237
+Martín José Jesús  Suc De;P4238;productor;Habilitado;Sin Cuit;P4238
+Graumann Patrick George  Suc De;P4239;productor;Habilitado;Sin Cuit;P4239
+Troncoso Maria Eva;P4241;productor;Habilitado;Sin Cuit;P4241
+Vaccarini Leonel;P4242;productor;Habilitado;Sin Cuit;P4242
+Vallejos Fabiola Beregueinstan Leon;P4243;productor;Habilitado;Sin Cuit;P4243
+Vavala  Vicente;P4244;productor;Habilitado;Sin Cuit;P4244
+Villegas Adrian Raul;P4245;productor;Habilitado;Sin Cuit;P4245
+Vizcaino Juan Antonio;P4246;productor;Habilitado;Sin Cuit;P4246
+Wauters Edmundo Walter;P4247;productor;Habilitado;Sin Cuit;P4247
+Zamora Isabel Y Yunez Ismael;P4248;productor;Habilitado;Sin Cuit;P4248
+Zamora Daniel;P4250;productor;Habilitado;Sin Cuit;P4250
+Zancanaro Maria Y Sini Juan Carlos;P4251;productor;Habilitado;Sin Cuit;P4251
+Zanetti Alberto;P4252;productor;Habilitado;Sin Cuit;P4252
+Zanola Miguel Domingo;P4253;productor;Habilitado;Sin Cuit;P4253
+Zornitta Raul Esteban;P4254;productor;Habilitado;Sin Cuit;P4254
+Zubeldia Isabel;P4255;productor;Habilitado;Sin Cuit;P4255
+Agropecuaria Los Tatas;P4256;productor;Habilitado;Sin Cuit;P4256
+Ardigó Ingeniería;P4258;productor;Habilitado;Sin Cuit;P4258
+Asoc Coop De La Est Exp Agropr Caída;P4259;productor;Habilitado;Sin Cuit;P4259
+Atencio Gustavo;P4260;productor;Habilitado;Sin Cuit;P4260
+Bielli Javier;P4261;productor;Habilitado;Sin Cuit;P4261
+Cabús Victor;P4262;productor;Habilitado;Sin Cuit;P4262
+Capel Norma;P4263;productor;Habilitado;Sin Cuit;P4263
+Cintas Cristina Mabel;P4265;productor;Habilitado;Sin Cuit;P4265
+Cintas Cristobal Francisco;P4266;productor;Habilitado;Sin Cuit;P4266
+Citadino Ramón;P4267;productor;Habilitado;Sin Cuit;P4267
+Colombo Sergio Amilcar;P4268;productor;Habilitado;Sin Cuit;P4268
+Conase Sa;P4269;productor;Habilitado;Sin Cuit;P4269
+Cooperativa Sierra Pintada Ltda;P4270;productor;Habilitado;Sin Cuit;P4270
+Douglas Jeffrey Allen;P4271;productor;Habilitado;Sin Cuit;P4271
+Encinas M E;P4272;productor;Habilitado;Sin Cuit;P4272
+Escudero Ana María;P4273;productor;Habilitado;Sin Cuit;P4273
+Espinelo Oscar ;P4274;productor;Habilitado;Sin Cuit;P4274
+Farina Guillermo;P4275;productor;Habilitado;Sin Cuit;P4275
+Farina Osvaldo;P4276;productor;Habilitado;Sin Cuit;P4276
+Fincas Del Usillal Sa;P4277;productor;Habilitado;Sin Cuit;P4277
+Fornes Suc De;P4278;productor;Habilitado;Sin Cuit;P4278
+Frites José Y Miranda Norma;P4279;productor;Habilitado;Sin Cuit;P4279
+Frutos Del Angel Srl Fenoy;P4280;productor;Habilitado;Sin Cuit;P4280
+Galdeano María Josefa;P4281;productor;Habilitado;Sin Cuit;P4281
+García Lignac Oscar Felipe;P4282;productor;Habilitado;Sin Cuit;P4282
+García José Luis Hijo De García Marín;P4283;productor;Habilitado;Sin Cuit;P4283
+Gonzalez Juan Agustín Juanito;P4284;productor;Habilitado;Sin Cuit;P4284
+Gonzalez Leticia Iris;P4285;productor;Habilitado;Sin Cuit;P4285
+Hogas Julio;P4287;productor;Habilitado;Sin Cuit;P4287
+Lafargue Domingo Faustino;P4288;productor;Habilitado;Sin Cuit;P4288
+Llorente María Bernarda;P4289;productor;Habilitado;Sin Cuit;P4289
+Lopez Samos Alejandra Natalí;P4290;productor;Habilitado;Sin Cuit;P4290
+Lorca Anastacio;P4291;productor;Habilitado;Sin Cuit;P4291
+Marquez Virginia Edith;P4292;productor;Habilitado;Sin Cuit;P4292
+Mazet Philippe Alain Olivier;P4293;productor;Habilitado;Sin Cuit;P4293
+Molina Ernesto Javier;P4294;productor;Habilitado;Sin Cuit;P4294
+Natoli Lidia Francisca;P4295;productor;Habilitado;Sin Cuit;P4295
+Olivetti De Sutter Norma;P4296;productor;Habilitado;Sin Cuit;P4296
+Ordoqui Hugo;P4297;productor;Habilitado;Sin Cuit;P4297
+Palomo Juan Carlos;P4298;productor;Habilitado;Sin Cuit;P4298
+Pereira Jorge Darío Gerardo Rubio;P4299;productor;Habilitado;Sin Cuit;P4299
+Pretel Cristina Cristian;P4300;productor;Habilitado;Sin Cuit;P4300
+Renna Pablo;P4301;productor;Habilitado;Sin Cuit;P4301
+Rodriguez Edgardo;P4302;productor;Habilitado;Sin Cuit;P4302
+Rodriguez María Esther Vignoni;P4303;productor;Habilitado;Sin Cuit;P4303
+Rodriguez Teodoro Suc De;P4304;productor;Habilitado;Sin Cuit;P4304
+Rossi Gabriel Adrián;P4305;productor;Habilitado;Sin Cuit;P4305
+Rubio Antonio Enrique;P4306;productor;Habilitado;Sin Cuit;P4306
+Ruiz Raul Y Oscar;P4307;productor;Habilitado;Sin Cuit;P4307
+Sanchez Abelardo José;P4308;productor;Habilitado;Sin Cuit;P4308
+Sandoval Ponce Raul José;P4309;productor;Habilitado;Sin Cuit;P4309
+Scopel Marcos Santiago;P4310;productor;Habilitado;Sin Cuit;P4310
+Scopel Pedro Ciro;P4311;productor;Habilitado;Sin Cuit;P4311
+Sepulveda Armando Y Otro;P4312;productor;Habilitado;Sin Cuit;P4312
+Serpa Griselda Y Vincenti Marcelo;P4313;productor;Habilitado;Sin Cuit;P4313
+Servindust Srl;P4314;productor;Habilitado;Sin Cuit;P4314
+Solano Judith Renzo Burzichelli;P4315;productor;Habilitado;Sin Cuit;P4315
+Sosa Franco;P4316;productor;Habilitado;Sin Cuit;P4316
+Vega Blanca Rosa;P4317;productor;Habilitado;Sin Cuit;P4317
+Zamora Pedro Ramón ;P4318;productor;Habilitado;Sin Cuit;P4318
+Arcangioletti Dominga María;P4319;productor;Habilitado;Sin Cuit;P4319
+Las Moras Agro Srl;P4324;productor;Habilitado;Sin Cuit;P4324
+Macovaz José Luis;P4325;productor;Habilitado;Sin Cuit;P4325
+Nevoga Inna Vladimirovna;P4327;productor;Habilitado;Sin Cuit;P4327
+Olivar Elsa Susana Arano Audelina;P4328;productor;Habilitado;Sin Cuit;P4328
+San Rafael Arcangel Sa;P4329;productor;Habilitado;Sin Cuit;P4329
+Seitz Viviana;P4330;productor;Habilitado;Sin Cuit;P4330
+Galera  José Mauricio;P4331;productor;Habilitado;Sin Cuit;P4331
+Galli Maria  Y Ruiz Raul;P4332;productor;Habilitado;Sin Cuit;P4332
+Moia Rodena Sas;P4333;productor;Habilitado;Sin Cuit;P4333
+Moriatis Angel;P4334;productor;Habilitado;Sin Cuit;P4334
+Samos Alexis;P4335;productor;Habilitado;Sin Cuit;P4335
+Acosta Ariel;P4401;productor;Habilitado;Sin Cuit;P4401
+Acosta Francisco Antonio;P4402;productor;Habilitado;Sin Cuit;P4402
+Acosta Gabriel Omar;P4403;productor;Habilitado;Sin Cuit;P4403
+Acosta Marcelo;P4404;productor;Habilitado;Sin Cuit;P4404
+Acosta Rafael;P4405;productor;Habilitado;Sin Cuit;P4405
+Acosta Rosa Sandra;P4406;productor;Habilitado;Sin Cuit;P4406
+Agricola Jose Sa;P4407;productor;Habilitado;Sin Cuit;P4407
+Agropecuaria Vanrrell Sa;P4408;productor;Habilitado;Sin Cuit;P4408
+Bizet Jorge Maria Y Berney Ge;P4409;productor;Habilitado;Sin Cuit;P4409
+Bonilla Alejandra Y Silvana;P4410;productor;Habilitado;Sin Cuit;P4410
+Bonilla Manuel;P4411;productor;Habilitado;Sin Cuit;P4411
+Castellino Carlos;P4412;productor;Habilitado;Sin Cuit;P4412
+Cichinelli Martha Natalia;P4413;productor;Habilitado;Sin Cuit;P4413
+Cichinelli Mirtha Francisca;P4414;productor;Habilitado;Sin Cuit;P4414
+Cichinelli Roberto R Y Mirtha;P4415;productor;Habilitado;Sin Cuit;P4415
+Colucci Pascual;P4416;productor;Habilitado;Sin Cuit;P4416
+De Liberato Carlos;P4417;productor;Habilitado;Sin Cuit;P4417
+De Lucía Eduardo;P4418;productor;Habilitado;Sin Cuit;P4418
+Fernandez Jorge Antonio;P4419;productor;Habilitado;Sin Cuit;P4419
+Ferrero Jose;P4420;productor;Habilitado;Sin Cuit;P4420
+Ferreyra Juan Juan;P4421;productor;Habilitado;Sin Cuit;P4421
+Giarratana Oscar Alberto;P4422;productor;Habilitado;Sin Cuit;P4422
+Grion Giovanettiluis F Y Otro;P4423;productor;Habilitado;Sin Cuit;P4423
+Ibarzabal Juan German;P4424;productor;Habilitado;Sin Cuit;P4424
+Italiano Esteban;P4425;productor;Habilitado;Sin Cuit;P4425
+Italiano Hnos Srl;P4426;productor;Habilitado;Sin Cuit;P4426
+Juarez Jose Nicolas;P4427;productor;Habilitado;Sin Cuit;P4427
+Las Abuela Magdalenas Sa;P4428;productor;Habilitado;Sin Cuit;P4428
+Lopresti Ursibil Cayetano Y Ot;P4429;productor;Habilitado;Sin Cuit;P4429
+Lorenzo Francisco;P4430;productor;Habilitado;Sin Cuit;P4430
+Mamaní Juan;P4431;productor;Habilitado;Sin Cuit;P4431
+Marcon Maria Josefa Y Luis;P4432;productor;Habilitado;Sin Cuit;P4432
+Martinez Gaspar Isidro;P4433;productor;Habilitado;Sin Cuit;P4433
+Megamat Sa;P4434;productor;Habilitado;Sin Cuit;P4434
+Montanari De Ricco Elsa Ana;P4435;productor;Habilitado;Sin Cuit;P4435
+Morales Jose I Y Enrique;P4436;productor;Habilitado;Sin Cuit;P4436
+Moyano Luis Alberto;P4437;productor;Habilitado;Sin Cuit;P4437
+Nieto Omar Orlando;P4438;productor;Habilitado;Sin Cuit;P4438
+Nuñez García Juan Daniel;P4439;productor;Habilitado;Sin Cuit;P4439
+Ortiz Jose;P4440;productor;Habilitado;Sin Cuit;P4440
+Rebudero Mario Jorge;P4441;productor;Habilitado;Sin Cuit;P4441
+Renzi Raul;P4442;productor;Habilitado;Sin Cuit;P4442
+Rodafe Srl;P4443;productor;Habilitado;Sin Cuit;P4443
+Salo Osvaldo Hector;P4444;productor;Habilitado;Sin Cuit;P4444
+Sanchez Norberto Y Otro;P4445;productor;Habilitado;Sin Cuit;P4445
+Soria Rodolfo Javier Soria Rod;P4446;productor;Habilitado;Sin Cuit;P4446
+Suc Ricco Cesar Ruben;P4447;productor;Habilitado;Sin Cuit;P4447
+Sucesion Oño Cano Isabel;P4448;productor;Habilitado;Sin Cuit;P4448
+Unidades Productivas Srl Un;P4449;productor;Habilitado;Sin Cuit;P4449
+Vanrell Gaya Miguel Angel Vanr;P4450;productor;Habilitado;Sin Cuit;P4450
+Vazquez Hilda Vazquez Romina;P4451;productor;Habilitado;Sin Cuit;P4451
+Vega Johana Alejandra;P4452;productor;Habilitado;Sin Cuit;P4452
+Vicente Alberto Santiago;P4453;productor;Habilitado;Sin Cuit;P4453
+Aliquó Enrique Santos;P4501;productor;Habilitado;Sin Cuit;P4501
+Aliquó Maris Stella;P4502;productor;Habilitado;Sin Cuit;P4502
+André Silvia Del Carmen;P4503;productor;Habilitado;Sin Cuit;P4503
+Aranguena Gustavo Y Susana ;P4504;productor;Habilitado;Sin Cuit;P4504
+Benenati Jose Alberto;P4505;productor;Habilitado;Sin Cuit;P4505
+Bonanno Ricardo Rosario;P4506;productor;Habilitado;Sin Cuit;P4506
+Ceneri  Norma Y Nancy;P4507;productor;Habilitado;Sin Cuit;P4507
+Ceneri Stella Margarita;P4508;productor;Habilitado;Sin Cuit;P4508
+Suc Demonte Edgardo Raul;P4509;productor;Habilitado;Sin Cuit;P4509
+Demonte Honorio;P4510;productor;Habilitado;Sin Cuit;P4510
+Lopez Francisco;P4511;productor;Habilitado;Sin Cuit;P4511
+Finca La Sultana Sas;P4513;productor;Habilitado;Sin Cuit;P4513
+Palmieri Roberto;P4515;productor;Habilitado;Sin Cuit;P4515
+Suc Gustavo Demonte;P4517;productor;Habilitado;Sin Cuit;P4517
+Carletto Tomas;P4518;productor;Habilitado;Sin Cuit;P4518
+Carletto Oscar;P4519;productor;Habilitado;Sin Cuit;P4519
+Herrera Ricardo;P4520;productor;Habilitado;Sin Cuit;P4520
+Suc De Rafael Manzanares Srl;P4521;productor;Habilitado;Sin Cuit;P4521
+Yaciofano Maria Nidia;P4522;productor;Habilitado;Sin Cuit;P4522
+Albizú Deolinda Antonia;P4601;productor;Habilitado;Sin Cuit;P4601
+Albizú Luis;P4602;productor;Habilitado;Sin Cuit;P4602
+Amaya Juan Carlos;P4603;productor;Habilitado;Sin Cuit;P4603
+Angeleri Antonio;P4604;productor;Habilitado;Sin Cuit;P4604
+Angelini Ángel Ricardo;P4605;productor;Habilitado;Sin Cuit;P4605
+Angelini Carlos Norberto;P4606;productor;Habilitado;Sin Cuit;P4606
+Apícola San Marino Sa;P4607;productor;Habilitado;Sin Cuit;P4607
+Avicola Santa Rosa De Maroto Finca Lavalle;P4608;productor;Habilitado;Sin Cuit;P4608
+Barello Marziano;P4609;productor;Habilitado;Sin Cuit;P4609
+Barello Pedro Y Marcelo;P4610;productor;Habilitado;Sin Cuit;P4610
+Barrera De Sicoli Luisa Silva;P4611;productor;Habilitado;Sin Cuit;P4611
+Capponetto Mario Francisco;P4612;productor;Habilitado;Sin Cuit;P4612
+Cooperativa Agrícola Tulumaya Ltda;P4613;productor;Habilitado;Sin Cuit;P4613
+Cortez Carlos Remigio;P4614;productor;Habilitado;Sin Cuit;P4614
+Doma;P4615;productor;Habilitado;Sin Cuit;P4615
+Don José;P4616;productor;Habilitado;Sin Cuit;P4616
+El Abuelo Gabriel;P4617;productor;Habilitado;Sin Cuit;P4617
+Escudero Marcelo Antonio;P4618;productor;Habilitado;Sin Cuit;P4618
+Fernandez Pedro;P4619;productor;Habilitado;Sin Cuit;P4619
+Garcia Cesar Gerardo;P4620;productor;Habilitado;Sin Cuit;P4620
+Gillio Mirta;P4621;productor;Habilitado;Sin Cuit;P4621
+Gimenez Beatriz Elizabet;P4622;productor;Habilitado;Sin Cuit;P4622
+Gimenez Jose Manuel;P4623;productor;Habilitado;Sin Cuit;P4623
+Gimenez Ricardo;P4624;productor;Habilitado;Sin Cuit;P4624
+Guirado Miriam Elizabeth;P4625;productor;Habilitado;Sin Cuit;P4625
+Jaime Juan;P4626;productor;Habilitado;Sin Cuit;P4626
+La Holanda;P4627;productor;Habilitado;Sin Cuit;P4627
+"Lavagno De Vazquez 				 Irma Ida	";P4628;productor;Habilitado;Sin Cuit;P4628
+Lhez Raul Ernesto;P4629;productor;Habilitado;Sin Cuit;P4629
+Lopez Miguel Angel;P4630;productor;Habilitado;Sin Cuit;P4630
+Lorente Martín Diego;P4631;productor;Habilitado;Sin Cuit;P4631
+Maldonado Laura;P4632;productor;Habilitado;Sin Cuit;P4632
+Marano Elvira Petrona;P4633;productor;Habilitado;Sin Cuit;P4633
+Martin Olga;P4634;productor;Habilitado;Sin Cuit;P4634
+Massi Alejandro;P4635;productor;Habilitado;Sin Cuit;P4635
+Massó Gregorio Manuel;P4636;productor;Habilitado;Sin Cuit;P4636
+Mercol Dante;P4637;productor;Habilitado;Sin Cuit;P4637
+Mercol Marcelo;P4638;productor;Habilitado;Sin Cuit;P4638
+Morales Ruben Adolfo;P4639;productor;Habilitado;Sin Cuit;P4639
+Negocios Agricolas;P4640;productor;Habilitado;Sin Cuit;P4640
+Nuevo Pistachal;P4641;productor;Habilitado;Sin Cuit;P4641
+Nuñez Jose Carlos;P4642;productor;Habilitado;Sin Cuit;P4642
+Quiroga David;P4643;productor;Habilitado;Sin Cuit;P4643
+Ravera De Barello Angela Ana;P4644;productor;Habilitado;Sin Cuit;P4644
+Rivas Humberto Emiliio;P4645;productor;Habilitado;Sin Cuit;P4645
+Rodighiero  Jorge Tulio;P4646;productor;Habilitado;Sin Cuit;P4646
+Rodriguez Lopez Luciana Vanesa;P4647;productor;Habilitado;Sin Cuit;P4647
+Rodriguez Francisco Alberto;P4648;productor;Habilitado;Sin Cuit;P4648
+Ruggeri Miguel Angel;P4649;productor;Habilitado;Sin Cuit;P4649
+Sanchez Alvarez Manuel;P4650;productor;Habilitado;Sin Cuit;P4650
+Serrahima Jorge Daniel;P4651;productor;Habilitado;Sin Cuit;P4651
+Skamlec Rodolfo;P4652;productor;Habilitado;Sin Cuit;P4652
+Sucecion Maldonado Francisco;P4653;productor;Habilitado;Sin Cuit;P4653
+Sucesión Venier Mario;P4654;productor;Habilitado;Sin Cuit;P4654
+Tejeno Higinio;P4655;productor;Habilitado;Sin Cuit;P4655
+Vazquez Poquet Y Otra Alberto;P4656;productor;Habilitado;Sin Cuit;P4656
+Vazquez Alberto;P4657;productor;Habilitado;Sin Cuit;P4657
+Villegas Héctor Pedro;P4658;productor;Habilitado;Sin Cuit;P4658
+Zabal Orlando Pedro;P4659;productor;Habilitado;Sin Cuit;P4659
+Zungri Pablo Adrian;P4660;productor;Habilitado;Sin Cuit;P4660
+Agroexportadora San Ceferino Sa;P4701;productor;Habilitado;Sin Cuit;P4701
+Bittar Julio;P4705;productor;Habilitado;Sin Cuit;P4705
+Capra Norma Susana;P4708;productor;Habilitado;Sin Cuit;P4708
+Cultivadores De Cuyo Sa;P4709;productor;Habilitado;Sin Cuit;P4709
+Don Venancio Sa;P4710;productor;Habilitado;Sin Cuit;P4710
+Dromi Miguel Jose;P4711;productor;Habilitado;Sin Cuit;P4711
+Garbuio Sebastián;P4717;productor;Habilitado;Sin Cuit;P4717
+Gava Leonardo;P4718;productor;Habilitado;Sin Cuit;P4718
+Gomez Bustamante Ana Laura;P4720;productor;Habilitado;Sin Cuit;P4720
+Herrera Ignacio ;P4721;productor;Habilitado;Sin Cuit;P4721
+Julio David César Y Viviana Ruano;P4722;productor;Habilitado;Sin Cuit;P4722
+La Vigne Sa;P4723;productor;Habilitado;Sin Cuit;P4723
+Larami Sa;P4724;productor;Habilitado;Sin Cuit;P4724
+Manzano Miguel;P4726;productor;Habilitado;Sin Cuit;P4726
+Moises Osvalo Nelson;P4728;productor;Habilitado;Sin Cuit;P4728
+Fernández María Teresita;P4729;productor;Habilitado;Sin Cuit;P4729
+Peche María Teresa;P4730;productor;Habilitado;Sin Cuit;P4730
+Plaza Gabriel A Por Suc;P4731;productor;Habilitado;Sin Cuit;P4731
+Rodríguez Martín Francisco;P4732;productor;Habilitado;Sin Cuit;P4732
+Romano  Patricia Gabriela;P4733;productor;Habilitado;Sin Cuit;P4733
+Romero Carlos Alberto;P4734;productor;Habilitado;Sin Cuit;P4734
+Rumel Sa;P4735;productor;Habilitado;Sin Cuit;P4735
+Salomón Atilio Abel;P4736;productor;Habilitado;Sin Cuit;P4736
+Scilipoti Sabatini Fabricio;P4737;productor;Habilitado;Sin Cuit;P4737
+Suc Alberto Barro;P4739;productor;Habilitado;Sin Cuit;P4739
+Valdearenas Isabel;P4742;productor;Habilitado;Sin Cuit;P4742
+Vega Carlos Damian;P4743;productor;Habilitado;Sin Cuit;P4743
+Vega   Agrocord Sas;P4744;productor;Habilitado;Sin Cuit;P4744
+Zalba Gustavo Fernando;P4745;productor;Habilitado;Sin Cuit;P4745
+Terra Uco Fideicomiso Le Ga 2;P4747;productor;Habilitado;Sin Cuit;P4747
+Melchiorri Ana;P4748;productor;Habilitado;Sin Cuit;P4748
+Nopalitos Sas;P4749;productor;Habilitado;Sin Cuit;P4749
+Osmar Martin Olea Peralta;P4750;productor;Habilitado;Sin Cuit;P4750
+Miralles Fernando;P4751;productor;Habilitado;Sin Cuit;P4751
+Badui Nardon Roberto Ceferino;P4752;productor;Habilitado;Sin Cuit;P4752
+Ana Maria Aravena;P4753;productor;Habilitado;Sin Cuit;P4753

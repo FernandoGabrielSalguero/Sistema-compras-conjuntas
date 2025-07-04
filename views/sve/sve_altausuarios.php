@@ -330,7 +330,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                     <label for="edit_id_real">ID Real</label>
                                     <div class="input-icon">
                                         <span class="material-icons">badge</span>
-                                        <input type="number" name="id_real" id="edit_id_real" required>
+                                        <input type="text" name="id_real" id="edit_id_real" required>
                                     </div>
                                 </div>
 
