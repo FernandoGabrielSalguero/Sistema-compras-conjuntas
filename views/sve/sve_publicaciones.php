@@ -784,14 +784,13 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             fetch(`../../controllers/sve_publicacionesController.php?action=get_publicacion&id=${id}`)
                 .then(r => r.json())
                 .then(data => {
-                    // Completar campos del formulario
                     document.getElementById('titulo').value = data.titulo;
                     document.getElementById('subtitulo').value = data.subtitulo;
                     document.getElementById('autor').value = data.autor;
                     document.getElementById('descripcion').value = data.descripcion;
                     document.getElementById('select-categoria').value = data.categoria_id;
 
-                    // Cargar subcategorías y seleccionar la actual
+                    // Cargar subcategorías
                     fetch(`../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=${data.categoria_id}`)
                         .then(r => r.json())
                         .then(subs => {
@@ -807,7 +806,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             subSelect.disabled = false;
                         });
 
-                    // Insertar campo hidden con el ID si no existe
+                    // Crear input hidden para ID
                     let inputHidden = document.getElementById('id_publicacion');
                     if (!inputHidden) {
                         inputHidden = document.createElement('input');
@@ -818,11 +817,14 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     }
                     inputHidden.value = data.id;
 
-                    // Cambiar botón a modo edición
+                    // ✅ Acá habilitamos el botón sin exigir archivo
                     const btn = document.getElementById('btn-guardar');
                     btn.textContent = 'Guardar cambios';
                     btn.classList.remove('btn-disabled');
                     btn.disabled = false;
+
+                    // ⚠️ Opcional: podés mostrar info del archivo actual
+                    // document.getElementById('archivo-info').textContent = 'Archivo actual: ' + data.archivo;
                 })
                 .catch(err => {
                     showToast('error', 'No se pudo cargar la publicación');
