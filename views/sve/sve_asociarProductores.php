@@ -194,10 +194,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-    <!-- <script src="/assets/js/sve_productos.js"></script> -->
-    <script src="/assets/js/sve_productos.js?v=<?= time() ?>"></script>
-
-
     <!-- javascrip -->
     <script>
         function asociarProductor(select, id_productor) {
