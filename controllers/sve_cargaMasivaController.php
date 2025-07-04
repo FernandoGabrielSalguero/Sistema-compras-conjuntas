@@ -42,9 +42,6 @@ try {
         case 'cooperativas':
             $modelo->insertarCooperativas($datosProcesados);
             break;
-        case 'productores':
-            $modelo->insertarProductores($datosProcesados);
-            break;
         case 'relaciones':
             $modelo->insertarRelaciones($datosProcesados);
             break;
