@@ -20,19 +20,25 @@ class CoopMercadoDigitalModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-public function listarProductoresPorCooperativa($coop_id)
+public function obtenerProductoresPorCooperativa($idCoopReal)
 {
-    $stmt = $this->pdo->prepare("
-        SELECT u.id_real, u.usuario, i.nombre
+    $sql = "
+        SELECT 
+            u.id_real AS id_productor,
+            u.usuario,
+            ui.nombre
         FROM rel_productor_coop rel
         JOIN usuarios u ON u.id_real = rel.productor_id_real
-        JOIN usuarios_info i ON i.usuario_id = u.id
-        WHERE rel.cooperativa_id_real = ?
-        ORDER BY i.nombre
-    ");
-    $stmt->execute([$coop_id]);
+        LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+        WHERE rel.cooperativa_id_real = :idCoopReal
+        ORDER BY ui.nombre IS NULL, ui.nombre ASC
+    ";
+
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([':idCoopReal' => $idCoopReal]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
 
     public function obtenerProductosAgrupadosPorCategoria()
     {
