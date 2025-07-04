@@ -45,7 +45,15 @@ try {
             $modelo->insertarCooperativas($datosProcesados);
             break;
         case 'relaciones':
-            $modelo->insertarRelaciones($datosProcesados);
+            $conflictos = $modelo->insertarRelaciones($datosProcesados);
+            if (count($conflictos)) {
+                echo json_encode([
+                    'mensaje' => 'Carga completada con advertencias.',
+                    'conflictos' => $conflictos
+                ]);
+            } else {
+                echo json_encode(['mensaje' => '✅ Relaciones cargadas exitosamente.']);
+            }
             break;
         default:
             throw new Exception("Tipo de carga desconocido.");

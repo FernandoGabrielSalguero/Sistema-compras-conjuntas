@@ -44,16 +44,41 @@ class CargaMasivaModel
         }
         public function insertarRelaciones($datos)
         {
-                $sql = "INSERT IGNORE INTO Relaciones_Cooperativa_Productores (id_productor, id_cooperativa)
-        VALUES (:id_productor, :id_cooperativa)";
+                $sqlCheck = "SELECT COUNT(*) FROM usuarios WHERE id_real = :id_real";
+                $checkStmt = $this->pdo->prepare($sqlCheck);
 
-                $stmt = $this->pdo->prepare($sql);
+                $sqlInsert = "INSERT IGNORE INTO rel_productor_coop (productor_id_real, cooperativa_id_real)
+                VALUES (:id_productor, :id_cooperativa)";
+                $insertStmt = $this->pdo->prepare($sqlInsert);
+
+                $conflictos = [];
 
                 foreach ($datos as $fila) {
-                        $stmt->execute([
-                                ':id_productor' => $fila['id_productor'],
-                                ':id_cooperativa' => $fila['id_cooperativa']
-                        ]);
+                        $productor = $fila['id_productor'];
+                        $cooperativa = $fila['id_cooperativa'];
+
+                        // Verificar existencia de productor
+                        $checkStmt->execute([':id_real' => $productor]);
+                        $prodExiste = $checkStmt->fetchColumn() > 0;
+
+                        // Verificar existencia de cooperativa
+                        $checkStmt->execute([':id_real' => $cooperativa]);
+                        $coopExiste = $checkStmt->fetchColumn() > 0;
+
+                        if ($prodExiste && $coopExiste) {
+                                $insertStmt->execute([
+                                        ':id_productor' => $productor,
+                                        ':id_cooperativa' => $cooperativa
+                                ]);
+                        } else {
+                                $conflictos[] = [
+                                        'productor' => $productor,
+                                        'cooperativa' => $cooperativa,
+                                        'motivo' => !$prodExiste ? 'Productor no existe' : 'Cooperativa no existe'
+                                ];
+                        }
                 }
+
+                return $conflictos;
         }
 }
