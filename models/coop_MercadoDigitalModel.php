@@ -203,8 +203,8 @@ $sql = "
     // obtenemos los operativos de la bbdd
     public function obtenerOperativosActivosPorCooperativa($coopId)
     {
-        if (!is_numeric($coopId)) {
-            throw new InvalidArgumentException("ID de cooperativa inválido");
+        if (!is_string($coopId) || trim($coopId) === '') {
+            throw new InvalidArgumentException("ID de cooperativa no válido");
         }
 
         $stmt = $this->pdo->prepare("
