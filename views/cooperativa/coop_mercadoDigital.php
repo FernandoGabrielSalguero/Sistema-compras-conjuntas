@@ -35,7 +35,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 // Campos adicionales para cooperativa
-$id_cooperativa_real = $_SESSION['id_real'] ?? null; // usamos el ID real de la sesión
+$id_cooperativa_real = $_SESSION['id_real'] ?? null;
 $id_cooperativa = $_SESSION['id_cooperativa'] ?? null;
 $id_productor = $_SESSION['id_productor'] ?? null;
 $direccion = $_SESSION['direccion'] ?? 'Sin dirección';
@@ -377,7 +377,8 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                 lista.innerHTML = '';
                                 const resultados = dataArray.filter(item => {
                                     return item.nombre.toLowerCase().includes(search) ||
-                                        item.id_real.toString().includes(search);
+                                        item.id_real?.toString().toLowerCase().includes(search) ||
+                                        item.usuario?.toLowerCase().includes(search)
                                 });
                                 if (resultados.length === 0) {
                                     lista.style.display = 'none';
