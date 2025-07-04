@@ -325,7 +325,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                                     <label for="archivo">Archivo</label>
                                     <div class="input-icon">
                                         <span class="material-icons">attach_file</span>
-                                        <input type="file" name="archivo" id="archivo" accept=".pdf">
+                                        <input type="file" name="archivo" id="archivo" accept=".pdf" required>
                                     </div>
                                 </div>
 

@@ -144,6 +144,12 @@ switch ($action) {
         echo json_encode($publicacionesModel->obtenerPublicaciones($categoria_id, $subcategoria_id));
         break;
 
+    case 'get_publicacion':
+        $id = $_GET['id'] ?? 0;
+        $data = $publicacionesModel->obtenerPublicacionPorId($id);
+        echo json_encode($data);
+        break;
+
     case 'incrementar_vista':
         $id = intval($_GET['id'] ?? 0);
         $ok = false;
