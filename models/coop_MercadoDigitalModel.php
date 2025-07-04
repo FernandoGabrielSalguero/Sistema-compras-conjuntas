@@ -20,19 +20,22 @@ class CoopMercadoDigitalModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-public function listarProductoresPorCooperativa($coop_id)
-{
-    $stmt = $this->pdo->prepare("
-        SELECT u.id_real, u.usuario, i.nombre
+    public function listarProductoresPorCooperativa($coop_id)
+    {
+        $stmt = $this->pdo->prepare("
+        SELECT 
+            u.id_real, 
+            u.usuario, 
+            COALESCE(i.nombre, u.usuario) AS nombre
         FROM rel_productor_coop rel
         JOIN usuarios u ON u.id_real = rel.productor_id_real
-        JOIN usuarios_info i ON i.usuario_id = u.id
+        LEFT JOIN usuarios_info i ON i.usuario_id = u.id
         WHERE rel.cooperativa_id_real = ?
-        ORDER BY i.nombre
+        ORDER BY nombre
     ");
-    $stmt->execute([$coop_id]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+        $stmt->execute([$coop_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
     public function obtenerProductosAgrupadosPorCategoria()
     {
@@ -137,7 +140,7 @@ INSERT INTO pedidos (
     // 📄 Obtiene listado de pedidos con paginación y búsqueda opcional
     public function obtenerListadoPedidos($search = '', $offset = 0, $limit = 25, $coop_id = null)
     {
-$sql = "
+        $sql = "
     SELECT 
         p.*,
         i1.nombre AS nombre_cooperativa,
@@ -222,8 +225,8 @@ $sql = "
 
     // obtener productos por operativo
     public function obtenerProductosPorOperativo($operativoId)
-{
-    $stmt = $this->pdo->prepare("
+    {
+        $stmt = $this->pdo->prepare("
         SELECT 
             p.categoria, 
             p.Id as producto_id,
@@ -236,17 +239,17 @@ $sql = "
         WHERE op.operativo_id = ?
         ORDER BY p.categoria, p.Nombre_producto
     ");
-    $stmt->execute([$operativoId]);
-    
-    $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $agrupados = [];
-    foreach ($productos as $p) {
-        $categoria = $p['categoria'];
-        if (!isset($agrupados[$categoria])) {
-            $agrupados[$categoria] = [];
+        $stmt->execute([$operativoId]);
+
+        $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $agrupados = [];
+        foreach ($productos as $p) {
+            $categoria = $p['categoria'];
+            if (!isset($agrupados[$categoria])) {
+                $agrupados[$categoria] = [];
+            }
+            $agrupados[$categoria][] = $p;
         }
-        $agrupados[$categoria][] = $p;
+        return $agrupados;
     }
-    return $agrupados;
-}
 }
