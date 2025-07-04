@@ -25,7 +25,9 @@ if (($handle = fopen($archivoTmp, 'r')) !== false) {
     }
     fclose($handle);
 }
-$encabezados = array_map('trim', $csv[0]);
+$encabezados = array_map(function ($val) {
+    return trim(preg_replace('/^\xEF\xBB\xBF/', '', $val));
+}, $csv[0]);
 $datos = array_slice($csv, 1);
 
 // Convertir filas a array asociativo
