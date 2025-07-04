@@ -365,6 +365,9 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             try {
                                 const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=productores&coop_id=${coopId}`);
                                 productores = await res.json();
+
+                                console.log('🧑‍🌾 Productores recibidos:', productores); // ⬅️ NUEVO LOG
+
                                 activarBuscador(inputProd, listaProd, productores, hiddenProd);
                             } catch (err) {
                                 console.error('❌ Error al cargar productores:', err);
