@@ -320,7 +320,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                             .then(res => res.json())
                             .then(data => {
                                 if (data.id_real) {
-                                    idRealInput.value = data.id_real;
+                                    idRealInput.value = `P${data.id_real}`;
                                 }
                             });
 

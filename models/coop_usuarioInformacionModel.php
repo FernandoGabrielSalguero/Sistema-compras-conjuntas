@@ -19,13 +19,20 @@ class UsuarioInformacionModel
 
     public function obtenerProximoIdRealDisponible($inicio, $fin)
     {
-        $stmt = $this->conn->prepare("SELECT id_real FROM usuarios WHERE id_real BETWEEN ? AND ? ORDER BY id_real ASC");
+        $stmt = $this->conn->prepare("
+    SELECT id_real FROM usuarios 
+    WHERE id_real REGEXP '^P[0-9]+$'
+    ORDER BY id_real ASC
+");
+        $stmt->execute();
+        $usados = $stmt->fetchAll(PDO::FETCH_COLUMN);
         $stmt->execute([$inicio, $fin]);
         $usados = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
         for ($i = $inicio; $i <= $fin; $i++) {
-            if (!in_array($i, $usados)) {
-                return $i;
+            $idConPrefijo = 'P' . $i;
+            if (!in_array($idConPrefijo, $usados)) {
+                return $idConPrefijo;
             }
         }
         return null;
