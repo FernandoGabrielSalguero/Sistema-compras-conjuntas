@@ -43,10 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Datos combinados
         $_SESSION['usuario'] = $user['usuario'];
         $_SESSION['rol'] = $user['rol'];
-        $_SESSION['nombre'] = $user['nombre'];
-        $_SESSION['correo'] = $user['correo'];
-        $_SESSION['telefono'] = $user['telefono'];
-        $_SESSION['direccion'] = $user['direccion'];
+        $_SESSION['nombre']    = $user['nombre'] ?? '';
+        $_SESSION['correo']    = $user['correo'] ?? '';
+        $_SESSION['telefono']  = $user['telefono'] ?? '';
+        $_SESSION['direccion'] = $user['direccion'] ?? '';
         $_SESSION['id_real'] = $user['id_real'];
         $_SESSION['cuit'] = $user['cuit'];
         $_SESSION['LAST_ACTIVITY'] = time();
