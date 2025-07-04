@@ -1,3 +1,30 @@
-cuit;contrasena;rol;permiso_ingreso;nombre;correo;telefono;id_cooperativa;id_productor;direccion;id_finca_asociada;observaciones
-12;12;cooperativa;Habilitado;Agr.Beltr�n;;;1;;;;
-13;13;cooperativa;Habilitado;Algarrobo Bonito;;;2;;;;
+﻿usuario;contrasena;rol;permiso_ingreso;cuit;id_real
+Agr.Beltran;30630406419;cooperativa;Habilitado;30630406419;1
+Algarrobo Bonito;30630780752;cooperativa;Habilitado;30630780752;2
+Altas Cumbres;30633780699;cooperativa;Habilitado;30633780699;3
+Brindis;30630441001;cooperativa;Habilitado;30630441001;4
+Colonia California;30638811568;cooperativa;Habilitado;30638811568;5
+Del Algarrobal;30517585900;cooperativa;Habilitado;30517585900;6
+El Cerrito;30517257415;cooperativa;Habilitado;30517257415;7
+El Libertador;30503062263;cooperativa;Habilitado;30503062263;8
+El Poniente;30631653797;cooperativa;Habilitado;30631653797;9
+Giagnoni;30631537851;cooperativa;Habilitado;30631537851;10
+Goudge;30507818141;cooperativa;Habilitado;30507818141;11
+La Dormida;30502977950;cooperativa;Habilitado;30502977950;12
+Las Trincheras;30517683627;cooperativa;Habilitado;30517683627;13
+Maipu;33561865839;cooperativa;Habilitado;33561865839;14
+Mendoza;33505883239;cooperativa;Habilitado;33505883239;15
+Moluches;30630585232;cooperativa;Habilitado;30630585232;16
+Norte Lavallino;33631316889;cooperativa;Habilitado;33631316889;17
+Norte Mendocino;30630221885;cooperativa;Habilitado;30630221885;18
+Nueva California;30505870782;cooperativa;Habilitado;30505870782;19
+Pampanos;30630902645;cooperativa;Habilitado;30630902645;20
+Prod.Junín;30503018876;cooperativa;Habilitado;30503018876;21
+Rama Caida;30504480948;cooperativa;Habilitado;30504480948;22
+Real del Padre;30516964924;cooperativa;Habilitado;30516964924;23
+San Carlos Sud;30518026174;cooperativa;Habilitado;30518026174;24
+Sierra Pintada;30631044936;cooperativa;Habilitado;30631044936;25
+Tres de Mayo;30517866586;cooperativa;Habilitado;30517866586;26
+Tres Porteñas;33553586289;cooperativa;Habilitado;33553586289;27
+Tulumaya;30503322729;cooperativa;Habilitado;30503322729;28
+Vista Flores;30516880151;cooperativa;Habilitado;30516880151;29

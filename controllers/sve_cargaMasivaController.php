@@ -3,7 +3,7 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 header('Content-Type: application/json');
 
-require_once __DIR__ . '/../models/CargaMasivaModel.php';
+require_once __DIR__ . '/../models/sve_cargaMasivaModel.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_FILES['archivo']) || !isset($_POST['tipo'])) {
     echo json_encode(['error' => 'Petición inválida']);
