@@ -1,10 +1,16 @@
 <?php
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+
+// Limpia cualquier salida previa (espacios, errores, etc.)
+ob_clean();
+
+// Indicar que devolvemos JSON
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../models/sve_cargaMasivaModel.php';
 
+// Validación de entrada
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_FILES['archivo']) || !isset($_POST['tipo'])) {
     echo json_encode(['error' => 'Petición inválida']);
     exit;
@@ -18,6 +24,7 @@ if (!file_exists($archivoTmp)) {
     exit;
 }
 
+// Leer CSV
 $csv = [];
 if (($handle = fopen($archivoTmp, 'r')) !== false) {
     while (($data = fgetcsv($handle, 10000, ';')) !== false) {
@@ -25,9 +32,12 @@ if (($handle = fopen($archivoTmp, 'r')) !== false) {
     }
     fclose($handle);
 }
+
+// Procesar encabezados
 $encabezados = array_map(function ($val) {
-    return trim(preg_replace('/^\xEF\xBB\xBF/', '', $val));
+    return trim(preg_replace('/^\xEF\xBB\xBF/', '', $val)); // limpiar BOM
 }, $csv[0]);
+
 $datos = array_slice($csv, 1);
 
 // Convertir filas a array asociativo
@@ -43,23 +53,26 @@ try {
     switch ($tipo) {
         case 'cooperativas':
             $modelo->insertarCooperativas($datosProcesados);
-            break;
+            echo json_encode(['mensaje' => '✅ Usuarios cargados correctamente.']);
+            exit;
+
         case 'relaciones':
             $conflictos = $modelo->insertarRelaciones($datosProcesados);
             if (count($conflictos)) {
                 echo json_encode([
-                    'mensaje' => 'Carga completada con advertencias.',
+                    'mensaje' => '⚠️ Carga completada con advertencias.',
                     'conflictos' => $conflictos
                 ]);
+                exit;
             } else {
                 echo json_encode(['mensaje' => '✅ Relaciones cargadas exitosamente.']);
+                exit;
             }
-            break;
+
         default:
             throw new Exception("Tipo de carga desconocido.");
     }
-
-    echo json_encode(['mensaje' => '✅ Carga exitosa.']);
 } catch (Exception $e) {
     echo json_encode(['error' => $e->getMessage()]);
+    exit;
 }
