@@ -20,7 +20,7 @@ if (!file_exists($archivoTmp)) {
 
 $csv = [];
 if (($handle = fopen($archivoTmp, 'r')) !== false) {
-    while (($data = fgetcsv($handle, 1000, ',')) !== false) {
+    while (($data = fgetcsv($handle, 10000, ';')) !== false) {
         $csv[] = $data;
     }
     fclose($handle);
