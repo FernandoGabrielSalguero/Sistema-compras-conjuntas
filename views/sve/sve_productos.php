@@ -599,6 +599,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
+    
 </body>
 
 </html>

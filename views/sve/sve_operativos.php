@@ -717,6 +717,11 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
+        <script>
+        setInterval(() => {
+            fetch('/ping.php').catch(err => console.warn('❌ ping falló', err));
+        }, 60000); // cada 1 minuto
+    </script>
 </body>
 
 </html>
