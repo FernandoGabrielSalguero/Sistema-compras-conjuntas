@@ -128,7 +128,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
                     <h2>Hola</h2>
                     <p>Te presentamos el tablero Power BI. Vas a poder consultar todas las metricas desde esta página</p>
                 </div>
-            <!-- Tablero Power BI -->
+                <!-- Tablero Power BI -->
                 <div class="card">
                     <div style="position: relative; width: 100%; padding-top: 56.25%;">
                         <iframe title="Cooperativa de Servicios Vitícolas y Enológicos"
@@ -170,7 +170,11 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
             <?php endif; ?>
         });
     </script>
-
+    <script>
+        setInterval(() => {
+            fetch('/ping.php').catch(err => console.warn('❌ ping falló', err));
+        }, 60000); // cada 1 minuto
+    </script>
 </body>
 
 
