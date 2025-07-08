@@ -3,27 +3,9 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesión y proteger acceso
-session_start();
-
-// ⚠️ Expiración por inactividad (20 minutos)
-if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 1200)) {
-    session_unset();
-    session_destroy();
-    header("Location: /index.php?expired=1");
-    exit;
-}
-$_SESSION['LAST_ACTIVITY'] = time(); // Actualiza el tiempo de actividad
-
-// 🚧 Protección de acceso general
-if (!isset($_SESSION['cuit'])) {
-    die("⚠️ Acceso denegado. No has iniciado sesión.");
-}
-
-// 🔐 Protección por rol
-if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'sve') {
-    die("🚫 Acceso restringido: esta página es solo para usuarios SVE.");
-}
+// Iniciar sesión y configurar parámetros de seguridad
+require_once '../../middleware/authMiddleware.php';
+checkAccess('sve');
 
 // Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
@@ -88,7 +70,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
-                        <span class="material-icons" style="color: #5b21b6;">article</span><span class="link-text">Publicaciones</span>
+                        <span class="material-icons" style="color: #5b21b6;">article</span><span class="link-text">Biblioteca Digital</span>
                     </li>
                     <li onclick="location.href='../../../logout.php'">
                         <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>

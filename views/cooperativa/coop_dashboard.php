@@ -4,38 +4,16 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesión y proteger acceso
-session_start();
-
-// ⚠️ Expiración por inactividad (20 minutos)
-if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 1200)) {
-    session_unset();
-    session_destroy();
-    header("Location: /index.php?expired=1");
-    exit;
-}
-$_SESSION['LAST_ACTIVITY'] = time();
-
-// 🚧 Protección de acceso general
-if (!isset($_SESSION['cuit'])) {
-    die("⚠️ Acceso denegado. No has iniciado sesión.");
-}
-
-// 🔐 Protección por rol
-if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'cooperativa') {
-    die("🚫 Acceso restringido: esta página es solo para usuarios cooperativa.");
-}
-
-//Cargamos los operativos cerrados
-$cierre_info = $_SESSION['cierre_info'] ?? null;
-unset($_SESSION['cierre_info']);
+// Iniciar sesión y configurar parámetros de seguridad
+require_once '../../middleware/authMiddleware.php';
+checkAccess('cooperativa');
 
 // Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
-$usuario = $_SESSION['usuario'] ?? 'Sin usuario';
+$cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
 $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
-
+$observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 ?>
 
 <!DOCTYPE html>

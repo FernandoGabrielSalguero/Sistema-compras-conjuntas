@@ -4,14 +4,19 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-session_start();
+// Iniciar sesión y configurar parámetros de seguridad
+require_once '../../middleware/authMiddleware.php';
+checkAccess('cooperativa');
+
+// Datos del usuario en sesión
+$nombre = $_SESSION['nombre'] ?? 'Sin nombre';
+$correo = $_SESSION['correo'] ?? 'Sin correo';
+$cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
+$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
+$observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
+
 require_once __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../models/coop_MercadoDigitalModel.php';
-
-
-if (!isset($_SESSION['usuario']) || $_SESSION['rol'] !== 'cooperativa') {
-    die("Acceso denegado");
-}
 
 if (!isset($_GET['id'])) {
     die("Falta ID de pedido");
