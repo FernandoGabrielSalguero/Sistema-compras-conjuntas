@@ -156,10 +156,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .toggle-password {
             position: absolute;
-            right: 10px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
+            color: #673ab7;
+            /* violeta institucional */
+            font-size: 24px;
+            /* tamaño estándar Material */
+            user-select: none;
+            line-height: 1;
         }
     </style>
 </head>
@@ -193,8 +199,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const passwordField = document.getElementById('contrasena');
 
         togglePassword.addEventListener('click', () => {
-            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordField.setAttribute('type', type);
+            const isPassword = passwordField.type === 'password';
+            passwordField.type = isPassword ? 'text' : 'password';
+            togglePassword.textContent = isPassword ? 'visibility_off' : 'visibility';
         });
 
         // imprirmir los datos de la sesion en la consola
