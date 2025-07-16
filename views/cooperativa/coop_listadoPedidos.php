@@ -106,6 +106,12 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                 <div class="card">
                     <h2>Hola 👋</h2>
                     <p>En esta página, vamos a ver todos los pedidos realizados por las cooperativas y por nosotros, además de poder cargar sus facturas y modificarlos en caso de ser necesario</p>
+                    <br>
+                    <!-- Boton de tutorial -->
+                    <button id="btnIniciarTutorial" class="btn btn-aceptar">
+                        Tutorial
+                    </button>
+
                 </div>
 
                 <!-- Tarjeta de buscador -->
@@ -217,21 +223,21 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     </td>
                     <td>${p.nombre_operativo || '-'}</td>
                     <td>
-                        <button class="btn-icon" onclick="verPedido(${p.id})">
+                        <button class="btn-icon" onclick="verPedido(${p.id})" data-tooltip="Ver pedido >
                             <i class="material-icons" style="color:blue;">description</i>
                         </button>
                         ${p.estado_operativo === 'abierto' 
-                            ? `<button class="btn-icon" onclick="abrirModalEdicion(${p.id})">
+                            ? `<button class="btn-icon" onclick="abrirModalEdicion(${p.id})" data-tooltip="Editar pedido">
                                 <i class="material-icons" style="color:blue;">edit</i>
                             </button>`
                             : `<button class="btn-icon" disabled title="Pedido cerrado">
                                 <i class="material-icons" style="color:gray; opacity: 0.5;">edit</i>
                             </button>`
                         }
-                        <button class="btn-icon" onclick="imprimirPedido(${p.id})">
+                        <button class="btn-icon" onclick="imprimirPedido(${p.id})" data-tooltip="Imprimir pedido">
                             <i class="material-icons" style="color:green;">print</i>
                         </button>
-                        <button class="btn-icon" onclick="confirmarEliminacion(${p.id})">
+                        <button class="btn-icon" onclick="confirmarEliminacion(${p.id})" data-tooltip="Eliminar pedido">
                             <i class="material-icons" style="color:red;">delete</i>
                         </button>
                     </td>
@@ -639,6 +645,8 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         </div>
     </div>
 
+    <!-- llamada de tutorial -->
+    <script src="../partials/tutorials/cooperativas/listadoPedidos.js?v=<?= time() ?>" defer></script>
 </body>
 
 
