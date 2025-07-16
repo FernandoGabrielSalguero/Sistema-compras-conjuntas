@@ -223,7 +223,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     </td>
                     <td>${p.nombre_operativo || '-'}</td>
                     <td>
-                        <button class="btn-icon" onclick="verPedido(${p.id})" data-tooltip="Ver pedido >
+                        <button class="btn-icon" onclick="verPedido(${p.id})" data-tooltip="Ver pedido" >
                             <i class="material-icons" style="color:blue;">description</i>
                         </button>
                         ${p.estado_operativo === 'abierto' 
