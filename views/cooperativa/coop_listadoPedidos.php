@@ -228,7 +228,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         </button>
                         ${p.estado_operativo === 'abierto' 
                             ? `<button class="btn-icon" onclick="abrirModalEdicion(${p.id})" data-tooltip="Editar pedido">
-                                <i class="material-icons" style="color:blue;">edit</i>
+                                <i class="material-icons" style="color:orange;">edit</i>
                             </button>`
                             : `<button class="btn-icon" disabled title="Pedido cerrado">
                                 <i class="material-icons" style="color:gray; opacity: 0.5;">edit</i>
