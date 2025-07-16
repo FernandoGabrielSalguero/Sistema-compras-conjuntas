@@ -240,8 +240,8 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 function iniciarTutorialDashboard() {
     const pasos = [
         {
-            selector: '.card:first-of-type',
-            mensaje: 'Este es tu panel de bienvenida.',
+            selector: '.tutorial-operativos-disponibles',
+            mensaje: 'En estas tarjetas, vas a poder ver los operativos habilitados para participar. Es importante que participes en uno para poder comprar en él.',
         },
         {
             selector: '#contenedorOperativos',
