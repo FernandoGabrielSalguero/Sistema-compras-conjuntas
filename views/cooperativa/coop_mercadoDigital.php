@@ -120,6 +120,62 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
             border-top: 1px solid #ccc;
             padding-top: 0.5rem;
         }
+
+        /* tutorial paso a paso */
+        #tour-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 5000;
+        }
+
+        .tour-tooltip {
+            position: fixed;
+            z-index: 6000;
+            max-width: 300px;
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            font-size: 0.95rem;
+            line-height: 1.4;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tour-tooltip::after {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 10px solid transparent;
+            border-top-color: white;
+            bottom: -20px;
+            left: 20px;
+        }
+
+        .tour-actions {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .tour-actions button {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #5b21b6;
+            color: white;
+        }
+
+        .tour-actions button:hover {
+            background-color: #4c1c9e;
+        }
     </style>
 </head>
 
@@ -183,6 +239,11 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                 <div class="card">
                     <h4><?php echo htmlspecialchars($nombre); ?>, estas en la página "Mercado Digital"</h4>
                     <p>Desde acá, vas a poder cargar los pedidos de los productores de una manera más fácil y rápida. Simplemente selecciona al productor, coloca las cantidades que necesites y listo</p>
+
+                    <!-- boton de tutorial -->
+                    <div class="form-buttons">
+                        <button class="btn btn-info" onclick="startTour()">Iniciar tutorial</button>
+                    </div>
                 </div>
 
                 <!-- crear nuevo pedido -->
@@ -204,7 +265,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             <!-- Productor -->
                             <div class="input-group">
                                 <label for="buscador_prod">Productor</label>
-                                <div class="input-icon">
+                                <div class="input-icon tutorial-productor">
                                     <span class="material-icons">person</span>
                                     <input type="text" id="buscador_prod" placeholder="Buscar productor..." autocomplete="off" required>
                                 </div>
@@ -217,7 +278,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                 <label for="hectareas">Hectáreas</label>
                                 <div class="input-icon">
                                     <span class="material-icons">agriculture</span>
-                                    <input type="number" id="hectareas" name="hectareas" min="0" step="0.01" placeholder="Cantidad de hectáreas..." required>
+                                    <input type="number" id="hectareas" name="hectareas" min="0" step="0.01" placeholder="Cantidad de hectáreas...">
                                 </div>
                             </div>
 
@@ -682,6 +743,111 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         } catch (err) {
                             console.error('❌ Error al cargar productos del operativo:', err);
                         }
+                    }
+
+                    // === TUTORIAL GUIADO POR PASOS ===
+
+                    const tourSteps = [{
+                            element: ".tutorial-productor", // Tarjeta de tutorial
+                            message: "Busca y selecciona un productor para el pedido. Podes hacerlo por ID o por nombre.",
+                            position: "right"
+                        },
+                        {
+                            element: ".switch", // boton para participar en operativos
+                            message: "Aca podes seleccionar si querés participar en el operativo.",
+                            position: "top"
+                        },
+                    ];
+
+                    let currentTourIndex = 0;
+
+                    function startTour() {
+                        currentTourIndex = 0;
+                        createOverlay();
+                        showTourStep(currentTourIndex);
+                    }
+
+                    function createOverlay() {
+                        if (!document.getElementById("tour-overlay")) {
+                            const overlay = document.createElement("div");
+                            overlay.id = "tour-overlay";
+                            document.body.appendChild(overlay);
+                        }
+                    }
+
+                    function removeTour() {
+                        const existing = document.querySelector(".tour-tooltip");
+                        if (existing) existing.remove();
+                        const overlay = document.getElementById("tour-overlay");
+                        if (overlay) overlay.remove();
+                    }
+
+                    function showTourStep(index) {
+                        removeTour();
+
+                        const step = tourSteps[index];
+                        const target = document.querySelector(step.element);
+                        if (!target) return;
+
+                        const tooltip = document.createElement("div");
+                        tooltip.className = "tour-tooltip";
+                        tooltip.innerHTML = `
+    <p>${step.message}</p>
+    <div class="tour-actions">
+      ${index > 0 ? `<button onclick="prevTourStep()">Anterior</button>` : ""}
+      <button onclick="${index < tourSteps.length - 1 ? "nextTourStep()" : "endTour()"}">
+        ${index < tourSteps.length - 1 ? "Siguiente" : "Finalizar"}
+      </button>
+    </div>
+  `;
+
+                        document.body.appendChild(tooltip);
+
+                        // Posicionar tooltip
+                        const rect = target.getBoundingClientRect();
+                        const tt = tooltip.getBoundingClientRect();
+                        let top = 0,
+                            left = 0;
+
+                        switch (step.position) {
+                            case "top":
+                                top = rect.top - tt.height - 10;
+                                left = rect.left + rect.width / 2 - tt.width / 2;
+                                break;
+                            case "right":
+                                top = rect.top + rect.height / 2 - tt.height / 2;
+                                left = rect.right + 10;
+                                break;
+                            case "bottom":
+                                top = rect.bottom + 10;
+                                left = rect.left + rect.width / 2 - tt.width / 2;
+                                break;
+                            default:
+                                top = rect.top - tt.height - 10;
+                                left = rect.left + rect.width / 2 - tt.width / 2;
+                        }
+
+                        tooltip.style.top = `${Math.max(top, 20)}px`;
+                        tooltip.style.left = `${Math.max(left, 20)}px`;
+                    }
+
+                    function nextTourStep() {
+                        if (currentTourIndex < tourSteps.length - 1) {
+                            currentTourIndex++;
+                            showTourStep(currentTourIndex);
+                        }
+                    }
+
+                    function prevTourStep() {
+                        if (currentTourIndex > 0) {
+                            currentTourIndex--;
+                            showTourStep(currentTourIndex);
+                        }
+                    }
+
+                    function endTour() {
+                        removeTour();
+                        showToast("success", "¡Tutorial finalizado!");
                     }
                 </script>
 
