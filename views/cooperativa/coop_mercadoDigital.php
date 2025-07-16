@@ -328,7 +328,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             </div>
 
                             <!-- Operativo -->
-                            <div class="input-group">
+                            <div class="input-group tutorial-operativo">
                                 <label for="operativo">Operativo</label>
                                 <div class="input-icon">
                                     <span class="material-icons">event</span>
@@ -748,13 +748,13 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     // === TUTORIAL GUIADO POR PASOS ===
 
                     const tourSteps = [{
-                            element: ".tutorial-productor", // Tarjeta de tutorial
+                            element: ".tutorial-productor",
                             message: "Busca y selecciona un productor para el pedido. Podes hacerlo por ID o por nombre.",
-                            position: "right"
+                            position: "top"
                         },
                         {
-                            element: ".switch", // boton para participar en operativos
-                            message: "Aca podes seleccionar si querés participar en el operativo.",
+                            element: ".tutorial-operativo",
+                            message: "Selecciona el operativo al que pertenece este pedido. Esto es importante para asociar los productos correctamente.",
                             position: "top"
                         },
                     ];
