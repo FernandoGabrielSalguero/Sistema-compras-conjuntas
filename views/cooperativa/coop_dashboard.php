@@ -30,6 +30,64 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
+    <style>
+        /* tutorial paso a paso */
+#tour-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 5000;
+}
+
+.tour-tooltip {
+  position: fixed;
+  z-index: 6000;
+  max-width: 300px;
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  animation: fadeIn 0.3s ease;
+}
+
+.tour-tooltip::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-top-color: white;
+  bottom: -20px;
+  left: 20px;
+}
+
+.tour-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.tour-actions button {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #5b21b6;
+  color: white;
+}
+
+.tour-actions button:hover {
+  background-color: #4c1c9e;
+}
+    </style>
 </head>
 
 <body>
@@ -91,7 +149,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <!-- Bienvenida -->
                 <div class="card">
                     <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
-                    <p>En esta página, vas a encontrar herramientas muy utiles para vos</p>
+                    <p>En esta página, vas a poder seleccionar a que operativo participar</p>
+
+                    <!-- boton de tutorial -->
+                    <div class="form-buttons">
+                        <button class="btn btn-info" onclick="startTour()">Iniciar tutorial</button>
+                    </div>
                 </div>
 
                 <!-- contenedor de operativos -->
@@ -156,7 +219,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     card.innerHTML = `
     <h3 class="user-name">${op.nombre}</h3>
 
-    <div class="user-info">
+    <div class="user-info tarjeta-tutorial">
         <span class="material-icons icon-email">description</span>
         <span class="user-email">${op.descripcion || 'Sin descripción.'}</span>
     </div>
@@ -221,6 +284,113 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const [a, m, d] = fechaISO.split("-");
             return `${d}/${m}/${a}`;
         }
+
+        
+// === TUTORIAL GUIADO POR PASOS ===
+
+const tourSteps = [
+    {
+        element: ".tarjeta-tutorial", // Tarjeta de tutorial
+        message: "En esta tarjeta vas a encontrar información sobre el operativo.",
+        position: "right"
+    },
+    {
+        element: ".switch", // boton para participar en operativos
+        message: "Aca podes seleccionar si querés participar en el operativo.",
+        position: "top"
+    },
+];
+
+let currentTourIndex = 0;
+
+function startTour() {
+    currentTourIndex = 0;
+    createOverlay();
+    showTourStep(currentTourIndex);
+}
+
+function createOverlay() {
+    if (!document.getElementById("tour-overlay")) {
+        const overlay = document.createElement("div");
+        overlay.id = "tour-overlay";
+        document.body.appendChild(overlay);
+    }
+}
+
+function removeTour() {
+    const existing = document.querySelector(".tour-tooltip");
+    if (existing) existing.remove();
+    const overlay = document.getElementById("tour-overlay");
+    if (overlay) overlay.remove();
+}
+
+function showTourStep(index) {
+    removeTour();
+
+    const step = tourSteps[index];
+    const target = document.querySelector(step.element);
+    if (!target) return;
+
+    const tooltip = document.createElement("div");
+    tooltip.className = "tour-tooltip";
+    tooltip.innerHTML = `
+    <p>${step.message}</p>
+    <div class="tour-actions">
+      ${index > 0 ? `<button onclick="prevTourStep()">Anterior</button>` : ""}
+      <button onclick="${index < tourSteps.length - 1 ? "nextTourStep()" : "endTour()"}">
+        ${index < tourSteps.length - 1 ? "Siguiente" : "Finalizar"}
+      </button>
+    </div>
+  `;
+
+    document.body.appendChild(tooltip);
+
+    // Posicionar tooltip
+    const rect = target.getBoundingClientRect();
+    const tt = tooltip.getBoundingClientRect();
+    let top = 0, left = 0;
+
+    switch (step.position) {
+        case "top":
+            top = rect.top - tt.height - 10;
+            left = rect.left + rect.width / 2 - tt.width / 2;
+            break;
+        case "right":
+            top = rect.top + rect.height / 2 - tt.height / 2;
+            left = rect.right + 10;
+            break;
+        case "bottom":
+            top = rect.bottom + 10;
+            left = rect.left + rect.width / 2 - tt.width / 2;
+            break;
+        default:
+            top = rect.top - tt.height - 10;
+            left = rect.left + rect.width / 2 - tt.width / 2;
+    }
+
+    tooltip.style.top = `${Math.max(top, 20)}px`;
+    tooltip.style.left = `${Math.max(left, 20)}px`;
+}
+
+function nextTourStep() {
+    if (currentTourIndex < tourSteps.length - 1) {
+        currentTourIndex++;
+        showTourStep(currentTourIndex);
+    }
+}
+
+function prevTourStep() {
+    if (currentTourIndex > 0) {
+        currentTourIndex--;
+        showTourStep(currentTourIndex);
+    }
+}
+
+function endTour() {
+    removeTour();
+    showToast("success", "¡Tutorial finalizado!");
+}
+
     </script>
 
 </body>
