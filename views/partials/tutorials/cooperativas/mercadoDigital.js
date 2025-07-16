@@ -10,12 +10,12 @@ function iniciarTutorialDashboard() {
         {
             selector: '.tutorial-seleccionarProductor',
             mensaje: 'Para comenzar, selecciona un productor de la lista. Puedes buscarlo escribiendo su nombre en el campo de búsqueda o su ID',
-            posicion: 'right'
+            posicion: 'bottom'
         },
         {
             selector: '.tutorial-SeleccionarOperativo',
             mensaje: 'Es importante que selecciones un operativo para poder ver los productos disponibles y realizar compras. Si no participas de ningún operativo, es importante que vayas a la página inicio y participes en alguno',
-            posicion: 'right'
+            posicion: 'bottom'
         },
         {
             selector: '.tutorial-SeleccionarProductos',
