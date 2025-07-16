@@ -217,7 +217,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                 <label for="hectareas">Hectáreas</label>
                                 <div class="input-icon">
                                     <span class="material-icons">agriculture</span>
-                                    <input type="number" id="hectareas" name="hectareas" min="0" step="0.01" placeholder="Cantidad de hectáreas..." required>
+                                    <input type="number" id="hectareas" name="hectareas" min="0" step="0.01" placeholder="Cantidad de hectáreas...">
                                 </div>
                             </div>
 
