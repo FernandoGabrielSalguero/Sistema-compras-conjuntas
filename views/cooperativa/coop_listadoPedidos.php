@@ -280,8 +280,8 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     </td>
                     <td>${p.nombre_operativo || '-'}</td>
                     <td>
-                        <button class="btn-icon" onclick="verPedido(${p.id})" tooltip="Ver pedido completo">
-                            <i class="material-icons" style="color:blue;">description</i>
+                        <button class="btn-icon" onclick="verPedido(${p.id})">
+                            <i class="material-icons" style="color:blue; data-tooltip="Subir factura"">description</i>
                         </button>
                         ${p.estado_operativo === 'abierto' 
                             ? `<button class="btn-icon" onclick="abrirModalEdicion(${p.id})">
