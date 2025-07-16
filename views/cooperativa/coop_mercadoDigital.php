@@ -354,7 +354,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             </div>
                         </div>
 
-                        <div class="form-buttons" style="margin-top: 20px;">
+                        <div class="form-buttons tutorial-BTN-GuardarPedido" style="margin-top: 20px;">
                             <button type="submit" class="btn btn-aceptar">Guardar pedido</button>
                         </div>
                     </form>
@@ -765,6 +765,11 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         {
                             element: ".tutorial-Resumen-pedido",
                             message: "En esta tarjeta, vas a ver un resumen de los productos seleccionados, sus cantidades y el total del pedido. Incluye el IVA correspondiente.",
+                            position: "top"
+                        },
+                                                {
+                            element: ".tutorial-BTN-GuardarPedido",
+                            message: "Cuando hayas completado el pedido, presiona este botón para guardarlo. El sistema validará los datos y te mostrará un mensaje de éxito o error. Podes ver el pedido en el listado de pedidos.",
                             position: "top"
                         },
                     ];
