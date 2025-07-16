@@ -342,7 +342,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
 
 
-                        <div class="card card-productos" style="margin-top: 10px;">
+                        <div class="card card-productos tutorial-seleccionarProductos" style="margin-top: 10px;">
                             <h2>Seleccionar productos</h2>
                             <div id="acordeones-productos" class="card-grid grid-3"></div>
                         </div>
@@ -755,6 +755,11 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         {
                             element: ".tutorial-operativo",
                             message: "Selecciona el operativo al que pertenece este pedido. Esto es importante para asociar los productos correctamente.",
+                            position: "top"
+                        },
+                                                {
+                            element: ".tutorial-seleccionarProductos",
+                            message: "Una vez seleccionado el productor y el operativo, podrás seleccionar los productos disponibles. Ingresa las cantidades que necesites de cada producto.",
                             position: "top"
                         },
                     ];
