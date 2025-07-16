@@ -93,7 +93,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <div class="card">
                     <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
                     <p>En esta página, vas a encontrar herramientas muy utiles para vos</p>
-
+<br>
                     <!-- Boton de tutorial -->
                     <button id="btnIniciarTutorial" class="btn btn-aceptar">
                         Tutorial

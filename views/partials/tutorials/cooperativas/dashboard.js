@@ -64,8 +64,8 @@ function iniciarTutorialDashboard() {
         tooltip.innerHTML = `
             <div>${paso.mensaje}</div>
             <br>
-            <button id="btnSiguienteTutorial" class="btn btn-light" style="margin-right: 1rem;">Siguiente</button>
-            <button id="btnCerrarTutorial" class="btn btn-light">Cerrar</button>
+            <button id="btnSiguienteTutorial" class="btn btn-info" style="margin-right: 1rem;">Siguiente</button>
+            <button id="btnCerrarTutorial" class="btn btn-cancelar">Cerrar</button>
         `;
 
         document.body.appendChild(tooltip);
