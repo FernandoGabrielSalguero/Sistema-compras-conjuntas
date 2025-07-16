@@ -183,6 +183,11 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                 <div class="card">
                     <h4><?php echo htmlspecialchars($nombre); ?>, estas en la página "Mercado Digital"</h4>
                     <p>Desde acá, vas a poder cargar los pedidos de los productores de una manera más fácil y rápida. Simplemente selecciona al productor, coloca las cantidades que necesites y listo</p>
+                    <br>
+                    <!-- Boton de tutorial -->
+                    <button id="btnIniciarTutorial" class="btn btn-aceptar">
+                        Tutorial
+                    </button>
                 </div>
 
                 <!-- crear nuevo pedido -->
@@ -699,6 +704,9 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
+
+    <!-- llamada de tutorial -->
+    <script src="../partials/tutorials/cooperativas/mercadoDigital.js?v=<?= time() ?>" defer></script>
 </body>
 
 </html>
