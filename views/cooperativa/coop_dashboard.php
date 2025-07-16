@@ -229,6 +229,9 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
         }
     </script>
 
+    <!-- llamada de tutorial -->
+    <script src="../partials/tutorials/cooperativas/dashboard.js" defer></script>
+
 </body>
 
 </html>
