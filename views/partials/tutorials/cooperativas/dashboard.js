@@ -13,13 +13,13 @@ function iniciarTutorialDashboard() {
             posicion: 'top'
         },
         {
-            selector: '#contenedorOperativos',
-            mensaje: 'En estas tarjetas, vas a poder ver los operativos habilitados para participar. Es importante que participes en uno para poder comprar en él.',
-            posicion: 'bottom'
+            selector: '.tutorial-swich-participacion',
+            mensaje: 'Para participar, simplemente toca este boton una ves hasta que se pinte de color violeta. Si ya estás parcipando, el botón estará activo y podrás dejar de participar tocándolo nuevamente.',
+            posicion: 'top'
         },
         {
-            selector: '.sidebar-menu li:nth-child(2)',
-            mensaje: 'Entrá al Mercado Digital desde este acceso rápido.',
+            selector: '.tutorial-botonDeMercado',
+            mensaje: 'Una vez que participes de almenos un operativo, entrá al Mercado Digital desde este acceso rápido para realizar las compras a tus productores.',
             posicion: 'right'
         }
     ];

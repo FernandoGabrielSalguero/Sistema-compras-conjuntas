@@ -51,7 +51,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
                     </li>
                     <li onclick="location.href='coop_mercadoDigital.php'">
-                        <span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
+                        <span class="material-icons tutorial-botonDeMercado" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
                     </li>
                     <li onclick="location.href='coop_listadoPedidos.php'">
                         <span class="material-icons" style="color: #5b21b6;">receipt_long</span><span class="link-text">Listado Pedidos</span>
@@ -180,7 +180,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     <div class="user-info">
         <span class="material-icons icon-email">how_to_reg</span>
         <span class="user-email"><strong>Participás:</strong></span>
-        <label class="switch" style="margin-left: 0.5rem;">
+        <label class="switch tutorial-swich-participacion" style="margin-left: 0.5rem;">
             <input type="checkbox" id="${switchId}" ${op.participa === 'si' ? 'checked' : ''}>
             <span class="slider round"></span>
         </label>
