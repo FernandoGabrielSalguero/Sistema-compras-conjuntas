@@ -13,13 +13,13 @@ function iniciarTutorialDashboard() {
             posicion: 'top'
         },
         {
-            selector: '.tutorial-swich-participacion',
-            mensaje: 'Para participar, simplemente toca este boton una ves hasta que se pinte de color violeta. Si ya estás parcipando, el botón estará activo y podrás dejar de participar tocándolo nuevamente.',
+            selector: '.tutorial-SeleccionarOperativo',
+            mensaje: 'Es importante que selecciones un operativo para poder ver los productos disponibles y realizar compras. Si no participas de ningún operativo, es importante que vayas a la página inicio y participes en alguno',
             posicion: 'top'
         },
         {
-            selector: '.sidebar-menu li:nth-child(2)',
-            mensaje: 'Una vez que participes de almenos un operativo, entrá al Mercado Digital desde este acceso rápido para realizar las compras a tus productores.',
+            selector: '.tutorial-SeleccionarProductos',
+            mensaje: 'Una vez seleccionado el operativo, podrás ver los productos disponibles. Puedes seleccionar los productos que deseas comprar tocando en su categoria y colocando la cantidad que necesitas.',
             posicion: 'right'
         }
     ];

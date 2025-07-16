@@ -272,7 +272,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             </div>
 
                             <!-- Operativo -->
-                            <div class="input-group">
+                            <div class="input-group tutorial-SeleccionarOperativo">
                                 <label for="operativo">Operativo</label>
                                 <div class="input-icon">
                                     <span class="material-icons">event</span>
@@ -286,7 +286,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
 
 
-                        <div class="card card-productos" style="margin-top: 10px;">
+                        <div class="card card-productos tutorial-SeleccionarProductos" style="margin-top: 10px;">
                             <h2>Seleccionar productos</h2>
                             <div id="acordeones-productos" class="card-grid grid-3"></div>
                         </div>
