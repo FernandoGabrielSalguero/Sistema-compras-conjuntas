@@ -154,19 +154,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             position: relative;
         }
 
-        .toggle-password {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #673ab7;
-            /* violeta institucional */
-            font-size: 24px;
-            /* tamaño estándar Material */
-            user-select: none;
-            line-height: 1;
-        }
+.toggle-password {
+    position: absolute;
+    right: 14px;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    color: #673ab7;
+    font-size: 22px;
+    cursor: pointer;
+    user-select: none;
+    line-height: 1;
+}
     </style>
 </head>
 
