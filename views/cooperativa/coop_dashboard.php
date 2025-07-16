@@ -31,7 +31,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
-    <style>
+    <!-- <style>
         /* tutorial paso a paso */
         #tour-overlay {
             position: fixed;
@@ -87,7 +87,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         .tour-actions button:hover {
             background-color: #4c1c9e;
         }
-    </style>
+    </style> -->
 </head>
 
 <body>
