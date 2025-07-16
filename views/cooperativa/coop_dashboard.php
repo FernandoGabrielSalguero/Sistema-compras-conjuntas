@@ -92,7 +92,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <!-- Bienvenida -->
                 <div class="card">
                     <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
-                    <p>En esta página, vas a encontrar herramientas muy utiles para vos</p>
+                    <p>En esta página vas a encontrar todos los operativos disponibles para que participes. Es importante que selecciones alguno para poder realizar compras a tus productores</p>
 <br>
                     <!-- Boton de tutorial -->
                     <button id="btnIniciarTutorial" class="btn btn-aceptar">
@@ -101,7 +101,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </div>
 
                 <!-- contenedor de operativos -->
-                <div class="card">
+                <div class="card tutorial-operativos-disponibles">
                     <h2>Operativos disponibles</h2>
                     <p>Seleccioná en qué operativos querés participar para habilitar la compra a tus productores.</p>
                     <br>

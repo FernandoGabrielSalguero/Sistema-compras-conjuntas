@@ -8,8 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function iniciarTutorialDashboard() {
     const pasos = [
         {
-            selector: '.card:first-of-type',
-            mensaje: 'Este es tu panel de bienvenida.',
+            selector: '.tutorial-operativos-disponibles',
+            mensaje: 'En esta tarjeta vas a tener la información principal del operativo, como su fecha de apertura y cierre y una breve descripción del mismo.',
         },
         {
             selector: '#contenedorOperativos',
