@@ -18,7 +18,7 @@ function iniciarTutorialDashboard() {
             posicion: 'top'
         },
         {
-            selector: '.tutorial-botonDeMercado',
+            selector: '.sidebar-menu li:nth-child(2)',
             mensaje: 'Una vez que participes de almenos un operativo, entrá al Mercado Digital desde este acceso rápido para realizar las compras a tus productores.',
             posicion: 'right'
         }
