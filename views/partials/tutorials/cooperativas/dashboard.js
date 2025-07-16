@@ -8,9 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
 function iniciarTutorialDashboard() {
     const pasos = [
         {
-            selector: '.card:first-of-type',
-            mensaje: 'Este es tu panel de bienvenida.',
-            posicion: 'bottom'
+            selector: '.tutorial-operativos-disponibles',
+            mensaje: 'En estas tarjetas, vas a poder ver los operativos habilitados para participar. Es importante que participes en uno para poder comprar en él.',
+            posicion: 'top'
         },
         {
             selector: '#contenedorOperativos',
@@ -67,8 +67,8 @@ function iniciarTutorialDashboard() {
             <div>${paso.mensaje}</div>
             <br>
             <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
-                <button id="btnSiguienteTutorial" class="btn btn-sm btn-primary">Siguiente</button>
-                <button id="btnCerrarTutorial" class="btn btn-sm btn-danger">Cerrar</button>
+                <button id="btnSiguienteTutorial" class="btn  btn-info">Siguiente</button>
+                <button id="btnCerrarTutorial" class="btn btn-cancelar">Cerrar</button>
             </div>
         `;
 
