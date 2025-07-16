@@ -50,8 +50,8 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     <li onclick="location.href='coop_dashboard.php'">
                         <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
                     </li>
-                    <li onclick="location.href='coop_mercadoDigital.php'" class="tutorial-botonDeMercado">
-                        <span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
+                    <li onclick="location.href='coop_mercadoDigital.php'">
+                        <span class="material-icons tutorial-botonDeMercado" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
                     </li>
                     <li onclick="location.href='coop_listadoPedidos.php'">
                         <span class="material-icons" style="color: #5b21b6;">receipt_long</span><span class="link-text">Listado Pedidos</span>
