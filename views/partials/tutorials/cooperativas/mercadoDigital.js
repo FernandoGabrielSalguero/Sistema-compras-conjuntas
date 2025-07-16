@@ -26,7 +26,17 @@ function iniciarTutorialDashboard() {
             selector: '.tutorial-ResumenPedido',
             mensaje: 'Cuando selecciones todos los productos que necesitas, podrás ver un resumen de tu pedido. Aquí podrás revisar los productos seleccionados y las cantidades con su precio total e IVA incluido.',
             posicion: 'top'
-        }
+        },
+        {
+            selector: '.tutorial-botonGuardar',
+            mensaje: 'Una vez finalizada la creación del pedido, puedes guardarlo. Asegúrate de que toda la información sea correcta antes de guardar.',
+            posicion: 'top'
+        },
+        {
+            selector: '.sidebar-menu li:nth-child(3)',
+            mensaje: 'Cuando guardes tu pedido, vas a encontrarlo en el menú Listado Pedidos.',
+            posicion: 'top'
+        },
     ];
 
     let pasoActual = 0;
