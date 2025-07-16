@@ -10,17 +10,22 @@ function iniciarTutorialDashboard() {
         {
             selector: '.tutorial-seleccionarProductor',
             mensaje: 'Para comenzar, selecciona un productor de la lista. Puedes buscarlo escribiendo su nombre en el campo de búsqueda o su ID',
-            posicion: 'top'
+            posicion: 'right'
         },
         {
             selector: '.tutorial-SeleccionarOperativo',
             mensaje: 'Es importante que selecciones un operativo para poder ver los productos disponibles y realizar compras. Si no participas de ningún operativo, es importante que vayas a la página inicio y participes en alguno',
-            posicion: 'top'
+            posicion: 'right'
         },
         {
             selector: '.tutorial-SeleccionarProductos',
             mensaje: 'Una vez seleccionado el operativo, podrás ver los productos disponibles. Puedes seleccionar los productos que deseas comprar tocando en su categoria y colocando la cantidad que necesitas.',
-            posicion: 'right'
+            posicion: 'top'
+        },
+        {
+            selector: '.tutorial-ResumenPedido',
+            mensaje: 'Cuando selecciones todos los productos que necesitas, podrás ver un resumen de tu pedido. Aquí podrás revisar los productos seleccionados y las cantidades con su precio total e IVA incluido.',
+            posicion: 'top'
         }
     ];
 
