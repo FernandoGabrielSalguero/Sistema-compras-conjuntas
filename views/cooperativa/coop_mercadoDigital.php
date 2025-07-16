@@ -207,7 +207,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             </div>
 
                             <!-- Productor -->
-                            <div class="input-group">
+                            <div class="input-group tutorial-seleccionarProductor">
                                 <label for="buscador_prod">Productor</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>

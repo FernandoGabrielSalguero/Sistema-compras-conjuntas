@@ -8,8 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function iniciarTutorialDashboard() {
     const pasos = [
         {
-            selector: '.tutorial-operativos-disponibles',
-            mensaje: 'En estas tarjetas, vas a poder ver los operativos habilitados para participar. Es importante que participes en uno para poder comprar en él.',
+            selector: '.tutorial-seleccionarProductor',
+            mensaje: 'Para comenzar, selecciona un productor de la lista. Puedes buscarlo escribiendo su nombre en el campo de búsqueda o su ID',
             posicion: 'top'
         },
         {
