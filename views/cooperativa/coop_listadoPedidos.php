@@ -44,6 +44,64 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
     <!-- descargar imagen  -->
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
+    <style>
+        /* tutorial paso a paso */
+        #tour-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 5000;
+        }
+
+        .tour-tooltip {
+            position: fixed;
+            z-index: 6000;
+            max-width: 300px;
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            font-size: 0.95rem;
+            line-height: 1.4;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tour-tooltip::after {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 10px solid transparent;
+            border-top-color: white;
+            bottom: -20px;
+            left: 20px;
+        }
+
+        .tour-actions {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .tour-actions button {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #5b21b6;
+            color: white;
+        }
+
+        .tour-actions button:hover {
+            background-color: #4c1c9e;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -104,8 +162,13 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
                 <!-- Bienvenida -->
                 <div class="card">
-                    <h2>Hola 👋</h2>
-                    <p>En esta página, vamos a ver todos los pedidos realizados por las cooperativas y por nosotros, además de poder cargar sus facturas y modificarlos en caso de ser necesario</p>
+                    <h2>Listao de pedidos</h2>
+                    <p>En esta página, vamos a ver todos los pedidos realizados para tus productores</p>
+
+                    <!-- boton de tutorial -->
+                    <div class="form-buttons">
+                        <button class="btn btn-info" onclick="startTour()">Iniciar tutorial</button>
+                    </div>
                 </div>
 
                 <!-- Tarjeta de buscador -->
@@ -217,7 +280,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     </td>
                     <td>${p.nombre_operativo || '-'}</td>
                     <td>
-                        <button class="btn-icon" onclick="verPedido(${p.id})">
+                        <button class="btn-icon" onclick="verPedido(${p.id}) tooltip="Ver pedido completo">
                             <i class="material-icons" style="color:blue;">description</i>
                         </button>
                         ${p.estado_operativo === 'abierto' 
