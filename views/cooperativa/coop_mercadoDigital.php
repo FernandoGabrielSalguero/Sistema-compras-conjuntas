@@ -342,8 +342,8 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
 
 
-                        <div class="card card-productos tutorial-seleccionarProductos" style="margin-top: 10px;">
-                            <h2>Seleccionar productos</h2>
+                        <div class="card card-productos" style="margin-top: 10px;">
+                            <h2 class="tutorial-seleccionarProductos">Seleccionar productos</h2>
                             <div id="acordeones-productos" class="card-grid grid-3"></div>
                         </div>
 
