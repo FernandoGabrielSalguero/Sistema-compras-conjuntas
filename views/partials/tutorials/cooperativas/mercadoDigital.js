@@ -30,12 +30,12 @@ function iniciarTutorialDashboard() {
         {
             selector: '.tutorial-botonGuardar',
             mensaje: 'Una vez finalizada la creación del pedido, puedes guardarlo. Asegúrate de que toda la información sea correcta antes de guardar.',
-            posicion: 'top'
+            posicion: 'right'
         },
         {
             selector: '.sidebar-menu li:nth-child(3)',
             mensaje: 'Cuando guardes tu pedido, vas a encontrarlo en el menú Listado Pedidos.',
-            posicion: 'top'
+            posicion: 'right'
         },
     ];
 
