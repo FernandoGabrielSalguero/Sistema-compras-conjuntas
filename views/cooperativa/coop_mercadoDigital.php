@@ -354,8 +354,8 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             </div>
                         </div>
 
-                        <div class="form-buttons tutorial-BTN-GuardarPedido" style="margin-top: 20px;">
-                            <button type="submit" class="btn btn-aceptar">Guardar pedido</button>
+                        <div class="form-buttons" style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-aceptar tutorial-BTN-GuardarPedido">Guardar pedido</button>
                         </div>
                     </form>
                 </div>
