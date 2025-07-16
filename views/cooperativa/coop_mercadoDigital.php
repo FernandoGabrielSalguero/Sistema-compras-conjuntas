@@ -676,14 +676,14 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             console.log('✅ Respuesta JSON:', json);
 
                             if (json.success) {
-                                showAlert('success', json.message);
+                                showToast('success', json.message);
                                 location.reload();
                             } else {
-                                showAlert('error', json.message);
+                                showToast('error', json.message);
                             }
                         } catch (err) {
                             console.error('❌ Error al parsear JSON:', err);
-                            showAlert('error', '❌ Error inesperado en la respuesta del servidor.');
+                            showToast('error', '❌ Error inesperado en la respuesta del servidor.');
                         }
                     });
 
