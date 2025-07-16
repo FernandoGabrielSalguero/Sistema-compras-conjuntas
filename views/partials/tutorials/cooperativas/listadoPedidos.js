@@ -15,7 +15,7 @@ function iniciarTutorialDashboard() {
         {
             selector: '.tutorial-TablaPedidos',
             mensaje: 'En esta tabla, verás todos los pedidos realizados. Del lado derecho, tenes botones para editar o ver los detalles de cada pedido.',
-            posicion: 'bottom'
+            posicion: 'top'
         }
     ];
 
