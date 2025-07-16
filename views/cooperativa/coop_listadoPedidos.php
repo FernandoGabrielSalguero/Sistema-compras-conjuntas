@@ -105,7 +105,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                 <!-- Bienvenida -->
                 <div class="card">
                     <h2>Hola 👋</h2>
-                    <p>En esta página, vamos a ver todos los pedidos realizados por las cooperativas y por nosotros, además de poder cargar sus facturas y modificarlos en caso de ser necesario</p>
+                    <p>En esta página, vamos a ver todos los pedidos realizados además de poder ver sus detalles, modificarlos y ver sus facturas en caso de que ya esten disponibles</p>
                     <br>
                     <!-- Boton de tutorial -->
                     <button id="btnIniciarTutorial" class="btn btn-aceptar">
@@ -120,7 +120,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
                     <form class="form-modern">
                         <!-- Buscar por Nombre -->
-                        <div class="input-group">
+                        <div class="input-group tutorial-BuscarProductor">
                             <label for="buscarNombre">Podes buscar por Productor</label>
                             <div class="input-icon">
                                 <span class="material-icons">person</span>
@@ -131,7 +131,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                 </div>
 
                 <!-- Tabla -->
-                <div class="card">
+                <div class="card tutorial-TablaPedidos">
                     <h2>Listado de pedidos realizados</h2>
                     <div class="table-container">
                         <table class="data-table">
