@@ -20,7 +20,7 @@ function iniciarTutorialDashboard() {
         {
             selector: '.tutorial-FacturaColumn',
             mensaje: 'Estos son los botones para ver, actualizar o eliminar el pedido.',
-            posicion: 'top',
+            posicion: 'left',
             scrollHorizontal: true
         }
 
