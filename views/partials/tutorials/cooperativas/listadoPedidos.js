@@ -17,16 +17,16 @@ function iniciarTutorialDashboard() {
             mensaje: 'En esta tabla, verás todos los pedidos realizados. Del lado derecho, tenés botones para editar o ver los detalles de cada pedido.',
             posicion: 'top'
         },
-                {
+        {
             selector: '.tutorial-FacturaColumn',
             mensaje: 'Estos son los botones para ver, actualizar o eliminar el pedido.',
-            posicion: 'top'
+            posicion: 'top',
+            scrollHorizontal: true
         }
     ];
 
     let pasoActual = 0;
 
-    // Overlay oscuro
     const overlay = document.createElement('div');
     overlay.id = 'tutorial-overlay';
     overlay.style = `
@@ -57,7 +57,6 @@ function iniciarTutorialDashboard() {
     mostrarPaso();
 
     function mostrarPaso() {
-        // Limpiar pasos anteriores
         document.querySelectorAll('.tutorial-tooltip').forEach(el => el.remove());
         document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
 
@@ -94,12 +93,26 @@ function iniciarTutorialDashboard() {
                 <button id="btnCerrarTutorial" class="btn btn-cancelar">Cerrar</button>
             </div>
         `;
-
         document.body.appendChild(tooltip);
 
-        // Scroll y posición del tooltip después de renderizar
+        // Esperar al render para posicionar y hacer scroll
         setTimeout(() => {
+            // Scroll vertical
             target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Scroll horizontal si aplica
+            if (paso.scrollHorizontal) {
+                const scrollableParent = findScrollableParent(target);
+                if (scrollableParent) {
+                    const rect = target.getBoundingClientRect();
+                    const parentRect = scrollableParent.getBoundingClientRect();
+                    const offsetLeft = rect.left - parentRect.left;
+                    scrollableParent.scrollTo({
+                        left: offsetLeft - 40,
+                        behavior: 'smooth'
+                    });
+                }
+            }
 
             const { top, left } = calcularPosicionTooltip(target, tooltip, paso.posicion);
             tooltip.style.top = `${top}px`;
@@ -147,6 +160,17 @@ function iniciarTutorialDashboard() {
                     left: rect.left + scrollX
                 };
         }
+    }
+
+    function findScrollableParent(el) {
+        while (el && el !== document.body) {
+            const overflowX = window.getComputedStyle(el).overflowX;
+            if (overflowX === 'auto' || overflowX === 'scroll') {
+                return el;
+            }
+            el = el.parentElement;
+        }
+        return null;
     }
 
     function avanzar() {
