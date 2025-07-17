@@ -120,6 +120,37 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
             border-top: 1px solid #ccc;
             padding-top: 0.5rem;
         }
+
+        /* Estilos del modal */
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-around;
+        }
     </style>
 </head>
 
@@ -550,11 +581,15 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         }
                     });
 
-                    // Guardar pedido
-                    document.getElementById('formPedido').addEventListener('submit', async function(e) {
+                    // Guardamos el pedido
+                    document.getElementById('formPedido').addEventListener('submit', function(e) {
                         e.preventDefault();
+                        mostrarModal(); // solo mostramos el modal
+                    });
 
-                        const formData = new FormData(this);
+                    async function guardarPedido() {
+                        const form = document.getElementById('formPedido');
+                        const formData = new FormData(form);
                         const productosSeleccionados = [];
                         let totalSinIVA = 0;
                         let totalIVA = 0;
@@ -579,7 +614,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             productosSeleccionados.push({
                                 id: parseInt(input.name.match(/\[(\d+)\]/)[1]),
                                 nombre: nombre,
-                                detalle: '', // si lo querés traer después
+                                detalle: '',
                                 precio: precio,
                                 unidad: unidad,
                                 categoria: input.closest('.card')?.querySelector('.accordion-header')?.textContent.trim() || '',
@@ -629,7 +664,21 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             console.error('❌ Error al parsear JSON:', err);
                             showAlert('error', '❌ Error inesperado en la respuesta del servidor.');
                         }
-                    });
+                    }
+
+                    function mostrarModal() {
+                        document.getElementById('modalConfirmacion').style.display = 'flex';
+                    }
+
+                    function cerrarModal() {
+                        document.getElementById('modalConfirmacion').style.display = 'none';
+                    }
+
+                    function confirmarEnvio() {
+                        cerrarModal();
+                        guardarPedido(); // Acá llamamos a tu función que guarda el pedido
+                    }
+
 
                     // cargamos los productos por operativo
                     async function cargarProductosPorOperativo(operativoId) {
@@ -707,6 +756,19 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
     <!-- llamada de tutorial -->
     <script src="../partials/tutorials/cooperativas/mercadoDigital.js?v=<?= time() ?>" defer></script>
+
+    <!-- Modal de confirmación -->
+    <div id="modalConfirmacion" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>¿Confirmar pedido?</h3>
+            <p>Estás por enviar el pedido. ¿Querés continuar?</p>
+            <div class="modal-actions">
+                <button class="btn btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn btn-aceptar" onclick="confirmarEnvio()">Sí, enviar</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>
