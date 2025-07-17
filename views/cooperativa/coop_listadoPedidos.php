@@ -213,7 +213,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     <td>$${parseFloat(p.total_sin_iva).toFixed(2)}</td>
                     <td>$${parseFloat(p.total_iva).toFixed(2)}</td>
                     <td><strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></td>
-                    <td>
+                    <td class="tutorial-FacturaColumn">
                     ${p.factura 
                         ? `<button class="btn-icon" onclick="verFactura('${p.factura}')">
                             <i class="material-icons" style="color:green;">visibility</i>
