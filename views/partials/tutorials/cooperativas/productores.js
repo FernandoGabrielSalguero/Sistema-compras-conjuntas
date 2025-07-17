@@ -13,28 +13,28 @@ function iniciarTutorialDashboard() {
             posicion: 'bottom'
         },
         {
-            selector: '.tutorial-SeleccionarOperativo',
-            mensaje: 'Es importante que selecciones un operativo para ver los productos disponibles y poder realizar compras. Si no participás en ninguno, andá a la página de inicio y participá en alguno.',
+            selector: '.tutorial-id_real',
+            mensaje: 'Este campo se autocompleta con un ID único para cada productor. No es necesario que lo modifiques.',
             posicion: 'bottom'
         },
         {
-            selector: '.tutorial-SeleccionarProductos',
-            mensaje: 'Una vez que selecciones un operativo, vas a poder ver los productos disponibles. Podés elegir los que necesitás tocando su categoría y colocando la cantidad que querés comprar.',
+            selector: '.tutorial-Boton',
+            mensaje: 'Una vez que completes el formulario, podés hacer clic en el botón "Crear productor" para guardar la información.',
             posicion: 'top'
         },
         {
-            selector: '.tutorial-ResumenPedido',
-            mensaje: 'Cuando selecciones todos los productos, vas a ver un resumen de tu pedido. Acá podés revisar los productos y cantidades, con su precio total e IVA incluido.',
+            selector: '.tutorial-buscar',
+            mensaje: 'En esta sección podés buscar productores existentes. Es útil para verificar si un productor ya está registrado antes de crear uno nuevo.',
             posicion: 'top'
         },
         {
-            selector: '.tutorial-botonGuardar',
-            mensaje: 'Una vez finalizado el pedido, podés guardarlo. Asegurate de que toda la información esté correcta antes de guardar.',
+            selector: '.tutorial-listadoProductores',
+            mensaje: 'En esta tarjeta verás un listado de todos los productores asociados a tu cooperativa. Podés editar su información haciendo clic en el botón correspondiente.',
             posicion: 'top'
         },
         {
-            selector: '.sidebar-menu li:nth-child(3)',
-            mensaje: 'Cuando guardes tu pedido, lo vas a encontrar en el menú Listado de Pedidos.',
+            selector: '.tutorial-EditarProductor',
+            mensaje: 'Para editar un productor, simplemente haz clic en el ícono de lápiz junto al nombre del productor. Esto abrirá un modal donde podrás modificar sus datos.',
             posicion: 'right'
         }
 

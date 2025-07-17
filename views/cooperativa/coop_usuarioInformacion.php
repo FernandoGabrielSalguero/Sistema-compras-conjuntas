@@ -161,7 +161,7 @@ unset($_SESSION['cierre_info']);
                             </div>
 
                             <!-- ID Real auto -->
-                            <div class="input-group">
+                            <div class="input-group tutorial-id_real">
                                 <label for="id_real">ID Real (Automático)</label>
                                 <div class="input-icon">
                                     <span class="material-icons">badge</span>
@@ -198,7 +198,7 @@ unset($_SESSION['cierre_info']);
                         </div>
 
                         <!-- Botones -->
-                        <div class="form-buttons">
+                        <div class="form-buttons tutorial-Boton">
                             <button class="btn btn-aceptar" type="submit">Crear productor</button>
                         </div>
                     </form>
@@ -206,7 +206,7 @@ unset($_SESSION['cierre_info']);
                 </div>
 
                 <!-- Tarjeta de buscador -->
-                <div class="card">
+                <div class="card tutorial-buscar">
                     <h2>Busca usuarios</h2>
 
                     <form class="form-modern">
@@ -233,7 +233,7 @@ unset($_SESSION['cierre_info']);
                 </div>
 
                 <!-- contenedor de productores -->
-                <div class="card">
+                <div class="card tutorial-listadoProductores">
                     <h2>Productores asociados</h2>
                     <p>Listado de productores asociados a tu cooperativa. Podés editar su información.</p>
                     <br>
@@ -386,7 +386,7 @@ unset($_SESSION['cierre_info']);
         <span class="user-email">${p.cuit}</span>
     </div>
 
-<button class="btn-icon tooltip-icon"
+<button class="btn-icon tooltip-icon tutorial-EditarProductor"
         data-tooltip="Editar productor"
         onclick='abrirModal(${JSON.stringify(p)})'>
     <span class="material-icons" style="color: blue;" >edit</span>
