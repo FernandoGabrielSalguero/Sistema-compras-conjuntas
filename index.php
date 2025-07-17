@@ -154,19 +154,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             position: relative;
         }
 
-.toggle-password {
-    position: absolute;
-    right: 14px;
-    top: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    color: #673ab7;
-    font-size: 22px;
-    cursor: pointer;
-    user-select: none;
-    line-height: 1;
-}
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            color: #673ab7;
+            font-size: 22px;
+            cursor: pointer;
+            user-select: none;
+            line-height: 1;
+        }
     </style>
 </head>
 
@@ -185,6 +185,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label for="contrasena">Contraseña:</label>
                     <input type="password" name="contrasena" id="contrasena" required>
                     <span class="material-icons toggle-password" title="Mostrar/Ocultar contraseña">visibility</span>
+                </div>
+
+
+                <!-- Contraseña con ojo -->
+                <div class="input-group password-container">
+                    <label for="contrasena">Contraseña</label>
+                    <div class="input-icon">
+                        <span class="material-icons">lock</span>
+                        <input type="password" id="contrasena" name="contrasena" placeholder="Asigna una contraseña" autocomplete="Asigna una contraseña" required>
+                        <span class="material-icons toggle-password" onclick="togglePassword()">visibility</span>
+                    </div>
                 </div>
 
                 <div class="form-group">
