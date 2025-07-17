@@ -187,17 +187,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <span class="material-icons toggle-password" title="Mostrar/Ocultar contraseña">visibility</span>
                 </div>
 
-
-                <!-- Contraseña con ojo -->
-                <div class="input-group password-container">
-                    <label for="contrasena">Contraseña</label>
-                    <div class="input-icon">
-                        <span class="material-icons">lock</span>
-                        <input type="password" id="contrasena" name="contrasena" placeholder="Asigna una contraseña" autocomplete="Asigna una contraseña" required>
-                        <span class="material-icons toggle-password" onclick="togglePassword()">visibility</span>
-                    </div>
-                </div>
-
                 <div class="form-group">
                     <button type="submit">INGRESAR</button>
                 </div>
