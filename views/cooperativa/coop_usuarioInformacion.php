@@ -51,6 +51,11 @@ unset($_SESSION['cierre_info']);
         .user-card.incompleto {
             border: 2px solid red;
         }
+
+        /* ocultar imputs */
+        .oculto {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -114,7 +119,7 @@ unset($_SESSION['cierre_info']);
                 <div class="card">
                     <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
                     <p>En esta página, vas a poder inscribir productores nuevos a tu cooperativa y vas a poder modificar su información</p>
-                                        <br>
+                    <br>
                     <!-- Boton de tutorial -->
                     <button id="btnIniciarTutorial" class="btn btn-aceptar">
                         Tutorial
