@@ -50,6 +50,12 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
     background-color: rgba(91, 33, 182, 0.1);
     transition: background-color 0.3s ease;
 }
+
+.tutorial-columna-completa {
+    background-color: rgba(91, 33, 182, 0.08);
+    box-shadow: inset 0 0 0 2px #5b21b6;
+    transition: background-color 0.3s ease;
+}
     </style>
 
 </head>
@@ -157,7 +163,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                     <th>Total pedido</th>
                                     <th>Factura</th>
                                     <th>Operativo</th>
-                                    <th>Acciones</th>
+                                    <th class="tutorial-ColumnaAcciones">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaPedidos">
@@ -230,25 +236,25 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     }
                     </td>
                     <td>${p.nombre_operativo || '-'}</td>
-                    <td>
-                        <button class="btn-icon" onclick="verPedido(${p.id})" data-tooltip="Ver pedido" >
-                            <i class="material-icons" style="color:blue;">description</i>
-                        </button>
-                        ${p.estado_operativo === 'abierto' 
-                            ? `<button class="btn-icon" onclick="abrirModalEdicion(${p.id})" data-tooltip="Editar pedido">
-                                <i class="material-icons" style="color:orange;">edit</i>
-                            </button>`
-                            : `<button class="btn-icon" disabled title="Pedido cerrado">
-                                <i class="material-icons" style="color:gray; opacity: 0.5;">edit</i>
-                            </button>`
-                        }
-                        <button class="btn-icon" onclick="imprimirPedido(${p.id})" data-tooltip="Imprimir pedido">
-                            <i class="material-icons" style="color:green;">print</i>
-                        </button>
-                        <button class="btn-icon" onclick="confirmarEliminacion(${p.id})" data-tooltip="Eliminar pedido">
-                            <i class="material-icons" style="color:red;">delete</i>
-                        </button>
-                    </td>
+<td class="tutorial-ColumnaAcciones">
+    <button class="btn-icon" onclick="verPedido(${p.id})" data-tooltip="Ver pedido">
+        <i class="material-icons" style="color:blue;">description</i>
+    </button>
+    ${p.estado_operativo === 'abierto' 
+        ? `<button class="btn-icon" onclick="abrirModalEdicion(${p.id})" data-tooltip="Editar pedido">
+            <i class="material-icons" style="color:orange;">edit</i>
+        </button>`
+        : `<button class="btn-icon" disabled title="Pedido cerrado">
+            <i class="material-icons" style="color:gray; opacity: 0.5;">edit</i>
+        </button>`
+    }
+    <button class="btn-icon" onclick="imprimirPedido(${p.id})" data-tooltip="Imprimir pedido">
+        <i class="material-icons" style="color:green;">print</i>
+    </button>
+    <button class="btn-icon" onclick="confirmarEliminacion(${p.id})" data-tooltip="Eliminar pedido">
+        <i class="material-icons" style="color:red;">delete</i>
+    </button>
+</td>
                 `;
                         tablaPedidos.appendChild(fila);
                     });
