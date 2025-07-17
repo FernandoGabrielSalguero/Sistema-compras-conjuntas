@@ -122,12 +122,12 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         }
 
         .modal.oculto {
-    display: none !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-    transform: scale(0.9);
-}
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transform: scale(0.9);
+        }
     </style>
 </head>
 
@@ -314,18 +314,17 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
 
                 <!-- 🛠️ SCRIPTS -->
+                <!-- 🔻 FRAMEWORK PRIMERO (sin defer) -->
+                <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
+
                 <script>
-                    console.log("🟢 Estos son los datos de sesión del usuario:");
-                    console.log(<?php echo json_encode($_SESSION, JSON_PRETTY_PRINT); ?>);
                     document.addEventListener('DOMContentLoaded', () => {
                         const coopId = "<?php echo $id_cooperativa_real; ?>";
                         const nombreCoopSesion = "<?php echo htmlspecialchars($nombre); ?>";
 
-                        // Cargar directamente los productores de la cooperativa del usuario
                         document.getElementById('cooperativa').value = coopId;
                         cargarProductores(coopId);
                         console.log("🔄 Cargando productores para coopId:", coopId);
-
 
                         const inputCoop = document.getElementById('buscador_coop');
                         const listaCoop = document.getElementById('lista_coop');
@@ -343,7 +342,6 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                 const res = await fetch('/controllers/coop_MercadoDigitalController.php?listar=cooperativas');
                                 cooperativas = await res.json();
                                 activarBuscador(inputCoop, listaCoop, cooperativas, hiddenCoop, (id) => {
-                                    // limpiar productor
                                     inputProd.value = '';
                                     hiddenProd.value = '';
                                     listaProd.innerHTML = '';
@@ -359,9 +357,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             try {
                                 const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=productores&coop_id=${coopId}`);
                                 productores = await res.json();
-
-                                console.log('🧑‍🌾 Productores recibidos:', productores); // ⬅️ NUEVO LOG
-
+                                console.log('🧑‍🌾 Productores recibidos:', productores);
                                 activarBuscador(inputProd, listaProd, productores, hiddenProd);
                             } catch (err) {
                                 console.error('❌ Error al cargar productores:', err);
@@ -402,11 +398,6 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                 }
                             });
                         }
-                    });
-
-                    // acordeones
-                    document.addEventListener('DOMContentLoaded', () => {
-                        cargarOperativos();
 
                         document.getElementById('operativo').addEventListener('change', () => {
                             const operativoId = document.getElementById('operativo').value;
@@ -416,317 +407,284 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                 document.getElementById('acordeones-productos').innerHTML = '<p style="padding:10px;">Seleccioná un operativo para ver los productos disponibles.</p>';
                             }
                         });
-                    });
 
-                    // Cargamos los opeartivos
-                    async function cargarOperativos() {
-                        const coopId = "<?php echo $id_cooperativa_real; ?>";
-                        try {
-                            const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=operativos_abiertos&coop_id=${coopId}`);
-                            const data = await res.json();
-                            const selectOperativo = document.getElementById('operativo');
-                            data.forEach(op => {
-                                const option = document.createElement('option');
-                                option.value = op.id;
-                                option.textContent = `${op.nombre} (${op.fecha_inicio} - ${op.fecha_cierre})`;
-                                selectOperativo.appendChild(option);
-                            });
-                        } catch (err) {
-                            console.error("❌ Error al cargar operativos:", err);
-                        }
-                    }
-
-
-                    // Cargamos los productos por categoria
-                    async function cargarProductosPorCategoria() {
-                        try {
-                            const res = await fetch('/controllers/coop_MercadoDigitalController.php?listar=productos_categorizados');
-                            const data = await res.json();
-
-                            const contenedor = document.getElementById('acordeones-productos');
-                            contenedor.innerHTML = '';
-
-                            for (const categoria in data) {
-                                const productos = data[categoria];
-
-                                const acordeon = document.createElement('div');
-                                acordeon.classList.add('card'); // usa tu estilo de tarjeta
-
-                                const header = document.createElement('div');
-                                header.classList.add('accordion-header');
-                                header.innerHTML = `<strong>${categoria}</strong>`;
-
-                                const body = document.createElement('div');
-                                body.classList.add('accordion-body');
-
-                                // Mostrar el cuerpo al hacer clic
-                                header.addEventListener('click', () => {
-                                    body.classList.toggle('show');
+                        async function cargarOperativos() {
+                            try {
+                                const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=operativos_abiertos&coop_id=${coopId}`);
+                                const data = await res.json();
+                                const selectOperativo = document.getElementById('operativo');
+                                data.forEach(op => {
+                                    const option = document.createElement('option');
+                                    option.value = op.id;
+                                    option.textContent = `${op.nombre} (${op.fecha_inicio} - ${op.fecha_cierre})`;
+                                    selectOperativo.appendChild(option);
                                 });
-
-                                productos.forEach(prod => {
-                                    // console.log(prod); //mirar los productos que vienen de la bbdd
-                                    const grupo = document.createElement('div');
-                                    grupo.className = 'input-group';
-
-                                    grupo.innerHTML = `
-    <label for="prod_${prod.producto_id}">
-        <strong>${prod.Nombre_producto}</strong>
-        (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
-    </label>
-    <div class="input-icon">
-        <span class="material-icons">numbers</span>
-        <input
-    type="number"
-    name="productos[${prod.producto_id}]"
-    id="prod_${prod.producto_id}"
-    min="0"
-    placeholder="Cantidad..."
-    data-alicuota="${prod.alicuota}"
-        />
-    </div>
-`;
-
-                                    body.appendChild(grupo);
-                                });
-
-                                acordeon.appendChild(header);
-                                acordeon.appendChild(body);
-                                contenedor.appendChild(acordeon);
+                            } catch (err) {
+                                console.error("❌ Error al cargar operativos:", err);
                             }
-                        } catch (err) {
-                            console.error('❌ Error al cargar productos:', err);
                         }
-                    }
 
-                    function actualizarResumen() {
-                        const inputs = document.querySelectorAll('#acordeones-productos input[type="number"]');
-                        const resumen = document.getElementById('contenidoResumen');
-                        resumen.innerHTML = '';
+                        async function cargarProductosPorCategoria() {
+                            try {
+                                const res = await fetch('/controllers/coop_MercadoDigitalController.php?listar=productos_categorizados');
+                                const data = await res.json();
+                                const contenedor = document.getElementById('acordeones-productos');
+                                contenedor.innerHTML = '';
 
-                        let hayProductos = false;
-                        let totalConIva = 0;
+                                for (const categoria in data) {
+                                    const productos = data[categoria];
+                                    const acordeon = document.createElement('div');
+                                    acordeon.classList.add('card');
+                                    const header = document.createElement('div');
+                                    header.classList.add('accordion-header');
+                                    header.innerHTML = `<strong>${categoria}</strong>`;
+                                    const body = document.createElement('div');
+                                    body.classList.add('accordion-body');
 
-                        inputs.forEach(input => {
-                            const cantidad = parseFloat(input.value);
-                            if (!cantidad || cantidad <= 0) return;
+                                    header.addEventListener('click', () => {
+                                        body.classList.toggle('show');
+                                    });
 
-                            hayProductos = true;
+                                    productos.forEach(prod => {
+                                        const grupo = document.createElement('div');
+                                        grupo.className = 'input-group';
+                                        grupo.innerHTML = `
+                        <label for="prod_${prod.producto_id}">
+                            <strong>${prod.Nombre_producto}</strong>
+                            (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
+                        </label>
+                        <div class="input-icon">
+                            <span class="material-icons">numbers</span>
+                            <input
+                                type="number"
+                                name="productos[${prod.producto_id}]"
+                                id="prod_${prod.producto_id}"
+                                min="0"
+                                placeholder="Cantidad..."
+                                data-alicuota="${prod.alicuota}" />
+                        </div>`;
+                                        body.appendChild(grupo);
+                                    });
 
-                            const prodId = input.name.match(/\[(\d+)\]/)[1];
-                            const label = input.closest('.input-group').querySelector('label');
-                            const texto = label?.textContent?.trim() || 'Producto';
+                                    acordeon.appendChild(header);
+                                    acordeon.appendChild(body);
+                                    contenedor.appendChild(acordeon);
+                                }
+                            } catch (err) {
+                                console.error('❌ Error al cargar productos:', err);
+                            }
+                        }
 
-                            const unidad = texto.match(/\(([^-]+)-/i)?.[1]?.trim() || '';
-                            const precio = parseFloat(texto.match(/\$([\d.]+)/)?.[1]) || 0;
-                            const alicuota = Number(input.dataset.alicuota);
-                            if (isNaN(alicuota)) alicuota = 0;
-                            const subtotal = precio * cantidad;
-                            const iva = subtotal * (alicuota / 100);
-                            const total = subtotal + iva;
-                            totalConIva += total;
+                        async function cargarProductosPorOperativo(operativoId) {
+                            try {
+                                const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=productos_por_operativo&operativo_id=${operativoId}`);
+                                const data = await res.json();
+                                const contenedor = document.getElementById('acordeones-productos');
+                                contenedor.innerHTML = '';
 
-                            const item = document.createElement('div');
-                            item.classList.add('resumen-item');
-                            item.innerHTML = `
-                            <strong>🧾 ${texto}</strong>
-                            <small>📦 Cantidad: ${cantidad} ${unidad}</small>
-                            <small>💵 Subtotal: $${subtotal.toFixed(2)}</small>
-                            <small>🧾 IVA (${alicuota}%): $${iva.toFixed(2)}</small>
-                            <div class="resumen-total">Total: $${total.toFixed(2)}</div>
-`;
-                            resumen.appendChild(item);
+                                for (const categoria in data) {
+                                    const productos = data[categoria];
+                                    const acordeon = document.createElement('div');
+                                    acordeon.classList.add('card');
+                                    const header = document.createElement('div');
+                                    header.classList.add('accordion-header');
+                                    header.innerHTML = `<strong>${categoria}</strong>`;
+                                    const body = document.createElement('div');
+                                    body.classList.add('accordion-body');
+                                    header.addEventListener('click', () => {
+                                        body.classList.toggle('show');
+                                    });
+
+                                    productos.forEach(prod => {
+                                        const grupo = document.createElement('div');
+                                        grupo.className = 'input-group';
+                                        grupo.innerHTML = `
+                        <label for="prod_${prod.producto_id}">
+                            <strong>${prod.Nombre_producto}</strong>
+                            (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
+                        </label>
+                        <div class="input-icon">
+                            <span class="material-icons">numbers</span>
+                            <input
+                                type="number"
+                                name="productos[${prod.producto_id}]"
+                                id="prod_${prod.producto_id}"
+                                min="0"
+                                placeholder="Cantidad..."
+                                data-alicuota="${prod.alicuota}" />
+                        </div>`;
+                                        body.appendChild(grupo);
+                                    });
+
+                                    acordeon.appendChild(header);
+                                    acordeon.appendChild(body);
+                                    contenedor.appendChild(acordeon);
+                                }
+                            } catch (err) {
+                                console.error('❌ Error al cargar productos del operativo:', err);
+                            }
+                        }
+
+                        document.addEventListener('input', function(e) {
+                            if (e.target.matches('#acordeones-productos input[type="number"]')) {
+                                actualizarResumen();
+                            }
                         });
 
-                        if (!hayProductos) {
-                            resumen.innerHTML = `<p>No se han seleccionado productos.</p>`;
-                        } else {
-                            const totalFinal = document.createElement('div');
-                            totalFinal.classList.add('resumen-item');
-                            totalFinal.innerHTML = `
-    <strong>🧮 Total final con IVA:</strong>
-    <div class="resumen-total" style="font-size: 1.2rem;">$${totalConIva.toFixed(2)}</div>
-`;
-                            resumen.appendChild(totalFinal);
-                        }
-                    }
+                        function actualizarResumen() {
+                            const inputs = document.querySelectorAll('#acordeones-productos input[type="number"]');
+                            const resumen = document.getElementById('contenidoResumen');
+                            resumen.innerHTML = '';
 
-                    // Escuchar cambios
-                    document.addEventListener('input', function(e) {
-                        if (e.target.matches('#acordeones-productos input[type="number"]')) {
-                            actualizarResumen();
-                        }
-                    });
+                            let hayProductos = false;
+                            let totalConIva = 0;
 
-                    // Guardar pedido
-                    document.getElementById('formPedido').addEventListener('submit', function(e) {
-                        e.preventDefault();
+                            inputs.forEach(input => {
+                                const cantidad = parseFloat(input.value);
+                                if (!cantidad || cantidad <= 0) return;
+                                hayProductos = true;
 
-                        const formData = new FormData(this);
-                        const productosSeleccionados = [];
-                        let totalConIVA = 0;
+                                const label = input.closest('.input-group').querySelector('label')?.textContent?.trim() || '';
+                                const texto = label.match(/^(.*?)\s*\((.*?)\s*-\s*\$(.*?)\)/);
+                                const nombre = texto?.[1]?.trim() || 'Producto';
+                                const unidad = texto?.[2]?.trim() || '';
+                                const precio = parseFloat(texto?.[3]) || 0;
+                                const alicuota = parseFloat(input.dataset.alicuota || 0);
+                                const subtotal = precio * cantidad;
+                                const iva = subtotal * (alicuota / 100);
+                                const total = subtotal + iva;
+                                totalConIva += total;
 
-                        document.querySelectorAll('#acordeones-productos input[type="number"]').forEach(input => {
-                            const cantidad = parseFloat(input.value);
-                            if (!cantidad || cantidad <= 0) return;
-
-                            const label = input.closest('.input-group').querySelector('label')?.textContent?.trim() || '';
-                            const texto = label.match(/^(.*?)\s*\((.*?)\s*-\s*\$(.*?)\)/);
-                            const nombre = texto?.[1]?.trim() || 'Producto';
-                            const unidad = texto?.[2]?.trim() || '';
-                            const precio = parseFloat(texto?.[3]) || 0;
-                            const alicuota = parseFloat(input.dataset.alicuota || 0);
-
-                            const subtotal = precio * cantidad;
-                            const iva = subtotal * (alicuota / 100);
-                            const total = subtotal + iva;
-                            totalConIVA += total;
-
-                            productosSeleccionados.push({
-                                id: parseInt(input.name.match(/\[(\d+)\]/)[1]),
-                                nombre,
-                                unidad,
-                                cantidad,
-                                subtotal: total
-                            });
-                        });
-
-                        if (productosSeleccionados.length === 0) {
-                            showAlert('error', 'Debe seleccionar al menos un producto.');
-                            return;
-                        }
-
-                        // Armar HTML para el modal
-                        let html = '<ul class="lista limpia" style="padding-left:0">';
-                        productosSeleccionados.forEach(p => {
-                            html += `
-            <li style="margin-bottom: 10px;">
-                <strong>🧾 ${p.nombre}</strong><br>
-                <small>📦 ${p.cantidad} ${p.unidad}</small><br>
-                <small>💵 Subtotal c/IVA: $${p.subtotal.toFixed(2)}</small>
-            </li>
-        `;
-                        });
-                        html += `</ul><hr><div style="text-align:right;font-weight:bold;font-size:1.2rem;">🧮 Total: $${totalConIVA.toFixed(2)}</div>`;
-
-                        document.getElementById('modalResumenPedido').innerHTML = html;
-                        abrirModal('modalConfirmacionPedido');
-
-                        // Guardamos payload en memoria temporal
-                        window.__payloadPedido = {
-                            accion: 'guardar_pedido',
-                            cooperativa: formData.get('cooperativa'),
-                            productor: formData.get('productor'),
-                            hectareas: formData.get('hectareas'),
-                            persona_facturacion: formData.get('persona_facturacion'),
-                            condicion_facturacion: formData.get('condicion_facturacion'),
-                            afiliacion: formData.get('afiliacion'),
-                            observaciones: formData.get('observaciones'),
-                            operativo_id: formData.get('operativo'),
-                            productos: productosSeleccionados.map(p => ({
-                                id: p.id,
-                                nombre: p.nombre,
-                                detalle: '',
-                                precio: 0, // omitimos para no duplicar lógica acá
-                                unidad: p.unidad,
-                                categoria: '',
-                                cantidad: p.cantidad,
-                                alicuota: 0
-                            })),
-                            totales: {
-                                sin_iva: 0,
-                                iva: 0,
-                                con_iva: totalConIVA
-                            }
-                        };
-                    });
-
-
-                    // cargamos los productos por operativo
-                    async function cargarProductosPorOperativo(operativoId) {
-                        try {
-                            const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=productos_por_operativo&operativo_id=${operativoId}`);
-                            const data = await res.json();
-
-                            const contenedor = document.getElementById('acordeones-productos');
-                            contenedor.innerHTML = '';
-
-                            for (const categoria in data) {
-                                const productos = data[categoria];
-
-                                const acordeon = document.createElement('div');
-                                acordeon.classList.add('card');
-
-                                const header = document.createElement('div');
-                                header.classList.add('accordion-header');
-                                header.innerHTML = `<strong>${categoria}</strong>`;
-
-                                const body = document.createElement('div');
-                                body.classList.add('accordion-body');
-
-                                header.addEventListener('click', () => {
-                                    body.classList.toggle('show');
-                                });
-
-                                productos.forEach(prod => {
-                                    const grupo = document.createElement('div');
-                                    grupo.className = 'input-group';
-
-                                    grupo.innerHTML = `
-                    <label for="prod_${prod.producto_id}">
-                        <strong>${prod.Nombre_producto}</strong> 
-                        (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
-                    </label>
-                    <div class="input-icon">
-                        <span class="material-icons">numbers</span>
-                        <input 
-                            type="number" 
-                            name="productos[${prod.producto_id}]" 
-                            id="prod_${prod.producto_id}"
-                            min="0" 
-                            placeholder="Cantidad..." 
-                            data-alicuota="${prod.alicuota}" />
-                    </div>
-                `;
-                                    body.appendChild(grupo);
-                                });
-
-                                acordeon.appendChild(header);
-                                acordeon.appendChild(body);
-                                contenedor.appendChild(acordeon);
-                            }
-                        } catch (err) {
-                            console.error('❌ Error al cargar productos del operativo:', err);
-                        }
-                    }
-
-                    // abrir modal de confirmación
-                    document.getElementById('btnConfirmarPedido').addEventListener('click', async () => {
-                        const payload = window.__payloadPedido;
-                        cerrarModal('modalConfirmacionPedido');
-
-                        try {
-                            const res = await fetch('/controllers/coop_MercadoDigitalController.php', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify(payload)
+                                const item = document.createElement('div');
+                                item.classList.add('resumen-item');
+                                item.innerHTML = `
+                <strong>🧾 ${nombre}</strong>
+                <small>📦 Cantidad: ${cantidad} ${unidad}</small>
+                <small>💵 Subtotal: $${subtotal.toFixed(2)}</small>
+                <small>🧾 IVA (${alicuota}%): $${iva.toFixed(2)}</small>
+                <div class="resumen-total">Total: $${total.toFixed(2)}</div>`;
+                                resumen.appendChild(item);
                             });
 
-                            const json = await res.json();
-                            if (json.success) {
-                                showAlert('success', json.message);
-                                setTimeout(() => location.reload(), 1500);
+                            if (!hayProductos) {
+                                resumen.innerHTML = `<p>No se han seleccionado productos.</p>`;
                             } else {
-                                showAlert('error', json.message || 'Error al guardar el pedido.');
+                                const totalFinal = document.createElement('div');
+                                totalFinal.classList.add('resumen-item');
+                                totalFinal.innerHTML = `
+                <strong>🧮 Total final con IVA:</strong>
+                <div class="resumen-total" style="font-size: 1.2rem;">$${totalConIva.toFixed(2)}</div>`;
+                                resumen.appendChild(totalFinal);
                             }
-                        } catch (err) {
-                            console.error('❌ Error al guardar pedido:', err);
-                            showAlert('error', '❌ No se pudo completar el pedido.');
                         }
+
+                        document.getElementById('formPedido').addEventListener('submit', function(e) {
+                            e.preventDefault();
+
+                            const formData = new FormData(this);
+                            const productosSeleccionados = [];
+                            let totalConIVA = 0;
+
+                            document.querySelectorAll('#acordeones-productos input[type="number"]').forEach(input => {
+                                const cantidad = parseFloat(input.value);
+                                if (!cantidad || cantidad <= 0) return;
+
+                                const label = input.closest('.input-group').querySelector('label')?.textContent?.trim() || '';
+                                const texto = label.match(/^(.*?)\s*\((.*?)\s*-\s*\$(.*?)\)/);
+                                const nombre = texto?.[1]?.trim() || 'Producto';
+                                const unidad = texto?.[2]?.trim() || '';
+                                const precio = parseFloat(texto?.[3]) || 0;
+                                const alicuota = parseFloat(input.dataset.alicuota || 0);
+                                const subtotal = precio * cantidad;
+                                const iva = subtotal * (alicuota / 100);
+                                const total = subtotal + iva;
+                                totalConIVA += total;
+
+                                productosSeleccionados.push({
+                                    id: parseInt(input.name.match(/\[(\d+)\]/)[1]),
+                                    nombre,
+                                    unidad,
+                                    cantidad,
+                                    subtotal: total
+                                });
+                            });
+
+                            if (productosSeleccionados.length === 0) {
+                                showAlert('error', 'Debe seleccionar al menos un producto.');
+                                return;
+                            }
+
+                            // Armar HTML del resumen
+                            let html = '<ul class="lista limpia" style="padding-left:0">';
+                            productosSeleccionados.forEach(p => {
+                                html += `
+                <li style="margin-bottom: 10px;">
+                    <strong>🧾 ${p.nombre}</strong><br>
+                    <small>📦 ${p.cantidad} ${p.unidad}</small><br>
+                    <small>💵 Subtotal c/IVA: $${p.subtotal.toFixed(2)}</small>
+                </li>`;
+                            });
+                            html += `</ul><hr><div style="text-align:right;font-weight:bold;font-size:1.2rem;">🧮 Total: $${totalConIVA.toFixed(2)}</div>`;
+                            document.getElementById('modalResumenPedido').innerHTML = html;
+
+                            if (typeof abrirModal === 'function') {
+                                abrirModal('modalConfirmacionPedido');
+                            } else {
+                                console.error("❌ La función abrirModal no está definida.");
+                            }
+
+                            window.__payloadPedido = {
+                                accion: 'guardar_pedido',
+                                cooperativa: formData.get('cooperativa'),
+                                productor: formData.get('productor'),
+                                hectareas: formData.get('hectareas'),
+                                persona_facturacion: formData.get('persona_facturacion'),
+                                condicion_facturacion: formData.get('condicion_facturacion'),
+                                afiliacion: formData.get('afiliacion'),
+                                observaciones: formData.get('observaciones'),
+                                operativo_id: formData.get('operativo'),
+                                productos: productosSeleccionados.map(p => ({
+                                    id: p.id,
+                                    nombre: p.nombre,
+                                    unidad: p.unidad,
+                                    cantidad: p.cantidad,
+                                    subtotal: p.subtotal
+                                })),
+                                totales: {
+                                    con_iva: totalConIVA
+                                }
+                            };
+                        });
+
+                        document.getElementById('btnConfirmarPedido').addEventListener('click', async () => {
+                            const payload = window.__payloadPedido;
+                            cerrarModal('modalConfirmacionPedido');
+
+                            try {
+                                const res = await fetch('/controllers/coop_MercadoDigitalController.php', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(payload)
+                                });
+                                const json = await res.json();
+                                if (json.success) {
+                                    showAlert('success', json.message);
+                                    setTimeout(() => location.reload(), 1500);
+                                } else {
+                                    showAlert('error', json.message || 'Error al guardar el pedido.');
+                                }
+                            } catch (err) {
+                                console.error('❌ Error al guardar pedido:', err);
+                                showAlert('error', '❌ No se pudo completar el pedido.');
+                            }
+                        });
+
+                        cargarOperativos();
                     });
                 </script>
+
 
                 <!-- Alert -->
                 <div class="alert-container" id="alertContainer"></div>
@@ -735,21 +693,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         </div>
     </div>
 
-    <!-- 🟪 MODAL CONFIRMACIÓN DE PEDIDO -->
-    <div class="modal oculto" id="modalConfirmacionPedido">
-        <div class="modal-contenido">
-            <div class="modal-header">
-                <h2>Confirmar Pedido</h2>
-            </div>
-            <div class="modal-body" id="modalResumenPedido">
-                <!-- El resumen se genera dinámicamente -->
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-cancelar" onclick="cerrarModal('modalConfirmacionPedido')">Cancelar</button>
-                <button class="btn btn-aceptar" id="btnConfirmarPedido">Crear Pedido</button>
-            </div>
-        </div>
-    </div>
+
 
 
     <!-- Spinner Global -->
