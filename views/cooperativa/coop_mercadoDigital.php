@@ -120,6 +120,14 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
             border-top: 1px solid #ccc;
             padding-top: 0.5rem;
         }
+
+        .modal.oculto {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: scale(0.9);
+}
     </style>
 </head>
 
