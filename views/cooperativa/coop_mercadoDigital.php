@@ -551,13 +551,12 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     });
 
                     // Guardar pedido
-                    document.getElementById('formPedido').addEventListener('submit', async function(e) {
+                    document.getElementById('formPedido').addEventListener('submit', function(e) {
                         e.preventDefault();
 
                         const formData = new FormData(this);
                         const productosSeleccionados = [];
-                        let totalSinIVA = 0;
-                        let totalIVA = 0;
+                        let totalConIVA = 0;
 
                         document.querySelectorAll('#acordeones-productos input[type="number"]').forEach(input => {
                             const cantidad = parseFloat(input.value);
@@ -572,23 +571,41 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
                             const subtotal = precio * cantidad;
                             const iva = subtotal * (alicuota / 100);
-
-                            totalSinIVA += subtotal;
-                            totalIVA += iva;
+                            const total = subtotal + iva;
+                            totalConIVA += total;
 
                             productosSeleccionados.push({
                                 id: parseInt(input.name.match(/\[(\d+)\]/)[1]),
-                                nombre: nombre,
-                                detalle: '', // si lo querés traer después
-                                precio: precio,
-                                unidad: unidad,
-                                categoria: input.closest('.card')?.querySelector('.accordion-header')?.textContent.trim() || '',
-                                cantidad: cantidad,
-                                alicuota: alicuota
+                                nombre,
+                                unidad,
+                                cantidad,
+                                subtotal: total
                             });
                         });
 
-                        const payload = {
+                        if (productosSeleccionados.length === 0) {
+                            showAlert('error', 'Debe seleccionar al menos un producto.');
+                            return;
+                        }
+
+                        // Armar HTML para el modal
+                        let html = '<ul class="lista limpia" style="padding-left:0">';
+                        productosSeleccionados.forEach(p => {
+                            html += `
+            <li style="margin-bottom: 10px;">
+                <strong>🧾 ${p.nombre}</strong><br>
+                <small>📦 ${p.cantidad} ${p.unidad}</small><br>
+                <small>💵 Subtotal c/IVA: $${p.subtotal.toFixed(2)}</small>
+            </li>
+        `;
+                        });
+                        html += `</ul><hr><div style="text-align:right;font-weight:bold;font-size:1.2rem;">🧮 Total: $${totalConIVA.toFixed(2)}</div>`;
+
+                        document.getElementById('modalResumenPedido').innerHTML = html;
+                        abrirModal('modalConfirmacionPedido');
+
+                        // Guardamos payload en memoria temporal
+                        window.__payloadPedido = {
                             accion: 'guardar_pedido',
                             cooperativa: formData.get('cooperativa'),
                             productor: formData.get('productor'),
@@ -598,38 +615,24 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             afiliacion: formData.get('afiliacion'),
                             observaciones: formData.get('observaciones'),
                             operativo_id: formData.get('operativo'),
-                            productos: productosSeleccionados,
+                            productos: productosSeleccionados.map(p => ({
+                                id: p.id,
+                                nombre: p.nombre,
+                                detalle: '',
+                                precio: 0, // omitimos para no duplicar lógica acá
+                                unidad: p.unidad,
+                                categoria: '',
+                                cantidad: p.cantidad,
+                                alicuota: 0
+                            })),
                             totales: {
-                                sin_iva: totalSinIVA,
-                                iva: totalIVA,
-                                con_iva: totalSinIVA + totalIVA
+                                sin_iva: 0,
+                                iva: 0,
+                                con_iva: totalConIVA
                             }
                         };
-
-                        const res = await fetch('/controllers/coop_MercadoDigitalController.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(payload)
-                        });
-
-                        let json;
-                        try {
-                            json = await res.json();
-                            console.log('✅ Respuesta JSON:', json);
-
-                            if (json.success) {
-                                showAlert('success', json.message);
-                                location.reload();
-                            } else {
-                                showAlert('error', json.message);
-                            }
-                        } catch (err) {
-                            console.error('❌ Error al parsear JSON:', err);
-                            showAlert('error', '❌ Error inesperado en la respuesta del servidor.');
-                        }
                     });
+
 
                     // cargamos los productos por operativo
                     async function cargarProductosPorOperativo(operativoId) {
@@ -688,6 +691,33 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             console.error('❌ Error al cargar productos del operativo:', err);
                         }
                     }
+
+                    // abrir modal de confirmación
+                    document.getElementById('btnConfirmarPedido').addEventListener('click', async () => {
+                        const payload = window.__payloadPedido;
+                        cerrarModal('modalConfirmacionPedido');
+
+                        try {
+                            const res = await fetch('/controllers/coop_MercadoDigitalController.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(payload)
+                            });
+
+                            const json = await res.json();
+                            if (json.success) {
+                                showAlert('success', json.message);
+                                setTimeout(() => location.reload(), 1500);
+                            } else {
+                                showAlert('error', json.message || 'Error al guardar el pedido.');
+                            }
+                        } catch (err) {
+                            console.error('❌ Error al guardar pedido:', err);
+                            showAlert('error', '❌ No se pudo completar el pedido.');
+                        }
+                    });
                 </script>
 
                 <!-- Alert -->
@@ -697,9 +727,21 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         </div>
     </div>
 
-    <script>
-
-    </script>
+    <!-- 🟪 MODAL CONFIRMACIÓN DE PEDIDO -->
+    <div class="modal" id="modalConfirmacionPedido">
+        <div class="modal-contenido">
+            <div class="modal-header">
+                <h2>Confirmar Pedido</h2>
+            </div>
+            <div class="modal-body" id="modalResumenPedido">
+                <!-- El resumen se genera dinámicamente -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancelar" onclick="cerrarModal('modalConfirmacionPedido')">Cancelar</button>
+                <button class="btn btn-aceptar" id="btnConfirmarPedido">Crear Pedido</button>
+            </div>
+        </div>
+    </div>
 
 
     <!-- Spinner Global -->
