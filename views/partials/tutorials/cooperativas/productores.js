@@ -29,15 +29,14 @@ function iniciarTutorialDashboard() {
         },
         {
             selector: '.tutorial-listadoProductores',
-            mensaje: 'En esta tarjeta verás un listado de todos los productores asociados a tu cooperativa. Podés editar su información haciendo clic en el botón correspondiente.',
+            mensaje: 'En esta tarjeta vas a ver un listado de todos los productores asociados a tu cooperativa. Podés editar su información haciendo clic en el botón correspondiente.',
             posicion: 'top'
         },
         {
             selector: '.tutorial-EditarProductor',
-            mensaje: 'Para editar un productor, simplemente haz clic en el ícono de lápiz junto al nombre del productor. Esto abrirá un modal donde podrás modificar sus datos.',
+            mensaje: 'Para editar un productor, simplemente hacé clic en el ícono de lápiz junto al nombre. Esto abrirá un modal donde vas a poder modificar sus datos.',
             posicion: 'right'
         }
-
     ];
 
     let pasoActual = 0;
@@ -54,7 +53,7 @@ function iniciarTutorialDashboard() {
     `;
     document.body.appendChild(overlay);
 
-    // Agregar estilos para resaltado si no existen
+    // Estilo para highlight
     if (!document.getElementById('estilo-tutorial-highlight')) {
         const estilo = document.createElement('style');
         estilo.id = 'estilo-tutorial-highlight';
@@ -73,7 +72,7 @@ function iniciarTutorialDashboard() {
     mostrarPaso();
 
     function mostrarPaso() {
-        // Limpiar pasos anteriores
+        // Limpiar anteriores
         document.querySelectorAll('.tutorial-tooltip').forEach(el => el.remove());
         document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
 
@@ -85,10 +84,8 @@ function iniciarTutorialDashboard() {
             return;
         }
 
-        // Resaltar
         target.classList.add('tutorial-highlight');
 
-        // Crear tooltip
         const tooltip = document.createElement('div');
         tooltip.className = 'tutorial-tooltip';
         tooltip.style = `
@@ -112,27 +109,31 @@ function iniciarTutorialDashboard() {
         `;
         document.body.appendChild(tooltip);
 
-        // Esperar al render y hacer scroll
+        // Scroll solo si el paso NO es el de listado de productores
+        if (paso.selector !== '.tutorial-listadoProductores') {
+            setTimeout(() => {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                const scrollableParent = findScrollableParent(target);
+                if (scrollableParent) {
+                    const rect = target.getBoundingClientRect();
+                    const parentRect = scrollableParent.getBoundingClientRect();
+                    const offsetLeft = rect.left - parentRect.left;
+                    scrollableParent.scrollTo({
+                        left: offsetLeft - 40,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 300);
+        }
+
+        // Posicionar tooltip
         setTimeout(() => {
-            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            const scrollableParent = findScrollableParent(target);
-            if (scrollableParent) {
-                const rect = target.getBoundingClientRect();
-                const parentRect = scrollableParent.getBoundingClientRect();
-                const offsetLeft = rect.left - parentRect.left;
-                scrollableParent.scrollTo({
-                    left: offsetLeft - 40,
-                    behavior: 'smooth'
-                });
-            }
-
             const { top, left } = calcularPosicionTooltip(target, tooltip, paso.posicion);
             tooltip.style.top = `${top}px`;
             tooltip.style.left = `${left}px`;
-        }, 300);
+        }, 310);
 
-        // Botones
         document.getElementById('btnSiguienteTutorial').onclick = avanzar;
         document.getElementById('btnCerrarTutorial').onclick = terminarTutorial;
     }
@@ -141,7 +142,6 @@ function iniciarTutorialDashboard() {
         const rect = target.getBoundingClientRect();
         const scrollY = window.scrollY;
         const scrollX = window.scrollX;
-
         const tooltipHeight = tooltip.offsetHeight || 120;
         const tooltipWidth = tooltip.offsetWidth || 280;
 
@@ -198,10 +198,8 @@ function iniciarTutorialDashboard() {
     function terminarTutorial() {
         const overlay = document.getElementById('tutorial-overlay');
         if (overlay) overlay.remove();
-
         document.querySelectorAll('.tutorial-tooltip').forEach(el => el.remove());
         document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
-
         const estilo = document.getElementById('estilo-tutorial-highlight');
         if (estilo) estilo.remove();
     }
