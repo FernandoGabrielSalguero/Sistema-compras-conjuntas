@@ -667,8 +667,41 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     }
 
                     function mostrarModal() {
+                        const resumen = document.getElementById('resumenModal');
+                        resumen.innerHTML = '';
+
+                        const inputs = document.querySelectorAll('#acordeones-productos input[type="number"]');
+                        let hayProductos = false;
+
+                        inputs.forEach(input => {
+                            const cantidad = parseFloat(input.value);
+                            if (!cantidad || cantidad <= 0) return;
+
+                            hayProductos = true;
+
+                            const label = input.closest('.input-group').querySelector('label');
+                            const texto = label?.textContent?.trim() || 'Producto';
+                            const unidad = texto.match(/\(([^-]+)-/i)?.[1]?.trim() || '';
+                            const precio = parseFloat(texto.match(/\$([\d.]+)/)?.[1]) || 0;
+                            const subtotal = cantidad * precio;
+
+                            const item = document.createElement('div');
+                            item.classList.add('resumen-item');
+                            item.innerHTML = `
+            <strong>🧾 ${texto}</strong>
+            <small>📦 Cantidad: ${cantidad} ${unidad}</small>
+            <small>💵 Subtotal: $${subtotal.toFixed(2)}</small>
+        `;
+                            resumen.appendChild(item);
+                        });
+
+                        if (!hayProductos) {
+                            resumen.innerHTML = `<p style="color: red;">⚠️ No se han seleccionado productos para confirmar.</p>`;
+                        }
+
                         document.getElementById('modalConfirmacion').style.display = 'flex';
                     }
+
 
                     function cerrarModal() {
                         document.getElementById('modalConfirmacion').style.display = 'none';
@@ -761,7 +794,10 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
     <div id="modalConfirmacion" class="modal" style="display:none;">
         <div class="modal-content">
             <h3>¿Confirmar pedido?</h3>
-            <p>Estás por enviar el pedido. ¿Querés continuar?</p>
+            <p>Estás por enviar el pedido. A continuación, revisá el detalle:</p>
+
+            <div id="resumenModal" style="max-height: 300px; overflow-y: auto; text-align: left; margin-top: 1rem;"></div>
+
             <div class="modal-actions">
                 <button class="btn btn-cancelar" onclick="cerrarModal()">Cancelar</button>
                 <button class="btn btn-aceptar" onclick="confirmarEnvio()">Sí, enviar</button>
