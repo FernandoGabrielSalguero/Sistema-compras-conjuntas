@@ -165,7 +165,7 @@ unset($_SESSION['cierre_info']);
                             </div>
 
                             <!-- Rol fijo -->
-                            <div class="input-group">
+                            <div class="input-group oculto">
                                 <label for="rol">Rol</label>
                                 <div class="input-icon">
                                     <span class="material-icons">supervisor_account</span>
@@ -174,7 +174,7 @@ unset($_SESSION['cierre_info']);
                             </div>
 
                             <!-- Permiso fijo -->
-                            <div class="input-group">
+                            <div class="input-group oculto">
                                 <label for="permiso_ingreso">Permiso</label>
                                 <div class="input-icon">
                                     <span class="material-icons">check_circle</span>
@@ -183,7 +183,7 @@ unset($_SESSION['cierre_info']);
                             </div>
 
                             <!-- Cooperativa -->
-                            <div class="input-group">
+                            <div class="input-group oculto">
                                 <label for="cooperativa">Cooperativa</label>
                                 <div class="input-icon">
                                     <span class="material-icons">store</span>
