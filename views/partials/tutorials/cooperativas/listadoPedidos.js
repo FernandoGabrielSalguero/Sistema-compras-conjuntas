@@ -21,7 +21,8 @@ function iniciarTutorialDashboard() {
             selector: '.tutorial-FacturaColumn',
             mensaje: 'Estos son los botones para ver, actualizar o eliminar el pedido.',
             posicion: 'left',
-            scrollHorizontal: true
+            scrollHorizontal: true,
+            destacarColumna: true
         }
 
     ];
@@ -69,7 +70,13 @@ function iniciarTutorialDashboard() {
             return;
         }
 
-        target.classList.add('tutorial-highlight');
+        if (paso.destacarColumna) {
+            // Si es una columna, marcar todas las celdas de la misma clase
+            const celdas = document.querySelectorAll(paso.selector);
+            celdas.forEach(celda => celda.classList.add('tutorial-columna-highlight'));
+        } else {
+            target.classList.add('tutorial-highlight');
+        }
 
         // Crear tooltip
         const tooltip = document.createElement('div');
@@ -192,5 +199,9 @@ function iniciarTutorialDashboard() {
 
         const estilo = document.getElementById('estilo-tutorial-highlight');
         if (estilo) estilo.remove();
+
+        document.querySelectorAll('.tutorial-columna-highlight').forEach(el =>
+            el.classList.remove('tutorial-columna-highlight')
+        );
     }
 }

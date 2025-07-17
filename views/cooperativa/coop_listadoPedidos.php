@@ -44,6 +44,14 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
     <!-- descargar imagen  -->
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
+    <style>
+        .tutorial-columna-highlight {
+    box-shadow: inset 0 0 0 3px #5b21b6;
+    background-color: rgba(91, 33, 182, 0.1);
+    transition: background-color 0.3s ease;
+}
+    </style>
+
 </head>
 
 <body>
