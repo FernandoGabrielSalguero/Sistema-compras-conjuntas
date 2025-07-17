@@ -114,10 +114,15 @@ unset($_SESSION['cierre_info']);
                 <div class="card">
                     <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
                     <p>En esta página, vas a poder inscribir productores nuevos a tu cooperativa y vas a poder modificar su información</p>
+                                        <br>
+                    <!-- Boton de tutorial -->
+                    <button id="btnIniciarTutorial" class="btn btn-aceptar">
+                        Tutorial
+                    </button>
                 </div>
 
                 <!-- Formulario -->
-                <div class="card">
+                <div class="card tutorial-formulario">
                     <h2>Crear nuevo usuario</h2>
                     <form class="form-modern" id="formUsuario">
                         <div class="form-grid grid-2">
@@ -453,6 +458,8 @@ unset($_SESSION['cierre_info']);
         </div>
     </div>
 
+    <!-- llamada de tutorial -->
+    <script src="../partials/tutorials/cooperativas/productores.js?v=<?= time() ?>" defer></script>
 </body>
 
 </html>

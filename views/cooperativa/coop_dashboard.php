@@ -93,7 +93,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <div class="card">
                     <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
                     <p>En esta página vas a encontrar todos los operativos disponibles para que participes. Es importante que selecciones alguno para poder realizar compras a tus productores</p>
-<br>
+                    <br>
                     <!-- Boton de tutorial -->
                     <button id="btnIniciarTutorial" class="btn btn-aceptar">
                         Tutorial
@@ -227,7 +227,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             const [a, m, d] = fechaISO.split("-");
             return `${d}/${m}/${a}`;
         }
-
     </script>
 
     <!-- llamada de tutorial -->

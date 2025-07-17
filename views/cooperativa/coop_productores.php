@@ -260,6 +260,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
+
 </body>
 
 </html>
