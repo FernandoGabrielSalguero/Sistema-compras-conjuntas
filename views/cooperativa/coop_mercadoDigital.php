@@ -728,7 +728,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
     </div>
 
     <!-- 🟪 MODAL CONFIRMACIÓN DE PEDIDO -->
-    <div class="modal" id="modalConfirmacionPedido">
+    <div class="modal oculto" id="modalConfirmacionPedido">
         <div class="modal-contenido">
             <div class="modal-header">
                 <h2>Confirmar Pedido</h2>
