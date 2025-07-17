@@ -9,34 +9,35 @@ function iniciarTutorialDashboard() {
     const pasos = [
         {
             selector: '.tutorial-seleccionarProductor',
-            mensaje: 'Para comenzar, selecciona un productor de la lista. Puedes buscarlo escribiendo su nombre en el campo de búsqueda o su ID',
+            mensaje: 'Para comenzar, seleccioná un productor de la lista. Podés buscarlo escribiendo su nombre o su ID en el campo de búsqueda.',
             posicion: 'bottom'
         },
         {
             selector: '.tutorial-SeleccionarOperativo',
-            mensaje: 'Es importante que selecciones un operativo para poder ver los productos disponibles y realizar compras. Si no participas de ningún operativo, es importante que vayas a la página inicio y participes en alguno',
+            mensaje: 'Es importante que selecciones un operativo para ver los productos disponibles y poder realizar compras. Si no participás en ninguno, andá a la página de inicio y participá en alguno.',
             posicion: 'bottom'
         },
         {
             selector: '.tutorial-SeleccionarProductos',
-            mensaje: 'Una vez seleccionado el operativo, podrás ver los productos disponibles. Puedes seleccionar los productos que deseas comprar tocando en su categoría y colocando la cantidad que necesitas.',
+            mensaje: 'Una vez que selecciones un operativo, vas a poder ver los productos disponibles. Podés elegir los que necesitás tocando su categoría y colocando la cantidad que querés comprar.',
             posicion: 'top'
         },
         {
             selector: '.tutorial-ResumenPedido',
-            mensaje: 'Cuando selecciones todos los productos que necesitas, podrás ver un resumen de tu pedido. Aquí podrás revisar los productos seleccionados y las cantidades con su precio total e IVA incluido.',
+            mensaje: 'Cuando selecciones todos los productos, vas a ver un resumen de tu pedido. Acá podés revisar los productos y cantidades, con su precio total e IVA incluido.',
             posicion: 'top'
         },
         {
             selector: '.tutorial-botonGuardar',
-            mensaje: 'Una vez finalizada la creación del pedido, puedes guardarlo. Asegúrate de que toda la información sea correcta antes de guardar.',
+            mensaje: 'Una vez finalizado el pedido, podés guardarlo. Asegurate de que toda la información esté correcta antes de guardar.',
             posicion: 'top'
         },
         {
             selector: '.sidebar-menu li:nth-child(3)',
-            mensaje: 'Cuando guardes tu pedido, vas a encontrarlo en el menú Listado Pedidos.',
+            mensaje: 'Cuando guardes tu pedido, lo vas a encontrar en el menú Listado de Pedidos.',
             posicion: 'right'
         }
+
     ];
 
     let pasoActual = 0;

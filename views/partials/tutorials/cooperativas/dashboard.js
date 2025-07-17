@@ -9,19 +9,20 @@ function iniciarTutorialDashboard() {
     const pasos = [
         {
             selector: '.tutorial-operativos-disponibles',
-            mensaje: 'En estas tarjetas, vas a poder ver los operativos habilitados para participar. Es importante que participes en uno para poder comprar en él.',
+            mensaje: 'En estas tarjetas vas a poder ver los operativos habilitados para participar. Es importante que te unas a uno para poder comprar productos dentro de él.',
             posicion: 'top'
         },
         {
             selector: '.tutorial-swich-participacion',
-            mensaje: 'Para participar, simplemente tocá este botón una vez hasta que se pinte de color violeta. Si ya estás participando, el botón estará activo y podrás dejar de participar tocándolo nuevamente.',
+            mensaje: 'Para participar, simplemente tocá este botón una vez hasta que se pinte de color violeta. Si ya estás participando, el botón estará activo y vas a poder dejar de participar tocándolo nuevamente.',
             posicion: 'top'
         },
         {
             selector: '.sidebar-menu li:nth-child(2)',
-            mensaje: 'Una vez que participes de al menos un operativo, entrá al Mercado Digital desde este acceso rápido para realizar las compras a tus productores.',
+            mensaje: 'Una vez que participes en al menos un operativo, entrá al Mercado Digital desde este acceso rápido para hacer tus compras a los productores.',
             posicion: 'right'
         }
+
     ];
 
     let pasoActual = 0;
@@ -106,7 +107,7 @@ function iniciarTutorialDashboard() {
             tooltip.style.top = `${top}px`;
             tooltip.style.left = `${left}px`;
         }, 300); // esperar a que se complete el scroll
-        
+
 
         // Botones
         document.getElementById('btnSiguienteTutorial').onclick = avanzar;

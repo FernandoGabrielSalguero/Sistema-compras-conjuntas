@@ -9,12 +9,12 @@ function iniciarTutorialDashboard() {
     const pasos = [
         {
             selector: '.tutorial-BuscarProductor',
-            mensaje: 'Desde aquí puedes buscar por nombre de productor. Esto te ayudará a encontrar pedidos específicos más rápido.',
+            mensaje: 'Desde acá podés buscar por nombre de productor. Esto te va a ayudar a encontrar pedidos específicos más rápido.',
             posicion: 'bottom'
         },
         {
             selector: '.tutorial-TablaPedidos',
-            mensaje: 'En esta tabla, verás todos los pedidos realizados. Del lado derecho, tenés botones para editar o ver los detalles de cada pedido.',
+            mensaje: 'En esta tabla vas a ver todos los pedidos realizados. Del lado derecho tenés botones para editar o ver los detalles de cada pedido.',
             posicion: 'top'
         },
         {
@@ -23,6 +23,7 @@ function iniciarTutorialDashboard() {
             posicion: 'top',
             scrollHorizontal: true
         }
+
     ];
 
     let pasoActual = 0;
