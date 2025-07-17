@@ -120,14 +120,6 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
             border-top: 1px solid #ccc;
             padding-top: 0.5rem;
         }
-
-        .modal.oculto {
-    display: none !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-    transform: scale(0.9);
-}
     </style>
 </head>
 
@@ -314,7 +306,389 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
 
                 <!-- 🛠️ SCRIPTS -->
+                <script>
+                    console.log("🟢 Estos son los datos de sesión del usuario:");
+                    console.log(<?php echo json_encode($_SESSION, JSON_PRETTY_PRINT); ?>);
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const coopId = "<?php echo $id_cooperativa_real; ?>";
+                        const nombreCoopSesion = "<?php echo htmlspecialchars($nombre); ?>";
 
+                        // Cargar directamente los productores de la cooperativa del usuario
+                        document.getElementById('cooperativa').value = coopId;
+                        cargarProductores(coopId);
+                        console.log("🔄 Cargando productores para coopId:", coopId);
+
+
+                        const inputCoop = document.getElementById('buscador_coop');
+                        const listaCoop = document.getElementById('lista_coop');
+                        const hiddenCoop = document.getElementById('cooperativa');
+
+                        const inputProd = document.getElementById('buscador_prod');
+                        const listaProd = document.getElementById('lista_prod');
+                        const hiddenProd = document.getElementById('productor');
+
+                        let cooperativas = [];
+                        let productores = [];
+
+                        async function cargarCooperativas() {
+                            try {
+                                const res = await fetch('/controllers/coop_MercadoDigitalController.php?listar=cooperativas');
+                                cooperativas = await res.json();
+                                activarBuscador(inputCoop, listaCoop, cooperativas, hiddenCoop, (id) => {
+                                    // limpiar productor
+                                    inputProd.value = '';
+                                    hiddenProd.value = '';
+                                    listaProd.innerHTML = '';
+                                    inputProd.disabled = false;
+                                    cargarProductores(id);
+                                });
+                            } catch (err) {
+                                console.error('❌ Error al cargar cooperativas:', err);
+                            }
+                        }
+
+                        async function cargarProductores(coopId) {
+                            try {
+                                const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=productores&coop_id=${coopId}`);
+                                productores = await res.json();
+
+                                console.log('🧑‍🌾 Productores recibidos:', productores); // ⬅️ NUEVO LOG
+
+                                activarBuscador(inputProd, listaProd, productores, hiddenProd);
+                            } catch (err) {
+                                console.error('❌ Error al cargar productores:', err);
+                            }
+                        }
+
+                        function activarBuscador(input, lista, dataArray, hiddenInput, onSelectCallback = null) {
+                            input.addEventListener('input', () => {
+                                const search = input.value.toLowerCase();
+                                lista.innerHTML = '';
+                                const resultados = dataArray.filter(item => {
+                                    return item.nombre.toLowerCase().includes(search) ||
+                                        item.id_real?.toString().toLowerCase().includes(search) ||
+                                        item.usuario?.toLowerCase().includes(search)
+                                });
+                                if (resultados.length === 0) {
+                                    lista.style.display = 'none';
+                                    return;
+                                }
+                                resultados.forEach(item => {
+                                    const li = document.createElement('li');
+                                    li.textContent = `${item.id_real} - ${item.nombre}`;
+                                    li.addEventListener('click', () => {
+                                        input.value = item.nombre;
+                                        hiddenInput.value = item.id_real;
+                                        lista.innerHTML = '';
+                                        lista.style.display = 'none';
+                                        if (onSelectCallback) onSelectCallback(item.id_real);
+                                    });
+                                    lista.appendChild(li);
+                                });
+                                lista.style.display = 'block';
+                            });
+
+                            document.addEventListener('click', (e) => {
+                                if (!input.contains(e.target) && !lista.contains(e.target)) {
+                                    lista.style.display = 'none';
+                                }
+                            });
+                        }
+                    });
+
+                    // acordeones
+                    document.addEventListener('DOMContentLoaded', () => {
+                        cargarOperativos();
+
+                        document.getElementById('operativo').addEventListener('change', () => {
+                            const operativoId = document.getElementById('operativo').value;
+                            if (operativoId) {
+                                cargarProductosPorOperativo(operativoId);
+                            } else {
+                                document.getElementById('acordeones-productos').innerHTML = '<p style="padding:10px;">Seleccioná un operativo para ver los productos disponibles.</p>';
+                            }
+                        });
+                    });
+
+                    // Cargamos los opeartivos
+                    async function cargarOperativos() {
+                        const coopId = "<?php echo $id_cooperativa_real; ?>";
+                        try {
+                            const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=operativos_abiertos&coop_id=${coopId}`);
+                            const data = await res.json();
+                            const selectOperativo = document.getElementById('operativo');
+                            data.forEach(op => {
+                                const option = document.createElement('option');
+                                option.value = op.id;
+                                option.textContent = `${op.nombre} (${op.fecha_inicio} - ${op.fecha_cierre})`;
+                                selectOperativo.appendChild(option);
+                            });
+                        } catch (err) {
+                            console.error("❌ Error al cargar operativos:", err);
+                        }
+                    }
+
+
+                    // Cargamos los productos por categoria
+                    async function cargarProductosPorCategoria() {
+                        try {
+                            const res = await fetch('/controllers/coop_MercadoDigitalController.php?listar=productos_categorizados');
+                            const data = await res.json();
+
+                            const contenedor = document.getElementById('acordeones-productos');
+                            contenedor.innerHTML = '';
+
+                            for (const categoria in data) {
+                                const productos = data[categoria];
+
+                                const acordeon = document.createElement('div');
+                                acordeon.classList.add('card'); // usa tu estilo de tarjeta
+
+                                const header = document.createElement('div');
+                                header.classList.add('accordion-header');
+                                header.innerHTML = `<strong>${categoria}</strong>`;
+
+                                const body = document.createElement('div');
+                                body.classList.add('accordion-body');
+
+                                // Mostrar el cuerpo al hacer clic
+                                header.addEventListener('click', () => {
+                                    body.classList.toggle('show');
+                                });
+
+                                productos.forEach(prod => {
+                                    // console.log(prod); //mirar los productos que vienen de la bbdd
+                                    const grupo = document.createElement('div');
+                                    grupo.className = 'input-group';
+
+                                    grupo.innerHTML = `
+    <label for="prod_${prod.producto_id}">
+        <strong>${prod.Nombre_producto}</strong>
+        (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
+    </label>
+    <div class="input-icon">
+        <span class="material-icons">numbers</span>
+        <input
+    type="number"
+    name="productos[${prod.producto_id}]"
+    id="prod_${prod.producto_id}"
+    min="0"
+    placeholder="Cantidad..."
+    data-alicuota="${prod.alicuota}"
+        />
+    </div>
+`;
+
+                                    body.appendChild(grupo);
+                                });
+
+                                acordeon.appendChild(header);
+                                acordeon.appendChild(body);
+                                contenedor.appendChild(acordeon);
+                            }
+                        } catch (err) {
+                            console.error('❌ Error al cargar productos:', err);
+                        }
+                    }
+
+                    function actualizarResumen() {
+                        const inputs = document.querySelectorAll('#acordeones-productos input[type="number"]');
+                        const resumen = document.getElementById('contenidoResumen');
+                        resumen.innerHTML = '';
+
+                        let hayProductos = false;
+                        let totalConIva = 0;
+
+                        inputs.forEach(input => {
+                            const cantidad = parseFloat(input.value);
+                            if (!cantidad || cantidad <= 0) return;
+
+                            hayProductos = true;
+
+                            const prodId = input.name.match(/\[(\d+)\]/)[1];
+                            const label = input.closest('.input-group').querySelector('label');
+                            const texto = label?.textContent?.trim() || 'Producto';
+
+                            const unidad = texto.match(/\(([^-]+)-/i)?.[1]?.trim() || '';
+                            const precio = parseFloat(texto.match(/\$([\d.]+)/)?.[1]) || 0;
+                            const alicuota = Number(input.dataset.alicuota);
+                            if (isNaN(alicuota)) alicuota = 0;
+                            const subtotal = precio * cantidad;
+                            const iva = subtotal * (alicuota / 100);
+                            const total = subtotal + iva;
+                            totalConIva += total;
+
+                            const item = document.createElement('div');
+                            item.classList.add('resumen-item');
+                            item.innerHTML = `
+                            <strong>🧾 ${texto}</strong>
+                            <small>📦 Cantidad: ${cantidad} ${unidad}</small>
+                            <small>💵 Subtotal: $${subtotal.toFixed(2)}</small>
+                            <small>🧾 IVA (${alicuota}%): $${iva.toFixed(2)}</small>
+                            <div class="resumen-total">Total: $${total.toFixed(2)}</div>
+`;
+                            resumen.appendChild(item);
+                        });
+
+                        if (!hayProductos) {
+                            resumen.innerHTML = `<p>No se han seleccionado productos.</p>`;
+                        } else {
+                            const totalFinal = document.createElement('div');
+                            totalFinal.classList.add('resumen-item');
+                            totalFinal.innerHTML = `
+    <strong>🧮 Total final con IVA:</strong>
+    <div class="resumen-total" style="font-size: 1.2rem;">$${totalConIva.toFixed(2)}</div>
+`;
+                            resumen.appendChild(totalFinal);
+                        }
+                    }
+
+                    // Escuchar cambios
+                    document.addEventListener('input', function(e) {
+                        if (e.target.matches('#acordeones-productos input[type="number"]')) {
+                            actualizarResumen();
+                        }
+                    });
+
+                    // Guardar pedido
+                    document.getElementById('formPedido').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+
+                        const formData = new FormData(this);
+                        const productosSeleccionados = [];
+                        let totalSinIVA = 0;
+                        let totalIVA = 0;
+
+                        document.querySelectorAll('#acordeones-productos input[type="number"]').forEach(input => {
+                            const cantidad = parseFloat(input.value);
+                            if (!cantidad || cantidad <= 0) return;
+
+                            const label = input.closest('.input-group').querySelector('label')?.textContent?.trim() || '';
+                            const texto = label.match(/^(.*?)\s*\((.*?)\s*-\s*\$(.*?)\)/);
+                            const nombre = texto?.[1]?.trim() || 'Producto';
+                            const unidad = texto?.[2]?.trim() || '';
+                            const precio = parseFloat(texto?.[3]) || 0;
+                            const alicuota = parseFloat(input.dataset.alicuota || 0);
+
+                            const subtotal = precio * cantidad;
+                            const iva = subtotal * (alicuota / 100);
+
+                            totalSinIVA += subtotal;
+                            totalIVA += iva;
+
+                            productosSeleccionados.push({
+                                id: parseInt(input.name.match(/\[(\d+)\]/)[1]),
+                                nombre: nombre,
+                                detalle: '', // si lo querés traer después
+                                precio: precio,
+                                unidad: unidad,
+                                categoria: input.closest('.card')?.querySelector('.accordion-header')?.textContent.trim() || '',
+                                cantidad: cantidad,
+                                alicuota: alicuota
+                            });
+                        });
+
+                        const payload = {
+                            accion: 'guardar_pedido',
+                            cooperativa: formData.get('cooperativa'),
+                            productor: formData.get('productor'),
+                            hectareas: formData.get('hectareas'),
+                            persona_facturacion: formData.get('persona_facturacion'),
+                            condicion_facturacion: formData.get('condicion_facturacion'),
+                            afiliacion: formData.get('afiliacion'),
+                            observaciones: formData.get('observaciones'),
+                            operativo_id: formData.get('operativo'),
+                            productos: productosSeleccionados,
+                            totales: {
+                                sin_iva: totalSinIVA,
+                                iva: totalIVA,
+                                con_iva: totalSinIVA + totalIVA
+                            }
+                        };
+
+                        const res = await fetch('/controllers/coop_MercadoDigitalController.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        let json;
+                        try {
+                            json = await res.json();
+                            console.log('✅ Respuesta JSON:', json);
+
+                            if (json.success) {
+                                showAlert('success', json.message);
+                                location.reload();
+                            } else {
+                                showAlert('error', json.message);
+                            }
+                        } catch (err) {
+                            console.error('❌ Error al parsear JSON:', err);
+                            showAlert('error', '❌ Error inesperado en la respuesta del servidor.');
+                        }
+                    });
+
+                    // cargamos los productos por operativo
+                    async function cargarProductosPorOperativo(operativoId) {
+                        try {
+                            const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=productos_por_operativo&operativo_id=${operativoId}`);
+                            const data = await res.json();
+
+                            const contenedor = document.getElementById('acordeones-productos');
+                            contenedor.innerHTML = '';
+
+                            for (const categoria in data) {
+                                const productos = data[categoria];
+
+                                const acordeon = document.createElement('div');
+                                acordeon.classList.add('card');
+
+                                const header = document.createElement('div');
+                                header.classList.add('accordion-header');
+                                header.innerHTML = `<strong>${categoria}</strong>`;
+
+                                const body = document.createElement('div');
+                                body.classList.add('accordion-body');
+
+                                header.addEventListener('click', () => {
+                                    body.classList.toggle('show');
+                                });
+
+                                productos.forEach(prod => {
+                                    const grupo = document.createElement('div');
+                                    grupo.className = 'input-group';
+
+                                    grupo.innerHTML = `
+                    <label for="prod_${prod.producto_id}">
+                        <strong>${prod.Nombre_producto}</strong> 
+                        (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
+                    </label>
+                    <div class="input-icon">
+                        <span class="material-icons">numbers</span>
+                        <input 
+                            type="number" 
+                            name="productos[${prod.producto_id}]" 
+                            id="prod_${prod.producto_id}"
+                            min="0" 
+                            placeholder="Cantidad..." 
+                            data-alicuota="${prod.alicuota}" />
+                    </div>
+                `;
+                                    body.appendChild(grupo);
+                                });
+
+                                acordeon.appendChild(header);
+                                acordeon.appendChild(body);
+                                contenedor.appendChild(acordeon);
+                            }
+                        } catch (err) {
+                            console.error('❌ Error al cargar productos del operativo:', err);
+                        }
+                    }
+                </script>
 
                 <!-- Alert -->
                 <div class="alert-container" id="alertContainer"></div>
@@ -323,7 +697,9 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         </div>
     </div>
 
+    <script>
 
+    </script>
 
 
     <!-- Spinner Global -->
