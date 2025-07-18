@@ -383,13 +383,37 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                 const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=productores&coop_id=${coopId}`);
                                 productores = await res.json();
 
-                                console.log('🧑‍🌾 Productores recibidos:', productores); // ⬅️ NUEVO LOG
+                                console.log('🧑‍🌾 Productores recibidos:', productores);
 
-                                activarBuscador(inputProd, listaProd, productores, hiddenProd);
+                                activarBuscador(inputProd, listaProd, productores, hiddenProd, (id_real) => {
+                                    verificarDatosProductor(id_real);
+                                });
                             } catch (err) {
                                 console.error('❌ Error al cargar productores:', err);
                             }
                         }
+
+                        async function verificarDatosProductor(id_real) {
+                            try {
+                                const res = await fetch(`/controllers/coop_MercadoDigitalController.php?consultar_datos_productor=1&id_real=${id_real}`);
+                                const datos = await res.json();
+
+                                if (!datos) return;
+
+                                const cuitFaltante = !datos.cuit || datos.cuit.trim() === '';
+                                const telefonoFaltante = !datos.telefono || datos.telefono.trim() === '';
+
+                                if (cuitFaltante || telefonoFaltante) {
+                                    document.getElementById('id_real_productor_modal').value = id_real;
+                                    document.getElementById('telefonoProductor').value = datos.telefono || '';
+                                    document.getElementById('cuitProductor').value = datos.cuit || '';
+                                    document.getElementById('modalDatosFaltantes').style.display = 'flex';
+                                }
+                            } catch (err) {
+                                console.error('❌ Error al verificar datos del productor:', err);
+                            }
+                        }
+
 
                         function activarBuscador(input, lista, dataArray, hiddenInput, onSelectCallback = null) {
                             input.addEventListener('input', () => {
@@ -492,7 +516,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                     const grupo = document.createElement('div');
                                     grupo.className = 'input-group';
 
-   grupo.innerHTML = `
+                                    grupo.innerHTML = `
     <label for="prod_${prod.producto_id}">
         <strong>${prod.Nombre_producto}</strong><br>
         <small style="color:#555;">Se vende por <strong>${prod.Unidad_Medida_venta}</strong> a <strong>$${prod.Precio_producto}</strong></small>
@@ -742,7 +766,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                     const grupo = document.createElement('div');
                                     grupo.className = 'input-group';
 
-grupo.innerHTML = `
+                                    grupo.innerHTML = `
     <label for="prod_${prod.producto_id}">
         <strong>${prod.Nombre_producto}</strong><br>
         <small style="color:#555;">Se vende por <strong>${prod.Unidad_Medida_venta}</strong> a <strong>$${prod.Precio_producto}</strong></small>
@@ -769,6 +793,41 @@ grupo.innerHTML = `
                             console.error('❌ Error al cargar productos del operativo:', err);
                         }
                     }
+
+                    // modal telefono y cuit
+                    function cerrarModalDatos() {
+                        document.getElementById('modalDatosFaltantes').style.display = 'none';
+                    }
+
+                    document.getElementById('formDatosFaltantes').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        const form = e.target;
+                        const formData = new FormData(form);
+                        const data = Object.fromEntries(formData.entries());
+
+                        try {
+                            const res = await fetch('/controllers/coop_MercadoDigitalController.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    accion: 'actualizar_datos_productor',
+                                    ...data
+                                })
+                            });
+                            const json = await res.json();
+                            if (json.success) {
+                                showAlert('success', 'Datos actualizados correctamente');
+                                cerrarModalDatos();
+                            } else {
+                                showAlert('error', json.message);
+                            }
+                        } catch (err) {
+                            console.error('❌ Error al guardar datos:', err);
+                            showAlert('error', 'Error inesperado');
+                        }
+                    });
                 </script>
 
                 <!-- Alert -->
@@ -804,6 +863,36 @@ grupo.innerHTML = `
         </div>
     </div>
 
+    <!-- Modal de busqueda de datos secundarios -->
+    <div id="modalDatosFaltantes" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Datos faltantes del productor</h3>
+            <p>Este productor no tiene cargado su CUIT o teléfono.</p>
+
+            <form id="formDatosFaltantes">
+                <div class="input-group">
+                    <label for="telefonoProductor">Teléfono</label>
+                    <div class="input-icon">
+                        <span class="material-icons">call</span>
+                        <input type="text" id="telefonoProductor" name="telefono" placeholder="Ej: 2611234567">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="cuitProductor">CUIT</label>
+                    <div class="input-icon">
+                        <span class="material-icons">badge</span>
+                        <input type="text" id="cuitProductor" name="cuit" placeholder="Ej: 20123456789">
+                    </div>
+                </div>
+                <input type="hidden" id="id_real_productor_modal" name="id_real">
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancelar" onclick="cerrarModalDatos()">Cancelar</button>
+                    <button type="submit" class="btn btn-aceptar">Aceptar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 
 </html>

@@ -63,4 +63,20 @@ if (isset($_GET['listar']) && $_GET['listar'] === 'productos_por_operativo' && i
     $data = $model->obtenerProductosPorOperativo($operativoId);
     echo json_encode($data);
     exit;
+
+    if (isset($_GET['consultar_datos_productor']) && isset($_GET['id_real'])) {
+    $idReal = $_GET['id_real'];
+    $stmt = $pdo->prepare("
+        SELECT 
+            u.id_real, u.cuit, 
+            i.telefono 
+        FROM usuarios u 
+        LEFT JOIN usuarios_info i ON i.usuario_id = u.id 
+        WHERE u.id_real = ?
+    ");
+    $stmt->execute([$idReal]);
+    $datos = $stmt->fetch(PDO::FETCH_ASSOC);
+    echo json_encode($datos ?: []);
+    exit;
+}
 }
