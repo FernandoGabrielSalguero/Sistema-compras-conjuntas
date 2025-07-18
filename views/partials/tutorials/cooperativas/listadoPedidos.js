@@ -21,7 +21,7 @@ function iniciarTutorialDashboard() {
         {
             selector: '.tutorial-ColumnaAcciones',
             mensaje: 'Estos son los botones para ver, actualizar o eliminar el pedido.',
-            posicion: 'left',
+            posicion: 'top',
             scrollHorizontal: true,
             destacarColumnaCompleta: true
         }
