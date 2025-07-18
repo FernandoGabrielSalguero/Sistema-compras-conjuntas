@@ -15,15 +15,16 @@ function iniciarTutorialDashboard() {
         {
             selector: '.tutorial-TablaPedidos',
             mensaje: 'En esta tabla vas a ver todos los pedidos realizados. Del lado derecho tenés botones para editar o ver los detalles de cada pedido.',
+            scrollHorizontal: false,
             posicion: 'top'
         },
-{
-    selector: '.tutorial-ColumnaAcciones',
-    mensaje: 'Estos son los botones para ver, actualizar o eliminar el pedido.',
-    posicion: 'left',
-    scrollHorizontal: true,
-    destacarColumnaCompleta: true
-}
+        {
+            selector: '.tutorial-ColumnaAcciones',
+            mensaje: 'Estos son los botones para ver, actualizar o eliminar el pedido.',
+            posicion: 'left',
+            scrollHorizontal: true,
+            destacarColumnaCompleta: true
+        }
 
     ];
 
