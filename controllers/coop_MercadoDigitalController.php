@@ -38,13 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 👉 Acción: Guardar pedido
     if ($data['accion'] === 'guardar_pedido') {
         try {
-$resultado = $model->guardarPedidoConDetalles($data);
-echo json_encode([
-    'success' => true,
-    'message' => 'Pedido guardado con éxito',
-    'pedido_id' => $resultado,
-    'debug' => $data 
-]);
+            $resultado = $model->guardarPedidoConDetalles($data);
+            echo json_encode(['success' => true, 'message' => 'Pedido guardado con éxito', 'pedido_id' => $resultado]);
         } catch (Exception $e) {
             http_response_code(500);
             error_log("🧨 Error al guardar pedido: " . $e->getMessage());

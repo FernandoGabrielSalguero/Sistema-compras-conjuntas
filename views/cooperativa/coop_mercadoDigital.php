@@ -660,7 +660,8 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             const nombre = texto?.[1]?.trim() || 'Producto';
                             const unidad = texto?.[2]?.trim() || '';
                             const precio = parseFloat(texto?.[3]) || 0;
-                            const alicuota = parseFloat(input.dataset.alicuota || 0);
+                            let alicuota = parseFloat(input.dataset.alicuota);
+                            if (isNaN(alicuota)) alicuota = 0;
 
                             const subtotal = precio * cantidad;
                             const iva = subtotal * (alicuota / 100);
@@ -729,6 +730,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
                         const inputs = document.querySelectorAll('#acordeones-productos input[type="number"]');
                         let hayProductos = false;
+                        let totalConIva = 0;
 
                         inputs.forEach(input => {
                             const cantidad = parseFloat(input.value);
@@ -740,7 +742,13 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             const texto = label?.textContent?.trim() || 'Producto';
                             const unidad = texto.match(/\(([^-]+)-/i)?.[1]?.trim() || '';
                             const precio = parseFloat(texto.match(/\$([\d.]+)/)?.[1]) || 0;
+                            let alicuota = parseFloat(input.dataset.alicuota);
+                            if (isNaN(alicuota)) alicuota = 0;
+
                             const subtotal = cantidad * precio;
+                            const iva = subtotal * (alicuota / 100);
+                            const total = subtotal + iva;
+                            totalConIva += total;
 
                             const item = document.createElement('div');
                             item.classList.add('resumen-item');
@@ -748,12 +756,22 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
             <strong>🧾 ${texto}</strong>
             <small>📦 Cantidad: ${cantidad} ${unidad}</small>
             <small>💵 Subtotal: $${subtotal.toFixed(2)}</small>
+            <small>🧾 IVA (${alicuota}%): $${iva.toFixed(2)}</small>
+            <div class="resumen-total">Total: $${total.toFixed(2)}</div>
         `;
                             resumen.appendChild(item);
                         });
 
                         if (!hayProductos) {
                             resumen.innerHTML = `<p style="color: red;">⚠️ No se han seleccionado productos para confirmar.</p>`;
+                        } else {
+                            const totalFinal = document.createElement('div');
+                            totalFinal.classList.add('resumen-item');
+                            totalFinal.innerHTML = `
+            <strong>🧮 Total final con IVA:</strong>
+            <div class="resumen-total" style="font-size: 1.2rem;">$${totalConIva.toFixed(2)}</div>
+        `;
+                            resumen.appendChild(totalFinal);
                         }
 
                         document.getElementById('modalConfirmacion').style.display = 'flex';
@@ -767,7 +785,6 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     function confirmarEnvio() {
                         cerrarModal();
                         guardarPedido();
-                        console.log('🧾 Pedido guardado:', result.debug || result);
                     }
 
 
