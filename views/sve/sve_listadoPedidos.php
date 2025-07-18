@@ -649,59 +649,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 console.error(err);
             }
         }
-
-        // 🔄 Drag and Drop
-        const dropArea = document.getElementById('dropArea');
-        const inputMulti = document.getElementById('inputMultiFactura');
-
-        if (dropArea && inputMulti) {
-            dropArea.addEventListener('click', () => inputMulti.click());
-
-            dropArea.addEventListener('dragover', e => {
-                e.preventDefault();
-                dropArea.classList.add('dragover');
-            });
-
-            dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
-
-            dropArea.addEventListener('drop', e => {
-                e.preventDefault();
-                dropArea.classList.remove('dragover');
-                subirFacturas(e.dataTransfer.files);
-            });
-
-            inputMulti.addEventListener('change', e => {
-                subirFacturas(e.target.files);
-            });
-        }
-        // Función para subir facturas
-        async function subirFacturas(archivos) {
-            const listaActual = document.getElementById('listaFacturas');
-            const actuales = listaActual.childElementCount;
-            if (actuales + archivos.length > 30) {
-                showAlert('error', 'Máximo 30 facturas por pedido');
-                return;
-            }
-
-            const formData = new FormData();
-            for (let a of archivos) {
-                formData.append('facturas[]', a);
-            }
-            formData.append('pedido_id', pedidoActualFacturas);
-
-            try {
-                const res = await fetch('/controllers/sve_facturaUploaderController.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                const json = await res.json();
-                if (!json.success) throw new Error(json.message);
-                getFacturasPedido();
-            } catch (err) {
-                showAlert('error', 'Error al subir facturas');
-                console.error(err);
-            }
-        }
     </script>
 
     <!-- Modal de confirmación para eliminar -->
@@ -825,6 +772,61 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
         </div>
     </div>
+
+    <script>
+        // 🔄 Drag and Drop
+        const dropArea = document.getElementById('dropArea');
+        const inputMulti = document.getElementById('inputMultiFactura');
+
+        if (dropArea && inputMulti) {
+            dropArea.addEventListener('click', () => inputMulti.click());
+
+            dropArea.addEventListener('dragover', e => {
+                e.preventDefault();
+                dropArea.classList.add('dragover');
+            });
+
+            dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
+
+            dropArea.addEventListener('drop', e => {
+                e.preventDefault();
+                dropArea.classList.remove('dragover');
+                subirFacturas(e.dataTransfer.files);
+            });
+
+            inputMulti.addEventListener('change', e => {
+                subirFacturas(e.target.files);
+            });
+        }
+        // Función para subir facturas
+        async function subirFacturas(archivos) {
+            const listaActual = document.getElementById('listaFacturas');
+            const actuales = listaActual.childElementCount;
+            if (actuales + archivos.length > 30) {
+                showAlert('error', 'Máximo 30 facturas por pedido');
+                return;
+            }
+
+            const formData = new FormData();
+            for (let a of archivos) {
+                formData.append('facturas[]', a);
+            }
+            formData.append('pedido_id', pedidoActualFacturas);
+
+            try {
+                const res = await fetch('/controllers/sve_facturaUploaderController.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const json = await res.json();
+                if (!json.success) throw new Error(json.message);
+                getFacturasPedido();
+            } catch (err) {
+                showAlert('error', 'Error al subir facturas');
+                console.error(err);
+            }
+        }
+    </script>
 
 </body>
 
