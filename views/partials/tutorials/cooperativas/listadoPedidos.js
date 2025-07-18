@@ -21,7 +21,7 @@ function iniciarTutorialDashboard() {
         {
             selector: '.tutorial-ColumnaAcciones',
             mensaje: 'Estos son los botones para ver, actualizar o eliminar el pedido.',
-            posicion: 'right',
+            posicion: 'top-center',
             scrollHorizontal: true,
             destacarColumnaCompleta: true
         }
@@ -133,43 +133,49 @@ function iniciarTutorialDashboard() {
         document.getElementById('btnCerrarTutorial').onclick = terminarTutorial;
     }
 
-function calcularPosicionTooltip(target, tooltip, posicion = 'bottom') {
-    const rect = target.getBoundingClientRect();
-    const scrollY = window.scrollY;
-    const scrollX = window.scrollX;
+    function calcularPosicionTooltip(target, tooltip, posicion = 'bottom') {
+        const rect = target.getBoundingClientRect();
+        const scrollY = window.scrollY;
+        const scrollX = window.scrollX;
 
-    const tooltipHeight = tooltip.offsetHeight || 120;
-    const tooltipWidth = tooltip.offsetWidth || 280;
+        const tooltipHeight = tooltip.offsetHeight || 120;
+        const tooltipWidth = tooltip.offsetWidth || 280;
 
-    switch (posicion) {
-        case 'top':
-            return {
-                top: rect.top + scrollY - tooltipHeight - 10,
-                left: rect.left + scrollX + (rect.width / 2) - (tooltipWidth / 2)
-            };
-        case 'left':
-            return {
-                top: rect.top + scrollY,
-                left: rect.left + scrollX - tooltipWidth - 10
-            };
-        case 'right':
-            return {
-                top: rect.top + scrollY,
-                left: rect.right + scrollX + 10
-            };
-        case 'center':
-            return {
-                top: rect.top + scrollY + rect.height / 2 - tooltipHeight / 2,
-                left: rect.left + scrollX + rect.width / 2 - tooltipWidth / 2
-            };
-        case 'bottom':
-        default:
-            return {
-                top: rect.bottom + scrollY + 10,
-                left: rect.left + scrollX
-            };
+        switch (posicion) {
+            case 'top':
+                return {
+                    top: rect.top + scrollY - tooltipHeight - 10,
+                    left: rect.left + scrollX
+                };
+            case 'top-center':
+                return {
+                    top: rect.top + scrollY - tooltipHeight - 10,
+                    left: rect.left + scrollX + (rect.width / 2) - (tooltipWidth / 2)
+                };
+            case 'left':
+                return {
+                    top: rect.top + scrollY,
+                    left: rect.left + scrollX - tooltipWidth - 10
+                };
+            case 'right':
+                return {
+                    top: rect.top + scrollY,
+                    left: rect.right + scrollX + 10
+                };
+            case 'center':
+                return {
+                    top: rect.top + scrollY + rect.height / 2 - tooltipHeight / 2,
+                    left: rect.left + scrollX + rect.width / 2 - tooltipWidth / 2
+                };
+            case 'bottom':
+            default:
+                return {
+                    top: rect.bottom + scrollY + 10,
+                    left: rect.left + scrollX
+                };
+        }
     }
-}
+
 
 
     function findScrollableParent(el) {
