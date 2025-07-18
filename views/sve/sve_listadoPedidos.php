@@ -629,7 +629,35 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         async function eliminarFactura(facturaId) {
-            if (!confirm('¿Eliminar esta factura?')) return;
+            showAlert({
+    titulo: '¿Eliminar esta factura?',
+    mensaje: 'Esta acción no se puede deshacer.',
+    tipo: 'confirmacion',
+    textoBotonConfirmar: 'Eliminar',
+    textoBotonCancelar: 'Cancelar',
+    callbackConfirmar: async () => {
+        try {
+            const res = await fetch('/controllers/sve_facturaUploaderController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    accion: 'eliminar_factura_multiple',
+                    id: facturaId
+                })
+            });
+            const json = await res.json();
+            if (!json.success) throw new Error(json.message);
+            getFacturasPedido();
+
+            showAlert('success', 'Factura eliminada correctamente ✅');
+        } catch (err) {
+            showAlert('error', 'Error al eliminar factura');
+            console.error(err);
+        }
+    }
+});
             try {
                 const res = await fetch('/controllers/sve_facturaUploaderController.php', {
                     method: 'POST',
