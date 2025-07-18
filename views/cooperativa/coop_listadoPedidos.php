@@ -46,16 +46,16 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
     <style>
         .tutorial-columna-highlight {
-    box-shadow: inset 0 0 0 3px #5b21b6;
-    background-color: rgba(91, 33, 182, 0.1);
-    transition: background-color 0.3s ease;
-}
+            box-shadow: inset 0 0 0 3px #5b21b6;
+            background-color: rgba(91, 33, 182, 0.1);
+            transition: background-color 0.3s ease;
+        }
 
-.tutorial-columna-completa {
-    background-color: rgba(91, 33, 182, 0.08);
-    box-shadow: inset 0 0 0 2px #5b21b6;
-    transition: background-color 0.3s ease;
-}
+        .tutorial-columna-completa {
+            background-color: rgba(91, 33, 182, 0.08);
+            box-shadow: inset 0 0 0 2px #5b21b6;
+            transition: background-color 0.3s ease;
+        }
     </style>
 
 </head>
@@ -390,10 +390,27 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         <div><strong>IVA:</strong> $${parseFloat(p.total_iva).toFixed(2)}</div>
         <div><strong>Total Pedido:</strong> <strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></div>
 
-        <div><strong>Factura:</strong> ${p.factura 
-            ? `<a href="/uploads/tax_invoices/${p.factura}" target="_blank">Ver archivo</a>` 
-            : 'No cargada'
-        }</div>
+<div>
+  <strong>Facturas:</strong>
+  ${p.cantidad_facturas > 0 
+    ? `<button class="btn-icon" onclick="abrirModalFacturas(${p.id})" data-tooltip="Ver facturas">
+        <i class="material-icons" style="color:#5b21b6; position: relative;">
+          attach_file
+        </i>
+        <span style="
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #5b21b6;
+            color: white;
+            border-radius: 50%;
+            font-size: 10px;
+            padding: 2px 5px;
+        ">${p.cantidad_facturas}</span>
+      </button>`
+    : '<span style="color:gray;">Sin facturas</span>'
+  }
+</div>
         <div></div>
     </div>
 `;

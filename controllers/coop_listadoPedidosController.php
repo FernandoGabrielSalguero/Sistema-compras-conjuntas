@@ -79,14 +79,14 @@ if (isset($json['accion']) && $json['accion'] === 'editar_pedido') {
 
     try {
         // 1. Actualizar encabezado del pedido
-        $stmt = $pdo->prepare("UPDATE pedidos SET 
-            persona_facturacion = ?, 
-            condicion_facturacion = ?, 
-            afiliacion = ?, 
-            ha_cooperativa = ?, 
-            observaciones = ?, 
-            total_sin_iva = ?, 
-            total_iva = ?, 
+        $stmt = $pdo->prepare("UPDATE pedidos SET
+            persona_facturacion = ?,
+            condicion_facturacion = ?,
+            afiliacion = ?,
+            ha_cooperativa = ?,
+            observaciones = ?,
+            total_sin_iva = ?,
+            total_iva = ?,
             total_pedido = ?
             WHERE id = ?");
 
@@ -116,7 +116,7 @@ if (isset($json['accion']) && $json['accion'] === 'editar_pedido') {
         $pdo->prepare("DELETE FROM detalle_pedidos WHERE pedido_id = ?")->execute([$pedidoId]);
 
         // 3. Insertar los nuevos productos
-        $stmtProd = $pdo->prepare("INSERT INTO detalle_pedidos 
+        $stmtProd = $pdo->prepare("INSERT INTO detalle_pedidos
             (pedido_id, producto_id, nombre_producto, categoria, unidad_medida_venta, cantidad, precio_producto, alicuota)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
@@ -201,7 +201,7 @@ if (isset($_GET['ver']) && isset($_GET['id'])) {
 
     try {
         $stmt = $pdo->prepare("
-    SELECT 
+    SELECT
         p.*,
         i1.nombre AS nombre_cooperativa,
         i2.nombre AS nombre_productor
@@ -222,6 +222,12 @@ if (isset($_GET['ver']) && isset($_GET['id'])) {
             $stmtProd = $pdo->prepare("SELECT * FROM detalle_pedidos WHERE pedido_id = ?");
             $stmtProd->execute([$id]);
             $productos = $stmtProd->fetchAll(PDO::FETCH_ASSOC);
+
+            // Contar facturas
+            $stmtFact = $pdo->prepare("SELECT COUNT(*) FROM facturas WHERE pedido_id = ?");
+            $stmtFact->execute([$id]);
+            $cantidadFacturas = $stmtFact->fetchColumn();
+            $pedido['cantidad_facturas'] = intval($cantidadFacturas);
 
             echo json_encode([
                 'success' => true,
