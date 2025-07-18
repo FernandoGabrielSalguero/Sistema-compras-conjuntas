@@ -849,9 +849,21 @@ grupo.innerHTML = `
                     }
 
                     // modal telefono y cuit
-                    function cerrarModalDatos() {
-                        document.getElementById('modalDatosFaltantes').style.display = 'none';
-                    }
+function cerrarModalDatos() {
+    // Ocultar el modal
+    document.getElementById('modalDatosFaltantes').style.display = 'none';
+
+    // Limpiar el campo de búsqueda del productor
+    document.getElementById('buscador_prod').value = '';
+
+    // Limpiar el campo oculto que guarda el ID del productor
+    document.getElementById('productor').value = '';
+
+    // Limpiar y ocultar la lista de sugerencias (opcional)
+    const lista = document.getElementById('lista_prod');
+    lista.innerHTML = '';
+    lista.style.display = 'none';
+}
                 </script>
 
                 <!-- Alert -->
