@@ -628,14 +628,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
-window.eliminarFactura = async function(facturaId) {
-    showAlert({
-        titulo: '¿Eliminar esta factura?',
-        mensaje: 'Esta acción no se puede deshacer.',
-        tipo: 'confirmacion',
-        textoBotonConfirmar: 'Eliminar',
-        textoBotonCancelar: 'Cancelar',
-        callbackConfirmar: async () => {
+        async function eliminarFactura(facturaId) {
+            if (!confirm('¿Eliminar esta factura?')) return;
             try {
                 const res = await fetch('/controllers/sve_facturaUploaderController.php', {
                     method: 'POST',
@@ -647,21 +641,14 @@ window.eliminarFactura = async function(facturaId) {
                         id: facturaId
                     })
                 });
-
                 const json = await res.json();
                 if (!json.success) throw new Error(json.message);
-
-                showAlert('success', 'Factura eliminada correctamente ✅');
-                getFacturasPedido(); // recargar listado
+                getFacturasPedido();
             } catch (err) {
                 showAlert('error', 'Error al eliminar factura');
                 console.error(err);
             }
         }
-    });
-};
-
-
     </script>
 
     <!-- Modal de confirmación para eliminar -->
