@@ -348,47 +348,25 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             cargarPedidos();
 
             // eliminar pedidos
-            let pedidoAEliminar = null;
+            let callbackConfirmar = null;
 
-            function confirmarEliminacion(id) {
-                pedidoAEliminar = id;
-                document.getElementById('textoPedidoEliminar').textContent = `Pedido #${id}`;
+            function mostrarModalEliminar(titulo, mensaje, onConfirmar) {
+                document.getElementById('modalEliminarTitulo').textContent = titulo || '¿Estás seguro?';
+                document.getElementById('modalEliminarTexto').textContent = mensaje || 'Esta acción no se puede deshacer.';
+                callbackConfirmar = onConfirmar;
                 document.getElementById('modalEliminar').style.display = 'flex';
             }
-            window.confirmarEliminacion = confirmarEliminacion; // 🔥 ESTA LÍNEA ES CLAVE
 
             function cerrarModalEliminar() {
-                pedidoAEliminar = null;
+                callbackConfirmar = null;
                 document.getElementById('modalEliminar').style.display = 'none';
             }
-            window.cerrarModalEliminar = cerrarModalEliminar; // por si lo usás con onclick
-
 
             document.getElementById('btnConfirmarEliminar').addEventListener('click', async () => {
-                if (!pedidoAEliminar) return;
-                console.log('🧹 Eliminando pedido ID:', pedidoAEliminar);
-                try {
-                    const res = await fetch('/controllers/sve_listadoPedidosController.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            accion: 'eliminar_pedido',
-                            id: pedidoAEliminar
-                        })
-                    });
-
-                    const json = await res.json();
-                    if (!json.success) throw new Error(json.message);
-
-                    showAlert('success', `Pedido eliminado correctamente ✅`);
-                    cerrarModalEliminar();
-                    setTimeout(() => location.reload(), 800);
-                } catch (err) {
-                    showAlert('error', `❌ No se pudo eliminar: ${err.message}`);
-                    console.error(err);
+                if (typeof callbackConfirmar === 'function') {
+                    await callbackConfirmar(); // ejecutar acción definida
                 }
+                cerrarModalEliminar();
             });
 
             // ver pedido completo
@@ -629,13 +607,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         async function eliminarFactura(facturaId) {
-            showAlert({
-                titulo: '¿Eliminar esta factura?',
-                mensaje: 'Esta acción no se puede deshacer.',
-                tipo: 'confirmacion',
-                textoBotonConfirmar: 'Eliminar',
-                textoBotonCancelar: 'Cancelar',
-                callbackConfirmar: async () => {
+            mostrarModalEliminar(
+                '¿Eliminar esta factura?',
+                'Esta acción no se puede deshacer.',
+                async () => {
                     try {
                         const res = await fetch('/controllers/sve_facturaUploaderController.php', {
                             method: 'POST',
@@ -652,23 +627,23 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         if (!json.success) throw new Error(json.message);
 
                         showAlert('success', 'Factura eliminada correctamente ✅');
-                        getFacturasPedido(); // recargar listado
+                        getFacturasPedido();
                     } catch (err) {
                         showAlert('error', 'Error al eliminar factura');
                         console.error(err);
                     }
                 }
-            });
+            );
         }
     </script>
 
-    <!-- Modal de confirmación para eliminar -->
+    <!-- Modal de confirmación reutilizable -->
     <div id="modalEliminar" class="modal" style="display: none;">
         <div class="modal-content">
-            <h3>¿Estás seguro de eliminar el pedido?</h3>
-            <p id="textoPedidoEliminar"></p>
+            <h3 id="modalEliminarTitulo">¿Confirmar acción?</h3>
+            <p id="modalEliminarTexto">¿Estás seguro de proceder?</p>
             <div class="modal-actions">
-                <button class="btn btn-aceptar" id="btnConfirmarEliminar">Eliminar</button>
+                <button class="btn btn-aceptar" id="btnConfirmarEliminar">Aceptar</button>
                 <button class="btn btn-cancelar" onclick="cerrarModalEliminar()">Cancelar</button>
             </div>
         </div>
