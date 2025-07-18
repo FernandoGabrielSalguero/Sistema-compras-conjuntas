@@ -766,7 +766,8 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
                     function confirmarEnvio() {
                         cerrarModal();
-                        guardarPedido(); // Acá llamamos a tu función que guarda el pedido
+                        guardarPedido();
+                        console.log('🧾 Pedido guardado:', result.debug || result);
                     }
 
 
