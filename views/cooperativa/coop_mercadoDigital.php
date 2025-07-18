@@ -557,13 +557,14 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
     </label>
     <div class="input-icon">
         <span class="material-icons">numbers</span>
-        <input 
-            type="number" 
-            name="productos[${prod.producto_id}]" 
-            id="prod_${prod.producto_id}"
-            min="0" 
-            placeholder="Cantidad..." 
-            data-alicuota="${prod.alicuota}" />
+<input 
+    type="number" 
+    name="productos[${prod.producto_id}]" 
+    id="prod_${prod.producto_id}"
+    min="0" 
+    placeholder="Cantidad..." 
+    data-alicuota="${prod.alicuota}"
+    data-precio="${prod.Precio_producto}" />
     </div>
 `;
 
@@ -655,11 +656,11 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             const cantidad = parseFloat(input.value);
                             if (!cantidad || cantidad <= 0) return;
 
-                            const label = input.closest('.input-group').querySelector('label')?.textContent?.trim() || '';
-                            const texto = label.match(/^(.*?)\s*\((.*?)\s*-\s*\$(.*?)\)/);
-                            const nombre = texto?.[1]?.trim() || 'Producto';
-                            const unidad = texto?.[2]?.trim() || '';
-                            const precio = parseFloat(texto?.[3]) || 0;
+                            const label = input.closest('.input-group').querySelector('label')?.textContent?.trim() || 'Producto';
+                            const nombre = label.split('\n')[0]?.trim() || 'Producto';
+                            const unidad = input.closest('.input-group').querySelector('small')?.textContent?.match(/por\s+(.+?)\s+a/i)?.[1] || '';
+                            const precio = parseFloat(input.dataset.precio) || 0;
+
                             let alicuota = parseFloat(input.dataset.alicuota);
                             if (isNaN(alicuota)) alicuota = 0;
 
