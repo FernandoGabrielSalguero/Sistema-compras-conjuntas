@@ -628,7 +628,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
-        async function eliminarFactura(facturaId) {
+window.eliminarFactura = async function(facturaId) {
     showAlert({
         titulo: '¿Eliminar esta factura?',
         mensaje: 'Esta acción no se puede deshacer.',
@@ -659,7 +659,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
     });
-}
+};
+
 
     </script>
 
