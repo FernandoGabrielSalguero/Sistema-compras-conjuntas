@@ -870,8 +870,8 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
     <div id="modalDatosFaltantes" class="modal" style="display: none;">
         <div class="modal-content">
             <h3>Datos faltantes del productor</h3>
-            <p>Este productor no tiene cargado su CUIT o teléfono.</p>
-
+            <p>Este productor no tiene cargado su CUIT o teléfono. Sin estos dos campos, no se puede cargar el pedido. Por favor, completalos.</p>
+<br>
             <form id="formDatosFaltantes">
                 <div class="input-group">
                     <label for="telefonoProductor">Teléfono</label>
