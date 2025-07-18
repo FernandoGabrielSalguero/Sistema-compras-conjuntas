@@ -287,9 +287,9 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
     <span class="material-icons">123</span>
     <input type="number" class="input" name="productos[][cantidad]" value="1" onchange="actualizarTotales()">
   </div>
-</td>        <td>$${parseFloat(p.Precio_producto).toFixed(2)}</td>
+</td>        <td>$${parseFloat(p.Precio_producto || p.precio_producto).toFixed(2)}</td>
         <td>${p.alicuota}%</td>
-        <td class="subtotal">$${parseFloat(p.Precio_producto).toFixed(2)}</td>
+        <td class="subtotal">$${parseFloat(p.Precio_producto || p.precio_producto).toFixed(2)}</td>
         <button type="button" class="btn-icon" onclick="this.closest('tr').remove(); actualizarTotales()">
         <span class="material-icons" style="color:red;">delete</span>
         </button>
