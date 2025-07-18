@@ -244,9 +244,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     } = json.data;
                     const tarjetas = document.querySelectorAll('.card-grid .card');
 
-                    tarjetas[0].querySelector('p').textContent = ${total} pedidos;
-                    tarjetas[1].querySelector('p').textContent = ${con_factura} con factura;
-                    tarjetas[2].querySelector('p').textContent = ${sin_factura} sin factura;
+                    tarjetas[0].querySelector('p').textContent = `${total} pedidos`;
+                    tarjetas[1].querySelector('p').textContent = `${con_factura} con factura`;
+                    tarjetas[2].querySelector('p').textContent = `${sin_factura} sin factura`;
                 } catch (err) {
                     console.error('❌ Error al cargar resumen:', err);
                 }
@@ -255,7 +255,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             // 🔹 Buscar y listar pedidos
             async function cargarPedidos() {
                 const search = buscarNombre.value.trim() || buscarCuit.value.trim();
-                const url = /controllers/sve_listadoPedidosController.php?listar=1&page=${paginaActual}&search=${encodeURIComponent(search)};
+                const url = `/controllers/sve_listadoPedidosController.php?listar=1&page=${paginaActual}&search=${encodeURIComponent(search)}`;
 
                 try {
                     const res = await fetch(url);
@@ -269,13 +269,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     tablaPedidos.innerHTML = '';
 
                     if (pedidos.length === 0) {
-                        tablaPedidos.innerHTML = <tr><td colspan="12">No se encontraron pedidos.</td></tr>;
+                        tablaPedidos.innerHTML = `<tr><td colspan="12">No se encontraron pedidos.</td></tr>`;
                         return;
                     }
 
                     pedidos.forEach(p => {
                         const fila = document.createElement('tr');
-                        fila.innerHTML = 
+                        fila.innerHTML = `
                     <td>${p.id}</td>
                     <td>${p.nombre_cooperativa || '-'}</td>
                     <td>${p.nombre_productor || '-'}</td>
@@ -289,7 +289,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             attach_file
         </i>
         ${p.cantidad_facturas > 0 
-            ? <span style="
+            ? `<span style="
                     position: absolute;
                     top: -6px;
                     right: -6px;
@@ -298,7 +298,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     border-radius: 50%;
                     font-size: 10px;
                     padding: 2px 5px;
-                ">${p.cantidad_facturas}</span> 
+                ">${p.cantidad_facturas}</span>` 
             : ''
         }
     </button>
@@ -317,12 +317,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <i class="material-icons" style="color:red;">delete</i>
                         </button>
                     </td>
-                ;
+                `;
                         tablaPedidos.appendChild(fila);
                     });
 
                     // 🔁 Paginación futura (no implementada visualmente aún)
-                    console.log(Mostrando página ${paginaActual} de ${paginasTotales});
+                    console.log(`Mostrando página ${paginaActual} de ${paginasTotales}`);
                 } catch (err) {
                     console.error('❌ Error al cargar pedidos:', err);
                 }
@@ -340,8 +340,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             });
 
             // 🔹 Funciones de acciones (placeholder, las implementamos después)
-            window.verFactura = (ruta) => window.open(/uploads/tax_invoices/${ruta}, '_blank');
-            window.editarPedido = (id) => alert(Editar pedido ID ${id});
+            window.verFactura = (ruta) => window.open(`/uploads/tax_invoices/${ruta}`, '_blank');
+            window.editarPedido = (id) => alert(`Editar pedido ID ${id}`);
 
             // 🟢 Iniciar
             cargarResumen();
@@ -352,7 +352,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             function confirmarEliminacion(id) {
                 pedidoAEliminar = id;
-                document.getElementById('textoPedidoEliminar').textContent = Pedido #${id};
+                document.getElementById('textoPedidoEliminar').textContent = `Pedido #${id}`;
                 document.getElementById('modalEliminar').style.display = 'flex';
             }
             window.confirmarEliminacion = confirmarEliminacion; // 🔥 ESTA LÍNEA ES CLAVE
@@ -382,11 +382,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     const json = await res.json();
                     if (!json.success) throw new Error(json.message);
 
-                    showAlert('success', Pedido eliminado correctamente ✅);
+                    showAlert('success', `Pedido eliminado correctamente ✅`);
                     cerrarModalEliminar();
                     setTimeout(() => location.reload(), 800);
                 } catch (err) {
-                    showAlert('error', ❌ No se pudo eliminar: ${err.message});
+                    showAlert('error', `❌ No se pudo eliminar: ${err.message}`);
                     console.error(err);
                 }
             });
@@ -400,13 +400,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 modal.style.display = 'flex';
 
                 try {
-                    const res = await fetch(/controllers/sve_listadoPedidosController.php?ver=1&id=${id});
+                    const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
                     const json = await res.json();
 
                     if (!json.success) throw new Error(json.message);
                     const p = json.data;
 
-                    contenedor.innerHTML = 
+                    contenedor.innerHTML = `
     <div class="grid-datos">
         <div><strong>ID:</strong> ${p.id}</div>
         <div><strong>Cooperativa:</strong> ${p.nombre_cooperativa || '-'}</div>
@@ -424,16 +424,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         <div><strong>Total Pedido:</strong> <strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></div>
 
         <div><strong>Factura:</strong> ${p.factura 
-            ? <a href="/uploads/tax_invoices/${p.factura}" target="_blank">Ver archivo</a> 
+            ? `<a href="/uploads/tax_invoices/${p.factura}" target="_blank">Ver archivo</a>` 
             : 'No cargada'
         }</div>
         <div></div>
     </div>
-;
+`;
 
                     // 🧾 Agregar productos del pedido si existen
                     if (json.productos && json.productos.length > 0) {
-                        let tablaHTML = 
+                        let tablaHTML = `
         <h4 style="margin-top: 1rem;">Productos del pedido:</h4>
         <table style="width:100%; border-collapse: collapse; margin-top: 0.5rem;">
             <thead>
@@ -446,10 +446,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 </tr>
             </thead>
             <tbody>
-    ;
+    `;
 
                         json.productos.forEach(prod => {
-                            tablaHTML += 
+                            tablaHTML += `
             <tr>
                 <td style="padding: 4px;">${prod.nombre_producto}</td>
                 <td style="padding: 4px;">${prod.categoria || '-'}</td>
@@ -457,19 +457,19 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <td style="padding: 4px; text-align:right;">${prod.unidad_medida_venta || '-'}</td>
                 <td style="padding: 4px; text-align:right;">$${parseFloat(prod.precio_producto).toFixed(2)}</td>
             </tr>
-        ;
+        `;
                         });
 
-                        tablaHTML += 
+                        tablaHTML += `
             </tbody>
         </table>
-    ;
+    `;
 
                         contenedor.innerHTML += tablaHTML;
                     }
 
                 } catch (err) {
-                    contenedor.innerHTML = <p style="color:red;">❌ Error al obtener el pedido: ${err.message}</p>;
+                    contenedor.innerHTML = `<p style="color:red;">❌ Error al obtener el pedido: ${err.message}</p>`;
                     console.error(err);
                 }
             };
@@ -484,7 +484,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         window.imprimirPedido = async function(id) {
             try {
                 // Obtener datos del pedido
-                const res = await fetch(/controllers/sve_listadoPedidosController.php?ver=1&id=${id});
+                const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
                 const json = await res.json();
 
                 if (!json.success) throw new Error(json.message);
@@ -492,7 +492,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const productos = json.productos || [];
 
                 // Generar HTML de impresión
-                const html = 
+                const html = `
         <div style="font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background: white; color: #000;">
             <h2 style="text-align: center;">Detalle del pedido</h2>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; margin-bottom: 1rem;">
@@ -507,12 +507,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <div><strong>IVA:</strong> $${parseFloat(p.total_iva).toFixed(2)}</div>
                 <div><strong>Total Pedido:</strong> $${parseFloat(p.total_pedido).toFixed(2)}</div>
                 <div><strong>Factura:</strong> ${p.factura 
-                    ? <span>✓ cargada</span> 
+                    ? `<span>✓ cargada</span>` 
                     : 'No cargada'}
                 </div>
             </div>
 
-            ${productos.length > 0 ? 
+            ${productos.length > 0 ? `
                 <h4 style="margin-top: 1rem;">Productos del pedido:</h4>
                 <table style="width:100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem;">
                     <thead>
@@ -525,7 +525,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         </tr>
                     </thead>
                     <tbody>
-                        ${productos.map(prod => 
+                        ${productos.map(prod => `
                             <tr>
                                 <td style="padding: 4px;">${prod.nombre_producto}</td>
                                 <td style="padding: 4px;">${prod.categoria || '-'}</td>
@@ -533,12 +533,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <td style="padding: 4px; text-align:right;">${prod.unidad_medida_venta || '-'}</td>
                                 <td style="padding: 4px; text-align:right;">$${parseFloat(prod.precio_producto).toFixed(2)}</td>
                             </tr>
-                        ).join('')}
+                        `).join('')}
                     </tbody>
                 </table>
-             : ''}
+            ` : ''}
         </div>
-        ;
+        `;
 
                 // Insertar en el contenedor oculto
                 const contenedor = document.getElementById('printContainer');
@@ -553,18 +553,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     scale: 2
                 });
                 const link = document.createElement('a');
-                link.download = pedido-${p.id}.png;
+                link.download = `pedido-${p.id}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
 
                 // Confirmar operación al usuario
-                showAlert('success', Pedido #${p.id} descargado como imagen ✅);
+                showAlert('success', `Pedido #${p.id} descargado como imagen ✅`);
 
                 // Limpiar
                 contenedor.style.display = 'none';
                 contenedor.innerHTML = '';
             } catch (err) {
-                alert(❌ Error al imprimir: ${err.message});
+                alert(`❌ Error al imprimir: ${err.message}`);
                 console.error(err);
             }
         };
@@ -573,7 +573,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         function abrirModalEdicion(pedidoId) {
             const modal = document.getElementById('iframeEditarModal');
             const iframe = document.getElementById('iframeEditar');
-            iframe.src = sve_editarPedido.php?id=${pedidoId};
+            iframe.src = `sve_editarPedido.php?id=${pedidoId}`;
             modal.style.display = 'flex';
         }
 
@@ -602,7 +602,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         async function getFacturasPedido() {
             try {
-                const res = await fetch(/controllers/sve_facturaUploaderController.php?listar=1&id=${pedidoActualFacturas});
+                const res = await fetch(`/controllers/sve_facturaUploaderController.php?listar=1&id=${pedidoActualFacturas}`);
                 const json = await res.json();
                 if (!json.success) throw new Error(json.message);
 
@@ -614,12 +614,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 json.data.forEach(f => {
                     const fila = document.createElement('div');
                     fila.className = 'item-factura';
-                    fila.innerHTML = 
+                    fila.innerHTML = `
                 <a href="/uploads/tax_invoices/${f.nombre_archivo}" target="_blank">${f.nombre_archivo}</a>
                 <button class="btn-icon" onclick="eliminarFactura(${f.id})">
                     <span class="material-icons" style="color:red;">delete</span>
                 </button>
-            ;
+            `;
                     lista.appendChild(fila);
                 });
             } catch (err) {
@@ -629,7 +629,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         async function eliminarFactura(facturaId) {
-            if (!confirm('¿Eliminar esta factura?')) return;
+    showAlert({
+        titulo: '¿Eliminar esta factura?',
+        mensaje: 'Esta acción no se puede deshacer.',
+        tipo: 'confirmacion',
+        textoBotonConfirmar: 'Eliminar',
+        textoBotonCancelar: 'Cancelar',
+        callbackConfirmar: async () => {
             try {
                 const res = await fetch('/controllers/sve_facturaUploaderController.php', {
                     method: 'POST',
@@ -641,14 +647,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         id: facturaId
                     })
                 });
+
                 const json = await res.json();
                 if (!json.success) throw new Error(json.message);
-                getFacturasPedido();
+
+                showAlert('success', 'Factura eliminada correctamente ✅');
+                getFacturasPedido(); // recargar listado
             } catch (err) {
                 showAlert('error', 'Error al eliminar factura');
                 console.error(err);
             }
         }
+    });
+}
+
     </script>
 
     <!-- Modal de confirmación para eliminar -->
