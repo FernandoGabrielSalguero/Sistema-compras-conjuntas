@@ -15,7 +15,8 @@ function iniciarTutorialDashboard() {
         {
             selector: '.tutorial-TablaPedidos',
             mensaje: 'En esta tabla vas a ver todos los pedidos realizados. Del lado derecho tenés botones para editar o ver los detalles de cada pedido.',
-            posicion: 'top'
+            posicion: 'top',
+            scrollVertical: false // ⛔ evitamos scroll vertical
         },
         {
             selector: '.tutorial-ColumnaAcciones',
@@ -24,7 +25,6 @@ function iniciarTutorialDashboard() {
             scrollHorizontal: true,
             destacarColumnaCompleta: true
         }
-
     ];
 
     let pasoActual = 0;
@@ -70,8 +70,7 @@ function iniciarTutorialDashboard() {
             return;
         }
 
-        if (paso.destacarColumna) {
-            // Si es una columna, marcar todas las celdas de la misma clase
+        if (paso.destacarColumnaCompleta) {
             const celdas = document.querySelectorAll(paso.selector);
             celdas.forEach(celda => celda.classList.add('tutorial-columna-highlight'));
         } else {
@@ -105,8 +104,10 @@ function iniciarTutorialDashboard() {
 
         // Esperar al render para posicionar y hacer scroll
         setTimeout(() => {
-            // Scroll vertical
-            target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // Scroll vertical solo si está permitido
+            if (paso.scrollVertical !== false) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
 
             // Scroll horizontal si aplica
             if (paso.scrollHorizontal) {
