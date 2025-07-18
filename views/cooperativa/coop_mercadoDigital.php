@@ -449,6 +449,38 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                 }
                             });
                         }
+
+
+                        // revision de campos cuit y telenofo
+                                            document.getElementById('formDatosFaltantes').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        const form = e.target;
+                        const formData = new FormData(form);
+                        const data = Object.fromEntries(formData.entries());
+
+                        try {
+                            const res = await fetch('/controllers/coop_MercadoDigitalController.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    accion: 'actualizar_datos_productor',
+                                    ...data
+                                })
+                            });
+                            const json = await res.json();
+                            if (json.success) {
+                                showAlert('success', 'Datos actualizados correctamente');
+                                cerrarModalDatos();
+                            } else {
+                                showAlert('error', json.message);
+                            }
+                        } catch (err) {
+                            console.error('❌ Error al guardar datos:', err);
+                            showAlert('error', 'Error inesperado');
+                        }
+                    });
                     });
 
                     // acordeones
@@ -799,35 +831,6 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         document.getElementById('modalDatosFaltantes').style.display = 'none';
                     }
 
-                    document.getElementById('formDatosFaltantes').addEventListener('submit', async function(e) {
-                        e.preventDefault();
-                        const form = e.target;
-                        const formData = new FormData(form);
-                        const data = Object.fromEntries(formData.entries());
-
-                        try {
-                            const res = await fetch('/controllers/coop_MercadoDigitalController.php', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    accion: 'actualizar_datos_productor',
-                                    ...data
-                                })
-                            });
-                            const json = await res.json();
-                            if (json.success) {
-                                showAlert('success', 'Datos actualizados correctamente');
-                                cerrarModalDatos();
-                            } else {
-                                showAlert('error', json.message);
-                            }
-                        } catch (err) {
-                            console.error('❌ Error al guardar datos:', err);
-                            showAlert('error', 'Error inesperado');
-                        }
-                    });
                 </script>
 
                 <!-- Alert -->
