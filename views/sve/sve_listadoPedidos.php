@@ -223,59 +223,59 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            let paginaActual = 1;
-            const limitePorPagina = 25;
+                let paginaActual = 1;
+                const limitePorPagina = 25;
 
-            const buscarCuit = document.getElementById('buscarCuit');
-            const buscarNombre = document.getElementById('buscarNombre');
-            const tablaPedidos = document.getElementById('tablaPedidos');
+                const buscarCuit = document.getElementById('buscarCuit');
+                const buscarNombre = document.getElementById('buscarNombre');
+                const tablaPedidos = document.getElementById('tablaPedidos');
 
-            // 🔹 Cargar tarjetas resumen
-            async function cargarResumen() {
-                try {
-                    const res = await fetch('/controllers/sve_listadoPedidosController.php?resumen=1');
-                    const json = await res.json();
-                    if (!json.success) throw new Error(json.message);
+                // 🔹 Cargar tarjetas resumen
+                async function cargarResumen() {
+                    try {
+                        const res = await fetch('/controllers/sve_listadoPedidosController.php?resumen=1');
+                        const json = await res.json();
+                        if (!json.success) throw new Error(json.message);
 
-                    const {
-                        total,
-                        con_factura,
-                        sin_factura
-                    } = json.data;
-                    const tarjetas = document.querySelectorAll('.card-grid .card');
+                        const {
+                            total,
+                            con_factura,
+                            sin_factura
+                        } = json.data;
+                        const tarjetas = document.querySelectorAll('.card-grid .card');
 
-                    tarjetas[0].querySelector('p').textContent = `${total} pedidos`;
-                    tarjetas[1].querySelector('p').textContent = `${con_factura} con factura`;
-                    tarjetas[2].querySelector('p').textContent = `${sin_factura} sin factura`;
-                } catch (err) {
-                    console.error('❌ Error al cargar resumen:', err);
-                }
-            }
-
-            // 🔹 Buscar y listar pedidos
-            async function cargarPedidos() {
-                const search = buscarNombre.value.trim() || buscarCuit.value.trim();
-                const url = `/controllers/sve_listadoPedidosController.php?listar=1&page=${paginaActual}&search=${encodeURIComponent(search)}`;
-
-                try {
-                    const res = await fetch(url);
-                    const json = await res.json();
-                    if (!json.success) throw new Error(json.message);
-
-                    const pedidos = json.data;
-                    const total = json.total;
-                    const paginasTotales = Math.ceil(total / limitePorPagina);
-
-                    tablaPedidos.innerHTML = '';
-
-                    if (pedidos.length === 0) {
-                        tablaPedidos.innerHTML = `<tr><td colspan="12">No se encontraron pedidos.</td></tr>`;
-                        return;
+                        tarjetas[0].querySelector('p').textContent = `${total} pedidos`;
+                        tarjetas[1].querySelector('p').textContent = `${con_factura} con factura`;
+                        tarjetas[2].querySelector('p').textContent = `${sin_factura} sin factura`;
+                    } catch (err) {
+                        console.error('❌ Error al cargar resumen:', err);
                     }
+                }
 
-                    pedidos.forEach(p => {
-                        const fila = document.createElement('tr');
-                        fila.innerHTML = `
+                // 🔹 Buscar y listar pedidos
+                async function cargarPedidos() {
+                    const search = buscarNombre.value.trim() || buscarCuit.value.trim();
+                    const url = `/controllers/sve_listadoPedidosController.php?listar=1&page=${paginaActual}&search=${encodeURIComponent(search)}`;
+
+                    try {
+                        const res = await fetch(url);
+                        const json = await res.json();
+                        if (!json.success) throw new Error(json.message);
+
+                        const pedidos = json.data;
+                        const total = json.total;
+                        const paginasTotales = Math.ceil(total / limitePorPagina);
+
+                        tablaPedidos.innerHTML = '';
+
+                        if (pedidos.length === 0) {
+                            tablaPedidos.innerHTML = `<tr><td colspan="12">No se encontraron pedidos.</td></tr>`;
+                            return;
+                        }
+
+                        pedidos.forEach(p => {
+                            const fila = document.createElement('tr');
+                            fila.innerHTML = `
                     <td>${p.id}</td>
                     <td>${p.nombre_cooperativa || '-'}</td>
                     <td>${p.nombre_productor || '-'}</td>
@@ -318,95 +318,95 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         </button>
                     </td>
                 `;
-                        tablaPedidos.appendChild(fila);
-                    });
+                            tablaPedidos.appendChild(fila);
+                        });
 
-                    // 🔁 Paginación futura (no implementada visualmente aún)
-                    console.log(`Mostrando página ${paginaActual} de ${paginasTotales}`);
-                } catch (err) {
-                    console.error('❌ Error al cargar pedidos:', err);
+                        // 🔁 Paginación futura (no implementada visualmente aún)
+                        console.log(`Mostrando página ${paginaActual} de ${paginasTotales}`);
+                    } catch (err) {
+                        console.error('❌ Error al cargar pedidos:', err);
+                    }
                 }
-            }
 
-            // 🔄 Buscar al escribir
-            buscarCuit.addEventListener('input', () => {
-                paginaActual = 1;
+                // 🔄 Buscar al escribir
+                buscarCuit.addEventListener('input', () => {
+                    paginaActual = 1;
+                    cargarPedidos();
+                });
+
+                buscarNombre.addEventListener('input', () => {
+                    paginaActual = 1;
+                    cargarPedidos();
+                });
+
+                // 🔹 Funciones de acciones (placeholder, las implementamos después)
+                window.verFactura = (ruta) => window.open(`/uploads/tax_invoices/${ruta}`, '_blank');
+                window.editarPedido = (id) => alert(`Editar pedido ID ${id}`);
+
+                // 🟢 Iniciar
+                cargarResumen();
                 cargarPedidos();
-            });
 
-            buscarNombre.addEventListener('input', () => {
-                paginaActual = 1;
-                cargarPedidos();
-            });
+                // eliminar pedidos
+                let pedidoAEliminar = null;
 
-            // 🔹 Funciones de acciones (placeholder, las implementamos después)
-            window.verFactura = (ruta) => window.open(`/uploads/tax_invoices/${ruta}`, '_blank');
-            window.editarPedido = (id) => alert(`Editar pedido ID ${id}`);
-
-            // 🟢 Iniciar
-            cargarResumen();
-            cargarPedidos();
-
-            // eliminar pedidos
-            let pedidoAEliminar = null;
-
-            function confirmarEliminacion(id) {
-                pedidoAEliminar = id;
-                document.getElementById('textoPedidoEliminar').textContent = `Pedido #${id}`;
-                document.getElementById('modalEliminar').style.display = 'flex';
-            }
-            window.confirmarEliminacion = confirmarEliminacion; // 🔥 ESTA LÍNEA ES CLAVE
-
-            function cerrarModalEliminar() {
-                pedidoAEliminar = null;
-                document.getElementById('modalEliminar').style.display = 'none';
-            }
-            window.cerrarModalEliminar = cerrarModalEliminar; // por si lo usás con onclick
-
-
-            document.getElementById('btnConfirmarEliminar').addEventListener('click', async () => {
-                if (!pedidoAEliminar) return;
-                console.log('🧹 Eliminando pedido ID:', pedidoAEliminar);
-                try {
-                    const res = await fetch('/controllers/sve_listadoPedidosController.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            accion: 'eliminar_pedido',
-                            id: pedidoAEliminar
-                        })
-                    });
-
-                    const json = await res.json();
-                    if (!json.success) throw new Error(json.message);
-
-                    showAlert('success', `Pedido eliminado correctamente ✅`);
-                    cerrarModalEliminar();
-                    setTimeout(() => location.reload(), 800);
-                } catch (err) {
-                    showAlert('error', `❌ No se pudo eliminar: ${err.message}`);
-                    console.error(err);
+                function confirmarEliminacion(id) {
+                    pedidoAEliminar = id;
+                    document.getElementById('textoPedidoEliminar').textContent = `Pedido #${id}`;
+                    document.getElementById('modalEliminar').style.display = 'flex';
                 }
-            });
+                window.confirmarEliminacion = confirmarEliminacion; // 🔥 ESTA LÍNEA ES CLAVE
 
-            // ver pedido completo
-            window.verPedido = async function(id) {
-                const modal = document.getElementById('modalVerPedido');
-                const contenedor = document.getElementById('contenidoPedido');
+                function cerrarModalEliminar() {
+                    pedidoAEliminar = null;
+                    document.getElementById('modalEliminar').style.display = 'none';
+                }
+                window.cerrarModalEliminar = cerrarModalEliminar; // por si lo usás con onclick
 
-                contenedor.innerHTML = '<p>🔄 Cargando pedido...</p>';
-                modal.style.display = 'flex';
 
-                try {
-                    const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
-                    const json = await res.json();
+                document.getElementById('btnConfirmarEliminar').addEventListener('click', async () => {
+                    if (!pedidoAEliminar) return;
+                    console.log('🧹 Eliminando pedido ID:', pedidoAEliminar);
+                    try {
+                        const res = await fetch('/controllers/sve_listadoPedidosController.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                accion: 'eliminar_pedido',
+                                id: pedidoAEliminar
+                            })
+                        });
 
-                    if (!json.success) throw new Error(json.message);
-                    const p = json.data;
+                        const json = await res.json();
+                        if (!json.success) throw new Error(json.message);
 
-                    contenedor.innerHTML = `
+                        showAlert('success', `Pedido eliminado correctamente ✅`);
+                        cerrarModalEliminar();
+                        setTimeout(() => location.reload(), 800);
+                    } catch (err) {
+                        showAlert('error', `❌ No se pudo eliminar: ${err.message}`);
+                        console.error(err);
+                    }
+                });
+
+                // ver pedido completo
+                window.verPedido = async function(id) {
+                    const modal = document.getElementById('modalVerPedido');
+                    const contenedor = document.getElementById('contenidoPedido');
+
+                    contenedor.innerHTML = '<p>🔄 Cargando pedido...</p>';
+                    modal.style.display = 'flex';
+
+                    try {
+                        const res = await fetch(`/controllers/sve_listadoPedidosController.php?ver=1&id=${id}`);
+                        const json = await res.json();
+
+                        if (!json.success) throw new Error(json.message);
+                        const p = json.data;
+
+                        contenedor.innerHTML = `
     <div class="grid-datos">
         <div><strong>ID:</strong> ${p.id}</div>
         <div><strong>Cooperativa:</strong> ${p.nombre_cooperativa || '-'}</div>
@@ -431,9 +431,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 `;
 
-                    // 🧾 Agregar productos del pedido si existen
-                    if (json.productos && json.productos.length > 0) {
-                        let tablaHTML = `
+                        // 🧾 Agregar productos del pedido si existen
+                        if (json.productos && json.productos.length > 0) {
+                            let tablaHTML = `
         <h4 style="margin-top: 1rem;">Productos del pedido:</h4>
         <table style="width:100%; border-collapse: collapse; margin-top: 0.5rem;">
             <thead>
@@ -448,8 +448,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             <tbody>
     `;
 
-                        json.productos.forEach(prod => {
-                            tablaHTML += `
+                            json.productos.forEach(prod => {
+                                tablaHTML += `
             <tr>
                 <td style="padding: 4px;">${prod.nombre_producto}</td>
                 <td style="padding: 4px;">${prod.categoria || '-'}</td>
@@ -458,27 +458,55 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <td style="padding: 4px; text-align:right;">$${parseFloat(prod.precio_producto).toFixed(2)}</td>
             </tr>
         `;
-                        });
+                            });
 
-                        tablaHTML += `
+                            tablaHTML += `
             </tbody>
         </table>
     `;
 
-                        contenedor.innerHTML += tablaHTML;
+                            contenedor.innerHTML += tablaHTML;
+                        }
+
+                    } catch (err) {
+                        contenedor.innerHTML = `<p style="color:red;">❌ Error al obtener el pedido: ${err.message}</p>`;
+                        console.error(err);
                     }
+                };
 
-                } catch (err) {
-                    contenedor.innerHTML = `<p style="color:red;">❌ Error al obtener el pedido: ${err.message}</p>`;
-                    console.error(err);
-                }
-            };
+                // funcion modal cerrar pedido
+                window.cerrarModalVerPedido = function() {
+                    document.getElementById('modalVerPedido').style.display = 'none';
+                };
 
-            // funcion modal cerrar pedido
-            window.cerrarModalVerPedido = function() {
-                document.getElementById('modalVerPedido').style.display = 'none';
-            };
-        }); //end DOMContentLoaded
+        document.getElementById('btnConfirmarEliminarFactura').addEventListener('click', async () => {
+            if (!facturaAEliminar) return;
+            try {
+                const res = await fetch('/controllers/sve_facturaUploaderController.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        accion: 'eliminar_factura_multiple',
+                        id: facturaAEliminar
+                    })
+                });
+                const json = await res.json();
+                if (!json.success) throw new Error(json.message);
+
+                showAlert('success', 'Factura eliminada correctamente ✅');
+                cerrarModalEliminarFactura();
+                getFacturasPedido();
+            } catch (err) {
+                showAlert('error', 'Error al eliminar factura');
+                console.error(err);
+            }
+        });
+
+
+
+}); //end DOMContentLoaded
 
 
         window.imprimirPedido = async function(id) {
@@ -640,31 +668,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             document.getElementById('modalEliminarFactura').style.display = 'none';
         }
         window.cerrarModalEliminarFactura = cerrarModalEliminarFactura;
-
-        document.getElementById('btnConfirmarEliminarFactura').addEventListener('click', async () => {
-            if (!facturaAEliminar) return;
-            try {
-                const res = await fetch('/controllers/sve_facturaUploaderController.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        accion: 'eliminar_factura_multiple',
-                        id: facturaAEliminar
-                    })
-                });
-                const json = await res.json();
-                if (!json.success) throw new Error(json.message);
-
-                showAlert('success', 'Factura eliminada correctamente ✅');
-                cerrarModalEliminarFactura();
-                getFacturasPedido();
-            } catch (err) {
-                showAlert('error', 'Error al eliminar factura');
-                console.error(err);
-            }
-        });
     </script>
 
     <!-- Modal de confirmación para eliminar -->
@@ -680,7 +683,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <!-- Modal de confirmación para eliminar factura -->
-<div id="modalEliminarFactura" class="modal" style="display: none; z-index: 10001;">
+    <div id="modalEliminarFactura" class="modal" style="display: none; z-index: 10001;">
         <div class="modal-content">
             <h3>¿Estás seguro de eliminar esta factura?</h3>
             <p>No se podrá recuperar una vez eliminada.</p>
