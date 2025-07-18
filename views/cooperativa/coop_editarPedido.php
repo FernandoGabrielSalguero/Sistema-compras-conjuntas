@@ -313,7 +313,7 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
                     cantidad: tr.querySelector('input[name="productos[][cantidad]"]').value,
                     categoria: tr.children[1].textContent.trim(),
                     unidad: tr.children[2].textContent.trim(),
-                    precio: parseFloat(tr.children[4].textContent.replace('$', '')),
+                    precio: parseFloat(tr.children[4].textContent.replace('$', '').replace(/,/g, '')),
                     alicuota: parseFloat(tr.children[5].textContent.replace('%', ''))
                 });
             });
