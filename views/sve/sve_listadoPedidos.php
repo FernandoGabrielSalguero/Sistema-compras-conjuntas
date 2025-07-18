@@ -33,6 +33,44 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- descargar imagen  -->
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
+    <style>
+        .drop-area {
+            border: 2px dashed #7c3aed;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .drop-area.dragover {
+            background-color: #ede9fe;
+        }
+
+        .lista-facturas {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 0.5rem;
+        }
+
+        .item-factura {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item-factura a {
+            text-decoration: none;
+            color: #4f46e5;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -246,14 +284,24 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <td>$${parseFloat(p.total_iva).toFixed(2)}</td>
                     <td><strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></td>
                     <td>
-                    ${p.factura 
-                        ? `<button class="btn-icon" onclick="verFactura('${p.factura}')" data-tooltip="Ver factura">
-                        <i class="material-icons" style="color:green;">visibility</i>
-                        </button>`
-                        : `<button class="btn-icon" onclick="cargarFactura(${p.id})" data-tooltip="Subir factura">
-                        <i class="material-icons" style="color:orange;">upload_file</i>
-                        </button>`
-                    }
+    <button class="btn-icon" onclick="abrirModalFacturas(${p.id})" data-tooltip="Ver / Cargar facturas">
+        <i class="material-icons" style="color:#5b21b6; position: relative;">
+            attach_file
+        </i>
+        ${p.cantidad_facturas > 0 
+            ? `<span style="
+                    position: absolute;
+                    top: -6px;
+                    right: -6px;
+                    background: #5b21b6;
+                    color: white;
+                    border-radius: 50%;
+                    font-size: 10px;
+                    padding: 2px 5px;
+                ">${p.cantidad_facturas}</span>` 
+            : ''
+        }
+    </button>
                     </td>
                     <td>
                         <button class="btn-icon" onclick="verPedido(${p.id})" data-tooltip="Ver detalle">
@@ -298,15 +346,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             // 🟢 Iniciar
             cargarResumen();
             cargarPedidos();
-
-            // funciones para subir la factura
-            window.cargarFactura = (pedidoId) => {
-                const input = document.getElementById('inputFactura');
-                const hidden = document.getElementById('pedidoFacturaId');
-
-                hidden.value = pedidoId;
-                input.click();
-            };
 
             // Cuando el usuario selecciona el archivo
             document.getElementById('inputFactura').addEventListener('change', async function() {
@@ -570,13 +609,121 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 document.getElementById('iframeEditarModal').style.display = 'none';
             }
         });
-    </script>
 
-    <!-- Formulario oculto para cargar la factura -->
-    <form id="formFactura" style="display: none;" enctype="multipart/form-data">
-        <input type="file" id="inputFactura" name="factura" accept=".pdf,.jpg,.jpeg,.png">
-        <input type="hidden" id="pedidoFacturaId" name="pedido_id">
-    </form>
+        // subir las facturas con el drag and drop
+        let pedidoActualFacturas = null;
+
+        window.abrirModalFacturas = function(pedidoId) {
+            pedidoActualFacturas = pedidoId;
+            document.getElementById('facturaPedidoId').textContent = pedidoId;
+            document.getElementById('modalFacturas').style.display = 'flex';
+            getFacturasPedido();
+        };
+
+        function cerrarModalFacturas() {
+            document.getElementById('modalFacturas').style.display = 'none';
+            document.getElementById('listaFacturas').innerHTML = '';
+            document.getElementById('contadorFacturas').textContent = '0';
+        }
+
+        async function getFacturasPedido() {
+            try {
+                const res = await fetch(`/controllers/sve_facturaUploaderController.php?listar=1&id=${pedidoActualFacturas}`);
+                const json = await res.json();
+                if (!json.success) throw new Error(json.message);
+
+                const lista = document.getElementById('listaFacturas');
+                const contador = document.getElementById('contadorFacturas');
+                lista.innerHTML = '';
+                contador.textContent = json.data.length;
+
+                json.data.forEach(f => {
+                    const fila = document.createElement('div');
+                    fila.className = 'item-factura';
+                    fila.innerHTML = `
+                <a href="/uploads/tax_invoices/${f.nombre_archivo}" target="_blank">${f.nombre_archivo}</a>
+                <button class="btn-icon" onclick="eliminarFactura(${f.id})">
+                    <span class="material-icons" style="color:red;">delete</span>
+                </button>
+            `;
+                    lista.appendChild(fila);
+                });
+            } catch (err) {
+                showAlert('error', 'Error al obtener facturas');
+                console.error(err);
+            }
+        }
+
+        async function eliminarFactura(facturaId) {
+            if (!confirm('¿Eliminar esta factura?')) return;
+            try {
+                const res = await fetch('/controllers/sve_facturaUploaderController.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        accion: 'eliminar_factura_multiple',
+                        id: facturaId
+                    })
+                });
+                const json = await res.json();
+                if (!json.success) throw new Error(json.message);
+                getFacturasPedido();
+            } catch (err) {
+                showAlert('error', 'Error al eliminar factura');
+                console.error(err);
+            }
+        }
+
+        // 🔄 Drag and Drop
+        const dropArea = document.getElementById('dropArea');
+        const inputMulti = document.getElementById('inputMultiFactura');
+
+        dropArea.addEventListener('click', () => inputMulti.click());
+
+        dropArea.addEventListener('dragover', e => {
+            e.preventDefault();
+            dropArea.classList.add('dragover');
+        });
+        dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
+        dropArea.addEventListener('drop', e => {
+            e.preventDefault();
+            dropArea.classList.remove('dragover');
+            subirFacturas(e.dataTransfer.files);
+        });
+        inputMulti.addEventListener('change', e => {
+            subirFacturas(e.target.files);
+        });
+
+        async function subirFacturas(archivos) {
+            const listaActual = document.getElementById('listaFacturas');
+            const actuales = listaActual.childElementCount;
+            if (actuales + archivos.length > 30) {
+                showAlert('error', 'Máximo 30 facturas por pedido');
+                return;
+            }
+
+            const formData = new FormData();
+            for (let a of archivos) {
+                formData.append('facturas[]', a);
+            }
+            formData.append('pedido_id', pedidoActualFacturas);
+
+            try {
+                const res = await fetch('/controllers/sve_facturaUploaderController.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const json = await res.json();
+                if (!json.success) throw new Error(json.message);
+                getFacturasPedido();
+            } catch (err) {
+                showAlert('error', 'Error al subir facturas');
+                console.error(err);
+            }
+        }
+    </script>
 
     <!-- Modal de confirmación para eliminar -->
     <div id="modalEliminar" class="modal" style="display: none;">
@@ -675,6 +822,27 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             <div class="modal-actions">
                 <button class="btn btn-cancelar" onclick="cerrarModalVerPedido()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Facturas del Pedido -->
+    <div id="modalFacturas" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 700px; width: 95%;">
+            <h3>Gestión de Facturas</h3>
+            <p><strong>Pedido #<span id="facturaPedidoId"></span></strong> &nbsp;—&nbsp; <span id="contadorFacturas"></span>/30 facturas</p>
+
+            <!-- Área Drag & Drop -->
+            <div id="dropArea" class="drop-area">
+                <p>Arrastrá hasta 30 archivos PDF/JPG/PNG aquí o hacé click para seleccionar</p>
+                <input type="file" id="inputMultiFactura" accept=".pdf,.jpg,.jpeg,.png" multiple style="display: none;">
+            </div>
+
+            <!-- Lista de facturas subidas -->
+            <div id="listaFacturas" class="lista-facturas"></div>
+
+            <div class="modal-actions">
+                <button class="btn btn-cancelar" onclick="cerrarModalFacturas()">Cerrar</button>
             </div>
         </div>
     </div>
