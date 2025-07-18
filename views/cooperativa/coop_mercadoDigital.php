@@ -399,9 +399,11 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                 const datos = await res.json();
 
                                 if (!datos) return;
+                                const cuit = datos.cuit ? String(datos.cuit).trim() : '';
+                                const telefono = datos.telefono ? String(datos.telefono).trim() : '';
 
-                                const cuitFaltante = !datos.cuit || datos.cuit.trim() === '';
-                                const telefonoFaltante = !datos.telefono || datos.telefono.trim() === '';
+                                const cuitFaltante = cuit === '';
+                                const telefonoFaltante = telefono === '';
 
                                 if (cuitFaltante || telefonoFaltante) {
                                     document.getElementById('id_real_productor_modal').value = id_real;
@@ -452,35 +454,35 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
 
                         // revision de campos cuit y telenofo
-                                            document.getElementById('formDatosFaltantes').addEventListener('submit', async function(e) {
-                        e.preventDefault();
-                        const form = e.target;
-                        const formData = new FormData(form);
-                        const data = Object.fromEntries(formData.entries());
+                        document.getElementById('formDatosFaltantes').addEventListener('submit', async function(e) {
+                            e.preventDefault();
+                            const form = e.target;
+                            const formData = new FormData(form);
+                            const data = Object.fromEntries(formData.entries());
 
-                        try {
-                            const res = await fetch('/controllers/coop_MercadoDigitalController.php', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    accion: 'actualizar_datos_productor',
-                                    ...data
-                                })
-                            });
-                            const json = await res.json();
-                            if (json.success) {
-                                showAlert('success', 'Datos actualizados correctamente');
-                                cerrarModalDatos();
-                            } else {
-                                showAlert('error', json.message);
+                            try {
+                                const res = await fetch('/controllers/coop_MercadoDigitalController.php', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        accion: 'actualizar_datos_productor',
+                                        ...data
+                                    })
+                                });
+                                const json = await res.json();
+                                if (json.success) {
+                                    showAlert('success', 'Datos actualizados correctamente');
+                                    cerrarModalDatos();
+                                } else {
+                                    showAlert('error', json.message);
+                                }
+                            } catch (err) {
+                                console.error('❌ Error al guardar datos:', err);
+                                showAlert('error', 'Error inesperado');
                             }
-                        } catch (err) {
-                            console.error('❌ Error al guardar datos:', err);
-                            showAlert('error', 'Error inesperado');
-                        }
-                    });
+                        });
                     });
 
                     // acordeones
@@ -830,7 +832,6 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     function cerrarModalDatos() {
                         document.getElementById('modalDatosFaltantes').style.display = 'none';
                     }
-
                 </script>
 
                 <!-- Alert -->
@@ -871,7 +872,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         <div class="modal-content">
             <h3>Datos faltantes del productor</h3>
             <p>Este productor no tiene cargado su CUIT o teléfono. Sin estos dos campos, no se puede cargar el pedido. Por favor, completalos.</p>
-<br>
+            <br>
             <form id="formDatosFaltantes">
                 <div class="input-group">
                     <label for="telefonoProductor">Teléfono</label>
