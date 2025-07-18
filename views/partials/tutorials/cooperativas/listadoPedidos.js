@@ -107,7 +107,7 @@ function iniciarTutorialDashboard() {
         // Esperar al render para posicionar y hacer scroll
         setTimeout(() => {
             // Scroll vertical
-            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
             // Scroll horizontal si aplica
             if (paso.scrollHorizontal) {
