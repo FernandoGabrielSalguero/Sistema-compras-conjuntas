@@ -139,11 +139,16 @@ VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
     public function obtenerListadoPedidos($search = '', $offset = 0, $limit = 25)
     {
         $sql = "
-        SELECT 
-            p.*,
-            i1.nombre AS nombre_cooperativa,
-            i2.nombre AS nombre_productor
-        FROM pedidos p
+SELECT 
+    p.*,
+    i1.nombre AS nombre_cooperativa,
+    i2.nombre AS nombre_productor,
+    (
+        SELECT COUNT(*) 
+        FROM factura_pedidos fp 
+        WHERE fp.pedido_id = p.id
+    ) AS cantidad_facturas
+FROM pedidos p
         JOIN usuarios u1 ON u1.id_real = p.cooperativa
         JOIN usuarios_info i1 ON i1.usuario_id = u1.id
         JOIN usuarios u2 ON u2.id_real = p.productor

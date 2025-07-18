@@ -38,7 +38,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['facturas'])) {
             $ext = strtolower(pathinfo($nombreOriginal, PATHINFO_EXTENSION));
             if (!in_array($ext, $extensionesPermitidas)) continue;
 
-            $nombreFinal = 'factura_' . $pedidoId . '_' . time() . '_' . uniqid() . '.' . $ext;
+            // Limpiar nombre de caracteres especiales
+            $baseName = pathinfo($nombreOriginal, PATHINFO_FILENAME);
+            $baseName = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $baseName);
+            $nombreLimpio = $baseName . '.' . $ext;
+
+            // Verificar si ya existe para este pedido
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM factura_pedidos WHERE pedido_id = ? AND nombre_archivo = ?");
+            $stmt->execute([$pedidoId, $nombreLimpio]);
+            $existe = $stmt->fetchColumn();
+            if ($existe > 0) continue;
+
+            // Si el archivo ya existe físicamente, renombrarlo (evitar sobrescribir archivos en disco)
+            $nombreFinal = $nombreLimpio;
+            $contador = 1;
+            while (file_exists($carpetaDestino . $nombreFinal)) {
+                $nombreFinal = $baseName . "_{$contador}." . $ext;
+                $contador++;
+            }
+
             $rutaFinal = $carpetaDestino . $nombreFinal;
 
             if (move_uploaded_file($tmp, $rutaFinal)) {
@@ -59,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['facturas'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['listar']) && isset($_GET['id'])) {
     $pedidoId = intval($_GET['id']);
     try {
-        $stmt = $pdo->prepare("SELECT id, nombre_archivo, extension FROM factura_pedidos WHERE pedido_id = ?");
+        $stmt = $pdo->prepare("SELECT id, nombre_archivo, extension, fecha_subida FROM factura_pedidos WHERE pedido_id = ?");
         $stmt->execute([$pedidoId]);
         $facturas = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(['success' => true, 'data' => $facturas]);
