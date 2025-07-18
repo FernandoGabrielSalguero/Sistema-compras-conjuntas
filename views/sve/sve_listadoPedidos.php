@@ -347,32 +347,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             cargarResumen();
             cargarPedidos();
 
-            // Cuando el usuario selecciona el archivo
-            document.getElementById('inputFactura').addEventListener('change', async function() {
-                console.log('📦 Archivo seleccionado:', this.files[0]);
-                const form = document.getElementById('formFactura');
-                const formData = new FormData(form);
-                console.log('📤 Enviando a servidor con FormData:', [...formData.entries()]);
-
-                try {
-                    const res = await fetch('/controllers/sve_facturaUploaderController.php', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    const json = await res.json();
-                    if (!json.success) throw new Error(json.message);
-
-                    showAlert('success', 'Factura cargada con éxito ✅');
-                    setTimeout(() => location.reload(), 1000);
-                } catch (err) {
-                    console.error('❌ Error al subir factura:', err);
-                    showAlert('error', 'Error al subir la factura ❌');
-                }
-
-                this.value = ''; // limpiar input
-            });
-
             // eliminar pedidos
             let pedidoAEliminar = null;
 
@@ -679,6 +653,28 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         // 🔄 Drag and Drop
         const dropArea = document.getElementById('dropArea');
         const inputMulti = document.getElementById('inputMultiFactura');
+
+        if (dropArea && inputMulti) {
+            dropArea.addEventListener('click', () => inputMulti.click());
+
+            dropArea.addEventListener('dragover', e => {
+                e.preventDefault();
+                dropArea.classList.add('dragover');
+            });
+
+            dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
+
+            dropArea.addEventListener('drop', e => {
+                e.preventDefault();
+                dropArea.classList.remove('dragover');
+                subirFacturas(e.dataTransfer.files);
+            });
+
+            inputMulti.addEventListener('change', e => {
+                subirFacturas(e.target.files);
+            });
+        }
+
 
         dropArea.addEventListener('click', () => inputMulti.click());
 
