@@ -680,7 +680,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <!-- Modal de confirmación para eliminar factura -->
-    <div id="modalEliminarFactura" class="modal" style="display: none;">
+<div id="modalEliminarFactura" class="modal" style="display: none; z-index: 10001;">
         <div class="modal-content">
             <h3>¿Estás seguro de eliminar esta factura?</h3>
             <p>No se podrá recuperar una vez eliminada.</p>
