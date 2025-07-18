@@ -182,9 +182,50 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
     </div>
 
 
+
     <script>
         console.log("🟢 Estos son los datos de sesión del usuario:");
         console.log(<?php echo json_encode($_SESSION, JSON_PRETTY_PRINT); ?>);
+
+        // <!-- contenedor de facturas -->
+
+        window.abrirModalFacturas = async function(pedidoId) {
+            try {
+                const res = await fetch(`/controllers/facturasController.php?listar=1&pedido_id=${pedidoId}`);
+                const json = await res.json();
+                if (!json.success) throw new Error(json.message);
+
+                const facturas = json.data;
+                let html = `<h3>Facturas del pedido #${pedidoId}</h3>`;
+
+                if (facturas.length === 0) {
+                    html += '<p>No hay facturas asociadas.</p>';
+                } else {
+                    html += '<ul>';
+                    facturas.forEach(f => {
+                        html += `<li><a href="/uploads/tax_invoices/${f.nombre}" target="_blank">${f.nombre}</a></li>`;
+                    });
+                    html += '</ul>';
+                }
+
+                // Mostramos modal
+                const cont = document.createElement('div');
+                cont.className = 'modal';
+                cont.innerHTML = `
+            <div class="modal-content">
+                ${html}
+                <div class="modal-actions">
+                    <button class="btn btn-cancelar" onclick="this.closest('.modal').remove()">Cerrar</button>
+                </div>
+            </div>`;
+                document.body.appendChild(cont);
+            } catch (err) {
+                alert(`Error al cargar facturas: ${err.message}`);
+            }
+        }
+
+
+
         document.addEventListener('DOMContentLoaded', () => {
             let paginaActual = 1;
             const limitePorPagina = 25;
@@ -228,13 +269,27 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     <td>$${parseFloat(p.total_iva).toFixed(2)}</td>
                     <td><strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></td>
                     <td class="tutorial-FacturaColumn">
-                    ${p.factura 
-                        ? `<button class="btn-icon" onclick="verFactura('${p.factura}')">
-                            <i class="material-icons" style="color:green;">visibility</i>
-                        </button>`
-                        : `Sin factura`
-                    }
-                    </td>
+<td class="tutorial-FacturaColumn">
+  ${p.cantidad_facturas > 0 
+    ? `<button class="btn-icon" onclick="abrirModalFacturas(${p.id})" data-tooltip="Ver facturas">
+        <i class="material-icons" style="color:#5b21b6; position: relative;">
+          attach_file
+        </i>
+        <span style="
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #5b21b6;
+            color: white;
+            border-radius: 50%;
+            font-size: 10px;
+            padding: 2px 5px;
+        ">${p.cantidad_facturas}</span>
+      </button>`
+    : '<span style="color:gray;">Sin facturas</span>'
+  }
+</td>
+
                     <td>${p.nombre_operativo || '-'}</td>
 <td class="tutorial-ColumnaAcciones">
     <button class="btn-icon" onclick="verPedido(${p.id})" data-tooltip="Ver pedido">
