@@ -628,8 +628,21 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
-        async function eliminarFactura(facturaId) {
-            if (!confirm('¿Eliminar esta factura?')) return;
+        let facturaAEliminar = null;
+
+        window.eliminarFactura = function(facturaId) {
+            facturaAEliminar = facturaId;
+            document.getElementById('modalEliminarFactura').style.display = 'flex';
+        };
+
+        function cerrarModalEliminarFactura() {
+            facturaAEliminar = null;
+            document.getElementById('modalEliminarFactura').style.display = 'none';
+        }
+        window.cerrarModalEliminarFactura = cerrarModalEliminarFactura;
+
+        document.getElementById('btnConfirmarEliminarFactura').addEventListener('click', async () => {
+            if (!facturaAEliminar) return;
             try {
                 const res = await fetch('/controllers/sve_facturaUploaderController.php', {
                     method: 'POST',
@@ -638,17 +651,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     },
                     body: JSON.stringify({
                         accion: 'eliminar_factura_multiple',
-                        id: facturaId
+                        id: facturaAEliminar
                     })
                 });
                 const json = await res.json();
                 if (!json.success) throw new Error(json.message);
+
+                showAlert('success', 'Factura eliminada correctamente ✅');
+                cerrarModalEliminarFactura();
                 getFacturasPedido();
             } catch (err) {
                 showAlert('error', 'Error al eliminar factura');
                 console.error(err);
             }
-        }
+        });
     </script>
 
     <!-- Modal de confirmación para eliminar -->
@@ -659,6 +675,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             <div class="modal-actions">
                 <button class="btn btn-aceptar" id="btnConfirmarEliminar">Eliminar</button>
                 <button class="btn btn-cancelar" onclick="cerrarModalEliminar()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para eliminar factura -->
+    <div id="modalEliminarFactura" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>¿Estás seguro de eliminar esta factura?</h3>
+            <p>No se podrá recuperar una vez eliminada.</p>
+            <div class="modal-actions">
+                <button class="btn btn-aceptar" id="btnConfirmarEliminarFactura">Eliminar</button>
+                <button class="btn btn-cancelar" onclick="cerrarModalEliminarFactura()">Cancelar</button>
             </div>
         </div>
     </div>
