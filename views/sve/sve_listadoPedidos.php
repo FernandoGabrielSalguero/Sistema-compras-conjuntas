@@ -674,24 +674,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 subirFacturas(e.target.files);
             });
         }
-
-
-        dropArea.addEventListener('click', () => inputMulti.click());
-
-        dropArea.addEventListener('dragover', e => {
-            e.preventDefault();
-            dropArea.classList.add('dragover');
-        });
-        dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
-        dropArea.addEventListener('drop', e => {
-            e.preventDefault();
-            dropArea.classList.remove('dragover');
-            subirFacturas(e.dataTransfer.files);
-        });
-        inputMulti.addEventListener('change', e => {
-            subirFacturas(e.target.files);
-        });
-
+        // Función para subir facturas
         async function subirFacturas(archivos) {
             const listaActual = document.getElementById('listaFacturas');
             const actuales = listaActual.childElementCount;
