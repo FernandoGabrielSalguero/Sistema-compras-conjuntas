@@ -279,8 +279,11 @@ async function exportarExtendido() {
     if (coopId) url.searchParams.append('cooperativa_id', coopId);
 
     try {
-        const res = await fetch(url);
-        const data = await res.json();
+const res = await fetch(url);
+const text = await res.text();
+console.log("Respuesta cruda:", text); // Agregalo
+const data = JSON.parse(text); // convertí manualmente
+
         if (!data.success) throw new Error(data.message);
 
         const pedidos = data.pedidos;

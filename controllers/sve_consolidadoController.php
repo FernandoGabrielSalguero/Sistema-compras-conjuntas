@@ -51,25 +51,28 @@ if (isset($_GET['action']) && $_GET['action'] === 'cooperativas') {
     exit;
 }
 
-// Obtener consolidado
-try {
-    $operativo_id = $_GET['operativo_id'] ?? null;
-    $cooperativa_id = $_GET['cooperativa_id'] ?? null;
-
-    $data = $model->obtenerConsolidadoPedidos($operativo_id, $cooperativa_id);
-    echo json_encode(['success' => true, 'consolidado' => $data]);
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Error extendido: ' . $e->getMessage()]);
-}
-
-// descargar tabla
+// Descargar tabla extendida
 if (isset($_GET['action']) && $_GET['action'] === 'descargar_extendido') {
     try {
         $operativo_id = $_GET['operativo_id'] ?? null;
         $cooperativa_id = $_GET['cooperativa_id'] ?? null;
         $data = $model->obtenerPedidosExtendidos($operativo_id, $cooperativa_id);
         echo json_encode(['success' => true, 'pedidos' => $data]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Error extendido: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
+// Obtener consolidado (solo si no hay action explícito)
+if (!isset($_GET['action'])) {
+    try {
+        $operativo_id = $_GET['operativo_id'] ?? null;
+        $cooperativa_id = $_GET['cooperativa_id'] ?? null;
+
+        $data = $model->obtenerConsolidadoPedidos($operativo_id, $cooperativa_id);
+        echo json_encode(['success' => true, 'consolidado' => $data]);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Error extendido: ' . $e->getMessage()]);
