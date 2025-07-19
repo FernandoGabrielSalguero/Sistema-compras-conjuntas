@@ -101,33 +101,33 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </div>
 
                 <!-- contenedor de consolidado -->
-<div class="card">
-    <h3>Listado de productos consolidados</h3>
-    <p>Visualizá el total de productos comprados por operativo.</p>
+                <div class="card tabla-card tutorial-operativos-disponibles">
+                    <div class="d-flex justify-between align-center mb-2">
+                        <h2>Consolidado de pedidos</h2>
+                        <span class="material-icons pointer" onclick="exportarAExcel()">download</span>
+                    </div>
+                    <p>Visualizá fácilmente la cantidad total de productos comprados por operativo.</p>
 
-    <div class="overflow-auto">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ID Operativo</th>
-                    <th>Producto</th>
-                    <th class="text-right">Cantidad</th>
-                    <th class="text-center">Unidad</th>
-                </tr>
-            </thead>
-            <tbody id="tablaConsolidado">
-                <!-- se completa desde JS -->
-            </tbody>
-        </table>
-    </div>
+                    <div class="tabla-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Operativo</th>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Unidad</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaConsolidado">
+                                <tr>
+                                    <td colspan="5">Cargando...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-    <div class="mt-2">
-        <button class="btn btn-aceptar" onclick="exportarAExcel()">
-            <span class="material-icons">download</span>
-            Exportar a Excel
-        </button>
-    </div>
-</div>
 
         </div>
 
@@ -145,45 +145,42 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
     <script>
         async function cargarConsolidado() {
-    const tbody = document.getElementById('tablaConsolidado');
-    tbody.innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
+            const tbody = document.getElementById('tablaConsolidado');
+            tbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
 
-    try {
-        const res = await fetch('/controllers/coop_consolidadoController.php');
-        const data = await res.json();
+            try {
+                const res = await fetch('/controllers/coop_consolidadoController.php');
+                const data = await res.json();
 
-        if (!data.success) throw new Error(data.message);
+                if (!data.success) throw new Error(data.message);
+                if (data.consolidado.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5">Sin datos disponibles.</td></tr>';
+                    return;
+                }
 
-        if (data.consolidado.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4">Sin datos disponibles.</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = '';
-
-        data.consolidado.forEach(row => {
-            const tr = document.createElement('tr');
-
-            tr.innerHTML = `
+                tbody.innerHTML = '';
+                data.consolidado.forEach((row, index) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                <td>${index + 1}</td>
                 <td>${row.operativo}</td>
                 <td>${row.producto}</td>
-                <td class="text-right">${row.cantidad_total}</td>
-                <td class="text-center">${row.unidad}</td>
+                <td>${row.cantidad_total}</td>
+                <td>${row.unidad}</td>
             `;
+                    tbody.appendChild(tr);
+                });
 
-            tbody.appendChild(tr);
-        });
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="5" style="color:red;">${err.message}</td></tr>`;
+            }
+        }
 
-    } catch (err) {
-        console.error(err);
-        tbody.innerHTML = `<tr><td colspan="4" style="color:red;">${err.message}</td></tr>`;
-    }
-}
-
-
+        document.addEventListener('DOMContentLoaded', cargarConsolidado);
 
         function exportarAExcel() {
-            const table = document.getElementById('tablaConsolidado');
+            const table = document.querySelector('.data-table');
             let csvContent = '';
             for (const row of table.rows) {
                 const rowData = Array.from(row.cells).map(cell => `"${cell.textContent}"`).join(',');
@@ -198,8 +195,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             link.download = 'consolidado_pedidos.csv';
             link.click();
         }
-
-        document.addEventListener('DOMContentLoaded', cargarConsolidado);
     </script>
 
     <!-- llamada de tutorial -->
