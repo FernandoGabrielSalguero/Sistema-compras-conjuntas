@@ -254,22 +254,11 @@ if (isset($_GET['ver']) && isset($_GET['id'])) {
             $stmtFact->execute([$id]);
             $pedido['cantidad_facturas'] = intval($stmtFact->fetchColumn());
 
+            // ✅ Solo UN echo json_encode aquí
             echo json_encode([
                 'success' => true,
                 'data' => $pedido,
                 'productos' => $productos
-            ]);
-
-            // 🧾 Obtener facturas del pedido
-            $stmtFacturas = $pdo->prepare("SELECT nombre_archivo FROM factura_pedidos WHERE pedido_id = ?");
-            $stmtFacturas->execute([$id]);
-            $facturas = $stmtFacturas->fetchAll(PDO::FETCH_ASSOC);
-
-            echo json_encode([
-                'success' => true,
-                'data' => $pedido,
-                'productos' => $productos,
-                'facturas' => $facturas
             ]);
         }
     } catch (Exception $e) {
@@ -277,6 +266,7 @@ if (isset($_GET['ver']) && isset($_GET['id'])) {
     }
     exit;
 }
+
 
 // ❌ Si llega acá, no hay endpoint válido
 http_response_code(400);
