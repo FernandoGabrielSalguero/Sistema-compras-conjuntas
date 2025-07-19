@@ -110,21 +110,21 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </div>
                     <p class="text-muted mb-3">Visualizá fácilmente la cantidad total de productos comprados por operativo.</p>
 
-                    <div class="overflow-auto mt-3">
-                        <table class="table table-sm text-sm" style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr class="text-bold border-bottom">
-                                    <th class="text-left px-3 py-2" style="border-bottom: 1px dotted #999;">Operativo</th>
-                                    <th class="text-left px-3 py-2" style="border-bottom: 1px dotted #999;">Producto</th>
-                                    <th class="text-right px-3 py-2" style="border-bottom: 1px dotted #999;">Cantidad</th>
-                                    <th class="text-center px-3 py-2" style="border-bottom: 1px dotted #999;">Unidad</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaConsolidado" class="bg-white">
-                                <!-- inyectado por JS -->
-                            </tbody>
-                        </table>
-                    </div>
+<div class="overflow-auto mt-3">
+    <table class="table table-sm text-sm">
+        <thead>
+            <tr class="text-bold border-bottom">
+                <th class="text-left px-3 py-2">Operativo</th>
+                <th class="text-left px-3 py-2">Producto</th>
+                <th class="text-right px-3 py-2">Cantidad</th>
+                <th class="text-center px-3 py-2">Unidad</th>
+            </tr>
+        </thead>
+        <tbody id="tablaConsolidado">
+            <!-- Inyectado vía JS -->
+        </tbody>
+    </table>
+</div>
                 </div>
 
         </div>
@@ -157,18 +157,21 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     return;
                 }
 
-                tbody.innerHTML = '';
+tbody.innerHTML = '';
 
-                data.consolidado.forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-    <td class="px-4 py-2">${row.operativo}</td>
-    <td class="px-4 py-2">${row.producto}</td>
-    <td class="text-right px-4 py-2">${row.cantidad_total}</td>
-    <td class="text-center px-4 py-2">${row.unidad}</td>
-`;
-                    tbody.appendChild(tr);
-                });
+data.consolidado.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.classList.add('border-bottom');
+
+    tr.innerHTML = `
+        <td class="px-3 py-2 text-left">${row.operativo}</td>
+        <td class="px-3 py-2 text-left">${row.producto}</td>
+        <td class="px-3 py-2 text-right">${row.cantidad_total}</td>
+        <td class="px-3 py-2 text-center">${row.unidad}</td>
+    `;
+
+    tbody.appendChild(tr);
+});
 
             } catch (err) {
                 console.error(err);
