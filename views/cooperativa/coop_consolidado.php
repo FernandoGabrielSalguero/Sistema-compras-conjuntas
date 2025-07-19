@@ -117,11 +117,10 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         </form>
                     </div>
 
-                    <div class="text-right tutorial-BotonDescargarExcel">
-                        <button id="btnDescargarExcel" class="btn btn-aceptar" onclick="exportarAExcel()"> Descargar la tabla a Excel
+                        <button id="btnDescargarExcel" class="btn btn-aceptar tutorial-BotonDescargarExcel" onclick="exportarAExcel()"> Descargar la tabla a Excel
                             <span class="material-icons">download</span>
                         </button>
-                    </div>
+
                 </div>
 
                 <!-- 🟨 TABLA DE CONSOLIDADO -->
