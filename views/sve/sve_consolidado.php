@@ -104,23 +104,28 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
                     <p>En esta página, vas a ver el resumen de la cantidad de productos pedidos. Podes además descargar la información en un archivo Excel.</p>
                     <br>
-                    <!-- Boton de tutorial -->
-                    <!-- <button id="btnIniciarTutorial" class="btn btn-aceptar">
-                        Tutorial
-                    </button> -->
                 </div>
 
                 <!-- 🟦 BUSCADOR Y EXPORTACIÓN -->
-                <div class="card card-grid grid-2 align-center justify-between tutorial-SeleccionarOperativo">
+                <div class="card card-grid grid-2 align-center justify-between">
                     <div>
                         <h2>Filtrar por operativo</h2>
                         <form class="form-modern">
-                            <div class="input-group tutorial-SeleccionarOperativo">
+                            <div class="input-group">
                                 <label for="operativo">Operativo</label>
                                 <div class="input-icon">
                                     <span class="material-icons">event</span>
                                     <select id="operativo" name="operativo">
                                         <option value="">Todos los operativos</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="cooperativa">Cooperativas</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">event</span>
+                                    <select id="cooperativa" name="cooperativa">
+                                        <option value="">Todas las cooperativas</option>
                                     </select>
                                 </div>
                             </div>
@@ -134,7 +139,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 </div>
 
                 <!-- 🟨 TABLA DE CONSOLIDADO -->
-                <div class="card tabla-card tutorial-TablaConsolidado">
+                <div class="card tabla-card">
                     <div class="d-flex justify-between align-center mb-2">
                         <h2>Consolidado de pedidos</h2>
                     </div>
