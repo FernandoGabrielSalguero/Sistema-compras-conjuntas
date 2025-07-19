@@ -59,7 +59,8 @@ try {
     $data = $model->obtenerConsolidadoPedidos($operativo_id, $cooperativa_id);
     echo json_encode(['success' => true, 'consolidado' => $data]);
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Error extendido: ' . $e->getMessage()]);
 }
 
 // descargar tabla
@@ -70,8 +71,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'descargar_extendido') {
         $data = $model->obtenerPedidosExtendidos($operativo_id, $cooperativa_id);
         echo json_encode(['success' => true, 'pedidos' => $data]);
     } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Error extendido: ' . $e->getMessage()]);
     }
     exit;
 }
-

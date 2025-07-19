@@ -132,11 +132,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         </form>
                     </div>
 
-<button class="btn btn-outline" onclick="exportarExtendido()">
-    Exportar extendido
-    <span class="material-icons">file_download</span>
-</button>
-
+                    <button id="btnDescargarExcel" class="btn btn-aceptar" onclick="exportarExtendido()"> Descargar la tabla a Excel
+                        <span class="material-icons">download</span>
+                    </button>
                 </div>
 
                 <!-- 🟨 TABLA DE CONSOLIDADO -->

@@ -76,12 +76,12 @@ public function obtenerPedidosExtendidos($operativo_id = null, $cooperativa_id =
 
     $params = [];
 
-    if ($operativo_id) {
+    if (!empty($operativo_id)) {
         $sql .= " AND ped.operativo_id = :operativo_id";
         $params['operativo_id'] = $operativo_id;
     }
 
-    if ($cooperativa_id) {
+    if (!empty($cooperativa_id)) {
         $sql .= " AND ped.cooperativa = :cooperativa_id";
         $params['cooperativa_id'] = $cooperativa_id;
     }
@@ -92,6 +92,7 @@ public function obtenerPedidosExtendidos($operativo_id = null, $cooperativa_id =
     $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
 
 
 
