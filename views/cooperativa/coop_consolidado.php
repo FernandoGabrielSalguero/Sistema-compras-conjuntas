@@ -110,21 +110,21 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </div>
                     <p class="text-muted mb-3">Visualizá fácilmente la cantidad total de productos comprados por operativo.</p>
 
-<div class="overflow-auto mt-3">
-    <table class="table table-sm text-sm">
-        <thead>
-            <tr class="text-bold border-bottom">
-                <th class="text-left px-3 py-2">Operativo</th>
-                <th class="text-left px-3 py-2">Producto</th>
-                <th class="text-right px-3 py-2">Cantidad</th>
-                <th class="text-center px-3 py-2">Unidad</th>
-            </tr>
-        </thead>
-        <tbody id="tablaConsolidado">
-            <!-- Inyectado vía JS -->
-        </tbody>
-    </table>
-</div>
+                    <div class="overflow-auto">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th class="text-left">Operativo</th>
+                                    <th class="text-left">Producto</th>
+                                    <th class="text-right">Cantidad</th>
+                                    <th class="text-center">Unidad</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaConsolidado">
+                                <!-- Filas se insertan dinámicamente con JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
         </div>
@@ -151,33 +151,32 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 const data = await res.json();
 
                 if (!data.success) throw new Error(data.message);
-
                 if (data.consolidado.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="4">Sin datos disponibles.</td></tr>';
                     return;
                 }
 
-tbody.innerHTML = '';
+                tbody.innerHTML = '';
 
-data.consolidado.forEach(row => {
-    const tr = document.createElement('tr');
-    tr.classList.add('border-bottom');
+                data.consolidado.forEach(row => {
+                    const tr = document.createElement('tr');
 
-    tr.innerHTML = `
-        <td class="px-3 py-2 text-left">${row.operativo}</td>
-        <td class="px-3 py-2 text-left">${row.producto}</td>
-        <td class="px-3 py-2 text-right">${row.cantidad_total}</td>
-        <td class="px-3 py-2 text-center">${row.unidad}</td>
-    `;
+                    tr.innerHTML = `
+                <td class="text-left">${row.operativo}</td>
+                <td class="text-left">${row.producto}</td>
+                <td class="text-right">${row.cantidad_total}</td>
+                <td class="text-center">${row.unidad}</td>
+            `;
 
-    tbody.appendChild(tr);
-});
+                    tbody.appendChild(tr);
+                });
 
             } catch (err) {
                 console.error(err);
                 tbody.innerHTML = `<tr><td colspan="4" style="color:red;">${err.message}</td></tr>`;
             }
         }
+
 
         function exportarAExcel() {
             const table = document.getElementById('tablaConsolidado');
