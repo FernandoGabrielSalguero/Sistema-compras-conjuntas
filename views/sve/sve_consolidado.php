@@ -5,7 +5,7 @@ error_reporting(E_ALL);
 
 // Iniciar sesión y configurar parámetros de seguridad
 require_once '../../middleware/authMiddleware.php';
-checkAccess('cooperativa');
+checkAccess('sve');
 
 // Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
@@ -13,8 +13,6 @@ $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
 $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
-
-$cierre_info = $_SESSION['cierre_info'] ?? null;
 ?>
 
 <!DOCTYPE html>
@@ -107,9 +105,9 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     <p>En esta página, vas a ver el resumen de la cantidad de productos pedidos. Podes además descargar la información en un archivo Excel.</p>
                     <br>
                     <!-- Boton de tutorial -->
-                    <button id="btnIniciarTutorial" class="btn btn-aceptar">
+                    <!-- <button id="btnIniciarTutorial" class="btn btn-aceptar">
                         Tutorial
-                    </button>
+                    </button> -->
                 </div>
 
                 <!-- 🟦 BUSCADOR Y EXPORTACIÓN -->
@@ -190,7 +188,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
         async function cargarOperativos() {
             try {
-                const res = await fetch('/controllers/coop_consolidadoController.php?action=operativos');
+                const res = await fetch('/controllers/sve_consolidadoController.php?action=operativos');
                 const data = await res.json();
 
                 if (!data.success) throw new Error(data.message);
@@ -213,7 +211,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             tbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
 
             try {
-                const url = new URL('/controllers/coop_consolidadoController.php', window.location.origin);
+                const url = new URL('/controllers/sve_consolidadoController.php', window.location.origin);
                 if (operativoId) url.searchParams.append('operativo_id', operativoId);
 
                 const res = await fetch(url);
@@ -264,7 +262,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
 
     <!-- llamada de tutorial -->
-    <script src="../partials/tutorials/cooperativas/consolidado.js?v=<?= time() ?>" defer></script>
+    <!-- <script src="../partials/tutorials/cooperativas/consolidado.js?v=<?= time() ?>" defer></script> -->
 
 
 </body>
