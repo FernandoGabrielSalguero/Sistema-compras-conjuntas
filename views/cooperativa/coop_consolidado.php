@@ -100,36 +100,34 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </button>
                 </div>
 
-<!-- Tarjeta de buscador -->
-<div class="card card-grid grid-2 align-center justify-between">
-    <div>
-        <h2>Filtrar por operativo</h2>
-        <form class="form-modern">
-            <div class="input-group tutorial-SeleccionarOperativo">
-                <label for="operativo">Operativo</label>
-                <div class="input-icon">
-                    <span class="material-icons">event</span>
-                    <select id="operativo" name="operativo">
-                        <option value="">Todos los operativos</option>
-                    </select>
+                <!-- 🟦 BUSCADOR Y EXPORTACIÓN -->
+                <div class="card card-grid grid-2 align-center justify-between">
+                    <div>
+                        <h2>Filtrar por operativo</h2>
+                        <form class="form-modern">
+                            <div class="input-group tutorial-SeleccionarOperativo">
+                                <label for="operativo">Operativo</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">event</span>
+                                    <select id="operativo" name="operativo">
+                                        <option value="">Todos los operativos</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="text-right">
+                        <button id="btnDescargarExcel" class="btn btn-aceptar" onclick="exportarAExcel()">
+                            <span class="material-icons">download</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </form>
-    </div>
 
-    <div class="text-right">
-        <button id="btnDescargarExcel" class="btn btn-aceptar" onclick="exportarAExcel()">
-            <span class="material-icons">download</span>
-        </button>
-    </div>
-</div>
-
-
-                <!-- contenedor de consolidado -->
+                <!-- 🟨 TABLA DE CONSOLIDADO -->
                 <div class="card tabla-card">
                     <div class="d-flex justify-between align-center mb-2">
                         <h2>Consolidado de pedidos</h2>
-                        <span class="material-icons pointer" onclick="exportarAExcel()">download</span>
                     </div>
                     <p>Visualizá fácilmente la cantidad total de productos comprados por operativo.</p>
 
@@ -154,6 +152,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </div>
 
 
+
         </div>
 
 
@@ -169,58 +168,88 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     </div>
 
     <script>
-        async function cargarConsolidado() {
-            const tbody = document.getElementById('tablaConsolidado');
-            tbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+    document.addEventListener('DOMContentLoaded', () => {
+        cargarOperativos();
+        cargarConsolidado();
 
-            try {
-                const res = await fetch('/controllers/coop_consolidadoController.php');
-                const data = await res.json();
+        document.getElementById('operativo').addEventListener('change', function () {
+            cargarConsolidado(this.value);
+        });
+    });
 
-                if (!data.success) throw new Error(data.message);
-                if (data.consolidado.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5">Sin datos disponibles.</td></tr>';
-                    return;
-                }
+    async function cargarOperativos() {
+        try {
+            const res = await fetch('/controllers/coop_operativosController.php');
+            const data = await res.json();
 
-                tbody.innerHTML = '';
-                data.consolidado.forEach((row, index) => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${row.operativo}</td>
-                <td>${row.producto}</td>
-                <td>${row.cantidad_total}</td>
-                <td>${row.unidad}</td>
-            `;
-                    tbody.appendChild(tr);
-                });
+            if (!data.success) throw new Error(data.message);
 
-            } catch (err) {
-                console.error(err);
-                tbody.innerHTML = `<tr><td colspan="5" style="color:red;">${err.message}</td></tr>`;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', cargarConsolidado);
-
-        function exportarAExcel() {
-            const table = document.querySelector('.data-table');
-            let csvContent = '';
-            for (const row of table.rows) {
-                const rowData = Array.from(row.cells).map(cell => `"${cell.textContent}"`).join(',');
-                csvContent += rowData + '\n';
-            }
-
-            const blob = new Blob(["\uFEFF" + csvContent], {
-                type: 'text/csv;charset=utf-8;'
+            const select = document.getElementById('operativo');
+            data.operativos.forEach(op => {
+                const option = document.createElement('option');
+                option.value = op.id;
+                option.textContent = op.nombre;
+                select.appendChild(option);
             });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'consolidado_pedidos.csv';
-            link.click();
+        } catch (err) {
+            console.error('Error al cargar operativos:', err.message);
         }
-    </script>
+    }
+
+    async function cargarConsolidado(operativoId = '') {
+        const tbody = document.getElementById('tablaConsolidado');
+        tbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+
+        try {
+            const url = new URL('/controllers/coop_consolidadoController.php', window.location.origin);
+            if (operativoId) url.searchParams.append('operativo_id', operativoId);
+
+            const res = await fetch(url);
+            const data = await res.json();
+
+            if (!data.success) throw new Error(data.message);
+            if (data.consolidado.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">Sin datos disponibles.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            data.consolidado.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${row.operativo}</td>
+                    <td>${row.producto}</td>
+                    <td>${row.cantidad_total}</td>
+                    <td>${row.unidad}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = `<tr><td colspan="5" style="color:red;">${err.message}</td></tr>`;
+        }
+    }
+
+    function exportarAExcel() {
+        const table = document.querySelector('.data-table');
+        let csvContent = '';
+        for (const row of table.rows) {
+            const rowData = Array.from(row.cells).map(cell => `"${cell.textContent}"`).join(',');
+            csvContent += rowData + '\n';
+        }
+
+        const blob = new Blob(["\uFEFF" + csvContent], {
+            type: 'text/csv;charset=utf-8;'
+        });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'consolidado_pedidos.csv';
+        link.click();
+    }
+</script>
+
 
     <!-- llamada de tutorial -->
     <script src="../partials/tutorials/cooperativas/consolidado.js?v=<?= time() ?>" defer></script>
