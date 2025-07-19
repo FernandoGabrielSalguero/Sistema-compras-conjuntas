@@ -195,18 +195,20 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                 const json = await res.json();
                 if (!json.success) throw new Error(json.message);
 
-                const facturas = json.data;
-                let html = `<h3>Facturas del pedido #${pedidoId}</h3>`;
+                const facturas = json.facturas || [];
+                htmlFacturas = '<strong>Facturas:</strong> ';
 
                 if (facturas.length === 0) {
-                    html += '<p>No hay facturas asociadas.</p>';
+                    htmlFacturas += '<span style="color:gray;">Sin facturas</span>';
                 } else {
-                    html += '<ul>';
+                    htmlFacturas += `<ul style="margin: 0.5rem 0;">`;
                     facturas.forEach(f => {
-                        html += `<li><a href="/uploads/tax_invoices/${f.nombre}" target="_blank">${f.nombre}</a></li>`;
+                        htmlFacturas += `<li><a href="/uploads/tax_invoices/${f.nombre_archivo}" target="_blank">${f.nombre_archivo}</a></li>`;
                     });
-                    html += '</ul>';
+                    htmlFacturas += `</ul>`;
                 }
+
+                contenedor.innerHTML += `<div>${htmlFacturas}</div>`;
 
                 // Mostramos modal
                 const cont = document.createElement('div');
@@ -268,27 +270,17 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     <td>$${parseFloat(p.total_sin_iva).toFixed(2)}</td>
                     <td>$${parseFloat(p.total_iva).toFixed(2)}</td>
                     <td><strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></td>
-                    <td class="tutorial-FacturaColumn">
+
 <td class="tutorial-FacturaColumn">
-  ${p.cantidad_facturas > 0 
-    ? `<button class="btn-icon" onclick="abrirModalFacturas(${p.id})" data-tooltip="Ver facturas">
-        <i class="material-icons" style="color:#5b21b6; position: relative;">
-          attach_file
-        </i>
-        <span style="
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            background: #5b21b6;
-            color: white;
-            border-radius: 50%;
-            font-size: 10px;
-            padding: 2px 5px;
-        ">${p.cantidad_facturas}</span>
-      </button>`
-    : '<span style="color:gray;">Sin facturas</span>'
+  ${
+    p.cantidad_facturas > 0 
+    ? `<span class="badge badge-success" style="background: #5b21b6; color: white; padding: 4px 8px; border-radius: 999px;">
+        Facturas listas (${p.cantidad_facturas})
+      </span>`
+    : '<span class="badge badge-warning" style="color: gray;">Sin facturas</span>'
   }
 </td>
+
 
                     <td>${p.nombre_operativo || '-'}</td>
 <td class="tutorial-ColumnaAcciones">

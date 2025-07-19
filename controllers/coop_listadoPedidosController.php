@@ -229,10 +229,16 @@ if (isset($_GET['ver']) && isset($_GET['id'])) {
             $cantidadFacturas = $stmtFact->fetchColumn();
             $pedido['cantidad_facturas'] = intval($cantidadFacturas);
 
+            // 🧾 Obtener facturas del pedido
+$stmtFacturas = $pdo->prepare("SELECT nombre_archivo FROM factura_pedidos WHERE pedido_id = ?");
+$stmtFacturas->execute([$id]);
+$facturas = $stmtFacturas->fetchAll(PDO::FETCH_ASSOC);
+
             echo json_encode([
                 'success' => true,
                 'data' => $pedido,
-                'productos' => $productos
+                'productos' => $productos,
+                'facturas' => $facturas
             ]);
         }
     } catch (Exception $e) {
