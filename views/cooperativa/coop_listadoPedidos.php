@@ -437,27 +437,13 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         <div><strong>IVA:</strong> $${parseFloat(p.total_iva).toFixed(2)}</div>
         <div><strong>Total Pedido:</strong> <strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></div>
 
-<div>
-  <strong>Facturas:</strong>
-  ${p.cantidad_facturas > 0 
-    ? `<button class="btn-icon" onclick="abrirModalFacturas(${p.id})" data-tooltip="Ver facturas">
-        <i class="material-icons" style="color:#5b21b6; position: relative;">
-          attach_file
-        </i>
-        <span style="
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            background: #5b21b6;
-            color: white;
-            border-radius: 50%;
-            font-size: 10px;
-            padding: 2px 5px;
-        ">${p.cantidad_facturas}</span>
-      </button>`
-    : '<span style="color:gray;">Sin facturas</span>'
-  }
-</div>
+        <div>
+        <strong>Factura:</strong> 
+        ${p.cantidad_facturas > 0 
+            ? '<span style="color:green;">Factura/s cargadas</span>' 
+            : '<span style="color:gray;">Factura/s sin cargar aún</span>'
+        }
+        </div>
         <div></div>
     </div>
 `;
