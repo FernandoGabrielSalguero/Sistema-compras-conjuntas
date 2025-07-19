@@ -20,7 +20,7 @@ function iniciarTutorialDashboard() {
         {
             selector: '.tutorial-TablaConsolidado',
             mensaje: 'En esta tabla se muestra el consolidado de pedidos de todos los operativos. Aquí podrás ver el total de productos, cantidades y precios por cada cooperativa.',
-            posicion: 'right'
+            posicion: 'top'
         }
 
     ];
