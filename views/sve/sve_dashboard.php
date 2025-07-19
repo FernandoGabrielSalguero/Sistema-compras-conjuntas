@@ -53,6 +53,9 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     <li onclick="location.href='sve_dashboard.php'">
                         <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
                     </li>
+                    <li onclick="location.href='sve_consolidado.php'">
+                        <span class="material-icons" style="color: #5b21b6;">analytics</span><span class="link-text">Consolidado</span>
+                    </li>
                     <li onclick="location.href='sve_altausuarios.php'">
                         <span class="material-icons" style="color: #5b21b6;">person</span><span class="link-text">Alta usuarios</span>
                     </li>
