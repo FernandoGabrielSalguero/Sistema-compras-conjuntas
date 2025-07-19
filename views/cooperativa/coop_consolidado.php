@@ -110,18 +110,18 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </div>
                     <p class="text-muted mb-3">Visualizá fácilmente la cantidad total de productos comprados por operativo.</p>
 
-                    <div class="overflow-auto border-radius-xl shadow-sm mt-3">
-                        <table class="table zebra table-sm">
-                            <thead class="bg-light">
-                                <tr class="text-sm text-bold text-dark border-bottom">
-                                    <th class="text-left px-4 py-3">Operativo</th>
-                                    <th class="text-left px-4 py-3">Producto</th>
-                                    <th class="text-right px-4 py-3">Cantidad</th>
-                                    <th class="text-center px-4 py-3">Unidad</th>
+                    <div class="overflow-auto mt-3">
+                        <table class="table table-sm text-sm" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr class="text-bold border-bottom">
+                                    <th class="text-left px-3 py-2" style="border-bottom: 1px dotted #999;">Operativo</th>
+                                    <th class="text-left px-3 py-2" style="border-bottom: 1px dotted #999;">Producto</th>
+                                    <th class="text-right px-3 py-2" style="border-bottom: 1px dotted #999;">Cantidad</th>
+                                    <th class="text-center px-3 py-2" style="border-bottom: 1px dotted #999;">Unidad</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaConsolidado" class="bg-white">
-                                <!-- JS inject -->
+                                <!-- inyectado por JS -->
                             </tbody>
                         </table>
                     </div>
@@ -161,7 +161,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
                 data.consolidado.forEach(row => {
                     const tr = document.createElement('tr');
-tr.innerHTML = `
+                    tr.innerHTML = `
     <td class="px-4 py-2">${row.operativo}</td>
     <td class="px-4 py-2">${row.producto}</td>
     <td class="text-right px-4 py-2">${row.cantidad_total}</td>
