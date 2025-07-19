@@ -100,32 +100,34 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </button>
                 </div>
 
-                <!-- contenedor de operativos -->
-                <div class="card tutorial-operativos-disponibles">
-                    <div class="flex align-center gap-2 mb-2">
-                        <h2 class="text-xl m-0">Consolidado de pedidos</h2>
-                        <button class="btn-icon" onclick="exportarAExcel()" aria-label="Exportar">
-                            <span class="material-icons">download</span>
-                        </button>
-                    </div>
-                    <p class="text-muted mb-3">Visualizá fácilmente la cantidad total de productos comprados por operativo.</p>
+                <!-- contenedor de consolidado -->
+<div class="card">
+    <h3>Listado de productos consolidados</h3>
+    <p>Visualizá el total de productos comprados por operativo.</p>
 
-                    <div class="overflow-auto">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th class="text-left">Operativo</th>
-                                    <th class="text-left">Producto</th>
-                                    <th class="text-right">Cantidad</th>
-                                    <th class="text-center">Unidad</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaConsolidado">
-                                <!-- Filas se insertan dinámicamente con JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    <div class="overflow-auto">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID Operativo</th>
+                    <th>Producto</th>
+                    <th class="text-right">Cantidad</th>
+                    <th class="text-center">Unidad</th>
+                </tr>
+            </thead>
+            <tbody id="tablaConsolidado">
+                <!-- se completa desde JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-2">
+        <button class="btn btn-aceptar" onclick="exportarAExcel()">
+            <span class="material-icons">download</span>
+            Exportar a Excel
+        </button>
+    </div>
+</div>
 
         </div>
 
@@ -143,39 +145,41 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
     <script>
         async function cargarConsolidado() {
-            const tbody = document.getElementById('tablaConsolidado');
-            tbody.innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
+    const tbody = document.getElementById('tablaConsolidado');
+    tbody.innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
 
-            try {
-                const res = await fetch('/controllers/coop_consolidadoController.php');
-                const data = await res.json();
+    try {
+        const res = await fetch('/controllers/coop_consolidadoController.php');
+        const data = await res.json();
 
-                if (!data.success) throw new Error(data.message);
-                if (data.consolidado.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4">Sin datos disponibles.</td></tr>';
-                    return;
-                }
+        if (!data.success) throw new Error(data.message);
 
-                tbody.innerHTML = '';
+        if (data.consolidado.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4">Sin datos disponibles.</td></tr>';
+            return;
+        }
 
-                data.consolidado.forEach(row => {
-                    const tr = document.createElement('tr');
+        tbody.innerHTML = '';
 
-                    tr.innerHTML = `
-                <td class="text-left">${row.operativo}</td>
-                <td class="text-left">${row.producto}</td>
+        data.consolidado.forEach(row => {
+            const tr = document.createElement('tr');
+
+            tr.innerHTML = `
+                <td>${row.operativo}</td>
+                <td>${row.producto}</td>
                 <td class="text-right">${row.cantidad_total}</td>
                 <td class="text-center">${row.unidad}</td>
             `;
 
-                    tbody.appendChild(tr);
-                });
+            tbody.appendChild(tr);
+        });
 
-            } catch (err) {
-                console.error(err);
-                tbody.innerHTML = `<tr><td colspan="4" style="color:red;">${err.message}</td></tr>`;
-            }
-        }
+    } catch (err) {
+        console.error(err);
+        tbody.innerHTML = `<tr><td colspan="4" style="color:red;">${err.message}</td></tr>`;
+    }
+}
+
 
 
         function exportarAExcel() {
