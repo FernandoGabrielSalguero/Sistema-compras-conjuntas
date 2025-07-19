@@ -100,27 +100,30 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </button>
                 </div>
 
-                <!-- Tarjeta de buscador -->
-                <div class="card card-grid grid-2">
-                    <h2>Filtra por operativo</h2>
-                        <form class="form-modern">
-                            <!-- Filtrar por operativo -->
-                            <div class="input-group tutorial-SeleccionarOperativo">
-                                <label for="operativo">Operativo</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">event</span>
-                                    <select id="operativo" name="operativo" required>
-                                        <option value="">Seleccionar operativo...</option>
-                                    </select>
-                                </div>
-                            </div>
-                                                    <!-- Boton de Descargar -->
-                        <button id="btnIniciarTutorial" class="btn btn-aceptar">
-                            Descargar Excel
-                            <span class="material-icons">download</span>
-                        </button>
-                        </form>                   
+<!-- Tarjeta de buscador -->
+<div class="card card-grid grid-2 align-center justify-between">
+    <div>
+        <h2>Filtrar por operativo</h2>
+        <form class="form-modern">
+            <div class="input-group tutorial-SeleccionarOperativo">
+                <label for="operativo">Operativo</label>
+                <div class="input-icon">
+                    <span class="material-icons">event</span>
+                    <select id="operativo" name="operativo">
+                        <option value="">Todos los operativos</option>
+                    </select>
                 </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="text-right">
+        <button id="btnDescargarExcel" class="btn btn-aceptar" onclick="exportarAExcel()">
+            <span class="material-icons">download</span>
+        </button>
+    </div>
+</div>
+
 
                 <!-- contenedor de consolidado -->
                 <div class="card tabla-card">
