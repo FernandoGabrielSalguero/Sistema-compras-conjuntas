@@ -182,70 +182,93 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            cargarOperativos();
-            cargarConsolidado();
+       document.addEventListener('DOMContentLoaded', () => {
+    cargarOperativos();
+    cargarCooperativas();
+    cargarConsolidado();
 
-            document.getElementById('operativo').addEventListener('change', function() {
-                cargarConsolidado(this.value);
-            });
+    document.getElementById('operativo').addEventListener('change', cargarConsolidado);
+    document.getElementById('cooperativa').addEventListener('change', cargarConsolidado);
+});
+
+async function cargarOperativos() {
+    try {
+        const res = await fetch('/controllers/sve_consolidadoController.php?action=operativos');
+        const data = await res.json();
+
+        if (!data.success) throw new Error(data.message);
+
+        const select = document.getElementById('operativo');
+        data.operativos.forEach(op => {
+            const option = document.createElement('option');
+            option.value = op.id;
+            option.textContent = op.nombre;
+            select.appendChild(option);
+        });
+    } catch (err) {
+        console.error('Error al cargar operativos:', err.message);
+    }
+}
+
+async function cargarCooperativas() {
+    try {
+        const res = await fetch('/controllers/sve_consolidadoController.php?action=cooperativas');
+        const data = await res.json();
+
+        if (!data.success) throw new Error(data.message);
+
+        const select = document.getElementById('cooperativa');
+        data.cooperativas.forEach(c => {
+            const option = document.createElement('option');
+            option.value = c.id;
+            option.textContent = c.nombre;
+            select.appendChild(option);
+        });
+    } catch (err) {
+        console.error('Error al cargar cooperativas:', err.message);
+    }
+}
+
+async function cargarConsolidado() {
+    const tbody = document.getElementById('tablaConsolidado');
+    tbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+
+    const operativoId = document.getElementById('operativo').value;
+    const cooperativaId = document.getElementById('cooperativa').value;
+
+    try {
+        const url = new URL('/controllers/sve_consolidadoController.php', window.location.origin);
+        if (operativoId) url.searchParams.append('operativo_id', operativoId);
+        if (cooperativaId) url.searchParams.append('cooperativa_id', cooperativaId);
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.success) throw new Error(data.message);
+        if (data.consolidado.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5">Sin datos disponibles.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+        data.consolidado.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${row.operativo}</td>
+                <td>${row.producto}</td>
+                <td>${row.cantidad_total}</td>
+                <td>${row.unidad}</td>
+            `;
+            tbody.appendChild(tr);
         });
 
-        async function cargarOperativos() {
-            try {
-                const res = await fetch('/controllers/sve_consolidadoController.php?action=operativos');
-                const data = await res.json();
+    } catch (err) {
+        console.error(err);
+        tbody.innerHTML = `<tr><td colspan="5" style="color:red;">${err.message}</td></tr>`;
+    }
+}
 
-                if (!data.success) throw new Error(data.message);
-
-                const select = document.getElementById('operativo');
-                data.operativos.forEach(op => {
-                    const option = document.createElement('option');
-                    option.value = op.id;
-                    option.textContent = op.nombre;
-                    select.appendChild(option);
-                });
-            } catch (err) {
-                console.error('Error al cargar operativos:', err.message);
-            }
-        }
-
-
-        async function cargarConsolidado(operativoId = '') {
-            const tbody = document.getElementById('tablaConsolidado');
-            tbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
-
-            try {
-                const url = new URL('/controllers/sve_consolidadoController.php', window.location.origin);
-                if (operativoId) url.searchParams.append('operativo_id', operativoId);
-
-                const res = await fetch(url);
-                const data = await res.json();
-
-                if (!data.success) throw new Error(data.message);
-                if (data.consolidado.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5">Sin datos disponibles.</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = '';
-                data.consolidado.forEach((row, index) => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${row.operativo}</td>
-                    <td>${row.producto}</td>
-                    <td>${row.cantidad_total}</td>
-                    <td>${row.unidad}</td>
-                `;
-                    tbody.appendChild(tr);
-                });
-
-            } catch (err) {
-                console.error(err);
-                tbody.innerHTML = `<tr><td colspan="5" style="color:red;">${err.message}</td></tr>`;
-            }
-        }
 
         function exportarAExcel() {
             const table = document.querySelector('.data-table');
