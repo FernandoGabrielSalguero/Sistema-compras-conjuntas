@@ -8,9 +8,8 @@ class CoopConsolidadoModel
         $this->pdo = $pdo;
     }
 
-    public function obtenerConsolidadoPedidos($cooperativa_id): array
-    {
-        $stmt = $this->pdo->prepare("
+public function obtenerConsolidadoPedidos($cooperativa_id, $operativo_id = null): array {
+    $sql = "
         SELECT 
             o.nombre AS operativo,
             p.Nombre_producto AS producto,
@@ -21,10 +20,20 @@ class CoopConsolidadoModel
         INNER JOIN productos p ON dp.producto_id = p.Id
         INNER JOIN operativos o ON ped.operativo_id = o.id
         WHERE ped.cooperativa = :coop_id_real
-        GROUP BY o.id, p.Id
-        ORDER BY o.fecha_inicio DESC, p.Nombre_producto ASC
-    ");
-        $stmt->execute(['coop_id_real' => $cooperativa_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    ";
+
+    $params = ['coop_id_real' => $cooperativa_id];
+
+    if ($operativo_id) {
+        $sql .= " AND o.id = :operativo_id";
+        $params['operativo_id'] = $operativo_id;
     }
+
+    $sql .= " GROUP BY o.id, p.Id ORDER BY o.fecha_inicio DESC, p.Nombre_producto ASC";
+
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 }

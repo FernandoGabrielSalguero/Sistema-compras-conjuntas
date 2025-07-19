@@ -18,7 +18,8 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'cooperativa') {
 $cooperativa_id = $_SESSION['id_real'] ?? null;
 
 try {
-    $data = $model->obtenerConsolidadoPedidos($cooperativa_id);
+    $operativo_id = $_GET['operativo_id'] ?? null;
+    $data = $model->obtenerConsolidadoPedidos($cooperativa_id, $operativo_id);
     echo json_encode(['success' => true, 'consolidado' => $data]);
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
