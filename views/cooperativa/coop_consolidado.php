@@ -102,26 +102,26 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
                 <!-- contenedor de operativos -->
                 <div class="card tutorial-operativos-disponibles">
-<div class="flex align-center gap-2 mb-2">
-    <h2 class="text-xl m-0">Consolidado de pedidos</h2>
-    <button class="btn-icon" onclick="exportarAExcel()" aria-label="Exportar">
-        <span class="material-icons">download</span>
-    </button>
-</div>
+                    <div class="flex align-center gap-2 mb-2">
+                        <h2 class="text-xl m-0">Consolidado de pedidos</h2>
+                        <button class="btn-icon" onclick="exportarAExcel()" aria-label="Exportar">
+                            <span class="material-icons">download</span>
+                        </button>
+                    </div>
                     <p class="text-muted mb-3">Visualizá fácilmente la cantidad total de productos comprados por operativo.</p>
 
-                    <div class="overflow-auto border-radius-xl shadow-sm">
-                        <table class="table zebra text-sm">
-                            <thead class="bg-light sticky top-0 z-10">
-                                <tr>
-                                    <th class="text-left px-3 py-2">Operativo</th>
-                                    <th class="text-left px-3 py-2">Producto</th>
-                                    <th class="text-right px-3 py-2">Cantidad</th>
-                                    <th class="text-center px-3 py-2">Unidad</th>
+                    <div class="overflow-auto border-radius-xl shadow-sm mt-3">
+                        <table class="table zebra table-sm">
+                            <thead class="bg-light">
+                                <tr class="text-sm text-bold text-dark border-bottom">
+                                    <th class="text-left px-4 py-3">Operativo</th>
+                                    <th class="text-left px-4 py-3">Producto</th>
+                                    <th class="text-right px-4 py-3">Cantidad</th>
+                                    <th class="text-center px-4 py-3">Unidad</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaConsolidado" class="bg-white">
-                                <!-- Se completa por JS -->
+                                <!-- JS inject -->
                             </tbody>
                         </table>
                     </div>
@@ -160,13 +160,12 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 tbody.innerHTML = '';
 
                 data.consolidado.forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                    <td>${row.operativo}</td>
-                    <td>${row.producto}</td>
-                    <td>${row.cantidad_total}</td>
-                    <td>${row.unidad}</td>
-                `;
+tr.innerHTML = `
+    <td class="px-4 py-2">${row.operativo}</td>
+    <td class="px-4 py-2">${row.producto}</td>
+    <td class="text-right px-4 py-2">${row.cantidad_total}</td>
+    <td class="text-center px-4 py-2">${row.unidad}</td>
+`;
                     tbody.appendChild(tr);
                 });
 
