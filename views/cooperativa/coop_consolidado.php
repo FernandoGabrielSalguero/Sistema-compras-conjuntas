@@ -145,7 +145,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
     <script>
         async function cargarConsolidado() {
-            const tbody = document.querySelector('#tablaConsolidado tbody');
+            const tbody = document.getElementById('tablaConsolidado');
             tbody.innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
 
             try {
