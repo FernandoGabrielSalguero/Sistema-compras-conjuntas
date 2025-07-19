@@ -274,10 +274,10 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 <td class="tutorial-FacturaColumn">
   ${
     p.cantidad_facturas > 0 
-    ? `<span class="badge badge-success" style="background: #5b21b6; color: white; padding: 4px 8px; border-radius: 999px;">
-        Facturas listas (${p.cantidad_facturas})
-      </span>`
-    : '<span class="badge badge-warning" style="color: gray;">Sin facturas</span>'
+    ? `<button class="btn btn-sm" onclick="abrirModalFacturas(${p.id})" style="background:#5b21b6; color:white; border-radius:20px; font-size:0.8rem;">
+          Facturas listas (${p.cantidad_facturas})
+       </button>`
+    : '<span style="color:gray;">Sin facturas</span>'
   }
 </td>
 
@@ -509,6 +509,51 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
             window.cerrarModalVerPedido = function() {
                 document.getElementById('modalVerPedido').style.display = 'none';
             };
+
+
+            // modal ver facturas
+            window.abrirModalFacturas = async function(pedidoId) {
+                const modal = document.getElementById('modalFacturas');
+                const contenedor = document.getElementById('contenidoFacturas');
+
+                contenedor.innerHTML = '🔄 Buscando facturas...';
+                modal.style.display = 'flex';
+
+                try {
+                    const res = await fetch(`/controllers/facturasController.php?listar=1&pedido_id=${pedidoId}`);
+                    const json = await res.json();
+
+                    if (!json.success) throw new Error(json.message);
+
+                    const facturas = json.facturas || [];
+                    if (facturas.length === 0) {
+                        contenedor.innerHTML = '<p style="color:gray;">No hay facturas cargadas.</p>';
+                        return;
+                    }
+
+                    let lista = '<ul style="list-style:none; padding:0;">';
+                    facturas.forEach(f => {
+                        lista += `
+        <li style="margin-bottom: 0.5rem;">
+          <a href="/uploads/tax_invoices/${f.nombre_archivo}" target="_blank" style="color:#5b21b6; text-decoration: underline;">
+            ${f.nombre_archivo}
+          </a>
+        </li>`;
+                    });
+                    lista += '</ul>';
+
+                    contenedor.innerHTML = lista;
+
+                } catch (err) {
+                    contenedor.innerHTML = `<p style="color:red;">❌ Error al obtener facturas: ${err.message}</p>`;
+                    console.error(err);
+                }
+            };
+
+            window.cerrarModalFacturas = function() {
+                document.getElementById('modalFacturas').style.display = 'none';
+            };
+
         }); //end DOMContentLoaded
 
 
@@ -639,6 +684,16 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         <iframe id="iframeEditar" style="width:90%; height:90%; border:none; border-radius:8px; background:white;"></iframe>
     </div>
 
+    <!-- Modal para ver facturas -->
+    <div id="modalFacturas" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>Facturas del pedido</h3>
+            <div id="contenidoFacturas" style="margin-top: 1rem;"></div>
+            <div class="modal-actions">
+                <button class="btn btn-cancelar" onclick="cerrarModalFacturas()">Cerrar</button>
+            </div>
+        </div>
+    </div>
 
     <!-- imprimir el pedido -->
     <div id="printContainer" style="display: none;"></div>
