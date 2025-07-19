@@ -102,9 +102,25 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
                 <!-- contenedor de operativos -->
                 <div class="card tutorial-operativos-disponibles">
-                    <h2>Operativos disponibles</h2>
-                    <p>Seleccioná en qué operativos querés participar para habilitar la compra a tus productores.</p>
+                    <h2>Consolidado de pedidos</h2>
+                    <p>En esta sección, vas a poder conocer rápidamente el total de los productos comprados por operativo.</p>
                     <br>
+                    <table class="table table-bordered" id="tablaConsolidado">
+                        <thead>
+                            <tr>
+                                <th>Operativo</th>
+                                <th>Producto</th>
+                                <th>Cantidad Total</th>
+                                <th>Unidad</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+
+                    <br>
+
+                    <button class="btn btn-aceptar" onclick="exportarAExcel()">📤 Exportar a Excel</button>
+
                 </div>
         </div>
 
@@ -121,13 +137,62 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     </div>
 
     <script>
+        async function cargarConsolidado() {
+            const tbody = document.querySelector('#tablaConsolidado tbody');
+            tbody.innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
 
+            try {
+                const res = await fetch('/controllers/coop_consolidadoController.php');
+                const data = await res.json();
 
+                if (!data.success) throw new Error(data.message);
 
+                if (data.consolidado.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4">Sin datos disponibles.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+
+                data.consolidado.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                    <td>${row.operativo}</td>
+                    <td>${row.producto}</td>
+                    <td>${row.cantidad_total}</td>
+                    <td>${row.unidad}</td>
+                `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="4" style="color:red;">${err.message}</td></tr>`;
+            }
+        }
+
+        function exportarAExcel() {
+            const table = document.getElementById('tablaConsolidado');
+            let csvContent = '';
+            for (const row of table.rows) {
+                const rowData = Array.from(row.cells).map(cell => `"${cell.textContent}"`).join(',');
+                csvContent += rowData + '\n';
+            }
+
+            const blob = new Blob(["\uFEFF" + csvContent], {
+                type: 'text/csv;charset=utf-8;'
+            });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'consolidado_pedidos.csv';
+            link.click();
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarConsolidado);
     </script>
 
     <!-- llamada de tutorial -->
-    <script src="../partials/tutorials/cooperativas/dashboard.js?v=<?= time() ?>" defer></script>
+    <script src="../partials/tutorials/cooperativas/consolidado.js?v=<?= time() ?>" defer></script>
 
 
 </body>
