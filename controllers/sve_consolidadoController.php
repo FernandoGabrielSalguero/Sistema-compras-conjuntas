@@ -62,3 +62,16 @@ try {
     echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
 }
 
+// descargar tabla
+if (isset($_GET['action']) && $_GET['action'] === 'descargar_extendido') {
+    try {
+        $operativo_id = $_GET['operativo_id'] ?? null;
+        $cooperativa_id = $_GET['cooperativa_id'] ?? null;
+        $data = $model->obtenerPedidosExtendidos($operativo_id, $cooperativa_id);
+        echo json_encode(['success' => true, 'pedidos' => $data]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+    }
+    exit;
+}
+

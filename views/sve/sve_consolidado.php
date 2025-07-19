@@ -132,9 +132,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         </form>
                     </div>
 
-                    <button id="btnDescargarExcel" class="btn btn-aceptar tutorial-BotonDescargarExcel" onclick="exportarAExcel()"> Descargar la tabla a Excel
-                        <span class="material-icons">download</span>
-                    </button>
+<button class="btn btn-outline" onclick="exportarExtendido()">
+    Exportar extendido
+    <span class="material-icons">file_download</span>
+</button>
 
                 </div>
 
@@ -270,22 +271,48 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 
 
-        function exportarAExcel() {
-            const table = document.querySelector('.data-table');
-            let csvContent = '';
-            for (const row of table.rows) {
-                const rowData = Array.from(row.cells).map(cell => `"${cell.textContent}"`).join(',');
-                csvContent += rowData + '\n';
-            }
+async function exportarExtendido() {
+    const operativoId = document.getElementById('operativo')?.value || '';
+    const coopId = document.getElementById('cooperativa')?.value || '';
 
-            const blob = new Blob(["\uFEFF" + csvContent], {
-                type: 'text/csv;charset=utf-8;'
-            });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'consolidado_pedidos.csv';
-            link.click();
+    const url = new URL('/controllers/sve_consolidadoController.php', window.location.origin);
+    url.searchParams.append('action', 'descargar_extendido');
+    if (operativoId) url.searchParams.append('operativo_id', operativoId);
+    if (coopId) url.searchParams.append('cooperativa_id', coopId);
+
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+
+        const pedidos = data.pedidos;
+        if (pedidos.length === 0) {
+            alert("No hay datos para exportar.");
+            return;
         }
+
+        const headers = Object.keys(pedidos[0]);
+        let csvContent = headers.join(',') + '\n';
+
+        pedidos.forEach(pedido => {
+            const row = headers.map(key => `"${(pedido[key] ?? '').toString().replace(/"/g, '""')}"`).join(',');
+            csvContent += row + '\n';
+        });
+
+        const blob = new Blob(["\uFEFF" + csvContent], {
+            type: 'text/csv;charset=utf-8;'
+        });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'pedidos_extendido.csv';
+        link.click();
+
+    } catch (err) {
+        console.error("Error exportando extendido:", err);
+        alert("Hubo un error exportando los datos.");
+    }
+}
+
     </script>
 
 
