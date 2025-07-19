@@ -101,12 +101,10 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </div>
 
                 <!-- contenedor de operativos -->
-                <div class="card tutorial-operativos-disponibles">
-<div class="flex align-center justify-start gap-2 mb-1">
+<div class="flex align-center gap-2 mb-2">
     <h2 class="text-xl m-0">Consolidado de pedidos</h2>
-    <button class="btn-icon tooltip" onclick="exportarAExcel()" aria-label="Exportar a Excel">
+    <button class="btn-icon" onclick="exportarAExcel()" aria-label="Exportar">
         <span class="material-icons">download</span>
-        <span class="tooltip-text">Exportar a Excel</span>
     </button>
 </div>
 
