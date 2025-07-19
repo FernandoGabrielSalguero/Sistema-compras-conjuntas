@@ -101,7 +101,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </div>
 
                 <!-- Tarjeta de buscador -->
-                <div class="card-grid grid-2">
+                <div class="card card-grid grid-2">
                     <h2>Filtra por operativo</h2>
                         <form class="form-modern">
                             <!-- Filtrar por operativo -->
