@@ -177,24 +177,25 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
         });
     });
 
-    async function cargarOperativos() {
-        try {
-            const res = await fetch('/controllers/coop_operativosController.php');
-            const data = await res.json();
+async function cargarOperativos() {
+    try {
+        const res = await fetch('/controllers/coop_consolidadoController.php?action=operativos');
+        const data = await res.json();
 
-            if (!data.success) throw new Error(data.message);
+        if (!data.success) throw new Error(data.message);
 
-            const select = document.getElementById('operativo');
-            data.operativos.forEach(op => {
-                const option = document.createElement('option');
-                option.value = op.id;
-                option.textContent = op.nombre;
-                select.appendChild(option);
-            });
-        } catch (err) {
-            console.error('Error al cargar operativos:', err.message);
-        }
+        const select = document.getElementById('operativo');
+        data.operativos.forEach(op => {
+            const option = document.createElement('option');
+            option.value = op.id;
+            option.textContent = op.nombre;
+            select.appendChild(option);
+        });
+    } catch (err) {
+        console.error('Error al cargar operativos:', err.message);
     }
+}
+
 
     async function cargarConsolidado(operativoId = '') {
         const tbody = document.getElementById('tablaConsolidado');

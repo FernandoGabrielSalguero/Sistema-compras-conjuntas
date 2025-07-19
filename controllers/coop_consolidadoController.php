@@ -17,6 +17,20 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'cooperativa') {
 
 $cooperativa_id = $_SESSION['id_real'] ?? null;
 
+// Si se solicita la lista de operativos
+if (isset($_GET['action']) && $_GET['action'] === 'operativos') {
+    try {
+        $stmt = $pdo->prepare("SELECT id, nombre FROM operativos WHERE cooperativa_id = :coop_id ORDER BY fecha_inicio DESC");
+        $stmt->execute(['coop_id' => $cooperativa_id]);
+        $operativos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        echo json_encode(['success' => true, 'operativos' => $operativos]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error al obtener operativos: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
 try {
     $operativo_id = $_GET['operativo_id'] ?? null;
     $data = $model->obtenerConsolidadoPedidos($cooperativa_id, $operativo_id);
