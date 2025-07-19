@@ -118,7 +118,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </div>
 
                     <div class="text-right">
-                        <button id="btnDescargarExcel" class="btn btn-aceptar" onclick="exportarAExcel()">
+                        <button id="btnDescargarExcel" class="btn btn-aceptar" onclick="exportarAExcel()"> Descargar la tabla a Excel
                             <span class="material-icons">download</span>
                         </button>
                     </div>
