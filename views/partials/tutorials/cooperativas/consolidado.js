@@ -58,61 +58,57 @@ function iniciarTutorialDashboard() {
     mostrarPaso();
 
     function mostrarPaso() {
-        // Limpiar pasos anteriores
-        document.querySelectorAll('.tutorial-tooltip').forEach(el => el.remove());
-        document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+    // Limpiar pasos anteriores
+    document.querySelectorAll('.tutorial-tooltip').forEach(el => el.remove());
+    document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
 
-        const paso = pasos[pasoActual];
-        const target = document.querySelector(paso.selector);
-        if (!target) {
-            console.warn(`No se encontró el selector: ${paso.selector}`);
-            avanzar();
-            return;
-        }
-
-        // Agregar clase para resaltar
-        target.classList.add('tutorial-highlight');
-
-        // Crear tooltip
-        const tooltip = document.createElement('div');
-        tooltip.className = 'tutorial-tooltip';
-        tooltip.style = `
-            position: absolute;
-            background: linear-gradient(45deg, #5b21b6, #9333ea);
-            color: white;
-            padding: 1rem;
-            border-radius: 10px;
-            max-width: 300px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
-            z-index: 10003;
-            font-size: 0.95rem;
-        `;
-
-        tooltip.innerHTML = `
-            <div>${paso.mensaje}</div>
-            <br>
-            <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
-                <button id="btnSiguienteTutorial" class="btn btn-info">Siguiente</button>
-                <button id="btnCerrarTutorial" class="btn btn-cancelar">Cerrar</button>
-            </div>
-        `;
-
-        document.body.appendChild(tooltip);
-
-        // Asegurar que el elemento esté visible y ajustar posición del tooltip
-        setTimeout(() => {
-            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            const { top, left } = calcularPosicionTooltip(target, tooltip, paso.posicion);
-            tooltip.style.top = `${top}px`;
-            tooltip.style.left = `${left}px`;
-        }, 300); // esperar a que se complete el scroll
-
-
-        // Botones
-        document.getElementById('btnSiguienteTutorial').onclick = avanzar;
-        document.getElementById('btnCerrarTutorial').onclick = terminarTutorial;
+    const paso = pasos[pasoActual];
+    const target = document.querySelector(paso.selector);
+    if (!target) {
+        console.warn(`No se encontró el selector: ${paso.selector}`);
+        avanzar();
+        return;
     }
+
+    // Agregar clase para resaltar
+    target.classList.add('tutorial-highlight');
+
+    // Crear tooltip
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tutorial-tooltip';
+    tooltip.style = `
+        position: absolute;
+        background: linear-gradient(45deg, #5b21b6, #9333ea);
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        max-width: 300px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+        z-index: 10003;
+        font-size: 0.95rem;
+    `;
+
+    tooltip.innerHTML = `
+        <div>${paso.mensaje}</div>
+        <br>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+            <button id="btnSiguienteTutorial" class="btn btn-info">Siguiente</button>
+            <button id="btnCerrarTutorial" class="btn btn-cancelar">Cerrar</button>
+        </div>
+    `;
+
+    document.body.appendChild(tooltip);
+
+    // Ajustar posición del tooltip (sin hacer scroll)
+    const { top, left } = calcularPosicionTooltip(target, tooltip, paso.posicion);
+    tooltip.style.top = `${top}px`;
+    tooltip.style.left = `${left}px`;
+
+    // Botones
+    document.getElementById('btnSiguienteTutorial').onclick = avanzar;
+    document.getElementById('btnCerrarTutorial').onclick = terminarTutorial;
+}
+
 
     function calcularPosicionTooltip(target, tooltip, posicion = 'bottom') {
         const rect = target.getBoundingClientRect();
