@@ -437,13 +437,12 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         <div><strong>IVA:</strong> $${parseFloat(p.total_iva).toFixed(2)}</div>
         <div><strong>Total Pedido:</strong> <strong>$${parseFloat(p.total_pedido).toFixed(2)}</strong></div>
 
-        <div>
-        <strong>Factura:</strong> 
-        ${p.cantidad_facturas > 0 
-            ? '<span style="color:green;">Factura/s cargadas</span>' 
-            : '<span style="color:gray;">Factura/s sin cargar aún</span>'
-        }
-        </div>
+  <div>
+    <strong>Facturación:</strong>
+    ${json.data.cantidad_facturas > 0 
+      ? '<span style="color:green;">Factura/s cargadas</span>' 
+      : '<span style="color:gray;">Factura/s sin cargar aún</span>'}
+  </div>
         <div></div>
     </div>
 `;

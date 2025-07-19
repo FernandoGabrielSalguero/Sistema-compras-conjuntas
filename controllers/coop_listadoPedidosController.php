@@ -249,16 +249,21 @@ if (isset($_GET['ver']) && isset($_GET['id'])) {
             $stmtProd->execute([$id]);
             $productos = $stmtProd->fetchAll(PDO::FETCH_ASSOC);
 
-            // Contar facturas
-            $stmtFact = $pdo->prepare("SELECT COUNT(*) FROM facturas WHERE pedido_id = ?");
+            // ✅ Contar facturas
+            $stmtFact = $pdo->prepare("SELECT COUNT(*) FROM factura_pedidos WHERE pedido_id = ?");
             $stmtFact->execute([$id]);
-            $cantidadFacturas = $stmtFact->fetchColumn();
-            $pedido['cantidad_facturas'] = intval($cantidadFacturas);
+            $pedido['cantidad_facturas'] = intval($stmtFact->fetchColumn());
+
+            echo json_encode([
+                'success' => true,
+                'data' => $pedido,
+                'productos' => $productos
+            ]);
 
             // 🧾 Obtener facturas del pedido
-$stmtFacturas = $pdo->prepare("SELECT nombre_archivo FROM factura_pedidos WHERE pedido_id = ?");
-$stmtFacturas->execute([$id]);
-$facturas = $stmtFacturas->fetchAll(PDO::FETCH_ASSOC);
+            $stmtFacturas = $pdo->prepare("SELECT nombre_archivo FROM factura_pedidos WHERE pedido_id = ?");
+            $stmtFacturas->execute([$id]);
+            $facturas = $stmtFacturas->fetchAll(PDO::FETCH_ASSOC);
 
             echo json_encode([
                 'success' => true,
