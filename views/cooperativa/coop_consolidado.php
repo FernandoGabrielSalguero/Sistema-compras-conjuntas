@@ -92,7 +92,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <!-- Bienvenida -->
                 <div class="card">
                     <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
-                    <p>En esta página vas a encontrar todos los operativos disponibles para que participes. Es importante que selecciones alguno para poder realizar compras a tus productores</p>
+                    <p>En esta página, vas a ver el resumen de la cantidad de productos pedidos. Podes además descargar la información en un archivo Excel.</p>
                     <br>
                     <!-- Boton de tutorial -->
                     <button id="btnIniciarTutorial" class="btn btn-aceptar">
@@ -100,8 +100,26 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </button>
                 </div>
 
+                <!-- Tarjeta de buscador -->
+                <div class="card">
+                    <h2>Filtra por operativo</h2>
+
+                    <form class="form-modern">
+                        <!-- Filtrar por operativo -->
+                        <div class="input-group tutorial-SeleccionarOperativo">
+                            <label for="operativo">Operativo</label>
+                            <div class="input-icon">
+                                <span class="material-icons">event</span>
+                                <select id="operativo" name="operativo" required>
+                                    <option value="">Seleccionar operativo...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
                 <!-- contenedor de consolidado -->
-                <div class="card tabla-card tutorial-operativos-disponibles">
+                <div class="card tabla-card">
                     <div class="d-flex justify-between align-center mb-2">
                         <h2>Consolidado de pedidos</h2>
                         <span class="material-icons pointer" onclick="exportarAExcel()">download</span>
