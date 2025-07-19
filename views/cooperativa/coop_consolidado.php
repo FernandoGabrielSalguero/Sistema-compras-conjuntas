@@ -83,7 +83,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="navbar-title">Inicio</div>
+                <div class="navbar-title">Consolidado</div>
             </header>
 
             <!-- 📦 CONTENIDO -->
@@ -146,7 +146,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             contenedor.innerHTML = '<p>Cargando operativos...</p>';
 
             try {
-                const res = await fetch('/controllers/coop_dashboardController.php');
+                const res = await fetch('/controllers/coop_consolidadoController.php');
                 const data = await res.json();
 
                 if (!data.success) throw new Error(data.message);
@@ -192,7 +192,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         const participa = e.target.checked ? 'si' : 'no';
 
                         try {
-                            const res = await fetch('/controllers/coop_dashboardController.php', {
+                            const res = await fetch('/controllers/coop_consolidadoController.php', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json'
