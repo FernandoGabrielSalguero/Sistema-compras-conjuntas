@@ -160,6 +160,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 tbody.innerHTML = '';
 
                 data.consolidado.forEach(row => {
+                    const tr = document.createElement('tr');
 tr.innerHTML = `
     <td class="px-4 py-2">${row.operativo}</td>
     <td class="px-4 py-2">${row.producto}</td>
