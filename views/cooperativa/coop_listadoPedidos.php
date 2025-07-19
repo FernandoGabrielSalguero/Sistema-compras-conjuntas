@@ -191,7 +191,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
         window.abrirModalFacturas = async function(pedidoId) {
             try {
-                const res = await fetch(`/controllers/facturasController.php?listar=1&pedido_id=${pedidoId}`);
+                const res = await fetch(`/controllers/coop_listadoPedidosController.php?facturas=1&pedido_id=${pedidoId}`);
                 const json = await res.json();
                 if (!json.success) throw new Error(json.message);
 
@@ -520,7 +520,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                 modal.style.display = 'flex';
 
                 try {
-                    const res = await fetch(`/controllers/facturasController.php?listar=1&pedido_id=${pedidoId}`);
+                    const res = await fetch(`/controllers/coop_listadoPedidosController.php?facturas=1&pedido_id=${pedidoId}`);
                     const json = await res.json();
 
                     if (!json.success) throw new Error(json.message);

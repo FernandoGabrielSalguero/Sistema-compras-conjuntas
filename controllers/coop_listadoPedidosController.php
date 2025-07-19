@@ -14,6 +14,32 @@ $model = new CoopMercadoDigitalModel($pdo);
 
 error_log("🔎 ID cooperativa desde sesión: $id_cooperativa");
 
+// 🔹 Obtener facturas de un pedido (para el modal)
+if (isset($_GET['facturas']) && $_GET['facturas'] == 1 && isset($_GET['pedido_id'])) {
+    $pedidoId = intval($_GET['pedido_id']);
+
+    if (!$pedidoId) {
+        echo json_encode(['success' => false, 'message' => 'ID de pedido inválido']);
+        exit;
+    }
+
+    try {
+        $stmt = $pdo->prepare("SELECT nombre_archivo FROM factura_pedidos WHERE pedido_id = ?");
+        $stmt->execute([$pedidoId]);
+        $facturas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        echo json_encode([
+            'success' => true,
+            'facturas' => $facturas
+        ]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Error al obtener facturas']);
+    }
+    exit;
+}
+
+
 // 🔸 ELIMINAR PEDIDO (manejar primero los POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $json = json_decode(file_get_contents("php://input"), true);
