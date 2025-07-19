@@ -20,7 +20,15 @@ $cooperativa_id = $_SESSION['id_real'] ?? null;
 // Si se solicita la lista de operativos
 if (isset($_GET['action']) && $_GET['action'] === 'operativos') {
     try {
-        $stmt = $pdo->prepare("SELECT id, nombre FROM operativos WHERE cooperativa_id = :coop_id ORDER BY fecha_inicio DESC");
+        $stmt = $pdo->prepare("
+    SELECT o.id, o.nombre
+    FROM operativos o
+    INNER JOIN operativos_cooperativas_participacion ocp 
+        ON o.id = ocp.operativo_id
+    WHERE ocp.cooperativa_id_real = :coop_id
+    AND ocp.participa = 'si'
+    ORDER BY o.fecha_inicio DESC
+");
         $stmt->execute(['coop_id' => $cooperativa_id]);
         $operativos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
