@@ -100,28 +100,31 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </button>
                 </div>
 
-                <!-- contenedor de operativos -->
-                <div class="card tutorial-operativos-disponibles">
-                    <h2>Consolidado de pedidos</h2>
-                    <p>En esta sección, vas a poder conocer rápidamente el total de los productos comprados por operativo.</p>
-                    <br>
-                    <table class="table table-bordered" id="tablaConsolidado">
-                        <thead>
-                            <tr>
-                                <th>Operativo</th>
-                                <th>Producto</th>
-                                <th>Cantidad Total</th>
-                                <th>Unidad</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                <!-- Consolidado -->
+<div class="flex space-between align-center">
+    <h2 class="m-0">Consolidado de pedidos</h2>
+    <button class="btn-icon tooltip" onclick="exportarAExcel()" aria-label="Exportar a Excel">
+        <span class="material-icons">download</span>
+        <span class="tooltip-text">Exportar a Excel</span>
+    </button>
+</div>
 
-                    <br>
+<p class="mt-1 mb-2">En esta sección, vas a poder conocer rápidamente el total de los productos comprados por operativo.</p>
 
-                    <button class="btn btn-aceptar" onclick="exportarAExcel()">📤 Exportar a Excel</button>
+<div class="table-responsive">
+    <table class="table zebra hover table-sm shadow-sm border-radius-xl" id="tablaConsolidado">
+        <thead>
+            <tr>
+                <th class="text-left">Operativo</th>
+                <th class="text-left">Producto</th>
+                <th class="text-right">Cantidad Total</th>
+                <th class="text-center">Unidad</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
 
-                </div>
         </div>
 
 
