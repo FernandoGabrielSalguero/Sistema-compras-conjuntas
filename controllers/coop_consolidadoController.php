@@ -15,7 +15,7 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'cooperativa') {
     exit;
 }
 
-$cooperativa_id = $_SESSION['cuit'] ?? null;
+$cooperativa_id = $_SESSION['id_real'] ?? null;
 
 try {
     $data = $model->obtenerConsolidadoPedidos($cooperativa_id);
