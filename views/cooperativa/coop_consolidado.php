@@ -101,9 +101,8 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </div>
 
                 <!-- Tarjeta de buscador -->
-                <div class="card">
+                <div class="card-grid grid-2">
                     <h2>Filtra por operativo</h2>
-                    <div class=".card-grid grid-2">
                         <form class="form-modern">
                             <!-- Filtrar por operativo -->
                             <div class="input-group tutorial-SeleccionarOperativo">
@@ -120,7 +119,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <button id="btnIniciarTutorial" class="btn btn-aceptar">
                             Tutorial
                         </button>
-                    </div>
+                    
                 </div>
 
                 <!-- contenedor de consolidado -->
