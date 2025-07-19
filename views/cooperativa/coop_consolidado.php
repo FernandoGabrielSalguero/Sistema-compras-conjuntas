@@ -103,19 +103,24 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <!-- Tarjeta de buscador -->
                 <div class="card">
                     <h2>Filtra por operativo</h2>
-
-                    <form class="form-modern">
-                        <!-- Filtrar por operativo -->
-                        <div class="input-group tutorial-SeleccionarOperativo">
-                            <label for="operativo">Operativo</label>
-                            <div class="input-icon">
-                                <span class="material-icons">event</span>
-                                <select id="operativo" name="operativo" required>
-                                    <option value="">Seleccionar operativo...</option>
-                                </select>
+                    <div class=".card-grid grid-2">
+                        <form class="form-modern">
+                            <!-- Filtrar por operativo -->
+                            <div class="input-group tutorial-SeleccionarOperativo">
+                                <label for="operativo">Operativo</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">event</span>
+                                    <select id="operativo" name="operativo" required>
+                                        <option value="">Seleccionar operativo...</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                    </form>
+                        </form>
+                        <!-- Boton de tutorial -->
+                        <button id="btnIniciarTutorial" class="btn btn-aceptar">
+                            Tutorial
+                        </button>
+                    </div>
                 </div>
 
                 <!-- contenedor de consolidado -->
