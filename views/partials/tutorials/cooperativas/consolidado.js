@@ -8,18 +8,18 @@ document.addEventListener('DOMContentLoaded', () => {
 function iniciarTutorialDashboard() {
     const pasos = [
         {
-            selector: '.tutorial-operativos-disponibles',
-            mensaje: 'En estas tarjetas vas a poder ver los operativos habilitados para participar. Es importante que te unas a uno para poder comprar productos dentro de él.',
+            selector: '.tutorial-SeleccionarOperativo',
+            mensaje: 'En esta tarjeta, vas a poder seleccionar el operativo en el que querés ver el consolidado de compras. Si no seleccionás ninguno, se mostrarán todos los operativos.',
             posicion: 'top'
         },
         {
-            selector: '.tutorial-swich-participacion',
-            mensaje: 'Para participar, simplemente tocá este botón una vez hasta que se pinte de color violeta. Si ya estás participando, el botón estará activo y vas a poder dejar de participar tocándolo nuevamente.',
+            selector: '.tutorial-BotonDescargarExcel',
+            mensaje: 'Con este boton podés descargar el consolidado de compras en formato Excel. Esto te permitirá analizar los datos de manera más detallada.',
             posicion: 'top'
         },
         {
-            selector: '.sidebar-menu li:nth-child(2)',
-            mensaje: 'Una vez que participes en al menos un operativo, entrá al Mercado Digital desde este acceso rápido para hacer tus compras a los productores.',
+            selector: '.tutorial-TablaConsolidado',
+            mensaje: 'En esta tabla se muestra el consolidado de pedidos de todos los operativos. Aquí podrás ver el total de productos, cantidades y precios por cada cooperativa.',
             posicion: 'right'
         }
 

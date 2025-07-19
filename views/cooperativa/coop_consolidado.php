@@ -101,7 +101,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </div>
 
                 <!-- 🟦 BUSCADOR Y EXPORTACIÓN -->
-                <div class="card card-grid grid-2 align-center justify-between">
+                <div class="card card-grid grid-2 align-center justify-between tutorial-SeleccionarOperativo">
                     <div>
                         <h2>Filtrar por operativo</h2>
                         <form class="form-modern">
@@ -117,7 +117,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         </form>
                     </div>
 
-                    <div class="text-right">
+                    <div class="text-right tutorial-BotonDescargarExcel">
                         <button id="btnDescargarExcel" class="btn btn-aceptar" onclick="exportarAExcel()"> Descargar la tabla a Excel
                             <span class="material-icons">download</span>
                         </button>
@@ -125,7 +125,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </div>
 
                 <!-- 🟨 TABLA DE CONSOLIDADO -->
-                <div class="card tabla-card">
+                <div class="card tabla-card tutorial-TablaConsolidado">
                     <div class="d-flex justify-between align-center mb-2">
                         <h2>Consolidado de pedidos</h2>
                     </div>
