@@ -117,7 +117,8 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         </form>
                         <!-- Boton de tutorial -->
                         <button id="btnIniciarTutorial" class="btn btn-aceptar">
-                            Tutorial
+                            Descargar Excel
+                            <span class="material-icons">download</span>
                         </button>
                     
                 </div>
