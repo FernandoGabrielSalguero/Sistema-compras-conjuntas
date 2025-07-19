@@ -17,7 +17,12 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'sve') {
 
 if (isset($_GET['action']) && $_GET['action'] === 'operativos') {
     try {
-        $stmt = $pdo->query("SELECT id, nombre FROM operativos ORDER BY fecha_inicio DESC");
+        $stmt = $pdo->query("
+            SELECT DISTINCT o.id, o.nombre
+            FROM pedidos ped
+            INNER JOIN operativos o ON ped.operativo_id = o.id
+            ORDER BY o.fecha_inicio DESC
+        ");
         $operativos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(['success' => true, 'operativos' => $operativos]);
     } catch (Exception $e) {
@@ -28,7 +33,16 @@ if (isset($_GET['action']) && $_GET['action'] === 'operativos') {
 
 if (isset($_GET['action']) && $_GET['action'] === 'cooperativas') {
     try {
-        $stmt = $pdo->query("SELECT DISTINCT cooperativa AS id, cooperativa AS nombre FROM pedidos ORDER BY cooperativa ASC");
+        $stmt = $pdo->query("
+            SELECT DISTINCT
+                ped.cooperativa AS id,
+                ui.nombre AS nombre
+            FROM pedidos ped
+            LEFT JOIN usuarios u ON ped.cooperativa = u.id_real
+            LEFT JOIN usuarios_info ui ON u.id = ui.usuario_id
+            WHERE ped.cooperativa IS NOT NULL
+            ORDER BY ui.nombre ASC
+        ");
         $cooperativas = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(['success' => true, 'cooperativas' => $cooperativas]);
     } catch (Exception $e) {
