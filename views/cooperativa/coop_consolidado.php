@@ -114,13 +114,12 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                                     </select>
                                 </div>
                             </div>
-                        </form>
-                        <!-- Boton de tutorial -->
+                                                    <!-- Boton de Descargar -->
                         <button id="btnIniciarTutorial" class="btn btn-aceptar">
                             Descargar Excel
                             <span class="material-icons">download</span>
                         </button>
-                    
+                        </form>                   
                 </div>
 
                 <!-- contenedor de consolidado -->
