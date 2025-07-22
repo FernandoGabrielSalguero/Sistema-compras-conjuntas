@@ -167,7 +167,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .password-container {
             position: relative;
-            min-height: 40px;
         }
     </style>
 </head>
@@ -178,24 +177,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php if ($error): ?>
             <div class="error"><?= $error ?></div>
         <?php endif; ?>
-<form action="" method="POST">
+        <form action="" method="POST">
 
-    <div class="form-group">
-        <label for="usuario">Usuario:</label>
-        <input type="text" name="usuario" id="usuario" required>
-    </div>
+            <div class="form-group">
+                <label for="usuario">Usuario:</label>
+                <input type="text" name="usuario" id="usuario" required>
+            </div>
 
-    <div class="form-group password-container">
-        <label for="contrasena">Contraseña:</label>
-        <input type="password" name="contrasena" id="contrasena" required>
-        <span class="material-icons toggle-password" title="Mostrar/Ocultar contraseña">visibility</span>
-    </div>
+            <div class="form-group password-container">
+                <label for="contrasena">Contraseña:</label>
+                <input type="password" name="contrasena" id="contrasena" required>
+                <span class="material-icons toggle-password" title="Mostrar/Ocultar contraseña">visibility</span>
+            </div>
 
-    <div class="form-group">
-        <button type="submit">INGRESAR</button>
-    </div>
+            <div class="form-group">
+                <button type="submit">INGRESAR</button>
+            </div>
 
-</form>
+        </form>
     </div>
 
     <script>
