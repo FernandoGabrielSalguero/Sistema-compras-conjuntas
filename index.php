@@ -157,15 +157,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .toggle-password {
             position: absolute;
             right: 14px;
-            top: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
+            top: 50%;
+            transform: translateY(-50%);
             color: #673ab7;
             font-size: 22px;
             cursor: pointer;
             user-select: none;
-            line-height: 1;
+        }
+
+        .password-container {
+            position: relative;
+            min-height: 40px;
         }
     </style>
 </head>
