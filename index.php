@@ -150,30 +150,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-align: center;
         }
 
-.password-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
+        .password-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
 
-.password-container input {
-    width: 100%;
-    padding: 10px 40px 10px 10px; /* padding derecho ajustado para el ícono */
-    box-sizing: border-box;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-}
+        .password-container input {
+            width: 100%;
+            padding: 10px 40px 10px 10px;
+            /* padding derecho ajustado para el ícono */
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
 
-.toggle-password {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #673ab7;
-    font-size: 22px;
-    cursor: pointer;
-    user-select: none;
-}
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #673ab7;
+            font-size: 22px;
+            cursor: pointer;
+            user-select: none;
+        }
     </style>
 </head>
 
@@ -190,10 +191,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="text" name="usuario" id="usuario" required>
             </div>
 
-            <div class="form-group password-container">
+            <div class="form-group">
                 <label for="contrasena">Contraseña:</label>
-                <input type="password" name="contrasena" id="contrasena" required>
-                <span class="material-icons toggle-password" title="Mostrar/Ocultar contraseña">visibility</span>
+                <div class="password-container">
+                    <input type="password" name="contrasena" id="contrasena" required>
+                    <span class="material-icons toggle-password" title="Mostrar/Ocultar contraseña">visibility</span>
+                </div>
             </div>
 
             <div class="form-group">
