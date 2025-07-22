@@ -38,6 +38,26 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             opacity: 1;
             /* para mantener visibilidad en todos los navegadores */
         }
+
+        /* control de tabla */
+
+        .table-container {
+            max-height: 500px;
+            /* o el alto que quieras */
+            overflow: auto;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+        }
+
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
     </style>
 </head>
 
