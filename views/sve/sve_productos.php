@@ -30,6 +30,27 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
+    <style>
+        .table-container {
+            max-height: 500px;
+            /* o el alto que prefieras */
+            overflow: auto;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+        }
+
+        /* Opcional: scroll visible y bonito */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+    </style>
 </head>
 
 <body>
@@ -578,7 +599,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
-    
+
 </body>
 
 </html>
