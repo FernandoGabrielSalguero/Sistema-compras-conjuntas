@@ -4,9 +4,10 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-ini_set('session.gc_maxlifetime', 1200);
+// Configurar duración de sesión en 20 minutos
+ini_set('session.gc_maxlifetime', 1200); // 20 minutos
 session_set_cookie_params([
-    'lifetime' => 1200,
+    'lifetime' => 1200, // también 20 minutos
     'path' => '/',
     'domain' => '',
     'secure' => isset($_SERVER['HTTPS']),
@@ -20,6 +21,7 @@ require_once __DIR__ . '/models/AuthModel.php';
 
 $error = '';
 
+// Mensaje si viene por expiración
 if (isset($_GET['expired']) && $_GET['expired'] == 1) {
     $error = "La sesión expiró por inactividad. Por favor, iniciá sesión nuevamente.";
 }
@@ -32,10 +34,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $auth->login($usuario, $contrasena);
 
     if ($user) {
+
+        //Analizamos los operativos cerrados
         require_once __DIR__ . '/views/partials/cierre_operativos.php';
         $cierre_info = cerrarOperativosVencidos($pdo);
         $_SESSION['cierre_info'] = $cierre_info;
 
+        // Datos combinados
         $_SESSION['usuario'] = $user['usuario'];
         $_SESSION['rol'] = $user['rol'];
         $_SESSION['nombre']    = $user['nombre'] ?? '';
@@ -65,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Usuario o contraseña inválidos o permiso no habilitado.";
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -72,64 +78,153 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <head>
     <meta charset="UTF-8">
-    <title>Iniciar Sesión</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- CDN de tu framework -->
-    <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
-    <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
-
-    <!-- Google Icons -->
+    <title>Iniciar Sesión</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-container h1 {
+            text-align: center;
+            color: #673ab7;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .form-group input:focus {
+            border-color: #673ab7;
+            outline: none;
+        }
+
+        .form-group button {
+            width: 100%;
+            padding: 10px;
+            background-color: #673ab7;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .form-group button:hover {
+            background-color: #5e35b1;
+        }
+
+        .error {
+            color: red;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+.password-container {
+    position: relative;
+}
+
+.password-container input {
+    padding-right: 40px; /* Espacio para el ícono */
+}
+
+.toggle-password {
+    position: absolute;
+    right: 14px;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #673ab7;
+    font-size: 22px;
+    cursor: pointer;
+    user-select: none;
+}
+    </style>
 </head>
 
-<body class="flex center middle full-height bg-light">
-
-    <div class="card p-4 radius-12 shadow-soft max-w-400 w-full">
-        <h1 class="text-center text-xl color-primary mb-3">Iniciar Sesión</h1>
-
+<body>
+    <div class="login-container">
+        <h1>Iniciar Sesión</h1>
         <?php if ($error): ?>
-            <div class="alert alert-danger mb-2 text-center"><?= $error ?></div>
+            <div class="error"><?= $error ?></div>
         <?php endif; ?>
-
         <form action="" method="POST">
+
             <div class="form-group">
-                <label for="usuario">Usuario</label>
-                <input type="text" name="usuario" id="usuario" class="input" required>
+                <label for="usuario">Usuario:</label>
+                <input type="text" name="usuario" id="usuario" required>
             </div>
 
-            <div class="form-group relative">
-                <label for="contrasena">Contraseña</label>
-                <input type="password" name="contrasena" id="contrasena" class="input pr-10" required>
-                <span class="material-icons absolute top-50 right-10 translate-middle-y cursor-pointer color-primary toggle-password" title="Mostrar/Ocultar contraseña">visibility</span>
+            <div class="form-group password-container">
+                <label for="contrasena">Contraseña:</label>
+                <input type="password" name="contrasena" id="contrasena" required>
+                <span class="material-icons toggle-password" title="Mostrar/Ocultar contraseña">visibility</span>
             </div>
 
-            <button type="submit" class="btn btn-primary w-full mt-3">INGRESAR</button>
+            <div class="form-group">
+                <button type="submit">INGRESAR</button>
+            </div>
+
         </form>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const togglePassword = document.querySelector(".toggle-password");
-            const passwordField = document.getElementById("contrasena");
+        // visualizador de contraseña
+        const togglePassword = document.querySelector('.toggle-password');
+        const passwordField = document.getElementById('contrasena');
 
-            togglePassword.addEventListener("click", () => {
-                const isPassword = passwordField.type === "password";
-                passwordField.type = isPassword ? "text" : "password";
-                togglePassword.textContent = isPassword ? "visibility_off" : "visibility";
-            });
-
-            <?php if (!empty($_SESSION)): ?>
-                console.log("Datos de sesión:", <?= json_encode($_SESSION, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>);
-            <?php endif; ?>
-
-            <?php if (!empty($cierre_info)): ?>
-                console.log("Cierre operativos:", <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>);
-            <?php endif; ?>
+        togglePassword.addEventListener('click', () => {
+            const isPassword = passwordField.type === 'password';
+            passwordField.type = isPassword ? 'text' : 'password';
+            togglePassword.textContent = isPassword ? 'visibility_off' : 'visibility';
         });
+
+        // imprirmir los datos de la sesion en la consola
+        <?php if (!empty($_SESSION)): ?>
+            const sessionData = <?= json_encode($_SESSION, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+            console.log("Datos de sesión:", sessionData);
+        <?php endif; ?>
+
+        // imprimir los operativos cerrados en la consola
+        <?php if (!empty($cierre_info)): ?>
+            const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+            console.log("Cierre operativos:", cierreData);
+        <?php endif; ?>
     </script>
 
-    <!-- Spinner Global (opcional) -->
+    <!-- Spinner Global -->
     <script src="views/partials/spinner-global.js"></script>
 </body>
 
