@@ -152,20 +152,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 .password-container {
     position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .password-container input {
-    padding-right: 40px; /* Espacio para el ícono */
+    width: 100%;
+    padding: 10px 40px 10px 10px; /* padding derecho ajustado para el ícono */
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 6px;
 }
 
 .toggle-password {
     position: absolute;
-    right: 14px;
-    top: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
     color: #673ab7;
     font-size: 22px;
     cursor: pointer;
