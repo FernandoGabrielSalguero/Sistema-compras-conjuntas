@@ -29,6 +29,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
+    
+    <!-- Descarga de consolidado -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
@@ -279,10 +283,9 @@ async function exportarExtendido() {
     if (coopId) url.searchParams.append('cooperativa_id', coopId);
 
     try {
-const res = await fetch(url);
-const text = await res.text();
-console.log("Respuesta cruda:", text); // Agregalo
-const data = JSON.parse(text); // convertí manualmente
+        const res = await fetch(url);
+        const text = await res.text();
+        const data = JSON.parse(text);
 
         if (!data.success) throw new Error(data.message);
 
@@ -292,27 +295,20 @@ const data = JSON.parse(text); // convertí manualmente
             return;
         }
 
-        const headers = Object.keys(pedidos[0]);
-        let csvContent = headers.join(',') + '\n';
+        // 🔄 Transformar los datos en hoja Excel
+        const worksheet = XLSX.utils.json_to_sheet(pedidos);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Pedidos");
 
-        pedidos.forEach(pedido => {
-            const row = headers.map(key => `"${(pedido[key] ?? '').toString().replace(/"/g, '""')}"`).join(',');
-            csvContent += row + '\n';
-        });
-
-        const blob = new Blob(["\uFEFF" + csvContent], {
-            type: 'text/csv;charset=utf-8;'
-        });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'pedidos_extendido.csv';
-        link.click();
+        // 📥 Descargar el archivo
+        XLSX.writeFile(workbook, "pedidos_extendido.xlsx");
 
     } catch (err) {
         console.error("Error exportando extendido:", err);
         alert("Hubo un error exportando los datos.");
     }
 }
+
 
     </script>
 
