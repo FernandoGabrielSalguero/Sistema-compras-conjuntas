@@ -31,6 +31,10 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
+    <!-- Descarga de consolidado -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
 </head>
 
 <body>
@@ -232,22 +236,17 @@ async function cargarOperativos() {
         }
     }
 
-    function exportarAExcel() {
-        const table = document.querySelector('.data-table');
-        let csvContent = '';
-        for (const row of table.rows) {
-            const rowData = Array.from(row.cells).map(cell => `"${cell.textContent}"`).join(',');
-            csvContent += rowData + '\n';
-        }
+function exportarAExcel() {
+    const table = document.querySelector('.data-table');
+    const workbook = XLSX.utils.book_new();
 
-        const blob = new Blob(["\uFEFF" + csvContent], {
-            type: 'text/csv;charset=utf-8;'
-        });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'consolidado_pedidos.csv';
-        link.click();
-    }
+    // Convertir tabla HTML a una hoja de Excel
+    const worksheet = XLSX.utils.table_to_sheet(table);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Consolidado");
+
+    // Descargar archivo
+    XLSX.writeFile(workbook, 'consolidado_pedidos.xlsx');
+}
 </script>
 
 
