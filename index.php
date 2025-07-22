@@ -150,24 +150,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-align: center;
         }
 
-        .password-container {
-            position: relative;
-        }
+.password-container {
+    position: relative;
+}
 
-        .toggle-password {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #673ab7;
-            font-size: 22px;
-            cursor: pointer;
-            user-select: none;
-        }
+.password-container input {
+    padding-right: 40px; /* Espacio para el ícono */
+}
 
-        .password-container {
-            position: relative;
-        }
+.toggle-password {
+    position: absolute;
+    right: 14px;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #673ab7;
+    font-size: 22px;
+    cursor: pointer;
+    user-select: none;
+}
     </style>
 </head>
 
