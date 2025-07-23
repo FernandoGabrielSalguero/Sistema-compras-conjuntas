@@ -128,7 +128,7 @@ unset($_SESSION['cierre_info']);
 
                 <!-- Formulario -->
                 <div class="card tutorial-formulario">
-                    <h2>Crear nuevo usuario</h2>
+                    <h2>Asignemos un productor a tu cooperativa</h2>
                     <form class="form-modern" id="formUsuario">
                         <div class="form-grid grid-2">
 
