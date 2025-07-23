@@ -134,10 +134,10 @@ unset($_SESSION['cierre_info']);
 
                             <!-- Usuario -->
                             <div class="input-group">
-                                <label for="usuario">Usuario</label>
+                                <label for="usuario">Nombre del productor</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
-                                    <input type="text" id="usuario" name="usuario" placeholder="Asigna un usuario" autocomplete="Asigna un usuario" required>
+                                    <input type="text" id="usuario" name="usuario" placeholder="¿Cual es su nombre?" autocomplete="¿Cual es su nombre?" required>
                                 </div>
                             </div>
 
