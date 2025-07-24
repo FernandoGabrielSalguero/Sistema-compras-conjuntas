@@ -82,11 +82,11 @@ unset($_SESSION['cierre_info']);
                     <li onclick="location.href='coop_listadoPedidos.php'">
                         <span class="material-icons" style="color: #5b21b6;">receipt_long</span><span class="link-text">Listado Pedidos</span>
                     </li>
-                    <li onclick="location.href='coop_usuarioInformacion.php'">
-                        <ure class="material-icons" style="color: #5b21b6;">agriculture</ure><span class="link-text">Productores</span>
-                    </li>
                     <li onclick="location.href='coop_consolidado.php'">
                         <span class="material-icons" style="color: #5b21b6;">analytics</span><span class="link-text">Consolidado</span>
+                    </li>
+                    <li onclick="location.href='coop_usuarioInformacion.php'">
+                        <ure class="material-icons" style="color: #5b21b6;">agriculture</ure><span class="link-text">Productores</span>
                     </li>
                     <li onclick="location.href='../../../logout.php'">
                         <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
@@ -199,7 +199,7 @@ unset($_SESSION['cierre_info']);
 
                         <!-- Botones -->
                         <div class="form-buttons tutorial-Boton">
-                            <button class="btn btn-aceptar" type="submit">Crear productor</button>
+                            <button class="btn btn-aceptar" type="submit">Asociar nuevo productor</button>
                         </div>
                     </form>
 
