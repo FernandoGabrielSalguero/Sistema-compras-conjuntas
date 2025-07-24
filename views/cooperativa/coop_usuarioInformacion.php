@@ -137,7 +137,7 @@ unset($_SESSION['cierre_info']);
                                 <label for="usuario">Nombre del productor</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
-<input type="text" id="usuario" name="prod_nombre" placeholder="¿Cuál es su nombre?" autocomplete="off" required>
+<input type="text" id="usuario" name="prod_nombre" placeholder="¿Cuál es el nombre del productor que vas a asociar?" autocomplete="off" required>
                                 </div>
                             </div>
 
@@ -146,7 +146,7 @@ unset($_SESSION['cierre_info']);
                                 <label for="contrasena">Contraseña</label>
                                 <div class="input-icon">
                                     <span class="material-icons">lock</span>
-<input type="password" id="contrasena" name="prod_contra" placeholder="Asigna una contraseña" autocomplete="new-password" required>
+<input type="password" id="contrasena" name="prod_contra" placeholder="Asignale una contraseña a este nuevo productor" autocomplete="new-password" required>
                                     <span class="material-icons toggle-password" onclick="togglePassword()">visibility</span>
                                 </div>
                             </div>
@@ -154,7 +154,7 @@ unset($_SESSION['cierre_info']);
                             <!-- CUIT -->
                             <div class="input-group">
                                 <label for="cuit">CUIT</label>
-                                <div class="input-icon">
+                                <div class="input-icon input-icon-cuit">
                                     <span class="material-icons">fingerprint</span>
                                     <input type="text" id="cuit" name="cuit" inputmode="numeric" pattern="\d*" maxlength="11" placeholder="Coloca el CUIT sin guiones" oninput="this.value = this.value.replace(/\D/g, '')" required>
                                 </div>
