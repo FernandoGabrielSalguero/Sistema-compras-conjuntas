@@ -87,8 +87,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['action'])) {
 
 // 📝 POST: editar datos de productor
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'editar_productor') {
+    global $pdo; // Asegura disponibilidad del objeto
+
     $usuarioId = $_POST['usuario_id'] ?? null;
     $nombre = $_POST['nombre'] ?? '';
+    $cuit = trim($_POST['cuit'] ?? '');
     $telefono = $_POST['telefono'] ?? '';
     $correo = $_POST['correo'] ?? '';
     $direccion = $_POST['direccion'] ?? '';
@@ -99,6 +102,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 
     $ok = $model->guardarInfoProductor($usuarioId, $nombre, $telefono, $correo, $direccion);
+
+    // Guardar CUIT en tabla usuarios
+    $stmt = $pdo->prepare("UPDATE usuarios SET cuit = ? WHERE id = ?");
+    $stmt->execute([$cuit, $usuarioId]);
 
     if ($ok) {
         echo json_encode(['success' => true, 'message' => 'Información actualizada correctamente']);

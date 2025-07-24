@@ -137,7 +137,7 @@ unset($_SESSION['cierre_info']);
                                 <label for="usuario">Nombre del productor</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
-<input type="text" id="usuario" name="prod_nombre" placeholder="¿Cuál es el nombre del productor que vas a asociar?" autocomplete="off" required>
+                                    <input type="text" id="usuario" name="prod_nombre" placeholder="¿Cuál es el nombre del productor que vas a asociar?" autocomplete="off" required>
                                 </div>
                             </div>
 
@@ -146,7 +146,7 @@ unset($_SESSION['cierre_info']);
                                 <label for="contrasena">Contraseña</label>
                                 <div class="input-icon">
                                     <span class="material-icons">lock</span>
-<input type="password" id="contrasena" name="prod_contra" placeholder="Asignale una contraseña a este nuevo productor" autocomplete="new-password" required>
+                                    <input type="password" id="contrasena" name="prod_contra" placeholder="Asignale una contraseña a este nuevo productor" autocomplete="new-password" required>
                                     <span class="material-icons toggle-password" onclick="togglePassword()">visibility</span>
                                 </div>
                             </div>
@@ -252,6 +252,14 @@ unset($_SESSION['cierre_info']);
                                 <div class="input-icon">
                                     <span class="material-icons">badge</span>
                                     <input type="text" id="nombre" name="nombre" required>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="cuitEditar">CUIT</label>
+                                <div class="input-icon input-icon-cuit">
+                                    <span class="material-icons">fingerprint</span>
+                                    <input type="text" id="cuitEditar" name="cuit" placeholder="Ej: 20123456789" maxlength="11" inputmode="numeric" pattern="^[0-9]{11}$">
                                 </div>
                             </div>
 
@@ -405,6 +413,7 @@ unset($_SESSION['cierre_info']);
 
                         document.getElementById('usuario_id').value = prod.usuario_id;
                         document.getElementById('nombre').value = prod.nombre || '';
+                        document.getElementById('cuitEditar').value = prod.cuit || '';
                         document.getElementById('telefono').value = prod.telefono || '';
                         document.getElementById('correo').value = prod.correo || '';
                         document.getElementById('direccion').value = prod.direccion || '';
