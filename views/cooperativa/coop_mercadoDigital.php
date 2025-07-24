@@ -819,7 +819,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                     const grupo = document.createElement('div');
                                     grupo.className = 'input-group';
 
-grupo.innerHTML = `
+                                    grupo.innerHTML = `
 <label for="prod_${prod.producto_id}">
     <strong>${prod.Nombre_producto}</strong><br>
     <small style="color:#555;">Se vende por <strong>${prod.Unidad_Medida_venta}</strong> a <strong>$${prod.Precio_producto}</strong></small>
@@ -849,21 +849,17 @@ grupo.innerHTML = `
                     }
 
                     // modal telefono y cuit
-function cerrarModalDatos() {
-    // Ocultar el modal
-    document.getElementById('modalDatosFaltantes').style.display = 'none';
+                    function cerrarModalDatos(limpiarCampos = false) {
+                        document.getElementById('modalDatosFaltantes').style.display = 'none';
 
-    // Limpiar el campo de búsqueda del productor
-    document.getElementById('buscador_prod').value = '';
-
-    // Limpiar el campo oculto que guarda el ID del productor
-    document.getElementById('productor').value = '';
-
-    // Limpiar y ocultar la lista de sugerencias (opcional)
-    const lista = document.getElementById('lista_prod');
-    lista.innerHTML = '';
-    lista.style.display = 'none';
-}
+                        if (limpiarCampos) {
+                            document.getElementById('buscador_prod').value = '';
+                            document.getElementById('productor').value = '';
+                            const lista = document.getElementById('lista_prod');
+                            lista.innerHTML = '';
+                            lista.style.display = 'none';
+                        }
+                    }
                 </script>
 
                 <!-- Alert -->
@@ -908,22 +904,22 @@ function cerrarModalDatos() {
             <form id="formDatosFaltantes">
                 <div class="input-group">
                     <label for="telefonoProductor">Teléfono</label>
-                    <div class="input-icon">
+                    <div class="input-icon input-icon-phone">
                         <span class="material-icons">call</span>
-                        <input type="text" id="telefonoProductor" name="telefono" placeholder="Ej: 2611234567">
+                        <input type="text" id="telefonoProductor" name="telefono" placeholder="Ej: 2611234567" required>
                     </div>
                 </div>
                 <div class="input-group">
                     <label for="cuitProductor">CUIT</label>
-                    <div class="input-icon">
+                    <div class="input-icon input-icon-cuit">
                         <span class="material-icons">badge</span>
-                        <input type="text" id="cuitProductor" name="cuit" placeholder="Ej: 20123456789">
+                        <input type="text" id="cuitProductor" name="cuit" placeholder="Ej: 20123456789" required>
                     </div>
                 </div>
                 <input type="hidden" id="id_real_productor_modal" name="id_real">
 
                 <div class="modal-actions">
-                    <button type="button" class="btn btn-cancelar" onclick="cerrarModalDatos()">Cancelar</button>
+                    <button type="button" class="btn btn-cancelar" onclick="cerrarModalDatos(true)">Cancelar</button>
                     <button type="submit" class="btn btn-aceptar">Aceptar</button>
                 </div>
             </form>
