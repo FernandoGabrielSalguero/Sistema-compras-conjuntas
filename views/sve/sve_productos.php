@@ -166,12 +166,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="Unidad_medida_venta">¿Se vende por?</label>
                                 <div class="input-icon">
                                     <span class="material-icons">scale</span>
-                                    <select id="Unidad_medida_venta" name="Unidad_medida_venta" required>
-                                        <option value="Kilos"> Kilos</option>
-                                        <option value="Gramos">Gramos</option>
-                                        <option value="Litros">Litros</option>
-                                        <option value="Unidad">Unidad</option>
-                                    </select>
+                                    <input type="text" id="Unidad_medida_venta" name="Unidad_medida_venta" placeholder="Ej: Botellas 1 litro" required>
                                 </div>
                             </div>
 
@@ -305,14 +300,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <label for="edit_Unidad_medida_venta">Unidad de medida</label>
                                     <div class="input-icon">
                                         <span class="material-icons">scale</span>
-                                        <select id="edit_Unidad_medida_venta" name="Unidad_medida_venta" required>
-                                            <option value="Kilos">Kilos</option>
-                                            <option value="Gramos">Gramos</option>
-                                            <option value="Litros">Litros</option>
-                                            <option value="Unidad">Unidad</option>
-                                        </select>
+                                        <input type="text" id="edit_Unidad_medida_venta" name="Unidad_medida_venta" placeholder="Ej: Botellas 1 litro" required>
                                     </div>
-
                                 </div>
 
                                 <div class="input-group">
