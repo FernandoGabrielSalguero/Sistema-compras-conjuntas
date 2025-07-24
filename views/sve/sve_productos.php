@@ -157,7 +157,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="Precio_producto">Precio</label>
                                 <div class="input-icon">
                                     <span class="material-icons">monetization_on</span>
-                                    <input type="text" id="Precio_producto" name="Precio_producto" placeholder="$2545" required>
+                                    <input type="number" id="Precio_producto" name="Precio_producto" placeholder="$2545" required>
                                 </div>
                             </div>
 
