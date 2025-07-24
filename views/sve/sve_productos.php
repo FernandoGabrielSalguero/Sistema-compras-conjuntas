@@ -440,7 +440,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             e.preventDefault();
 
             const formData = new FormData(this);
-            formData.append('accion', 'crear');
+            formData.append('accion', 'actualizar');
 
             try {
                 const response = await fetch('/controllers/sve_productosController.php', {
