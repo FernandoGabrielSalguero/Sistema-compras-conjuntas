@@ -418,7 +418,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 .then(data => {
                     // console.log("✅ Producto recibido:", data);
 
-                    document.getElementById('edit_id').value = data.producto.id;
+                    document.getElementById('edit_id').value = data.producto.Id;
                     document.getElementById('edit_Nombre_producto').value = data.producto.Nombre_producto;
                     document.getElementById('edit_Detalle_producto').value = data.producto.Detalle_producto;
                     document.getElementById('edit_Precio_producto').value = data.producto.Precio_producto;
