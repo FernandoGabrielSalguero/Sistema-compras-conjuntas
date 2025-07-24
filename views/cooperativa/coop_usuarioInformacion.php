@@ -137,7 +137,7 @@ unset($_SESSION['cierre_info']);
                                 <label for="usuario">Nombre del productor</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
-                                    <input type="text" id="usuario" name="usuario" placeholder="¿Cual es su nombre?" autocomplete="¿Cual es su nombre?" required>
+<input type="text" id="usuario" name="prod_nombre" placeholder="¿Cuál es su nombre?" autocomplete="off" required>
                                 </div>
                             </div>
 
@@ -146,7 +146,7 @@ unset($_SESSION['cierre_info']);
                                 <label for="contrasena">Contraseña</label>
                                 <div class="input-icon">
                                     <span class="material-icons">lock</span>
-                                    <input type="password" id="contrasena" name="contrasena" placeholder="Asigna una contraseña" autocomplete="Asigna una contraseña" required>
+<input type="password" id="contrasena" name="prod_contra" placeholder="Asigna una contraseña" autocomplete="new-password" required>
                                     <span class="material-icons toggle-password" onclick="togglePassword()">visibility</span>
                                 </div>
                             </div>
