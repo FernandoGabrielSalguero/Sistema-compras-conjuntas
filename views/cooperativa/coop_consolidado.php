@@ -236,17 +236,37 @@ async function cargarOperativos() {
         }
     }
 
-function exportarAExcel() {
-    const table = document.querySelector('.data-table');
-    const workbook = XLSX.utils.book_new();
+async function exportarAExcel() {
+    const operativoId = document.getElementById('operativo')?.value || '';
 
-    // Convertir tabla HTML a una hoja de Excel
-    const worksheet = XLSX.utils.table_to_sheet(table);
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Consolidado");
+    const url = new URL('/controllers/coop_consolidadoController.php', window.location.origin);
+    url.searchParams.append('action', 'descargar_extendido');
+    if (operativoId) url.searchParams.append('operativo_id', operativoId);
 
-    // Descargar archivo
-    XLSX.writeFile(workbook, 'consolidado_pedidos.xlsx');
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.success) throw new Error(data.message);
+
+        const pedidos = data.pedidos;
+        if (pedidos.length === 0) {
+            alert("No hay datos para exportar.");
+            return;
+        }
+
+        const worksheet = XLSX.utils.json_to_sheet(pedidos);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Pedidos");
+
+        XLSX.writeFile(workbook, "pedidos_consolidado.xlsx");
+
+    } catch (err) {
+        console.error("Error exportando:", err);
+        alert("Hubo un error al exportar los datos.");
+    }
 }
+
 </script>
 
 
