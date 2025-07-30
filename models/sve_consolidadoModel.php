@@ -50,8 +50,9 @@ public function obtenerPedidosConDetalle($operativo_id = null, $cooperativa_id =
         SELECT 
             ped.id AS pedido_id,
             ped.cooperativa AS cooperativa_id_real,
-            info.nombre AS nombre_cooperativa,
-            ped.productor,
+            coop_info.nombre AS nombre_cooperativa,
+            ped.productor AS productor_id_real,
+            prod_info.nombre AS nombre_productor,
             ped.fecha_pedido,
             ped.persona_facturacion,
             ped.condicion_facturacion,
@@ -62,13 +63,13 @@ public function obtenerPedidosConDetalle($operativo_id = null, $cooperativa_id =
             ped.total_pedido,
             ped.observaciones,
             ped.operativo_id,
+
             u.rol,
             u.cuit,
             u.id_real,
-            info.nombre,
-            info.direccion,
-            info.telefono,
-            info.correo,
+            coop_info.direccion AS direccion_coop,
+            coop_info.telefono AS telefono_coop,
+            coop_info.correo AS correo_coop,
 
             -- Detalle del producto
             dp.nombre_producto,
@@ -82,8 +83,15 @@ public function obtenerPedidosConDetalle($operativo_id = null, $cooperativa_id =
 
         FROM pedidos ped
         LEFT JOIN detalle_pedidos dp ON dp.pedido_id = ped.id
+
+        -- Datos cooperativa
         LEFT JOIN usuarios u ON u.id_real = ped.cooperativa
-        LEFT JOIN usuarios_info info ON info.usuario_id = u.id
+        LEFT JOIN usuarios_info coop_info ON coop_info.usuario_id = u.id
+
+        -- Datos productor
+        LEFT JOIN usuarios prod ON prod.id_real = ped.productor
+        LEFT JOIN usuarios_info prod_info ON prod_info.usuario_id = prod.id
+
         WHERE 1 = 1
     ";
 
@@ -105,6 +113,7 @@ public function obtenerPedidosConDetalle($operativo_id = null, $cooperativa_id =
     $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
 
 
 
