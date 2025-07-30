@@ -56,7 +56,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'descargar_extendido') {
     try {
         $operativo_id = $_GET['operativo_id'] ?? null;
         $cooperativa_id = $_GET['cooperativa_id'] ?? null;
-        $data = $model->obtenerPedidosExtendidos($operativo_id, $cooperativa_id);
+        $data = $model->obtenerPedidosConDetalle($operativo_id, $cooperativa_id); // nueva función
         echo json_encode(['success' => true, 'pedidos' => $data]);
     } catch (Exception $e) {
         http_response_code(500);
@@ -64,6 +64,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'descargar_extendido') {
     }
     exit;
 }
+
 
 // Obtener consolidado (solo si no hay action explícito)
 if (!isset($_GET['action'])) {

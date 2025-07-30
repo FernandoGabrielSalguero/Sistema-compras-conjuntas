@@ -45,11 +45,12 @@ public function obtenerConsolidadoPedidos($operativo_id = null, $cooperativa_id 
 }
 
 // descargar pedidos
-public function obtenerPedidosExtendidos($operativo_id = null, $cooperativa_id = null): array {
+public function obtenerPedidosConDetalle($operativo_id = null, $cooperativa_id = null): array {
     $sql = "
         SELECT 
             ped.id AS pedido_id,
-            ped.cooperativa,
+            ped.cooperativa AS cooperativa_id_real,
+            info.nombre AS nombre_cooperativa,
             ped.productor,
             ped.fecha_pedido,
             ped.persona_facturacion,
@@ -67,8 +68,20 @@ public function obtenerPedidosExtendidos($operativo_id = null, $cooperativa_id =
             info.nombre,
             info.direccion,
             info.telefono,
-            info.correo
+            info.correo,
+
+            -- Detalle del producto
+            dp.nombre_producto,
+            dp.detalle_producto,
+            dp.precio_producto,
+            dp.unidad_medida_venta,
+            dp.categoria,
+            dp.producto_id,
+            dp.cantidad,
+            dp.alicuota
+
         FROM pedidos ped
+        LEFT JOIN detalle_pedidos dp ON dp.pedido_id = ped.id
         LEFT JOIN usuarios u ON u.id_real = ped.cooperativa
         LEFT JOIN usuarios_info info ON info.usuario_id = u.id
         WHERE 1 = 1
