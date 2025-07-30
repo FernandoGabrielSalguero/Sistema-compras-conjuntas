@@ -67,9 +67,16 @@ public function obtenerPedidosConDetalle($operativo_id = null, $cooperativa_id =
             u.rol,
             u.cuit,
             u.id_real,
+
+            -- Datos de la cooperativa
             coop_info.direccion AS direccion_coop,
             coop_info.telefono AS telefono_coop,
             coop_info.correo AS correo_coop,
+
+            -- Datos del productor (NUEVO)
+            prod_info.direccion AS direccion_productor,
+            prod_info.telefono AS telefono_productor,
+            prod_info.correo AS correo_productor,
 
             -- Detalle del producto
             dp.nombre_producto,
@@ -84,11 +91,11 @@ public function obtenerPedidosConDetalle($operativo_id = null, $cooperativa_id =
         FROM pedidos ped
         LEFT JOIN detalle_pedidos dp ON dp.pedido_id = ped.id
 
-        -- Datos cooperativa
+        -- Cooperativa
         LEFT JOIN usuarios u ON u.id_real = ped.cooperativa
         LEFT JOIN usuarios_info coop_info ON coop_info.usuario_id = u.id
 
-        -- Datos productor
+        -- Productor
         LEFT JOIN usuarios prod ON prod.id_real = ped.productor
         LEFT JOIN usuarios_info prod_info ON prod_info.usuario_id = prod.id
 
@@ -113,9 +120,5 @@ public function obtenerPedidosConDetalle($operativo_id = null, $cooperativa_id =
     $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-
-
-
-
 
 }
