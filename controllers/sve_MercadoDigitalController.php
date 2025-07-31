@@ -70,7 +70,8 @@ if (isset($_GET['listar']) && $_GET['listar'] === 'productos_operativo' && isset
             p.Unidad_Medida_venta,
             p.Precio_producto,
             p.alicuota,
-            p.categoria
+            p.categoria,
+            p.Detalle_producto
         FROM productos p
         JOIN operativos_productos op ON op.producto_id = p.Id
         WHERE op.operativo_id = ?

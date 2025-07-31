@@ -442,8 +442,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     const grupo = document.createElement('div');
                                     grupo.className = 'input-group';
 
-                                    grupo.innerHTML = `
+const tieneDetalle = prod.Detalle_producto && prod.Detalle_producto.trim() !== '';
+const iconoInfo = tieneDetalle ? `<span class="material-icons info-icon" title="${prod.Detalle_producto.replace(/"/g, '&quot;')}">info</span>` : '';
+
+grupo.innerHTML = `
 <label for="prod_${prod.producto_id}">
+    ${iconoInfo}
     <strong>${prod.Nombre_producto}</strong> 
     (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
 </label>
