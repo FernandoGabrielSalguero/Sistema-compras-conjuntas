@@ -66,7 +66,7 @@ public function obtenerPedidosConDetalle($operativo_id = null, $cooperativa_id =
             ped.operativo_id,
 
             u.rol,
-            u.cuit,
+            u.cuit AS cuit_cooperativa,
             u.id_real,
 
             -- Datos de la cooperativa
