@@ -819,8 +819,14 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                     const grupo = document.createElement('div');
                                     grupo.className = 'input-group';
 
-                                    grupo.innerHTML = `
+const tieneDetalle = prod.Detalle_producto && prod.Detalle_producto.trim() !== '';
+const iconoInfo = tieneDetalle
+    ? `<span class="material-icons info-icon" title="${prod.Detalle_producto.replace(/"/g, '&quot;')}">info</span>`
+    : '';
+
+grupo.innerHTML = `
 <label for="prod_${prod.producto_id}">
+    ${iconoInfo}
     <strong>${prod.Nombre_producto}</strong><br>
     <small style="color:#555;">Se vende por <strong>${prod.Unidad_Medida_venta}</strong> a <strong>$${prod.Precio_producto}</strong></small>
 </label>
@@ -836,6 +842,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         data-precio="${prod.Precio_producto}" />
 </div>
 `;
+
                                     body.appendChild(grupo);
                                 });
 

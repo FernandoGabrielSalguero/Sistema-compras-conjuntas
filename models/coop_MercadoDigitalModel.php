@@ -238,7 +238,8 @@ INSERT INTO pedidos (
             p.Nombre_producto,
             p.Unidad_Medida_venta,
             p.Precio_producto,
-            p.alicuota
+            p.alicuota,
+            p.Detalle_producto
         FROM productos p
         INNER JOIN operativos_productos op ON op.producto_id = p.Id
         WHERE op.operativo_id = ?
