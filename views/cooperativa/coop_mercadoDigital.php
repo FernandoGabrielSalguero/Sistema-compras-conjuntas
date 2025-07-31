@@ -151,6 +151,15 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
             display: flex;
             justify-content: space-around;
         }
+
+        /* icono de información */
+        .info-icon {
+    font-size: 16px;
+    vertical-align: middle;
+    color: #555;
+    margin-right: 4px;
+    cursor: help;
+}
     </style>
 </head>
 
