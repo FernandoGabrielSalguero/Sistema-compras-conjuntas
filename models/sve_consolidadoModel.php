@@ -54,6 +54,7 @@ public function obtenerPedidosConDetalle($operativo_id = null, $cooperativa_id =
             ped.productor AS productor_id_real,
             prod_info.nombre AS nombre_productor,
             ped.fecha_pedido,
+            prod.cuit AS cuit_productor,
             ped.persona_facturacion,
             ped.condicion_facturacion,
             ped.afiliacion,

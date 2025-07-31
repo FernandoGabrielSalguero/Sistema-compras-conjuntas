@@ -44,6 +44,7 @@ public function obtenerPedidosExtendidosPorCoop($cooperativa_id, $operativo_id =
             coop_info.nombre AS nombre_cooperativa,
             ped.productor AS productor_id_real,
             prod_info.nombre AS nombre_productor,
+            prod.cuit AS cuit_productor,
             ped.fecha_pedido,
             ped.persona_facturacion,
             ped.condicion_facturacion,
