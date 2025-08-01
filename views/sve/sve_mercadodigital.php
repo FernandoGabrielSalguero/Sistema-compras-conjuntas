@@ -110,6 +110,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             border-top: 1px solid #ccc;
             padding-top: 0.5rem;
         }
+
+        /* icono de información */
+        .info-icon {
+            color: #5b21b6;
+        }
     </style>
 
 
@@ -442,10 +447,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     const grupo = document.createElement('div');
                                     grupo.className = 'input-group';
 
-const tieneDetalle = prod.Detalle_producto && prod.Detalle_producto.trim() !== '';
-const iconoInfo = tieneDetalle ? `<span class="material-icons info-icon" title="${prod.Detalle_producto.replace(/"/g, '&quot;')}">info</span>` : '';
+                                    const tieneDetalle = prod.Detalle_producto && prod.Detalle_producto.trim() !== '';
+                                    const iconoInfo = tieneDetalle ? `<span class="material-icons info-icon" title="${prod.Detalle_producto.replace(/"/g, '&quot;')}">info</span>` : '';
 
-grupo.innerHTML = `
+                                    grupo.innerHTML = `
 <label for="prod_${prod.producto_id}">
     ${iconoInfo}
     <strong>${prod.Nombre_producto}</strong> 
