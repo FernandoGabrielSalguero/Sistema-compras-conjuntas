@@ -174,7 +174,7 @@ unset($_SESSION['cierre_info']);
                                 <label for="rol">Rol</label>
                                 <div class="input-icon">
                                     <span class="material-icons">supervisor_account</span>
-                                    <input type="text" id="rol" name="rol" value="productor" disabled>
+                                    <input type="text" id="rol" name="rol" value="productor" readonly>
                                 </div>
                             </div>
 
@@ -183,7 +183,7 @@ unset($_SESSION['cierre_info']);
                                 <label for="permiso_ingreso">Permiso</label>
                                 <div class="input-icon">
                                     <span class="material-icons">check_circle</span>
-                                    <input type="text" id="permiso_ingreso" name="permiso_ingreso" value="Habilitado" disabled>
+                                    <input type="text" id="permiso_ingreso" name="permiso_ingreso" value="Habilitado" readonly>
                                 </div>
                             </div>
 
