@@ -1,4 +1,6 @@
 <?php
+$data = json_decode(file_get_contents("php://input"), true);
+error_log("📥 Datos recibidos: " . print_r($data, true));
 require_once __DIR__ . '/../config.php';
 
 // Si es POST, procesamos la asociación
