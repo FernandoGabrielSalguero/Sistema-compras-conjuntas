@@ -174,18 +174,23 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
             if (!id_cooperativa) return;
 
+            // 📌 Mostrar lo que se va a enviar
+            const payload = {
+                id_productor: id_productor,
+                id_cooperativa: id_cooperativa
+            };
+            console.log("📤 Enviando al controlador:", payload);
+
             fetch('/controllers/coop_asociarProductoresController.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        id_productor,
-                        id_cooperativa
-                    })
+                    body: JSON.stringify(payload)
                 })
                 .then(res => res.json())
                 .then(data => {
+                    console.log("📥 Respuesta del controlador:", data);
                     if (data.success) {
                         showAlert('success', data.message);
                     } else {
@@ -193,10 +198,11 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     }
                 })
                 .catch(err => {
-                    console.error('❌ Error en la asociaci\u00f3n:', err);
+                    console.error('❌ Error en la asociación:', err);
                     showAlert('error', 'Error inesperado al asociar productor.');
                 });
         }
+
 
         // cargar la tabla
         document.addEventListener('DOMContentLoaded', () => {
