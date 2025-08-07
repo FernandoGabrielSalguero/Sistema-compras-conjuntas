@@ -160,7 +160,7 @@ unset($_SESSION['cierre_info']);
                                 </div>
                             </div>
 
-                            <!-- ID Real auto -->
+                            <!-- ID Real auto --> 
                             <div class="input-group tutorial-id_real">
                                 <label for="id_real">ID Real (Automático)</label>
                                 <div class="input-icon">
@@ -312,44 +312,54 @@ unset($_SESSION['cierre_info']);
                     }
 
                     document.addEventListener('DOMContentLoaded', () => {
-                        const form = document.getElementById('formUsuario');
-                        const idRealInput = document.getElementById('id_real');
+    const form = document.getElementById('formUsuario');
+    const idRealInput = document.getElementById('id_real');
 
-                        // Obtener ID real disponible al cargar
-                        fetch('../../controllers/coop_usuarioInformacionController.php')
-                            .then(res => res.json())
-                            .then(data => {
-                                if (data.id_real) {
-                                    idRealInput.value = data.id_real; // ✅ Ya viene con la 'P'
-                                }
-                            });
+    // Obtener ID real disponible al cargar
+    fetch('../../controllers/coop_usuarioInformacionController.php')
+        .then(res => res.json())
+        .then(data => {
+            if (data.id_real) {
+                idRealInput.value = data.id_real; // ✅ Ya viene con la 'P'
+            }
+        });
 
-                        form.addEventListener('submit', async (e) => {
-                            e.preventDefault();
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-                            const formData = new FormData(form);
-                            const response = await fetch('../../controllers/coop_usuarioInformacionController.php', {
-                                method: 'POST',
-                                body: formData
-                            });
+        const formData = new FormData(form);
 
-                            const result = await response.json();
+        // 🟡 DEBUG: Log de los datos enviados
+        console.log('📦 Datos enviados por FormData:');
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}: ${value}`);
+        }
 
-                            if (result.success) {
-                                showAlert('success', result.message);
-                                // Obtener nuevo ID real tras creación
-                                fetch('../../controllers/coop_usuarioInformacionController.php')
-                                    .then(r => r.json())
-                                    .then(d => {
-                                        if (d.id_real) idRealInput.value = d.id_real;
-                                    });
-                                form.reset();
-                                cargarProductores(); // 👈 Actualiza tarjetas en tiempo real
-                            } else {
-                                showAlert('error', result.message);
-                            }
-                        });
-                    });
+        const response = await fetch('../../controllers/coop_usuarioInformacionController.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showAlert('success', result.message);
+
+            // Obtener nuevo ID real tras creación
+            fetch('../../controllers/coop_usuarioInformacionController.php')
+                .then(r => r.json())
+                .then(d => {
+                    if (d.id_real) idRealInput.value = d.id_real;
+                });
+
+            form.reset();
+            cargarProductores(); // 👈 Actualiza tarjetas en tiempo real
+        } else {
+            showAlert('error', result.message);
+        }
+    });
+});
+
 
                     // funcion para cargar productores
                     async function cargarProductores() {
