@@ -448,7 +448,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     grupo.className = 'input-group';
 
                                     const tieneDetalle = prod.Detalle_producto && prod.Detalle_producto.trim() !== '';
-                                    const iconoInfo = tieneDetalle ? `<span class="material-icons info-icon" title="${prod.Detalle_producto.replace(/"/g, '&quot;')}">info</span>` : '';
+                                    const iconoInfo = tieneDetalle ?
+                                        `<button type="button" class="btn-icon info-icon" onclick="abrirModalDetalle('${prod.Detalle_producto.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">
+        <span class="material-icons">info</span>
+    </button>` :
+                                        '';
 
                                     grupo.innerHTML = `
 <label for="prod_${prod.producto_id}">
@@ -620,6 +624,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             showAlert('error', '❌ Error inesperado en la respuesta del servidor.');
                         }
                     });
+
+                    // modal detalle producto
+                    function abrirModalDetalle(texto) {
+                        const modal = document.getElementById('modalDetalleProducto');
+                        const contenido = document.getElementById('detalleContenido');
+                        contenido.textContent = texto || 'Sin detalle disponible.';
+                        modal.style.display = 'flex';
+                    }
+
+                    function cerrarModalDetalle() {
+                        document.getElementById('modalDetalleProducto').style.display = 'none';
+                    }
                 </script>
 
                 <!-- 🟢 Alertas -->
@@ -627,6 +643,19 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Spinner Global -->
                 <script src="../../views/partials/spinner-global.js"></script>
+
+
+                <!-- Modal de detalle del producto -->
+                <div id="modalDetalleProducto" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <h3>📝 Detalle del producto</h3>
+                        <p id="detalleContenido" style="margin-top: 1rem; white-space: pre-wrap;"></p>
+                        <div class="modal-actions">
+                            <button class="btn btn-cancelar" onclick="cerrarModalDetalle()">Cerrar</button>
+                            <button class="btn btn-aceptar" onclick="cerrarModalDetalle()">Aceptar</button>
+                        </div>
+                    </div>
+                </div>
 </body>
 
 </html>
