@@ -129,79 +129,80 @@ unset($_SESSION['cierre_info']);
                 <!-- Formulario -->
                 <div class="card tutorial-formulario">
                     <h2>Asignemos un productor a tu cooperativa</h2>
-                    <form class="form-modern" id="formUsuario">
-                        <div class="form-grid grid-2">
+<form class="form-modern" id="formUsuario">
+    <div class="form-grid grid-2">
 
-                            <!-- Usuario -->
-                            <div class="input-group">
-                                <label for="usuario">Nombre del productor</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">person</span>
-                                    <input type="text" id="usuario" name="prod_nombre" placeholder="¿Cuál es el nombre del productor que vas a asociar?" autocomplete="off" required>
-                                </div>
-                            </div>
+        <!-- ✅ Nombre del productor (usuario) -->
+        <div class="input-group">
+            <label for="usuario">Nombre del productor</label>
+            <div class="input-icon">
+                <span class="material-icons">person</span>
+                <input type="text" id="usuario" name="usuario" placeholder="¿Cuál es el nombre del productor que vas a asociar?" autocomplete="off" required>
+            </div>
+        </div>
 
-                            <!-- Contraseña con ojo -->
-                            <div class="input-group password-container">
-                                <label for="contrasena">Contraseña</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">lock</span>
-                                    <input type="password" id="contrasena" name="prod_contra" placeholder="Asignale una contraseña a este nuevo productor" autocomplete="new-password" required>
-                                    <span class="material-icons toggle-password" onclick="togglePassword()">visibility</span>
-                                </div>
-                            </div>
+        <!-- ✅ Contraseña -->
+        <div class="input-group password-container">
+            <label for="contrasena">Contraseña</label>
+            <div class="input-icon">
+                <span class="material-icons">lock</span>
+                <input type="password" id="contrasena" name="contrasena" placeholder="Asignale una contraseña a este nuevo productor" autocomplete="new-password" required>
+                <span class="material-icons toggle-password" onclick="togglePassword()">visibility</span>
+            </div>
+        </div>
 
-                            <!-- CUIT -->
-                            <div class="input-group">
-                                <label for="cuit">CUIT</label>
-                                <div class="input-icon input-icon-cuit">
-                                    <span class="material-icons">fingerprint</span>
-                                    <input type="text" id="cuit" name="cuit" inputmode="numeric" pattern="\d*" maxlength="11" placeholder="Coloca el CUIT sin guiones" oninput="this.value = this.value.replace(/\D/g, '')" required>
-                                </div>
-                            </div>
+        <!-- CUIT -->
+        <div class="input-group">
+            <label for="cuit">CUIT</label>
+            <div class="input-icon input-icon-cuit">
+                <span class="material-icons">fingerprint</span>
+                <input type="text" id="cuit" name="cuit" inputmode="numeric" pattern="\d*" maxlength="11" placeholder="Coloca el CUIT sin guiones" oninput="this.value = this.value.replace(/\D/g, '')" required>
+            </div>
+        </div>
 
-                            <!-- ID Real auto --> 
-                            <div class="input-group tutorial-id_real">
-                                <label for="id_real">ID Real (Automático)</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">badge</span>
-                                    <input type="text" id="id_real" name="id_real" readonly>
-                                </div>
-                            </div>
+        <!-- ID Real auto --> 
+        <div class="input-group tutorial-id_real">
+            <label for="id_real">ID Real (Automático)</label>
+            <div class="input-icon">
+                <span class="material-icons">badge</span>
+                <input type="text" id="id_real" name="id_real" readonly>
+            </div>
+        </div>
 
-                            <!-- Rol fijo -->
-                            <div class="input-group oculto">
-                                <label for="rol">Rol</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">supervisor_account</span>
-                                    <input type="text" id="rol" name="rol" value="productor" readonly>
-                                </div>
-                            </div>
+        <!-- Rol fijo -->
+        <div class="input-group oculto">
+            <label for="rol">Rol</label>
+            <div class="input-icon">
+                <span class="material-icons">supervisor_account</span>
+                <input type="text" id="rol" name="rol" value="productor" readonly>
+            </div>
+        </div>
 
-                            <!-- Permiso fijo -->
-                            <div class="input-group oculto">
-                                <label for="permiso_ingreso">Permiso</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">check_circle</span>
-                                    <input type="text" id="permiso_ingreso" name="permiso_ingreso" value="Habilitado" readonly>
-                                </div>
-                            </div>
+        <!-- Permiso fijo -->
+        <div class="input-group oculto">
+            <label for="permiso_ingreso">Permiso</label>
+            <div class="input-icon">
+                <span class="material-icons">check_circle</span>
+                <input type="text" id="permiso_ingreso" name="permiso_ingreso" value="Habilitado" readonly>
+            </div>
+        </div>
 
-                            <!-- Cooperativa -->
-                            <div class="input-group oculto">
-                                <label for="cooperativa">Cooperativa</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">store</span>
-                                    <input type="text" id="cooperativa" name="cooperativa" value="<?php echo htmlspecialchars($nombre); ?>" readonly>
-                                </div>
-                            </div>
-                        </div>
+        <!-- Cooperativa -->
+        <div class="input-group oculto">
+            <label for="cooperativa">Cooperativa</label>
+            <div class="input-icon">
+                <span class="material-icons">store</span>
+                <input type="text" id="cooperativa" name="cooperativa" value="<?php echo htmlspecialchars($nombre); ?>" readonly>
+            </div>
+        </div>
+    </div>
 
-                        <!-- Botones -->
-                        <div class="form-buttons tutorial-Boton">
-                            <button class="btn btn-aceptar" type="submit">Asociar nuevo productor</button>
-                        </div>
-                    </form>
+    <!-- Botones -->
+    <div class="form-buttons tutorial-Boton">
+        <button class="btn btn-aceptar" type="submit">Asociar nuevo productor</button>
+    </div>
+</form>
+
 
                 </div>
 
@@ -312,53 +313,53 @@ unset($_SESSION['cierre_info']);
                     }
 
                     document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('formUsuario');
-    const idRealInput = document.getElementById('id_real');
+                        const form = document.getElementById('formUsuario');
+                        const idRealInput = document.getElementById('id_real');
 
-    // Obtener ID real disponible al cargar
-    fetch('../../controllers/coop_usuarioInformacionController.php')
-        .then(res => res.json())
-        .then(data => {
-            if (data.id_real) {
-                idRealInput.value = data.id_real; // ✅ Ya viene con la 'P'
-            }
-        });
+                        // Obtener ID real disponible al cargar
+                        fetch('../../controllers/coop_usuarioInformacionController.php')
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.id_real) {
+                                    idRealInput.value = data.id_real; // ✅ Ya viene con la 'P'
+                                }
+                            });
 
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+                        form.addEventListener('submit', async (e) => {
+                            e.preventDefault();
 
-        const formData = new FormData(form);
+                            const formData = new FormData(form);
 
-        // 🟡 DEBUG: Log de los datos enviados
-        console.log('📦 Datos enviados por FormData:');
-        for (let [key, value] of formData.entries()) {
-            console.log(`${key}: ${value}`);
-        }
+                            // 🟡 DEBUG: Log de los datos enviados
+                            console.log('📦 Datos enviados por FormData:');
+                            for (let [key, value] of formData.entries()) {
+                                console.log(`${key}: ${value}`);
+                            }
 
-        const response = await fetch('../../controllers/coop_usuarioInformacionController.php', {
-            method: 'POST',
-            body: formData
-        });
+                            const response = await fetch('../../controllers/coop_usuarioInformacionController.php', {
+                                method: 'POST',
+                                body: formData
+                            });
 
-        const result = await response.json();
+                            const result = await response.json();
 
-        if (result.success) {
-            showAlert('success', result.message);
+                            if (result.success) {
+                                showAlert('success', result.message);
 
-            // Obtener nuevo ID real tras creación
-            fetch('../../controllers/coop_usuarioInformacionController.php')
-                .then(r => r.json())
-                .then(d => {
-                    if (d.id_real) idRealInput.value = d.id_real;
-                });
+                                // Obtener nuevo ID real tras creación
+                                fetch('../../controllers/coop_usuarioInformacionController.php')
+                                    .then(r => r.json())
+                                    .then(d => {
+                                        if (d.id_real) idRealInput.value = d.id_real;
+                                    });
 
-            form.reset();
-            cargarProductores(); // 👈 Actualiza tarjetas en tiempo real
-        } else {
-            showAlert('error', result.message);
-        }
-    });
-});
+                                form.reset();
+                                cargarProductores(); // 👈 Actualiza tarjetas en tiempo real
+                            } else {
+                                showAlert('error', result.message);
+                            }
+                        });
+                    });
 
 
                     // funcion para cargar productores
