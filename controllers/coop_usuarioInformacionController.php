@@ -66,9 +66,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['action'])) {
 
     // Crear usuario productor
     try {
+        // 1. Crear en tabla `usuarios`
         $nuevoId = $model->crearUsuarioProductor($usuario, $contrasena, $cuit, $proximoId);
 
-        // Asociar al productor con la cooperativa
+        // 2. Guardar nombre también en `usuarios_info`
+        $model->guardarInfoProductor($nuevoId, $usuario, '', '', '');
+
+        // 3. Asociar con la cooperativa
         $model->asociarProductorCooperativa($proximoId, $cooperativaIdReal);
 
         echo json_encode([
