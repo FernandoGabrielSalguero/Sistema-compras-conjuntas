@@ -826,7 +826,9 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
 
                                     const tieneDetalle = prod.Detalle_producto && prod.Detalle_producto.trim() !== '';
                                     const iconoInfo = tieneDetalle ?
-                                        `<span class="material-icons info-icon" title="${prod.Detalle_producto.replace(/"/g, '&quot;')}">info</span>` :
+                                        `<button type="button" class="btn-icon info-icon" onclick="abrirModalDetalle('${prod.Detalle_producto.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">
+        <span class="material-icons">info</span>
+     </button>` :
                                         '';
 
                                     grupo.innerHTML = `
@@ -872,6 +874,18 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             lista.style.display = 'none';
                         }
                     }
+
+                    // Modal detalle de producto
+                    function abrirModalDetalle(texto) {
+                        const modal = document.getElementById('modalDetalleProducto');
+                        const contenido = document.getElementById('detalleContenido');
+                        contenido.textContent = texto || 'Sin detalle disponible.';
+                        modal.style.display = 'flex';
+                    }
+
+                    function cerrarModalDetalle() {
+                        document.getElementById('modalDetalleProducto').style.display = 'none';
+                    }
                 </script>
 
                 <!-- Alert -->
@@ -903,6 +917,18 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
             <div class="modal-actions">
                 <button class="btn btn-cancelar" onclick="cerrarModal()">Cancelar</button>
                 <button class="btn btn-aceptar" onclick="confirmarEnvio()">Sí, enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de detalle del producto -->
+    <div id="modalDetalleProducto" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>📝 Detalle del producto</h3>
+            <p id="detalleContenido" style="margin-top: 1rem; white-space: pre-wrap;"></p>
+            <div class="modal-actions">
+                <button class="btn btn-cancelar" onclick="cerrarModalDetalle()">Cerrar</button>
+                <button class="btn btn-aceptar" onclick="cerrarModalDetalle()">Aceptar</button>
             </div>
         </div>
     </div>
