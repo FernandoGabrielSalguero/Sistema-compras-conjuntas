@@ -30,7 +30,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
-    
+
     <!-- Descarga de consolidado -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
@@ -110,161 +110,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <br>
                 </div>
 
-                <!-- Métricas redondas -->
-<div class="card">
-  <h2>Métricas</h2>
-
-  <div class="metrics-round-grid">
-    <!-- 1 -->
-    <div class="metric-round">
-      <div class="metric-circle">
-        <span class="metric-name">Ventas</span>
-        <span class="metric-count">1,245</span>
-        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-ventas"
-                onclick="toggleRoundMetric(this)">
-          <span class="material-icons">expand_more</span>
-        </button>
-      </div>
-      <div class="metric-extra-round" id="m-ventas">
-        <ul>
-          <li>Online: 950</li>
-          <li>Locales: 295</li>
-          <li>Promedio diario: 42</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- 2 -->
-    <div class="metric-round">
-      <div class="metric-circle">
-        <span class="metric-name">Usuarios</span>
-        <span class="metric-count">3,560</span>
-        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-usuarios"
-                onclick="toggleRoundMetric(this)">
-          <span class="material-icons">expand_more</span>
-        </button>
-      </div>
-      <div class="metric-extra-round" id="m-usuarios">
-        <ul>
-          <li>Nuevos: 320</li>
-          <li>Activos: 3,240</li>
-          <li>Retención: 88%</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- 3 -->
-    <div class="metric-round">
-      <div class="metric-circle">
-        <span class="metric-name">Ingresos</span>
-        <span class="metric-count">$45.8K</span>
-        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-ingresos"
-                onclick="toggleRoundMetric(this)">
-          <span class="material-icons">expand_more</span>
-        </button>
-      </div>
-      <div class="metric-extra-round" id="m-ingresos">
-        <ul>
-          <li>Producto A: $20K</li>
-          <li>Producto B: $15.5K</li>
-          <li>Servicios: $10.3K</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- 4 -->
-    <div class="metric-round">
-      <div class="metric-circle">
-        <span class="metric-name">Descargas</span>
-        <span class="metric-count">12.3K</span>
-        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-descargas"
-                onclick="toggleRoundMetric(this)">
-          <span class="material-icons">expand_more</span>
-        </button>
-      </div>
-      <div class="metric-extra-round" id="m-descargas">
-        <ul>
-          <li>App iOS: 7.1K</li>
-          <li>App Android: 5.2K</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- 5 -->
-    <div class="metric-round">
-      <div class="metric-circle">
-        <span class="metric-name">Tickets</span>
-        <span class="metric-count">284</span>
-        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-tickets"
-                onclick="toggleRoundMetric(this)">
-          <span class="material-icons">expand_more</span>
-        </button>
-      </div>
-      <div class="metric-extra-round" id="m-tickets">
-        <ul>
-          <li>Abiertos: 67</li>
-          <li>En curso: 121</li>
-          <li>Resueltos: 96</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- 6 -->
-    <div class="metric-round">
-      <div class="metric-circle">
-        <span class="metric-name">Clientes</span>
-        <span class="metric-count">842</span>
-        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-clientes"
-                onclick="toggleRoundMetric(this)">
-          <span class="material-icons">expand_more</span>
-        </button>
-      </div>
-      <div class="metric-extra-round" id="m-clientes">
-        <ul>
-          <li>Empresas: 110</li>
-          <li>Particulares: 732</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- 7 -->
-    <div class="metric-round">
-      <div class="metric-circle">
-        <span class="metric-name">Subs.</span>
-        <span class="metric-count">1,120</span>
-        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-subs"
-                onclick="toggleRoundMetric(this)">
-          <span class="material-icons">expand_more</span>
-        </button>
-      </div>
-      <div class="metric-extra-round" id="m-subs">
-        <ul>
-          <li>Mensual: 910</li>
-          <li>Anual: 210</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- 8 -->
-    <div class="metric-round">
-      <div class="metric-circle">
-        <span class="metric-name">Devoluciones</span>
-        <span class="metric-count">32</span>
-        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-devoluciones"
-                onclick="toggleRoundMetric(this)">
-          <span class="material-icons">expand_more</span>
-        </button>
-      </div>
-      <div class="metric-extra-round" id="m-devoluciones">
-        <ul>
-          <li>Por defecto: 12</li>
-          <li>Arrepentimiento: 20</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
                 <!-- 🟦 BUSCADOR Y EXPORTACIÓN -->
                 <div class="card card-grid grid-2 align-center justify-between">
                     <div>
@@ -294,6 +139,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <button id="btnDescargarExcel" class="btn btn-aceptar" onclick="exportarExtendido()"> Descargar la tabla a Excel
                         <span class="material-icons">download</span>
                     </button>
+                </div>
+
+                <!-- Métricas redondas -->
+                <div class="card">
+                    <h2>Resumen general</h2>
+                    <div id="metricsContainer" class="metrics-round-grid">
+                        <!-- Se completa por JS -->
+                    </div>
                 </div>
 
                 <!-- 🟨 TABLA DE CONSOLIDADO -->
@@ -338,15 +191,74 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <script>
+        /* ===========================
+   Boot
+=========================== */
         document.addEventListener('DOMContentLoaded', () => {
             cargarOperativos();
             cargarCooperativas();
             cargarConsolidado();
+            cargarMetricas(); // ⬅️ nuevo
 
-            document.getElementById('operativo').addEventListener('change', cargarConsolidado);
-            document.getElementById('cooperativa').addEventListener('change', cargarConsolidado);
+            const onFilterChange = () => {
+                cargarConsolidado();
+                cargarMetricas(); // ⬅️ refresca métricas con filtros
+            };
+
+            document.getElementById('operativo').addEventListener('change', onFilterChange);
+            document.getElementById('cooperativa').addEventListener('change', onFilterChange);
         });
 
+        /* ===========================
+           Helpers (números, HTML, ids)
+        =========================== */
+        function nfmt(n) {
+            return new Intl.NumberFormat('es-AR').format(Number(n) || 0);
+        }
+
+        function cfmt(n) {
+            return new Intl.NumberFormat('es-AR', {
+                style: 'currency',
+                currency: 'ARS',
+                maximumFractionDigits: 2
+            }).format(Number(n) || 0);
+        }
+
+        function idRand(prefix) {
+            return `${prefix}-${Math.random().toString(36).slice(2, 8)}`;
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            } [m]));
+        }
+
+        /* ===========================
+           Sidebar Metric Toggle (fallback)
+        =========================== */
+        if (typeof window.toggleRoundMetric !== 'function') {
+            window.toggleRoundMetric = function(btn) {
+                try {
+                    const expanded = btn.getAttribute('aria-expanded') === 'true';
+                    btn.setAttribute('aria-expanded', String(!expanded));
+                    const id = btn.getAttribute('aria-controls');
+                    const panel = document.getElementById(id);
+                    if (panel) panel.classList.toggle('open', !expanded);
+                } catch (e) {
+                    console.warn('toggleRoundMetric fallback:', e);
+                }
+            }
+        }
+
+        /* ===========================
+           Carga de selects
+        =========================== */
         async function cargarOperativos() {
             try {
                 const res = await fetch('/controllers/sve_consolidadoController.php?action=operativos');
@@ -385,6 +297,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
+        /* ===========================
+           Tabla Consolidado
+        =========================== */
         async function cargarConsolidado() {
             const tbody = document.getElementById('tablaConsolidado');
             tbody.innerHTML = '<tr><td colspan="6">Cargando...</td></tr>';
@@ -401,7 +316,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const data = await res.json();
 
                 if (!data.success) throw new Error(data.message);
-                if (data.consolidado.length === 0) {
+                if (!data.consolidado || data.consolidado.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6">Sin datos disponibles.</td></tr>';
                     return;
                 }
@@ -410,62 +325,215 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 data.consolidado.forEach((row, index) => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${row.operativo}</td>
-                <td>${row.nombre_cooperativa || 'Sin nombre'}</td>
-                <td>${row.producto}</td>
-                <td>${row.cantidad_total}</td>
-                <td>${row.unidad}</td>
-            `;
+        <td>${index + 1}</td>
+        <td>${escapeHtml(row.operativo)}</td>
+        <td>${escapeHtml(row.nombre_cooperativa || 'Sin nombre')}</td>
+        <td>${escapeHtml(row.producto)}</td>
+        <td>${nfmt(row.cantidad_total)}</td>
+        <td>${escapeHtml(row.unidad)}</td>
+      `;
                     tbody.appendChild(tr);
                 });
 
             } catch (err) {
                 console.error(err);
-                tbody.innerHTML = `<tr><td colspan="6" style="color:red;">${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="color:red;">${escapeHtml(err.message)}</td></tr>`;
             }
         }
 
+        /* ===========================
+           Exportar extendido
+        =========================== */
+        async function exportarExtendido() {
+            const operativoId = document.getElementById('operativo')?.value || '';
+            const coopId = document.getElementById('cooperativa')?.value || '';
 
+            const url = new URL('/controllers/sve_consolidadoController.php', window.location.origin);
+            url.searchParams.append('action', 'descargar_extendido');
+            if (operativoId) url.searchParams.append('operativo_id', operativoId);
+            if (coopId) url.searchParams.append('cooperativa_id', coopId);
 
-async function exportarExtendido() {
-    const operativoId = document.getElementById('operativo')?.value || '';
-    const coopId = document.getElementById('cooperativa')?.value || '';
+            try {
+                const res = await fetch(url);
+                const text = await res.text();
+                const data = JSON.parse(text);
 
-    const url = new URL('/controllers/sve_consolidadoController.php', window.location.origin);
-    url.searchParams.append('action', 'descargar_extendido');
-    if (operativoId) url.searchParams.append('operativo_id', operativoId);
-    if (coopId) url.searchParams.append('cooperativa_id', coopId);
+                if (!data.success) throw new Error(data.message);
 
-    try {
-        const res = await fetch(url);
-        const text = await res.text();
-        const data = JSON.parse(text);
+                const pedidos = data.pedidos || [];
+                if (pedidos.length === 0) {
+                    alert("No hay datos para exportar.");
+                    return;
+                }
 
-        if (!data.success) throw new Error(data.message);
+                // 🔄 Transformar los datos en hoja Excel
+                const worksheet = XLSX.utils.json_to_sheet(pedidos);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Pedidos");
 
-        const pedidos = data.pedidos;
-        if (pedidos.length === 0) {
-            alert("No hay datos para exportar.");
-            return;
+                // 📥 Descargar el archivo
+                XLSX.writeFile(workbook, "pedidos_extendido.xlsx");
+
+            } catch (err) {
+                console.error("Error exportando extendido:", err);
+                alert("Hubo un error exportando los datos.");
+            }
         }
 
-        // 🔄 Transformar los datos en hoja Excel
-        const worksheet = XLSX.utils.json_to_sheet(pedidos);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Pedidos");
+        /* ===========================
+           Métricas (reales)
+        =========================== */
+        async function cargarMetricas() {
+            const container = document.getElementById('metricsContainer');
+            if (!container) return; // por si aún no reemplazaste el bloque HTML de métricas
 
-        // 📥 Descargar el archivo
-        XLSX.writeFile(workbook, "pedidos_extendido.xlsx");
+            // skeletons mientras carga
+            container.innerHTML = `
+    <div class="skeleton h-28"></div>
+    <div class="skeleton h-28"></div>
+    <div class="skeleton h-28"></div>
+    <div class="skeleton h-28"></div>
+  `;
 
-    } catch (err) {
-        console.error("Error exportando extendido:", err);
-        alert("Hubo un error exportando los datos.");
-    }
-}
+            const operativoId = document.getElementById('operativo').value || '';
+            const cooperativaId = document.getElementById('cooperativa').value || '';
 
+            try {
+                const url = new URL('/controllers/sve_consolidadoController.php', window.location.origin);
+                url.searchParams.append('action', 'metricas');
+                if (operativoId) url.searchParams.append('operativo_id', operativoId);
+                if (cooperativaId) url.searchParams.append('cooperativa_id', cooperativaId);
 
+                const res = await fetch(url);
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'No fue posible obtener métricas');
+
+                renderMetricas(data);
+
+            } catch (err) {
+                console.error('Error métricas:', err);
+                container.innerHTML = `<div class="alert alert-error">No fue posible cargar las métricas.</div>`;
+            }
+        }
+
+        function renderMetricas(data) {
+            const {
+                resumen,
+                detalle_por_cooperativa
+            } = data;
+            const container = document.getElementById('metricsContainer');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            // Construimos 4 métricas clave
+            const metricas = [{
+                    key: 'facturacion',
+                    name: 'Facturación',
+                    main: cfmt(resumen?.total_facturado),
+                    detailItems: (detalle_por_cooperativa || []).map(c => ({
+                        label: c.nombre_cooperativa || c.cooperativa_id_real || 'Sin nombre',
+                        right: `${cfmt(c.total_facturado)}`
+                    }))
+                },
+                {
+                    key: 'pedidos',
+                    name: 'Pedidos',
+                    main: nfmt(resumen?.total_pedidos),
+                    detailItems: (detalle_por_cooperativa || []).map(c => ({
+                        label: c.nombre_cooperativa || c.cooperativa_id_real || 'Sin nombre',
+                        right: `${nfmt(c.pedidos)} • ${cfmt(c.total_facturado)}`
+                    }))
+                },
+                {
+                    key: 'unidades',
+                    name: 'Unidades',
+                    main: nfmt(resumen?.total_unidades),
+                    detailItems: (detalle_por_cooperativa || []).map(c => ({
+                        label: c.nombre_cooperativa || c.cooperativa_id_real || 'Sin nombre',
+                        right: `${nfmt(c.unidades)} • ${cfmt(c.total_facturado)}`
+                    }))
+                },
+                {
+                    key: 'productos',
+                    name: 'Productos distintos',
+                    main: nfmt(resumen?.productos_distintos),
+                    detailItems: (detalle_por_cooperativa || []).map(c => ({
+                        label: c.nombre_cooperativa || c.cooperativa_id_real || 'Sin nombre',
+                        right: `${cfmt(c.total_facturado)}`
+                    }))
+                }
+            ];
+
+            metricas.forEach(m => container.appendChild(buildMetricRound(m)));
+        }
+
+        function buildMetricRound({
+            key,
+            name,
+            main,
+            detailItems
+        }) {
+            const id = idRand(`m-${key}`);
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'metric-round';
+
+            // header
+            const circle = document.createElement('div');
+            circle.className = 'metric-circle';
+
+            const spanName = document.createElement('span');
+            spanName.className = 'metric-name';
+            spanName.textContent = name;
+
+            const spanMain = document.createElement('span');
+            spanMain.className = 'metric-count';
+            spanMain.textContent = main;
+
+            const btn = document.createElement('button');
+            btn.className = 'metric-center-btn';
+            btn.setAttribute('aria-expanded', 'false');
+            btn.setAttribute('aria-controls', id);
+            btn.setAttribute('onclick', 'toggleRoundMetric(this)');
+            btn.innerHTML = '<span class="material-icons">expand_more</span>';
+
+            circle.appendChild(spanName);
+            circle.appendChild(spanMain);
+            circle.appendChild(btn);
+
+            // details
+            const extra = document.createElement('div');
+            extra.className = 'metric-extra-round';
+            extra.id = id;
+
+            const ul = document.createElement('ul');
+            if (detailItems && detailItems.length) {
+                detailItems.forEach(i => {
+                    const li = document.createElement('li');
+                    li.className = 'd-flex justify-between';
+                    const left = document.createElement('span');
+                    left.textContent = i.label;
+                    const right = document.createElement('strong');
+                    right.textContent = i.right;
+                    li.appendChild(left);
+                    li.appendChild(right);
+                    ul.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.textContent = 'No hay datos';
+                ul.appendChild(li);
+            }
+
+            extra.appendChild(ul);
+            wrapper.appendChild(circle);
+            wrapper.appendChild(extra);
+
+            return wrapper;
+        }
     </script>
+
 
 
     <!-- llamada de tutorial -->

@@ -8,8 +8,9 @@ class sveConsolidadoModel
         $this->pdo = $pdo;
     }
 
-public function obtenerConsolidadoPedidos($operativo_id = null, $cooperativa_id = null): array {
-    $sql = "
+    public function obtenerConsolidadoPedidos($operativo_id = null, $cooperativa_id = null): array
+    {
+        $sql = "
         SELECT 
             o.nombre AS operativo,
             ui.nombre AS nombre_cooperativa,
@@ -25,28 +26,29 @@ public function obtenerConsolidadoPedidos($operativo_id = null, $cooperativa_id 
         WHERE 1 = 1
     ";
 
-    $params = [];
+        $params = [];
 
-    if ($operativo_id) {
-        $sql .= " AND o.id = :operativo_id";
-        $params['operativo_id'] = $operativo_id;
+        if ($operativo_id) {
+            $sql .= " AND o.id = :operativo_id";
+            $params['operativo_id'] = $operativo_id;
+        }
+
+        if ($cooperativa_id) {
+            $sql .= " AND ped.cooperativa = :cooperativa_id";
+            $params['cooperativa_id'] = $cooperativa_id;
+        }
+
+        $sql .= " GROUP BY o.id, p.Id, ped.cooperativa ORDER BY o.fecha_inicio DESC, p.Nombre_producto ASC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    if ($cooperativa_id) {
-        $sql .= " AND ped.cooperativa = :cooperativa_id";
-        $params['cooperativa_id'] = $cooperativa_id;
-    }
-
-    $sql .= " GROUP BY o.id, p.Id, ped.cooperativa ORDER BY o.fecha_inicio DESC, p.Nombre_producto ASC";
-
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->execute($params);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-// descargar pedidos
-public function obtenerPedidosConDetalle($operativo_id = null, $cooperativa_id = null): array {
-    $sql = "
+    // descargar pedidos
+    public function obtenerPedidosConDetalle($operativo_id = null, $cooperativa_id = null): array
+    {
+        $sql = "
         SELECT 
             ped.id AS pedido_id,
             ped.cooperativa AS cooperativa_id_real,
@@ -103,23 +105,107 @@ public function obtenerPedidosConDetalle($operativo_id = null, $cooperativa_id =
         WHERE 1 = 1
     ";
 
-    $params = [];
+        $params = [];
 
-    if (!empty($operativo_id)) {
-        $sql .= " AND ped.operativo_id = :operativo_id";
-        $params['operativo_id'] = $operativo_id;
+        if (!empty($operativo_id)) {
+            $sql .= " AND ped.operativo_id = :operativo_id";
+            $params['operativo_id'] = $operativo_id;
+        }
+
+        if (!empty($cooperativa_id)) {
+            $sql .= " AND ped.cooperativa = :cooperativa_id";
+            $params['cooperativa_id'] = $cooperativa_id;
+        }
+
+        $sql .= " ORDER BY ped.fecha_pedido DESC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    if (!empty($cooperativa_id)) {
-        $sql .= " AND ped.cooperativa = :cooperativa_id";
-        $params['cooperativa_id'] = $cooperativa_id;
+    // ⬇️ Pegar dentro de la clase sveConsolidadoModel
+    public function obtenerMetricas($operativo_id = null, $cooperativa_id = null): array
+    {
+        // Filtros y params
+        $where = " WHERE 1=1 ";
+        $params = [];
+        if (!empty($operativo_id)) {
+            $where .= " AND ped.operativo_id = :operativo_id";
+            $params['operativo_id'] = $operativo_id;
+        }
+        if (!empty($cooperativa_id)) {
+            $where .= " AND ped.cooperativa = :cooperativa_id";
+            $params['cooperativa_id'] = $cooperativa_id;
+        }
+
+        // 1) Totales a nivel PEDIDOS (evita duplicados de importe)
+        $sqlTotalesPedidos = "
+        SELECT 
+            COUNT(*) AS total_pedidos,
+            COALESCE(SUM(ped.total_pedido), 0) AS total_facturado
+        FROM pedidos ped
+        $where
+    ";
+        $stmt1 = $this->pdo->prepare($sqlTotalesPedidos);
+        $stmt1->execute($params);
+        $totalesPedidos = $stmt1->fetch(PDO::FETCH_ASSOC) ?: ['total_pedidos' => 0, 'total_facturado' => 0];
+
+        // 2) Totales a nivel DETALLE (unidades + productos distintos)
+        $sqlTotalesDetalle = "
+        SELECT 
+            COALESCE(SUM(dp.cantidad), 0) AS total_unidades,
+            COALESCE(COUNT(DISTINCT dp.producto_id), 0) AS productos_distintos
+        FROM pedidos ped
+        LEFT JOIN detalle_pedidos dp ON dp.pedido_id = ped.id
+        $where
+    ";
+        $stmt2 = $this->pdo->prepare($sqlTotalesDetalle);
+        $stmt2->execute($params);
+        $totalesDetalle = $stmt2->fetch(PDO::FETCH_ASSOC) ?: ['total_unidades' => 0, 'productos_distintos' => 0];
+
+        // 3) Detalle por COOPERATIVA (sin duplicar importes)
+        //    Subconsulta por pedido para sumar unidades por pedido y luego agrupar por coop.
+        $subPedidos = "
+        SELECT 
+            ped.id,
+            ped.cooperativa,
+            ped.total_pedido,
+            (
+                SELECT COALESCE(SUM(dp2.cantidad),0)
+                FROM detalle_pedidos dp2
+                WHERE dp2.pedido_id = ped.id
+            ) AS unidades
+        FROM pedidos ped
+        $where
+    ";
+
+        $sqlDetalleCoop = "
+        SELECT
+            t.cooperativa AS cooperativa_id_real,
+            ui.nombre AS nombre_cooperativa,
+            COUNT(*) AS pedidos,
+            COALESCE(SUM(t.unidades),0) AS unidades,
+            COALESCE(SUM(t.total_pedido),0) AS total_facturado
+        FROM ($subPedidos) t
+        LEFT JOIN usuarios u ON u.id_real = t.cooperativa
+        LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+        GROUP BY t.cooperativa, ui.nombre
+        ORDER BY total_facturado DESC, unidades DESC
+    ";
+
+        $stmt3 = $this->pdo->prepare($sqlDetalleCoop);
+        $stmt3->execute($params);
+        $detalleCoop = $stmt3->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        return [
+            'resumen' => [
+                'total_pedidos'       => (int)($totalesPedidos['total_pedidos'] ?? 0),
+                'total_unidades'      => (int)($totalesDetalle['total_unidades'] ?? 0),
+                'productos_distintos' => (int)($totalesDetalle['productos_distintos'] ?? 0),
+                'total_facturado'     => (float)($totalesPedidos['total_facturado'] ?? 0),
+            ],
+            'detalle_por_cooperativa' => $detalleCoop
+        ];
     }
-
-    $sql .= " ORDER BY ped.fecha_pedido DESC";
-
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->execute($params);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
 }
