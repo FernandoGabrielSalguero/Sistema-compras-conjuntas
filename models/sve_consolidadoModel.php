@@ -124,12 +124,12 @@ class sveConsolidadoModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // ⬇️ Pegar dentro de la clase sveConsolidadoModel
-    public function obtenerMetricas($operativo_id = null, $cooperativa_id = null): array
+    // ⬇️ Obtener metricas por producto
+    public function obtenerMetricasPorProducto($operativo_id = null, $cooperativa_id = null): array
     {
-        // Filtros y params
         $where = " WHERE 1=1 ";
         $params = [];
+
         if (!empty($operativo_id)) {
             $where .= " AND ped.operativo_id = :operativo_id";
             $params['operativo_id'] = $operativo_id;
@@ -139,73 +139,47 @@ class sveConsolidadoModel
             $params['cooperativa_id'] = $cooperativa_id;
         }
 
-        // 1) Totales a nivel PEDIDOS (evita duplicados de importe)
-        $sqlTotalesPedidos = "
+        // Datos por producto con sumatoria general
+        $sqlProductos = "
         SELECT 
-            COUNT(*) AS total_pedidos,
-            COALESCE(SUM(ped.total_pedido), 0) AS total_facturado
-        FROM pedidos ped
-        $where
-    ";
-        $stmt1 = $this->pdo->prepare($sqlTotalesPedidos);
-        $stmt1->execute($params);
-        $totalesPedidos = $stmt1->fetch(PDO::FETCH_ASSOC) ?: ['total_pedidos' => 0, 'total_facturado' => 0];
-
-        // 2) Totales a nivel DETALLE (unidades + productos distintos)
-        $sqlTotalesDetalle = "
-        SELECT 
-            COALESCE(SUM(dp.cantidad), 0) AS total_unidades,
-            COALESCE(COUNT(DISTINCT dp.producto_id), 0) AS productos_distintos
+            p.Id AS producto_id,
+            p.Nombre_producto,
+            p.Unidad_Medida_venta,
+            COALESCE(SUM(dp.cantidad),0) AS cantidad_total,
+            COALESCE(SUM(dp.cantidad * dp.precio_producto),0) AS monto_total
         FROM pedidos ped
         LEFT JOIN detalle_pedidos dp ON dp.pedido_id = ped.id
+        LEFT JOIN productos p ON p.Id = dp.producto_id
         $where
+        GROUP BY p.Id, p.Nombre_producto, p.Unidad_Medida_venta
+        ORDER BY p.Nombre_producto ASC
     ";
-        $stmt2 = $this->pdo->prepare($sqlTotalesDetalle);
-        $stmt2->execute($params);
-        $totalesDetalle = $stmt2->fetch(PDO::FETCH_ASSOC) ?: ['total_unidades' => 0, 'productos_distintos' => 0];
+        $stmtProd = $this->pdo->prepare($sqlProductos);
+        $stmtProd->execute($params);
+        $productos = $stmtProd->fetchAll(PDO::FETCH_ASSOC);
 
-        // 3) Detalle por COOPERATIVA (sin duplicar importes)
-        //    Subconsulta por pedido para sumar unidades por pedido y luego agrupar por coop.
-        $subPedidos = "
-        SELECT 
-            ped.id,
-            ped.cooperativa,
-            ped.total_pedido,
-            (
-                SELECT COALESCE(SUM(dp2.cantidad),0)
-                FROM detalle_pedidos dp2
-                WHERE dp2.pedido_id = ped.id
-            ) AS unidades
-        FROM pedidos ped
-        $where
-    ";
+        // Por cada producto, detalle por cooperativa
+        foreach ($productos as &$prod) {
+            $sqlCoop = "
+            SELECT 
+                ui.nombre AS nombre_cooperativa,
+                COALESCE(SUM(dp.cantidad),0) AS cantidad,
+                COALESCE(SUM(dp.cantidad * dp.precio_producto),0) AS monto
+            FROM pedidos ped
+            LEFT JOIN detalle_pedidos dp ON dp.pedido_id = ped.id
+            LEFT JOIN usuarios u ON u.id_real = ped.cooperativa
+            LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+            WHERE dp.producto_id = :producto_id
+            " . (!empty($operativo_id) ? " AND ped.operativo_id = :operativo_id" : "") . "
+            " . (!empty($cooperativa_id) ? " AND ped.cooperativa = :cooperativa_id" : "") . "
+            GROUP BY ui.nombre
+            ORDER BY ui.nombre ASC
+        ";
+            $stmtCoop = $this->pdo->prepare($sqlCoop);
+            $stmtCoop->execute(array_merge($params, ['producto_id' => $prod['producto_id']]));
+            $prod['detalle_cooperativas'] = $stmtCoop->fetchAll(PDO::FETCH_ASSOC);
+        }
 
-        $sqlDetalleCoop = "
-        SELECT
-            t.cooperativa AS cooperativa_id_real,
-            ui.nombre AS nombre_cooperativa,
-            COUNT(*) AS pedidos,
-            COALESCE(SUM(t.unidades),0) AS unidades,
-            COALESCE(SUM(t.total_pedido),0) AS total_facturado
-        FROM ($subPedidos) t
-        LEFT JOIN usuarios u ON u.id_real = t.cooperativa
-        LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
-        GROUP BY t.cooperativa, ui.nombre
-        ORDER BY total_facturado DESC, unidades DESC
-    ";
-
-        $stmt3 = $this->pdo->prepare($sqlDetalleCoop);
-        $stmt3->execute($params);
-        $detalleCoop = $stmt3->fetchAll(PDO::FETCH_ASSOC) ?: [];
-
-        return [
-            'resumen' => [
-                'total_pedidos'       => (int)($totalesPedidos['total_pedidos'] ?? 0),
-                'total_unidades'      => (int)($totalesDetalle['total_unidades'] ?? 0),
-                'productos_distintos' => (int)($totalesDetalle['productos_distintos'] ?? 0),
-                'total_facturado'     => (float)($totalesPedidos['total_facturado'] ?? 0),
-            ],
-            'detalle_por_cooperativa' => $detalleCoop
-        ];
+        return $productos;
     }
 }

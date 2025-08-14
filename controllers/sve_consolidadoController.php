@@ -52,16 +52,16 @@ if (isset($_GET['action']) && $_GET['action'] === 'cooperativas') {
 }
 
 // Metricas
-if (isset($_GET['action']) && $_GET['action'] === 'metricas') {
+if (isset($_GET['action']) && $_GET['action'] === 'metricas_productos') {
     try {
         $operativo_id   = $_GET['operativo_id']   ?? null;
         $cooperativa_id = $_GET['cooperativa_id'] ?? null;
 
-        $data = $model->obtenerMetricas($operativo_id, $cooperativa_id);
-        echo json_encode(['success' => true] + $data);
+        $data = $model->obtenerMetricasPorProducto($operativo_id, $cooperativa_id);
+        echo json_encode(['success' => true, 'productos' => $data]);
     } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Error al obtener métricas: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Error al obtener métricas de productos: ' . $e->getMessage()]);
     }
     exit;
 }

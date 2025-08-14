@@ -143,9 +143,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Métricas redondas -->
                 <div class="card">
-                    <h2>Resumen general</h2>
+                    <h2>Resumen por producto</h2>
                     <div id="metricsContainer" class="metrics-round-grid">
-                        <!-- Se completa por JS -->
+                        <!-- JS rellena -->
                     </div>
                 </div>
 
@@ -383,24 +383,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         /* ===========================
            Métricas (reales)
         =========================== */
+
+
         async function cargarMetricas() {
             const container = document.getElementById('metricsContainer');
-            if (!container) return; // por si aún no reemplazaste el bloque HTML de métricas
+            if (!container) return;
 
-            // skeletons mientras carga
-            container.innerHTML = `
-    <div class="skeleton h-28"></div>
-    <div class="skeleton h-28"></div>
-    <div class="skeleton h-28"></div>
-    <div class="skeleton h-28"></div>
-  `;
+            container.innerHTML = `<div class="skeleton h-28"></div>`;
 
             const operativoId = document.getElementById('operativo').value || '';
             const cooperativaId = document.getElementById('cooperativa').value || '';
 
             try {
                 const url = new URL('/controllers/sve_consolidadoController.php', window.location.origin);
-                url.searchParams.append('action', 'metricas');
+                url.searchParams.append('action', 'metricas_productos');
                 if (operativoId) url.searchParams.append('operativo_id', operativoId);
                 if (cooperativaId) url.searchParams.append('cooperativa_id', cooperativaId);
 
@@ -408,7 +404,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const data = await res.json();
                 if (!data.success) throw new Error(data.message || 'No fue posible obtener métricas');
 
-                renderMetricas(data);
+                renderMetricasProductos(data.productos);
 
             } catch (err) {
                 console.error('Error métricas:', err);
@@ -416,57 +412,39 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
-        function renderMetricas(data) {
-            const {
-                resumen,
-                detalle_por_cooperativa
-            } = data;
+        function renderMetricasProductos(productos) {
             const container = document.getElementById('metricsContainer');
-            if (!container) return;
-
             container.innerHTML = '';
 
-            // Construimos 4 métricas clave
-            const metricas = [{
-                    key: 'facturacion',
-                    name: 'Facturación',
-                    main: cfmt(resumen?.total_facturado),
-                    detailItems: (detalle_por_cooperativa || []).map(c => ({
-                        label: c.nombre_cooperativa || c.cooperativa_id_real || 'Sin nombre',
-                        right: `${cfmt(c.total_facturado)}`
-                    }))
-                },
-                {
-                    key: 'pedidos',
-                    name: 'Pedidos',
-                    main: nfmt(resumen?.total_pedidos),
-                    detailItems: (detalle_por_cooperativa || []).map(c => ({
-                        label: c.nombre_cooperativa || c.cooperativa_id_real || 'Sin nombre',
-                        right: `${nfmt(c.pedidos)} • ${cfmt(c.total_facturado)}`
-                    }))
-                },
-                {
-                    key: 'unidades',
-                    name: 'Unidades',
-                    main: nfmt(resumen?.total_unidades),
-                    detailItems: (detalle_por_cooperativa || []).map(c => ({
-                        label: c.nombre_cooperativa || c.cooperativa_id_real || 'Sin nombre',
-                        right: `${nfmt(c.unidades)} • ${cfmt(c.total_facturado)}`
-                    }))
-                },
-                {
-                    key: 'productos',
-                    name: 'Productos distintos',
-                    main: nfmt(resumen?.productos_distintos),
-                    detailItems: (detalle_por_cooperativa || []).map(c => ({
-                        label: c.nombre_cooperativa || c.cooperativa_id_real || 'Sin nombre',
-                        right: `${cfmt(c.total_facturado)}`
-                    }))
-                }
-            ];
+            productos.forEach(prod => {
+                const id = idRand(`prod-${prod.producto_id}`);
+                const wrapper = document.createElement('div');
+                wrapper.className = 'metric-round';
 
-            metricas.forEach(m => container.appendChild(buildMetricRound(m)));
+                wrapper.innerHTML = `
+      <div class="metric-circle">
+        <span class="metric-name">${escapeHtml(prod.Nombre_producto)}</span>
+        <span class="metric-count">${nfmt(prod.cantidad_total)}</span>
+        <small>${cfmt(prod.monto_total)}</small>
+        <button class="metric-center-btn" aria-expanded="false" aria-controls="${id}" onclick="toggleRoundMetric(this)">
+          <span class="material-icons">expand_more</span>
+        </button>
+      </div>
+      <div class="metric-extra-round" id="${id}">
+        <ul>
+          ${prod.detalle_cooperativas.map(c => `
+            <li class="d-flex justify-between">
+              <span>${escapeHtml(c.nombre_cooperativa || 'Sin nombre')}</span>
+              <strong>${nfmt(c.cantidad)} • ${cfmt(c.monto)}</strong>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    `;
+                container.appendChild(wrapper);
+            });
         }
+
 
         function buildMetricRound({
             key,
