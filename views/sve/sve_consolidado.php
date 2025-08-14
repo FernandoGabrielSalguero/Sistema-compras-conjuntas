@@ -110,6 +110,161 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <br>
                 </div>
 
+                <!-- Métricas redondas -->
+<div class="card">
+  <h2>Métricas</h2>
+
+  <div class="metrics-round-grid">
+    <!-- 1 -->
+    <div class="metric-round">
+      <div class="metric-circle">
+        <span class="metric-name">Ventas</span>
+        <span class="metric-count">1,245</span>
+        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-ventas"
+                onclick="toggleRoundMetric(this)">
+          <span class="material-icons">expand_more</span>
+        </button>
+      </div>
+      <div class="metric-extra-round" id="m-ventas">
+        <ul>
+          <li>Online: 950</li>
+          <li>Locales: 295</li>
+          <li>Promedio diario: 42</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="metric-round">
+      <div class="metric-circle">
+        <span class="metric-name">Usuarios</span>
+        <span class="metric-count">3,560</span>
+        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-usuarios"
+                onclick="toggleRoundMetric(this)">
+          <span class="material-icons">expand_more</span>
+        </button>
+      </div>
+      <div class="metric-extra-round" id="m-usuarios">
+        <ul>
+          <li>Nuevos: 320</li>
+          <li>Activos: 3,240</li>
+          <li>Retención: 88%</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="metric-round">
+      <div class="metric-circle">
+        <span class="metric-name">Ingresos</span>
+        <span class="metric-count">$45.8K</span>
+        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-ingresos"
+                onclick="toggleRoundMetric(this)">
+          <span class="material-icons">expand_more</span>
+        </button>
+      </div>
+      <div class="metric-extra-round" id="m-ingresos">
+        <ul>
+          <li>Producto A: $20K</li>
+          <li>Producto B: $15.5K</li>
+          <li>Servicios: $10.3K</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="metric-round">
+      <div class="metric-circle">
+        <span class="metric-name">Descargas</span>
+        <span class="metric-count">12.3K</span>
+        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-descargas"
+                onclick="toggleRoundMetric(this)">
+          <span class="material-icons">expand_more</span>
+        </button>
+      </div>
+      <div class="metric-extra-round" id="m-descargas">
+        <ul>
+          <li>App iOS: 7.1K</li>
+          <li>App Android: 5.2K</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="metric-round">
+      <div class="metric-circle">
+        <span class="metric-name">Tickets</span>
+        <span class="metric-count">284</span>
+        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-tickets"
+                onclick="toggleRoundMetric(this)">
+          <span class="material-icons">expand_more</span>
+        </button>
+      </div>
+      <div class="metric-extra-round" id="m-tickets">
+        <ul>
+          <li>Abiertos: 67</li>
+          <li>En curso: 121</li>
+          <li>Resueltos: 96</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="metric-round">
+      <div class="metric-circle">
+        <span class="metric-name">Clientes</span>
+        <span class="metric-count">842</span>
+        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-clientes"
+                onclick="toggleRoundMetric(this)">
+          <span class="material-icons">expand_more</span>
+        </button>
+      </div>
+      <div class="metric-extra-round" id="m-clientes">
+        <ul>
+          <li>Empresas: 110</li>
+          <li>Particulares: 732</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="metric-round">
+      <div class="metric-circle">
+        <span class="metric-name">Subs.</span>
+        <span class="metric-count">1,120</span>
+        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-subs"
+                onclick="toggleRoundMetric(this)">
+          <span class="material-icons">expand_more</span>
+        </button>
+      </div>
+      <div class="metric-extra-round" id="m-subs">
+        <ul>
+          <li>Mensual: 910</li>
+          <li>Anual: 210</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 8 -->
+    <div class="metric-round">
+      <div class="metric-circle">
+        <span class="metric-name">Devoluciones</span>
+        <span class="metric-count">32</span>
+        <button class="metric-center-btn" aria-expanded="false" aria-controls="m-devoluciones"
+                onclick="toggleRoundMetric(this)">
+          <span class="material-icons">expand_more</span>
+        </button>
+      </div>
+      <div class="metric-extra-round" id="m-devoluciones">
+        <ul>
+          <li>Por defecto: 12</li>
+          <li>Arrepentimiento: 20</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
                 <!-- 🟦 BUSCADOR Y EXPORTACIÓN -->
                 <div class="card card-grid grid-2 align-center justify-between">
                     <div>
