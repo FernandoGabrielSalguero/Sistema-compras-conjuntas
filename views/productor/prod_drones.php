@@ -190,7 +190,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </div>
 
                 <!-- Formulario para solicitar el drone -->
-                <form id="form-dron" class="gform-grid cols-4" novalidate>
+                <form id="form-dron" class="gform-grid cols-2" novalidate>
 
                     <!-- representante -->
                     <div class="gform-question" role="group" aria-labelledby="q_representante_label" id="q_representante">
