@@ -38,22 +38,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             align-items: center;
             justify-content: space-between;
             padding: 2rem 1.5rem;
-            /* un poco más alto */
-        }
-
-        /* Título con icono */
-        .card-title {
-            display: flex;
-            align-items: center;
-            gap: .5rem;
-        }
-
-        .card-title .material-icons {
-            font-size: 32px;
-            /* tamaño del icono */
-            color: #5b21b6;
-            /* tono que usás en el sistema */
-            opacity: .9;
+            /* un poco más alto que el default */
         }
 
         /* Pie de cada tarjeta: botón alineado a la derecha */
@@ -71,7 +56,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
         <div class="main">
             <header class="navbar">
-                <h4>¡Qué bueno verte de nuevo <?php echo htmlspecialchars($nombre); ?>!</h4>
+                <h4>¡Que bueno verte de nuevo <?php echo htmlspecialchars($nombre); ?>!</h4>
             </header>
 
             <section class="content">
@@ -79,40 +64,15 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <div class="card header-card">
                     <div>
                         <h4><?php echo htmlspecialchars($nombre); ?> 👋</h4>
-                        <p>Esta es la nueva plataforma de SVE. Desde acá vas a poder acceder a los servicios brindados de una manera rápida y fácil.</p>
+                        <p>Esta es la nueva plataforma de SVE. Desde acá, vas a poder acceder a los servicios brindados de una manera rápida y fácil</p>
                     </div>
                     <a class="btn btn-info" href="prod_dashboard.php">Volver al inicio</a>
                 </div>
 
-                <!-- Tarjetas de acciones -->
+                <!-- Tarjetas de acciones (usa tu grid nativa) -->
                 <div class="card-grid grid-4">
                     <div class="card">
-                        <div class="card-title">
-                            <span class="material-icons">shopping_cart</span>
-                            <h3>Mercado Digital</h3>
-                        </div>
-                        <p>Ingresá al catálogo y realizá tus pedidos disponibles.</p>
-                        <div class="action-footer">
-                            <a class="btn btn-aceptar" href="prod_mercadoDigital.php">Ir al mercado</a>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-title">
-                            <span class="material-icons">receipt_long</span>
-                            <h3>Mis pedidos</h3>
-                        </div>
-                        <p>Revisá el estado de tus pedidos y descargá comprobantes.</p>
-                        <div class="action-footer">
-                            <a class="btn btn-aceptar" href="prod_listadoPedidos.php">Ver pedidos</a>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-title">
-                            <span class="material-icons">analytics</span>
-                            <h3>Consolidado</h3>
-                        </div>
+                        <h3>📊 Consolidado</h3>
                         <p>Resumen de productos y montos por operativo.</p>
                         <div class="action-footer">
                             <a class="btn btn-aceptar" href="prod_consolidado.php">Abrir consolidado</a>
@@ -120,10 +80,23 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </div>
 
                     <div class="card">
-                        <div class="card-title">
-                            <span class="material-icons">person</span>
-                            <h3>Mi información</h3>
+                        <h3>🛒 Mercado Digital</h3>
+                        <p>Ingresá al catálogo y realizá tus pedidos disponibles.</p>
+                        <div class="action-footer">
+                            <a class="btn btn-aceptar" href="prod_mercadoDigital.php">Ir al mercado</a>
                         </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>🧾 Mis pedidos</h3>
+                        <p>Revisá el estado de tus pedidos y descargá comprobantes.</p>
+                        <div class="action-footer">
+                            <a class="btn btn-aceptar" href="prod_listadoPedidos.php">Ver pedidos</a>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>👤 Mi información</h3>
                         <p>Datos de tu cuenta y medios de contacto.</p>
                         <div class="action-footer">
                             <a class="btn btn-aceptar" href="prod_usuarioInformacion.php">Editar datos</a>
@@ -138,14 +111,14 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
         </div>
     </div>
 
-    <!-- Spinner Global -->
+    <!-- Spinner Global (desde tu CDN) -->
     <div id="globalSpinner" class="spinner-overlay hidden">
         <div class="spinner"></div>
     </div>
     <script src="https://www.fernandosalguero.com/cdn/components/spinner-global.js"></script>
 
     <script>
-        // Avisos de cierre de operativos
+        // Avisos de cierre de operativos (se mantiene)
         window.addEventListener('DOMContentLoaded', () => {
             <?php if (!empty($cierre_info)): ?>
                 const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
