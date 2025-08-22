@@ -231,7 +231,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <div class="gform-error">Seleccioná al menos una opción.</div>
                     </div>
 
-<!-- 4) Checkbox (con “Otros” inline) -->
+                    <!-- 4) Checkbox (con “Otros” inline) -->
                     <div class="gform-question" role="group" aria-labelledby="q_motivo_label">
                         <div id="q_motivo_label" class="gform-legend">INDICAR EN QUE MOMENTO DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span>
                         </div>
@@ -278,7 +278,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
 
 
-                                        <!-- 4) Checkbox (con “Otros” inline) -->
+                    <!-- 4) Checkbox (con “Otros” inline) -->
                     <div class="gform-question" role="group" aria-labelledby="q_productos_label">
                         <div id="q_productos_label" class="gform-legend">
                             En el caso de necesitar productos fitosanitarios para realizar la pulverización indicar los
@@ -379,6 +379,31 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <div class="gform-error">Seleccioná al menos una opción.</div>
                     </div>
 
+                    <!-- ¿Estás en la ubicación de la finca? -->
+                    <div class="gform-question span-2" role="group" aria-labelledby="q_ubicacion_label">
+                        <div id="q_ubicacion_label" class="gform-label">
+                            ¿Estás en la ubicación de la finca? <span class="gform-required">*</span>
+                        </div>
+                        <div class="gform-helper">
+                            Solo selecciona que SI, si estpas en la ubicación de la finca, ya que se capturarán las coordenadas GPS del lugar.
+                            Si no estás en la finca, selecciona NO y las coordenadas no se capturar
+                        </div>
+
+                        <div class="gform-miniopts">
+                            <label><input type="radio" name="en-finca" value="no" checked>No</label>
+                            <label><input type="radio" name="en-finca" value="si">Si</label>
+                        </div>
+
+                        <div class="gform-helper" id="ubicacion_status">No se capturarán coordenadas.</div>
+
+                        <!-- Campos que se envían por AJAX -->
+                        <input type="hidden" name="lat" id="ubicacion_lat">
+                        <input type="hidden" name="lng" id="ubicacion_lng">
+                        <input type="hidden" name="acc" id="ubicacion_acc">
+                        <input type="hidden" name="ubicacion_ts" id="ubicacion_ts">
+                    </div>
+
+
                     <!-- 6) Long answer / párrafo -->
                     <div class="gform-question span-2" data-required="true">
                         <label class="gform-label" for="g_obs">OBSERVACIONES <span
@@ -390,8 +415,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
                     <!-- Acciones (podés dejarlas full width) -->
                     <div class="gform-actions span-4">
-                        <button type="button" class="gform-btn">Atrás</button>
-                        <button type="submit" class="gform-btn gform-primary">Siguiente</button>
+                        <button type="submit" class="gform-btn gform-primary">Solicitar el servicio</button>
                         <a href="#" class="gform-clear"
                             onclick="document.getElementById('form-dron').reset();return false;">Borrar formulario</a>
                     </div>
