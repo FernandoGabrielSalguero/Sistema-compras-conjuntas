@@ -415,6 +415,21 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
         </div>
     </div>
 
+    <!-- Modal de confirmación -->
+    <div id="modalConfirmacion" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>¿Confirmar pedido?</h3>
+            <p>Estás por enviar el pedido. A continuación, revisá el detalle:</p>
+
+            <div id="resumenModal" style="max-height: 300px; overflow-y: auto; text-align: left; margin-top: 1rem;"></div>
+
+            <div class="modal-actions">
+                <button class="btn btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn btn-aceptar" onclick="confirmarEnvio()">Sí, enviar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Spinner Global (desde tu CDN) -->
     <div id="globalSpinner" class="spinner-overlay hidden">
         <div class="spinner"></div>
@@ -428,7 +443,45 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
             const form = $('#form-dron');
 
-            // ---- UI: "Otros" en Motivo
+            // -------- Modal
+            const modal = $('#modalConfirmacion');
+            const resumenModal = $('#resumenModal');
+            let __ultimoPayload = null;
+
+            const abrirModal = () => {
+                if (!modal) return;
+                modal.style.display = 'block'; // usa tus estilos del framework
+                document.body.style.overflow = 'hidden';
+            };
+            const cerrarModal = () => {
+                if (!modal) return;
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            };
+            // Exponer a los botones con onclick=""
+            window.cerrarModal = cerrarModal;
+            window.confirmarEnvio = () => {
+                if (!__ultimoPayload) return cerrarModal();
+                console.log('DRON :: payload listo para enviar', __ultimoPayload);
+
+                // Ejemplo de envío real (dejar comentado si por ahora solo es consola):
+                // fetch('/api/solicitudes/dron', {
+                //   method: 'POST',
+                //   headers: { 'Content-Type': 'application/json' },
+                //   body: JSON.stringify(__ultimoPayload)
+                // }).then(r => r.json()).then(data => console.log('Respuesta backend', data));
+
+                cerrarModal();
+            };
+            // Cerrar al hacer click fuera del contenido y con ESC
+            modal?.addEventListener('click', (e) => {
+                if (e.target === modal) cerrarModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal?.style.display !== 'none') cerrarModal();
+            });
+
+            // -------- UI: "Otros" en Motivo
             const chkOtros = $('#motivo_otros_chk');
             const inputOtros = $('#motivo_otros');
             if (chkOtros && inputOtros) {
@@ -441,7 +494,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 syncOtros();
             }
 
-            // ---- UI: mostrar complementos cuando se elige un producto
+            // -------- UI: complementos por producto
             $$('input[type="checkbox"][data-complement]').forEach(cb => {
                 const cmp = document.querySelector(cb.dataset.complement);
                 const sync = () => cmp && (cmp.hidden = !cb.checked);
@@ -449,7 +502,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 sync();
             });
 
-            // ---- UI: mostrar "marca" cuando el radio == "yo" en cada producto
+            // -------- UI: mostrar "marca" si fuente == "yo"
             [{
                     radios: ['#src_lobesia_sve', '#src_lobesia_yo'],
                     brandBox: '#brand_lobesia'
@@ -483,7 +536,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 sync();
             });
 
-            // ---- Geolocalización condicional
+            // -------- Geolocalización condicional
             const enFincaSi = $('#en_finca_si');
             const enFincaNo = $('#en_finca_no');
             const status = $('#ubicacion_status');
@@ -526,23 +579,105 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     }
                 );
             }
-
             if (enFincaSi && enFincaNo) {
                 enFincaSi.addEventListener('change', () => enFincaSi.checked ? captureGeo() : clearGeo());
                 enFincaNo.addEventListener('change', clearGeo);
             }
 
-            // ---- Helper para obtener radios/checkboxes
+            // -------- Helpers
             const getRadioValue = (name) => {
                 const el = form.querySelector(`input[type="radio"][name="${name}"]:checked`);
                 return el ? el.value : null;
             };
-
             const getCheckboxValues = (name) => {
                 return $$(`input[type="checkbox"][name="${name}"]:checked`, form).map(i => i.value);
             };
+            const toSiNo = (v) => v === 'si' ? 'Sí' : v === 'no' ? 'No' : '—';
+            const escapeHTML = (s) => (s ?? '')
+                .toString()
+                .replace(/[&<>"'`=\/]/g, c => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                    '/': '&#x2F;',
+                    '`': '&#x60;',
+                    '=': '&#x3D;'
+                } [c]));
 
-            // ---- Submit: construir payload y loguear
+            const labelMotivo = {
+                mildiu: 'Peronospora/Mildiu',
+                oidio: 'Oidio/Quintal',
+                lobesia: 'Lobesia',
+                podredumbre: 'Podredumbre',
+                fertilizacion: 'Fertilización foliar',
+                otros: 'Otros'
+            };
+            const labelRango = {
+                enero_q1: '1ª quincena de Enero',
+                enero_q2: '2ª quincena de Enero',
+                febrero_q1: '1ª quincena de Febrero',
+                febrero_q2: '2ª quincena de Febrero',
+                octubre_q1: '1ª quincena de Octubre',
+                octubre_q2: '2ª quincena de Octubre',
+                noviembre_q1: '1ª quincena de Noviembre',
+                noviembre_q2: '2ª quincena de Noviembre',
+                diciembre_q1: '1ª quincena de Diciembre',
+                diciembre_q2: '2ª quincena de Diciembre',
+            };
+            const labelProducto = {
+                lobesia: 'Productos para Lobesia/Polilla de la Vid',
+                peronospora: 'Productos para Peronospora',
+                oidio: 'Productos para Oidio/Quintal',
+                podredumbre: 'Productos para Podredumbre'
+            };
+
+            function renderResumenHTML(payload) {
+                const motivos = (payload.motivo.opciones || [])
+                    .map(v => labelMotivo[v] || v);
+                if (payload.motivo.otros) motivos.push(`Otros: ${escapeHTML(payload.motivo.otros)}`);
+
+                const rangos = (payload.rango_fecha || [])
+                    .map(v => labelRango[v] || v);
+
+                const prods = (payload.productos || []).map(p => {
+                    const fuente = p.fuente === 'yo' ? 'Proveedor propio' : 'SVE';
+                    const marca = p.marca ? ` — Marca: ${escapeHTML(p.marca)}` : '';
+                    return `<li>${escapeHTML(labelProducto[p.tipo] || p.tipo)} <small>(Fuente: ${fuente}${marca})</small></li>`;
+                }).join('');
+
+                const ubic = payload.ubicacion || {};
+                const coords = (ubic.lat && ubic.lng) ?
+                    `${escapeHTML(ubic.lat)}, ${escapeHTML(ubic.lng)} (±${escapeHTML(ubic.acc)} m)` :
+                    '—';
+
+                return `
+      <div class="card" style="margin:0;padding:1rem;">
+        <h4 style="margin-top:0;">Resumen de respuestas</h4>
+        <ul>
+          <li><strong>Representante en finca:</strong> ${toSiNo(payload.representante)}</li>
+          <li><strong>Líneas de media/alta tensión (&lt;30m):</strong> ${toSiNo(payload.linea_tension)}</li>
+          <li><strong>Zona de vuelo restringida (&lt;3km):</strong> ${toSiNo(payload.zona_restringida)}</li>
+          <li><strong>Corriente eléctrica disponible:</strong> ${toSiNo(payload.corriente_electrica)}</li>
+          <li><strong>Agua potable disponible:</strong> ${toSiNo(payload.agua_potable)}</li>
+          <li><strong>Cuarteles libres de obstáculos:</strong> ${toSiNo(payload.libre_obstaculos)}</li>
+          <li><strong>Área de despegue apropiada:</strong> ${toSiNo(payload.area_despegue)}</li>
+          <li><strong>Superficie (ha):</strong> ${escapeHTML(payload.superficie_ha ?? '—')}</li>
+          <li><strong>Motivo:</strong> ${motivos.length ? escapeHTML(motivos.join(', ')) : '—'}</li>
+          <li><strong>Momento preferido:</strong> ${rangos.length ? escapeHTML(rangos.join(', ')) : '—'}</li>
+          <li><strong>Productos:</strong>
+            ${prods ? `<ul>${prods}</ul>` : ' —'}
+          </li>
+          <li><strong>En la finca ahora:</strong> ${toSiNo(ubic.en_finca)}</li>
+          <li><strong>Coordenadas:</strong> ${coords}</li>
+          <li><strong>Observaciones:</strong><br><div style="white-space:pre-wrap;border:1px solid #eee;padding:.5rem;border-radius:.5rem;">${escapeHTML(payload.observaciones ?? '—')}</div></li>
+        </ul>
+      </div>
+    `;
+            }
+
+            // -------- Submit: construir payload y abrir modal
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
 
@@ -615,17 +750,17 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     observaciones: $('#observaciones')?.value?.trim() || null,
                 };
 
-                console.log('DRON :: payload listo para enviar', payload);
+                // Guardamos para confirmar y mostramos el resumen en el modal
+                __ultimoPayload = payload;
+                if (resumenModal) resumenModal.innerHTML = renderResumenHTML(payload);
+                abrirModal();
 
-                // Ejemplo de cómo lo enviarías:
-                // fetch('/api/solicitudes/dron', {
-                //   method: 'POST',
-                //   headers: { 'Content-Type': 'application/json' },
-                //   body: JSON.stringify(payload)
-                // }).then(r => r.json()).then(data => console.log('Respuesta backend', data));
+                // NOTA: no imprimimos en consola acá. Solo cuando el usuario confirma en el modal.
             });
+
         })();
     </script>
+
 </body>
 
 </html>
