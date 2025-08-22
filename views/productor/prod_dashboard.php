@@ -55,19 +55,16 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
         <!-- SIN sidebar -->
 
         <div class="main">
-            < <header class="navbar">
-                <button class="btn-icon" onclick="toggleSidebar()">
-                    <span class="material-icons">menu</span>
-                </button>
-                <div class="navbar-title">Consolidado</div>
+            <header class="navbar">
+                <h4>¡Que bueno verte de nuevo <?php echo htmlspecialchars($nombre); ?>!</h4>
                 </header>
 
                 <section class="content">
                     <!-- Header / Bienvenida -->
                     <div class="card header-card">
                         <div>
-                            <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
-                            <p>Elegí una opción para continuar.</p>
+                            <h4><?php echo htmlspecialchars($nombre); ?> 👋</h4>
+                            <p>Esta es la nueva plataforma de SVE. Desde acá, vas a poder acceder a los servicios brindados de una manera rápida y fácil</p>
                         </div>
                         <a class="btn btn-info" href="prod_dashboard.php">Volver al inicio</a>
                     </div>
