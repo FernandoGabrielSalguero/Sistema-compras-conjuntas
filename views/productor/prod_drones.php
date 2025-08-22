@@ -161,6 +161,30 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             padding: .75rem;
             background: #fafafa;
         }
+
+        /* --- GForm validation feedback --- */
+        .gform-question .gform-error {
+            display: none;
+            color: #dc2626;
+            font-size: .9rem;
+            margin-top: .5rem
+        }
+
+        .gform-question.has-error .gform-error {
+            display: block
+        }
+
+        .gform-question.has-error .gform-legend,
+        .gform-question.has-error .gform-label {
+            color: #dc2626
+        }
+
+        .gform-question.has-error .gform-options,
+        .gform-question.has-error .gform-input,
+        .gform-question.has-error textarea {
+            outline: 2px solid #dc2626;
+            outline-offset: 2px
+        }
     </style>
 </head>
 
@@ -777,23 +801,23 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             };
 
             function renderResumenHTML(payload) {
-  const motivos = (payload.motivo.opciones || []).map(v => labelMotivo[v] || v);
-  if (payload.motivo.otros) motivos.push(`Otros: ${escapeHTML(payload.motivo.otros)}`);
+                const motivos = (payload.motivo.opciones || []).map(v => labelMotivo[v] || v);
+                if (payload.motivo.otros) motivos.push(`Otros: ${escapeHTML(payload.motivo.otros)}`);
 
-  const rangos = (payload.rango_fecha || []).map(v => labelRango[v] || v);
+                const rangos = (payload.rango_fecha || []).map(v => labelRango[v] || v);
 
-  const prodsItems = (payload.productos || []).map(p => {
-    const fuente = p.fuente === 'yo' ? 'Proveedor propio' : 'SVE';
-    const marca  = p.marca ? ` — Marca: ${escapeHTML(p.marca)}` : '';
-    return `<li>${escapeHTML(labelProducto[p.tipo] || p.tipo)} <small>(${fuente}${marca})</small></li>`;
-  }).join('');
+                const prodsItems = (payload.productos || []).map(p => {
+                    const fuente = p.fuente === 'yo' ? 'Proveedor propio' : 'SVE';
+                    const marca = p.marca ? ` — Marca: ${escapeHTML(p.marca)}` : '';
+                    return `<li>${escapeHTML(labelProducto[p.tipo] || p.tipo)} <small>(${fuente}${marca})</small></li>`;
+                }).join('');
 
-  const ubic = payload.ubicacion || {};
-  const coords = (ubic.lat && ubic.lng)
-    ? `${escapeHTML(ubic.lat)}, ${escapeHTML(ubic.lng)} (±${escapeHTML(ubic.acc)} m)`
-    : '—';
+                const ubic = payload.ubicacion || {};
+                const coords = (ubic.lat && ubic.lng) ?
+                    `${escapeHTML(ubic.lat)}, ${escapeHTML(ubic.lng)} (±${escapeHTML(ubic.acc)} m)` :
+                    '—';
 
-  return `
+                return `
     <div class="modal-summary">
       <dl>
         <dt>Representante en finca</dt>
@@ -840,12 +864,127 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
       </dl>
     </div>
   `;
-}
+            }
+
+            // ------- VALIDACIÓN GFORM
+            function flag(container, ok) {
+                if (!container) return ok;
+                container.classList.toggle('has-error', !ok);
+                // aria-invalid para accesibilidad
+                const grp = container.querySelector('[role="group"], .gform-options, .gform-input, textarea');
+                if (grp) grp.setAttribute('aria-invalid', String(!ok));
+                return ok;
+            }
+
+            function atLeastOneChecked(selector, ctx = document) {
+                return !!ctx.querySelector(`${selector}:checked`);
+            }
+
+            function getValuesChecked(selector, ctx = document) {
+                return Array.from(ctx.querySelectorAll(`${selector}:checked`)).map(i => i.value);
+            }
+
+            function validateGForm() {
+                let ok = true,
+                    firstBad = null;
+                const must = (container, condition) => {
+                    const good = !!condition;
+                    ok = ok && good;
+                    if (!good && !firstBad) firstBad = container;
+                    return flag(container, good);
+                };
+
+                // Radios obligatorios
+                must(document.getElementById('q_representante'), atLeastOneChecked('input[type="radio"][name="representante"]', form));
+                must(document.getElementById('q_linea_tension'), atLeastOneChecked('input[type="radio"][name="linea_tension"]', form));
+                must(document.getElementById('q_zona_restringida'), atLeastOneChecked('input[type="radio"][name="zona_restringida"]', form));
+                must(document.getElementById('q_corriente_electrica'), atLeastOneChecked('input[type="radio"][name="corriente_electrica"]', form));
+                must(document.getElementById('q_agua_potable'), atLeastOneChecked('input[type="radio"][name="agua_potable"]', form));
+                must(document.getElementById('q_obstaculos'), atLeastOneChecked('input[type="radio"][name="libre_obstaculos"]', form));
+                must(document.getElementById('q_area_despegue'), atLeastOneChecked('input[type="radio"][name="area_despegue"]', form));
+                must(document.getElementById('q_ubicacion'), atLeastOneChecked('input[type="radio"][name="en_finca"]', form)); // ya viene con NO marcado, igual chequeo
+
+                // Superficie (número > 0)
+                const supEl = document.getElementById('superficie_ha');
+                const supOk = supEl && supEl.value.trim() !== '' && !isNaN(supEl.value) && Number(supEl.value) > 0;
+                must(document.getElementById('q_superficie'), supOk);
+
+                // Motivo (al menos uno) y "Otros" con texto si está marcado
+                const motivos = getValuesChecked('input[type="checkbox"][name="motivo[]"]', form);
+                let motivoOk = motivos.length > 0;
+                if (motivoOk && document.getElementById('motivo_otros_chk')?.checked) {
+                    motivoOk = !!document.getElementById('motivo_otros')?.value.trim();
+                }
+                must(document.getElementById('q_motivo'), motivoOk);
+
+                // Rango de fechas (al menos uno)
+                must(document.getElementById('q_rango'), getValuesChecked('input[type="checkbox"][name="rango_fecha[]"]', form).length > 0);
+
+                // Productos (al menos uno) + si fuente = "yo", exigir marca
+                const productosMarcados = getValuesChecked('input[type="checkbox"][name="productos[]"]', form);
+                let prodOk = productosMarcados.length > 0;
+                if (prodOk) {
+                    const checks = [{
+                            tipo: 'lobesia',
+                            src: 'src-lobesia',
+                            marca: '#marca_lobesia',
+                            chk: '#prod_lobesia'
+                        },
+                        {
+                            tipo: 'peronospora',
+                            src: 'src-peronospora',
+                            marca: '#marca_peronospora',
+                            chk: '#prod_peronospora'
+                        },
+                        {
+                            tipo: 'oidio',
+                            src: 'src-oidio',
+                            marca: '#marca_oidio',
+                            chk: '#prod_oidio'
+                        },
+                        {
+                            tipo: 'podredumbre',
+                            src: 'src-podredumbre',
+                            marca: '#marca_podredumbre',
+                            chk: '#prod_podredumbre'
+                        },
+                    ];
+                    for (const it of checks) {
+                        if (!document.querySelector(it.chk)?.checked) continue;
+                        const fuente = form.querySelector(`input[type="radio"][name="${it.src}"]:checked`)?.value;
+                        if (fuente === 'yo' && !document.querySelector(it.marca)?.value.trim()) {
+                            prodOk = false;
+                            break;
+                        }
+                    }
+                }
+                must(document.getElementById('q_productos'), prodOk);
+
+                // Observaciones (obligatorio según tu UI)
+                const obsOk = !!document.getElementById('observaciones')?.value.trim();
+                must(document.getElementById('q_observaciones'), obsOk);
+
+                // Enfocar/scroll al primero con error
+                if (!ok && firstBad) firstBad.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+
+                return ok;
+            }
+
 
 
             // -------- Submit: construir payload y abrir modal
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
+
+                // 1) Validación custom
+                if (!validateGForm()) {
+                    // Si querés también mostrar un toast del framework (si está disponible):
+                    window.showToast?.('error', 'Revisá los campos marcados en rojo.');
+                    return;
+                }
 
                 const motivos = getCheckboxValues('motivo[]');
                 const payload = {
