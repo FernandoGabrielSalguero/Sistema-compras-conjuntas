@@ -72,7 +72,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <!-- Tarjetas de acciones (usa tu grid nativa) -->
                 <div class="card-grid grid-4">
                     <div class="card">
-                        <h3>📊 Consolidado</h3>
+                        <h3> Drones</h3>
                         <p>Resumen de productos y montos por operativo.</p>
                         <div class="action-footer">
                             <a class="btn btn-aceptar" href="prod_consolidado.php">Abrir consolidado</a>
@@ -80,7 +80,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </div>
 
                     <div class="card">
-                        <h3>🛒 Mercado Digital</h3>
+                        <h3> Mercado Digital</h3>
                         <p>Ingresá al catálogo y realizá tus pedidos disponibles.</p>
                         <div class="action-footer">
                             <a class="btn btn-aceptar" href="prod_mercadoDigital.php">Ir al mercado</a>
@@ -88,7 +88,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </div>
 
                     <div class="card">
-                        <h3>🧾 Mis pedidos</h3>
+                        <h3> Mis pedidos</h3>
                         <p>Revisá el estado de tus pedidos y descargá comprobantes.</p>
                         <div class="action-footer">
                             <a class="btn btn-aceptar" href="prod_listadoPedidos.php">Ver pedidos</a>
@@ -96,7 +96,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </div>
 
                     <div class="card">
-                        <h3>👤 Mi información</h3>
+                        <h3> Mi información</h3>
                         <p>Datos de tu cuenta y medios de contacto.</p>
                         <div class="action-footer">
                             <a class="btn btn-aceptar" href="prod_usuarioInformacion.php">Editar datos</a>

@@ -88,6 +88,17 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <div class="card-grid grid-4">
                     <div class="card">
                         <div class="card-title">
+                            <span class="material-icons">drone</span>
+                            <h3>Pulverización con Drones</h3>
+                        </div>
+                        <p>Solicita el servicio de drones para tu finca. </p>
+                        <div class="action-footer">
+                            <a class="btn btn-aceptar" href="prod_mercadoDigital.php">Ir al mercado</a>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">
                             <span class="material-icons">shopping_cart</span>
                             <h3>Mercado Digital</h3>
                         </div>
