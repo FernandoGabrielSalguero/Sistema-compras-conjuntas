@@ -364,7 +364,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     <div class="gform-question" data-required="true" id="q_superficie">
                         <label class="gform-label" for="superficie_ha">SUPERFICIE (en hectáreas) PARA LAS QUE DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span></label>
                         <div class="gform-helper">Debe colocar solamente el número de hectáreas a pulverizar</div>
-                        <input class="gform-input" id="superficie_ha" name="superficie_ha" type="text" placeholder="Tu respuesta" />
+                        <input class="gform-input" id="superficie_ha" name="superficie_ha" type="number" placeholder="Tu respuesta" />
                         <div class="gform-error">Esta pregunta es obligatoria.</div>
                     </div>
 
