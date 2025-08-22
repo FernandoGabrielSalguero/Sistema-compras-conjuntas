@@ -71,7 +71,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
                 <!-- Formulario para solicitar el drone -->
 
-                <h2 style="margin-bottom: 1rem;">Formulario estilo Google (demo)</h2>
+                <h2 style="margin-bottom: 1rem;">Señor productor a continuación se le realizaran preguntas de gran importancia para la prestación del servicio. Por favor leer y contestar cada una con detenimiento.</h2>
 
                 <form id="form-dron" class="gform-grid cols-4" novalidate>
 
@@ -194,42 +194,33 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
                     <!-- 1) Short answer -->
                     <div class="gform-question" data-required="true">
-                        <label class="gform-label" for="g_razon">RAZON SOCIAL <span
+                        <label class="gform-label" for="g_razon">SUPERFICIE (en hectáreas) PARA LAS QUE DESEA CONTRATAR EL SERVICIO<span
                                 class="gform-required">*</span></label>
-                        <div class="gform-helper">Debe ser la razón social vinculada a la cooperativa.</div>
+                        <div class="gform-helper">Debe colocar solamente el número de hectáreas a pulverizar</div>
                         <input class="gform-input" id="g_razon" name="g_razon" type="text" placeholder="Tu respuesta" />
                         <div class="gform-error">Esta pregunta es obligatoria.</div>
                     </div>
 
-                    <!-- 2) Select / dropdown -->
-                    <div class="gform-question" data-required="true">
-                        <label class="gform-label" for="g_coop">COOPERATIVA A LA QUE PERTENECE <span
-                                class="gform-required">*</span></label>
-                        <div class="gform-select">
-                            <select id="g_coop" name="g_coop">
-                                <option value="">Elegir</option>
-                                <option>Cooperativa La Dormida</option>
-                                <option>Cooperativa Las Trincheras</option>
-                                <option>Cooperativa Productores de Junín</option>
-                            </select>
-                            <span class="material-icons gform-arrow">expand_more</span>
-                        </div>
-                        <div class="gform-error">Esta pregunta es obligatoria.</div>
-                    </div>
-
-                    <!-- 3) Radio (SI/NO) con helper -->
-
-
                     <!-- 4) Checkbox (con “Otros” inline) -->
                     <div class="gform-question" role="group" aria-labelledby="q_motivo_label">
-                        <div id="q_motivo_label" class="gform-legend">
-                            MOTIVO DEL SERVICIO <span class="gform-required">*</span>
+                        <div id="q_motivo_label" class="gform-legend">INDICAR EL MOTIVO POR EL QUE DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span>
                         </div>
                         <div class="gform-options">
                             <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="mildiu">
-                                <span>Curación para Mildiu</span></label>
+                                <span>Curación para Peronospora o Mildiu</span>
+                            </label>
                             <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
-                                <span>Curación para Oidio</span></label>
+                                <span>Curación para Oidio o Quintal</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
+                                <span>Curación para Lobesia</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
+                                <span>Curación para Podredumbre</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
+                                <span>Fertilización Foliar</span>
+                            </label>
                             <label class="gform-option gform-option-otros">
                                 <input type="checkbox" id="g_motivo_otros_chk" value="otros">
                                 <span>Otros:</span>
@@ -240,18 +231,70 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <div class="gform-error">Seleccioná al menos una opción.</div>
                     </div>
 
-                    <!-- 5) Checkbox list (quincenas) -->
-                    <div class="gform-question" role="group" aria-labelledby="q_momento_label">
-                        <div id="q_momento_label" class="gform-legend">
-                            MOMENTO EN QUE DESEA CONTRATAR EL SERVICIO <span class="gform-required">*</span>
+<!-- 4) Checkbox (con “Otros” inline) -->
+                    <div class="gform-question" role="group" aria-labelledby="q_motivo_label">
+                        <div id="q_motivo_label" class="gform-legend">INDICAR EN QUE MOMENTO DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span>
                         </div>
                         <div class="gform-options">
-                            <label class="gform-option"><input type="checkbox" name="g_quince[]" value="oct1">
-                                <span>Primera quincena de Octubre</span></label>
-                            <label class="gform-option"><input type="checkbox" name="g_quince[]" value="oct2">
-                                <span>Segunda quincena de Octubre</span></label>
-                            <label class="gform-option"><input type="checkbox" name="g_quince[]" value="nov1">
-                                <span>Primera quincena de Noviembre</span></label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="mildiu">
+                                <span>Primera quincena de Enero</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
+                                <span>Segunda quincena de Enero</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
+                                <span>Primera quincena de Febrero</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
+                                <span>Segunda quincena de Febrero</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="mildiu">
+                                <span>Primera quincena de Octubre</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
+                                <span>Segunda quincena de Octubre</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
+                                <span>Primera quincena de Noviembre</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
+                                <span>Segunda quincena de Noviembre</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
+                                <span>Primero quincena de Diciembre</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
+                                <span>Segunda quincena de Diciembre</span>
+                            </label>
+                            <label class="gform-option gform-option-otros">
+                                <input type="checkbox" id="g_motivo_otros_chk" value="otros">
+                                <span>Otros:</span>
+                                <input type="text" id="g_motivo_otros" class="gform-input gform-input-inline oculto"
+                                    placeholder="Especificar">
+                            </label>
+                        </div>
+                        <div class="gform-error">Seleccioná al menos una opción.</div>
+                    </div>
+
+
+
+                                        <!-- 4) Checkbox (con “Otros” inline) -->
+                    <div class="gform-question" role="group" aria-labelledby="q_motivo_label">
+                        <div id="q_motivo_label" class="gform-legend">En el caso de necesitar productos fitosanitarios para realizar la pulverización indicar los que sean necesarios.<span class="gform-required">*</span>
+                        </div>
+                        <div class="gform-options">
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="mildiu">
+                                <span>Productos para Lobesia/Polilla de la Vid</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
+                                <span>Productos para Peronospora de la vid</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
+                                <span>Productos para Oidio/Quintal de la vid</span>
+                            </label>
+                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
+                                <span>Productos para Podredimbre de los racimos</span>
+                            </label>
                         </div>
                         <div class="gform-error">Seleccioná al menos una opción.</div>
                     </div>
