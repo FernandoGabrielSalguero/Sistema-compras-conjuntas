@@ -162,6 +162,16 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     <script src="https://www.fernandosalguero.com/cdn/components/spinner-global.js"></script>
 
     <script>
+        // Debug: imprimir datos de la sesión en consola
+        <?php if (!empty($_SESSION)): ?>
+            const sessionData = <?= json_encode($_SESSION, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+            console.log('Datos de sesión:', sessionData);
+        <?php else: ?>
+            console.log('Datos de sesión: (vacío)');
+        <?php endif; ?>
+    </script>
+
+    <script>
         // Avisos de cierre de operativos
         window.addEventListener('DOMContentLoaded', () => {
             <?php if (!empty($cierre_info)): ?>
