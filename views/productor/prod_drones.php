@@ -279,23 +279,103 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
 
                                         <!-- 4) Checkbox (con “Otros” inline) -->
-                    <div class="gform-question" role="group" aria-labelledby="q_motivo_label">
-                        <div id="q_motivo_label" class="gform-legend">En el caso de necesitar productos fitosanitarios para realizar la pulverización indicar los que sean necesarios.<span class="gform-required">*</span>
+                    <div class="gform-question" role="group" aria-labelledby="q_productos_label">
+                        <div id="q_productos_label" class="gform-legend">
+                            En el caso de necesitar productos fitosanitarios para realizar la pulverización indicar los
+                            que sean necesarios. <span class="gform-required">*</span>
                         </div>
-                        <div class="gform-options">
-                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="mildiu">
-                                <span>Productos para Lobesia/Polilla de la Vid</span>
-                            </label>
-                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
-                                <span>Productos para Peronospora de la vid</span>
-                            </label>
-                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
-                                <span>Productos para Oidio/Quintal de la vid</span>
-                            </label>
-                            <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
-                                <span>Productos para Podredimbre de los racimos</span>
-                            </label>
+
+                        <div class="gform-options gopts-with-complement">
+                            <!-- Productos para Lobesia -->
+                            <div class="gform-optbox">
+                                <label class="gform-option">
+                                    <input type="checkbox" name="g_quince[]" value="lobesia"
+                                        data-complement="#cmp-lobesia">
+                                    <span>Productos para Lobesia/Polilla de la Vid</span>
+                                </label>
+                                <div id="cmp-lobesia" class="gform-complement" hidden>
+                                    <div class="gform-miniopts">
+                                        <span>¿Tenés el producto?</span>
+                                        <label><input type="radio" name="src-lobesia" value="sve" checked> No</label>
+                                        <label><input type="radio" name="src-lobesia" value="yo"> Sí</label>
+                                    </div>
+                                    <div class="gform-brand" hidden>
+                                        <input type="text" class="gform-input gform-input-inline" name="marca-lobesia"
+                                            placeholder="Marca del producto">
+                                        <div class="gform-helper">Indicá marca y, si aplica, concentración/composición.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Productos para Peronospora -->
+                            <div class="gform-optbox">
+                                <label class="gform-option">
+                                    <input type="checkbox" name="g_quince[]" value="peronospora"
+                                        data-complement="#cmp-peronospora">
+                                    <span>Productos para Peronospora de la vid</span>
+                                </label>
+                                <div id="cmp-peronospora" class="gform-complement" hidden>
+                                    <div class="gform-miniopts">
+                                        <span>¿Tenés el producto?</span>
+                                        <label><input type="radio" name="src-peronospora" value="sve" checked>
+                                            No</label>
+                                        <label><input type="radio" name="src-peronospora" value="yo"> Sí</label>
+                                    </div>
+                                    <div class="gform-brand" hidden>
+                                        <input type="text" class="gform-input gform-input-inline"
+                                            name="marca-peronospora" placeholder="Marca del producto">
+                                        <div class="gform-helper">Indicá marca y, si aplica, concentración/composición.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Productos para Oidio -->
+                            <div class="gform-optbox">
+                                <label class="gform-option">
+                                    <input type="checkbox" name="g_quince[]" value="oidio" data-complement="#cmp-oidio">
+                                    <span>Productos para Oidio/Quintal de la vid</span>
+                                </label>
+                                <div id="cmp-oidio" class="gform-complement" hidden>
+                                    <div class="gform-miniopts">
+                                        <span>¿Tenés el producto?</span>
+                                        <label><input type="radio" name="src-oidio" value="sve" checked> No</label>
+                                        <label><input type="radio" name="src-oidio" value="yo"> Sí</label>
+                                    </div>
+                                    <div class="gform-brand" hidden>
+                                        <input type="text" class="gform-input gform-input-inline" name="marca-oidio"
+                                            placeholder="Marca del producto">
+                                        <div class="gform-helper">Indicá marca y, si aplica, concentración/composición.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Productos para Podredumbre -->
+                            <div class="gform-optbox">
+                                <label class="gform-option">
+                                    <input type="checkbox" name="g_quince[]" value="podredumbre"
+                                        data-complement="#cmp-podredumbre">
+                                    <span>Productos para Podredimbre de los racimos</span>
+                                </label>
+                                <div id="cmp-podredumbre" class="gform-complement" hidden>
+                                    <div class="gform-miniopts">
+                                        <span>¿Tenés el producto?</span>
+                                        <label><input type="radio" name="src-podredumbre" value="sve" checked>
+                                            No</label>
+                                        <label><input type="radio" name="src-podredumbre" value="yo"> Sí</label>
+                                    </div>
+                                    <div class="gform-brand" hidden>
+                                        <input type="text" class="gform-input gform-input-inline"
+                                            name="marca-podredumbre" placeholder="Marca del producto">
+                                        <div class="gform-helper">Indicá marca y, si aplica, concentración/composición.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                         <div class="gform-error">Seleccioná al menos una opción.</div>
                     </div>
 
