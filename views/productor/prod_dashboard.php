@@ -132,8 +132,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             <?php endif; ?>
         });
 
-        document.addEventListener('DOMContentLoaded', cargarOperativos);
-
         function formatearFechaArg(fechaISO) {
             const [a, m, d] = fechaISO.split("-");
             return `${d}/${m}/${a}`;
