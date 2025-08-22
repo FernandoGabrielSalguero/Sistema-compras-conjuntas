@@ -21,6 +21,8 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
 
     <!-- Tu framework (CSS/JS) -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
@@ -86,12 +88,13 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
                 <!-- Tarjetas de acciones -->
                 <div class="card-grid grid-4">
+
                     <div class="card">
                         <div class="card-title">
-                            <span class="material-icons">drone_2</span>
+                            <span class="material-symbols-outlined">drone</span>
                             <h3>Pulverización con Drones</h3>
                         </div>
-                        <p>Solicita el servicio de drones para tu finca. </p>
+                        <p>Solicitá el servicio de drones para tu finca.</p>
                         <div class="action-footer">
                             <a class="btn btn-aceptar" href="prod_drones.php">Ir al mercado</a>
                         </div>
