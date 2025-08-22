@@ -60,7 +60,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             </header>
 
             <section class="content">
-                <!-- Header / Bienvenida -->
+                <!-- Header-->
                 <div class="card header-card">
                     <div>
                         <h4><?php echo htmlspecialchars($nombre); ?></h4>
@@ -223,12 +223,20 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                             <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
                                 <span>Fertilización Foliar</span>
                             </label>
-                            <label class="gform-option gform-option-otros">
-                                <input type="checkbox" id="g_motivo_otros_chk" value="otros">
-                                <span>Otros:</span>
-                                <input type="text" id="g_motivo_otros" class="gform-input gform-input-inline oculto"
-                                    placeholder="Especificar">
-                            </label>
+<label class="gform-option gform-option-otros">
+  <input type="checkbox"
+         id="g_motivo_otros_chk"
+         name="g_motivo[]"
+         value="otros"
+         aria-controls="g_motivo_otros">
+  <span>Otros:</span>
+  <input type="text"
+         id="g_motivo_otros"
+         name="g_motivo_otros"
+         class="gform-input gform-input-inline oculto"
+         placeholder="Especificar"
+         disabled>
+</label>
                         </div>
                         <div class="gform-error">Seleccioná al menos una opción.</div>
                     </div>
@@ -267,12 +275,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                             </label>
                             <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
                                 <span>Segunda quincena de Diciembre</span>
-                            </label>
-                            <label class="gform-option gform-option-otros">
-                                <input type="checkbox" id="g_motivo_otros_chk" value="otros">
-                                <span>Otros:</span>
-                                <input type="text" id="g_motivo_otros" class="gform-input gform-input-inline oculto"
-                                    placeholder="Especificar">
                             </label>
                         </div>
                         <div class="gform-error">Seleccioná al menos una opción.</div>
@@ -388,7 +390,8 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         </div>
                         <div class="gform-helper">
                             Solo selecciona que SI, si estpas en la ubicación de la finca, ya que se capturarán las coordenadas GPS del lugar.
-                            Si no estás en la finca, selecciona NO y las coordenadas no se capturar
+                            Si no estás en la finca, selecciona NO y las coordenadas no se capturararan. 
+                            SOLO TOCA SI, CUANDO LLENES EL FORMULARIO DESDE UN CELULAR.
                         </div>
 
                         <div class="gform-miniopts">
