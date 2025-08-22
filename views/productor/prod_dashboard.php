@@ -55,57 +55,62 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
         <!-- SIN sidebar -->
 
         <div class="main">
-            <!-- SIN navbar (contenido ocupa todo) -->
+            < <header class="navbar">
+                <button class="btn-icon" onclick="toggleSidebar()">
+                    <span class="material-icons">menu</span>
+                </button>
+                <div class="navbar-title">Consolidado</div>
+                </header>
 
-            <section class="content">
-                <!-- Header / Bienvenida -->
-                <div class="card header-card">
-                    <div>
-                        <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
-                        <p>Elegí una opción para continuar.</p>
+                <section class="content">
+                    <!-- Header / Bienvenida -->
+                    <div class="card header-card">
+                        <div>
+                            <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
+                            <p>Elegí una opción para continuar.</p>
+                        </div>
+                        <a class="btn btn-info" href="prod_dashboard.php">Volver al inicio</a>
                     </div>
-                    <a class="btn btn-info" href="prod_dashboard.php">Volver al inicio</a>
-                </div>
 
-                <!-- Tarjetas de acciones (usa tu grid nativa) -->
-                <div class="card-grid grid-4">
-                    <div class="card">
-                        <h3>🛒 Mercado Digital</h3>
-                        <p>Ingresá al catálogo y realizá tus pedidos disponibles.</p>
-                        <div class="action-footer">
-                            <a class="btn btn-aceptar" href="prod_mercadoDigital.php">Ir al mercado</a>
+                    <!-- Tarjetas de acciones (usa tu grid nativa) -->
+                    <div class="card-grid grid-4">
+                        <div class="card">
+                            <h3>🛒 Mercado Digital</h3>
+                            <p>Ingresá al catálogo y realizá tus pedidos disponibles.</p>
+                            <div class="action-footer">
+                                <a class="btn btn-aceptar" href="prod_mercadoDigital.php">Ir al mercado</a>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>🧾 Mis pedidos</h3>
+                            <p>Revisá el estado de tus pedidos y descargá comprobantes.</p>
+                            <div class="action-footer">
+                                <a class="btn btn-aceptar" href="prod_listadoPedidos.php">Ver pedidos</a>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>📊 Consolidado</h3>
+                            <p>Resumen de productos y montos por operativo.</p>
+                            <div class="action-footer">
+                                <a class="btn btn-aceptar" href="prod_consolidado.php">Abrir consolidado</a>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>👤 Mi información</h3>
+                            <p>Datos de tu cuenta y medios de contacto.</p>
+                            <div class="action-footer">
+                                <a class="btn btn-aceptar" href="prod_usuarioInformacion.php">Editar datos</a>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="card">
-                        <h3>🧾 Mis pedidos</h3>
-                        <p>Revisá el estado de tus pedidos y descargá comprobantes.</p>
-                        <div class="action-footer">
-                            <a class="btn btn-aceptar" href="prod_listadoPedidos.php">Ver pedidos</a>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <h3>📊 Consolidado</h3>
-                        <p>Resumen de productos y montos por operativo.</p>
-                        <div class="action-footer">
-                            <a class="btn btn-aceptar" href="prod_consolidado.php">Abrir consolidado</a>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <h3>👤 Mi información</h3>
-                        <p>Datos de tu cuenta y medios de contacto.</p>
-                        <div class="action-footer">
-                            <a class="btn btn-aceptar" href="prod_usuarioInformacion.php">Editar datos</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Contenedores para Toast -->
-                <div id="toast-container"></div>
-                <div id="toast-container-boton"></div>
-            </section>
+                    <!-- Contenedores para Toast -->
+                    <div id="toast-container"></div>
+                    <div id="toast-container-boton"></div>
+                </section>
         </div>
     </div>
 
