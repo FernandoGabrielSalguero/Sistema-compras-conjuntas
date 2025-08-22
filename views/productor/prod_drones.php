@@ -50,38 +50,116 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
         /* Estilos del modal */
 
+
         .modal {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.4);
-            display: flex;
+            inset: 0;
+            display: none;
             align-items: center;
             justify-content: center;
-            z-index: 9999;
+            background: rgba(0, 0, 0, .55);
+            padding: 1rem;
+            z-index: 10000;
+        }
+
+        .modal.is-open {
+            display: flex;
         }
 
         .modal-content {
+            width: min(720px, 100%);
             background: #fff;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
+            border-radius: 16px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, .25);
+            overflow: hidden;
+        }
+
+        /* Secciones del modal */
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close .material-icons {
+            font-size: 22px;
+            color: #666;
+        }
+
+        .modal-body {
+            padding: 1rem 1.25rem;
+            max-height: 65vh;
+            overflow: auto;
         }
 
         .modal-actions {
-            margin-top: 20px;
+            padding: 1rem 1.25rem;
             display: flex;
-            justify-content: space-around;
+            gap: .75rem;
+            justify-content: flex-end;
+            border-top: 1px solid #eee;
         }
 
-        /* icono de información */
-        .info-icon {
-            color: #5b21b6;
+        /* Tipografías/colores dentro del modal */
+        .modal-body .muted {
+            color: #666;
+        }
+
+        /* Resumen key/value en dos columnas en desktop */
+        .modal-summary dl {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: .5rem 1rem;
+            margin: 1rem 0 0;
+        }
+
+        .modal-summary dt {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-summary dd {
+            margin: 0;
+            color: #111;
+        }
+
+        @media (min-width:640px) {
+            .modal-summary dl {
+                grid-template-columns: 1.2fr 1fr;
+            }
+        }
+
+        /* Listado de productos dentro del value */
+        .modal-summary .prod-list {
+            margin: .25rem 0 0;
+            padding-left: 1rem;
+        }
+
+        .modal-summary .note {
+            white-space: pre-wrap;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: .75rem;
+            background: #fafafa;
         }
     </style>
 </head>
@@ -458,16 +536,23 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     <script src="https://www.fernandosalguero.com/cdn/components/spinner-global.js"></script>
 
     <!-- Modal de confirmación -->
-    <div id="modalConfirmacion" class="modal" style="display:none;">
+    <div id="modalConfirmacion" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modalTitle">
         <div class="modal-content">
-            <h3>¿Confirmar pedido?</h3>
-            <p>Estás por enviar el pedido. A continuación, revisá el detalle:</p>
+            <div class="modal-header">
+                <h3 id="modalTitle" class="modal-title">¿Confirmar pedido?</h3>
+                <button type="button" class="modal-close" aria-label="Cerrar" onclick="cerrarModal()">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
 
-            <div id="resumenModal" style="max-height: 300px; overflow-y: auto; text-align: left; margin-top: 1rem;"></div>
+            <div class="modal-body">
+                <p class="muted">Estás por enviar el pedido. Revisá el detalle:</p>
+                <div id="resumenModal"></div>
+            </div>
 
             <div class="modal-actions">
-                <button class="btn btn-cancelar" onclick="cerrarModal()">Cancelar</button>
-                <button class="btn btn-aceptar" onclick="confirmarEnvio()">Sí, enviar</button>
+                <button type="button" class="btn btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+                <button type="button" id="btnConfirmarModal" class="btn btn-aceptar" onclick="confirmarEnvio()">Sí, enviar</button>
             </div>
         </div>
     </div>
@@ -486,14 +571,36 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
             const abrirModal = () => {
                 if (!modal) return;
-                modal.style.display = 'block'; // usa tus estilos del framework
+                modal.classList.add('is-open');
+                modal.setAttribute('aria-hidden', 'false');
                 document.body.style.overflow = 'hidden';
+                // foco al confirmar
+                setTimeout(() => $('#btnConfirmarModal')?.focus(), 0);
             };
             const cerrarModal = () => {
                 if (!modal) return;
-                modal.style.display = 'none';
+                modal.classList.remove('is-open');
+                modal.setAttribute('aria-hidden', 'true');
                 document.body.style.overflow = '';
+                // devuelve foco al botón de submit del form
+                $('#btn_solicitar')?.focus();
             };
+            // Exponer a los botones con onclick=""
+            window.cerrarModal = cerrarModal;
+            window.confirmarEnvio = () => {
+                if (!__ultimoPayload) return cerrarModal();
+                console.log('DRON :: payload listo para enviar', __ultimoPayload);
+                // fetch(...) // <- envío real si querés
+                cerrarModal();
+            };
+            // Cerrar al hacer click fuera del contenido y con ESC
+            modal?.addEventListener('click', (e) => {
+                if (e.target === modal) cerrarModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal?.classList.contains('is-open')) cerrarModal();
+            });
+
             // Exponer a los botones con onclick=""
             window.cerrarModal = cerrarModal;
             window.confirmarEnvio = () => {
@@ -670,48 +777,71 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             };
 
             function renderResumenHTML(payload) {
-                const motivos = (payload.motivo.opciones || [])
-                    .map(v => labelMotivo[v] || v);
-                if (payload.motivo.otros) motivos.push(`Otros: ${escapeHTML(payload.motivo.otros)}`);
+  const motivos = (payload.motivo.opciones || []).map(v => labelMotivo[v] || v);
+  if (payload.motivo.otros) motivos.push(`Otros: ${escapeHTML(payload.motivo.otros)}`);
 
-                const rangos = (payload.rango_fecha || [])
-                    .map(v => labelRango[v] || v);
+  const rangos = (payload.rango_fecha || []).map(v => labelRango[v] || v);
 
-                const prods = (payload.productos || []).map(p => {
-                    const fuente = p.fuente === 'yo' ? 'Proveedor propio' : 'SVE';
-                    const marca = p.marca ? ` — Marca: ${escapeHTML(p.marca)}` : '';
-                    return `<li>${escapeHTML(labelProducto[p.tipo] || p.tipo)} <small>(Fuente: ${fuente}${marca})</small></li>`;
-                }).join('');
+  const prodsItems = (payload.productos || []).map(p => {
+    const fuente = p.fuente === 'yo' ? 'Proveedor propio' : 'SVE';
+    const marca  = p.marca ? ` — Marca: ${escapeHTML(p.marca)}` : '';
+    return `<li>${escapeHTML(labelProducto[p.tipo] || p.tipo)} <small>(${fuente}${marca})</small></li>`;
+  }).join('');
 
-                const ubic = payload.ubicacion || {};
-                const coords = (ubic.lat && ubic.lng) ?
-                    `${escapeHTML(ubic.lat)}, ${escapeHTML(ubic.lng)} (±${escapeHTML(ubic.acc)} m)` :
-                    '—';
+  const ubic = payload.ubicacion || {};
+  const coords = (ubic.lat && ubic.lng)
+    ? `${escapeHTML(ubic.lat)}, ${escapeHTML(ubic.lng)} (±${escapeHTML(ubic.acc)} m)`
+    : '—';
 
-                return `
-      <div class="card" style="margin:0;padding:1rem;">
-        <h4 style="margin-top:0;">Resumen de respuestas</h4>
-        <ul>
-          <li><strong>Representante en finca:</strong> ${toSiNo(payload.representante)}</li>
-          <li><strong>Líneas de media/alta tensión (&lt;30m):</strong> ${toSiNo(payload.linea_tension)}</li>
-          <li><strong>Zona de vuelo restringida (&lt;3km):</strong> ${toSiNo(payload.zona_restringida)}</li>
-          <li><strong>Corriente eléctrica disponible:</strong> ${toSiNo(payload.corriente_electrica)}</li>
-          <li><strong>Agua potable disponible:</strong> ${toSiNo(payload.agua_potable)}</li>
-          <li><strong>Cuarteles libres de obstáculos:</strong> ${toSiNo(payload.libre_obstaculos)}</li>
-          <li><strong>Área de despegue apropiada:</strong> ${toSiNo(payload.area_despegue)}</li>
-          <li><strong>Superficie (ha):</strong> ${escapeHTML(payload.superficie_ha ?? '—')}</li>
-          <li><strong>Motivo:</strong> ${motivos.length ? escapeHTML(motivos.join(', ')) : '—'}</li>
-          <li><strong>Momento preferido:</strong> ${rangos.length ? escapeHTML(rangos.join(', ')) : '—'}</li>
-          <li><strong>Productos:</strong>
-            ${prods ? `<ul>${prods}</ul>` : ' —'}
-          </li>
-          <li><strong>En la finca ahora:</strong> ${toSiNo(ubic.en_finca)}</li>
-          <li><strong>Coordenadas:</strong> ${coords}</li>
-          <li><strong>Observaciones:</strong><br><div style="white-space:pre-wrap;border:1px solid #eee;padding:.5rem;border-radius:.5rem;">${escapeHTML(payload.observaciones ?? '—')}</div></li>
-        </ul>
-      </div>
-    `;
-            }
+  return `
+    <div class="modal-summary">
+      <dl>
+        <dt>Representante en finca</dt>
+        <dd>${toSiNo(payload.representante)}</dd>
+
+        <dt>Líneas de media/alta tensión (&lt;30m)</dt>
+        <dd>${toSiNo(payload.linea_tension)}</dd>
+
+        <dt>Zona de vuelo restringida (&lt;3km)</dt>
+        <dd>${toSiNo(payload.zona_restringida)}</dd>
+
+        <dt>Corriente eléctrica disponible</dt>
+        <dd>${toSiNo(payload.corriente_electrica)}</dd>
+
+        <dt>Agua potable disponible</dt>
+        <dd>${toSiNo(payload.agua_potable)}</dd>
+
+        <dt>Cuarteles libres de obstáculos</dt>
+        <dd>${toSiNo(payload.libre_obstaculos)}</dd>
+
+        <dt>Área de despegue apropiada</dt>
+        <dd>${toSiNo(payload.area_despegue)}</dd>
+
+        <dt>Superficie (ha)</dt>
+        <dd>${escapeHTML(payload.superficie_ha ?? '—')}</dd>
+
+        <dt>Motivo</dt>
+        <dd>${motivos.length ? escapeHTML(motivos.join(', ')) : '—'}</dd>
+
+        <dt>Momento preferido</dt>
+        <dd>${rangos.length ? escapeHTML(rangos.join(', ')) : '—'}</dd>
+
+        <dt>Productos</dt>
+        <dd>${prodsItems ? `<ul class="prod-list">${prodsItems}</ul>` : '—'}</dd>
+
+        <dt>En la finca ahora</dt>
+        <dd>${toSiNo(ubic.en_finca)}</dd>
+
+        <dt>Coordenadas</dt>
+        <dd>${coords}</dd>
+
+        <dt>Observaciones</dt>
+        <dd><div class="note">${escapeHTML(payload.observaciones ?? '—')}</div></dd>
+      </dl>
+    </div>
+  `;
+}
+
 
             // -------- Submit: construir payload y abrir modal
             form.addEventListener('submit', (e) => {
