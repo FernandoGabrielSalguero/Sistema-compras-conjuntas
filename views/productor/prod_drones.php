@@ -66,7 +66,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <h4><?php echo htmlspecialchars($nombre); ?> 👋</h4>
                         <p>¿Queres volver al inicio?</p>
                     </div>
-                    <a class="btn btn-info" href="prod_dashboard.php">Presiona acá</a>
+                    <a class="btn btn-info" href="prod_dashboard.php">Apreta acá</a>
                 </div>
 
                 <!-- Tarjetas de acciones (usa tu grid nativa) -->
@@ -75,7 +75,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <h3> Drones</h3>
                         <p>Resumen de productos y montos por operativo.</p>
                         <div class="action-footer">
-                            <a class="btn btn-aceptar" href="prod_consolidado.php">Abrir consolidado</a>
+                            <a class="btn btn-aceptar" href="prod_consolidado.php">Solicitar Drone</a>
                         </div>
                     </div>
 

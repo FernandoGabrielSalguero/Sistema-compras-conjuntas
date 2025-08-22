@@ -99,7 +99,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         </div>
                         <p>Solicitá el servicio de drones para tu finca.</p>
                         <div class="action-footer">
-                            <a class="btn btn-aceptar" href="prod_drones.php">Ir al mercado</a>
+                            <a class="btn btn-aceptar" href="prod_consolidado.php">Solicitar Drone</a>
                         </div>
                     </div>
 
