@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: /views/cooperativa/coop_dashboard.php');
                 break;
             case 'productor':
-                header('Location: /views/productor/dashboard.php');
+                header('Location: /views/productor/prod_dashboard.php');
                 break;
             case 'sve':
                 header('Location: /views/sve/sve_dashboard.php');
