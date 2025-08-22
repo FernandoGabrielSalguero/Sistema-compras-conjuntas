@@ -56,7 +56,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
         <div class="main">
             <header class="navbar">
-                <h4>¡Que bueno verte de nuevo <?php echo htmlspecialchars($nombre); ?>!</h4>
+                <h4>Formulario para solicitar el servicio de pulverización con dron.</h4>
             </header>
 
             <section class="content">
