@@ -99,14 +99,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         Tutorial
                     </button>
                 </div>
-
-                <!-- contenedor de operativos -->
-                <div class="card tutorial-operativos-disponibles">
-                    <h2>Operativos disponibles</h2>
-                    <p>Seleccioná en qué operativos querés participar para habilitar la compra a tus productores.</p>
-                    <br>
-                    <div class="card-grid grid-4" id="contenedorOperativos"></div>
-                </div>
         </div>
 
 
@@ -122,7 +114,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     </div>
 
     <script>
-        // toast
+        // toast con operativos por cerrar
         window.addEventListener('DOMContentLoaded', () => {
             console.log(<?php echo json_encode($_SESSION); ?>);
 
@@ -139,87 +131,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 });
             <?php endif; ?>
         });
-
-        // cargar operativos
-        async function cargarOperativos() {
-            const contenedor = document.getElementById('contenedorOperativos');
-            contenedor.innerHTML = '<p>Cargando operativos...</p>';
-
-            try {
-                const res = await fetch('/controllers/coop_dashboardController.php');
-                const data = await res.json();
-
-                if (!data.success) throw new Error(data.message);
-
-                contenedor.innerHTML = '';
-
-                data.operativos.forEach(op => {
-                    const card = document.createElement('div');
-                    card.className = 'user-card';
-
-                    const switchId = `switch_${op.id}`;
-
-                    card.innerHTML = `
-    <h3 class="user-name">${op.nombre}</h3>
-
-    <div class="user-info">
-        <span class="material-icons icon-email">description</span>
-        <span class="user-email">${op.descripcion || 'Sin descripción.'}</span>
-    </div>
-
-    <div class="user-info">
-        <span class="material-icons icon-email">event</span>
-        <span class="user-email"><strong>Inicio:</strong> ${formatearFechaArg(op.fecha_inicio)}</span>
-    </div>
-
-    <div class="user-info">
-        <span class="material-icons icon-email">event_busy</span>
-        <span class="user-email"><strong>Cierre:</strong> ${formatearFechaArg(op.fecha_cierre)}</span>
-    </div>
-
-    <div class="user-info">
-        <span class="material-icons icon-email">how_to_reg</span>
-        <span class="user-email"><strong>Participás:</strong></span>
-        <label class="switch tutorial-swich-participacion" style="margin-left: 0.5rem;">
-            <input type="checkbox" id="${switchId}" ${op.participa === 'si' ? 'checked' : ''}>
-            <span class="slider round"></span>
-        </label>
-    </div>
-`;
-
-                    // Manejador de cambio
-                    card.querySelector(`#${switchId}`).addEventListener('change', async (e) => {
-                        const participa = e.target.checked ? 'si' : 'no';
-
-                        try {
-                            const res = await fetch('/controllers/coop_dashboardController.php', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    operativo_id: op.id,
-                                    participa: participa
-                                })
-                            });
-
-                            const result = await res.json();
-                            if (!result.success) {
-                                alert('❌ Error al guardar participación: ' + result.message);
-                            }
-                        } catch (err) {
-                            console.error('❌ Error en fetch:', err);
-                            alert('Error de red al actualizar participación.');
-                        }
-                    });
-
-                    contenedor.appendChild(card);
-                });
-
-            } catch (err) {
-                contenedor.innerHTML = `<p style="color:red;">${err.message}</p>`;
-            }
-        }
 
         document.addEventListener('DOMContentLoaded', cargarOperativos);
 

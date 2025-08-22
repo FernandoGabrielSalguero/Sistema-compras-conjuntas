@@ -34,7 +34,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <style>
         ::placeholder {
-            color: red;
             opacity: 1;
             /* para mantener visibilidad en todos los navegadores */
         }
