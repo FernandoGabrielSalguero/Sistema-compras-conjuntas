@@ -64,6 +64,10 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             display: flex;
             justify-content: flex-end;
         }
+
+        .material-symbols-outlined {
+            color: #5b21b6;
+        }
     </style>
 </head>
 
