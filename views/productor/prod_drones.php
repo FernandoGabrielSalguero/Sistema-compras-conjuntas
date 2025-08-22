@@ -72,6 +72,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <!-- Formulario para solicitar el drone -->
                 <div class="card">
                     <h2>Completa con atención el siguiente formulario</h2>
+                    <br>
                     <form class="form-modern">
                         <div class="form-grid grid-4">
 
@@ -80,11 +81,14 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                                 <small>El representante deberá recibir al piloto, indicar los cuarteles a pulverizar, brindar asistencia si se requiere y firmar el registro fitosanitario.</small>
                                 <div class="input-icon">
                                     <span class="material-icons">help_outline</span>
-                                    <select id="asistente_finca" name="asistente_finca" required>
-                                        <option value="" selected disabled>Seleccioná una opción</option>
-                                        <option value="si">Sí</option>
-                                        <option value="no">No</option>
-                                    </select>
+                                    <label>
+                                        <input type="radio" name="shoes" />
+                                        <span>Boots</span>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="shoes" />
+                                        <span>Clogs</span>
+                                    </label>
                                 </div>
                             </div>
 
