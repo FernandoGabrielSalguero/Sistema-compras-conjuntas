@@ -424,8 +424,8 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <div class="gform-error">Esta pregunta es obligatoria.</div>
                     </div>
 
-                    <!-- Acciones (podés dejarlas full width) -->
-                    <div class="gform-actions span-4">
+                    <!-- Acciones-->
+                    <div class="gform-actions span-1">
                         <button type="submit" class="gform-btn gform-primary">Solicitar el servicio</button>
                     </div>
                 </form>
