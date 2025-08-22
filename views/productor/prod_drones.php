@@ -71,13 +71,14 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
                 <!-- Formulario para solicitar el drone -->
                 <div class="card">
-                    <h2>Formularios</h2>
+                    <h2>Completa con atención el siguiente formulario</h2>
                     <form class="form-modern">
                         <div class="form-grid grid-4">
 
-                            <!-- Nombre completo -->
+                            <!-- Asistente en la finca -->
                             <div class="input-group">
-                                <label for="nombre">Nombre completo</label>
+                                <label for="nombre">¿A la hora de tomar el servicio podremos contar con un representante de la pripiedad en la finca?</label>
+                                <h4>El representante de la propiedad, debera recibir al piloto e indicarle los cuarteles a pulverizar, darle asistencia si la requiere y firmar el registro fitosanitario</h4>
                                 <div class="input-icon input-icon-name">
                                     <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
                                 </div>
