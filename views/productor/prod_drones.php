@@ -415,6 +415,12 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
         </div>
     </div>
 
+    <!-- Spinner Global (desde tu CDN) -->
+    <div id="globalSpinner" class="spinner-overlay hidden">
+        <div class="spinner"></div>
+    </div>
+    <script src="https://www.fernandosalguero.com/cdn/components/spinner-global.js"></script>
+
     <!-- Modal de confirmación -->
     <div id="modalConfirmacion" class="modal" style="display:none;">
         <div class="modal-content">
@@ -429,12 +435,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             </div>
         </div>
     </div>
-
-    <!-- Spinner Global (desde tu CDN) -->
-    <div id="globalSpinner" class="spinner-overlay hidden">
-        <div class="spinner"></div>
-    </div>
-    <script src="https://www.fernandosalguero.com/cdn/components/spinner-global.js"></script>
 
     <script>
         (() => {
