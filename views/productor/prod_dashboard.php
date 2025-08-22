@@ -87,7 +87,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <h4><?php echo htmlspecialchars($nombre); ?> 👋</h4>
                         <p>Esta es la nueva plataforma de SVE. Desde acá vas a poder acceder a los servicios brindados de una manera rápida y fácil.</p>
                     </div>
-                    <a class="btn btn-info" href="prod_dashboard.php">Volver al inicio</a>
                 </div>
 
                 <!-- Tarjetas de acciones -->

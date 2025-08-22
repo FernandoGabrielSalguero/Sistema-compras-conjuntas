@@ -64,9 +64,9 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <div class="card header-card">
                     <div>
                         <h4><?php echo htmlspecialchars($nombre); ?> 👋</h4>
-                        <p>Esta es la nueva plataforma de SVE. Desde acá, vas a poder acceder a los servicios brindados de una manera rápida y fácil</p>
+                        <p>¿Queres volver al inicio?</p>
                     </div>
-                    <a class="btn btn-info" href="prod_dashboard.php">Volver al inicio</a>
+                    <a class="btn btn-info" href="prod_dashboard.php">Presiona acá</a>
                 </div>
 
                 <!-- Tarjetas de acciones (usa tu grid nativa) -->
