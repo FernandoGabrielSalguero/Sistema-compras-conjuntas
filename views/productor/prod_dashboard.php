@@ -19,6 +19,9 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE - Productor</title>
 
+    <!-- Íconos de Material Design -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
     <!-- Tu framework (CSS/JS) -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
