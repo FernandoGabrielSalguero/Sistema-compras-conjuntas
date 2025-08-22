@@ -77,17 +77,18 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <div class="form-grid grid-4">
 
                             <div class="input-group">
-                                <label for="asistente_finca">¿Habrá un representante de la propiedad presente en la finca?</label>
-                                <small>El representante deberá recibir al piloto, indicar los cuarteles a pulverizar, brindar asistencia si se requiere y firmar el registro fitosanitario.</small>
-                                <div class="input-icon">
-                                    <span class="material-icons">help_outline</span>
+                                <label for="dni">¿Contamos con un representante de la propiedad al momento de visitar la finca?</label>
+                                <small>El representante de la propiedad deberá, recibir al piloto, indicarle los cuarteles a pulverizar, dale asistencia si la requiere y firmar el registro fitosanitario</small>
+                                <div class="card selector-list">
+                                    <h3>Selecciona una opción</h3>
+                                    <hr />
                                     <label>
-                                        <input type="radio" name="shoes" />
-                                        <span>Boots</span>
+                                        <input type="radio" name="Si" />
+                                        <span>Si</span>
                                     </label>
                                     <label>
-                                        <input type="radio" name="shoes" />
-                                        <span>Clogs</span>
+                                        <input type="radio" name="No" />
+                                        <span>No</span>
                                     </label>
                                 </div>
                             </div>
