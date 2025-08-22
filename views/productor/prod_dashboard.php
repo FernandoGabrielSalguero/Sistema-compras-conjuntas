@@ -52,9 +52,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
         .card-title .material-icons {
             font-size: 32px;
-            /* tamaño del icono */
             color: #5b21b6;
-            /* tono que usás en el sistema */
             opacity: .9;
         }
 
@@ -66,7 +64,9 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
         }
 
         .material-symbols-outlined {
+            font-size: 32px;
             color: #5b21b6;
+            opacity: .9;
         }
     </style>
 </head>
