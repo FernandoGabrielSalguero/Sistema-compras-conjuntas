@@ -77,6 +77,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
                 <!-- Formulario para solicitar el drone -->
                 <form id="form-dron" class="gform-grid cols-4" novalidate>
+
                     <!-- asistente -->
                     <div class="gform-question" role="group" aria-labelledby="q_corriente_label">
                         <div id="q_corriente_label" class="gform-legend">
@@ -123,7 +124,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </div>
 
 
-                    <!-- asistente -->
+                    <!-- assist_electric -->
                     <div class="gform-question" role="group" aria-labelledby="q_corriente_label">
                         <div id="q_corriente_label" class="gform-legend">
                             ¿CUENTA CON DISPONIBILIDAD DE CORRIENTE ELÉCTRICA?<span class="gform-required">*</span>
@@ -140,7 +141,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <div class="gform-error">Esta pregunta es obligatoria.</div>
                     </div>
 
-                    <!-- asistente -->
+                    <!-- assist_water -->
                     <div class="gform-question" role="group" aria-labelledby="q_corriente_label">
                         <div id="q_corriente_label" class="gform-legend">
                             ¿EN LA PROPIEDAD HAY DISPONIBILIDAD DE AGUA POTABLE? <span class="gform-required">*</span>
@@ -157,7 +158,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <div class="gform-error">Esta pregunta es obligatoria.</div>
                     </div>
 
-                    <!-- asistente -->
+                    <!-- danger_obstacul -->
                     <div class="gform-question" role="group" aria-labelledby="q_corriente_label">
                         <div id="q_corriente_label" class="gform-legend">
                             ¿ EL/LOS CUARTELES A PULVERIZAR ESTAN LIBRES DE OBSTÁCULOS? <span class="gform-required">*</span>
@@ -177,7 +178,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <div class="gform-error">Esta pregunta es obligatoria.</div>
                     </div>
 
-                    <!-- asistente -->
+                    <!-- assist_airport -->
                     <div class="gform-question" role="group" aria-labelledby="q_corriente_label">
                         <div id="q_corriente_label" class="gform-legend">
                             ¿EL/ LOS CUARTELES A PULVERIZAR CUENTAN CON UN ÁREA DE DESPEGUE APROPIADA? <span class="gform-required">*</span>
@@ -194,7 +195,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <div class="gform-error">Esta pregunta es obligatoria.</div>
                     </div>
 
-                    <!-- 1) Short answer -->
+                    <!-- hectareas -->
                     <div class="gform-question" data-required="true">
                         <label class="gform-label" for="g_razon">SUPERFICIE (en hectáreas) PARA LAS QUE DESEA CONTRATAR EL SERVICIO<span
                                 class="gform-required">*</span></label>
@@ -203,7 +204,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <div class="gform-error">Esta pregunta es obligatoria.</div>
                     </div>
 
-                    <!-- 4) Checkbox (con “Otros” inline) -->
+                    <!-- tratamiento -->
                     <div class="gform-question" role="group" aria-labelledby="q_motivo_label">
                         <div id="q_motivo_label" class="gform-legend">INDICAR EL MOTIVO POR EL QUE DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span>
                         </div>
@@ -223,25 +224,25 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                             <label class="gform-option"><input type="checkbox" name="g_motivo[]" value="oidio">
                                 <span>Fertilización Foliar</span>
                             </label>
-<label class="gform-option gform-option-otros">
-  <input type="checkbox"
-         id="g_motivo_otros_chk"
-         name="g_motivo[]"
-         value="otros"
-         aria-controls="g_motivo_otros">
-  <span>Otros:</span>
-  <input type="text"
-         id="g_motivo_otros"
-         name="g_motivo_otros"
-         class="gform-input gform-input-inline oculto"
-         placeholder="Especificar"
-         disabled>
-</label>
+                            <label class="gform-option gform-option-otros">
+                                <input type="checkbox"
+                                    id="g_motivo_otros_chk"
+                                    name="g_motivo[]"
+                                    value="otros"
+                                    aria-controls="g_motivo_otros">
+                                <span>Otros:</span>
+                                <input type="text"
+                                    id="g_motivo_otros"
+                                    name="g_motivo_otros"
+                                    class="gform-input gform-input-inline oculto"
+                                    placeholder="Especificar"
+                                    disabled>
+                            </label>
                         </div>
                         <div class="gform-error">Seleccioná al menos una opción.</div>
                     </div>
 
-                    <!-- 4) Checkbox (con “Otros” inline) -->
+                    <!-- rango_fecha -->
                     <div class="gform-question" role="group" aria-labelledby="q_motivo_label">
                         <div id="q_motivo_label" class="gform-legend">INDICAR EN QUE MOMENTO DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span>
                         </div>
@@ -282,7 +283,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
 
 
-                    <!-- 4) Checkbox (con “Otros” inline) -->
+                    <!-- assist_product -->
                     <div class="gform-question" role="group" aria-labelledby="q_productos_label">
                         <div id="q_productos_label" class="gform-legend">
                             En el caso de necesitar productos fitosanitarios para realizar la pulverización indicar los
@@ -290,6 +291,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         </div>
 
                         <div class="gform-options gopts-with-complement">
+
                             <!-- Productos para Lobesia -->
                             <div class="gform-optbox">
                                 <label class="gform-option">
@@ -383,14 +385,14 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <div class="gform-error">Seleccioná al menos una opción.</div>
                     </div>
 
-                    <!-- ¿Estás en la ubicación de la finca? -->
+                    <!-- assist_geolocation -->
                     <div class="gform-question span-2" role="group" aria-labelledby="q_ubicacion_label">
                         <div id="q_ubicacion_label" class="gform-label">
                             ¿Estás en la ubicación de la finca? <span class="gform-required">*</span>
                         </div>
                         <div class="gform-helper">
                             Solo selecciona que SI, si estpas en la ubicación de la finca, ya que se capturarán las coordenadas GPS del lugar.
-                            Si no estás en la finca, selecciona NO y las coordenadas no se capturararan. 
+                            Si no estás en la finca, selecciona NO y las coordenadas no se capturararan.
                             SOLO TOCA SI, CUANDO LLENES EL FORMULARIO DESDE UN CELULAR.
                         </div>
 
@@ -409,10 +411,14 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     </div>
 
 
-                    <!-- 6) Long answer / párrafo -->
+                    <!-- information -->
                     <div class="gform-question span-2" data-required="true">
                         <label class="gform-label" for="g_obs">OBSERVACIONES <span
-                                class="gform-required">*</span></label>
+                                class="gform-required">*</span>
+                        </label>
+                                                <div class="gform-helper">
+                            Podes dejar tu comentario o consulta aquí.
+                        </div>
                         <textarea class="gform-input gform-textarea" id="g_obs" name="g_obs" rows="3"
                             placeholder="Tu respuesta"></textarea>
                         <div class="gform-error">Esta pregunta es obligatoria.</div>
@@ -421,8 +427,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     <!-- Acciones (podés dejarlas full width) -->
                     <div class="gform-actions span-4">
                         <button type="submit" class="gform-btn gform-primary">Solicitar el servicio</button>
-                        <a href="#" class="gform-clear"
-                            onclick="document.getElementById('form-dron').reset();return false;">Borrar formulario</a>
                     </div>
                 </form>
 
