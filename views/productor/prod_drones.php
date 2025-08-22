@@ -47,6 +47,42 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             display: flex;
             justify-content: flex-end;
         }
+
+        /* Estilos del modal */
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        /* icono de información */
+        .info-icon {
+            color: #5b21b6;
+        }
     </style>
 </head>
 
