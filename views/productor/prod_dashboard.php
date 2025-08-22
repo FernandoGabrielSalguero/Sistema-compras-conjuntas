@@ -84,7 +84,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <!-- Header / Bienvenida -->
                 <div class="card header-card">
                     <div>
-                        <h4><?php echo htmlspecialchars($nombre); ?> 👋</h4>
+                        <h4><?php echo htmlspecialchars($nombre); ?></h4>
                         <p>Esta es la nueva plataforma de SVE. Desde acá vas a poder acceder a los servicios brindados de una manera rápida y fácil.</p>
                     </div>
                 </div>
@@ -99,7 +99,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         </div>
                         <p>Solicitá el servicio de drones para tu finca.</p>
                         <div class="action-footer">
-                            <a class="btn btn-aceptar" href="prod_consolidado.php">Solicitar Drone</a>
+                            <a class="btn btn-aceptar" href="prod_drones.php">Solicitar Drone</a>
                         </div>
                     </div>
 

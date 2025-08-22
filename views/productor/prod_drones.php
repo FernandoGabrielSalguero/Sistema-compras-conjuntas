@@ -63,8 +63,8 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <!-- Header / Bienvenida -->
                 <div class="card header-card">
                     <div>
-                        <h4><?php echo htmlspecialchars($nombre); ?> 👋</h4>
-                        <p>¿Queres volver al inicio?</p>
+                        <h4><?php echo htmlspecialchars($nombre); ?></h4>
+                        <p>¿Queres ir al inicio?</p>
                     </div>
                     <a class="btn btn-info" href="prod_dashboard.php">Apreta acá</a>
                 </div>
@@ -118,24 +118,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     <script src="https://www.fernandosalguero.com/cdn/components/spinner-global.js"></script>
 
     <script>
-        // Avisos de cierre de operativos (se mantiene)
-        window.addEventListener('DOMContentLoaded', () => {
-            <?php if (!empty($cierre_info)): ?>
-                const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-                if (Array.isArray(cierreData.pendientes)) {
-                    cierreData.pendientes.forEach(op => {
-                        const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s). Contactate con tu cooperativa para poder comprar productos en el operativo.`;
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('info', mensaje);
-                        } else if (typeof showToast === 'function') {
-                            showToast('info', mensaje);
-                        } else {
-                            console.log('[AVISO]', mensaje);
-                        }
-                    });
-                }
-            <?php endif; ?>
-        });
+
     </script>
 </body>
 
