@@ -71,10 +71,17 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
                 <!-- Formulario para solicitar el drone -->
 
-                <h2 style="margin-bottom: 1rem;">Señor productor a continuación se le realizaran preguntas de gran importancia para la prestación del servicio. Por favor leer y contestar cada una con detenimiento.</h2>
+                <h2 style="margin-bottom: 1rem;"></h2>
+
+                    <div>
+                        <h4>Señor productor a continuación se le realizaran preguntas de gran importancia para la prestación del servicio. Por favor leer y contestar cada una con detenimiento.</h4>
+                    </div>
+                </div>
+
+
+
 
                 <form id="form-dron" class="gform-grid cols-4" novalidate>
-
                     <!-- asistente -->
                     <div class="gform-question" role="group" aria-labelledby="q_corriente_label">
                         <div id="q_corriente_label" class="gform-legend">
