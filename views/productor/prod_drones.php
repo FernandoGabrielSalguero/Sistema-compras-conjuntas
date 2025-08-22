@@ -69,18 +69,13 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     <a class="btn btn-info" href="prod_dashboard.php">Apreta acá</a>
                 </div>
 
-                <!-- Formulario para solicitar el drone -->
-
-                <h2 style="margin-bottom: 1rem;"></h2>
-
-                    <div>
-                        <h4>Señor productor a continuación se le realizaran preguntas de gran importancia para la prestación del servicio. Por favor leer y contestar cada una con detenimiento.</h4>
-                    </div>
+                <!-- Bienvenida -->
+                <div class="card">
+                    <p>Señor productor a continuación se le realizaran preguntas de gran importancia para la prestación del servicio. Por favor leer y contestar cada una con detenimiento.</p>
+                    <br>
                 </div>
 
-
-
-
+                <!-- Formulario para solicitar el drone -->
                 <form id="form-dron" class="gform-grid cols-4" novalidate>
                     <!-- asistente -->
                     <div class="gform-question" role="group" aria-labelledby="q_corriente_label">
