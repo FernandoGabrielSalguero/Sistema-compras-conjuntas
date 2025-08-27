@@ -634,6 +634,23 @@ $sesion_payload = [
     </div>
 
     <script>
+        // ====== API ======
+        const API_URL = '../../controllers/prod_dronesController.php'; // ajustá si tu ruta es distinta
+
+        // ====== UI helpers ======
+        function showSpinner(show = true) {
+            const el = document.getElementById('globalSpinner');
+            if (!el) return;
+            el.classList.toggle('hidden', !show);
+        }
+
+        function setConfirmBtnLoading(loading = true) {
+            const btn = document.getElementById('btnConfirmarModal');
+            if (!btn) return;
+            btn.disabled = loading;
+            btn.textContent = loading ? 'Enviando…' : 'Sí, enviar';
+        }
+
         (() => {
             const $ = (sel, ctx = document) => ctx.querySelector(sel);
             const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
@@ -688,24 +705,74 @@ $sesion_payload = [
 
             // Exponer a los botones con onclick=""
             window.cerrarModal = cerrarModal;
-            
-            window.confirmarEnvio = () => {
+
+            window.confirmarEnvio = async () => {
                 if (!__ultimoPayload) return cerrarModal();
 
-                // Primero log de sesión (desde PHP)
+                // Log informativo (opcional)
                 console.log('DRON :: sesión actual', sessionData);
-
-                // Después el payload completo (con la sesión incluida también)
                 console.log('DRON :: payload listo para enviar', __ultimoPayload);
 
-                // Ejemplo de envío real (dejar comentado si por ahora solo es consola):
-                // fetch('/api/solicitudes/dron', {
-                //   method: 'POST',
-                //   headers: { 'Content-Type': 'application/json' },
-                //   body: JSON.stringify(__ultimoPayload)
-                // }).then(r => r.json()).then(data => console.log('Respuesta backend', data));
+                try {
+                    showSpinner(true);
+                    setConfirmBtnLoading(true);
 
-                cerrarModal();
+                    const res = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin', // importante para que el PHP vea la sesión
+                        body: JSON.stringify(__ultimoPayload)
+                    });
+
+                    const data = await res.json().catch(() => ({}));
+
+                    if (!res.ok || !data?.ok) {
+                        const msg = data?.error || `Error ${res.status} al registrar la solicitud.`;
+                        window.showToast?.('error', msg) || alert(msg);
+                        return;
+                    }
+
+                    // OK
+                    window.showToast?.('success', `Solicitud registrada (#${data.id}).`);
+                    cerrarModal();
+
+                    // Reseteo “gentil” del form y sus estados UI
+                    form.reset();
+                    // ocultar complementos de productos
+                    $$('input[type="checkbox"][data-complement]').forEach(cb => {
+                        const cmp = document.querySelector(cb.dataset.complement);
+                        if (cmp) cmp.hidden = true;
+                    });
+                    // ocultar cajas de marca
+                    ['#brand_lobesia', '#brand_peronospora', '#brand_oidio', '#brand_podredumbre']
+                    .forEach(sel => {
+                        const b = $(sel);
+                        if (b) b.hidden = true;
+                    });
+                    // limpiar “Otros”
+                    if (typeof chkOtros !== 'undefined' && chkOtros) {
+                        chkOtros.checked = false;
+                        if (inputOtros) {
+                            inputOtros.value = '';
+                            inputOtros.disabled = true;
+                            inputOtros.classList.add('oculto');
+                        }
+                    }
+                    // limpiar geolocalización
+                    if (typeof clearGeo === 'function') clearGeo();
+
+                    // Si querés redirigir:
+                    // location.href = 'prod_dashboard.php';
+
+                } catch (err) {
+                    console.error(err);
+                    window.showToast?.('error', 'No se pudo enviar la solicitud. Verificá tu conexión.');
+                } finally {
+                    setConfirmBtnLoading(false);
+                    showSpinner(false);
+                }
             };
             // Cerrar al hacer click fuera del contenido y con ESC
             modal?.addEventListener('click', (e) => {
