@@ -709,10 +709,6 @@ $sesion_payload = [
             window.confirmarEnvio = async () => {
                 if (!__ultimoPayload) return cerrarModal();
 
-                // Log informativo (opcional)
-                console.log('DRON :: sesión actual', sessionData);
-                console.log('DRON :: payload listo para enviar', __ultimoPayload);
-
                 try {
                     showSpinner(true);
                     setConfirmBtnLoading(true);
@@ -722,36 +718,42 @@ $sesion_payload = [
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        credentials: 'same-origin', // importante para que el PHP vea la sesión
+                        credentials: 'same-origin',
                         body: JSON.stringify(__ultimoPayload)
                     });
 
-                    const data = await res.json().catch(() => ({}));
+                    const raw = await res.text(); // <- cuerpo crudo
+                    let data = null;
+                    try {
+                        data = JSON.parse(raw);
+                    } catch {
+                        console.warn('Respuesta NO-JSON del backend:', raw);
+                    }
 
                     if (!res.ok || !data?.ok) {
                         const msg = data?.error || `Error ${res.status} al registrar la solicitud.`;
+                        console.error('Detalle backend:', {
+                            status: res.status,
+                            raw
+                        });
                         window.showToast?.('error', msg) || alert(msg);
                         return;
                     }
 
-                    // OK
                     window.showToast?.('success', `Solicitud registrada (#${data.id}).`);
                     cerrarModal();
-
-                    // Reseteo “gentil” del form y sus estados UI
                     form.reset();
-                    // ocultar complementos de productos
+
+                    // reset de UI complementos/marcas
                     $$('input[type="checkbox"][data-complement]').forEach(cb => {
                         const cmp = document.querySelector(cb.dataset.complement);
                         if (cmp) cmp.hidden = true;
                     });
-                    // ocultar cajas de marca
                     ['#brand_lobesia', '#brand_peronospora', '#brand_oidio', '#brand_podredumbre']
                     .forEach(sel => {
                         const b = $(sel);
                         if (b) b.hidden = true;
                     });
-                    // limpiar “Otros”
                     if (typeof chkOtros !== 'undefined' && chkOtros) {
                         chkOtros.checked = false;
                         if (inputOtros) {
@@ -760,11 +762,7 @@ $sesion_payload = [
                             inputOtros.classList.add('oculto');
                         }
                     }
-                    // limpiar geolocalización
                     if (typeof clearGeo === 'function') clearGeo();
-
-                    // Si querés redirigir:
-                    // location.href = 'prod_dashboard.php';
 
                 } catch (err) {
                     console.error(err);
@@ -774,6 +772,10 @@ $sesion_payload = [
                     showSpinner(false);
                 }
             };
+
+
+
+
             // Cerrar al hacer click fuera del contenido y con ESC
             modal?.addEventListener('click', (e) => {
                 if (e.target === modal) cerrarModal();
