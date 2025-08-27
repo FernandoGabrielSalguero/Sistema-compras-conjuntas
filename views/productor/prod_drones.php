@@ -28,7 +28,7 @@ $sesion_payload = [
 <script id="session-data" type="application/json">
     <?= json_encode($sesion_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
 </script>
-?>
+
 <!DOCTYPE html>
 <html lang="es">
 
