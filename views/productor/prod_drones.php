@@ -638,12 +638,9 @@ $sesion_payload = [
             const $ = (sel, ctx = document) => ctx.querySelector(sel);
             const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
-            // ---- DOM base
             const form = $('#form-dron');
-            const modal = $('#modalConfirmacion');
-            const resumenModal = $('#resumenModal');
 
-            // ---- Sesión (inyectada por PHP)
+            // ---- Sesión (inyectada desde PHP)
             const sessionData = (() => {
                 try {
                     return JSON.parse($('#session-data')?.textContent || '{}');
@@ -651,18 +648,18 @@ $sesion_payload = [
                     return {};
                 }
             })();
-            // la expongo por si querés verla desde consola
-            window.sessionData = sessionData;
 
-            // ---- Estado
-            window.__ultimoPayload = null; // <- AHORA global, lo usa confirmarEnvio()
+            // -------- Modal
+            const modal = $('#modalConfirmacion');
+            const resumenModal = $('#resumenModal');
+            let __ultimoPayload = null;
 
-            // ---- Modal helpers
             const abrirModal = () => {
                 if (!modal) return;
                 modal.classList.add('is-open');
                 modal.setAttribute('aria-hidden', 'false');
                 document.body.style.overflow = 'hidden';
+                // foco al confirmar
                 setTimeout(() => $('#btnConfirmarModal')?.focus(), 0);
             };
             const cerrarModal = () => {
@@ -670,11 +667,19 @@ $sesion_payload = [
                 modal.classList.remove('is-open');
                 modal.setAttribute('aria-hidden', 'true');
                 document.body.style.overflow = '';
+                // devuelve foco al botón de submit del form
                 $('#btn_solicitar')?.focus();
             };
+            // Exponer a los botones con onclick=""
             window.cerrarModal = cerrarModal;
 
-            // Cerrar modal por overlay/ESC (una sola vez)
+            window.confirmarEnvio = () => {
+                if (!__ultimoPayload) return cerrarModal();
+                console.log('DRON :: payload listo para enviar', __ultimoPayload);
+                // fetch(...) // <- envío real si querés
+                cerrarModal();
+            };
+            // Cerrar al hacer click fuera del contenido y con ESC
             modal?.addEventListener('click', (e) => {
                 if (e.target === modal) cerrarModal();
             });
@@ -682,7 +687,28 @@ $sesion_payload = [
                 if (e.key === 'Escape' && modal?.classList.contains('is-open')) cerrarModal();
             });
 
-            // ---- UI: "Otros" en Motivo
+            // Exponer a los botones con onclick=""
+            window.cerrarModal = cerrarModal;
+
+            window.confirmarEnvio = () => {
+                if (!__ultimoPayload) return cerrarModal();
+
+                // Primero log de sesión (desde PHP)
+                console.log('DRON :: sesión actual', sessionData);
+
+                // Después el payload completo (con la sesión incluida también)
+                console.log('DRON :: payload listo para enviar', __ultimoPayload);
+                cerrarModal();
+            };
+            // Cerrar al hacer click fuera del contenido y con ESC
+            modal?.addEventListener('click', (e) => {
+                if (e.target === modal) cerrarModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal?.style.display !== 'none') cerrarModal();
+            });
+
+            // -------- UI: "Otros" en Motivo
             const chkOtros = $('#motivo_otros_chk');
             const inputOtros = $('#motivo_otros');
             if (chkOtros && inputOtros) {
@@ -695,7 +721,7 @@ $sesion_payload = [
                 syncOtros();
             }
 
-            // ---- UI: complementos por producto
+            // -------- UI: complementos por producto
             $$('input[type="checkbox"][data-complement]').forEach(cb => {
                 const cmp = document.querySelector(cb.dataset.complement);
                 const sync = () => cmp && (cmp.hidden = !cb.checked);
@@ -703,7 +729,7 @@ $sesion_payload = [
                 sync();
             });
 
-            // ---- UI: mostrar "marca" si fuente == "yo"
+            // -------- UI: mostrar "marca" si fuente == "yo"
             [{
                     radios: ['#src_lobesia_sve', '#src_lobesia_yo'],
                     brandBox: '#brand_lobesia'
@@ -737,7 +763,7 @@ $sesion_payload = [
                 sync();
             });
 
-            // ---- Geolocalización condicional
+            // -------- Geolocalización condicional
             const enFincaSi = $('#en_finca_si');
             const enFincaNo = $('#en_finca_no');
             const status = $('#ubicacion_status');
@@ -785,7 +811,7 @@ $sesion_payload = [
                 enFincaNo.addEventListener('change', clearGeo);
             }
 
-            // ---- Helpers varios
+            // -------- Helpers
             const getRadioValue = (name) => {
                 const el = form.querySelector(`input[type="radio"][name="${name}"]:checked`);
                 return el ? el.value : null;
@@ -794,16 +820,18 @@ $sesion_payload = [
                 return $$(`input[type="checkbox"][name="${name}"]:checked`, form).map(i => i.value);
             };
             const toSiNo = (v) => v === 'si' ? 'Sí' : v === 'no' ? 'No' : '—';
-            const escapeHTML = (s) => (s ?? '').toString().replace(/[&<>"'`=\/]/g, c => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;',
-                '/': '&#x2F;',
-                '`': '&#x60;',
-                '=': '&#x3D;'
-            } [c]));
+            const escapeHTML = (s) => (s ?? '')
+                .toString()
+                .replace(/[&<>"'`=\/]/g, c => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                    '/': '&#x2F;',
+                    '`': '&#x60;',
+                    '=': '&#x3D;'
+                } [c]));
 
             const labelMotivo = {
                 mildiu: 'Peronospora/Mildiu',
@@ -871,41 +899,81 @@ $sesion_payload = [
                 }).join('');
 
                 const ubic = payload.ubicacion || {};
-                const coords = (ubic.lat && ubic.lng) ? `${escapeHTML(ubic.lat)}, ${escapeHTML(ubic.lng)} (±${escapeHTML(ubic.acc)} m)` : '—';
+                const coords = (ubic.lat && ubic.lng) ?
+                    `${escapeHTML(ubic.lat)}, ${escapeHTML(ubic.lng)} (±${escapeHTML(ubic.acc)} m)` :
+                    '—';
 
                 return `
-      <div class="modal-summary">
-        <dl>
-          <dt>Representante en finca</dt><dd>${toSiNo(payload.representante)}</dd>
-          <dt>Líneas de media/alta tensión (&lt;30m)</dt><dd>${toSiNo(payload.linea_tension)}</dd>
-          <dt>Zona de vuelo restringida (&lt;3km)</dt><dd>${toSiNo(payload.zona_restringida)}</dd>
-          <dt>Corriente eléctrica disponible</dt><dd>${toSiNo(payload.corriente_electrica)}</dd>
-          <dt>Agua potable disponible</dt><dd>${toSiNo(payload.agua_potable)}</dd>
-          <dt>Cuarteles libres de obstáculos</dt><dd>${toSiNo(payload.libre_obstaculos)}</dd>
-          <dt>Área de despegue apropiada</dt><dd>${toSiNo(payload.area_despegue)}</dd>
-          <dt>Superficie (ha)</dt><dd>${escapeHTML(payload.superficie_ha ?? '—')}</dd>
-          <dt>Dirección</dt><dd>${formatDireccion(payload.direccion)}</dd>
-          <dt>Motivo</dt><dd>${motivos.length ? escapeHTML(motivos.join(', ')) : '—'}</dd>
-          <dt>Momento preferido</dt><dd>${rangos.length ? escapeHTML(rangos.join(', ')) : '—'}</dd>
-          <dt>Productos</dt><dd>${prodsItems ? `<ul class="prod-list">${prodsItems}</ul>` : '—'}</dd>
-          <dt>En la finca ahora</dt><dd>${toSiNo(ubic.en_finca)}</dd>
-          <dt>Coordenadas</dt><dd>${coords}</dd>
-          <dt>Observaciones</dt><dd><div class="note">${escapeHTML(payload.observaciones ?? '—')}</div></dd>
-        </dl>
-      </div>
-    `;
+    <div class="modal-summary">
+      <dl>
+        <dt>Representante en finca</dt>
+        <dd>${toSiNo(payload.representante)}</dd>
+
+        <dt>Líneas de media/alta tensión (&lt;30m)</dt>
+        <dd>${toSiNo(payload.linea_tension)}</dd>
+
+        <dt>Zona de vuelo restringida (&lt;3km)</dt>
+        <dd>${toSiNo(payload.zona_restringida)}</dd>
+
+        <dt>Corriente eléctrica disponible</dt>
+        <dd>${toSiNo(payload.corriente_electrica)}</dd>
+
+        <dt>Agua potable disponible</dt>
+        <dd>${toSiNo(payload.agua_potable)}</dd>
+
+        <dt>Cuarteles libres de obstáculos</dt>
+        <dd>${toSiNo(payload.libre_obstaculos)}</dd>
+
+        <dt>Área de despegue apropiada</dt>
+        <dd>${toSiNo(payload.area_despegue)}</dd>
+
+        <dt>Superficie (ha)</dt>
+        <dd>${escapeHTML(payload.superficie_ha ?? '—')}</dd>
+
+        <!-- NUEVO: Dirección -->
+        <dt>Dirección</dt>
+        <dd>${formatDireccion(payload.direccion)}</dd>
+
+        <dt>Motivo</dt>
+        <dd>${motivos.length ? escapeHTML(motivos.join(', ')) : '—'}</dd>
+
+        <dt>Momento preferido</dt>
+        <dd>${rangos.length ? escapeHTML(rangos.join(', ')) : '—'}</dd>
+
+        <dt>Productos</dt>
+        <dd>${prodsItems ? `<ul class="prod-list">${prodsItems}</ul>` : '—'}</dd>
+
+        <dt>En la finca ahora</dt>
+        <dd>${toSiNo(ubic.en_finca)}</dd>
+
+        <dt>Coordenadas</dt>
+        <dd>${coords}</dd>
+
+        <dt>Observaciones</dt>
+        <dd><div class="note">${escapeHTML(payload.observaciones ?? '—')}</div></dd>
+      </dl>
+    </div>
+  `;
             }
 
-            // ------- VALIDACIÓN
+
+            // ------- VALIDACIÓN GFORM
             function flag(container, ok) {
                 if (!container) return ok;
                 container.classList.toggle('has-error', !ok);
+                // aria-invalid para accesibilidad
                 const grp = container.querySelector('[role="group"], .gform-options, .gform-input, textarea');
                 if (grp) grp.setAttribute('aria-invalid', String(!ok));
                 return ok;
             }
-            const atLeastOneChecked = (selector, ctx = document) => !!ctx.querySelector(`${selector}:checked`);
-            const getValuesChecked = (selector, ctx = document) => Array.from(ctx.querySelectorAll(`${selector}:checked`)).map(i => i.value);
+
+            function atLeastOneChecked(selector, ctx = document) {
+                return !!ctx.querySelector(`${selector}:checked`);
+            }
+
+            function getValuesChecked(selector, ctx = document) {
+                return Array.from(ctx.querySelectorAll(`${selector}:checked`)).map(i => i.value);
+            }
 
             function validateGForm() {
                 let ok = true,
@@ -917,28 +985,33 @@ $sesion_payload = [
                     return flag(container, good);
                 };
 
-                must($('#q_representante'), atLeastOneChecked('input[type="radio"][name="representante"]', form));
-                must($('#q_linea_tension'), atLeastOneChecked('input[type="radio"][name="linea_tension"]', form));
-                must($('#q_zona_restringida'), atLeastOneChecked('input[type="radio"][name="zona_restringida"]', form));
-                must($('#q_corriente_electrica'), atLeastOneChecked('input[type="radio"][name="corriente_electrica"]', form));
-                must($('#q_agua_potable'), atLeastOneChecked('input[type="radio"][name="agua_potable"]', form));
-                must($('#q_obstaculos'), atLeastOneChecked('input[type="radio"][name="libre_obstaculos"]', form));
-                must($('#q_area_despegue'), atLeastOneChecked('input[type="radio"][name="area_despegue"]', form));
-                must($('#q_ubicacion'), atLeastOneChecked('input[type="radio"][name="en_finca"]', form));
+                // Radios obligatorios
+                must(document.getElementById('q_representante'), atLeastOneChecked('input[type="radio"][name="representante"]', form));
+                must(document.getElementById('q_linea_tension'), atLeastOneChecked('input[type="radio"][name="linea_tension"]', form));
+                must(document.getElementById('q_zona_restringida'), atLeastOneChecked('input[type="radio"][name="zona_restringida"]', form));
+                must(document.getElementById('q_corriente_electrica'), atLeastOneChecked('input[type="radio"][name="corriente_electrica"]', form));
+                must(document.getElementById('q_agua_potable'), atLeastOneChecked('input[type="radio"][name="agua_potable"]', form));
+                must(document.getElementById('q_obstaculos'), atLeastOneChecked('input[type="radio"][name="libre_obstaculos"]', form));
+                must(document.getElementById('q_area_despegue'), atLeastOneChecked('input[type="radio"][name="area_despegue"]', form));
+                must(document.getElementById('q_ubicacion'), atLeastOneChecked('input[type="radio"][name="en_finca"]', form)); // ya viene con NO marcado, igual chequeo
 
-                const supEl = $('#superficie_ha');
+                // Superficie (número > 0)
+                const supEl = document.getElementById('superficie_ha');
                 const supOk = supEl && supEl.value.trim() !== '' && !isNaN(supEl.value) && Number(supEl.value) > 0;
-                must($('#q_superficie'), supOk);
+                must(document.getElementById('q_superficie'), supOk);
 
+                // Motivo (al menos uno) y "Otros" con texto si está marcado
                 const motivos = getValuesChecked('input[type="checkbox"][name="motivo[]"]', form);
                 let motivoOk = motivos.length > 0;
-                if (motivoOk && $('#motivo_otros_chk')?.checked) {
-                    motivoOk = !!$('#motivo_otros')?.value.trim();
+                if (motivoOk && document.getElementById('motivo_otros_chk')?.checked) {
+                    motivoOk = !!document.getElementById('motivo_otros')?.value.trim();
                 }
-                must($('#q_motivo'), motivoOk);
+                must(document.getElementById('q_motivo'), motivoOk);
 
-                must($('#q_rango'), getValuesChecked('input[type="checkbox"][name="rango_fecha[]"]', form).length > 0);
+                // Rango de fechas (al menos uno)
+                must(document.getElementById('q_rango'), getValuesChecked('input[type="checkbox"][name="rango_fecha[]"]', form).length > 0);
 
+                // Productos (al menos uno) + si fuente = "yo", exigir marca
                 const productosMarcados = getValuesChecked('input[type="checkbox"][name="productos[]"]', form);
                 let prodOk = productosMarcados.length > 0;
                 if (prodOk) {
@@ -968,115 +1041,51 @@ $sesion_payload = [
                         },
                     ];
                     for (const it of checks) {
-                        if (!$(it.chk)?.checked) continue;
+                        if (!document.querySelector(it.chk)?.checked) continue;
                         const fuente = form.querySelector(`input[type="radio"][name="${it.src}"]:checked`)?.value;
-                        if (fuente === 'yo' && !$(it.marca)?.value.trim()) {
+                        if (fuente === 'yo' && !document.querySelector(it.marca)?.value.trim()) {
                             prodOk = false;
                             break;
                         }
                     }
                 }
-                must($('#q_productos'), prodOk);
+                must(document.getElementById('q_productos'), prodOk);
 
-                const obsOk = !!$('#observaciones')?.value.trim();
-                must($('#q_observaciones'), obsOk);
+                // Observaciones (obligatorio según tu UI)
+                const obsOk = !!document.getElementById('observaciones')?.value.trim();
+                must(document.getElementById('q_observaciones'), obsOk);
 
+                // Dirección requerida si no está en la finca
                 const enFincaVal = getRadioValue('en_finca');
                 const dir = getDireccionFromForm();
                 let dirOk = true;
                 if (enFincaVal === 'no') {
                     dirOk = !!(dir.provincia && dir.localidad && dir.calle && dir.numero);
                 }
-                if (!flag($('#q_direccion'), dirOk)) {
+                if (!flag(document.getElementById('q_direccion'), dirOk)) {
                     ok = false;
-                    if (!firstBad) firstBad = $('#q_direccion');
+                    if (!firstBad) firstBad = document.getElementById('q_direccion');
                 }
 
+
+                // Enfocar/scroll al primero con error
                 if (!ok && firstBad) firstBad.scrollIntoView({
                     behavior: 'smooth',
                     block: 'center'
                 });
+
                 return ok;
             }
 
-            // ---- Helpers de UI
-            const toggleSpinner = (on) => {
-                const sp = $('#globalSpinner'); // tu overlay
-                if (!sp) return;
-                sp.classList.toggle('hidden', !on);
-            };
-            const resetDynamicUI = () => {
-                document.querySelectorAll('input[type="checkbox"][data-complement]').forEach(cb => {
-                    const cmp = document.querySelector(cb.dataset.complement);
-                    if (cmp) cmp.hidden = true;
-                    cb.checked = false;
-                });
-                document.querySelectorAll('.gform-brand').forEach(box => {
-                    box.hidden = true;
-                    box.querySelector('input')?.value = '';
-                });
-                if (chkOtros && inputOtros) {
-                    chkOtros.checked = false;
-                    inputOtros.value = '';
-                    inputOtros.classList.add('oculto');
-                    inputOtros.disabled = true;
-                }
-                document.querySelectorAll('.gform-question.has-error').forEach(q => q.classList.remove('has-error'));
-                const st = $('#ubicacion_status');
-                if (st) st.textContent = 'No se capturarán coordenadas.';
-            };
 
-            // ---- Envío al backend (Controller)
-            const ENDPOINT = '../../controllers/prod_dronesController.php';
 
-            window.confirmarEnvio = async () => {
-                if (!window.__ultimoPayload) return cerrarModal();
-
-                try {
-                    console.log('DRON :: sesión actual', window.sessionData || {});
-                    console.log('DRON :: payload listo para enviar', window.__ultimoPayload);
-
-                    toggleSpinner(true);
-
-                    const resp = await fetch(ENDPOINT, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        credentials: 'same-origin',
-                        body: JSON.stringify(window.__ultimoPayload)
-                    });
-
-                    let data = null;
-                    try {
-                        data = await resp.json();
-                    } catch {}
-
-                    if (!resp.ok || !data || !data.ok) {
-                        const msg = (data && data.error) ? data.error : `Error HTTP ${resp.status}`;
-                        (window.showAlert || window.showToast || alert)('error' in (window) ? msg : `Error: ${msg}`);
-                        return;
-                    }
-
-                    (window.showAlert || window.showToast || alert)('success' in (window) ? `Solicitud registrada (ID #${data.id}).` : `Solicitud registrada (ID #${data.id}).`);
-
-                    form?.reset();
-                    resetDynamicUI();
-                    cerrarModal();
-                    window.__ultimoPayload = null;
-
-                } catch (err) {
-                    console.error(err);
-                    (window.showAlert || window.showToast || alert)('No se pudo registrar la solicitud.');
-                } finally {
-                    toggleSpinner(false);
-                }
-            };
-
-            // ---- Submit: validar, armar payload y abrir modal
+            // -------- Submit: construir payload y abrir modal
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
+
+                // 1) Validación custom
                 if (!validateGForm()) {
+                    // Si querés también mostrar un toast del framework (si está disponible):
                     window.showToast?.('error', 'Revisá los campos marcados en rojo.');
                     return;
                 }
@@ -1149,19 +1158,111 @@ $sesion_payload = [
                         timestamp: ts?.value || null,
                     },
                     observaciones: $('#observaciones')?.value?.trim() || null,
-                    // No confiamos en sesión del front en el backend; esto es solo informativo/log
+
                     sesion: sessionData
                 };
 
-                // Guardamos global para confirmarEnvio() y renderizamos resumen
-                window.__ultimoPayload = payload;
+                // Guardamos para confirmar y mostramos el resumen en el modal
+                __ultimoPayload = payload;
                 if (resumenModal) resumenModal.innerHTML = renderResumenHTML(payload);
                 abrirModal();
+
+                // NOTA: no imprimimos en consola acá. Solo cuando el usuario confirma en el modal.
             });
 
         })();
-    </script>
 
+        (function(){
+  const $ = (sel, ctx = document) => ctx.querySelector(sel);
+
+  // --- Helpers de UI
+  const toggleSpinner = (on) => {
+    const sp = $('#globalSpinner');
+    if (!sp) return;
+    sp.classList.toggle('hidden', !on);
+  };
+
+  const resetDynamicUI = () => {
+    // Ocultar complementos de productos
+    document.querySelectorAll('input[type="checkbox"][data-complement]').forEach(cb => {
+      const cmp = document.querySelector(cb.dataset.complement);
+      if (cmp) cmp.hidden = true;
+      cb.checked = false;
+    });
+    // Ocultar cajas de "marca"
+    document.querySelectorAll('.gform-brand').forEach(box => {
+      box.hidden = true;
+      box.querySelector('input')?.value = '';
+    });
+    // "Otros" deshabilitado/oculto
+    const chkOtros = document.getElementById('motivo_otros_chk');
+    const inputOtros = document.getElementById('motivo_otros');
+    if (chkOtros && inputOtros) {
+      chkOtros.checked = false;
+      inputOtros.value = '';
+      inputOtros.classList.add('oculto');
+      inputOtros.disabled = true;
+    }
+    // Limpio estados de error visuales
+    document.querySelectorAll('.gform-question.has-error').forEach(q => q.classList.remove('has-error'));
+    // Texto de geolocalización
+    const st = document.getElementById('ubicacion_status');
+    if (st) st.textContent = 'No se capturarán coordenadas.';
+  };
+
+  // --- ENDPOINT (ajustá la ruta según tu estructura)
+  const ENDPOINT = '../../controllers/prod_dronesController.php';
+
+  // Esta variable ya la definías arriba en tu código
+  window.confirmarEnvio = async () => {
+    if (!window.__ultimoPayload) {
+      return window.cerrarModal();
+    }
+
+    try {
+      // Log opcional
+      console.log('DRON :: sesión actual', (window.sessionData || {}));
+      console.log('DRON :: payload listo para enviar', window.__ultimoPayload);
+
+      toggleSpinner(true);
+
+      const resp = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(window.__ultimoPayload),
+        credentials: 'same-origin'
+      });
+
+      let data;
+      try { data = await resp.json(); } catch { data = null; }
+
+      if (!resp.ok || !data || !data.ok) {
+        const msg = (data && data.error) ? data.error : `Error HTTP ${resp.status}`;
+        window.showAlert?.('error', msg);
+        return;
+      }
+
+      // Éxito
+      window.showAlert?.('success', `Solicitud registrada (ID #${data.id}).`);
+      // Reset del form y de la UI dinámica
+      const form = document.getElementById('form-dron');
+      form?.reset();
+      resetDynamicUI();
+
+      // Cerramos modal
+      window.cerrarModal();
+      // Limpiamos el último payload
+      window.__ultimoPayload = null;
+
+    } catch (err) {
+      console.error(err);
+      window.showAlert?.('error', 'No se pudo registrar la solicitud.');
+    } finally {
+      toggleSpinner(false);
+    }
+  };
+})();
+    </script>
 
 </body>
 
