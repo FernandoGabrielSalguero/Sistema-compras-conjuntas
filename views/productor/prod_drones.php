@@ -508,15 +508,47 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <div class="gform-error">Seleccioná al menos una opción.</div>
                     </div>
 
+                    <!-- dirección -->
+                    <div class="gform-question span-2" role="group" aria-labelledby="q_direccion_label" id="q_direccion">
+                        <div id="q_direccion_label" class="gform-legend">
+                            DIRECCIÓN DE LA FINCA
+                        </div>
+                        <div class="gform-helper">
+                            Estos datos ayudan si no capturaste coordenadas desde la finca.
+                        </div>
+
+                        <div class="gform-grid cols-4">
+                            <div class="gform-field">
+                                <label class="gform-label" for="dir_provincia">Provincia</label>
+                                <input class="gform-input" id="dir_provincia" name="dir_provincia" type="text" placeholder="Provincia">
+                            </div>
+
+                            <div class="gform-field">
+                                <label class="gform-label" for="dir_localidad">Localidad</label>
+                                <input class="gform-input" id="dir_localidad" name="dir_localidad" type="text" placeholder="Localidad">
+                            </div>
+
+                            <div class="gform-field">
+                                <label class="gform-label" for="dir_calle">Calle</label>
+                                <input class="gform-input" id="dir_calle" name="dir_calle" type="text" placeholder="Calle">
+                            </div>
+
+                            <div class="gform-field">
+                                <label class="gform-label" for="dir_numero">Numeración</label>
+                                <input class="gform-input" id="dir_numero" name="dir_numero" type="text" inputmode="numeric" placeholder="Nº">
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- assist_geolocation -->
                     <div class="gform-question span-2" role="group" aria-labelledby="q_ubicacion_label" id="q_ubicacion">
                         <div id="q_ubicacion_label" class="gform-label">
                             ¿Estás en la ubicación de la finca? <span class="gform-required">*</span>
                         </div>
                         <div class="gform-helper">
-                            Solo selecciona que SI, si estpas en la ubicación de la finca, ya que se capturarán las coordenadas GPS del lugar.
+                            Solo selecciona que SI, si estás en la ubicación de la finca, ya que se capturarán las coordenadas GPS del lugar.
                             Si no estás en la finca, selecciona NO y las coordenadas no se capturararan.
-                            SOLO TOCA SI, CUANDO LLENES EL FORMULARIO DESDE UN CELULAR.
+                            SOLO TOCA SI, CUANDO RESPONDAS EL FORMULARIO DESDE UN CELULAR.
                         </div>
 
                         <div class="gform-miniopts">
@@ -802,6 +834,32 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 podredumbre: 'Productos para Podredumbre'
             };
 
+            function getDireccionFromForm() {
+                const provincia = $('#dir_provincia')?.value?.trim() || null;
+                const localidad = $('#dir_localidad')?.value?.trim() || null;
+                const calle = $('#dir_calle')?.value?.trim() || null;
+                const numero = $('#dir_numero')?.value?.trim() || null;
+                return {
+                    provincia,
+                    localidad,
+                    calle,
+                    numero
+                };
+            }
+
+            function formatDireccion(dir) {
+                if (!dir) return '—';
+                const parts = [];
+                if (dir.calle) {
+                    let c = escapeHTML(dir.calle);
+                    if (dir.numero) c += ' ' + escapeHTML(dir.numero);
+                    parts.push(c);
+                }
+                if (dir.localidad) parts.push(escapeHTML(dir.localidad));
+                if (dir.provincia) parts.push(escapeHTML(dir.provincia));
+                return parts.length ? parts.join(', ') : '—';
+            }
+
             function renderResumenHTML(payload) {
                 const motivos = (payload.motivo.opciones || []).map(v => labelMotivo[v] || v);
                 if (payload.motivo.otros) motivos.push(`Otros: ${escapeHTML(payload.motivo.otros)}`);
@@ -846,6 +904,10 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
         <dt>Superficie (ha)</dt>
         <dd>${escapeHTML(payload.superficie_ha ?? '—')}</dd>
 
+        <!-- NUEVO: Dirección -->
+        <dt>Dirección</dt>
+        <dd>${formatDireccion(payload.direccion)}</dd>
+
         <dt>Motivo</dt>
         <dd>${motivos.length ? escapeHTML(motivos.join(', ')) : '—'}</dd>
 
@@ -867,6 +929,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     </div>
   `;
             }
+
 
             // ------- VALIDACIÓN GFORM
             function flag(container, ok) {
@@ -966,6 +1029,19 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 const obsOk = !!document.getElementById('observaciones')?.value.trim();
                 must(document.getElementById('q_observaciones'), obsOk);
 
+                // Dirección requerida si no está en la finca
+                const enFincaVal = getRadioValue('en_finca');
+                const dir = getDireccionFromForm();
+                let dirOk = true;
+                if (enFincaVal === 'no') {
+                    dirOk = !!(dir.provincia && dir.localidad && dir.calle && dir.numero);
+                }
+                if (!flag(document.getElementById('q_direccion'), dirOk)) {
+                    ok = false;
+                    if (!firstBad) firstBad = document.getElementById('q_direccion');
+                }
+
+
                 // Enfocar/scroll al primero con error
                 if (!ok && firstBad) firstBad.scrollIntoView({
                     behavior: 'smooth',
@@ -1047,6 +1123,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         });
                         return result;
                     })(),
+                    direccion: getDireccionFromForm(),
                     ubicacion: {
                         en_finca: getRadioValue('en_finca'),
                         lat: lat?.value || null,
