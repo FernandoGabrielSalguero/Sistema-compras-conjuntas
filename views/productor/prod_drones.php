@@ -10,6 +10,24 @@ checkAccess('productor');
 // Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $cierre_info = $_SESSION['cierre_info'] ?? null;
+
+// Armar un payload simple con lo que quieras exponer al front
+$sesion_payload = [
+    'usuario'        => $_SESSION['usuario']   ?? null,
+    'rol'            => $_SESSION['rol']       ?? null,
+    'nombre'         => $_SESSION['nombre']    ?? '',
+    'correo'         => $_SESSION['correo']    ?? '',
+    'telefono'       => $_SESSION['telefono']  ?? '',
+    'direccion'      => $_SESSION['direccion'] ?? '',
+    'id_real'        => $_SESSION['id_real']   ?? null,
+    'cuit'           => $_SESSION['cuit']      ?? null,
+];
+
+// Lo dejamos disponible como JSON embebido para que el JS lo lea sin riesgos de XSS
+?>
+<script id="session-data" type="application/json">
+    <?= json_encode($sesion_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
+</script>
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -622,6 +640,15 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
             const form = $('#form-dron');
 
+            // ---- Sesión (inyectada desde PHP)
+            const sessionData = (() => {
+                try {
+                    return JSON.parse($('#session-data')?.textContent || '{}');
+                } catch {
+                    return {};
+                }
+            })();
+
             // -------- Modal
             const modal = $('#modalConfirmacion');
             const resumenModal = $('#resumenModal');
@@ -663,6 +690,11 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             window.cerrarModal = cerrarModal;
             window.confirmarEnvio = () => {
                 if (!__ultimoPayload) return cerrarModal();
+
+                // Primero log de sesión (desde PHP)
+                console.log('DRON :: sesión actual', sessionData);
+
+                // Después el payload completo (con la sesión incluida también)
                 console.log('DRON :: payload listo para enviar', __ultimoPayload);
 
                 // Ejemplo de envío real (dejar comentado si por ahora solo es consola):
@@ -1132,6 +1164,8 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         timestamp: ts?.value || null,
                     },
                     observaciones: $('#observaciones')?.value?.trim() || null,
+
+                    sesion: sessionData
                 };
 
                 // Guardamos para confirmar y mostramos el resumen en el modal
