@@ -77,6 +77,9 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     <li onclick="location.href='sve_productos.php'">
                         <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
                     </li>
+                    <li onclick="location.href='sve_pulverizacionDrone.php'">
+                        <span class="material-icons" style="color: #5b21b6;">flight</span><span class="link-text">Drones</span>
+                    </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
                     </li>
