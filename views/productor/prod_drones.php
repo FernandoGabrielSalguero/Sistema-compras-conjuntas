@@ -635,45 +635,6 @@ $sesion_payload = [
         // ====== API ======
         const API_URL = '../../controllers/prod_dronesController.php'; // ajustá si tu ruta es distinta
 
-        // ====== UI helpers ======
-        function showSpinner(show = true) {
-            const el = document.getElementById('globalSpinner');
-            if (!el) return;
-
-            // 1) Si el CDN expone un API, usarlo
-            // (intentamos varios nombres comunes sin romper si no existen)
-            const g = window.SpinnerGlobal || window.GlobalSpinner || null;
-            if (g && (g.show || g.open) && (g.hide || g.close)) {
-                if (show) {
-                    (g.show || g.open).call(g);
-                } else {
-                    (g.hide || g.close).call(g);
-                }
-                return;
-            }
-            if (typeof window.toggleGlobalSpinner === 'function') {
-                window.toggleGlobalSpinner(show);
-                return;
-            }
-
-            // 2) Fallback: forzar atributos, clases y estilos
-            //    (esto gana incluso si el CDN dejó display:flex en línea)
-            el.classList.toggle('hidden', !show);
-            el.classList.toggle('is-active', !!show); // por si el CDN usa esta clase
-            el.setAttribute('aria-hidden', show ? 'false' : 'true');
-
-            if (show) {
-                el.style.display = 'flex';
-                el.style.visibility = 'visible';
-                el.style.opacity = '1';
-            } else {
-                // aseguramos que desaparezca sí o sí
-                el.style.display = 'none';
-                el.style.visibility = 'hidden';
-                el.style.opacity = '0';
-            }
-        }
-
         function setConfirmBtnLoading(loading = true) {
             const btn = document.getElementById('btnConfirmarModal');
             if (!btn) return;
@@ -740,7 +701,6 @@ $sesion_payload = [
                 if (!__ultimoPayload) return cerrarModal();
 
                 try {
-                    showSpinner(true);
                     setConfirmBtnLoading(true);
 
                     const res = await fetch(API_URL, {
@@ -799,7 +759,6 @@ $sesion_payload = [
                     window.showToast?.('error', 'No se pudo enviar la solicitud. Verificá tu conexión.');
                 } finally {
                     setConfirmBtnLoading(false);
-                    showSpinner(false);
                 }
             };
 
