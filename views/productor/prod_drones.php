@@ -605,11 +605,9 @@ $sesion_payload = [
         </div>
     </div>
 
-    <!-- Spinner Global (desde tu CDN) -->
-    <div id="globalSpinner" class="spinner-overlay hidden">
-        <div class="spinner"></div>
-    </div>
-    <script src="https://www.fernandosalguero.com/cdn/components/spinner-global.js"></script>
+    <!-- Spinner Global -->
+    <script src="../../views/partials/spinner-global.js"></script>
+
 
     <!-- Modal de confirmación -->
     <div id="modalConfirmacion" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modalTitle">
