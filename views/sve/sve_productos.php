@@ -26,6 +26,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
@@ -79,6 +80,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <li onclick="location.href='sve_asociarProductores.php'">
                         <span class="material-icons" style="color: #5b21b6;">link</span><span class="link-text">Asociaciones</span>
                     </li>
+                    <li onclick="location.href='sve_cargaMasiva.php'">
+                        <span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Carga masiva</span>
+                    </li>
                     <li onclick="location.href='sve_operativos.php'">
                         <span class="material-icons" style="color: #5b21b6;">assignment</span><span class="link-text">Operativos</span>
                     </li>
@@ -90,6 +94,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </li>
                     <li onclick="location.href='sve_productos.php'">
                         <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
+                    </li>
+                    <li onclick="location.href='sve_pulverizacionDrone.php'">
+                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
+                    <span class="link-text">Drones</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
