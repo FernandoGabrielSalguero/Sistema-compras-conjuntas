@@ -514,7 +514,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         <div class="kv"><span>Precisión</span><span>${fmt(s.ubicacion_acc)}</span></div>
         <div class="kv"><span>Fecha GPS</span><span>${fecha(s.ubicacion_ts)}</span></div>
         <h4>Motivos por el cual solicita el servicio</h4>
-        <div class="kv"><span>Fecha GPS</span><span>${motivosHtml}</span></div>
+        <div class="kv"><span>Enfermedad</span><span>${motivosHtml}</span></div>
 
         
       </div>
