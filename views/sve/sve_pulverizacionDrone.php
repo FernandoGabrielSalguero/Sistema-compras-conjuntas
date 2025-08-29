@@ -142,6 +142,39 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         #ModalEditarServicio table {
             width: 100%
         }
+
+        /* === Fondo gris más oscuro para que destaquen las tarjetas del listado === */
+        #proyectosContainer {
+            background: #f1f5f9;
+            /* gris suave más oscuro que el body */
+            padding: 12px;
+            /* respiro alrededor de las cards */
+            border-radius: 16px;
+            /* bordes suaves como tu framework */
+        }
+
+        /* === Fallback por si .grid-3 del framework no fuerza 3 columnas === */
+        #proyectosContainer.grid-3 {
+            display: grid;
+            /* asegura grid si no lo da la clase */
+            grid-template-columns: repeat(3, 1fr);
+            /* 3 columnas fijas en desktop */
+            gap: 16px;
+            /* espacio entre tarjetas */
+        }
+
+        /* Responsivo limpio (opcional) */
+        @media (max-width: 1100px) {
+            #proyectosContainer.grid-3 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            #proyectosContainer.grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 
 </head>
@@ -269,7 +302,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 <!-- Listado de proyectos -->
                 <div class="card">
                     <h2>Listado de proyectos</h2>
-                    <div class="card-grid grid-4" id="proyectosContainer" style="max-height:600px; overflow:auto;">
+                    <div class="card-grid grid-3" id="proyectosContainer" style="max-height:1200px; overflow:auto;">
                         <!-- JS rellena -->
                     </div>
                 </div>
