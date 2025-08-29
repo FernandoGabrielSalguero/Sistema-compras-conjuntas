@@ -743,36 +743,46 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
       </div>
 
             <!-- Fila 3 -->
-      <div class="card col-span-2">
-        <h4>Agregar un nuevo producto</h4>
-<div class="form-modern" style="margin-top:12px;">
-  <div class="form-grid grid-4">
-    <div class="input-group">
-      <label>Tipo</label>
-      <select id="prod_tipo">
-        <option value="lobesia">lobesia</option>
-        <option value="peronospora">peronospora</option>
-        <option value="oidio">oidio</option>
-        <option value="podredumbre">podredumbre</option>
-      </select>
-    </div>
-    <div class="input-group">
-      <label>Fuente</label>
-      <select id="prod_fuente">
-        <option value="sve">SVE</option>
-        <option value="yo">Productor</option>
-      </select>
-    </div>
-    <div class="input-group">
-      <label>Marca</label>
-      <input type="text" id="prod_marca" placeholder="Marca" />
-    </div>
-    <div class="input-group" style="align-self:end;">
-      <button class="btn btn-aceptar" id="btnAddProducto" type="button">Agregar</button>
+<div class="card col-span-2">
+  <h4>Agregar un nuevo producto</h4>
+
+  <div class="form-modern" style="margin-top:12px;">
+    <div class="form-grid grid-4">
+      <div class="input-group">
+        <label>Tipo</label>
+        <div class="input-icon input-icon-globe">
+          <select id="prod_tipo">
+            <option value="lobesia">lobesia</option>
+            <option value="peronospora">peronospora</option>
+            <option value="oidio">oidio</option>
+            <option value="podredumbre">podredumbre</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Fuente</label>
+        <div class="input-icon input-icon-globe">
+          <select id="prod_fuente">
+            <option value="sve">SVE</option>
+            <option value="yo">Productor</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Marca</label>
+        <div class="input-icon input-icon-name">
+          <input type="text" id="prod_marca" placeholder="Marca" />
+        </div>
+      </div>
+
+      <div class="input-group" style="align-self:end;">
+        <button class="btn btn-aceptar" id="btnAddProducto" type="button">Agregar</button>
+      </div>
     </div>
   </div>
 </div>
-      </div>
 
       <!-- Nueva: Parámetros de vuelo -->
 <div class="card">
@@ -812,7 +822,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
   <h4>Indicaciones para el piloto</h4>
   <div class="form-modern">
     <div class="input-group">
-    //   <label>Indicaciones</label>
+      <label>Indicaciones</label>
       <textarea id="obs_piloto" rows="3" placeholder="Notas para el piloto...">${escapeHtml(s.obs_piloto ?? '')}</textarea>
     </div>
   </div>
