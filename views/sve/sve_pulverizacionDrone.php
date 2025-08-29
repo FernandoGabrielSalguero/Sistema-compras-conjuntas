@@ -493,7 +493,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     <div class="modal-grid">
       <!-- Fila 1 -->
       <div class="card">
-        <h4>Datos generales</h4>
+        <h4>Datos generales del servicio</h4>
         <div class="kv"><span>ID</span><span>${s.id}</span></div>
         <div class="kv"><span>Estado</span><span>${badgeEstado(s.estado)}</span></div>
         <div class="kv"><span>Superficie (ha)</span><span>${fmt(s.superficie_ha)}</span></div>
@@ -502,8 +502,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         <div class="kv"><span>Actualizado</span><span>${fecha(s.updated_at)}</span></div>
         <div class="kv"><span>Rango de fecha preferido</span><span>${rangosHtml}</span></div>
         <h4>Motivos por el cual solicita el servicio</h4>
-        <div class="kv"><span>Enfermedad</span><span>${motivosHtml}</span></div>
-
+        <div class="kv"><span>Patologia</span><span>${motivosHtml}</span></div>
       </div>
 
       <div class="card">
