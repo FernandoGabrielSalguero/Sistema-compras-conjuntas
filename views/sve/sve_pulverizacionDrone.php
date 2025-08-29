@@ -79,8 +79,8 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                         <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
                     </li>
                     <li onclick="location.href='sve_pulverizacionDrone.php'">
-                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                    <span class="link-text">Drones</span>
+                        <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
+                        <span class="link-text">Drones</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -116,6 +116,44 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 <div class="card">
                     <h2>Hola</h2>
                     <p>Te presentamos el gestor de proyectos de vuelo. Armar todos los protocolos y los registros fitosanitarios desde esta página</p>
+                </div>
+
+                <!-- Filtro -->
+                <div class="card">
+                    <h2>Busca el servicio</h2>
+                    <form class="form-modern">
+                        <div class="form-grid grid-4">
+
+                            <!-- Filtro por nombre del productor -->
+                            <div class="input-group">
+                                <label for="nombre">Nombre completo</label>
+                                <div class="input-icon input-icon-name">
+                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" />
+                                </div>
+                            </div>
+
+                            <!-- Filtro por fecha -->
+                            <div class="input-group">
+                                <label for="fecha">Fecha</label>
+                                <div class="input-icon input-icon-date">
+                                    <input id="fecha" name="fecha" />
+                                </div>
+                            </div>
+
+                            <!-- Filtro por estado -->
+                            <div class="input-group">
+                                <label for="provincia">Estado</label>
+                                <div class="input-icon input-icon-globe">
+                                    <select id="provincia" name="provincia">
+                                        <option value="">Seleccionar</option>
+                                        <option>Buenos Aires</option>
+                                        <option>Córdoba</option>
+                                        <option>Santa Fe</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
 
                 <div class="card">
@@ -158,7 +196,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                         </div>
                     </div>
                 </div>
-                
+
 
                 <!-- contenedor del toastify -->
                 <div id="toast-container"></div>
