@@ -47,27 +47,29 @@ switch ($accion) {
             echo json_encode(['success' => false, 'message' => 'ID inválido']);
             exit;
         }
-        $ok = $productosModel->actualizarProducto(
-            $id,
-            $_POST['Nombre_producto'],
-            $_POST['Detalle_producto'],
-            $_POST['Precio_producto'],
-            $_POST['Unidad_medida_venta'],
-            $_POST['categoria'],
-            $_POST['alicuota']
-        );
+$ok = $productosModel->actualizarProducto(
+    $id,
+    $_POST['Nombre_producto'],
+    $_POST['Detalle_producto'],
+    $_POST['Precio_producto'],
+    $_POST['Unidad_medida_venta'],
+    $_POST['categoria'],
+    $_POST['alicuota'],
+    $_POST['moneda'] ?? 'Pesos' // <-- NUEVO
+);
         echo json_encode(['success' => $ok, 'message' => $ok ? 'Producto actualizado' : 'No se pudo actualizar']);
         break;
 
     case 'crear':
-        $ok = $productosModel->crearProducto(
-            $_POST['Nombre_producto'],
-            $_POST['Detalle_producto'],
-            $_POST['Precio_producto'],
-            $_POST['Unidad_medida_venta'],
-            $_POST['categoria'],
-            $_POST['alicuota']
-        );
+$ok = $productosModel->crearProducto(
+    $_POST['Nombre_producto'],
+    $_POST['Detalle_producto'],
+    $_POST['Precio_producto'],
+    $_POST['Unidad_medida_venta'],
+    $_POST['categoria'],
+    $_POST['alicuota'],
+    $_POST['moneda'] ?? 'Pesos' // <-- NUEVO
+);
         echo json_encode(['success' => $ok, 'message' => $ok ? 'Producto creado' : 'No se pudo crear']);
         break;
 
@@ -84,6 +86,7 @@ switch ($accion) {
             echo '<td>' . htmlspecialchars($producto['Nombre_producto']) . '</td>';
             echo '<td>' . htmlspecialchars($producto['Detalle_producto']) . '</td>';
             echo '<td>$' . number_format(floatval($producto['Precio_producto']), 2, ',', '.') . '</td>';
+            echo '<td>' . htmlspecialchars($producto['moneda']) . '</td>';
             echo '<td>' . htmlspecialchars($producto['Unidad_Medida_venta']) . '</td>';
             echo '<td>' . htmlspecialchars($producto['categoria']) . '</td>';
             echo '<td>' . htmlspecialchars($producto['alicuota']) . '%</td>';

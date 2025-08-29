@@ -169,6 +169,19 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
                             </div>
 
+                            <!-- Moneda -->
+<div class="input-group">
+    <label for="moneda">Moneda</label>
+    <div class="input-icon">
+        <span class="material-icons">payments</span>
+        <select id="moneda" name="moneda" required>
+            <option value="Pesos" selected>Pesos</option>
+            <option value="USD">USD</option>
+            <!-- Si en el futuro necesitás más, agregás aquí -->
+        </select>
+    </div>
+</div>
+
                             <!-- Unidad_medida_venta -->
                             <div class="input-group">
                                 <label for="Unidad_medida_venta">¿Se vende por?</label>
@@ -268,6 +281,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <th>Nombre</th>
                                     <th>Detalle del producto</th>
                                     <th>Precio</th>
+                                    <th>Moneda</th>
                                     <th>Unidad de venta</th>
                                     <th>Categoria</th>
                                     <th>Alicuota</th>
@@ -313,6 +327,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     </div>
                                 </div>
 
+<!-- Moneda (editar) -->
+<div class="input-group">
+    <label for="edit_moneda">Moneda</label>
+    <div class="input-icon">
+        <span class="material-icons">payments</span>
+        <select id="edit_moneda" name="moneda" required>
+            <option value="Pesos">Pesos</option>
+            <option value="USD">USD</option>
+        </select>
+    </div>
+</div>
                                 <div class="input-group">
                                     <label for="edit_Unidad_medida_venta">Unidad de medida</label>
                                     <div class="input-icon">
@@ -442,6 +467,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     document.getElementById('edit_Unidad_medida_venta').value = data.producto.Unidad_Medida_venta;
                     document.getElementById('edit_categoria').value = data.producto.categoria;
                     document.getElementById('edit_alicuota').value = data.producto.alicuota;
+                    document.getElementById('edit_moneda').value = data.producto.moneda || 'Pesos';
+
 
                     openModalEditar();
                 })

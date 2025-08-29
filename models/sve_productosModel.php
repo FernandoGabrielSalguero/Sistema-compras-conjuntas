@@ -13,11 +13,15 @@ class ProductosModel
         $this->conn = $pdo;
     }
 
-    public function crearProducto($nombre, $detalle, $precio, $unidad, $categoria, $alicuota)
-    {
-        $stmt = $this->conn->prepare("INSERT INTO productos (Nombre_producto, Detalle_producto, Precio_producto, Unidad_medida_venta, categoria, alicuota) VALUES (?, ?, ?, ?, ?, ?)");
-        return $stmt->execute([$nombre, $detalle, $precio, $unidad, $categoria, $alicuota]);
-    }
+public function crearProducto($nombre, $detalle, $precio, $unidad, $categoria, $alicuota, $moneda)
+{
+    $stmt = $this->conn->prepare("
+        INSERT INTO productos 
+            (Nombre_producto, Detalle_producto, Precio_producto, Unidad_Medida_venta, categoria, alicuota, moneda) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ");
+    return $stmt->execute([$nombre, $detalle, $precio, $unidad, $categoria, $alicuota, $moneda]);
+}
 
     public function obtenerTodos()
     {
@@ -32,11 +36,21 @@ class ProductosModel
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function actualizarProducto($id, $nombre, $detalle, $precio, $unidad, $categoria, $alicuota)
-    {
-        $stmt = $this->conn->prepare("UPDATE productos SET Nombre_producto = ?, Detalle_producto = ?, Precio_producto = ?, Unidad_medida_venta = ?, categoria = ?, alicuota = ? WHERE id = ?");
-        return $stmt->execute([$nombre, $detalle, $precio, $unidad, $categoria, $alicuota, $id]);
-    }
+public function actualizarProducto($id, $nombre, $detalle, $precio, $unidad, $categoria, $alicuota, $moneda)
+{
+    $stmt = $this->conn->prepare("
+        UPDATE productos 
+           SET Nombre_producto = ?, 
+               Detalle_producto = ?, 
+               Precio_producto = ?, 
+               Unidad_Medida_venta = ?, 
+               categoria = ?, 
+               alicuota = ?,
+               moneda = ?
+         WHERE id = ?
+    ");
+    return $stmt->execute([$nombre, $detalle, $precio, $unidad, $categoria, $alicuota, $moneda, $id]);
+}
 
     public function eliminarProducto($id)
     {
