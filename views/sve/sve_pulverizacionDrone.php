@@ -86,11 +86,26 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             z-index: 10001;
         }
 
-        /* A4 aprox. en escritorio: ancho grande y responsivo */
+
+        /* Evita barras dentro de cada tarjeta en la grid */
+        #ModalEditarServicio .modal-grid>.card {
+            min-width: 0;
+        }
+
+        /* Por si aparecen textos largos en el valor derecho */
+        #ModalEditarServicio .kv span:last-child {
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        /* MODAL ancho XXL (override del framework) */
         #ModalEditarServicio .modal-content {
-            width: clamp(1024px, 92vw, 1320px) !important;
-            /* ⬅️ más ancho */
-            max-height: 85vh;
+            /* ocupa casi todo el viewport y no queda limitado por el framework */
+            width: min(1600px, calc(100vw - 48px)) !important;
+            /* 48 = padding del overlay (24px x lado) */
+            max-width: none !important;
+            /* clave para romper el max-width base */
+            max-height: 90vh;
             overflow: auto;
             background: #fff;
             border-radius: 20px;
@@ -100,15 +115,12 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             margin: 0;
         }
 
+        @media (min-width: 1280px) {
+            #ModalEditarServicio .modal-content {
+                min-width: 1180px;
+            }
 
-        /* === Modal más ancho === */
-        #ModalEditarServicio .modal-content {
-            /* antes: clamp(1024px, 92vw, 1320px) */
-            width: clamp(1200px, 98vw, 1600px) !important;
-            /* más ancho */
-            max-height: 90vh;
-            /* un poco más alto para aprovechar espacio */
-            overflow: auto;
+            /* 3 columnas cómodas en desktop */
         }
 
         /* === Grilla interna del modal (3 columnas) === */
@@ -118,7 +130,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             gap: 16px;
         }
 
-        /* Responsivo: 2 columnas en pantallas medianas, 1 en mobile */
+        /* Responsivo */
         @media (max-width: 1280px) {
             #ModalEditarServicio .modal-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -131,6 +143,18 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             }
         }
 
+        /* Evita scrolls dentro de cada tarjeta de la grid */
+        #ModalEditarServicio .modal-grid>.card {
+            min-width: 0;
+        }
+
+        /* Valores largos alineados y sin cortar */
+        #ModalEditarServicio .kv span:last-child {
+            text-align: right;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
 
         /* Header pegajoso */
         #ModalEditarServicio .modal-header {
