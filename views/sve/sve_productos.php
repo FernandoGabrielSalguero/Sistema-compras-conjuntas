@@ -96,8 +96,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
                     </li>
                     <li onclick="location.href='sve_pulverizacionDrone.php'">
-                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                    <span class="link-text">Drones</span>
+                        <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
+                        <span class="link-text">Drones</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -170,17 +170,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             </div>
 
                             <!-- Moneda -->
-<div class="input-group">
-    <label for="moneda">Moneda</label>
-    <div class="input-icon">
-        <span class="material-icons">payments</span>
-        <select id="moneda" name="moneda" required>
-            <option value="Pesos" selected>Pesos</option>
-            <option value="USD">USD</option>
-            <!-- Si en el futuro necesitás más, agregás aquí -->
-        </select>
-    </div>
-</div>
+                            <div class="input-group">
+                                <label for="moneda">Moneda</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">payments</span>
+                                    <select id="moneda" name="moneda" required>
+                                        <option value="Pesos" selected>Pesos</option>
+                                        <option value="USD">USD</option>
+                                        <!-- Si en el futuro necesitás más, agregás aquí -->
+                                    </select>
+                                </div>
+                            </div>
 
                             <!-- Unidad_medida_venta -->
                             <div class="input-group">
@@ -207,7 +207,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                         <option value="Herbicidas">Herbicidas</option>
                                         <option value="Fertilizantes Especiales">Fertilizantes Especiales</option>
                                         <option value="Fertilizantes Foliares">Fertilizantes Foliares</option>
-                                        
+
                                         <option value="Levadura SA">Levadura SA</option>
                                         <option value="Levadura SA Siembra Directa">Levadura SA Siembra Directa</option>
                                         <option value="Nutriente enologico">Nutriente enológico</option>
@@ -327,17 +327,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     </div>
                                 </div>
 
-<!-- Moneda (editar) -->
-<div class="input-group">
-    <label for="edit_moneda">Moneda</label>
-    <div class="input-icon">
-        <span class="material-icons">payments</span>
-        <select id="edit_moneda" name="moneda" required>
-            <option value="Pesos">Pesos</option>
-            <option value="USD">USD</option>
-        </select>
-    </div>
-</div>
+                                <!-- Moneda (editar) -->
+                                <div class="input-group">
+                                    <label for="edit_moneda">Moneda</label>
+                                    <div class="input-icon">
+                                        <span class="material-icons">payments</span>
+                                        <select id="edit_moneda" name="moneda" required>
+                                            <option value="Pesos">Pesos</option>
+                                            <option value="USD">USD</option>
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="input-group">
                                     <label for="edit_Unidad_medida_venta">Unidad de medida</label>
                                     <div class="input-icon">
@@ -361,7 +361,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                             <option value="Herbicidas">Herbicidas</option>
                                             <option value="Fertilizantes Especiales">Fertilizantes Especiales</option>
                                             <option value="Fertilizantes Foliares">Fertilizantes Foliares</option>
+
+                                            <option value="Levadura SA">Levadura SA</option>
+                                            <option value="Levadura SA Siembra Directa">Levadura SA Siembra Directa</option>
+                                            <option value="Nutriente enologico">Nutriente enológico</option>
+                                            <option value="Desincrustante">Desincrustante</option>
+                                            <option value="Clarificante">Clarificante</option>
+                                            <option value="Acidulante">Acidulante</option>
+                                            <option value="Acido columna">Acido columna</option>
+
                                             <option value="Otros">Otros</option>
+
                                         </select>
                                     </div>
                                 </div>
