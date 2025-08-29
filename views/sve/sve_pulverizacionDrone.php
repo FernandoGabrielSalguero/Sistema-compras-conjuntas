@@ -35,6 +35,95 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
+    <style>
+        /* ===== Píldoras de estado (colores de referencia) =====
+     pendiente:  #f59e0b (naranja)
+     en_proceso: #5b21b6 (violeta brand)
+     completado: #10b981 (verde)
+     cancelado:  #ef4444 (rojo)
+  */
+        .status-pill {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: .85rem;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .status-pendiente {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+        .status-en_proceso {
+            background: #5b21b6;
+            color: #fff;
+        }
+
+        .status-completado {
+            background: #10b981;
+            color: #fff;
+        }
+
+        .status-cancelado {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        /* ===== Modal centrado y más ancho (respetando tu framework) ===== */
+        #ModalEditarServicio {
+            position: fixed;
+            inset: 0;
+            display: none;
+            /* se cambia a 'flex' al abrir */
+            align-items: center;
+            /* centrado vertical */
+            justify-content: center;
+            /* centrado horizontal */
+            padding: 24px;
+            background: rgba(0, 0, 0, .35);
+            /* overlay */
+            z-index: 10001;
+        }
+
+        #ModalEditarServicio .modal-content {
+            width: min(1100px, 96vw);
+            /* más ancho pero responsivo */
+            max-height: 85vh;
+            /* scroll interno */
+            overflow: auto;
+            background: #fff;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .2);
+            border: 1px solid rgba(0, 0, 0, .06);
+        }
+
+        /* Header pegajoso y botón cerrar */
+        #ModalEditarServicio .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            background: #fff;
+            padding-bottom: 8px;
+            margin: -4px -4px 12px;
+            z-index: 1;
+        }
+
+        /* Inputs del modal: usan tu grid + form-modern */
+        #ModalEditarServicio .form-modern .input-group input,
+        #ModalEditarServicio .form-modern .input-group select,
+        #ModalEditarServicio .form-modern .input-group textarea {
+            width: 100%;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -160,7 +249,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 <!-- Listado de proyectos -->
                 <div class="card">
                     <h2>Listado de proyectos</h2>
-                    <div class="card-grid grid-4" id="proyectosContainer" style="max-height:500px; overflow:auto;">
+                    <div class="card-grid grid-4" id="proyectosContainer" style="max-height:600px; overflow:auto;">
                         <!-- JS rellena -->
                     </div>
                 </div>
@@ -443,13 +532,22 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             }
 
             function badgeEstado(est) {
-                const map = {
-                    'pendiente': '<span class="badge badge-warning">Pendiente</span>',
-                    'en_proceso': '<span class="badge badge-info">En proceso</span>',
-                    'completado': '<span class="badge badge-success">Completado</span>',
-                    'cancelado': '<span class="badge badge-danger">Cancelado</span>'
+                const key = (est || '').toLowerCase();
+                const mapLabel = {
+                    'pendiente': 'Pendiente',
+                    'en_proceso': 'En proceso',
+                    'completado': 'Completado',
+                    'cancelado': 'Cancelado'
                 };
-                return map[est] || `<span class="badge">${escapeHtml(est||'—')}</span>`;
+                const mapClass = {
+                    'pendiente': 'status-pill status-pendiente',
+                    'en_proceso': 'status-pill status-en_proceso',
+                    'completado': 'status-pill status-completado',
+                    'cancelado': 'status-pill status-cancelado'
+                };
+                const label = mapLabel[key] || (est || '—');
+                const cls = mapClass[key] || 'status-pill';
+                return `<span class="${cls}">${label}</span>`;
             }
 
             function toastError(msg) {
