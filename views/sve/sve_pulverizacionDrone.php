@@ -122,7 +122,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 <div class="card">
                     <h2>Busca el servicio</h2>
                     <form class="form-modern">
-                        <div class="form-grid grid-4">
+                        <div class="form-grid grid-3">
 
                             <!-- Filtro por nombre del productor -->
                             <div class="input-group">
@@ -146,9 +146,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                                 <div class="input-icon input-icon-globe">
                                     <select id="provincia" name="provincia">
                                         <option value="">Seleccionar</option>
-                                        <option>Buenos Aires</option>
-                                        <option>Córdoba</option>
-                                        <option>Santa Fe</option>
+                                        <option>Pendiente</option>
+                                        <option>En proceso</option>
+                                        <option>Completado</option>
+                                        <option>Cancelado</option>
                                     </select>
                                 </div>
                             </div>
