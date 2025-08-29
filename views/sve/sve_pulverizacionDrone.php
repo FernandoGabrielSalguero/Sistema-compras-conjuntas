@@ -491,8 +491,8 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             </div>
             <div id="modalBody"></div>
             <div class="modal-actions" style="gap:8px;">
+                <button class="btn btn-aceptar" id="btnImprimir">Imprimir / PDF</button>
                 <button class="btn btn-info" id="btnDescargar">Descargar protocolo</button>
-                <button class="btn" id="btnImprimir">Imprimir / PDF</button>
                 <button class="btn btn-aceptar" id="btnActualizar">Actualizar pedido</button>
             </div>
         </div>
@@ -502,47 +502,60 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     <script>
         (() => {
 
+            let lastDetalle = null;
+
             document.getElementById('btnDescargar')?.addEventListener('click', async () => {
-                const node = document.querySelector('#ModalEditarServicio .modal-content');
-                if (!node) return;
+  const node = document.querySelector('#ModalEditarServicio .modal-content');
+  if (!node) return;
 
-                // 1) Qué bloques eligió el usuario (si no hay selector, toma todos)
-                const checks = document.querySelectorAll('#exportSelector input[type=checkbox][data-block]');
-                let selected = new Set(
-                    [...checks].filter(i => i.checked).map(i => i.dataset.block)
-                );
-                // fallback: si no hay nada seleccionado, exportar todo
-                if (selected.size === 0) {
-                    selected = new Set([...document.querySelectorAll('.modal-grid .card[data-block]')]
-                        .map(el => el.getAttribute('data-block')));
-                }
+  // tarjetas seleccionadas
+  const checks = document.querySelectorAll('#exportSelector input[type=checkbox][data-block]');
+  let selected = new Set([...checks].filter(i => i.checked).map(i => i.dataset.block));
+  if (selected.size === 0) {
+    selected = new Set(
+      [...document.querySelectorAll('.modal-grid .card[data-block]')].map(el => el.getAttribute('data-block'))
+    );
+  }
 
-                try {
-                    const canvas = await html2canvas(node, {
-                        scale: 2,
-                        useCORS: true,
-                        backgroundColor: '#fff',
-                        onclone: (doc) => {
-                            // Ocultar tarjetas NO seleccionadas
-                            doc.querySelectorAll('.modal-grid .card[data-block]').forEach(el => {
-                                const block = el.getAttribute('data-block');
-                                if (!selected.has(block)) el.style.display = 'none';
-                            });
-                            // Ocultar UI que no queremos en la imagen
-                            doc.querySelectorAll('[data-noprint], .modal-actions').forEach(el => {
-                                el.style.display = 'none';
-                            });
-                        }
-                    });
+  try {
+    const canvas = await html2canvas(node, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#fff',
+      scrollX: 0,
+      scrollY: 0,
+      onclone: (doc) => {
+        // 1) expandir modal para incluir TODO el contenido
+        const modal = doc.querySelector('#ModalEditarServicio .modal-content');
+        if (modal) {
+          modal.style.maxHeight = 'none';
+          modal.style.height = 'auto';
+          modal.style.overflow = 'visible';
+          modal.style.background = '#fff';
+        }
+        const grid = doc.querySelector('#ModalEditarServicio .modal-grid');
+        if (grid) grid.style.overflow = 'visible';
 
-                    const link = document.createElement('a');
-                    link.download = `protocolo_${currentSolicitudId || 'servicio'}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                } catch (e) {
-                    toastError('No se pudo generar la imagen');
-                }
-            });
+        // 2) eliminar UI que no queremos en la imagen
+        doc.querySelectorAll('[data-noprint], .modal-actions').forEach(el => el.remove());
+
+        // 3) eliminar tarjetas NO seleccionadas (deja solo las elegidas)
+        doc.querySelectorAll('.modal-grid .card[data-block]').forEach(el => {
+          const block = el.getAttribute('data-block');
+          if (!selected.has(block)) el.remove();
+        });
+      }
+    });
+
+    const link = document.createElement('a');
+    link.download = `protocolo_${currentSolicitudId || 'servicio'}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch (e) {
+    toastError('No se pudo generar la imagen');
+  }
+});
+
 
 
 
@@ -648,71 +661,62 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             }
 
             async function loadDetalle(id) {
-                const url = `${CONTROLLER_URL}?action=get_solicitud&id=${id}`;
-                const res = await fetch(url, {
-                    credentials: 'same-origin'
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const json = await res.json();
-                if (!json.ok) throw new Error(json.error || 'Error desconocido');
+  const url = `${CONTROLLER_URL}?action=get_solicitud&id=${id}`;
+  const res = await fetch(url, { credentials: 'same-origin' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'Error desconocido');
 
-                const {
-                    solicitud: s,
-                    motivos,
-                    productos,
-                    rangos
-                } = json.data;
+  const { solicitud: s, motivos, productos, rangos } = json.data;
 
-                // 1) inyectar HTML
-                modalBody.innerHTML = buildDetalleHTML(s, motivos, productos, rangos);
+  // ✅ guardar para impresión
+  lastDetalle = { s, motivos, productos, rangos };
 
-                // 2) ahora sí, bindear eventos del detalle
-                initDetalleEvents();
+  // 1) inyectar HTML del detalle
+  modalBody.innerHTML = buildDetalleHTML(s, motivos, productos, rangos);
 
-                // 3) handler Agregar Producto
-                const btnAdd = document.getElementById('btnAddProducto');
-                btnAdd?.addEventListener('click', async () => {
-                    const tipo = document.getElementById('prod_tipo').value;
-                    const fuente = document.getElementById('prod_fuente').value;
-                    const marca = document.getElementById('prod_marca').value.trim();
+  // 2) bind de eventos internos
+  initDetalleEvents();
 
-                    try {
-                        const fd = new URLSearchParams({
-                            action: 'add_producto',
-                            solicitud_id: String(currentSolicitudId),
-                            tipo,
-                            fuente,
-                            marca
-                        });
-                        const r = await fetch(CONTROLLER_URL, {
-                            method: 'POST',
-                            credentials: 'same-origin',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded'
-                            },
-                            body: fd.toString()
-                        });
-                        const j = await r.json();
-                        if (!j.ok) throw new Error(j.error || 'No se pudo agregar');
-                        await loadDetalle(currentSolicitudId); // refresca
-                    } catch (e) {
-                        toastError(e.message);
-                    }
-                });
+  // 3) handler "Agregar producto"
+  const btnAdd = document.getElementById('btnAddProducto');
+  btnAdd?.addEventListener('click', async () => {
+    const tipo = document.getElementById('prod_tipo').value;
+    const fuente = document.getElementById('prod_fuente').value;
+    const marca = document.getElementById('prod_marca').value.trim();
+    try {
+      const fd = new URLSearchParams({
+        action: 'add_producto',
+        solicitud_id: String(currentSolicitudId),
+        tipo, fuente, marca
+      });
+      const r = await fetch(CONTROLLER_URL, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: fd.toString()
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || 'No se pudo agregar');
+      await loadDetalle(currentSolicitudId); // refresca
+    } catch (e) {
+      toastError(e.message);
+    }
+  });
 
-                // 4) mostrar modal
-                modal.style.display = 'flex';
-                document.body.classList.add('modal-open');
+  // 4) abrir modal
+  modal.style.display = 'flex';
+  document.body.classList.add('modal-open');
 
-                // --- interna ---
-                function initDetalleEvents() {
-                    const sel = document.getElementById('estado_select');
-                    const wrap = document.getElementById('wrap_motivo_cancel');
-                    sel?.addEventListener('change', () => {
-                        wrap.style.display = sel.value === 'cancelado' ? 'block' : 'none';
-                    });
-                }
-            }
+  function initDetalleEvents() {
+    const sel = document.getElementById('estado_select');
+    const wrap = document.getElementById('wrap_motivo_cancel');
+    sel?.addEventListener('change', () => {
+      wrap.style.display = sel.value === 'cancelado' ? 'block' : 'none';
+    });
+  }
+}
+
 
             function buildDetalleHTML(s, motivos, productos, rangos) {
 
@@ -765,7 +769,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 return `
     <div class="modal-grid">
       <!-- Fila 1 -->
-<div class="card">
+<div class="card" data-block="generales">
   <h4>Datos generales del servicio</h4>
   <div class="kv"><span>ID</span><span>${s.id}</span></div>
 
