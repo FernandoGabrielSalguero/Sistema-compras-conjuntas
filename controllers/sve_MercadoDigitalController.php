@@ -69,6 +69,7 @@ if (isset($_GET['listar']) && $_GET['listar'] === 'productos_operativo' && isset
             p.Nombre_producto,
             p.Unidad_Medida_venta,
             p.Precio_producto,
+            p.moneda,
             p.alicuota,
             p.categoria,
             p.Detalle_producto

@@ -462,12 +462,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </button>` :
                                         '';
 
-                                    grupo.innerHTML = `
+grupo.innerHTML = `
 <label for="prod_${prod.producto_id}">
     ${iconoInfo}
     <strong>${prod.Nombre_producto}</strong> 
     (${prod.Unidad_Medida_venta} - $${prod.Precio_producto})
 </label>
+<small style="display:block;margin:4px 0 8px 36px;color:#333;">
+    Este producto se vende en <strong>${prod.moneda || 'Pesos'}</strong>.
+</small>
 <div class="input-icon">
     <span class="material-icons">numbers</span>
     <input 
