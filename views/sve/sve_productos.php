@@ -218,10 +218,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                             <option value="Clarificante">Clarificante</option>
                                             <option value="Acidulante">Acidulante</option>
                                             <option value="Acido columna">Acido columna</option>
+                                            <option value="Enzima">Enzima</option>
 
-                                            <option value="Otros">Otros</option>
 
                                         <option value="Otros">Otros</option>
+
+
                                     </select>
                                 </div>
                             </div>
@@ -377,6 +379,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                             <option value="Clarificante">Clarificante</option>
                                             <option value="Acidulante">Acidulante</option>
                                             <option value="Acido columna">Acido columna</option>
+                                            <option value="Enzima">Enzima</option>
 
                                             <option value="Otros">Otros</option>
 
