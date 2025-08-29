@@ -100,14 +100,11 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
         /* MODAL ancho XXL (override del framework) */
         #ModalEditarServicio .modal-content {
-            /* ocupa casi todo el viewport y no queda limitado por el framework */
             width: min(1600px, calc(100vw - 48px)) !important;
-            /* 48 = padding del overlay (24px x lado) */
             max-width: none !important;
-            /* clave para romper el max-width base */
             max-height: 90vh;
             overflow: auto;
-            background: #fff;
+            background: #f3f4f6;
             border-radius: 20px;
             padding: 24px;
             box-shadow: 0 12px 30px rgba(0, 0, 0, .2);
