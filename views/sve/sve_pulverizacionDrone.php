@@ -240,6 +240,104 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         #ModalEditarServicio .table tbody tr:last-child td {
             border-bottom: 0;
         }
+
+        /* --- pantalla --- */
+        @media screen {
+            .only-print {
+                display: none !important;
+            }
+        }
+
+        /* --- impresión --- */
+        @media print {
+            @page {
+                size: A4;
+                /* A4 vertical */
+                margin: 16mm 14mm;
+                /* márgenes cómodos */
+            }
+
+            html,
+            body {
+                background: #fff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Mostrar solo #printArea al imprimir */
+            body * {
+                visibility: hidden !important;
+            }
+
+            #printArea,
+            #printArea * {
+                visibility: visible !important;
+            }
+
+            #printArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+
+            /* Cards “limpias” para impresión */
+            .print-card {
+                border: 1px solid #e5e7eb;
+                border-radius: 10px;
+                padding: 12px 14px;
+                margin: 8px 0;
+                background: #fff;
+            }
+
+            /* Cada .print-page fuerza salto de página */
+            .print-page {
+                page-break-after: always;
+            }
+
+            /* Portada */
+            .print-cover {
+                display: grid;
+                grid-template-rows: auto 1fr;
+                gap: 12px;
+            }
+
+            .cover-title {
+                font-size: 22pt;
+                font-weight: 800;
+                margin: 6px 0 2px;
+            }
+
+            .cover-subtitle {
+                font-size: 12pt;
+                color: #555;
+            }
+
+            .cover-brand {
+                font-size: 11pt;
+                font-weight: 700;
+                color: #5b21b6;
+                letter-spacing: .5px;
+                text-transform: uppercase;
+            }
+
+            .cover-meta {
+                margin-top: 18px;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px 16px;
+                font-size: 11pt;
+            }
+
+            .kvp {
+                display: flex;
+                gap: 8px;
+            }
+
+            .kvp b {
+                min-width: 140px;
+            }
+        }
     </style>
 
 </head>
@@ -394,6 +492,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             <div id="modalBody"></div>
             <div class="modal-actions" style="gap:8px;">
                 <button class="btn btn-info" id="btnDescargar">Descargar protocolo</button>
+                <button class="btn" id="btnImprimir">Imprimir / PDF</button>
                 <button class="btn btn-aceptar" id="btnActualizar">Actualizar pedido</button>
             </div>
         </div>
@@ -1038,7 +1137,189 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 }
             }
         })();
+
+
+        /* Guarda el último detalle cargado para reusarlo en la impresión */
+        let lastDetalle = null;
+
+        /* Hook en loadDetalle: guardamos datos para imprimir */
+        async function loadDetalle(id) {
+            const url = `${CONTROLLER_URL}?action=get_solicitud&id=${id}`;
+            const res = await fetch(url, {
+                credentials: 'same-origin'
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+            if (!json.ok) throw new Error(json.error || 'Error desconocido');
+
+            const {
+                solicitud: s,
+                motivos,
+                productos,
+                rangos
+            } = json.data;
+
+            // guardamos para impresión
+            lastDetalle = {
+                s,
+                motivos,
+                productos,
+                rangos
+            };
+
+            // ... lo que ya tenías:
+            modalBody.innerHTML = buildDetalleHTML(s, motivos, productos, rangos);
+            // bind de eventos, etc...
+            // ...
+        }
+
+        /* Botón imprimir */
+        document.getElementById('btnImprimir')?.addEventListener('click', () => {
+            if (!lastDetalle) return toastError('Cargá primero un servicio.');
+            const area = document.getElementById('printArea');
+            area.innerHTML = buildPrintHTML(lastDetalle.s, lastDetalle.motivos, lastDetalle.productos, lastDetalle.rangos);
+            // Disparamos el diálogo del navegador: Imprimir / Guardar como PDF
+            window.print();
+            // Limpieza tras imprimir (por si el usuario cierra sin imprimir)
+            setTimeout(() => {
+                area.innerHTML = '';
+            }, 500);
+        });
+
+        /* === Construye el HTML SOLO PARA IMPRESIÓN (con portada) === */
+        function buildPrintHTML(s, motivos, productos, rangos) {
+            const fmt = v => (v ?? '—');
+            const siNo = v => v === 'si' ? 'Sí' : (v === 'no' ? 'No' : '—');
+            const fecha = v => formatFecha(v);
+            const fuenteLabel = v => !v ? '—' : (('' + v).toLowerCase() === 'yo' ? 'productor' : v);
+
+            const motivosHtml = (motivos || []).map(m => `
+    <li><strong>${m.motivo}</strong>${m.otros_text ? ` — ${escapeHtml(m.otros_text)}` : ''}</li>
+  `).join('') || '<li>—</li>';
+
+            const productosHtml = (productos || []).map(p => `
+    <tr><td>${fmt(p.tipo)}</td><td>${fuenteLabel(p.fuente)}</td><td>${escapeHtml(p.marca||'—')}</td></tr>
+  `).join('') || '<tr><td colspan="3">—</td></tr>';
+
+            const rangosHtml = (rangos || []).map(r => `<span>${r.rango}</span>`).join(', ') || '—';
+
+            /* --- PORTADA --- */
+            const cover = `
+  <section class="print-page print-cover">
+    <div>
+      <div class="cover-brand">SVE</div>
+      <div class="cover-title">Protocolo de pulverización con drone</div>
+      <div class="cover-subtitle">Documento técnico para impresión / archivo</div>
+    </div>
+
+    <div class="cover-meta">
+      <div class="kvp"><b>Nº de protocolo</b><span>${s.id}</span></div>
+      <div class="kvp"><b>Estado</b><span>${(s.estado||'').replace('_',' ')}</span></div>
+      <div class="kvp"><b>Productor</b><span>${escapeHtml(s.ses_nombre || s.ses_usuario || '—')}</span></div>
+      <div class="kvp"><b>Fecha servicio</b><span>${fecha(s.fecha_servicio || s.created_at)}</span></div>
+      <div class="kvp"><b>Superficie (ha)</b><span>${fmt(s.superficie_ha)}</span></div>
+      <div class="kvp"><b>Generado</b><span>${fecha(new Date())}</span></div>
+    </div>
+  </section>`;
+
+            /* --- PÁGINA 2: Datos generales + Ubicación + Productor --- */
+            const page2 = `
+  <section class="print-page">
+    <div class="print-card">
+      <h3>Datos generales</h3>
+      <div class="kvp"><b>Rango preferido</b><span>${rangosHtml}</span></div>
+      <div class="kvp"><b>Creado</b><span>${fecha(s.created_at)}</span></div>
+      <div class="kvp"><b>Actualizado</b><span>${fecha(s.updated_at)}</span></div>
+      <div><b>Motivos:</b><ul>${motivosHtml}</ul></div>
+    </div>
+
+    <div class="print-card">
+      <h3>Ubicación de la finca</h3>
+      <div class="kvp"><b>Provincia</b><span>${fmt(s.dir_provincia)}</span></div>
+      <div class="kvp"><b>Localidad</b><span>${fmt(s.dir_localidad)}</span></div>
+      <div class="kvp"><b>Dirección</b><span>${fmt(s.dir_calle)} ${fmt(s.dir_numero)}</span></div>
+      <div class="kvp"><b>En finca</b><span>${siNo(s.en_finca)}</span></div>
+      <div class="kvp"><b>Lat/Lng</b><span>${fmt(s.ubicacion_lat)} / ${fmt(s.ubicacion_lng)}</span></div>
+      <div class="kvp"><b>Precisión</b><span>${fmt(s.ubicacion_acc)}</span></div>
+      <div class="kvp"><b>Fecha GPS</b><span>${fecha(s.ubicacion_ts)}</span></div>
+    </div>
+
+    <div class="print-card">
+      <h3>Datos del productor</h3>
+      <div class="kvp"><b>Usuario</b><span>${fmt(s.ses_usuario)}</span></div>
+      <div class="kvp"><b>Rol</b><span>${fmt(s.ses_rol)}</span></div>
+      <div class="kvp"><b>Nombre</b><span>${fmt(s.ses_nombre)}</span></div>
+      <div class="kvp"><b>Correo</b><span>${fmt(s.ses_correo)}</span></div>
+      <div class="kvp"><b>Teléfono</b><span>${fmt(s.ses_telefono)}</span></div>
+      <div class="kvp"><b>Dirección</b><span>${fmt(s.ses_direccion)}</span></div>
+      <div class="kvp"><b>CUIT</b><span>${fmt(s.ses_cuit)}</span></div>
+      <div class="kvp"><b>Últ. actividad</b><span>${fecha(s.ses_last_activity_ts)}</span></div>
+    </div>
+  </section>`;
+
+            /* --- PÁGINA 3: Infraestructura + Productos --- */
+            const page3 = `
+  <section class="print-page">
+    <div class="print-card">
+      <h3>Infraestructura</h3>
+      <div class="kvp"><b>Línea de tensión</b><span>${siNo(s.linea_tension)}</span></div>
+      <div class="kvp"><b>Zona restringida</b><span>${siNo(s.zona_restringida)}</span></div>
+      <div class="kvp"><b>Corriente eléctrica</b><span>${siNo(s.corriente_electrica)}</span></div>
+      <div class="kvp"><b>Agua potable</b><span>${siNo(s.agua_potable)}</span></div>
+      <div class="kvp"><b>Libre de obstáculos</b><span>${siNo(s.libre_obstaculos)}</span></div>
+      <div class="kvp"><b>Área de despegue</b><span>${siNo(s.area_despegue)}</span></div>
+      <div class="kvp"><b>Representante en finca</b><span>${siNo(s.representante)}</span></div>
+    </div>
+
+    <div class="print-card">
+      <h3>Productos a utilizar</h3>
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px 4px;">Tipo</th>
+            <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px 4px;">Fuente</th>
+            <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px 4px;">Marca</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${productosHtml}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+
+            /* --- PÁGINA 4: Parámetros + Observaciones + Planificación --- */
+            const page4 = `
+  <section class="print-page">
+    <div class="print-card">
+      <h3>Parámetros de vuelo</h3>
+      <div class="kvp"><b>Volumen/ha</b><span>${fmt(s.volumen_ha)}</span></div>
+      <div class="kvp"><b>Velocidad</b><span>${fmt(s.velocidad_vuelo)}</span></div>
+      <div class="kvp"><b>Altura</b><span>${fmt(s.alto_vuelo)}</span></div>
+      <div class="kvp"><b>Tamaño de gota</b><span>${fmt(s.tamano_gota)}</span></div>
+    </div>
+
+    <div class="print-card">
+      <h3>Indicaciones para el piloto</h3>
+      <div>${escapeHtml(s.obs_piloto || '—')}</div>
+    </div>
+
+    <div class="print-card">
+      <h3>Planificación</h3>
+      <div class="kvp"><b>Responsable</b><span>${fmt(s.responsable)}</span></div>
+      <div class="kvp"><b>Piloto</b><span>${fmt(s.piloto)}</span></div>
+      <div class="kvp"><b>Fecha de visita</b><span>${fecha(s.fecha_visita)}</span></div>
+      <div class="kvp"><b>Hora de visita</b><span>${fmt(s.hora_visita)}</span></div>
+      ${s.motivo_cancelacion ? `<div class="kvp"><b>Motivo cancelación</b><span>${escapeHtml(s.motivo_cancelacion)}</span></div>` : ''}
+    </div>
+  </section>`;
+
+            return cover + page2 + page3 + page4;
+        }
     </script>
+
+    <!-- Contenedor exclusivo para impresión -->
+    <div id="printArea" class="only-print"></div>
 </body>
 
 </html>
