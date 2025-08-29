@@ -160,8 +160,8 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 <!-- Listado de proyectos -->
                 <div class="card">
                     <h2>Listado de proyectos</h2>
-                    <div class="card-grid grid-4" id="proyectosContainer">
-                        <!-- JS rellena con tarjetas -->
+                    <div class="card-grid grid-4" id="proyectosContainer" style="max-height:500px; overflow:auto;">
+                        <!-- JS rellena -->
                     </div>
                 </div>
 
@@ -194,16 +194,18 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     <!-- Espacio para scripts adicionales -->
     <script>
         (() => {
-            // Helpers
             const $ = (sel, ctx = document) => ctx.querySelector(sel);
             const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
             const debounce = (fn, ms = 350) => {
                 let t;
-                return (...args) => {
+                return (...a) => {
                     clearTimeout(t);
-                    t = setTimeout(() => fn(...args), ms);
-                };
+                    t = setTimeout(() => fn(...a), ms);
+                }
             };
+
+            // ✅ Path correcto (dos niveles arriba desde views/sve/)
+            const CONTROLLER_URL = '../../controllers/sve_pulverizacionDroneController.php';
 
             // Refs UI
             const inputNombre = document.getElementById('nombre');
@@ -211,59 +213,48 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             const selEstado = document.getElementById('provincia'); // es "estado"
             const grid = document.getElementById('proyectosContainer');
 
-            // Forzar tipo date si faltó en HTML
+            // Forzar type="date" si faltó en el HTML
             if (inputFecha && inputFecha.type !== 'date') {
                 inputFecha.setAttribute('type', 'date');
             }
 
-            // Estado de filtros
+            // ✅ Sin paginación
             const state = {
                 q: '',
                 fecha: '',
-                estado: '',
-                page: 1,
-                limit: 20
+                estado: ''
             };
 
-            // Normaliza el valor visual del select a los enums de DB
-            const toEnumEstado = (label) => {
-                if (!label) return '';
-                return label.trim().toLowerCase().replace(/\s+/g, '_'); // "En proceso" -> "en_proceso"
-            };
+            const toEnumEstado = (label) => !label ? '' : label.trim().toLowerCase().replace(/\s+/g, '_');
 
-            // Fetch listado
+            // ✅ Sin page/limit en la query
             async function fetchListado() {
                 const params = new URLSearchParams({
                     action: 'list_solicitudes',
                     q: state.q || '',
                     fecha: state.fecha || '',
-                    estado: state.estado || '',
-                    page: state.page,
-                    limit: state.limit
+                    estado: state.estado || ''
                 });
-
-                const url = `../controllers/sve_pulverizacionDroneController.php?${params.toString()}`;
+                const url = `${CONTROLLER_URL}?${params.toString()}`;
                 const res = await fetch(url, {
                     credentials: 'same-origin'
                 });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const json = await res.json();
                 if (!json.ok) throw new Error(json.error || 'Error desconocido');
-                return json.data;
+                return json.data; // { items: [...] }
             }
 
-            // Render cards
             function renderCards(data) {
                 grid.innerHTML = '';
                 const items = data.items || [];
                 if (!items.length) {
-                    grid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1; text-align:center;">
+                    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1; text-align:center;">
         <span class="material-icons" style="font-size:42px;opacity:.6;">inbox</span>
         <p style="opacity:.8;">No hay servicios para los filtros aplicados.</p>
       </div>`;
                     return;
                 }
-
                 const frag = document.createDocumentFragment();
                 for (const it of items) {
                     const card = document.createElement('div');
@@ -283,14 +274,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     frag.appendChild(card);
                 }
                 grid.appendChild(frag);
-
-                // Bind botones Ver
-                $$('.btn-ver', grid).forEach(btn => {
-                    btn.addEventListener('click', () => openModal(parseInt(btn.dataset.id, 10)));
-                });
+                $$('.btn-ver', grid).forEach(btn => btn.addEventListener('click', () => openModal(parseInt(btn.dataset.id, 10))));
             }
 
-            // Modal
+            // ------ Modal / detalle (igual que te pasé antes) ------
             const modal = document.getElementById('ModalEditarServicio');
             const modalBody = document.getElementById('modalBody');
             const modalCloseBtn = document.getElementById('modalCloseBtn');
@@ -303,41 +290,30 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             function closeModal() {
                 modal.style.display = 'none';
             }
-
             async function loadDetalle(id) {
-                const url = `../controllers/sve_pulverizacionDroneController.php?action=get_solicitud&id=${id}`;
+                const url = `${CONTROLLER_URL}?action=get_solicitud&id=${id}`;
                 const res = await fetch(url, {
                     credentials: 'same-origin'
                 });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const json = await res.json();
                 if (!json.ok) throw new Error(json.error || 'Error desconocido');
-
                 const {
                     solicitud: s,
                     motivos,
                     productos,
                     rangos
                 } = json.data;
-
                 modalBody.innerHTML = buildDetalleHTML(s, motivos, productos, rangos);
                 modal.style.display = 'block';
             }
 
-            // Construye HTML prolijo del detalle + campos nuevos (responsable/piloto/visita/cancelación)
             function buildDetalleHTML(s, motivos, productos, rangos) {
                 const siNo = v => v === 'si' ? 'Sí' : (v === 'no' ? 'No' : '—');
                 const fmt = v => (v ?? '—');
                 const fecha = v => formatFecha(v);
-
-                const motivosHtml = (motivos || []).map(m => `
-      <li><strong>${m.motivo}</strong>${m.otros_text ? ` — ${escapeHtml(m.otros_text)}`:''}</li>
-    `).join('') || '<li>—</li>';
-
-                const productosHtml = (productos || []).map(p => `
-      <tr><td>${fmt(p.tipo)}</td><td>${fmt(p.fuente)}</td><td>${escapeHtml(p.marca||'—')}</td></tr>
-    `).join('') || '<tr><td colspan="3">—</td></tr>';
-
+                const motivosHtml = (motivos || []).map(m => `<li><strong>${m.motivo}</strong>${m.otros_text ? ` — ${escapeHtml(m.otros_text)}`:''}</li>`).join('') || '<li>—</li>';
+                const productosHtml = (productos || []).map(p => `<tr><td>${fmt(p.tipo)}</td><td>${fmt(p.fuente)}</td><td>${escapeHtml(p.marca||'—')}</td></tr>`).join('') || '<tr><td colspan="3">—</td></tr>';
                 const rangosHtml = (rangos || []).map(r => `<span class="chip">${r.rango}</span>`).join(' ') || '—';
 
                 return `
@@ -435,7 +411,6 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     `;
             }
 
-            // Utilidades de formato/escape
             function formatFecha(v) {
                 if (!v) return '—';
                 const d = new Date(v);
@@ -477,7 +452,6 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 return map[est] || `<span class="badge">${escapeHtml(est||'—')}</span>`;
             }
 
-            // Toast helpers (usa tu framework si lo tenés mapeado)
             function toastError(msg) {
                 try {
                     window.Toastify?.show({
@@ -489,22 +463,17 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 }
             }
 
-            // Eventos de filtros (en vivo, con debounce)
+            // Filtros en vivo
             inputNombre?.addEventListener('input', debounce(() => {
                 state.q = inputNombre.value.trim();
-                state.page = 1;
                 refresh();
             }, 300));
-
             inputFecha?.addEventListener('change', () => {
                 state.fecha = inputFecha.value || '';
-                state.page = 1;
                 refresh();
             });
-
             selEstado?.addEventListener('change', () => {
                 state.estado = toEnumEstado(selEstado.value || '');
-                state.page = 1;
                 refresh();
             });
 
