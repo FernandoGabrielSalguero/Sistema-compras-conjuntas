@@ -513,6 +513,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         <div class="kv"><span>Lat / Lng</span><span>${fmt(s.ubicacion_lat)} / ${fmt(s.ubicacion_lng)}</span></div>
         <div class="kv"><span>Precisión</span><span>${fmt(s.ubicacion_acc)}</span></div>
         <div class="kv"><span>Fecha GPS</span><span>${fecha(s.ubicacion_ts)}</span></div>
+        <h4>Motivos por el cual solicita el servicio</h4>
+        <div class="kv"><span>Fecha GPS</span><span>${motivosHtml}</span></div>
+
+        
       </div>
 
       <div class="card">
@@ -539,10 +543,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         <div class="kv"><span>Representante en finca</span><span>${siNo(s.representante)}</span></div>
       </div>
 
-      <div class="card">
-        <h4>Motivos a tratar</h4>
-        <ul class="list-disc" style="margin-left:18px;">${motivosHtml}</ul>
-      </div>
+
 
       <!-- Fila 3 -->
       <div class="card" style="grid-column:1/-1;">
