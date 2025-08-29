@@ -559,11 +559,12 @@ grupo.innerHTML = `
 <label for="prod_${prod.producto_id}">
     ${iconoInfo}
     <strong>${prod.Nombre_producto}</strong><br>
-    <small style="color:#555;">Se vende por <strong>${prod.Unidad_Medida_venta}</strong> a <strong>$${prod.Precio_producto}</strong></small>
+    <small style="color:#555;">
+        Se vende por <strong>${prod.Unidad_Medida_venta}</strong> a 
+        <strong>$${Number(prod.Precio_producto).toFixed(2)}</strong> en 
+        <strong>${prod.moneda || 'Pesos'}</strong>
+    </small>
 </label>
-<small style="display:block;margin:4px 0 8px 36px;color:#333;">
-    Este producto se vende en <strong>${prod.moneda || 'Pesos'}</strong>.
-</small>
 <div class="input-icon">
     <span class="material-icons">numbers</span>
     <input 
