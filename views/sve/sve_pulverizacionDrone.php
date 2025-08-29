@@ -100,6 +100,38 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             margin: 0;
         }
 
+
+        /* === Modal más ancho === */
+        #ModalEditarServicio .modal-content {
+            /* antes: clamp(1024px, 92vw, 1320px) */
+            width: clamp(1200px, 98vw, 1600px) !important;
+            /* más ancho */
+            max-height: 90vh;
+            /* un poco más alto para aprovechar espacio */
+            overflow: auto;
+        }
+
+        /* === Grilla interna del modal (3 columnas) === */
+        #ModalEditarServicio .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        /* Responsivo: 2 columnas en pantallas medianas, 1 en mobile */
+        @media (max-width: 1280px) {
+            #ModalEditarServicio .modal-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 720px) {
+            #ModalEditarServicio .modal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
         /* Header pegajoso */
         #ModalEditarServicio .modal-header {
             display: flex;
@@ -437,7 +469,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 const rangosHtml = (rangos || []).map(r => `<span class="chip">${r.rango}</span>`).join(' ') || '—';
 
                 return `
-    <div class="grid grid-3" style="gap:16px;">
+    <div class="modal-grid">
       <!-- Fila 1 -->
       <div class="card">
         <h4>Datos generales</h4>
