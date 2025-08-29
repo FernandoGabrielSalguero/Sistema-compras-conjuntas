@@ -208,13 +208,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                         <option value="Fertilizantes Especiales">Fertilizantes Especiales</option>
                                         <option value="Fertilizantes Foliares">Fertilizantes Foliares</option>
 
-                                        <option value="Levadura SA">Levadura SA</option>
-                                        <option value="Levadura SA Siembra Directa">Levadura SA Siembra Directa</option>
-                                        <option value="Nutriente enologico">Nutriente enológico</option>
-                                        <option value="Desincrustante">Desincrustante</option>
-                                        <option value="Clarificante">Clarificante</option>
-                                        <option value="Acidulante">Acidulante</option>
-                                        <option value="Acido columna">Acido columna</option>
+                                            <option value="Levadura SA Bayanus">Levadura SA Bayanus</option>
+                                            <option value="Levadura SA TRB Genérico">Levadura SA TRB Genérico</option>
+                                            <option value="Levadura SA Tinto Verietal">Levadura SA Tinto Verietal</option>
+                                            <option value="Levadura SA Blanco Varietal">Levadura SA Blanco Varietal</option>
+                                            <option value="Levadura SA Dulce Natural">Levadura SA Dulce Natural</option>
+                                            <option value="Nutriente enologico">Nutriente enológico</option>
+                                            <option value="Desincrustante">Desincrustante</option>
+                                            <option value="Clarificante">Clarificante</option>
+                                            <option value="Acidulante">Acidulante</option>
+                                            <option value="Acido columna">Acido columna</option>
+
+                                            <option value="Otros">Otros</option>
 
                                         <option value="Otros">Otros</option>
                                     </select>
@@ -362,8 +367,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                             <option value="Fertilizantes Especiales">Fertilizantes Especiales</option>
                                             <option value="Fertilizantes Foliares">Fertilizantes Foliares</option>
 
-                                            <option value="Levadura SA">Levadura SA</option>
-                                            <option value="Levadura SA Siembra Directa">Levadura SA Siembra Directa</option>
+                                            <option value="Levadura SA Bayanus">Levadura SA Bayanus</option>
+                                            <option value="Levadura SA TRB Genérico">Levadura SA TRB Genérico</option>
+                                            <option value="Levadura SA Tinto Verietal">Levadura SA Tinto Verietal</option>
+                                            <option value="Levadura SA Blanco Varietal">Levadura SA Blanco Varietal</option>
+                                            <option value="Levadura SA Dulce Natural">Levadura SA Dulce Natural</option>
                                             <option value="Nutriente enologico">Nutriente enológico</option>
                                             <option value="Desincrustante">Desincrustante</option>
                                             <option value="Clarificante">Clarificante</option>
