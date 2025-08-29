@@ -555,22 +555,26 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                     const grupo = document.createElement('div');
                                     grupo.className = 'input-group';
 
-                                    grupo.innerHTML = `
-    <label for="prod_${prod.producto_id}">
-        <strong>${prod.Nombre_producto}</strong><br>
-        <small style="color:#555;">Se vende por <strong>${prod.Unidad_Medida_venta}</strong> a <strong>$${prod.Precio_producto}</strong></small>
-    </label>
-    <div class="input-icon">
-        <span class="material-icons">numbers</span>
-<input 
-    type="number" 
-    name="productos[${prod.producto_id}]" 
-    id="prod_${prod.producto_id}"
-    min="0" 
-    placeholder="Cantidad..." 
-    data-alicuota="${prod.alicuota}"
-    data-precio="${prod.Precio_producto}" />
-    </div>
+grupo.innerHTML = `
+<label for="prod_${prod.producto_id}">
+    ${iconoInfo}
+    <strong>${prod.Nombre_producto}</strong><br>
+    <small style="color:#555;">Se vende por <strong>${prod.Unidad_Medida_venta}</strong> a <strong>$${prod.Precio_producto}</strong></small>
+</label>
+<small style="display:block;margin:4px 0 8px 36px;color:#333;">
+    Este producto se vende en <strong>${prod.moneda || 'Pesos'}</strong>.
+</small>
+<div class="input-icon">
+    <span class="material-icons">numbers</span>
+    <input 
+        type="number" 
+        name="productos[${prod.producto_id}]" 
+        id="prod_${prod.producto_id}"
+        min="0" 
+        placeholder="Cantidad..." 
+        data-alicuota="${prod.alicuota}" 
+        data-precio="${prod.Precio_producto}" />
+</div>
 `;
 
                                     body.appendChild(grupo);

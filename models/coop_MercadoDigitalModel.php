@@ -46,6 +46,7 @@ class CoopMercadoDigitalModel
             Nombre_producto,
             Unidad_Medida_venta,
             Precio_producto,
+            moneda,
             alicuota
         FROM productos
         ORDER BY categoria, Nombre_producto
@@ -238,6 +239,7 @@ INSERT INTO pedidos (
             p.Nombre_producto,
             p.Unidad_Medida_venta,
             p.Precio_producto,
+            p.moneda,
             p.alicuota,
             p.Detalle_producto
         FROM productos p
