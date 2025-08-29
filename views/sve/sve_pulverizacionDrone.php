@@ -213,6 +213,29 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         #ModalEditarServicio .table-wrap {
             overflow: auto;
         }
+
+        /* Estilo de tabla similar al framework, scopeado al modal */
+        #ModalEditarServicio .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #ModalEditarServicio .table thead th {
+            text-align: left;
+            font-weight: 700;
+            padding: 12px 16px;
+            border-bottom: 2px solid rgba(0, 0, 0, .08);
+            white-space: nowrap;
+        }
+
+        #ModalEditarServicio .table tbody td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, .06);
+        }
+
+        #ModalEditarServicio .table tbody tr:last-child td {
+            border-bottom: 0;
+        }
     </style>
 
 </head>
@@ -497,6 +520,13 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 const fmt = v => (v ?? '—');
                 const fecha = v => formatFecha(v);
 
+                const fuenteLabel = v => {
+                    if (!v) return '—';
+                    const val = ('' + v).toLowerCase();
+                    if (val === 'yo') return 'productor';
+                    return val; // 'sve' u otros
+                };
+
                 const motivosHtml = (motivos || []).map(m => `
     <li><strong>${m.motivo}</strong>${m.otros_text ? ` — ${escapeHtml(m.otros_text)}`:''}</li>
   `).join('') || '<li>—</li>';
@@ -559,21 +589,21 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
       </div>
 
       <!-- Fila 3 -->
-<div class="card col-span-2">
-  <h4>Productos a utilizar</h4>
-  <div class="table-wrap">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Tipo</th>
-          <th>Fuente</th>
-          <th>Marca</th>
-        </tr>
-      </thead>
-      <tbody>${productosHtml}</tbody>
-    </table>
-  </div>
-</div>
+      <div class="card col-span-2">
+        <h4>Productos a utilizar</h4>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Fuente</th>
+                <th>Marca</th>
+              </tr>
+            </thead>
+            <tbody>${productosHtml}</tbody>
+          </table>
+        </div>
+      </div>
 
       <!-- Fila 4 (ancho completo) -->
       <div class="card" style="grid-column:1/-1;">
