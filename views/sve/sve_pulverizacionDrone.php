@@ -73,12 +73,18 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             color: #fff;
         }
 
-        /* ===== Modal centrado y más ancho (respetando tu framework) ===== */
+        /* ===== Modal centrado y ancho ===== */
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        /* evita scroll del fondo */
+
         #ModalEditarServicio {
             position: fixed;
             inset: 0;
             display: none;
-            /* se cambia a 'flex' al abrir */
+            /* JS lo cambia a flex */
             align-items: center;
             /* centrado vertical */
             justify-content: center;
@@ -89,20 +95,22 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             z-index: 10001;
         }
 
+        /* Aumentamos ancho, con clamp responsivo. 
+   Ponemos width con !important para ganarle a reglas del framework .modal .modal-content */
         #ModalEditarServicio .modal-content {
-            width: min(1100px, 96vw);
-            /* más ancho pero responsivo */
+            width: clamp(780px, 85vw, 1200px) !important;
             max-height: 85vh;
-            /* scroll interno */
             overflow: auto;
             background: #fff;
             border-radius: 20px;
             padding: 24px;
             box-shadow: 0 12px 30px rgba(0, 0, 0, .2);
             border: 1px solid rgba(0, 0, 0, .06);
+            margin: 0;
+            /* por si el framework aplica márgenes */
         }
 
-        /* Header pegajoso y botón cerrar */
+        /* Header pegajoso + botón cerrar */
         #ModalEditarServicio .modal-header {
             display: flex;
             align-items: center;
@@ -111,8 +119,8 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             position: sticky;
             top: 0;
             background: #fff;
-            padding-bottom: 8px;
-            margin: -4px -4px 12px;
+            padding: 4px 0 12px;
+            margin: 0 0 12px;
             z-index: 1;
         }
 
@@ -378,7 +386,9 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
             function closeModal() {
                 modal.style.display = 'none';
+                document.body.classList.remove('modal-open'); // desbloquea scroll
             }
+
             async function loadDetalle(id) {
                 const url = `${CONTROLLER_URL}?action=get_solicitud&id=${id}`;
                 const res = await fetch(url, {
@@ -394,7 +404,8 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     rangos
                 } = json.data;
                 modalBody.innerHTML = buildDetalleHTML(s, motivos, productos, rangos);
-                modal.style.display = 'block';
+                modal.style.display = 'flex'; // ⬅️ necesario para centrar con flexbox
+                document.body.classList.add('modal-open'); // bloquea el scroll del fondo
             }
 
             function buildDetalleHTML(s, motivos, productos, rangos) {
