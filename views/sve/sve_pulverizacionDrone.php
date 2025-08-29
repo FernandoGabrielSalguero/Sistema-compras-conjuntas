@@ -195,6 +195,24 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         #ModalEditarServicio table {
             width: 100%
         }
+
+        /* === Helpers de columnas dentro del modal === */
+        #ModalEditarServicio .col-span-2 {
+            grid-column: span 2;
+            /* en la grilla de 3 columnas ocupa dos */
+        }
+
+        /* En pantallas donde el modal usa 2 o 1 columna, que ocupe el ancho completo */
+        @media (max-width:1280px) {
+            #ModalEditarServicio .col-span-2 {
+                grid-column: 1 / -1;
+            }
+        }
+
+        /* (opcional) wrapper para scroll horizontal si la tabla crece */
+        #ModalEditarServicio .table-wrap {
+            overflow: auto;
+        }
     </style>
 
 </head>
@@ -540,16 +558,22 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         <div class="kv"><span>Representante en finca</span><span>${siNo(s.representante)}</span></div>
       </div>
 
-
-
       <!-- Fila 3 -->
-      <div class="card" style="grid-column:1/-1;">
-        <h4>Productos a utilizar</h4>
-        <table class="table">
-          <thead><tr><th>Tipo</th><th>Fuente</th><th>Marca</th></tr></thead>
-          <tbody>${productosHtml}</tbody>
-        </table>
-      </div>
+<div class="card col-span-2">
+  <h4>Productos a utilizar</h4>
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Fuente</th>
+          <th>Marca</th>
+        </tr>
+      </thead>
+      <tbody>${productosHtml}</tbody>
+    </table>
+  </div>
+</div>
 
       <!-- Fila 4 (ancho completo) -->
       <div class="card" style="grid-column:1/-1;">
