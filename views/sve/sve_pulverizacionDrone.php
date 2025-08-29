@@ -118,7 +118,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     <p>Te presentamos el gestor de proyectos de vuelo. Armar todos los protocolos y los registros fitosanitarios desde esta página</p>
                 </div>
 
-                <!-- Filtro -->
+                <!-- Filtros -->
                 <div class="card">
                     <h2>Busca el servicio</h2>
                     <form class="form-modern">
@@ -157,8 +157,9 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     </form>
                 </div>
 
+                <!-- Tarjetas de pedidos -->
                 <div class="card">
-                    <h2>Tarjetas de usuarios</h2>
+                    <h2>Listado de proyectos</h2>
                     <div class="card-grid grid-4">
                         <div class="user-card">
                             <h3 class="user-name">NOMBRE USUARIO</h3>
@@ -210,27 +211,21 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         </div>
     </div>
 
-    <!-- toast -->
+    <!-- Modal para editar el servicio -->
+    <div id="ModalEditarServicio" class="modal" style="display: none; z-index: 10001;">
+        <div class="modal-content">
+            <h3>Veamos el detalle del servicio</h3>
+            <p>No se podrá recuperar una vez eliminada.</p>
+            <div class="modal-actions">
+                <button class="btn btn-aceptar" id="btn">Actualizar pedido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Espacio para scripts adicionales -->
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            console.log(<?php echo json_encode($_SESSION); ?>);
 
-            <?php if (!empty($cierre_info)): ?>
-                const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-                cierreData.pendientes.forEach(op => {
-                    const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
-                    console.log(mensaje);
-                    if (typeof showToastBoton === 'function') {
-                        showToastBoton('info', mensaje);
-                    } else {
-                        console.warn('⚠️ showToastBoton no está definido aún.');
-                    }
-                });
-            <?php endif; ?>
-        });
     </script>
-
 </body>
-
 
 </html>
