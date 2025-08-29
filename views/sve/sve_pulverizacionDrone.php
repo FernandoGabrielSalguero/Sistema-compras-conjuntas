@@ -322,7 +322,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 <!-- Listado de proyectos -->
                 <div class="card">
                     <h2>Listado de proyectos</h2>
-                    <div class="card-grid grid-3" id="proyectosContainer" style="max-height:600px; overflow:auto;">
+                    <div class="card-grid grid-3" id="proyectosContainer" style="max-height:500px; overflow:auto;">
                         <!-- JS rellena -->
                     </div>
                 </div>
