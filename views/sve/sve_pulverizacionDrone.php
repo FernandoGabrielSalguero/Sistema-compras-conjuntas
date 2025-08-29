@@ -118,7 +118,46 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     <p>Te presentamos el gestor de proyectos de vuelo. Armar todos los protocolos y los registros fitosanitarios desde esta página</p>
                 </div>
 
+                <div class="card">
+                    <h2>Tarjetas de usuarios</h2>
+                    <div class="card-grid grid-4">
+                        <div class="user-card">
+                            <h3 class="user-name">NOMBRE USUARIO</h3>
+                            <div class="user-info">
+                                <span class="material-icons icon-email">mail</span>
+                                <span class="user-email">Correo electrónico</span>
+                            </div>
+                            <button class="btn btn-info">Guardar</button>
+                        </div>
 
+                        <div class="user-card">
+                            <h3 class="user-name">NOMBRE USUARIO</h3>
+                            <div class="user-info">
+                                <span class="material-icons icon-email">mail</span>
+                                <span class="user-email">Correo electrónico</span>
+                            </div>
+                            <button class="btn btn-info">Guardar</button>
+                        </div>
+
+                        <div class="user-card">
+                            <h3 class="user-name">NOMBRE USUARIO</h3>
+                            <div class="user-info">
+                                <span class="material-icons icon-email">mail</span>
+                                <span class="user-email">Correo electrónico</span>
+                            </div>
+                            <button class="btn btn-info">Guardar</button>
+                        </div>
+
+                        <div class="user-card">
+                            <h3 class="user-name">NOMBRE USUARIO</h3>
+                            <div class="user-info">
+                                <span class="material-icons icon-email">mail</span>
+                                <span class="user-email">Correo electrónico</span>
+                            </div>
+                            <button class="btn btn-info">Guardar</button>
+                        </div>
+                    </div>
+                </div>
                 
 
                 <!-- contenedor del toastify -->
