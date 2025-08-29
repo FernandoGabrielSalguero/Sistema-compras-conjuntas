@@ -73,32 +73,23 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             color: #fff;
         }
 
-        /* ===== Modal centrado y ancho ===== */
-        body.modal-open {
-            overflow: hidden;
-        }
-
-        /* evita scroll del fondo */
-
         #ModalEditarServicio {
             position: fixed;
             inset: 0;
             display: none;
-            /* JS lo cambia a flex */
+            /* JS -> flex */
             align-items: center;
-            /* centrado vertical */
             justify-content: center;
-            /* centrado horizontal */
+            /* centrado */
             padding: 24px;
             background: rgba(0, 0, 0, .35);
-            /* overlay */
             z-index: 10001;
         }
 
-        /* Aumentamos ancho, con clamp responsivo. 
-   Ponemos width con !important para ganarle a reglas del framework .modal .modal-content */
+        /* A4 aprox. en escritorio: ancho grande y responsivo */
         #ModalEditarServicio .modal-content {
-            width: clamp(780px, 85vw, 1200px) !important;
+            width: clamp(1024px, 92vw, 1320px) !important;
+            /* ⬅️ más ancho */
             max-height: 85vh;
             overflow: auto;
             background: #fff;
@@ -107,10 +98,9 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             box-shadow: 0 12px 30px rgba(0, 0, 0, .2);
             border: 1px solid rgba(0, 0, 0, .06);
             margin: 0;
-            /* por si el framework aplica márgenes */
         }
 
-        /* Header pegajoso + botón cerrar */
+        /* Header pegajoso */
         #ModalEditarServicio .modal-header {
             display: flex;
             align-items: center;
@@ -124,11 +114,33 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             z-index: 1;
         }
 
-        /* Inputs del modal: usan tu grid + form-modern */
+        /* Inputs dentro del modal: usar layout de tu CDN */
         #ModalEditarServicio .form-modern .input-group input,
         #ModalEditarServicio .form-modern .input-group select,
         #ModalEditarServicio .form-modern .input-group textarea {
-            width: 100%;
+            width: 100%
+        }
+
+        /* Pares clave/valor prolijos */
+        .kv {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 3px 0
+        }
+
+        .kv span:first-child {
+            opacity: .75;
+            font-weight: 600
+        }
+
+        .kv span:last-child {
+            text-align: right
+        }
+
+        /* Tablas del detalle */
+        #ModalEditarServicio table {
+            width: 100%
         }
     </style>
 
@@ -275,9 +287,9 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     </div>
 
     <!-- Modal -->
-    <div id="ModalEditarServicio" class="modal" style="display:none; z-index:10001;">
-        <div class="modal-content" style="max-height:80vh; overflow:auto;">
-            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div id="ModalEditarServicio" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
                 <h3>Detalle del servicio</h3>
                 <button class="btn-icon" id="modalCloseBtn"><span class="material-icons">close</span></button>
             </div>
@@ -386,7 +398,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
             function closeModal() {
                 modal.style.display = 'none';
-                document.body.classList.remove('modal-open'); // desbloquea scroll
+                document.body.classList.remove('modal-open');
             }
 
             async function loadDetalle(id) {
@@ -403,112 +415,134 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     productos,
                     rangos
                 } = json.data;
+
                 modalBody.innerHTML = buildDetalleHTML(s, motivos, productos, rangos);
-                modal.style.display = 'flex'; // ⬅️ necesario para centrar con flexbox
-                document.body.classList.add('modal-open'); // bloquea el scroll del fondo
+                modal.style.display = 'flex'; // ⬅️ flex para centrar
+                document.body.classList.add('modal-open');
             }
 
             function buildDetalleHTML(s, motivos, productos, rangos) {
                 const siNo = v => v === 'si' ? 'Sí' : (v === 'no' ? 'No' : '—');
                 const fmt = v => (v ?? '—');
                 const fecha = v => formatFecha(v);
-                const motivosHtml = (motivos || []).map(m => `<li><strong>${m.motivo}</strong>${m.otros_text ? ` — ${escapeHtml(m.otros_text)}`:''}</li>`).join('') || '<li>—</li>';
-                const productosHtml = (productos || []).map(p => `<tr><td>${fmt(p.tipo)}</td><td>${fmt(p.fuente)}</td><td>${escapeHtml(p.marca||'—')}</td></tr>`).join('') || '<tr><td colspan="3">—</td></tr>';
+
+                const motivosHtml = (motivos || []).map(m => `
+    <li><strong>${m.motivo}</strong>${m.otros_text ? ` — ${escapeHtml(m.otros_text)}`:''}</li>
+  `).join('') || '<li>—</li>';
+
+                const productosHtml = (productos || []).map(p => `
+    <tr><td>${fmt(p.tipo)}</td><td>${fmt(p.fuente)}</td><td>${escapeHtml(p.marca||'—')}</td></tr>
+  `).join('') || '<tr><td colspan="3">—</td></tr>';
+
                 const rangosHtml = (rangos || []).map(r => `<span class="chip">${r.rango}</span>`).join(' ') || '—';
 
                 return `
-      <div class="grid grid-2" style="gap:16px;">
-        <div class="card">
-          <h4>Datos generales</h4>
-          <div class="kv"><span>ID</span><span>${s.id}</span></div>
-          <div class="kv"><span>Estado</span><span>${badgeEstado(s.estado)}</span></div>
-          <div class="kv"><span>Superficie (ha)</span><span>${fmt(s.superficie_ha)}</span></div>
-          <div class="kv"><span>Fecha servicio</span><span>${fecha(s.fecha_servicio || s.created_at)}</span></div>
-          <div class="kv"><span>Creado</span><span>${fecha(s.created_at)}</span></div>
-          <div class="kv"><span>Actualizado</span><span>${fecha(s.updated_at)}</span></div>
-        </div>
+    <div class="grid grid-3" style="gap:16px;">
+      <!-- Fila 1 -->
+      <div class="card">
+        <h4>Datos generales</h4>
+        <div class="kv"><span>ID</span><span>${s.id}</span></div>
+        <div class="kv"><span>Estado</span><span>${badgeEstado(s.estado)}</span></div>
+        <div class="kv"><span>Superficie (ha)</span><span>${fmt(s.superficie_ha)}</span></div>
+        <div class="kv"><span>Fecha servicio</span><span>${fecha(s.fecha_servicio || s.created_at)}</span></div>
+        <div class="kv"><span>Creado</span><span>${fecha(s.created_at)}</span></div>
+        <div class="kv"><span>Actualizado</span><span>${fecha(s.updated_at)}</span></div>
+      </div>
 
-        <div class="card">
-          <h4>Ubicación</h4>
-          <div class="kv"><span>Provincia</span><span>${fmt(s.dir_provincia)}</span></div>
-          <div class="kv"><span>Localidad</span><span>${fmt(s.dir_localidad)}</span></div>
-          <div class="kv"><span>Calle / Nº</span><span>${fmt(s.dir_calle)} ${fmt(s.dir_numero)}</span></div>
-          <div class="kv"><span>En finca</span><span>${siNo(s.en_finca)}</span></div>
-          <div class="kv"><span>Lat / Lng</span><span>${fmt(s.ubicacion_lat)} / ${fmt(s.ubicacion_lng)}</span></div>
-          <div class="kv"><span>Precisión</span><span>${fmt(s.ubicacion_acc)}</span></div>
-          <div class="kv"><span>Fecha GPS</span><span>${fecha(s.ubicacion_ts)}</span></div>
-        </div>
+      <div class="card">
+        <h4>Ubicación</h4>
+        <div class="kv"><span>Provincia</span><span>${fmt(s.dir_provincia)}</span></div>
+        <div class="kv"><span>Localidad</span><span>${fmt(s.dir_localidad)}</span></div>
+        <div class="kv"><span>Calle / Nº</span><span>${fmt(s.dir_calle)} ${fmt(s.dir_numero)}</span></div>
+        <div class="kv"><span>En finca</span><span>${siNo(s.en_finca)}</span></div>
+        <div class="kv"><span>Lat / Lng</span><span>${fmt(s.ubicacion_lat)} / ${fmt(s.ubicacion_lng)}</span></div>
+        <div class="kv"><span>Precisión</span><span>${fmt(s.ubicacion_acc)}</span></div>
+        <div class="kv"><span>Fecha GPS</span><span>${fecha(s.ubicacion_ts)}</span></div>
+      </div>
 
-        <div class="card">
-          <h4>Infraestructura</h4>
-          <div class="kv"><span>Línea de tensión</span><span>${siNo(s.linea_tension)}</span></div>
-          <div class="kv"><span>Zona restringida</span><span>${siNo(s.zona_restringida)}</span></div>
-          <div class="kv"><span>Corriente eléctrica</span><span>${siNo(s.corriente_electrica)}</span></div>
-          <div class="kv"><span>Agua potable</span><span>${siNo(s.agua_potable)}</span></div>
-          <div class="kv"><span>Libre de obstáculos</span><span>${siNo(s.libre_obstaculos)}</span></div>
-          <div class="kv"><span>Área de despegue</span><span>${siNo(s.area_despegue)}</span></div>
-          <div class="kv"><span>Representante en finca</span><span>${siNo(s.representante)}</span></div>
-        </div>
+      <div class="card">
+        <h4>Datos de sesión</h4>
+        <div class="kv"><span>Usuario</span><span>${fmt(s.ses_usuario)}</span></div>
+        <div class="kv"><span>Rol</span><span>${fmt(s.ses_rol)}</span></div>
+        <div class="kv"><span>Nombre</span><span>${fmt(s.ses_nombre)}</span></div>
+        <div class="kv"><span>Correo</span><span>${fmt(s.ses_correo)}</span></div>
+        <div class="kv"><span>Teléfono</span><span>${fmt(s.ses_telefono)}</span></div>
+        <div class="kv"><span>Dirección</span><span>${fmt(s.ses_direccion)}</span></div>
+        <div class="kv"><span>CUIT</span><span>${fmt(s.ses_cuit)}</span></div>
+        <div class="kv"><span>Última actividad</span><span>${fecha(s.ses_last_activity_ts)}</span></div>
+      </div>
 
-        <div class="card">
-          <h4>Datos de sesión</h4>
-          <div class="kv"><span>Usuario</span><span>${fmt(s.ses_usuario)}</span></div>
-          <div class="kv"><span>Rol</span><span>${fmt(s.ses_rol)}</span></div>
-          <div class="kv"><span>Nombre</span><span>${fmt(s.ses_nombre)}</span></div>
-          <div class="kv"><span>Correo</span><span>${fmt(s.ses_correo)}</span></div>
-          <div class="kv"><span>Teléfono</span><span>${fmt(s.ses_telefono)}</span></div>
-          <div class="kv"><span>Dirección</span><span>${fmt(s.ses_direccion)}</span></div>
-          <div class="kv"><span>CUIT</span><span>${fmt(s.ses_cuit)}</span></div>
-          <div class="kv"><span>Última actividad</span><span>${fecha(s.ses_last_activity_ts)}</span></div>
-        </div>
+      <!-- Fila 2 -->
+      <div class="card">
+        <h4>Infraestructura</h4>
+        <div class="kv"><span>Línea de tensión</span><span>${siNo(s.linea_tension)}</span></div>
+        <div class="kv"><span>Zona restringida</span><span>${siNo(s.zona_restringida)}</span></div>
+        <div class="kv"><span>Corriente eléctrica</span><span>${siNo(s.corriente_electrica)}</span></div>
+        <div class="kv"><span>Agua potable</span><span>${siNo(s.agua_potable)}</span></div>
+        <div class="kv"><span>Libre de obstáculos</span><span>${siNo(s.libre_obstaculos)}</span></div>
+        <div class="kv"><span>Área de despegue</span><span>${siNo(s.area_despegue)}</span></div>
+        <div class="kv"><span>Representante en finca</span><span>${siNo(s.representante)}</span></div>
+      </div>
 
-        <div class="card">
-          <h4>Motivos</h4>
-          <ul class="list-disc" style="margin-left:18px;">${motivosHtml}</ul>
-        </div>
+      <div class="card">
+        <h4>Motivos</h4>
+        <ul class="list-disc" style="margin-left:18px;">${motivosHtml}</ul>
+      </div>
 
-        <div class="card">
-          <h4>Productos</h4>
-          <table class="table">
-            <thead><tr><th>Tipo</th><th>Fuente</th><th>Marca</th></tr></thead>
-            <tbody>${productosHtml}</tbody>
-          </table>
-        </div>
+      <div class="card">
+        <h4>Rangos</h4>
+        <div>${rangosHtml}</div>
+      </div>
 
-        <div class="card">
-          <h4>Rangos</h4>
-          <div>${rangosHtml}</div>
-        </div>
+      <!-- Fila 3 (ancho completo) -->
+      <div class="card" style="grid-column:1/-1;">
+        <h4>Productos</h4>
+        <table class="table">
+          <thead><tr><th>Tipo</th><th>Fuente</th><th>Marca</th></tr></thead>
+          <tbody>${productosHtml}</tbody>
+        </table>
+      </div>
 
-        <div class="card">
-          <h4>Planificación (nuevo)</h4>
-          <div class="form-modern">
-            <div class="form-grid grid-2">
-              <div class="input-group">
-                <label>Responsable</label>
+      <!-- Fila 4 (ancho completo) -->
+      <div class="card" style="grid-column:1/-1;">
+        <h4>Planificación (nuevo)</h4>
+        <div class="form-modern">
+          <div class="form-grid grid-2">
+            <div class="input-group">
+              <label>Responsable</label>
+              <div class="input-icon input-icon-name">
                 <input type="text" id="plan_responsable" value="${escapeAttr(s.responsable || '')}" />
               </div>
-              <div class="input-group">
-                <label>Piloto</label>
+            </div>
+            <div class="input-group">
+              <label>Piloto</label>
+              <div class="input-icon input-icon-name">
                 <input type="text" id="plan_piloto" value="${escapeAttr(s.piloto || '')}" />
               </div>
-              <div class="input-group">
-                <label>Fecha de visita</label>
+            </div>
+            <div class="input-group">
+              <label>Fecha de visita</label>
+              <div class="input-icon input-icon-date">
                 <input type="date" id="plan_fecha_visita" value="${toDateValue(s.fecha_visita)}" />
               </div>
-              <div class="input-group">
-                <label>Hora de visita</label>
+            </div>
+            <div class="input-group">
+              <label>Hora de visita</label>
+              <div class="input-icon input-icon-date">
                 <input type="time" id="plan_hora_visita" value="${toTimeValue(s.hora_visita)}" />
               </div>
-              <div class="input-group" style="grid-column:1/-1;">
-                <label>Motivo de cancelación</label>
+            </div>
+            <div class="input-group" style="grid-column:1/-1;">
+              <label>Motivo de cancelación</label>
+              <div class="input-icon input-icon-name">
                 <input type="text" id="plan_motivo_cancelacion" placeholder="(solo si aplica)" value="${escapeAttr(s.motivo_cancelacion || '')}" />
               </div>
             </div>
           </div>
         </div>
       </div>
-    `;
+    </div>
+  `;
             }
 
             function formatFecha(v) {
