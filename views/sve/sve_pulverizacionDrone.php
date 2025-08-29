@@ -501,6 +501,8 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         <div class="kv"><span>Creado</span><span>${fecha(s.created_at)}</span></div>
         <div class="kv"><span>Actualizado</span><span>${fecha(s.updated_at)}</span></div>
         <div class="kv"><span>Rango de fecha preferido</span><span>${rangosHtml}</span></div>
+        <h4>Motivos por el cual solicita el servicio</h4>
+        <div class="kv"><span>Enfermedad</span><span>${motivosHtml}</span></div>
 
       </div>
 
@@ -513,10 +515,6 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         <div class="kv"><span>Lat / Lng</span><span>${fmt(s.ubicacion_lat)} / ${fmt(s.ubicacion_lng)}</span></div>
         <div class="kv"><span>Precisión</span><span>${fmt(s.ubicacion_acc)}</span></div>
         <div class="kv"><span>Fecha GPS</span><span>${fecha(s.ubicacion_ts)}</span></div>
-        <h4>Motivos por el cual solicita el servicio</h4>
-        <div class="kv"><span>Enfermedad</span><span>${motivosHtml}</span></div>
-
-        
       </div>
 
       <div class="card">
