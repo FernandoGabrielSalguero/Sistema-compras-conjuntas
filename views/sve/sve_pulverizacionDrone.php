@@ -405,23 +405,46 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
             document.getElementById('btnDescargar')?.addEventListener('click', async () => {
                 const node = document.querySelector('#ModalEditarServicio .modal-content');
-                if (!node) {
-                    return;
+                if (!node) return;
+
+                // 1) Qué bloques eligió el usuario (si no hay selector, toma todos)
+                const checks = document.querySelectorAll('#exportSelector input[type=checkbox][data-block]');
+                let selected = new Set(
+                    [...checks].filter(i => i.checked).map(i => i.dataset.block)
+                );
+                // fallback: si no hay nada seleccionado, exportar todo
+                if (selected.size === 0) {
+                    selected = new Set([...document.querySelectorAll('.modal-grid .card[data-block]')]
+                        .map(el => el.getAttribute('data-block')));
                 }
+
                 try {
                     const canvas = await html2canvas(node, {
                         scale: 2,
                         useCORS: true,
-                        backgroundColor: null
+                        backgroundColor: '#fff',
+                        onclone: (doc) => {
+                            // Ocultar tarjetas NO seleccionadas
+                            doc.querySelectorAll('.modal-grid .card[data-block]').forEach(el => {
+                                const block = el.getAttribute('data-block');
+                                if (!selected.has(block)) el.style.display = 'none';
+                            });
+                            // Ocultar UI que no queremos en la imagen
+                            doc.querySelectorAll('[data-noprint], .modal-actions').forEach(el => {
+                                el.style.display = 'none';
+                            });
+                        }
                     });
+
                     const link = document.createElement('a');
-                    link.download = `protocolo_${currentSolicitudId||'servicio'}.png`;
+                    link.download = `protocolo_${currentSolicitudId || 'servicio'}.png`;
                     link.href = canvas.toDataURL('image/png');
                     link.click();
                 } catch (e) {
                     toastError('No se pudo generar la imagen');
                 }
             });
+
 
 
             let currentSolicitudId = null;
@@ -648,7 +671,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
   <div class="kv"><span>ID</span><span>${s.id}</span></div>
 
   <!-- Estado editable -->
-  <div class="input-group">
+  <div class="input-group" data-block="generales">
     <label>Estado</label>
     <div class="input-icon input-icon-globe">
       <select id="estado_select">
@@ -678,7 +701,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 </div>
 
 
-<div class="card">
+<div class="card" data-block="ubicacion">
   <h4>Ubicación de la finca</h4>
   <div class="kv"><span>Provincia</span><span>${fmt(s.dir_provincia)}</span></div>
   <div class="kv"><span>Localidad</span><span>${fmt(s.dir_localidad)}</span></div>
@@ -701,7 +724,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     })()}
 </div>
 
-      <div class="card">
+      <div class="card" data-block="productor">
         <h4>Datos del productor</h4>
         <div class="kv"><span>Usuario</span><span>${fmt(s.ses_usuario)}</span></div>
         <div class="kv"><span>Rol</span><span>${fmt(s.ses_rol)}</span></div>
@@ -714,7 +737,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
       </div>
 
       <!-- Fila 2 -->
-      <div class="card">
+      <div class="card" data-block="infraestructura">
         <h4>Infraestructura de la finca</h4>
         <div class="kv"><span>Línea de tensión</span><span>${siNo(s.linea_tension)}</span></div>
         <div class="kv"><span>Zona restringida</span><span>${siNo(s.zona_restringida)}</span></div>
@@ -726,7 +749,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
       </div>
 
       <!-- Fila 3 -->
-      <div class="card col-span-2">
+      <div class="card col-span-2" data-block="productos_tabla">
         <h4>Productos a utilizar</h4>
         <div class="table-wrap">
           <table class="table">
@@ -785,7 +808,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 </div>
 
       <!-- Nueva: Parámetros de vuelo -->
-<div class="card">
+<div class="card" data-block="parametros">
   <h4>Parámetros de vuelo</h4>
   <div class="form-modern">
     <div class="form-grid grid-2">
@@ -818,7 +841,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 </div>
 
 <!-- Nueva: Observaciones para el piloto -->
-<div class="card" style="grid-column:1/-1;">
+<div class="card" style="grid-column:1/-1;" data-block="observaciones">
   <h4>Indicaciones para el piloto</h4>
   <div class="form-modern">
     <div class="input-group">
@@ -829,7 +852,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 </div>
 
       <!-- Fila 4 (ancho completo) -->
-      <div class="card" style="grid-column:1/-1;">
+      <div class="card" style="grid-column:1/-1;" data-block="planificacion">
         <h4>Planificación</h4>
         <div class="form-modern">
           <div class="form-grid grid-2">
@@ -861,6 +884,25 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         </div>
       </div>
     </div>
+
+    
+    <!-- Selector de tarjetas para imprimir -->
+    <div class="card" id="exportSelector" style="grid-column:1/-1;" data-noprint>
+  <h4>¿Qué incluir al descargar?</h4>
+  <div class="form-modern">
+    <div class="form-grid grid-4">
+      <label><input type="checkbox" data-block="generales" checked> Datos generales</label>
+      <label><input type="checkbox" data-block="ubicacion" checked> Ubicación</label>
+      <label><input type="checkbox" data-block="productor" checked> Datos del productor</label>
+      <label><input type="checkbox" data-block="infraestructura" checked> Infraestructura</label>
+      <label><input type="checkbox" data-block="productos_tabla" checked> Productos (tabla)</label>
+      <label><input type="checkbox" data-block="parametros" checked> Parámetros de vuelo</label>
+      <label><input type="checkbox" data-block="observaciones" checked> Indicaciones</label>
+      <label><input type="checkbox" data-block="planificacion" checked> Planificación</label>
+    </div>
+    <small style="opacity:.7">Este panel no se incluye en la imagen.</small>
+  </div>
+</div>
   `;
             }
 
