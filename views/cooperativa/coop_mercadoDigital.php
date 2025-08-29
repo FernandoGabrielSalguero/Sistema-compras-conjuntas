@@ -836,11 +836,15 @@ grupo.innerHTML = `
      </button>` :
                                         '';
 
-                                    grupo.innerHTML = `
+grupo.innerHTML = `
 <label for="prod_${prod.producto_id}">
     ${iconoInfo}
     <strong>${prod.Nombre_producto}</strong><br>
-    <small style="color:#555;">Se vende por <strong>${prod.Unidad_Medida_venta}</strong> a <strong>$${prod.Precio_producto}</strong></small>
+    <small style="color:#555;">
+        Se vende por <strong>${prod.Unidad_Medida_venta}</strong> a 
+        <strong>$${Number(prod.Precio_producto).toFixed(2)}</strong> en 
+        <strong>${prod.moneda || 'Pesos'}</strong>
+    </small>
 </label>
 <div class="input-icon">
     <span class="material-icons">numbers</span>
@@ -854,6 +858,7 @@ grupo.innerHTML = `
         data-precio="${prod.Precio_producto}" />
 </div>
 `;
+
 
                                     body.appendChild(grupo);
                                 });
