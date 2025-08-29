@@ -157,45 +157,11 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     </form>
                 </div>
 
-                <!-- Tarjetas de pedidos -->
+                <!-- Listado de proyectos -->
                 <div class="card">
                     <h2>Listado de proyectos</h2>
-                    <div class="card-grid grid-4">
-                        <div class="user-card">
-                            <h3 class="user-name">NOMBRE USUARIO</h3>
-                            <div class="user-info">
-                                <span class="material-icons icon-email">mail</span>
-                                <span class="user-email">Correo electrónico</span>
-                            </div>
-                            <button class="btn btn-info">Guardar</button>
-                        </div>
-
-                        <div class="user-card">
-                            <h3 class="user-name">NOMBRE USUARIO</h3>
-                            <div class="user-info">
-                                <span class="material-icons icon-email">mail</span>
-                                <span class="user-email">Correo electrónico</span>
-                            </div>
-                            <button class="btn btn-info">Guardar</button>
-                        </div>
-
-                        <div class="user-card">
-                            <h3 class="user-name">NOMBRE USUARIO</h3>
-                            <div class="user-info">
-                                <span class="material-icons icon-email">mail</span>
-                                <span class="user-email">Correo electrónico</span>
-                            </div>
-                            <button class="btn btn-info">Guardar</button>
-                        </div>
-
-                        <div class="user-card">
-                            <h3 class="user-name">NOMBRE USUARIO</h3>
-                            <div class="user-info">
-                                <span class="material-icons icon-email">mail</span>
-                                <span class="user-email">Correo electrónico</span>
-                            </div>
-                            <button class="btn btn-info">Guardar</button>
-                        </div>
+                    <div class="card-grid grid-4" id="proyectosContainer">
+                        <!-- JS rellena con tarjetas -->
                     </div>
                 </div>
 
@@ -211,20 +177,349 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         </div>
     </div>
 
-    <!-- Modal para editar el servicio -->
-    <div id="ModalEditarServicio" class="modal" style="display: none; z-index: 10001;">
-        <div class="modal-content">
-            <h3>Veamos el detalle del servicio</h3>
-            <p>No se podrá recuperar una vez eliminada.</p>
-            <div class="modal-actions">
-                <button class="btn btn-aceptar" id="btn">Actualizar pedido</button>
+    <!-- Modal -->
+    <div id="ModalEditarServicio" class="modal" style="display:none; z-index:10001;">
+        <div class="modal-content" style="max-height:80vh; overflow:auto;">
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>Detalle del servicio</h3>
+                <button class="btn-icon" id="modalCloseBtn"><span class="material-icons">close</span></button>
+            </div>
+            <div id="modalBody"></div>
+            <div class="modal-actions" style="gap:8px;">
+                <button class="btn btn-aceptar" id="btnActualizar">Actualizar pedido</button>
             </div>
         </div>
     </div>
 
     <!-- Espacio para scripts adicionales -->
     <script>
+        (() => {
+            // Helpers
+            const $ = (sel, ctx = document) => ctx.querySelector(sel);
+            const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
+            const debounce = (fn, ms = 350) => {
+                let t;
+                return (...args) => {
+                    clearTimeout(t);
+                    t = setTimeout(() => fn(...args), ms);
+                };
+            };
 
+            // Refs UI
+            const inputNombre = document.getElementById('nombre');
+            const inputFecha = document.getElementById('fecha');
+            const selEstado = document.getElementById('provincia'); // es "estado"
+            const grid = document.getElementById('proyectosContainer');
+
+            // Forzar tipo date si faltó en HTML
+            if (inputFecha && inputFecha.type !== 'date') {
+                inputFecha.setAttribute('type', 'date');
+            }
+
+            // Estado de filtros
+            const state = {
+                q: '',
+                fecha: '',
+                estado: '',
+                page: 1,
+                limit: 20
+            };
+
+            // Normaliza el valor visual del select a los enums de DB
+            const toEnumEstado = (label) => {
+                if (!label) return '';
+                return label.trim().toLowerCase().replace(/\s+/g, '_'); // "En proceso" -> "en_proceso"
+            };
+
+            // Fetch listado
+            async function fetchListado() {
+                const params = new URLSearchParams({
+                    action: 'list_solicitudes',
+                    q: state.q || '',
+                    fecha: state.fecha || '',
+                    estado: state.estado || '',
+                    page: state.page,
+                    limit: state.limit
+                });
+
+                const url = `../controllers/sve_pulverizacionDroneController.php?${params.toString()}`;
+                const res = await fetch(url, {
+                    credentials: 'same-origin'
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const json = await res.json();
+                if (!json.ok) throw new Error(json.error || 'Error desconocido');
+                return json.data;
+            }
+
+            // Render cards
+            function renderCards(data) {
+                grid.innerHTML = '';
+                const items = data.items || [];
+                if (!items.length) {
+                    grid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1; text-align:center;">
+        <span class="material-icons" style="font-size:42px;opacity:.6;">inbox</span>
+        <p style="opacity:.8;">No hay servicios para los filtros aplicados.</p>
+      </div>`;
+                    return;
+                }
+
+                const frag = document.createDocumentFragment();
+                for (const it of items) {
+                    const card = document.createElement('div');
+                    card.className = 'user-card';
+                    card.innerHTML = `
+        <h3 class="user-name" title="${it.ses_nombre || ''}">${escapeHtml(it.ses_usuario || it.ses_nombre || '—')}</h3>
+        <div class="user-info">
+          <span class="material-icons icon-email">flag</span>
+          <span class="user-email">${badgeEstado(it.estado)}</span>
+        </div>
+        <div class="user-info">
+          <span class="material-icons icon-email">event</span>
+          <span class="user-email">${formatFecha(it.fecha_base || it.created_at)}</span>
+        </div>
+        <button class="btn btn-info btn-ver" data-id="${it.id}">Ver</button>
+      `;
+                    frag.appendChild(card);
+                }
+                grid.appendChild(frag);
+
+                // Bind botones Ver
+                $$('.btn-ver', grid).forEach(btn => {
+                    btn.addEventListener('click', () => openModal(parseInt(btn.dataset.id, 10)));
+                });
+            }
+
+            // Modal
+            const modal = document.getElementById('ModalEditarServicio');
+            const modalBody = document.getElementById('modalBody');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+            modalCloseBtn?.addEventListener('click', closeModal);
+
+            function openModal(id) {
+                loadDetalle(id).catch(err => toastError(err.message));
+            }
+
+            function closeModal() {
+                modal.style.display = 'none';
+            }
+
+            async function loadDetalle(id) {
+                const url = `../controllers/sve_pulverizacionDroneController.php?action=get_solicitud&id=${id}`;
+                const res = await fetch(url, {
+                    credentials: 'same-origin'
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const json = await res.json();
+                if (!json.ok) throw new Error(json.error || 'Error desconocido');
+
+                const {
+                    solicitud: s,
+                    motivos,
+                    productos,
+                    rangos
+                } = json.data;
+
+                modalBody.innerHTML = buildDetalleHTML(s, motivos, productos, rangos);
+                modal.style.display = 'block';
+            }
+
+            // Construye HTML prolijo del detalle + campos nuevos (responsable/piloto/visita/cancelación)
+            function buildDetalleHTML(s, motivos, productos, rangos) {
+                const siNo = v => v === 'si' ? 'Sí' : (v === 'no' ? 'No' : '—');
+                const fmt = v => (v ?? '—');
+                const fecha = v => formatFecha(v);
+
+                const motivosHtml = (motivos || []).map(m => `
+      <li><strong>${m.motivo}</strong>${m.otros_text ? ` — ${escapeHtml(m.otros_text)}`:''}</li>
+    `).join('') || '<li>—</li>';
+
+                const productosHtml = (productos || []).map(p => `
+      <tr><td>${fmt(p.tipo)}</td><td>${fmt(p.fuente)}</td><td>${escapeHtml(p.marca||'—')}</td></tr>
+    `).join('') || '<tr><td colspan="3">—</td></tr>';
+
+                const rangosHtml = (rangos || []).map(r => `<span class="chip">${r.rango}</span>`).join(' ') || '—';
+
+                return `
+      <div class="grid grid-2" style="gap:16px;">
+        <div class="card">
+          <h4>Datos generales</h4>
+          <div class="kv"><span>ID</span><span>${s.id}</span></div>
+          <div class="kv"><span>Estado</span><span>${badgeEstado(s.estado)}</span></div>
+          <div class="kv"><span>Superficie (ha)</span><span>${fmt(s.superficie_ha)}</span></div>
+          <div class="kv"><span>Fecha servicio</span><span>${fecha(s.fecha_servicio || s.created_at)}</span></div>
+          <div class="kv"><span>Creado</span><span>${fecha(s.created_at)}</span></div>
+          <div class="kv"><span>Actualizado</span><span>${fecha(s.updated_at)}</span></div>
+        </div>
+
+        <div class="card">
+          <h4>Ubicación</h4>
+          <div class="kv"><span>Provincia</span><span>${fmt(s.dir_provincia)}</span></div>
+          <div class="kv"><span>Localidad</span><span>${fmt(s.dir_localidad)}</span></div>
+          <div class="kv"><span>Calle / Nº</span><span>${fmt(s.dir_calle)} ${fmt(s.dir_numero)}</span></div>
+          <div class="kv"><span>En finca</span><span>${siNo(s.en_finca)}</span></div>
+          <div class="kv"><span>Lat / Lng</span><span>${fmt(s.ubicacion_lat)} / ${fmt(s.ubicacion_lng)}</span></div>
+          <div class="kv"><span>Precisión</span><span>${fmt(s.ubicacion_acc)}</span></div>
+          <div class="kv"><span>Fecha GPS</span><span>${fecha(s.ubicacion_ts)}</span></div>
+        </div>
+
+        <div class="card">
+          <h4>Infraestructura</h4>
+          <div class="kv"><span>Línea de tensión</span><span>${siNo(s.linea_tension)}</span></div>
+          <div class="kv"><span>Zona restringida</span><span>${siNo(s.zona_restringida)}</span></div>
+          <div class="kv"><span>Corriente eléctrica</span><span>${siNo(s.corriente_electrica)}</span></div>
+          <div class="kv"><span>Agua potable</span><span>${siNo(s.agua_potable)}</span></div>
+          <div class="kv"><span>Libre de obstáculos</span><span>${siNo(s.libre_obstaculos)}</span></div>
+          <div class="kv"><span>Área de despegue</span><span>${siNo(s.area_despegue)}</span></div>
+          <div class="kv"><span>Representante en finca</span><span>${siNo(s.representante)}</span></div>
+        </div>
+
+        <div class="card">
+          <h4>Datos de sesión</h4>
+          <div class="kv"><span>Usuario</span><span>${fmt(s.ses_usuario)}</span></div>
+          <div class="kv"><span>Rol</span><span>${fmt(s.ses_rol)}</span></div>
+          <div class="kv"><span>Nombre</span><span>${fmt(s.ses_nombre)}</span></div>
+          <div class="kv"><span>Correo</span><span>${fmt(s.ses_correo)}</span></div>
+          <div class="kv"><span>Teléfono</span><span>${fmt(s.ses_telefono)}</span></div>
+          <div class="kv"><span>Dirección</span><span>${fmt(s.ses_direccion)}</span></div>
+          <div class="kv"><span>CUIT</span><span>${fmt(s.ses_cuit)}</span></div>
+          <div class="kv"><span>Última actividad</span><span>${fecha(s.ses_last_activity_ts)}</span></div>
+        </div>
+
+        <div class="card">
+          <h4>Motivos</h4>
+          <ul class="list-disc" style="margin-left:18px;">${motivosHtml}</ul>
+        </div>
+
+        <div class="card">
+          <h4>Productos</h4>
+          <table class="table">
+            <thead><tr><th>Tipo</th><th>Fuente</th><th>Marca</th></tr></thead>
+            <tbody>${productosHtml}</tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h4>Rangos</h4>
+          <div>${rangosHtml}</div>
+        </div>
+
+        <div class="card">
+          <h4>Planificación (nuevo)</h4>
+          <div class="form-modern">
+            <div class="form-grid grid-2">
+              <div class="input-group">
+                <label>Responsable</label>
+                <input type="text" id="plan_responsable" value="${escapeAttr(s.responsable || '')}" />
+              </div>
+              <div class="input-group">
+                <label>Piloto</label>
+                <input type="text" id="plan_piloto" value="${escapeAttr(s.piloto || '')}" />
+              </div>
+              <div class="input-group">
+                <label>Fecha de visita</label>
+                <input type="date" id="plan_fecha_visita" value="${toDateValue(s.fecha_visita)}" />
+              </div>
+              <div class="input-group">
+                <label>Hora de visita</label>
+                <input type="time" id="plan_hora_visita" value="${toTimeValue(s.hora_visita)}" />
+              </div>
+              <div class="input-group" style="grid-column:1/-1;">
+                <label>Motivo de cancelación</label>
+                <input type="text" id="plan_motivo_cancelacion" placeholder="(solo si aplica)" value="${escapeAttr(s.motivo_cancelacion || '')}" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+            }
+
+            // Utilidades de formato/escape
+            function formatFecha(v) {
+                if (!v) return '—';
+                const d = new Date(v);
+                if (isNaN(d)) return ('' + v).slice(0, 10);
+                return d.toISOString().slice(0, 10);
+            }
+
+            function toDateValue(v) {
+                return v ? formatFecha(v) : '';
+            }
+
+            function toTimeValue(v) {
+                if (!v) return '';
+                const s = ('' + v).slice(0, 5);
+                return /^\d{2}:\d{2}$/.test(s) ? s : '';
+            }
+
+            function escapeHtml(s) {
+                return (s ?? '').toString().replace(/[&<>"']/g, m => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                } [m]));
+            }
+
+            function escapeAttr(s) {
+                return escapeHtml(s);
+            }
+
+            function badgeEstado(est) {
+                const map = {
+                    'pendiente': '<span class="badge badge-warning">Pendiente</span>',
+                    'en_proceso': '<span class="badge badge-info">En proceso</span>',
+                    'completado': '<span class="badge badge-success">Completado</span>',
+                    'cancelado': '<span class="badge badge-danger">Cancelado</span>'
+                };
+                return map[est] || `<span class="badge">${escapeHtml(est||'—')}</span>`;
+            }
+
+            // Toast helpers (usa tu framework si lo tenés mapeado)
+            function toastError(msg) {
+                try {
+                    window.Toastify?.show({
+                        text: msg,
+                        className: 'toast-error'
+                    });
+                } catch (e) {
+                    console.error(msg);
+                }
+            }
+
+            // Eventos de filtros (en vivo, con debounce)
+            inputNombre?.addEventListener('input', debounce(() => {
+                state.q = inputNombre.value.trim();
+                state.page = 1;
+                refresh();
+            }, 300));
+
+            inputFecha?.addEventListener('change', () => {
+                state.fecha = inputFecha.value || '';
+                state.page = 1;
+                refresh();
+            });
+
+            selEstado?.addEventListener('change', () => {
+                state.estado = toEnumEstado(selEstado.value || '');
+                state.page = 1;
+                refresh();
+            });
+
+            async function refresh() {
+                try {
+                    const data = await fetchListado();
+                    renderCards(data);
+                } catch (err) {
+                    toastError('No se pudo cargar el listado: ' + err.message);
+                }
+            }
+
+            // Primera carga
+            refresh();
+        })();
     </script>
 </body>
 
