@@ -500,10 +500,12 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         <div class="kv"><span>Fecha servicio</span><span>${fecha(s.fecha_servicio || s.created_at)}</span></div>
         <div class="kv"><span>Creado</span><span>${fecha(s.created_at)}</span></div>
         <div class="kv"><span>Actualizado</span><span>${fecha(s.updated_at)}</span></div>
+        <div class="kv"><span>Rango de fecha preferido</span><span>${rangosHtml}</span></div>
+
       </div>
 
       <div class="card">
-        <h4>Ubicación</h4>
+        <h4>Ubicación de la finca</h4>
         <div class="kv"><span>Provincia</span><span>${fmt(s.dir_provincia)}</span></div>
         <div class="kv"><span>Localidad</span><span>${fmt(s.dir_localidad)}</span></div>
         <div class="kv"><span>Calle / Nº</span><span>${fmt(s.dir_calle)} ${fmt(s.dir_numero)}</span></div>
@@ -514,7 +516,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
       </div>
 
       <div class="card">
-        <h4>Datos de sesión</h4>
+        <h4>Datos del productor</h4>
         <div class="kv"><span>Usuario</span><span>${fmt(s.ses_usuario)}</span></div>
         <div class="kv"><span>Rol</span><span>${fmt(s.ses_rol)}</span></div>
         <div class="kv"><span>Nombre</span><span>${fmt(s.ses_nombre)}</span></div>
@@ -527,7 +529,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
       <!-- Fila 2 -->
       <div class="card">
-        <h4>Infraestructura</h4>
+        <h4>Infraestructura de la finca</h4>
         <div class="kv"><span>Línea de tensión</span><span>${siNo(s.linea_tension)}</span></div>
         <div class="kv"><span>Zona restringida</span><span>${siNo(s.zona_restringida)}</span></div>
         <div class="kv"><span>Corriente eléctrica</span><span>${siNo(s.corriente_electrica)}</span></div>
@@ -538,18 +540,13 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
       </div>
 
       <div class="card">
-        <h4>Motivos</h4>
+        <h4>Motivos a tratar</h4>
         <ul class="list-disc" style="margin-left:18px;">${motivosHtml}</ul>
       </div>
 
-      <div class="card">
-        <h4>Rangos</h4>
-        <div>${rangosHtml}</div>
-      </div>
-
-      <!-- Fila 3 (ancho completo) -->
+      <!-- Fila 3 -->
       <div class="card" style="grid-column:1/-1;">
-        <h4>Productos</h4>
+        <h4>Productos a utilizar</h4>
         <table class="table">
           <thead><tr><th>Tipo</th><th>Fuente</th><th>Marca</th></tr></thead>
           <tbody>${productosHtml}</tbody>
@@ -558,7 +555,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
       <!-- Fila 4 (ancho completo) -->
       <div class="card" style="grid-column:1/-1;">
-        <h4>Planificación (nuevo)</h4>
+        <h4>Planificación</h4>
         <div class="form-modern">
           <div class="form-grid grid-2">
             <div class="input-group">
