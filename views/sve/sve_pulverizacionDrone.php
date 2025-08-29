@@ -28,6 +28,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE</title>
 
+    <!-- descargar imagen -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -363,7 +367,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 <!-- Listado de proyectos -->
                 <div class="card">
                     <h2>Listado de proyectos</h2>
-                    <div class="card-grid grid-3" id="proyectosContainer" style="max-height:500px; overflow:auto;">
+                    <div class="card-grid grid-3" id="proyectosContainer" style="max-height:400px; overflow:auto;">
                         <!-- JS rellena -->
                     </div>
                 </div>
@@ -389,6 +393,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             </div>
             <div id="modalBody"></div>
             <div class="modal-actions" style="gap:8px;">
+                <button class="btn btn-info" id="btnDescargar">Descargar protocolo</button>
                 <button class="btn btn-aceptar" id="btnActualizar">Actualizar pedido</button>
             </div>
         </div>
@@ -397,6 +402,29 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     <!-- Espacio para scripts adicionales -->
     <script>
         (() => {
+
+            document.getElementById('btnDescargar')?.addEventListener('click', async () => {
+                const node = document.querySelector('#ModalEditarServicio .modal-content');
+                if (!node) {
+                    return;
+                }
+                try {
+                    const canvas = await html2canvas(node, {
+                        scale: 2,
+                        useCORS: true,
+                        backgroundColor: null
+                    });
+                    const link = document.createElement('a');
+                    link.download = `protocolo_${currentSolicitudId||'servicio'}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                } catch (e) {
+                    toastError('No se pudo generar la imagen');
+                }
+            });
+
+
+            let currentSolicitudId = null;
             const $ = (sel, ctx = document) => ctx.querySelector(sel);
             const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
             const debounce = (fn, ms = 350) => {
@@ -463,17 +491,18 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     const card = document.createElement('div');
                     card.className = 'user-card';
                     card.innerHTML = `
-        <h3 class="user-name" title="${it.ses_nombre || ''}">${escapeHtml(it.ses_usuario || it.ses_nombre || '—')}</h3>
-        <div class="user-info">
-          <span class="material-icons icon-email">flag</span>
-          <span class="user-email">${badgeEstado(it.estado)}</span>
-        </div>
-        <div class="user-info">
-          <span class="material-icons icon-email">event</span>
-          <span class="user-email">${formatFecha(it.fecha_base || it.created_at)}</span>
-        </div>
-        <button class="btn btn-info btn-ver" data-id="${it.id}">Ver</button>
-      `;
+  <h3 class="user-name" title="${it.ses_nombre || ''}">${escapeHtml(it.ses_usuario || it.ses_nombre || '—')}</h3>
+  <div class="user-info">
+    <span class="material-icons icon-email">flag</span>
+    <span class="user-email">${badgeEstado(it.estado)}</span>
+  </div>
+  ${it.fecha_visita ? `
+    <div class="user-info">
+      <span class="material-icons icon-email">event</span>
+      <span class="user-email">${formatFecha(it.fecha_visita)}</span>
+    </div>` : ``}
+  <button class="btn btn-info btn-ver" data-id="${it.id}">Ver</button>
+`;
                     frag.appendChild(card);
                 }
                 grid.appendChild(frag);
@@ -487,6 +516,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             modalCloseBtn?.addEventListener('click', closeModal);
 
             function openModal(id) {
+                currentSolicitudId = id;
                 loadDetalle(id).catch(err => toastError(err.message));
             }
 
@@ -503,6 +533,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const json = await res.json();
                 if (!json.ok) throw new Error(json.error || 'Error desconocido');
+
                 const {
                     solicitud: s,
                     motivos,
@@ -510,9 +541,55 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     rangos
                 } = json.data;
 
+                // 1) inyectar HTML
                 modalBody.innerHTML = buildDetalleHTML(s, motivos, productos, rangos);
-                modal.style.display = 'flex'; // ⬅️ flex para centrar
+
+                // 2) ahora sí, bindear eventos del detalle
+                initDetalleEvents();
+
+                // 3) handler Agregar Producto
+                const btnAdd = document.getElementById('btnAddProducto');
+                btnAdd?.addEventListener('click', async () => {
+                    const tipo = document.getElementById('prod_tipo').value;
+                    const fuente = document.getElementById('prod_fuente').value;
+                    const marca = document.getElementById('prod_marca').value.trim();
+
+                    try {
+                        const fd = new URLSearchParams({
+                            action: 'add_producto',
+                            solicitud_id: String(currentSolicitudId),
+                            tipo,
+                            fuente,
+                            marca
+                        });
+                        const r = await fetch(CONTROLLER_URL, {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: fd.toString()
+                        });
+                        const j = await r.json();
+                        if (!j.ok) throw new Error(j.error || 'No se pudo agregar');
+                        await loadDetalle(currentSolicitudId); // refresca
+                    } catch (e) {
+                        toastError(e.message);
+                    }
+                });
+
+                // 4) mostrar modal
+                modal.style.display = 'flex';
                 document.body.classList.add('modal-open');
+
+                // --- interna ---
+                function initDetalleEvents() {
+                    const sel = document.getElementById('estado_select');
+                    const wrap = document.getElementById('wrap_motivo_cancel');
+                    sel?.addEventListener('change', () => {
+                        wrap.style.display = sel.value === 'cancelado' ? 'block' : 'none';
+                    });
+                }
             }
 
             function buildDetalleHTML(s, motivos, productos, rangos) {
@@ -523,7 +600,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                         const q = `${s.ubicacion_lat},${s.ubicacion_lng}`;
                         return {
                             url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`,
-                            label: 'Ver en Google Maps (GPS)'
+                            label: 'Ver en Google Maps'
                         };
                     }
                     const addr = [s.dir_calle, s.dir_numero, s.dir_localidad, s.dir_provincia]
@@ -554,26 +631,52 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
   `).join('') || '<li>—</li>';
 
                 const productosHtml = (productos || []).map(p => `
-    <tr><td>${fmt(p.tipo)}</td><td>${fmt(p.fuente)}</td><td>${escapeHtml(p.marca||'—')}</td></tr>
-  `).join('') || '<tr><td colspan="3">—</td></tr>';
+  <tr>
+    <td>${fmt(p.tipo)}</td>
+    <td>${fuenteLabel(p.fuente)}</td>
+    <td>${escapeHtml(p.marca||'—')}</td>
+  </tr>
+`).join('') || '<tr><td colspan="3">—</td></tr>';
 
                 const rangosHtml = (rangos || []).map(r => `<span class="chip">${r.rango}</span>`).join(' ') || '—';
 
                 return `
     <div class="modal-grid">
       <!-- Fila 1 -->
-      <div class="card">
-        <h4>Datos generales del servicio</h4>
-        <div class="kv"><span>ID</span><span>${s.id}</span></div>
-        <div class="kv"><span>Estado</span><span>${badgeEstado(s.estado)}</span></div>
-        <div class="kv"><span>Superficie (ha)</span><span>${fmt(s.superficie_ha)}</span></div>
-        <div class="kv"><span>Fecha servicio</span><span>${fecha(s.fecha_servicio || s.created_at)}</span></div>
-        <div class="kv"><span>Creado</span><span>${fecha(s.created_at)}</span></div>
-        <div class="kv"><span>Actualizado</span><span>${fecha(s.updated_at)}</span></div>
-        <div class="kv"><span>Rango de fecha preferido</span><span>${rangosHtml}</span></div>
-        <h4>Motivos por el cual solicita el servicio</h4>
-        <div class="kv"><span>Patologia</span><span>${motivosHtml}</span></div>
-      </div>
+<div class="card">
+  <h4>Datos generales del servicio</h4>
+  <div class="kv"><span>ID</span><span>${s.id}</span></div>
+
+  <!-- Estado editable -->
+  <div class="input-group">
+    <label>Estado</label>
+    <div class="input-icon input-icon-globe">
+      <select id="estado_select">
+        <option value="pendiente"   ${s.estado==='pendiente'?'selected':''}>Pendiente</option>
+        <option value="en_proceso"  ${s.estado==='en_proceso'?'selected':''}>En proceso</option>
+        <option value="completado"  ${s.estado==='completado'?'selected':''}>Completado</option>
+        <option value="cancelado"   ${s.estado==='cancelado'?'selected':''}>Cancelado</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Motivo cancelación (aparece solo si estado = cancelado) -->
+  <div class="input-group" id="wrap_motivo_cancel" style="display:${s.estado==='cancelado'?'block':'none'};">
+    <label>Motivo de cancelación</label>
+    <div class="input-icon input-icon-name">
+      <input type="text" id="plan_motivo_cancelacion" value="${escapeAttr(s.motivo_cancelacion || '')}" />
+    </div>
+  </div>
+
+  <div class="kv"><span>Superficie (ha)</span><span>${fmt(s.superficie_ha)}</span></div>
+  <div class="kv"><span>Fecha servicio</span><span>${fecha(s.fecha_servicio || s.created_at)}</span></div>
+  <div class="kv"><span>Creado</span><span>${fecha(s.created_at)}</span></div>
+  <div class="kv"><span>Actualizado</span><span>${fecha(s.updated_at)}</span></div>
+  <div class="kv"><span>Rango de fecha preferido</span><span>${rangosHtml}</span></div>
+  <h4>Motivos por el cual solicita el servicio</h4>
+  <div class="kv"><span>Patologia</span><span>${motivosHtml}</span></div>
+</div>
+
 
 <div class="card">
   <h4>Ubicación de la finca</h4>
@@ -639,6 +742,78 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         </div>
       </div>
 
+      <!-- Nueva: Parámetros de vuelo -->
+<div class="card">
+  <h4>Parámetros de vuelo</h4>
+  <div class="form-modern">
+    <div class="form-grid grid-2">
+      <div class="input-group">
+        <label>Volumen/ha</label>
+        <div class="input-icon input-icon-number">
+          <input type="number" step="0.01" id="volumen_ha" value="${escapeAttr(s.volumen_ha ?? '')}" placeholder="L/ha" />
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Velocidad de vuelo</label>
+        <div class="input-icon input-icon-number">
+          <input type="number" step="0.01" id="velocidad_vuelo" value="${escapeAttr(s.velocidad_vuelo ?? '')}" placeholder="m/s o km/h" />
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Alto de vuelo</label>
+        <div class="input-icon input-icon-number">
+          <input type="number" step="0.01" id="alto_vuelo" value="${escapeAttr(s.alto_vuelo ?? '')}" placeholder="m" />
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Tamaño de gota</label>
+        <div class="input-icon input-icon-name">
+          <input type="text" id="tamano_gota" value="${escapeAttr(s.tamano_gota ?? '')}" placeholder="μm o descripción" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Nueva: Observaciones para el piloto -->
+<div class="card" style="grid-column:1/-1;">
+  <h4>Observaciones para el piloto</h4>
+  <div class="form-modern">
+    <div class="input-group">
+      <label>Observaciones</label>
+      <textarea id="obs_piloto" rows="3" placeholder="Notas para el piloto...">${escapeHtml(s.obs_piloto ?? '')}</textarea>
+    </div>
+  </div>
+</div>
+
+<div class="form-modern" style="margin-top:12px;">
+  <div class="form-grid grid-4">
+    <div class="input-group">
+      <label>Tipo</label>
+      <select id="prod_tipo">
+        <option value="lobesia">lobesia</option>
+        <option value="peronospora">peronospora</option>
+        <option value="oidio">oidio</option>
+        <option value="podredumbre">podredumbre</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label>Fuente</label>
+      <select id="prod_fuente">
+        <option value="sve">SVE</option>
+        <option value="yo">Productor</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label>Marca</label>
+      <input type="text" id="prod_marca" placeholder="Marca" />
+    </div>
+    <div class="input-group" style="align-self:end;">
+      <button class="btn btn-aceptar" id="btnAddProducto" type="button">Agregar</button>
+    </div>
+  </div>
+</div>
+
       <!-- Fila 4 (ancho completo) -->
       <div class="card" style="grid-column:1/-1;">
         <h4>Planificación</h4>
@@ -666,12 +841,6 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
               <label>Hora de visita</label>
               <div class="input-icon input-icon-date">
                 <input type="time" id="plan_hora_visita" value="${toTimeValue(s.hora_visita)}" />
-              </div>
-            </div>
-            <div class="input-group" style="grid-column:1/-1;">
-              <label>Motivo de cancelación</label>
-              <div class="input-icon input-icon-name">
-                <input type="text" id="plan_motivo_cancelacion" placeholder="(solo si aplica)" value="${escapeAttr(s.motivo_cancelacion || '')}" />
               </div>
             </div>
           </div>
@@ -767,6 +936,51 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
             // Primera carga
             refresh();
+
+            document.getElementById('btnActualizar')?.addEventListener('click', saveSolicitud);
+
+            async function saveSolicitud() {
+                try {
+                    const estado = document.getElementById('estado_select')?.value || '';
+                    const motivo = (estado === 'cancelado') ?
+                        (document.getElementById('plan_motivo_cancelacion')?.value || '') :
+                        ''; // <- limpiar
+
+                    const fd = new URLSearchParams({
+                        action: 'update_solicitud',
+                        id: String(currentSolicitudId),
+                        estado: estado,
+                        motivo_cancelacion: motivo,
+                        responsable: document.getElementById('plan_responsable')?.value || '',
+                        piloto: document.getElementById('plan_piloto')?.value || '',
+                        fecha_visita: document.getElementById('plan_fecha_visita')?.value || '',
+                        hora_visita: document.getElementById('plan_hora_visita')?.value || '',
+                        volumen_ha: document.getElementById('volumen_ha')?.value || '',
+                        velocidad_vuelo: document.getElementById('velocidad_vuelo')?.value || '',
+                        alto_vuelo: document.getElementById('alto_vuelo')?.value || '',
+                        tamano_gota: document.getElementById('tamano_gota')?.value || '',
+                        obs_piloto: document.getElementById('obs_piloto')?.value || ''
+                    });
+
+                    const r = await fetch(CONTROLLER_URL, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: fd.toString()
+                    });
+                    const j = await r.json();
+                    if (!j.ok) throw new Error(j.error || 'No se pudo actualizar');
+
+                    // refrescar listado para reflejar fecha_visita/estado
+                    await refresh();
+                    // recargar detalle para ver cambios
+                    await loadDetalle(currentSolicitudId);
+                } catch (e) {
+                    toastError(e.message);
+                }
+            }
         })();
     </script>
 </body>

@@ -52,10 +52,11 @@
             $dateCol = $useFechaServicio ? 's.fecha_servicio' : 's.created_at';
 
             $sql = "SELECT s.id, s.ses_usuario, s.ses_nombre, s.ses_correo, s.estado,
-                   s.superficie_ha, $dateCol AS fecha_base, s.created_at
-            FROM dron_solicitudes s
-            $whereSql
-            ORDER BY s.created_at DESC";
+               s.superficie_ha, $dateCol AS fecha_base, s.created_at,
+               s.fecha_visita
+        FROM dron_solicitudes s
+        $whereSql
+        ORDER BY s.created_at DESC";
 
             $st = $this->conn->prepare($sql);
             foreach ($params as $k => $v) $st->bindValue($k, $v);
@@ -105,5 +106,50 @@
             $stmt = $this->conn->prepare("SELECT * FROM categorias_publicaciones");
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        public function actualizarSolicitud(int $id, array $data): bool
+        {
+            // Campos permitidos:
+            $allowed = [
+                'estado',
+                'motivo_cancelacion',
+                'responsable',
+                'piloto',
+                'fecha_visita',
+                'hora_visita',
+                'volumen_ha',
+                'velocidad_vuelo',
+                'alto_vuelo',
+                'tamano_gota',
+                'obs_piloto'
+            ];
+            $sets = [];
+            $params = [':id' => $id];
+
+            foreach ($allowed as $k) {
+                if (array_key_exists($k, $data)) {
+                    $sets[] = " $k = :$k ";
+                    $params[":$k"] = $data[$k] === '' ? null : $data[$k];
+                }
+            }
+            if (!$sets) return false;
+
+            $sql = "UPDATE dron_solicitudes SET " . implode(',', $sets) . ", updated_at = NOW() WHERE id = :id";
+            $st = $this->conn->prepare($sql);
+            return $st->execute($params);
+        }
+
+        public function agregarProducto(int $solicitudId, string $tipo, string $fuente, ?string $marca): bool
+        {
+            $sql = "INSERT INTO dron_solicitudes_productos (solicitud_id, tipo, fuente, marca)
+            VALUES (:sid, :tipo, :fuente, :marca)";
+            $st = $this->conn->prepare($sql);
+            return $st->execute([
+                ':sid' => $solicitudId,
+                ':tipo' => $tipo,
+                ':fuente' => $fuente,
+                ':marca' => $marca
+            ]);
         }
     }
