@@ -516,6 +516,28 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             }
 
             function buildDetalleHTML(s, motivos, productos, rangos) {
+
+                const mapsLink = (s) => {
+                    const hasCoords = s.ubicacion_lat && s.ubicacion_lng;
+                    if (hasCoords) {
+                        const q = `${s.ubicacion_lat},${s.ubicacion_lng}`;
+                        return {
+                            url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`,
+                            label: 'Ver en Google Maps (GPS)'
+                        };
+                    }
+                    const addr = [s.dir_calle, s.dir_numero, s.dir_localidad, s.dir_provincia]
+                        .filter(Boolean).join(' ');
+                    if (addr) {
+                        return {
+                            url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`,
+                            label: 'Ver en Google Maps'
+                        };
+                    }
+                    return null;
+                };
+
+
                 const siNo = v => v === 'si' ? 'Sí' : (v === 'no' ? 'No' : '—');
                 const fmt = v => (v ?? '—');
                 const fecha = v => formatFecha(v);
@@ -553,16 +575,28 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         <div class="kv"><span>Patologia</span><span>${motivosHtml}</span></div>
       </div>
 
-      <div class="card">
-        <h4>Ubicación de la finca</h4>
-        <div class="kv"><span>Provincia</span><span>${fmt(s.dir_provincia)}</span></div>
-        <div class="kv"><span>Localidad</span><span>${fmt(s.dir_localidad)}</span></div>
-        <div class="kv"><span>Calle / Nº</span><span>${fmt(s.dir_calle)} ${fmt(s.dir_numero)}</span></div>
-        <div class="kv"><span>En finca</span><span>${siNo(s.en_finca)}</span></div>
-        <div class="kv"><span>Lat / Lng</span><span>${fmt(s.ubicacion_lat)} / ${fmt(s.ubicacion_lng)}</span></div>
-        <div class="kv"><span>Precisión</span><span>${fmt(s.ubicacion_acc)}</span></div>
-        <div class="kv"><span>Fecha GPS</span><span>${fecha(s.ubicacion_ts)}</span></div>
-      </div>
+<div class="card">
+  <h4>Ubicación de la finca</h4>
+  <div class="kv"><span>Provincia</span><span>${fmt(s.dir_provincia)}</span></div>
+  <div class="kv"><span>Localidad</span><span>${fmt(s.dir_localidad)}</span></div>
+  <div class="kv"><span>Calle / Nº</span><span>${fmt(s.dir_calle)} ${fmt(s.dir_numero)}</span></div>
+  <div class="kv"><span>En finca</span><span>${siNo(s.en_finca)}</span></div>
+  <div class="kv"><span>Lat / Lng</span><span>${fmt(s.ubicacion_lat)} / ${fmt(s.ubicacion_lng)}</span></div>
+  <div class="kv"><span>Precisión</span><span>${fmt(s.ubicacion_acc)}</span></div>
+  <div class="kv"><span>Fecha GPS</span><span>${fecha(s.ubicacion_ts)}</span></div>
+
+  ${(() => {
+      const m = mapsLink(s);
+      return m ? `
+        <div style="margin-top:10px;">
+          <a class="btn btn-info" href="${m.url}" target="_blank" rel="noopener">
+            <span class="material-icons" style="font-size:18px;vertical-align:-3px;">map</span>
+            <span style="margin-left:6px;">${m.label}</span>
+          </a>
+        </div>
+      ` : '';
+    })()}
+</div>
 
       <div class="card">
         <h4>Datos del productor</h4>
