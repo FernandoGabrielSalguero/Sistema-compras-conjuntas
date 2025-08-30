@@ -18,7 +18,7 @@
 
 <body>
     <div class="content">
-        <div class="card">
+        <div class="card" style="background-color: #e9e905ff;">
             <h3>Buscar proyecto de vuelo</h3>
 
             <form class="form-grid grid-4" id="form-search" enctype="multipart/form-data">
