@@ -77,7 +77,7 @@
                     <form id="detalle-form" class="form-grid grid-2" autocomplete="off">
 
                         <!-- ======= Identificación ======= -->
-                        <div class="form-separator"><span class="material-icons mi">badge</span>Identificación</div>
+                        <div class="form-separator"><span class="material-icons mi">badge</span>Detalle general de la solicitud</div>
 
                         <div class="input-group">
                             <label for="f-id">ID (interno)</label>
@@ -103,11 +103,21 @@
                             </div>
                         </div>
 
-                        <div class="input-group">
-                            <label for="f-piloto">Piloto</label>
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <label>Motivos</label>
+                            <div id="f-motivos" class="pill-list" aria-live="polite"></div>
+                        </div>
+
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <label>Productos seleccionados por el productor</label>
+                            <ul id="f-productos" class="product-list" aria-live="polite"></ul>
+                        </div>
+
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <label for="f-observaciones">Observaciones del productor</label>
                             <div class="input-icon material">
-                                <span class="material-icons mi">flight</span>
-                                <input type="text" id="f-piloto" name="piloto" placeholder="Nombre del piloto" />
+                                <span class="material-icons mi">notes</span>
+                                <textarea id="f-observaciones" name="observaciones" rows="3" placeholder="Notas del productor"></textarea>
                             </div>
                         </div>
 
@@ -136,14 +146,6 @@
                             </div>
                         </div>
 
-                        <div class="input-group" style="grid-column:1/-1;">
-                            <label for="f-observaciones">Observaciones del productor</label>
-                            <div class="input-icon material">
-                                <span class="material-icons mi">notes</span>
-                                <textarea id="f-observaciones" name="observaciones" rows="3" placeholder="Notas del productor"></textarea>
-                            </div>
-                        </div>
-
                         <!-- ======= Estado y notas ======= -->
                         <div class="form-separator"><span class="material-icons mi">flag</span>Estado y notas</div>
 
@@ -169,7 +171,7 @@
                         </div>
 
                         <div class="input-group" style="grid-column:1/-1;">
-                            <label for="f-obs_piloto">Observaciones del piloto</label>
+                            <label for="f-obs_piloto">Observaciones para el piloto</label>
                             <div class="input-icon material">
                                 <span class="material-icons mi">description</span>
                                 <textarea id="f-obs_piloto" name="obs_piloto" rows="3" placeholder="Notas del piloto"></textarea>
@@ -240,6 +242,14 @@
 
                         <!-- ======= Parámetros de vuelo ======= -->
                         <div class="form-separator"><span class="material-icons mi">tune</span>Parámetros de vuelo</div>
+
+                        <div class="input-group">
+                            <label for="f-piloto">Piloto</label>
+                            <div class="input-icon material">
+                                <span class="material-icons mi">flight</span>
+                                <input type="text" id="f-piloto" name="piloto" placeholder="Nombre del piloto" />
+                            </div>
+                        </div>
 
                         <div class="input-group">
                             <label for="f-volumen_ha">Volumen (ha)</label>
@@ -341,23 +351,6 @@
                                 </select>
                             </div>
                         </div>
-
-                        <!-- ======= Listas (visual) ======= -->
-                        <div class="form-separator"><span class="material-icons mi">list_alt</span>Listas</div>
-
-                        <div class="input-group" style="grid-column:1/-1;">
-                            <label>Motivos</label>
-                            <div id="f-motivos" class="pill-list" aria-live="polite"></div>
-                        </div>
-
-                        <div class="input-group" style="grid-column:1/-1;">
-                            <label>Productos seleccionados por el productor</label>
-                            <ul id="f-productos" class="product-list" aria-live="polite"></ul>
-                        </div>
-
-
-
-
 
                     </form>
                 </div>
@@ -810,18 +803,18 @@
     };
 
     // ===== Utils globales (usados fuera del IIFE) =====
-function esc(s){
-  return (s ?? '').toString()
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-    .replace(/'/g,'&#039;');
-}
-// Wrapper de spinner para uso global (submit del form)
-function showSpinner(flag){
-  if (window.showSpinnerGlobal && window.hideSpinnerGlobal){
-    flag ? window.showSpinnerGlobal() : window.hideSpinnerGlobal();
-  }
-}
+    function esc(s) {
+        return (s ?? '').toString()
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+    // Wrapper de spinner para uso global (submit del form)
+    function showSpinner(flag) {
+        if (window.showSpinnerGlobal && window.hideSpinnerGlobal) {
+            flag ? window.showSpinnerGlobal() : window.hideSpinnerGlobal();
+        }
+    }
 
 
     // --- Drawer refs y helpers ---
