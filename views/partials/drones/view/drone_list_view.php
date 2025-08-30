@@ -175,11 +175,11 @@
         <div class="product-body">
           <div class="user-info">
             <div>
-              <strong>${esc(it.piloto || 'sin piloto asignado aún')}</strong>
-              <div class="role">${esc(it.fecha_visita || 'sin fecha')} & ${esc(it.hora_visita || '')}</div>
+              <strong>${esc(it.piloto || 'Sin piloto asignado aún')}</strong>
+              <div class="role">Fecha de visita ${esc(it.fecha_visita || 'sin fecha')} hora ${esc(it.hora_visita || '')}</div>
             </div>
           </div>
-          <p class="description">${esc(it.observaciones || '')}</p>
+          <p class="description">Observaciones del productor: ${esc(it.observaciones || '')}</p>
           <hr />
           <div class="product-footer">
             <div class="metric">
