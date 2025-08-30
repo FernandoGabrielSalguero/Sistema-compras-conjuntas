@@ -139,10 +139,6 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
           </div>
         </div>
 
-
-
-
-
         <!-- contenedor del toastify -->
         <div id="toast-container"></div>
         <div id="toast-container-boton"></div>
