@@ -41,7 +41,13 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
   <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
   <style>
+          .tab-panel {
+            display: none;
+          }
 
+          .tab-panel.active {
+            display: block;
+          }
   </style>
 
 </head>
@@ -125,20 +131,33 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         <div class="card">
           <h2>Hola! </h2>
           <p>Te presentamos el gestor de proyectos de vuelo. Armar todos los protocolos y los registros fitosanitarios desde esta página</p>
+
+          <!-- 🔘 Tarjeta con los botones del tab -->
           <div class="tabs">
             <div class="tab-buttons">
-              <button class="tab-button active" data-tab="tab1">Solicitudes</button>
-              <button class="tab-button" data-tab="tab2">Stock</button>
+              <button class="tab-button active" data-target="#panel-solicitudes">Solicitudes</button>
+              <button class="tab-button" data-target="#panel-stock">Stock</button>
             </div>
-  <div class="tab-content active" id="tab1">
-    <?php
-      // Renderiza la vista a través del controlador MVC del módulo de drones (Listado)
-      require __DIR__ . '/../partials/drones/controller/drone_list_controller.php';
-    ?>
-  </div>
-            <div class="tab-content" id="tab2">
-              <p>Contenido de la pestaña Opciones.</p>
-            </div>
+          </div>
+        </div>
+
+        <!-- 🧩 Tarjeta separada para el contenido del tab -->
+        <div class="card" id="tab-content-card" style="margin-top: 12px;">
+          <!-- Panel: Solicitudes (renderiza directamente la vista) -->
+          <div class="tab-panel active" id="panel-solicitudes">
+            <?php
+            $viewFile = __DIR__ . '/../partials/drones/view/drone_list_view.php';
+            if (is_file($viewFile)) {
+              require $viewFile; // 👈 se incluye la VISTA directamente
+            } else {
+              echo '<p>No se encontró la vista <code>drone_list_view.php</code>.</p>';
+            }
+            ?>
+          </div>
+
+          <!-- Panel: Stock -->
+          <div class="tab-panel" id="panel-stock">
+            <p>Contenido de la pestaña Stock (próximamente).</p>
           </div>
         </div>
 
@@ -155,9 +174,29 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
 
 
-  <!-- Espacio para scripts adicionales -->
+  <!-- JS simple para alternar contenido entre tarjetas -->
   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const buttons = document.querySelectorAll('.tab-buttons .tab-button');
+      const panels = document.querySelectorAll('#tab-content-card .tab-panel');
 
+      function activate(targetSel) {
+        buttons.forEach(b => b.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+
+        const btn = Array.from(buttons).find(b => b.dataset.target === targetSel);
+        const panel = document.querySelector(targetSel);
+        if (btn) btn.classList.add('active');
+        if (panel) panel.classList.add('active');
+      }
+
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => activate(btn.dataset.target));
+      });
+
+      // Estado inicial por si el framework no lo setea
+      activate('#panel-solicitudes');
+    });
   </script>
 
   <!-- Contenedor exclusivo para impresión -->
