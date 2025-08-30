@@ -1,72 +1,106 @@
-<div class="card-grid grid-3">
-                        <div class="card selector-list">
-                            <h3>Selector Multiple</h3>
-                            <hr />
-                            <label>
-                                <input type="checkbox" checked />
-                                <span>Boots</span>
-                            </label>
-                            <label>
-                                <input type="checkbox" />
-                                <span>Clogs</span>
-                            </label>
-                            <label>
-                                <input type="checkbox" checked />
-                                <span>Loafers</span>
-                            </label>
-                            <label>
-                                <input type="checkbox" />
-                                <span>Moccasins</span>
-                            </label>
-                            <label>
-                                <input type="checkbox" checked />
-                                <span>Sneakers</span>
-                            </label>
-                        </div>
-                        <div class="card selector-list">
-                            <h3>Selector simple</h3>
-                            <hr />
-                            <label>
-                                <input type="radio" name="shoes" />
-                                <span>Boots</span>
-                            </label>
-                            <label>
-                                <input type="radio" name="shoes" />
-                                <span>Clogs</span>
-                            </label>
-                            <label>
-                                <input type="radio" name="shoes" />
-                                <span>Loafers</span>
-                            </label>
-                            <label>
-                                <input type="radio" name="shoes" checked />
-                                <span>Moccasins</span>
-                            </label>
-                            <label>
-                                <input type="radio" name="shoes" />
-                                <span>Sneakers</span>
-                            </label>
-                            <small>Option selected: Moccasins</small>
-                        </div>
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
 
-                        <div class="card smart-selector">
-                            <h3>Selector con buscador incorporado</h3>
-                            <hr />
+    <!-- Íconos de Material Design -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-                            <input type="text" class="smart-selector-search" placeholder="Buscar topping...">
+    <!-- Framework Success desde CDN -->
+    <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
+    <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+</head>
 
-                            <div class="smart-selector-list">
-                                <label><input type="checkbox" name="toppings" value="pepperoni"> Pepperoni</label>
-                                <label><input type="checkbox" name="toppings" value="extracheese"> Extra Cheese</label>
-                                <label><input type="checkbox" name="toppings" value="mushroom"> Mushroom</label>
-                                <label><input type="checkbox" name="toppings" value="onion"> Onion</label>
-                                <label><input type="checkbox" name="toppings" value="tomato"> Tomato</label>
-                                <label><input type="checkbox" name="toppings" value="bacon"> Bacon</label>
-                                <label><input type="checkbox" name="toppings" value="olives"> Olives</label>
-                                <label><input type="checkbox" name="toppings" value="spinach"> Spinach</label>
-                                <!-- Agregá más opciones acá -->
-                            </div>
-                        </div>
+<body>
+    <div class="content">
+        <div class="card">
+            <h3>Buscar proyecto de vuelo</h3>
 
+            <form class="form-grid grid-4" id="form-search" enctype="multipart/form-data">
+                <!-- Buscamos por piloto -->
+                <div class="input-group">
+                    <label for="piloto">Nombre piloto</label>
+                    <div class="input-icon input-icon-name">
+                        <input type="text" id="piloto" name="piloto" placeholder="Piloto" />
                     </div>
+                </div>
+
+                <!-- Buscamos por productor -->
+                <div class="input-group">
+                    <label for="ses_usuario">Nombre productor</label>
+                    <div class="input-icon input-icon-name">
+                        <input type="text" id="ses_usuario" name="ses_usuario" placeholder="Productor" />
+                    </div>
+                </div>
+
+                <!-- Buscamos por estado -->
+                <div class="input-group">
+                    <label for="estado">Estado</label>
+                    <div class="input-icon input-icon-globe">
+                        <select id="estado" name="estado">
+                            <option value="">Seleccionar</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="en_proceso">En proceso</option>
+                            <option value="completado">Completado</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Buscamos por fecha -->
+                <div class="input-group">
+                    <label for="fecha_visita">Fecha del servicio</label>
+                    <div class="input-icon input-icon-date">
+                        <input id="fecha_visita" name="fecha_visita" />
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- tarjetas con proyectos -->
+        <div class="triple-tarjetas card-grid grid-4">
+            <div class="product-card">
+                <div class="product-header">
+                    <h4>ses_usuario</h4>
+                    <p>piloto</p>
+                </div>
+                <div class="product-body">
+                    <div class="user-info">
+                        <div>
+                            <strong>productor_id_real</strong>
+                            <div class="role">fecha_visita & hora_visita</div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <p class="description">
+                        observaciones
+                    </p>
+
+                    <hr />
+
+                    <div class="product-footer">
+                        <div class="metric">
+                            <td><span class="badge warning">Pendiente</span></td>
+                        </div>
+                        <div class="metric">
+                            <span>motivo_cancelacion</span>
+                        </div>
+                        <button class="btn-view">Ver detalle</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    </div>
+    <!-- Alert -->
+    <div class="alert-container" id="alertContainer"></div>
+</body>
+
+</html>
