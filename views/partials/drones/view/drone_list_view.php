@@ -77,7 +77,7 @@
                     <form id="detalle-form" class="form-grid grid-2" autocomplete="off">
 
                         <!-- ======= Identificación ======= -->
-                        <div class="form-separator"><span class="material-icons mi">badge</span>Detalle general de la solicitud</div>
+                        <div class="form-separator"><span class="material-icons mi">badge</span>Datos generales del servicio</div>
 
                         <div class="input-group">
                             <label for="f-id">Número de solicitud</label>
@@ -121,10 +121,9 @@
                             </div>
                         </div>
 
-                        <!-- ======= Agenda ======= -->
+                                                <!-- ======= Agenda ======= -->
                         <div class="form-separator"><span class="material-icons mi">event</span>Agenda</div>
 
-                        <!-- Rangos preferidos -->
                         <div class="input-group" style="grid-column:1/-1;">
                             <label>Rango preferido por el productor</label>
                             <div id="f-rangos" class="pill-list" aria-live="polite"></div>
@@ -143,6 +142,75 @@
                             <div class="input-icon material">
                                 <span class="material-icons mi">schedule</span>
                                 <input type="time" id="f-hora_visita" name="hora_visita" />
+                            </div>
+                        </div>
+
+                        <!-- ======= Seguridad ======= -->
+                        <div class="form-separator"><span class="material-icons mi">shield</span>Condiciones de la finca</div>
+
+                        <div class="input-group">
+                            <label for="f-linea_tension">Línea de tensión</label>
+                            <div class="input-icon material">
+                                <span class="material-icons mi">bolt</span>
+                                <select id="f-linea_tension" name="linea_tension">
+                                    <option>si</option>
+                                    <option>no</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-zona_restringida">Zona restringida</label>
+                            <div class="input-icon material">
+                                <span class="material-icons mi">block</span>
+                                <select id="f-zona_restringida" name="zona_restringida">
+                                    <option>si</option>
+                                    <option>no</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-corriente_electrica">Corriente eléctrica</label>
+                            <div class="input-icon material">
+                                <span class="material-icons mi">electrical_services</span>
+                                <select id="f-corriente_electrica" name="corriente_electrica">
+                                    <option>si</option>
+                                    <option>no</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-agua_potable">Agua potable</label>
+                            <div class="input-icon material">
+                                <span class="material-icons mi">water_drop</span>
+                                <select id="f-agua_potable" name="agua_potable">
+                                    <option>si</option>
+                                    <option>no</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-libre_obstaculos">Libre de obstáculos</label>
+                            <div class="input-icon material">
+                                <span class="material-icons mi">landscape</span>
+                                <select id="f-libre_obstaculos" name="libre_obstaculos">
+                                    <option>si</option>
+                                    <option>no</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-area_despegue">Área despegue</label>
+                            <div class="input-icon material">
+                                <span class="material-icons mi">flight_takeoff</span>
+                                <select id="f-area_despegue" name="area_despegue">
+                                    <option>si</option>
+                                    <option>no</option>
+                                </select>
                             </div>
                         </div>
 
@@ -280,75 +348,6 @@
                             <div class="input-icon material">
                                 <span class="material-icons mi">water_drop</span>
                                 <input type="text" id="f-tamano_gota" name="tamano_gota" placeholder="Tamaño de gota" />
-                            </div>
-                        </div>
-
-                        <!-- ======= Seguridad ======= -->
-                        <div class="form-separator"><span class="material-icons mi">shield</span>Seguridad</div>
-
-                        <div class="input-group">
-                            <label for="f-linea_tension">Línea de tensión</label>
-                            <div class="input-icon material">
-                                <span class="material-icons mi">bolt</span>
-                                <select id="f-linea_tension" name="linea_tension">
-                                    <option>si</option>
-                                    <option>no</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="f-zona_restringida">Zona restringida</label>
-                            <div class="input-icon material">
-                                <span class="material-icons mi">block</span>
-                                <select id="f-zona_restringida" name="zona_restringida">
-                                    <option>si</option>
-                                    <option>no</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="f-corriente_electrica">Corriente eléctrica</label>
-                            <div class="input-icon material">
-                                <span class="material-icons mi">electrical_services</span>
-                                <select id="f-corriente_electrica" name="corriente_electrica">
-                                    <option>si</option>
-                                    <option>no</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="f-agua_potable">Agua potable</label>
-                            <div class="input-icon material">
-                                <span class="material-icons mi">water_drop</span>
-                                <select id="f-agua_potable" name="agua_potable">
-                                    <option>si</option>
-                                    <option>no</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="f-libre_obstaculos">Libre de obstáculos</label>
-                            <div class="input-icon material">
-                                <span class="material-icons mi">landscape</span>
-                                <select id="f-libre_obstaculos" name="libre_obstaculos">
-                                    <option>si</option>
-                                    <option>no</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="f-area_despegue">Área despegue</label>
-                            <div class="input-icon material">
-                                <span class="material-icons mi">flight_takeoff</span>
-                                <select id="f-area_despegue" name="area_despegue">
-                                    <option>si</option>
-                                    <option>no</option>
-                                </select>
                             </div>
                         </div>
 
