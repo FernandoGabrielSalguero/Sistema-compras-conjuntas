@@ -41,7 +41,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
   <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
   <style>
-    
+
   </style>
 
 </head>
@@ -123,10 +123,21 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
         <!-- Bienvenida -->
         <div class="card">
-          <h2>Hola</h2>
+          <h2>Hola! </h2>
           <p>Te presentamos el gestor de proyectos de vuelo. Armar todos los protocolos y los registros fitosanitarios desde esta página</p>
+          <div class="tabs">
+            <div class="tab-buttons">
+              <button class="tab-button active" data-tab="tab1">Solicitudes</button>
+              <button class="tab-button" data-tab="tab2">Stock</button>
+            </div>
+            <div class="tab-content active" id="tab1">
+              <p>Contenido de la pestaña General.</p>
+            </div>
+            <div class="tab-content" id="tab2">
+              <p>Contenido de la pestaña Opciones.</p>
+            </div>
+          </div>
         </div>
-
 
 
 
