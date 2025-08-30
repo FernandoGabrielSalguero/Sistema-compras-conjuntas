@@ -114,6 +114,14 @@
                         <!-- ======= Agenda ======= -->
                         <div class="form-separator"><span class="material-icons mi">event</span>Agenda</div>
 
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <label for="f-rangos">Rango preferido por el productor</label>
+                            <div class="input-icon material">
+                                <span class="material-icons mi">calendar_month</span>
+                                <div id="f-rangos" class="pill-list" aria-live="polite"></div>
+                            </div>
+                        </div>
+
                         <div class="input-group">
                             <label for="f-fecha_visita">Fecha visita</label>
                             <div class="input-icon material">
@@ -130,7 +138,7 @@
                             </div>
                         </div>
 
-                                                <div class="input-group" style="grid-column:1/-1;">
+                        <div class="input-group" style="grid-column:1/-1;">
                             <label for="f-observaciones">Observaciones del productor</label>
                             <div class="input-icon material">
                                 <span class="material-icons mi">notes</span>
@@ -225,7 +233,7 @@
                         </div>
 
                         <div class="input-group">
-                            <label for="f-ubicacion_lng">Lng</label>
+                            <label for="f-ubicacion_lng">my_location</label>
                             <div class="input-icon material">
                                 <span class="material-icons mi">place</span>
                                 <input type="number" id="f-ubicacion_lng" name="ubicacion_lng" placeholder="-68.12345678" step="0.00000001" />
@@ -349,10 +357,7 @@
                             <div id="f-productos" class="table-mini"></div>
                         </div>
 
-                        <div class="input-group" style="grid-column:1/-1;">
-                            <label>Rangos</label>
-                            <div id="f-rangos" class="pill-list"></div>
-                        </div>
+
 
 
 
