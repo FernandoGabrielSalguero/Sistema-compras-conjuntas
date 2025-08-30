@@ -70,7 +70,7 @@
                 <div class="card">
                     <form id="detalle-form" class="form-grid grid-2" autocomplete="off">
                         <!-- Identificación -->
-                        <div class="input-group">
+                        <div class="input-group input-icon">
                             <label>ID (interno)</label>
                             <input type="text" name="id" id="f-id" readonly />
                         </div>
