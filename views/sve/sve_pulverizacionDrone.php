@@ -130,9 +130,12 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
               <button class="tab-button active" data-tab="tab1">Solicitudes</button>
               <button class="tab-button" data-tab="tab2">Stock</button>
             </div>
-            <div class="tab-content active" id="tab1">
-              <p>Contenido de la pestaña General.</p>
-            </div>
+  <div class="tab-content active" id="tab1">
+    <?php
+      // Renderiza la vista a través del controlador MVC del módulo de drones (Listado)
+      require __DIR__ . '/../partials/drones/controller/drone_list_controller.php';
+    ?>
+  </div>
             <div class="tab-content" id="tab2">
               <p>Contenido de la pestaña Opciones.</p>
             </div>
