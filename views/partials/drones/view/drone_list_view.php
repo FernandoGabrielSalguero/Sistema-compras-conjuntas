@@ -130,6 +130,14 @@
                             </div>
                         </div>
 
+                                                <div class="input-group" style="grid-column:1/-1;">
+                            <label for="f-observaciones">Observaciones del productor</label>
+                            <div class="input-icon material">
+                                <span class="material-icons mi">notes</span>
+                                <textarea id="f-observaciones" name="observaciones" rows="3" placeholder="Notas del productor"></textarea>
+                            </div>
+                        </div>
+
                         <!-- ======= Estado y notas ======= -->
                         <div class="form-separator"><span class="material-icons mi">flag</span>Estado y notas</div>
 
@@ -151,14 +159,6 @@
                             <div class="input-icon material">
                                 <span class="material-icons mi">cancel</span>
                                 <input type="text" id="f-motivo_cancelacion" name="motivo_cancelacion" placeholder="Motivo de cancelación (opcional)" />
-                            </div>
-                        </div>
-
-                        <div class="input-group" style="grid-column:1/-1;">
-                            <label for="f-observaciones">Observaciones del productor</label>
-                            <div class="input-icon material">
-                                <span class="material-icons mi">notes</span>
-                                <textarea id="f-observaciones" name="observaciones" rows="3" placeholder="Notas del productor"></textarea>
                             </div>
                         </div>
 
