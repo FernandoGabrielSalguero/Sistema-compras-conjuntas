@@ -697,13 +697,6 @@
             }
         }
 
-        function esc(s) {
-            return (s ?? '').toString()
-                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
-
         function getFilters() {
             return {
                 piloto: els.piloto.value.trim(),
@@ -815,6 +808,21 @@
             cancelado: 'Cancelado'
         }
     };
+
+    // ===== Utils globales (usados fuera del IIFE) =====
+function esc(s){
+  return (s ?? '').toString()
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+// Wrapper de spinner para uso global (submit del form)
+function showSpinner(flag){
+  if (window.showSpinnerGlobal && window.hideSpinnerGlobal){
+    flag ? window.showSpinnerGlobal() : window.hideSpinnerGlobal();
+  }
+}
+
 
     // --- Drawer refs y helpers ---
     const drawer = document.getElementById('drawer');
