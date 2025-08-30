@@ -171,7 +171,7 @@
         <div class="product-header">
           <h4>${esc(it.ses_usuario || '—')}</h4>
           <p>${esc(it.productor_id_real || '—')}</p>
-          <span><strong>Pedido ID:</strong> ${esc(it.id ?? '')}</span>
+          <p><strong>Pedido ID:</strong> ${esc(it.id ?? '')}</p>
         </div>
         <div class="product-body">
           <div class="user-info">
