@@ -80,7 +80,7 @@
                         <div class="form-separator"><span class="material-icons mi">badge</span>Detalle general de la solicitud</div>
 
                         <div class="input-group">
-                            <label for="f-id">ID (interno)</label>
+                            <label for="f-id">Número de solicitud</label>
                             <div class="input-icon material">
                                 <span class="material-icons mi">tag</span>
                                 <input type="text" id="f-id" name="id" placeholder="ID interno" readonly />
@@ -96,7 +96,7 @@
                         </div>
 
                         <div class="input-group">
-                            <label for="f-ses_usuario">Productor</label>
+                            <label for="f-ses_usuario">Nombre/Usuario del productor</label>
                             <div class="input-icon material">
                                 <span class="material-icons mi">person</span>
                                 <input type="text" id="f-ses_usuario" name="ses_usuario" placeholder="Nombre del productor" readonly />
@@ -104,7 +104,7 @@
                         </div>
 
                         <div class="input-group" style="grid-column:1/-1;">
-                            <label>Motivos</label>
+                            <label>Motivos por el cúal contrata el servicio</label>
                             <div id="f-motivos" class="pill-list" aria-live="polite"></div>
                         </div>
 
