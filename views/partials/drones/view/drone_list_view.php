@@ -74,12 +74,12 @@
                             <label>ID (interno)</label>
                             <input type="text" name="id" id="f-id" readonly />
                         </div>
-                        <div class="input-group">
+                        <div class="input-group input-icon">
                             <label>Id real Productor</label>
                             <input type="text" name="productor_id_real" id="f-productor_id_real" readonly />
                         </div>
 
-                        <div class="input-group">
+                        <div class="input-group input-icon">
                             <label>Productor</label>
                             <input type="text" name="ses_usuario" id="f-ses_usuario" readonly />
                         </div>
