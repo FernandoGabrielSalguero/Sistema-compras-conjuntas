@@ -176,7 +176,7 @@
           <div class="user-info">
             <div>
               <strong>${esc(it.piloto || 'Sin piloto asignado aún')}</strong>
-              <div class="role">Fecha de visita ${esc(it.fecha_visita || 'sin fecha')} hora ${esc(it.hora_visita || '')}</div>
+              <div class="role">Fecha de visita: ${esc(it.fecha_visita || '')} hora ${esc(it.hora_visita || '')}</div>
             </div>
           </div>
           <p class="description">Observaciones del productor: ${esc(it.observaciones || '')}</p>
