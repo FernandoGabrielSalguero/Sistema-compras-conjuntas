@@ -1,5 +1,11 @@
-<?php // views/partials/drones/view/drone_list_view.php 
+<?php
 ?>
+
+<!-- Íconos de Material Design -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+
 <div class="content">
 
     <div class="card" style="background-color:#5b21b6;">
@@ -70,52 +76,67 @@
                 <div class="card">
                     <form id="detalle-form" class="form-grid grid-2" autocomplete="off">
 
-                        <!-- Identificación -->
+                        <!-- ======= Identificación ======= -->
+                        <div class="form-separator"><span class="material-icons mi">badge</span>Identificación</div>
+
                         <div class="input-group">
                             <label for="f-id">ID (interno)</label>
-                            <div class="input-icon input-icon-name">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">tag</span>
                                 <input type="text" id="f-id" name="id" placeholder="ID interno" readonly />
                             </div>
                         </div>
 
                         <div class="input-group">
                             <label for="f-productor_id_real">Id real Productor</label>
-                            <div class="input-icon input-icon-name">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">badge</span>
                                 <input type="text" id="f-productor_id_real" name="productor_id_real" placeholder="Id real del productor" readonly />
                             </div>
                         </div>
 
                         <div class="input-group">
                             <label for="f-ses_usuario">Productor</label>
-                            <div class="input-icon input-icon-name">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">person</span>
                                 <input type="text" id="f-ses_usuario" name="ses_usuario" placeholder="Nombre del productor" readonly />
                             </div>
                         </div>
 
                         <div class="input-group">
                             <label for="f-piloto">Piloto</label>
-                            <div class="input-icon input-icon-name">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">flight</span>
                                 <input type="text" id="f-piloto" name="piloto" placeholder="Nombre del piloto" />
                             </div>
                         </div>
 
+                        <!-- ======= Agenda ======= -->
+                        <div class="form-separator"><span class="material-icons mi">event</span>Agenda</div>
+
                         <div class="input-group">
                             <label for="f-fecha_visita">Fecha visita</label>
-                            <div class="input-icon input-icon-date">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">event</span>
                                 <input type="date" id="f-fecha_visita" name="fecha_visita" />
                             </div>
                         </div>
 
                         <div class="input-group">
                             <label for="f-hora_visita">Hora visita</label>
-                            <div class="input-icon input-icon-date">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">schedule</span>
                                 <input type="time" id="f-hora_visita" name="hora_visita" />
                             </div>
                         </div>
 
+                        <!-- ======= Estado y notas ======= -->
+                        <div class="form-separator"><span class="material-icons mi">flag</span>Estado y notas</div>
+
                         <div class="input-group">
                             <label for="f-estado">Estado</label>
-                            <div class="input-icon input-icon-globe">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">flag</span>
                                 <select id="f-estado" name="estado">
                                     <option value="pendiente">Pendiente</option>
                                     <option value="en_proceso">En proceso</option>
@@ -127,57 +148,67 @@
 
                         <div class="input-group">
                             <label for="f-motivo_cancelacion">Motivo cancelación</label>
-                            <div class="input-icon input-icon-name">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">cancel</span>
                                 <input type="text" id="f-motivo_cancelacion" name="motivo_cancelacion" placeholder="Motivo de cancelación (opcional)" />
                             </div>
                         </div>
 
                         <div class="input-group" style="grid-column:1/-1;">
                             <label for="f-observaciones">Observaciones del productor</label>
-                            <div class="input-icon input-icon-name">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">notes</span>
                                 <textarea id="f-observaciones" name="observaciones" rows="3" placeholder="Notas del productor"></textarea>
                             </div>
                         </div>
 
                         <div class="input-group" style="grid-column:1/-1;">
                             <label for="f-obs_piloto">Observaciones del piloto</label>
-                            <div class="input-icon input-icon-name">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">description</span>
                                 <textarea id="f-obs_piloto" name="obs_piloto" rows="3" placeholder="Notas del piloto"></textarea>
                             </div>
                         </div>
 
-                        <!-- Dirección / ubicación -->
+                        <!-- ======= Dirección y ubicación ======= -->
+                        <div class="form-separator"><span class="material-icons mi">map</span>Dirección y ubicación</div>
+
                         <div class="input-group">
                             <label for="f-dir_provincia">Provincia</label>
-                            <div class="input-icon input-icon-globe">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">public</span>
                                 <input type="text" id="f-dir_provincia" name="dir_provincia" placeholder="Provincia" />
                             </div>
                         </div>
 
                         <div class="input-group">
                             <label for="f-dir_localidad">Localidad</label>
-                            <div class="input-icon input-icon-globe">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">location_city</span>
                                 <input type="text" id="f-dir_localidad" name="dir_localidad" placeholder="Localidad" />
                             </div>
                         </div>
 
                         <div class="input-group">
                             <label for="f-dir_calle">Calle</label>
-                            <div class="input-icon input-icon-globe">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">route</span>
                                 <input type="text" id="f-dir_calle" name="dir_calle" placeholder="Calle" />
                             </div>
                         </div>
 
                         <div class="input-group">
                             <label for="f-dir_numero">Número</label>
-                            <div class="input-icon input-icon-globe">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">pin</span>
                                 <input type="text" id="f-dir_numero" name="dir_numero" placeholder="Número" />
                             </div>
                         </div>
 
                         <div class="input-group">
                             <label for="f-en_finca">En finca</label>
-                            <div class="input-icon input-icon-globe">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">agriculture</span>
                                 <select id="f-en_finca" name="en_finca">
                                     <option value="si">si</option>
                                     <option value="no">no</option>
@@ -187,51 +218,62 @@
 
                         <div class="input-group">
                             <label for="f-ubicacion_lat">Lat</label>
-                            <div class="input-icon input-icon-globe">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">my_location</span>
                                 <input type="number" id="f-ubicacion_lat" name="ubicacion_lat" placeholder="-32.12345678" step="0.00000001" />
                             </div>
                         </div>
 
                         <div class="input-group">
                             <label for="f-ubicacion_lng">Lng</label>
-                            <div class="input-icon input-icon-globe">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">place</span>
                                 <input type="number" id="f-ubicacion_lng" name="ubicacion_lng" placeholder="-68.12345678" step="0.00000001" />
                             </div>
                         </div>
 
-                        <!-- Parámetros de vuelo -->
+                        <!-- ======= Parámetros de vuelo ======= -->
+                        <div class="form-separator"><span class="material-icons mi">tune</span>Parámetros de vuelo</div>
+
                         <div class="input-group">
                             <label for="f-volumen_ha">Volumen (ha)</label>
-                            <div class="input-icon input-icon-name">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">square_foot</span>
                                 <input type="number" id="f-volumen_ha" name="volumen_ha" placeholder="0.00" step="0.01" />
                             </div>
                         </div>
 
                         <div class="input-group">
                             <label for="f-velocidad_vuelo">Velocidad (m/s)</label>
-                            <div class="input-icon input-icon-name">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">speed</span>
                                 <input type="number" id="f-velocidad_vuelo" name="velocidad_vuelo" placeholder="0.00" step="0.01" />
                             </div>
                         </div>
 
                         <div class="input-group">
                             <label for="f-alto_vuelo">Altura (m)</label>
-                            <div class="input-icon input-icon-name">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">height</span>
                                 <input type="number" id="f-alto_vuelo" name="alto_vuelo" placeholder="0.00" step="0.01" />
                             </div>
                         </div>
 
                         <div class="input-group">
                             <label for="f-tamano_gota">Tamaño gota</label>
-                            <div class="input-icon input-icon-name">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">water_drop</span>
                                 <input type="text" id="f-tamano_gota" name="tamano_gota" placeholder="Tamaño de gota" />
                             </div>
                         </div>
 
-                        <!-- Seguridad -->
+                        <!-- ======= Seguridad ======= -->
+                        <div class="form-separator"><span class="material-icons mi">shield</span>Seguridad</div>
+
                         <div class="input-group">
                             <label for="f-linea_tension">Línea de tensión</label>
-                            <div class="input-icon input-icon-globe">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">bolt</span>
                                 <select id="f-linea_tension" name="linea_tension">
                                     <option>si</option>
                                     <option>no</option>
@@ -241,7 +283,8 @@
 
                         <div class="input-group">
                             <label for="f-zona_restringida">Zona restringida</label>
-                            <div class="input-icon input-icon-globe">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">block</span>
                                 <select id="f-zona_restringida" name="zona_restringida">
                                     <option>si</option>
                                     <option>no</option>
@@ -251,7 +294,8 @@
 
                         <div class="input-group">
                             <label for="f-corriente_electrica">Corriente eléctrica</label>
-                            <div class="input-icon input-icon-globe">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">electrical_services</span>
                                 <select id="f-corriente_electrica" name="corriente_electrica">
                                     <option>si</option>
                                     <option>no</option>
@@ -261,7 +305,8 @@
 
                         <div class="input-group">
                             <label for="f-agua_potable">Agua potable</label>
-                            <div class="input-icon input-icon-globe">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">water_drop</span>
                                 <select id="f-agua_potable" name="agua_potable">
                                     <option>si</option>
                                     <option>no</option>
@@ -271,7 +316,8 @@
 
                         <div class="input-group">
                             <label for="f-libre_obstaculos">Libre de obstáculos</label>
-                            <div class="input-icon input-icon-globe">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">landscape</span>
                                 <select id="f-libre_obstaculos" name="libre_obstaculos">
                                     <option>si</option>
                                     <option>no</option>
@@ -281,13 +327,33 @@
 
                         <div class="input-group">
                             <label for="f-area_despegue">Área despegue</label>
-                            <div class="input-icon input-icon-globe">
+                            <div class="input-icon material">
+                                <span class="material-icons mi">flight_takeoff</span>
                                 <select id="f-area_despegue" name="area_despegue">
                                     <option>si</option>
                                     <option>no</option>
                                 </select>
                             </div>
                         </div>
+
+                        <!-- ======= Listas (visual) ======= -->
+                        <div class="form-separator"><span class="material-icons mi">list_alt</span>Listas</div>
+
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <label>Motivos</label>
+                            <div id="f-motivos" class="pill-list"></div>
+                        </div>
+
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <label>Productos</label>
+                            <div id="f-productos" class="table-mini"></div>
+                        </div>
+
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <label>Rangos</label>
+                            <div id="f-rangos" class="pill-list"></div>
+                        </div>
+
 
 
                     </form>
@@ -443,6 +509,49 @@
 
     .sv-drawer.closing .sv-drawer__overlay {
         animation: fadeOut .20s ease both;
+    }
+
+    /* iconos y estilos de botones */
+    /* Input con ícono Material dentro */
+    .input-icon.material {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-icon.material>.mi,
+    .input-icon.material>.ms {
+        position: absolute;
+        left: 12px;
+        line-height: 1;
+        pointer-events: none;
+        font-size: 22px;
+        opacity: .8;
+    }
+
+    .input-icon.material>input,
+    .input-icon.material>select,
+    .input-icon.material>textarea {
+        padding-left: 44px !important;
+        /* deja espacio para el ícono */
+    }
+
+    /* Títulos/separadores de secciones dentro del grid del form */
+    .form-separator {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 0 2px;
+        font-weight: 600;
+        color: #5b21b6;
+        /* tu violeta */
+    }
+
+    .form-separator .mi,
+    .form-separator .ms {
+        font-size: 20px;
+        opacity: .9;
     }
 </style>
 
