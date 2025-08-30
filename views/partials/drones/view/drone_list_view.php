@@ -271,13 +271,13 @@
                         <div class="input-group">
                             <label for="f-ubicacion_lat">Lat</label>
                             <div class="input-icon material">
-                                <span class="material-icons mi">my_location</span>
+                                <span class="material-icons mi">place</span>
                                 <input type="number" id="f-ubicacion_lat" name="ubicacion_lat" placeholder="-32.12345678" step="0.00000001" />
                             </div>
                         </div>
 
                         <div class="input-group">
-                            <label for="f-ubicacion_lng">my_location</label>
+                            <label for="f-ubicacion_lng">Long</label>
                             <div class="input-icon material">
                                 <span class="material-icons mi">place</span>
                                 <input type="number" id="f-ubicacion_lng" name="ubicacion_lng" placeholder="-68.12345678" step="0.00000001" />
