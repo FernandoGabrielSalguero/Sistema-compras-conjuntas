@@ -120,4 +120,35 @@ class DroneListModel
             'rangos'    => $rangos,
         ];
     }
+
+    public function actualizarSolicitud(int $id, array $data): bool
+{
+    // Campos permitidos a actualizar (tabla principal)
+    $allowed = [
+        'piloto','fecha_visita','hora_visita','observaciones','estado','motivo_cancelacion',
+        'obs_piloto','responsable','volumen_ha','velocidad_vuelo','alto_vuelo','tamano_gota',
+        'dir_provincia','dir_localidad','dir_calle','dir_numero','en_finca',
+        'linea_tension','zona_restringida','corriente_electrica','agua_potable',
+        'libre_obstaculos','area_despegue','ubicacion_lat','ubicacion_lng','ubicacion_acc'
+    ];
+
+    $set = [];
+    $params = [':id' => $id];
+
+    foreach ($allowed as $col) {
+        if (array_key_exists($col, $data)) {
+            $set[] = " $col = :$col ";
+            $params[":$col"] = $data[$col];
+        }
+    }
+
+    if (!$set) {
+        return false; // nada para actualizar
+    }
+
+    $sql = "UPDATE dron_solicitudes SET ".implode(',', $set)." WHERE id = :id";
+    $st  = $this->pdo->prepare($sql);
+    return $st->execute($params);
+}
+
 }

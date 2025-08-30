@@ -47,6 +47,29 @@ try {
             break;
         }
 
+        case 'update_solicitud': {
+    // Soportar JSON o x-www-form-urlencoded
+    $input = $_POST;
+    if (empty($input)) {
+        $raw = file_get_contents('php://input');
+        $json = json_decode($raw, true);
+        if (is_array($json)) $input = $json;
+    }
+
+    $data = $input['data'] ?? $input ?? [];
+    $id = isset($data['id']) ? (int)$data['id'] : 0;
+    if ($id <= 0) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'ID inválido']);
+        break;
+    }
+
+    $ok = $model->actualizarSolicitud($id, $data);
+    echo json_encode(['ok' => (bool)$ok]);
+    break;
+}
+
+
         default: {
             http_response_code(400);
             echo json_encode(['ok' => false, 'error' => 'Acción no soportada']);
