@@ -121,30 +121,6 @@
                             </div>
                         </div>
 
-                                                <!-- ======= Agenda ======= -->
-                        <div class="form-separator"><span class="material-icons mi">event</span>Agenda</div>
-
-                        <div class="input-group" style="grid-column:1/-1;">
-                            <label>Rango preferido por el productor</label>
-                            <div id="f-rangos" class="pill-list" aria-live="polite"></div>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="f-fecha_visita">Fecha visita</label>
-                            <div class="input-icon material">
-                                <span class="material-icons mi">event</span>
-                                <input type="date" id="f-fecha_visita" name="fecha_visita" />
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="f-hora_visita">Hora visita</label>
-                            <div class="input-icon material">
-                                <span class="material-icons mi">schedule</span>
-                                <input type="time" id="f-hora_visita" name="hora_visita" />
-                            </div>
-                        </div>
-
                         <!-- ======= Seguridad ======= -->
                         <div class="form-separator"><span class="material-icons mi">shield</span>Condiciones de la finca</div>
 
@@ -305,6 +281,30 @@
                             <div class="input-icon material">
                                 <span class="material-icons mi">place</span>
                                 <input type="number" id="f-ubicacion_lng" name="ubicacion_lng" placeholder="-68.12345678" step="0.00000001" />
+                            </div>
+                        </div>
+
+                                                <!-- ======= Agenda ======= -->
+                        <div class="form-separator"><span class="material-icons mi">event</span>Agenda</div>
+
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <label>Rango preferido por el productor</label>
+                            <div id="f-rangos" class="pill-list" aria-live="polite"></div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-fecha_visita">Fecha visita</label>
+                            <div class="input-icon material">
+                                <span class="material-icons mi">event</span>
+                                <input type="date" id="f-fecha_visita" name="fecha_visita" />
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-hora_visita">Hora visita</label>
+                            <div class="input-icon material">
+                                <span class="material-icons mi">schedule</span>
+                                <input type="time" id="f-hora_visita" name="hora_visita" />
                             </div>
                         </div>
 
