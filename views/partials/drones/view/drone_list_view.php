@@ -116,14 +116,7 @@
 
                         <!-- Rangos preferidos -->
                         <div class="input-group" style="grid-column:1/-1;">
-                            <label for="f-rangos_text">Rango preferido por el productor</label>
-                            <div class="input-icon material">
-                                <span class="material-icons mi">calendar_month</span>
-                                <input type="text" id="f-rangos_text" name="rangos_text" placeholder="Sin rangos seleccionados" readonly />
-                            </div>
-                        </div>
-
-                        <div class="input-group" style="grid-column:1/-1; margin-top:-6px;">
+                            <label>Rango preferido por el productor</label>
                             <div id="f-rangos" class="pill-list" aria-live="polite"></div>
                         </div>
 
@@ -354,12 +347,12 @@
 
                         <div class="input-group" style="grid-column:1/-1;">
                             <label>Motivos</label>
-                            <div id="f-motivos" class="pill-list"></div>
+                            <div id="f-motivos" class="pill-list" aria-live="polite"></div>
                         </div>
 
                         <div class="input-group" style="grid-column:1/-1;">
-                            <label>Productos</label>
-                            <div id="f-productos" class="table-mini"></div>
+                            <label>Productos seleccionados por el productor</label>
+                            <ul id="f-productos" class="product-list" aria-live="polite"></ul>
                         </div>
 
 
@@ -562,6 +555,91 @@
     .form-separator .ms {
         font-size: 20px;
         opacity: .9;
+    }
+
+    /* chips  */
+    /* Chips (píldoras) */
+    .pill-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px
+    }
+
+    .pill-list .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #111827;
+        font-size: .9rem;
+        line-height: 1;
+    }
+
+    .pill-list .pill .mi {
+        font-size: 18px;
+        opacity: .75
+    }
+
+    /* Variantes (por si querés colorear alguna) */
+    .pill--accent {
+        background: #eef2ff;
+        color: #4338ca
+    }
+
+    .pill--success {
+        background: #dcfce7;
+        color: #166534
+    }
+
+    .pill--empty {
+        background: #f3f4f6;
+        color: #6b7280;
+        font-style: italic
+    }
+
+    /* Lista de productos */
+    .product-list {
+        list-style: none;
+        padding: 0;
+        margin: 0
+    }
+
+    .product-list li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 4px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .product-list li:last-child {
+        border-bottom: none
+    }
+
+    .product-list .mi {
+        font-size: 18px;
+        opacity: .8
+    }
+
+    .product-list .title {
+        font-weight: 600
+    }
+
+    .product-list .sub {
+        font-size: .85rem;
+        color: #6b7280
+    }
+
+    .product-list .badge {
+        margin-left: auto;
+        font-size: .8rem;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4338ca;
+        white-space: nowrap
     }
 </style>
 
@@ -779,6 +857,33 @@
     drawerClose.addEventListener('click', closeDrawer);
     drawerCancel.addEventListener('click', closeDrawer);
 
+    const PRETTY_RANGO = {
+        'enero_q1': 'Enero Q1',
+        'enero_q2': 'Enero Q2',
+        'febrero_q1': 'Febrero Q1',
+        'febrero_q2': 'Febrero Q2',
+        'octubre_q1': 'Octubre Q1',
+        'octubre_q2': 'Octubre Q2',
+        'noviembre_q1': 'Noviembre Q1',
+        'noviembre_q2': 'Noviembre Q2',
+        'diciembre_q1': 'Diciembre Q1',
+        'diciembre_q2': 'Diciembre Q2'
+    };
+    const PRETTY_MOTIVO = {
+        mildiu: 'Mildiu',
+        oidio: 'Oídio',
+        lobesia: 'Lobesia',
+        podredumbre: 'Podredumbre',
+        fertilizacion: 'Fertilización',
+        otros: 'Otros'
+    };
+    // helper para capitalizar
+    function cap(s) {
+        s = (s || '').toString();
+        return s ? s[0].toUpperCase() + s.slice(1) : s;
+    }
+
+
     // --- Rellenar formulario con el detalle ---
     function fillForm({
         solicitud,
@@ -826,48 +931,38 @@
 
         // Motivos (chips)
         const contMotivos = document.getElementById('f-motivos');
-        contMotivos.innerHTML = (motivos || []).map(m => `<span class="pill">${esc(m.motivo)}${m.otros_text?`: ${esc(m.otros_text)}`:''}</span>`).join('');
+        const prettyMotivos = (motivos || []).map(m => {
+            const base = PRETTY_MOTIVO[m.motivo] || cap(m.motivo);
+            const extra = m.otros_text ? `: ${esc(m.otros_text)}` : '';
+            return `<span class="pill"><span class="material-icons mi">label</span>${esc(base+extra)}</span>`;
+        });
+        contMotivos.innerHTML = prettyMotivos.length ?
+            prettyMotivos.join('') :
+            `<span class="pill pill--empty">Sin motivos</span>`;
 
         // Productos (tabla mini)
-        const contProd = document.getElementById('f-productos');
+        const ulProd = document.getElementById('f-productos');
         if ((productos || []).length) {
-            contProd.innerHTML = `
-      <table>
-        <thead><tr><th>Tipo</th><th>Fuente</th><th>Marca</th></tr></thead>
-        <tbody>${productos.map(p=>`<tr><td>${esc(p.tipo)}</td><td>${esc(p.fuente)}</td><td>${esc(p.marca||'')}</td></tr>`).join('')}</tbody>
-      </table>`;
-        } else contProd.innerHTML = '<em>Sin productos</em>';
-
-        // Rangos (chips)
-
-        const PRETTY_RANGO = {
-            'enero_q1': 'Enero Q1',
-            'enero_q2': 'Enero Q2',
-            'febrero_q1': 'Febrero Q1',
-            'febrero_q2': 'Febrero Q2',
-            'octubre_q1': 'Octubre Q1',
-            'octubre_q2': 'Octubre Q2',
-            'noviembre_q1': 'Noviembre Q1',
-            'noviembre_q2': 'Noviembre Q2',
-            'diciembre_q1': 'Diciembre Q1',
-            'diciembre_q2': 'Diciembre Q2'
-        };
-
-        // Rangos (input readonly + chips)
-        const prettyRangos = (rangos || []).map(r => PRETTY_RANGO[r.rango] || r.rango);
-
-        // Input de solo lectura con la lista separada por coma
-        const inputRangosText = document.getElementById('f-rangos_text');
-        if (inputRangosText) {
-            inputRangosText.value = prettyRangos.join(', ');
-            if (!prettyRangos.length) inputRangosText.value = ''; // deja ver el placeholder
+            ulProd.innerHTML = productos.map(p => `
+    <li>
+      <span class="material-icons mi">science</span>
+      <div>
+        <div class="title">${esc(cap(p.tipo))}${p.marca ? ` — ${esc(p.marca)}` : ''}</div>
+        <div class="sub">Fuente: ${esc(p.fuente === 'sve' ? 'SVE' : 'Propio')}</div>
+      </div>
+      <span class="badge product-badge">${esc(p.fuente === 'sve' ? 'SVE' : 'Yo')}</span>
+    </li>
+  `).join('');
+        } else {
+            ulProd.innerHTML = `<li><span class="sub">Sin productos</span></li>`;
         }
 
-        // Chips debajo
+        // Rangos (chips)
         const contRangos = document.getElementById('f-rangos');
+        const prettyRangos = (rangos || []).map(r => PRETTY_RANGO[r.rango] || r.rango);
         contRangos.innerHTML = prettyRangos.length ?
-            prettyRangos.map(txt => `<span class="pill">${esc(txt)}</span>`).join('') :
-            '<em>Sin rangos seleccionados</em>';
+            prettyRangos.map(txt => `<span class="pill"><span class="material-icons mi">calendar_month</span>${esc(txt)}</span>`).join('') :
+            `<span class="pill pill--empty">Sin rangos</span>`;
     }
 
     // Serializar form => objeto plano
