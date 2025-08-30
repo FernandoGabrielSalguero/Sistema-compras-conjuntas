@@ -19,7 +19,7 @@
 <body>
     <div class="content">
         <div class="card" style="background-color: #5b21b6;">
-            <h3>Buscar proyecto de vuelo</h3>
+            <h3 style="color: white;">Buscar proyecto de vuelo</h3>
 
             <form class="form-grid grid-4" id="form-search" enctype="multipart/form-data">
                 <!-- Buscamos por piloto -->
