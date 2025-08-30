@@ -70,152 +70,233 @@
                 <div class="card">
                     <form id="detalle-form" class="form-grid grid-2" autocomplete="off">
 
-
                         <!-- Identificación -->
                         <div class="input-group">
-                            <label>ID (interno)</label>
-                            <input type="text" name="id" id="f-id" readonly />
-                        </div>
-
-            <div class="input-group">
-                <label for="ses_usuario">Id real Productor</label>
-                <div class="input-icon input-icon-name">
-                    <input type="text" id="productor_id_real" name="productor_id_real" placeholder="Productor" />
-                </div>
-            </div>
-
-                        <div class="input-group">
-                            <label></label>
-                            <input type="text" name="productor_id_real" id="f-productor_id_real" readonly />
+                            <label for="f-id">ID (interno)</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="text" id="f-id" name="id" placeholder="ID interno" readonly />
+                            </div>
                         </div>
 
                         <div class="input-group">
-                            <label>Productor</label>
-                            <input type="text" name="ses_usuario" id="f-ses_usuario" readonly />
-                        </div>
-                        <div class="input-group">
-                            <label>Piloto</label>
-                            <input type="text" name="piloto" id="f-piloto" />
+                            <label for="f-productor_id_real">Id real Productor</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="text" id="f-productor_id_real" name="productor_id_real" placeholder="Id real del productor" readonly />
+                            </div>
                         </div>
 
                         <div class="input-group">
-                            <label>Fecha visita</label>
-                            <input type="date" name="fecha_visita" id="f-fecha_visita" />
-                        </div>
-                        <div class="input-group">
-                            <label>Hora visita</label>
-                            <input type="time" name="hora_visita" id="f-hora_visita" />
+                            <label for="f-ses_usuario">Productor</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="text" id="f-ses_usuario" name="ses_usuario" placeholder="Nombre del productor" readonly />
+                            </div>
                         </div>
 
                         <div class="input-group">
-                            <label>Estado</label>
-                            <select name="estado" id="f-estado">
-                                <option value="pendiente">Pendiente</option>
-                                <option value="en_proceso">En proceso</option>
-                                <option value="completado">Completado</option>
-                                <option value="cancelado">Cancelado</option>
-                            </select>
+                            <label for="f-piloto">Piloto</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="text" id="f-piloto" name="piloto" placeholder="Nombre del piloto" />
+                            </div>
                         </div>
+
                         <div class="input-group">
-                            <label>Motivo cancelación</label>
-                            <input type="text" name="motivo_cancelacion" id="f-motivo_cancelacion" />
+                            <label for="f-fecha_visita">Fecha visita</label>
+                            <div class="input-icon input-icon-date">
+                                <input type="date" id="f-fecha_visita" name="fecha_visita" />
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-hora_visita">Hora visita</label>
+                            <div class="input-icon input-icon-date">
+                                <input type="time" id="f-hora_visita" name="hora_visita" />
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-estado">Estado</label>
+                            <div class="input-icon input-icon-globe">
+                                <select id="f-estado" name="estado">
+                                    <option value="pendiente">Pendiente</option>
+                                    <option value="en_proceso">En proceso</option>
+                                    <option value="completado">Completado</option>
+                                    <option value="cancelado">Cancelado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-motivo_cancelacion">Motivo cancelación</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="text" id="f-motivo_cancelacion" name="motivo_cancelacion" placeholder="Motivo de cancelación (opcional)" />
+                            </div>
                         </div>
 
                         <div class="input-group" style="grid-column:1/-1;">
-                            <label>Observaciones del productor</label>
-                            <textarea name="observaciones" id="f-observaciones" rows="3"></textarea>
+                            <label for="f-observaciones">Observaciones del productor</label>
+                            <div class="input-icon input-icon-name">
+                                <textarea id="f-observaciones" name="observaciones" rows="3" placeholder="Notas del productor"></textarea>
+                            </div>
                         </div>
+
                         <div class="input-group" style="grid-column:1/-1;">
-                            <label>Observaciones del piloto</label>
-                            <textarea name="obs_piloto" id="f-obs_piloto" rows="3"></textarea>
+                            <label for="f-obs_piloto">Observaciones del piloto</label>
+                            <div class="input-icon input-icon-name">
+                                <textarea id="f-obs_piloto" name="obs_piloto" rows="3" placeholder="Notas del piloto"></textarea>
+                            </div>
                         </div>
 
                         <!-- Dirección / ubicación -->
-                        <div class="input-group"><label>Provincia</label><input name="dir_provincia" id="f-dir_provincia" /></div>
-                        <div class="input-group"><label>Localidad</label><input name="dir_localidad" id="f-dir_localidad" /></div>
-                        <div class="input-group"><label>Calle</label><input name="dir_calle" id="f-dir_calle" /></div>
-                        <div class="input-group"><label>Número</label><input name="dir_numero" id="f-dir_numero" /></div>
+                        <div class="input-group">
+                            <label for="f-dir_provincia">Provincia</label>
+                            <div class="input-icon input-icon-globe">
+                                <input type="text" id="f-dir_provincia" name="dir_provincia" placeholder="Provincia" />
+                            </div>
+                        </div>
 
                         <div class="input-group">
-                            <label>En finca</label>
-                            <select name="en_finca" id="f-en_finca">
-                                <option value="si">si</option>
-                                <option value="no">no</option>
-                            </select>
+                            <label for="f-dir_localidad">Localidad</label>
+                            <div class="input-icon input-icon-globe">
+                                <input type="text" id="f-dir_localidad" name="dir_localidad" placeholder="Localidad" />
+                            </div>
                         </div>
-                        <div class="input-group"><label>Lat</label><input name="ubicacion_lat" id="f-ubicacion_lat" /></div>
-                        <div class="input-group"><label>Lng</label><input name="ubicacion_lng" id="f-ubicacion_lng" /></div>
+
+                        <div class="input-group">
+                            <label for="f-dir_calle">Calle</label>
+                            <div class="input-icon input-icon-globe">
+                                <input type="text" id="f-dir_calle" name="dir_calle" placeholder="Calle" />
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-dir_numero">Número</label>
+                            <div class="input-icon input-icon-globe">
+                                <input type="text" id="f-dir_numero" name="dir_numero" placeholder="Número" />
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-en_finca">En finca</label>
+                            <div class="input-icon input-icon-globe">
+                                <select id="f-en_finca" name="en_finca">
+                                    <option value="si">si</option>
+                                    <option value="no">no</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-ubicacion_lat">Lat</label>
+                            <div class="input-icon input-icon-globe">
+                                <input type="number" id="f-ubicacion_lat" name="ubicacion_lat" placeholder="-32.12345678" step="0.00000001" />
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-ubicacion_lng">Lng</label>
+                            <div class="input-icon input-icon-globe">
+                                <input type="number" id="f-ubicacion_lng" name="ubicacion_lng" placeholder="-68.12345678" step="0.00000001" />
+                            </div>
+                        </div>
 
                         <!-- Parámetros de vuelo -->
-                        <div class="input-group"><label>Volumen (ha)</label><input name="volumen_ha" id="f-volumen_ha" /></div>
-                        <div class="input-group"><label>Velocidad (m/s)</label><input name="velocidad_vuelo" id="f-velocidad_vuelo" /></div>
-                        <div class="input-group"><label>Altura (m)</label><input name="alto_vuelo" id="f-alto_vuelo" /></div>
-                        <div class="input-group"><label>Tamaño gota</label><input name="tamano_gota" id="f-tamano_gota" /></div>
+                        <div class="input-group">
+                            <label for="f-volumen_ha">Volumen (ha)</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="number" id="f-volumen_ha" name="volumen_ha" placeholder="0.00" step="0.01" />
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-velocidad_vuelo">Velocidad (m/s)</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="number" id="f-velocidad_vuelo" name="velocidad_vuelo" placeholder="0.00" step="0.01" />
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-alto_vuelo">Altura (m)</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="number" id="f-alto_vuelo" name="alto_vuelo" placeholder="0.00" step="0.01" />
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-tamano_gota">Tamaño gota</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="text" id="f-tamano_gota" name="tamano_gota" placeholder="Tamaño de gota" />
+                            </div>
+                        </div>
 
                         <!-- Seguridad -->
                         <div class="input-group">
-                            <label>Línea de tensión</label>
-                            <select name="linea_tension" id="f-linea_tension">
-                                <option>si</option>
-                                <option>no</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Zona restringida</label>
-                            <select name="zona_restringida" id="f-zona_restringida">
-                                <option>si</option>
-                                <option>no</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Corriente eléctrica</label>
-                            <select name="corriente_electrica" id="f-corriente_electrica">
-                                <option>si</option>
-                                <option>no</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Agua potable</label>
-                            <select name="agua_potable" id="f-agua_potable">
-                                <option>si</option>
-                                <option>no</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Libre de obstáculos</label>
-                            <select name="libre_obstaculos" id="f-libre_obstaculos">
-                                <option>si</option>
-                                <option>no</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Área despegue</label>
-                            <select name="area_despegue" id="f-area_despegue">
-                                <option>si</option>
-                                <option>no</option>
-                            </select>
+                            <label for="f-linea_tension">Línea de tensión</label>
+                            <div class="input-icon input-icon-globe">
+                                <select id="f-linea_tension" name="linea_tension">
+                                    <option>si</option>
+                                    <option>no</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <!-- Listas hijas (solo visual en v1) -->
-                        <div class="input-group" style="grid-column:1/-1;">
-                            <label>Motivos</label>
-                            <div id="f-motivos" class="pill-list"></div>
+                        <div class="input-group">
+                            <label for="f-zona_restringida">Zona restringida</label>
+                            <div class="input-icon input-icon-globe">
+                                <select id="f-zona_restringida" name="zona_restringida">
+                                    <option>si</option>
+                                    <option>no</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="input-group" style="grid-column:1/-1;">
-                            <label>Productos</label>
-                            <div id="f-productos" class="table-mini"></div>
+
+                        <div class="input-group">
+                            <label for="f-corriente_electrica">Corriente eléctrica</label>
+                            <div class="input-icon input-icon-globe">
+                                <select id="f-corriente_electrica" name="corriente_electrica">
+                                    <option>si</option>
+                                    <option>no</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="input-group" style="grid-column:1/-1;">
-                            <label>Rangos</label>
-                            <div id="f-rangos" class="pill-list"></div>
+
+                        <div class="input-group">
+                            <label for="f-agua_potable">Agua potable</label>
+                            <div class="input-icon input-icon-globe">
+                                <select id="f-agua_potable" name="agua_potable">
+                                    <option>si</option>
+                                    <option>no</option>
+                                </select>
+                            </div>
                         </div>
+
+                        <div class="input-group">
+                            <label for="f-libre_obstaculos">Libre de obstáculos</label>
+                            <div class="input-icon input-icon-globe">
+                                <select id="f-libre_obstaculos" name="libre_obstaculos">
+                                    <option>si</option>
+                                    <option>no</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-area_despegue">Área despegue</label>
+                            <div class="input-icon input-icon-globe">
+                                <select id="f-area_despegue" name="area_despegue">
+                                    <option>si</option>
+                                    <option>no</option>
+                                </select>
+                            </div>
+                        </div>
+
+
                     </form>
                 </div>
             </div>
 
             <div class="sv-drawer__footer">
-                <button class="btn" id="drawer-cancel" type="button">Cerrar</button>
-                <button class="btn primary" id="drawer-save" type="submit" form="detalle-form">Guardar cambios</button>
+                <button class="btn btn-cancelar" id="drawer-cancel" type="button">Cerrar</button>
+                <button class="btn btn-aceptar" id="drawer-save" type="submit" form="detalle-form">Guardar cambios</button>
             </div>
         </aside>
     </div>
