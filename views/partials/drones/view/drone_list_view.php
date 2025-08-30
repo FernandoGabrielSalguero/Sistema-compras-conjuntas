@@ -114,12 +114,17 @@
                         <!-- ======= Agenda ======= -->
                         <div class="form-separator"><span class="material-icons mi">event</span>Agenda</div>
 
+                        <!-- Rangos preferidos -->
                         <div class="input-group" style="grid-column:1/-1;">
-                            <label for="f-rangos">Rango preferido por el productor</label>
+                            <label for="f-rangos_text">Rango preferido por el productor</label>
                             <div class="input-icon material">
                                 <span class="material-icons mi">calendar_month</span>
-                                <div id="f-rangos" class="pill-list" aria-live="polite"></div>
+                                <input type="text" id="f-rangos_text" name="rangos_text" placeholder="Sin rangos seleccionados" readonly />
                             </div>
+                        </div>
+
+                        <div class="input-group" style="grid-column:1/-1; margin-top:-6px;">
+                            <div id="f-rangos" class="pill-list" aria-live="polite"></div>
                         </div>
 
                         <div class="input-group">
@@ -834,8 +839,35 @@
         } else contProd.innerHTML = '<em>Sin productos</em>';
 
         // Rangos (chips)
+
+        const PRETTY_RANGO = {
+            'enero_q1': 'Enero Q1',
+            'enero_q2': 'Enero Q2',
+            'febrero_q1': 'Febrero Q1',
+            'febrero_q2': 'Febrero Q2',
+            'octubre_q1': 'Octubre Q1',
+            'octubre_q2': 'Octubre Q2',
+            'noviembre_q1': 'Noviembre Q1',
+            'noviembre_q2': 'Noviembre Q2',
+            'diciembre_q1': 'Diciembre Q1',
+            'diciembre_q2': 'Diciembre Q2'
+        };
+
+        // Rangos (input readonly + chips)
+        const prettyRangos = (rangos || []).map(r => PRETTY_RANGO[r.rango] || r.rango);
+
+        // Input de solo lectura con la lista separada por coma
+        const inputRangosText = document.getElementById('f-rangos_text');
+        if (inputRangosText) {
+            inputRangosText.value = prettyRangos.join(', ');
+            if (!prettyRangos.length) inputRangosText.value = ''; // deja ver el placeholder
+        }
+
+        // Chips debajo
         const contRangos = document.getElementById('f-rangos');
-        contRangos.innerHTML = (rangos || []).map(r => `<span class="pill">${esc(r.rango)}</span>`).join('');
+        contRangos.innerHTML = prettyRangos.length ?
+            prettyRangos.map(txt => `<span class="pill">${esc(txt)}</span>`).join('') :
+            '<em>Sin rangos seleccionados</em>';
     }
 
     // Serializar form => objeto plano
