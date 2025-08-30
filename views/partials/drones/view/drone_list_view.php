@@ -54,147 +54,162 @@
 
 
     <!-- Drawer lateral de detalle/edición -->
-    <div id="drawer" class="sv-drawer hidden">
+    <!-- Drawer lateral de detalle/edición -->
+    <div id="drawer" class="sv-drawer hidden" aria-hidden="true">
         <div class="sv-drawer__overlay" data-close></div>
 
-        <div class="sv-drawer__panel">
+        <aside class="sv-drawer__panel" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
             <div class="sv-drawer__header">
-                <h3>Solicitud <span id="drawer-id"></span></h3>
+                <h3 id="drawer-title">Solicitud <span id="drawer-id"></span></h3>
                 <button class="sv-drawer__close" id="drawer-close" aria-label="Cerrar">×</button>
             </div>
 
-            <form id="detalle-form" class="form-grid grid-2" autocomplete="off">
-                <!-- Identificación -->
-                <div class="input-group">
-                    <label>ID (interno)</label>
-                    <input type="text" name="id" id="f-id" readonly />
-                </div>
-                <div class="input-group">
-                    <label>Id real Productor</label>
-                    <input type="text" name="productor_id_real" id="f-productor_id_real" readonly />
-                </div>
+            <!-- BODY scrollable -->
+            <div class="sv-drawer__body">
+                <!-- Envolvemos el formulario en una card para que tome el mismo estilo de inputs del resto del sitio -->
+                <div class="card">
+                    <form id="detalle-form" class="form-grid grid-2" autocomplete="off">
+                        <!-- Identificación -->
+                        <div class="input-group">
+                            <label>ID (interno)</label>
+                            <input type="text" name="id" id="f-id" readonly />
+                        </div>
+                        <div class="input-group">
+                            <label>Id real Productor</label>
+                            <input type="text" name="productor_id_real" id="f-productor_id_real" readonly />
+                        </div>
 
-                <div class="input-group">
-                    <label>Productor</label>
-                    <input type="text" name="ses_usuario" id="f-ses_usuario" readonly />
-                </div>
-                <div class="input-group">
-                    <label>Piloto</label>
-                    <input type="text" name="piloto" id="f-piloto" />
-                </div>
+                        <div class="input-group">
+                            <label>Productor</label>
+                            <input type="text" name="ses_usuario" id="f-ses_usuario" readonly />
+                        </div>
+                        <div class="input-group">
+                            <label>Piloto</label>
+                            <input type="text" name="piloto" id="f-piloto" />
+                        </div>
 
-                <div class="input-group">
-                    <label>Fecha visita</label>
-                    <input type="date" name="fecha_visita" id="f-fecha_visita" />
-                </div>
-                <div class="input-group">
-                    <label>Hora visita</label>
-                    <input type="time" name="hora_visita" id="f-hora_visita" />
-                </div>
+                        <div class="input-group">
+                            <label>Fecha visita</label>
+                            <input type="date" name="fecha_visita" id="f-fecha_visita" />
+                        </div>
+                        <div class="input-group">
+                            <label>Hora visita</label>
+                            <input type="time" name="hora_visita" id="f-hora_visita" />
+                        </div>
 
-                <div class="input-group">
-                    <label>Estado</label>
-                    <select name="estado" id="f-estado">
-                        <option value="pendiente">Pendiente</option>
-                        <option value="en_proceso">En proceso</option>
-                        <option value="completado">Completado</option>
-                        <option value="cancelado">Cancelado</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Motivo cancelación</label>
-                    <input type="text" name="motivo_cancelacion" id="f-motivo_cancelacion" />
-                </div>
+                        <div class="input-group">
+                            <label>Estado</label>
+                            <select name="estado" id="f-estado">
+                                <option value="pendiente">Pendiente</option>
+                                <option value="en_proceso">En proceso</option>
+                                <option value="completado">Completado</option>
+                                <option value="cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Motivo cancelación</label>
+                            <input type="text" name="motivo_cancelacion" id="f-motivo_cancelacion" />
+                        </div>
 
-                <div class="input-group" style="grid-column:1/-1;">
-                    <label>Observaciones del productor</label>
-                    <textarea name="observaciones" id="f-observaciones" rows="3"></textarea>
-                </div>
-                <div class="input-group" style="grid-column:1/-1;">
-                    <label>Observaciones del piloto</label>
-                    <textarea name="obs_piloto" id="f-obs_piloto" rows="3"></textarea>
-                </div>
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <label>Observaciones del productor</label>
+                            <textarea name="observaciones" id="f-observaciones" rows="3"></textarea>
+                        </div>
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <label>Observaciones del piloto</label>
+                            <textarea name="obs_piloto" id="f-obs_piloto" rows="3"></textarea>
+                        </div>
 
-                <!-- Dirección / ubicación -->
-                <div class="input-group"><label>Provincia</label><input name="dir_provincia" id="f-dir_provincia" /></div>
-                <div class="input-group"><label>Localidad</label><input name="dir_localidad" id="f-dir_localidad" /></div>
-                <div class="input-group"><label>Calle</label><input name="dir_calle" id="f-dir_calle" /></div>
-                <div class="input-group"><label>Número</label><input name="dir_numero" id="f-dir_numero" /></div>
+                        <!-- Dirección / ubicación -->
+                        <div class="input-group"><label>Provincia</label><input name="dir_provincia" id="f-dir_provincia" /></div>
+                        <div class="input-group"><label>Localidad</label><input name="dir_localidad" id="f-dir_localidad" /></div>
+                        <div class="input-group"><label>Calle</label><input name="dir_calle" id="f-dir_calle" /></div>
+                        <div class="input-group"><label>Número</label><input name="dir_numero" id="f-dir_numero" /></div>
 
-                <div class="input-group"><label>En finca</label>
-                    <select name="en_finca" id="f-en_finca">
-                        <option value="si">si</option>
-                        <option value="no">no</option>
-                    </select>
-                </div>
-                <div class="input-group"><label>Lat</label><input name="ubicacion_lat" id="f-ubicacion_lat" /></div>
-                <div class="input-group"><label>Lng</label><input name="ubicacion_lng" id="f-ubicacion_lng" /></div>
+                        <div class="input-group">
+                            <label>En finca</label>
+                            <select name="en_finca" id="f-en_finca">
+                                <option value="si">si</option>
+                                <option value="no">no</option>
+                            </select>
+                        </div>
+                        <div class="input-group"><label>Lat</label><input name="ubicacion_lat" id="f-ubicacion_lat" /></div>
+                        <div class="input-group"><label>Lng</label><input name="ubicacion_lng" id="f-ubicacion_lng" /></div>
 
-                <!-- Parámetros de vuelo -->
-                <div class="input-group"><label>Volumen (ha)</label><input name="volumen_ha" id="f-volumen_ha" /></div>
-                <div class="input-group"><label>Velocidad (m/s)</label><input name="velocidad_vuelo" id="f-velocidad_vuelo" /></div>
-                <div class="input-group"><label>Altura (m)</label><input name="alto_vuelo" id="f-alto_vuelo" /></div>
-                <div class="input-group"><label>Tamaño gota</label><input name="tamano_gota" id="f-tamano_gota" /></div>
+                        <!-- Parámetros de vuelo -->
+                        <div class="input-group"><label>Volumen (ha)</label><input name="volumen_ha" id="f-volumen_ha" /></div>
+                        <div class="input-group"><label>Velocidad (m/s)</label><input name="velocidad_vuelo" id="f-velocidad_vuelo" /></div>
+                        <div class="input-group"><label>Altura (m)</label><input name="alto_vuelo" id="f-alto_vuelo" /></div>
+                        <div class="input-group"><label>Tamaño gota</label><input name="tamano_gota" id="f-tamano_gota" /></div>
 
-                <!-- Seguridad -->
-                <div class="input-group"><label>Línea de tensión</label>
-                    <select name="linea_tension" id="f-linea_tension">
-                        <option>si</option>
-                        <option>no</option>
-                    </select>
-                </div>
-                <div class="input-group"><label>Zona restringida</label>
-                    <select name="zona_restringida" id="f-zona_restringida">
-                        <option>si</option>
-                        <option>no</option>
-                    </select>
-                </div>
-                <div class="input-group"><label>Corriente eléctrica</label>
-                    <select name="corriente_electrica" id="f-corriente_electrica">
-                        <option>si</option>
-                        <option>no</option>
-                    </select>
-                </div>
-                <div class="input-group"><label>Agua potable</label>
-                    <select name="agua_potable" id="f-agua_potable">
-                        <option>si</option>
-                        <option>no</option>
-                    </select>
-                </div>
-                <div class="input-group"><label>Libre de obstáculos</label>
-                    <select name="libre_obstaculos" id="f-libre_obstaculos">
-                        <option>si</option>
-                        <option>no</option>
-                    </select>
-                </div>
-                <div class="input-group"><label>Área despegue</label>
-                    <select name="area_despegue" id="f-area_despegue">
-                        <option>si</option>
-                        <option>no</option>
-                    </select>
-                </div>
+                        <!-- Seguridad -->
+                        <div class="input-group">
+                            <label>Línea de tensión</label>
+                            <select name="linea_tension" id="f-linea_tension">
+                                <option>si</option>
+                                <option>no</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Zona restringida</label>
+                            <select name="zona_restringida" id="f-zona_restringida">
+                                <option>si</option>
+                                <option>no</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Corriente eléctrica</label>
+                            <select name="corriente_electrica" id="f-corriente_electrica">
+                                <option>si</option>
+                                <option>no</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Agua potable</label>
+                            <select name="agua_potable" id="f-agua_potable">
+                                <option>si</option>
+                                <option>no</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Libre de obstáculos</label>
+                            <select name="libre_obstaculos" id="f-libre_obstaculos">
+                                <option>si</option>
+                                <option>no</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Área despegue</label>
+                            <select name="area_despegue" id="f-area_despegue">
+                                <option>si</option>
+                                <option>no</option>
+                            </select>
+                        </div>
 
-                <!-- Listas hijas (solo visual en v1) -->
-                <div class="input-group" style="grid-column:1/-1;">
-                    <label>Motivos</label>
-                    <div id="f-motivos" class="pill-list"></div>
+                        <!-- Listas hijas (solo visual en v1) -->
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <label>Motivos</label>
+                            <div id="f-motivos" class="pill-list"></div>
+                        </div>
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <label>Productos</label>
+                            <div id="f-productos" class="table-mini"></div>
+                        </div>
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <label>Rangos</label>
+                            <div id="f-rangos" class="pill-list"></div>
+                        </div>
+                    </form>
                 </div>
-                <div class="input-group" style="grid-column:1/-1;">
-                    <label>Productos</label>
-                    <div id="f-productos" class="table-mini"></div>
-                </div>
-                <div class="input-group" style="grid-column:1/-1;">
-                    <label>Rangos</label>
-                    <div id="f-rangos" class="pill-list"></div>
-                </div>
-            </form>
+            </div>
 
             <div class="sv-drawer__footer">
                 <button class="btn" id="drawer-cancel" type="button">Cerrar</button>
                 <button class="btn primary" id="drawer-save" type="submit" form="detalle-form">Guardar cambios</button>
             </div>
-        </div>
+        </aside>
     </div>
+
 
 </div>
 
@@ -210,34 +225,134 @@
     }
 
     /* Drawer lateral */
-.sv-drawer.hidden{display:none}
-.sv-drawer{position:fixed; inset:0; z-index:60}
-.sv-drawer__overlay{position:absolute; inset:0; background:#0006; opacity:0; transition:opacity .2s}
-.sv-drawer__panel{
-  position:absolute; top:0; right:0; height:100%; width:min(720px,100%);
-  background:#fff; box-shadow:-6px 0 24px #00000022; transform:translateX(100%);
-  display:flex; flex-direction:column; border-top-left-radius:16px; border-bottom-left-radius:16px;
-  transition:transform .25s;
-}
-.sv-drawer.open .sv-drawer__overlay{opacity:1}
-.sv-drawer.open .sv-drawer__panel{transform:translateX(0)}
-.sv-drawer__header{display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #eee}
-.sv-drawer__footer{padding:12px 20px; border-top:1px solid #eee; display:flex; gap:12px; justify-content:flex-end}
-.sv-drawer__close{font-size:24px; line-height:1; border:none; background:transparent; cursor:pointer}
+    /* Drawer lateral */
+    .sv-drawer.hidden {
+        display: none
+    }
 
-/* Pills/listas */
-.pill-list{display:flex; gap:8px; flex-wrap:wrap}
-.pill-list .pill{padding:4px 10px; border-radius:999px; background:#f1f5f9; font-size:.9rem}
+    .sv-drawer {
+        position: fixed;
+        inset: 0;
+        z-index: 60
+    }
 
-/* Tabla mini para productos */
-.table-mini{width:100%; overflow:auto}
-.table-mini table{width:100%; border-collapse:collapse}
-.table-mini th,.table-mini td{padding:6px 8px; border-bottom:1px solid #e5e7eb; text-align:left; font-size:.92rem}
+    /* overlay sin animación por defecto (se anima con las clases opening/closing) */
+    .sv-drawer__overlay {
+        position: absolute;
+        inset: 0;
+        background: #0006;
+        opacity: 0
+    }
 
-/* Botones (compatibles con tu framework) */
-.btn{padding:8px 14px; border-radius:10px; background:#e5e7eb; border:none; cursor:pointer}
-.btn.primary{background:#5b21b6; color:#fff}
+    /* panel */
+    .sv-drawer__panel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+        width: min(760px, 100%);
+        background: #fff;
+        box-shadow: -6px 0 24px #00000022;
+        display: flex;
+        flex-direction: column;
+        border-top-left-radius: 16px;
+        border-bottom-left-radius: 16px;
+    }
 
+    .sv-drawer__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid #eee
+    }
+
+    .sv-drawer__footer {
+        padding: 12px 20px;
+        border-top: 1px solid #eee;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end
+    }
+
+    .sv-drawer__close {
+        font-size: 24px;
+        line-height: 1;
+        border: none;
+        background: transparent;
+        cursor: pointer
+    }
+
+    /* Cuerpo scrollable (mantiene header y footer fijos) */
+    .sv-drawer__body {
+        flex: 1;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 16px 20px;
+    }
+
+    /* La card del body es sólo contenedor visual para heredar estilos de inputs del framework */
+    .sv-drawer__body .card {
+        box-shadow: none;
+    }
+
+    /* Animaciones */
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%)
+        }
+
+        to {
+            transform: translateX(0)
+        }
+    }
+
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0)
+        }
+
+        to {
+            transform: translateX(100%)
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+
+    @keyframes fadeOut {
+        from {
+            opacity: 1
+        }
+
+        to {
+            opacity: 0
+        }
+    }
+
+    /* Estados animados */
+    .sv-drawer.opening .sv-drawer__panel {
+        animation: slideInRight .28s cubic-bezier(.22, .61, .36, 1) both;
+    }
+
+    .sv-drawer.closing .sv-drawer__panel {
+        animation: slideOutRight .22s ease both;
+    }
+
+    .sv-drawer.opening .sv-drawer__overlay {
+        animation: fadeIn .25s ease both;
+    }
+
+    .sv-drawer.closing .sv-drawer__overlay {
+        animation: fadeOut .20s ease both;
+    }
 </style>
 
 <script>
@@ -380,7 +495,7 @@
                         const json = await res.json();
                         if (json.ok) {
                             console.log('Detalle solicitud:', json.data); // 👈 toda la info en consola
-                            openDrawer(json.data); 
+                            openDrawer(json.data);
                         } else {
                             console.error(json.error || 'No se pudo obtener el detalle');
                         }
@@ -400,135 +515,169 @@
 
         // Carga inicial
         load();
+        window.refreshSolicitudes = load;
     })();
 
     // --- Constantes de enums para pretty print ---
-const ENUM_LABEL = {
-  estado: {pendiente:'Pendiente', en_proceso:'En proceso', completado:'Completado', cancelado:'Cancelado'}
-};
+    const ENUM_LABEL = {
+        estado: {
+            pendiente: 'Pendiente',
+            en_proceso: 'En proceso',
+            completado: 'Completado',
+            cancelado: 'Cancelado'
+        }
+    };
 
-// --- Drawer refs y helpers ---
-const drawer = document.getElementById('drawer');
-const drawerPanel = drawer.querySelector('.sv-drawer__panel');
-const drawerOverlay = drawer.querySelector('.sv-drawer__overlay');
-const drawerClose = document.getElementById('drawer-close');
-const drawerCancel = document.getElementById('drawer-cancel');
-const drawerId = document.getElementById('drawer-id');
-const formDetalle = document.getElementById('detalle-form');
-let currentDetalle = null;
+    // --- Drawer refs y helpers ---
+    const drawer = document.getElementById('drawer');
+    const drawerPanel = drawer.querySelector('.sv-drawer__panel');
+    const drawerOverlay = drawer.querySelector('.sv-drawer__overlay');
+    const drawerClose = document.getElementById('drawer-close');
+    const drawerCancel = document.getElementById('drawer-cancel');
+    const drawerId = document.getElementById('drawer-id');
+    const formDetalle = document.getElementById('detalle-form');
+    let currentDetalle = null;
 
-function openDrawer(data){
-  currentDetalle = data;
-  drawer.classList.remove('hidden');
-  // forzar siguiente frame para animación
-  requestAnimationFrame(()=> drawer.classList.add('open'));
-  fillForm(data);
-}
+    function openDrawer(data) {
+        currentDetalle = data;
+        drawer.classList.remove('hidden', 'closing');
+        drawer.classList.add('opening');
+        fillForm(data);
 
-function closeDrawer(){
-  drawer.classList.remove('open');
-  setTimeout(()=>drawer.classList.add('hidden'), 200);
-  currentDetalle = null;
-}
+        const onEnd = (e) => {
+            if (e.target !== drawer.querySelector('.sv-drawer__panel')) return;
+            drawer.classList.remove('opening');
+            drawer.removeEventListener('animationend', onEnd, true);
+        };
+        drawer.addEventListener('animationend', onEnd, true);
+    }
 
-drawerOverlay.addEventListener('click', closeDrawer);
-drawerClose.addEventListener('click', closeDrawer);
-drawerCancel.addEventListener('click', closeDrawer);
+    function closeDrawer() {
+        drawer.classList.add('closing');
+        const onEnd = (e) => {
+            if (e.target !== drawer.querySelector('.sv-drawer__panel')) return;
+            drawer.classList.remove('closing');
+            drawer.classList.add('hidden');
+            drawer.removeEventListener('animationend', onEnd, true);
+            currentDetalle = null;
+        };
+        drawer.addEventListener('animationend', onEnd, true);
+    }
 
-// --- Rellenar formulario con el detalle ---
-function fillForm({ solicitud, motivos, productos, rangos }){
-  drawerId.textContent = `#${solicitud.id}`;
 
-  // Campos simples
-  const map = {
-    'f-id': 'id',
-    'f-productor_id_real':'productor_id_real',
-    'f-ses_usuario':'ses_usuario',
-    'f-piloto':'piloto',
-    'f-fecha_visita':'fecha_visita',
-    'f-hora_visita':'hora_visita',
-    'f-estado':'estado',
-    'f-motivo_cancelacion':'motivo_cancelacion',
-    'f-observaciones':'observaciones',
-    'f-obs_piloto':'obs_piloto',
-    'f-dir_provincia':'dir_provincia',
-    'f-dir_localidad':'dir_localidad',
-    'f-dir_calle':'dir_calle',
-    'f-dir_numero':'dir_numero',
-    'f-en_finca':'en_finca',
-    'f-ubicacion_lat':'ubicacion_lat',
-    'f-ubicacion_lng':'ubicacion_lng',
-    'f-volumen_ha':'volumen_ha',
-    'f-velocidad_vuelo':'velocidad_vuelo',
-    'f-alto_vuelo':'alto_vuelo',
-    'f-tamano_gota':'tamano_gota',
-    'f-linea_tension':'linea_tension',
-    'f-zona_restringida':'zona_restringida',
-    'f-corriente_electrica':'corriente_electrica',
-    'f-agua_potable':'agua_potable',
-    'f-libre_obstaculos':'libre_obstaculos',
-    'f-area_despegue':'area_despegue',
-  };
-  Object.entries(map).forEach(([id, key])=>{
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.value = solicitud[key] ?? '';
-  });
+    drawerOverlay.addEventListener('click', closeDrawer);
+    drawerClose.addEventListener('click', closeDrawer);
+    drawerCancel.addEventListener('click', closeDrawer);
 
-  // Motivos (chips)
-  const contMotivos = document.getElementById('f-motivos');
-  contMotivos.innerHTML = (motivos||[]).map(m=>`<span class="pill">${esc(m.motivo)}${m.otros_text?`: ${esc(m.otros_text)}`:''}</span>`).join('');
+    // --- Rellenar formulario con el detalle ---
+    function fillForm({
+        solicitud,
+        motivos,
+        productos,
+        rangos
+    }) {
+        drawerId.textContent = `#${solicitud.id}`;
 
-  // Productos (tabla mini)
-  const contProd = document.getElementById('f-productos');
-  if ((productos||[]).length){
-    contProd.innerHTML = `
+        // Campos simples
+        const map = {
+            'f-id': 'id',
+            'f-productor_id_real': 'productor_id_real',
+            'f-ses_usuario': 'ses_usuario',
+            'f-piloto': 'piloto',
+            'f-fecha_visita': 'fecha_visita',
+            'f-hora_visita': 'hora_visita',
+            'f-estado': 'estado',
+            'f-motivo_cancelacion': 'motivo_cancelacion',
+            'f-observaciones': 'observaciones',
+            'f-obs_piloto': 'obs_piloto',
+            'f-dir_provincia': 'dir_provincia',
+            'f-dir_localidad': 'dir_localidad',
+            'f-dir_calle': 'dir_calle',
+            'f-dir_numero': 'dir_numero',
+            'f-en_finca': 'en_finca',
+            'f-ubicacion_lat': 'ubicacion_lat',
+            'f-ubicacion_lng': 'ubicacion_lng',
+            'f-volumen_ha': 'volumen_ha',
+            'f-velocidad_vuelo': 'velocidad_vuelo',
+            'f-alto_vuelo': 'alto_vuelo',
+            'f-tamano_gota': 'tamano_gota',
+            'f-linea_tension': 'linea_tension',
+            'f-zona_restringida': 'zona_restringida',
+            'f-corriente_electrica': 'corriente_electrica',
+            'f-agua_potable': 'agua_potable',
+            'f-libre_obstaculos': 'libre_obstaculos',
+            'f-area_despegue': 'area_despegue',
+        };
+        Object.entries(map).forEach(([id, key]) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.value = solicitud[key] ?? '';
+        });
+
+        // Motivos (chips)
+        const contMotivos = document.getElementById('f-motivos');
+        contMotivos.innerHTML = (motivos || []).map(m => `<span class="pill">${esc(m.motivo)}${m.otros_text?`: ${esc(m.otros_text)}`:''}</span>`).join('');
+
+        // Productos (tabla mini)
+        const contProd = document.getElementById('f-productos');
+        if ((productos || []).length) {
+            contProd.innerHTML = `
       <table>
         <thead><tr><th>Tipo</th><th>Fuente</th><th>Marca</th></tr></thead>
         <tbody>${productos.map(p=>`<tr><td>${esc(p.tipo)}</td><td>${esc(p.fuente)}</td><td>${esc(p.marca||'')}</td></tr>`).join('')}</tbody>
       </table>`;
-  } else contProd.innerHTML = '<em>Sin productos</em>';
+        } else contProd.innerHTML = '<em>Sin productos</em>';
 
-  // Rangos (chips)
-  const contRangos = document.getElementById('f-rangos');
-  contRangos.innerHTML = (rangos||[]).map(r=>`<span class="pill">${esc(r.rango)}</span>`).join('');
-}
+        // Rangos (chips)
+        const contRangos = document.getElementById('f-rangos');
+        contRangos.innerHTML = (rangos || []).map(r => `<span class="pill">${esc(r.rango)}</span>`).join('');
+    }
 
-// Serializar form => objeto plano
-function formToJSON(form){
-  const fd = new FormData(form);
-  const obj = {};
-  fd.forEach((v,k)=>{ obj[k] = v; });
-  // Aseguramos enums si están vacíos
-  ['linea_tension','zona_restringida','corriente_electrica','agua_potable','libre_obstaculos','area_despegue','en_finca']
-    .forEach(k => { if (k in obj && obj[k]==='') obj[k] = null; });
-  return obj;
-}
+    // Serializar form => objeto plano
+    function formToJSON(form) {
+        const fd = new FormData(form);
+        const obj = {};
+        fd.forEach((v, k) => {
+            obj[k] = v;
+        });
+        // Aseguramos enums si están vacíos
+        ['linea_tension', 'zona_restringida', 'corriente_electrica', 'agua_potable', 'libre_obstaculos', 'area_despegue', 'en_finca']
+        .forEach(k => {
+            if (k in obj && obj[k] === '') obj[k] = null;
+        });
+        return obj;
+    }
 
-// Guardar cambios (solo tabla principal v1)
-formDetalle.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  if(!currentDetalle) return;
-  const payload = formToJSON(formDetalle);
-  payload.id = Number(payload.id || currentDetalle.solicitud.id);
-  try{
-    showSpinner(true);
-    const res = await fetch(API, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'update_solicitud', data: payload })
+    // Guardar cambios (solo tabla principal v1)
+    formDetalle.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentDetalle) return;
+        const payload = formToJSON(formDetalle);
+        payload.id = Number(payload.id || currentDetalle.solicitud.id);
+        try {
+            showSpinner(true);
+            const res = await fetch(API, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'update_solicitud',
+                    data: payload
+                })
+            });
+            const json = await res.json();
+            if (!json.ok) throw new Error(json.error || 'No se pudo guardar');
+            closeDrawer();
+            // Refrescamos listado para ver cambios
+            if (typeof window.refreshSolicitudes === 'function') {
+                window.refreshSolicitudes();
+            }
+        } catch (err) {
+            console.error(err);
+            alert('No se pudo guardar los cambios.');
+        } finally {
+            showSpinner(false);
+        }
     });
-    const json = await res.json();
-    if(!json.ok) throw new Error(json.error || 'No se pudo guardar');
-    closeDrawer();
-    // Refrescamos listado para ver cambios
-    load();
-  }catch(err){
-    console.error(err);
-    alert('No se pudo guardar los cambios.');
-  }finally{
-    showSpinner(false);
-  }
-});
-
 </script>
