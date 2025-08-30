@@ -27,7 +27,7 @@
                 <label for="estado" style="color:white;">Estado</label>
                 <div class="input-icon input-icon-globe">
                     <select id="estado" name="estado">
-                        <option value="">Seleccionar</option>
+                        <option value="">Todos</option>
                         <option value="pendiente">Pendiente</option>
                         <option value="en_proceso">En proceso</option>
                         <option value="completado">Completado</option>
@@ -67,8 +67,8 @@
 
 <script>
     (function() {
-        // Importante: la URL es relativa a /views/sve/sve_pulverizacionDrone.php (la página cargada en el navegador)
-        const API = '../../controllers/sve_pulverizacionDroneController.php';
+
+        const API = '../partials/drones/controller/drone_list_controller.php';
 
         const $ = (s, ctx = document) => ctx.querySelector(s);
         const $$ = (s, ctx = document) => Array.from(ctx.querySelectorAll(s));
