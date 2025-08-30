@@ -18,13 +18,13 @@
 
 <body>
     <div class="content">
-        <div class="card" style="background-color: #e9e905ff;">
+        <div class="card" style="background-color: #5b21b6;">
             <h3>Buscar proyecto de vuelo</h3>
 
             <form class="form-grid grid-4" id="form-search" enctype="multipart/form-data">
                 <!-- Buscamos por piloto -->
                 <div class="input-group">
-                    <label for="piloto">Nombre piloto</label>
+                    <label for="piloto" style="color: white;">Nombre piloto</label>
                     <div class="input-icon input-icon-name">
                         <input type="text" id="piloto" name="piloto" placeholder="Piloto" />
                     </div>
@@ -32,7 +32,7 @@
 
                 <!-- Buscamos por productor -->
                 <div class="input-group">
-                    <label for="ses_usuario">Nombre productor</label>
+                    <label for="ses_usuario " style="color: white">Nombre productor</label>
                     <div class="input-icon input-icon-name">
                         <input type="text" id="ses_usuario" name="ses_usuario" placeholder="Productor" />
                     </div>
@@ -40,7 +40,7 @@
 
                 <!-- Buscamos por estado -->
                 <div class="input-group">
-                    <label for="estado">Estado</label>
+                    <label for="estado" style="color: white">Estado</label>
                     <div class="input-icon input-icon-globe">
                         <select id="estado" name="estado">
                             <option value="">Seleccionar</option>
@@ -54,7 +54,7 @@
 
                 <!-- Buscamos por fecha -->
                 <div class="input-group">
-                    <label for="fecha_visita">Fecha del servicio</label>
+                    <label for="fecha_visita" style="color: white">Fecha del servicio</label>
                     <div class="input-icon input-icon-date">
                         <input id="fecha_visita" name="fecha_visita" />
                     </div>
