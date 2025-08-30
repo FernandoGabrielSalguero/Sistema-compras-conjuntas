@@ -69,17 +69,27 @@
                 <!-- Envolvemos el formulario en una card para que tome el mismo estilo de inputs del resto del sitio -->
                 <div class="card">
                     <form id="detalle-form" class="form-grid grid-2" autocomplete="off">
+
+
                         <!-- Identificación -->
-                        <div class="input-group input-icon">
+                        <div class="input-group">
                             <label>ID (interno)</label>
                             <input type="text" name="id" id="f-id" readonly />
                         </div>
-                        <div class="input-group input-icon">
-                            <label>Id real Productor</label>
+
+            <div class="input-group">
+                <label for="ses_usuario">Id real Productor</label>
+                <div class="input-icon input-icon-name">
+                    <input type="text" id="productor_id_real" name="productor_id_real" placeholder="Productor" />
+                </div>
+            </div>
+
+                        <div class="input-group">
+                            <label></label>
                             <input type="text" name="productor_id_real" id="f-productor_id_real" readonly />
                         </div>
 
-                        <div class="input-group input-icon">
+                        <div class="input-group">
                             <label>Productor</label>
                             <input type="text" name="ses_usuario" id="f-ses_usuario" readonly />
                         </div>
