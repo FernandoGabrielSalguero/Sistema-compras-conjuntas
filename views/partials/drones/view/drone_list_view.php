@@ -170,12 +170,12 @@
                 card.innerHTML = `
         <div class="product-header">
           <h4>${esc(it.ses_usuario || '—')}</h4>
-          <p>${esc(it.piloto || '—')}</p>
+          <p>${esc(it.productor_id_real || '—')}</p>
         </div>
         <div class="product-body">
           <div class="user-info">
             <div>
-              <strong>${esc(it.productor_id_real || '—')}</strong>
+              <strong>${esc(it.piloto || 'sin piloto asignado aún')}</strong>
               <div class="role">${esc(it.fecha_visita || 'sin fecha')} & ${esc(it.hora_visita || '')}</div>
             </div>
           </div>
