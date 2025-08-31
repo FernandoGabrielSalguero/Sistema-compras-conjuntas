@@ -9,19 +9,19 @@ header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../../../../config.php';
 
 // MODELO de este módulo
-require_once __DIR__ . '/../model/drone_stock_model.php';
+require_once __DIR__ . '/../model/drone_calendar_model.php';
 
 // Instancia e inyección de PDO
-$model = new DroneStockModel();
+$model = new DroneCalendarModel();
 $model->pdo = $pdo;
 
 // Healthcheck mínimo (para que la vista pueda verificar wiring)
-$connected = ($model instanceof DroneStockModel) && ($pdo instanceof PDO);
+$connected = ($model instanceof DroneCalendarModel) && ($pdo instanceof PDO);
 
 echo json_encode([
     'ok'      => $connected,
     'message' => $connected
-        ? 'Controlador y modelo conectados correctamente Stock'
+        ? 'Controlador y modelo conectados correctamente Calendario'
         : 'Falla de wiring (revisá require y $pdo)',
     // Datos útiles para debug rápido
     'checks'  => [

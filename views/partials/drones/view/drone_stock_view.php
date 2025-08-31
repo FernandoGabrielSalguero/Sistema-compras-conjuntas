@@ -11,7 +11,7 @@
 
 <div class="content">
     <div class="card" style="background-color:#5b21b6;">
-        <h3 style="color:white;">Módulo: Stock</h3>
+        <h3 style="color:white;">Módulo: Calendario</h3>
         <p style="color:white;margin:0;">Proximamente va a estar activa esta funcionalidad.</p>
     </div>
 
@@ -23,7 +23,7 @@
 </div>
 
 <script>
-    const API = '../partials/drones/controller/drone_stock_controller.php';
+    const API = '../partials/drones/controller/drone_calendar_controller.php';
 
     (async function checkWiring() {
         const card = document.getElementById('healthcard');
