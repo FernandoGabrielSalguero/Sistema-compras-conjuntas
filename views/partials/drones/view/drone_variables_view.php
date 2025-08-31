@@ -1,16 +1,17 @@
 <?php // views/partials/drones/view/drone_variables_view.php ?>
 <div class="content">
+  <!-- Tarjeta violeta (solo encabezado) -->
   <div class="card" style="background-color:#5b21b6;">
     <h3 style="color:white;">Variables del sistema</h3>
     <p style="color:white;margin:0;">Gestioná catálogos reutilizables por todo el sistema.</p>
   </div>
 
   <!-- Patologías -->
-  <div id="card-patologias" class="card" aria-labelledby="h-patologias">
+  <div id="card-patologias" class="card tabla-card" aria-labelledby="h-patologias">
     <h4 id="h-patologias">Patologías</h4>
     <p class="muted" style="margin-top:-6px;color:#64748b;">CRUD de patologías (tabla: <code>dron_patologias</code>).</p>
 
-    <form id="form-patologias" class="form-grid grid-3" autocomplete="off" aria-describedby="msg-patologias">
+    <form id="form-patologias" class="form-grid grid-3" autocomplete="off" aria-describedby="p-msg">
       <input type="hidden" name="id" id="p-id" value="">
       <div class="input-group">
         <label for="p-nombre">Nombre</label>
@@ -24,12 +25,10 @@
           <input type="text" id="p-desc" name="descripcion" placeholder="Opcional (máx. 255)" maxlength="255" />
         </div>
       </div>
-      <div class="input-group">
-        <label for="p-submit" class="sr-only">Acciones</label>
-        <div>
-          <button id="p-submit" type="submit" class="btn primary">Guardar</button>
-          <button id="p-cancel" type="button" class="btn" aria-label="Cancelar edición">Cancelar</button>
-        </div>
+      <div class="form-grid grid-3">
+        <button id="p-submit" type="submit" class="btn btn-aceptar">Guardar</button>
+        <button id="p-cancel" type="button" class="btn btn-cancelar" aria-label="Cancelar edición">Cancelar</button>
+        <button id="p-limpiar" type="button" class="btn btn-info">Limpiar</button>
       </div>
     </form>
 
@@ -42,23 +41,24 @@
       </div>
       <div class="input-group">
         <label for="p-inactivos">Ver inactivos</label>
-        <div class="input-icon">
+        <label class="switch">
           <input type="checkbox" id="p-inactivos" />
-        </div>
+          <span class="slider"></span>
+        </label>
       </div>
     </div>
 
     <div id="p-msg" role="status" aria-live="polite" class="muted" style="margin:6px 0;"></div>
 
-    <div class="table-responsive" style="margin-top:8px;">
-      <table class="table" aria-describedby="h-patologias">
+    <div class="tabla-wrapper" style="margin-top:8px;">
+      <table class="data-table" aria-describedby="h-patologias">
         <thead>
           <tr>
-            <th scope="col">#</th>
-            <th scope="col">Nombre</th>
-            <th scope="col">Descripción</th>
-            <th scope="col">Estado</th>
-            <th scope="col" style="width:170px;">Acciones</th>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th style="width:220px;">Acciones</th>
           </tr>
         </thead>
         <tbody id="p-tbody"></tbody>
@@ -67,11 +67,11 @@
   </div>
 
   <!-- Producción -->
-  <div id="card-produccion" class="card" aria-labelledby="h-produccion">
+  <div id="card-produccion" class="card tabla-card" aria-labelledby="h-produccion">
     <h4 id="h-produccion">Producción</h4>
     <p class="muted" style="margin-top:-6px;color:#64748b;">CRUD de producción (tabla: <code>dron_produccion</code>).</p>
 
-    <form id="form-produccion" class="form-grid grid-3" autocomplete="off" aria-describedby="msg-produccion">
+    <form id="form-produccion" class="form-grid grid-3" autocomplete="off" aria-describedby="r-msg">
       <input type="hidden" name="id" id="r-id" value="">
       <div class="input-group">
         <label for="r-nombre">Nombre</label>
@@ -85,12 +85,10 @@
           <input type="text" id="r-desc" name="descripcion" placeholder="Opcional (máx. 255)" maxlength="255" />
         </div>
       </div>
-      <div class="input-group">
-        <label for="r-submit" class="sr-only">Acciones</label>
-        <div>
-          <button id="r-submit" type="submit" class="btn primary">Guardar</button>
-          <button id="r-cancel" type="button" class="btn" aria-label="Cancelar edición">Cancelar</button>
-        </div>
+      <div class="form-grid grid-3">
+        <button id="r-submit" type="submit" class="btn btn-aceptar">Guardar</button>
+        <button id="r-cancel" type="button" class="btn btn-cancelar" aria-label="Cancelar edición">Cancelar</button>
+        <button id="r-limpiar" type="button" class="btn btn-info">Limpiar</button>
       </div>
     </form>
 
@@ -103,23 +101,24 @@
       </div>
       <div class="input-group">
         <label for="r-inactivos">Ver inactivos</label>
-        <div class="input-icon">
+        <label class="switch">
           <input type="checkbox" id="r-inactivos" />
-        </div>
+          <span class="slider"></span>
+        </label>
       </div>
     </div>
 
     <div id="r-msg" role="status" aria-live="polite" class="muted" style="margin:6px 0;"></div>
 
-    <div class="table-responsive" style="margin-top:8px;">
-      <table class="table" aria-describedby="h-produccion">
+    <div class="tabla-wrapper" style="margin-top:8px;">
+      <table class="data-table" aria-describedby="h-produccion">
         <thead>
           <tr>
-            <th scope="col">#</th>
-            <th scope="col">Nombre</th>
-            <th scope="col">Descripción</th>
-            <th scope="col">Estado</th>
-            <th scope="col" style="width:170px;">Acciones</th>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th style="width:220px;">Acciones</th>
           </tr>
         </thead>
         <tbody id="r-tbody"></tbody>
@@ -130,37 +129,47 @@
 
 <style>
   /* Ajustes mínimos, no rompe el CDN */
-  .table-responsive { overflow-x:auto; }
-  .btn.primary { transition: transform .08s ease; }
-  .btn.primary:active { transform: scale(0.98); }
-  .sr-only {
-    position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
-  }
+  .tabla-card { margin-top: 14px; }
+  .data-table td .badge { display:inline-block; }
+  .acciones-wrap { display:flex; gap:8px; flex-wrap:wrap; }
 </style>
 
 <script>
 (function () {
-  // Ruta ABSOLUTA para evitar 404 al resolver desde distintas vistas
+  // Ruta ABSOLUTA
   const DVAR_API = '/views/partials/drones/controller/drone_variables_controller.php';
 
-  // Utilidades
+  // Utils
   const $ = (sel, ctx=document) => ctx.querySelector(sel);
   const el = (tag, props={}) => Object.assign(document.createElement(tag), props);
-  const escape = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const debounce = (fn, ms=280) => { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms);} };
+  const show = (type, msg) => { try { window.showAlert ? window.showAlert(type, msg) : alert(msg); } catch(_) { alert(msg); } };
 
+  // Render fila
   function renderRow(item, tbody, entity) {
     const tr = el('tr');
-    const estado = item.activo === 'si' ? 'Activo' : 'Inactivo';
     tr.append(
       el('td', { textContent: item.id }),
       el('td', { textContent: item.nombre }),
-      el('td', { textContent: item.descripcion || '' }),
-      el('td', { textContent: estado }),
+      el('td', { textContent: item.descripcion || '' })
     );
+
+    const tdEstado = el('td');
+    const estadoOk = item.activo === 'si';
+    const badge = el('span', { className: 'badge ' + (estadoOk ? 'success' : 'warning'), textContent: estadoOk ? 'Activo' : 'Inactivo' });
+    tdEstado.append(badge);
+    tr.append(tdEstado);
+
     const tdAcc = el('td');
-    const btnEdit = el('button', { className:'btn', type:'button', textContent:'Editar', 'aria-label':'Editar' });
-    const btnDel  = el('button', { className:'btn', type:'button', textContent: item.activo==='si' ? 'Eliminar' : 'Reactivar', 'aria-label': item.activo==='si' ? 'Eliminar' : 'Reactivar' });
+    const wrap = el('div', { className: 'acciones-wrap' });
+
+    const btnEdit = el('button', { className:'btn btn-info', type:'button', textContent:'Editar', 'aria-label':'Editar' });
+    const btnToggle = el('button', {
+      className: 'btn ' + (estadoOk ? 'btn-cancelar' : 'btn-aceptar'),
+      type:'button',
+      textContent: estadoOk ? 'Eliminar' : 'Reactivar',
+      'aria-label': estadoOk ? 'Eliminar' : 'Reactivar'
+    });
 
     btnEdit.addEventListener('click', () => {
       if (entity==='patologias') {
@@ -172,21 +181,24 @@
       }
     });
 
-    btnDel.addEventListener('click', async () => {
-      if (item.activo==='si') {
-        if (!confirm('¿Eliminar este registro? Quedará inactivo.')) return;
-      }
+    btnToggle.addEventListener('click', async () => {
+      if (estadoOk && !confirm('¿Eliminar este registro? Quedará inactivo.')) return;
       const res = await fetch(DVAR_API+'?action=delete&entity='+entity, {
         method:'POST',
         headers:{ 'Content-Type':'application/json' },
         body: JSON.stringify({ id: item.id })
       }).then(r=>r.json()).catch(()=>({ok:false,error:'Error de red'}));
-      const msgEl = entity==='patologias' ? $('#p-msg') : $('#r-msg');
-      msgEl.textContent = res.ok ? 'Actualizado correctamente.' : ('Error: '+ (res.error||''));
-      await (entity==='patologias' ? loadPatologias() : loadProduccion());
+
+      if (res.ok) {
+        show('success', estadoOk ? 'Registro inactivado' : 'Registro reactivado');
+        await (entity==='patologias' ? loadPatologias() : loadProduccion());
+      } else {
+        show('error', res.error || 'No se pudo actualizar');
+      }
     });
 
-    tdAcc.append(btnEdit, document.createTextNode(' '), btnDel);
+    wrap.append(btnEdit, btnToggle);
+    tdAcc.append(wrap);
     tr.append(tdAcc);
     tbody.append(tr);
   }
@@ -216,9 +228,10 @@
     const ina = $('#p-inactivos').checked;
     const tbody = $('#p-tbody'); tbody.innerHTML='';
     const data = await list('patologias', q, ina);
-    if (!data.ok) { $('#p-msg').textContent = 'Error: '+(data.error||'No se pudo cargar'); return; }
+    if (!data.ok) { $('#p-msg').textContent = 'Error: '+(data.error||'No se pudo cargar'); show('error','No se pudo cargar Patologías'); return; }
     (data.data||[]).forEach(it => renderRow(it, tbody, 'patologias'));
     $('#p-msg').textContent = (data.data||[]).length ? '' : 'Sin resultados.';
+    if (!(data.data||[]).length) show('info','Sin resultados en Patologías');
   };
 
   $('#form-patologias').addEventListener('submit', async (e)=>{
@@ -227,10 +240,16 @@
     const nombre = $('#p-nombre').value.trim();
     const descripcion = $('#p-desc').value.trim();
     const res = await save('patologias', { id, nombre, descripcion });
-    $('#p-msg').textContent = res.ok ? 'Guardado correctamente.' : ('Error: '+(res.error||''));
-    if (res.ok) { $('#p-id').value=''; $('#p-nombre').value=''; $('#p-desc').value=''; await loadPatologias(); }
+    if (res.ok) {
+      show('success', id ? 'Patología actualizada' : 'Patología creada');
+      $('#p-id').value=''; $('#p-nombre').value=''; $('#p-desc').value='';
+      await loadPatologias();
+    } else {
+      show('error', res.error || 'No se pudo guardar');
+    }
   });
-  $('#p-cancel').addEventListener('click', ()=>{ $('#p-id').value=''; $('#p-nombre').value=''; $('#p-desc').value=''; $('#p-msg').textContent=''; });
+  $('#p-cancel').addEventListener('click', ()=>{ $('#p-id').value=''; $('#p-nombre').value=''; $('#p-desc').value=''; $('#p-msg').textContent=''; show('info','Edición cancelada'); });
+  $('#p-limpiar').addEventListener('click', ()=>{ $('#p-q').value=''; $('#p-inactivos').checked=false; show('info','Filtros limpiados'); loadPatologias(); });
   $('#p-q').addEventListener('input', debounce(loadPatologias, 300));
   $('#p-inactivos').addEventListener('change', loadPatologias);
 
@@ -240,9 +259,10 @@
     const ina = $('#r-inactivos').checked;
     const tbody = $('#r-tbody'); tbody.innerHTML='';
     const data = await list('produccion', q, ina);
-    if (!data.ok) { $('#r-msg').textContent = 'Error: '+(data.error||'No se pudo cargar'); return; }
+    if (!data.ok) { $('#r-msg').textContent = 'Error: '+(data.error||'No se pudo cargar'); show('error','No se pudo cargar Producción'); return; }
     (data.data||[]).forEach(it => renderRow(it, tbody, 'produccion'));
     $('#r-msg').textContent = (data.data||[]).length ? '' : 'Sin resultados.';
+    if (!(data.data||[]).length) show('info','Sin resultados en Producción');
   };
 
   $('#form-produccion').addEventListener('submit', async (e)=>{
@@ -251,17 +271,21 @@
     const nombre = $('#r-nombre').value.trim();
     const descripcion = $('#r-desc').value.trim();
     const res = await save('produccion', { id, nombre, descripcion });
-    $('#r-msg').textContent = res.ok ? 'Guardado correctamente.' : ('Error: '+(res.error||''));
-    if (res.ok) { $('#r-id').value=''; $('#r-nombre').value=''; $('#r-desc').value=''; await loadProduccion(); }
+    if (res.ok) {
+      show('success', id ? 'Producción actualizada' : 'Producción creada');
+      $('#r-id').value=''; $('#r-nombre').value=''; $('#r-desc').value='';
+      await loadProduccion();
+    } else {
+      show('error', res.error || 'No se pudo guardar');
+    }
   });
-  $('#r-cancel').addEventListener('click', ()=>{ $('#r-id').value=''; $('#r-nombre').value=''; $('#r-desc').value=''; $('#r-msg').textContent=''; });
+  $('#r-cancel').addEventListener('click', ()=>{ $('#r-id').value=''; $('#r-nombre').value=''; $('#r-desc').value=''; $('#r-msg').textContent=''; show('info','Edición cancelada'); });
+  $('#r-limpiar').addEventListener('click', ()=>{ $('#r-q').value=''; $('#r-inactivos').checked=false; show('info','Filtros limpiados'); loadProduccion(); });
   $('#r-q').addEventListener('input', debounce(loadProduccion, 300));
   $('#r-inactivos').addEventListener('change', loadProduccion);
 
   (async function init(){
-    try {
-      await fetch(DVAR_API+'?action=health&t='+Date.now(), {cache:'no-store'}).then(r=>r.json());
-    } catch(_) {}
+    try { await fetch(DVAR_API+'?action=health&t='+Date.now(), {cache:'no-store'}).then(r=>r.json()); } catch(_) {}
     await loadPatologias();
     await loadProduccion();
   })();
