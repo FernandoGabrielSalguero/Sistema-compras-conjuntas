@@ -164,12 +164,12 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
           <!-- Panel: Variables -->
           <div class="tab-panel" id="panel-variables">
-            <p>Contenido de la pestaña Stock (próximamente).</p>
+            <p>Contenido de la pestaña Variable (próximamente).</p>
           </div>
 
           <!-- Panel: Calendario -->
           <div class="tab-panel" id="panel-calendario">
-            <p>Contenido de la pestaña Stock (próximamente).</p>
+            <p>Contenido de la pestaña Calendario (próximamente).</p>
           </div>
 
         </div>
