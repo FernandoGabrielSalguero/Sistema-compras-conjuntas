@@ -1,4 +1,5 @@
 <?php
+
 ?>
 <!-- Framework visual del proyecto -->
 <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
@@ -11,7 +12,7 @@
 <div class="content">
     <div class="card" style="background-color:#5b21b6;">
         <h3 style="color:white;">Módulo: Calendario</h3>
-        <p style="color:white;margin:0;">Plantilla mínima lista para empezar.</p>
+        <p style="color:white;margin:0;">Proximamente va a estar activa esta funcionalidad.</p>
     </div>
 
     <div id="feature-root" class="card-grid grid-4">
@@ -22,7 +23,6 @@
 </div>
 
 <script>
-    // ⬇️ Ajustá la ruta si movés esta vista a otra profundidad
     const API = '../partials/drones/controller/drone_calendar_controller.php';
 
     (async function checkWiring() {

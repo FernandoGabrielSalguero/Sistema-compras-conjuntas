@@ -21,7 +21,7 @@ $connected = ($model instanceof DroneCalendarModel) && ($pdo instanceof PDO);
 echo json_encode([
     'ok'      => $connected,
     'message' => $connected
-        ? 'Controlador y modelo conectados correctamente'
+        ? 'Controlador y modelo conectados correctamente Calendario'
         : 'Falla de wiring (revisá require y $pdo)',
     // Datos útiles para debug rápido
     'checks'  => [

@@ -1,16 +1,31 @@
 <?php
-
-
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 header('Content-Type: application/json; charset=utf-8');
 
-
+// CONFIG global
 require_once __DIR__ . '/../../../../config.php';
-require_once __DIR__ . '/../model/drone_variables_controller.php';
 
+// MODELO de este módulo
+require_once __DIR__ . '/../model/drone_variables_model.php';
 
-$model = new droneVariablesModel();
+// Instancia e inyección de PDO
+$model = new DroneVariableModel();
 $model->pdo = $pdo;
+
+// Healthcheck mínimo (para que la vista pueda verificar wiring)
+$connected = ($model instanceof DroneVariableModel) && ($pdo instanceof PDO);
+
+echo json_encode([
+    'ok'      => $connected,
+    'message' => $connected
+        ? 'Controlador y modelo conectados correctamente Variables'
+        : 'Falla de wiring (revisá require y $pdo)',
+    // Datos útiles para debug rápido
+    'checks'  => [
+        'modelClass' => get_class($model),
+        'pdo'        => $pdo instanceof PDO,
+    ],
+]);
