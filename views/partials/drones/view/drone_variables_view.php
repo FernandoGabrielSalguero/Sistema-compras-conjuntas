@@ -1,5 +1,5 @@
 <?php // views/partials/drones/view/drone_variables_view.php ?>
-<div class="content">
+<div class="content" style="background: transparent !important; box-shadow: none !important;">
   <!-- Tarjeta violeta (solo encabezado) -->
   <div class="card" style="background-color:#5b21b6;">
     <h3 style="color:white;">Variables del sistema</h3>
