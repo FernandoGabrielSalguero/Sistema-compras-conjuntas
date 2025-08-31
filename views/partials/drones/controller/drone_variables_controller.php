@@ -6,17 +6,8 @@ error_reporting(E_ALL);
 
 header('Content-Type: application/json; charset=utf-8');
 
-// CONFIG y Auth
 require_once __DIR__ . '/../../../../config.php';
-require_once __DIR__ . '/../../../../middleware/authMiddleware.php';
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
-checkAccess('sve'); // Asumo que sólo SVE administra catálogos
-
 require_once __DIR__ . '/../model/drone_variables_model.php';
-
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
 
 function out(array $payload, int $code = 200): void {
     http_response_code($code);
@@ -32,7 +23,7 @@ try {
     $model = new DroneVariableModel($pdo);
 
     if ($action === 'health') {
-        out(['ok'=>true, 'message'=>'Variables API OK', 'csrf'=>$_SESSION['csrf_token']]);
+        out(['ok'=>true, 'message'=>'Variables API OK']);
     }
 
     $allowed = ['patologias','produccion'];
@@ -59,16 +50,9 @@ try {
         out(['ok'=>false,'error'=>'Acción GET no soportada'], 400);
     }
 
-    // POST: require CSRF
-    $csrfHeader = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_SERVER['HTTP_X_CSRF'] ?? '';
+    // POST (sin CSRF, como solicitaste)
     $raw = file_get_contents('php://input');
     $json = json_decode($raw ?: '[]', true) ?? [];
-    $csrfBody = (string)($json['csrf_token'] ?? $_POST['csrf_token'] ?? '');
-    $csrf = $csrfHeader ?: $csrfBody;
-
-    if (!$csrf || !hash_equals($_SESSION['csrf_token'], $csrf)) {
-        out(['ok'=>false,'error'=>'CSRF inválido'], 419);
-    }
 
     if ($action === 'create' || $action === 'update') {
         $id = isset($json['id']) ? (int)$json['id'] : (isset($_POST['id'])?(int)$_POST['id']:0);
@@ -97,7 +81,6 @@ try {
         $id = isset($json['id']) ? (int)$json['id'] : (isset($_POST['id'])?(int)$_POST['id']:0);
         if ($id <= 0) out(['ok'=>false,'error'=>'ID inválido'], 422);
 
-        // toggle activo (soft delete/reactivar)
         $row = $model->get($entity, $id);
         if (!$row) out(['ok'=>false,'error'=>'No encontrado'], 404);
         $to = ($row['activo'] === 'si') ? false : true;
@@ -108,7 +91,6 @@ try {
     out(['ok'=>false,'error'=>'Acción POST no soportada'], 400);
 
 } catch (Throwable $e) {
-    // Log simple
     @file_put_contents(__DIR__ . '/../../../../log_backend.txt', '['.date('c')."] drone_variables: ".$e->getMessage().PHP_EOL, FILE_APPEND);
     out(['ok'=>false,'error'=>'Error inesperado'], 500);
 }

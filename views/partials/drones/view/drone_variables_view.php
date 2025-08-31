@@ -1,9 +1,4 @@
-<?php // views/partials/drones/view/drone_variables_view.php
-// CSRF para POST
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
-if (empty($_SESSION['csrf_token'])) { $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); }
-$CSRF = $_SESSION['csrf_token'];
-?>
+<?php // views/partials/drones/view/drone_variables_view.php ?>
 <div class="content">
   <div class="card" style="background-color:#5b21b6;">
     <h3 style="color:white;">Variables del sistema</h3>
@@ -145,8 +140,8 @@ $CSRF = $_SESSION['csrf_token'];
 
 <script>
 (function () {
-  const DVAR_API = '../partials/drones/controller/drone_variables_controller.php';
-  const CSRF = <?php echo json_encode($CSRF, JSON_UNESCAPED_UNICODE); ?>;
+  // Ruta ABSOLUTA para evitar 404 al resolver desde distintas vistas
+  const DVAR_API = '/views/partials/drones/controller/drone_variables_controller.php';
 
   // Utilidades
   const $ = (sel, ctx=document) => ctx.querySelector(sel);
@@ -154,7 +149,6 @@ $CSRF = $_SESSION['csrf_token'];
   const escape = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const debounce = (fn, ms=280) => { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms);} };
 
-  // Render fila
   function renderRow(item, tbody, entity) {
     const tr = el('tr');
     const estado = item.activo === 'si' ? 'Activo' : 'Inactivo';
@@ -184,7 +178,7 @@ $CSRF = $_SESSION['csrf_token'];
       }
       const res = await fetch(DVAR_API+'?action=delete&entity='+entity, {
         method:'POST',
-        headers:{ 'Content-Type':'application/json', 'X-CSRF-Token': CSRF },
+        headers:{ 'Content-Type':'application/json' },
         body: JSON.stringify({ id: item.id })
       }).then(r=>r.json()).catch(()=>({ok:false,error:'Error de red'}));
       const msgEl = entity==='patologias' ? $('#p-msg') : $('#r-msg');
@@ -211,7 +205,7 @@ $CSRF = $_SESSION['csrf_token'];
     const url = DVAR_API+'?action='+(payload.id ? 'update':'create')+'&entity='+entity;
     return fetch(url, {
       method:'POST',
-      headers:{ 'Content-Type':'application/json', 'X-CSRF-Token': CSRF },
+      headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify(payload)
     }).then(r=>r.json());
   }
@@ -264,11 +258,9 @@ $CSRF = $_SESSION['csrf_token'];
   $('#r-q').addEventListener('input', debounce(loadProduccion, 300));
   $('#r-inactivos').addEventListener('change', loadProduccion);
 
-  // Health + primeras cargas
   (async function init(){
     try {
-      const health = await fetch(DVAR_API+'?action=health&t='+Date.now(), {cache:'no-store'}).then(r=>r.json());
-      // no mostramos nada si ok, mantener limpio
+      await fetch(DVAR_API+'?action=health&t='+Date.now(), {cache:'no-store'}).then(r=>r.json());
     } catch(_) {}
     await loadPatologias();
     await loadProduccion();
