@@ -183,7 +183,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
           </div>
 
           <!-- Panel: Variables -->
-          <div class="tab-panel active" id="panel-variables" style="background: transparent !important; box-shadow: none !important; border: 0 !important;">
+          <div class="tab-panel" id="panel-variables" style="background: transparent !important; box-shadow: none !important; border: 0 !important;">
             <?php
             $viewFile = __DIR__ . '/../partials/drones/view/drone_variables_view.php';
             if (is_file($viewFile)) {
