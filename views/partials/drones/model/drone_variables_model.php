@@ -6,7 +6,7 @@ declare(strict_types=1);
  * El controlador le inyecta $pdo (desde config.php).
  */
 
-class droneStockModel
+class droneVariablesModel
 {
     /** @var PDO */
     public $pdo;

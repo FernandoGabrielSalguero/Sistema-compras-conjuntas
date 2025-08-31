@@ -13,18 +13,18 @@
 
 <div class="content">
     <div class="card" style="background-color:#5b21b6;">
-        <h3 style="color:white;">Módulo: Stock</h3>
+        <h3 style="color:white;">Módulo: Variables</h3>
         <p style="color:white;margin:0;">Plantilla mínima lista para empezar.</p>
     </div>
 
     <!-- Contenedor de trabajo -->
     <div id="feature-root" class="card-grid grid-4">
 
-<h4>Esta es la vista del sistema de control de stock, proximamente va a estar disponible para su consumo.</h4>
+<h4>Esta es la vista del variables, proximamente va a estar disponible para su consumo.</h4>
 
     </div>
 </div>
 
 <script>
-    const API = '../partials/drones/controller/drone_stock_controller.php'; 
+    const API = '../partials/drones/controller/drone_variables_controller.php'; 
 </script>

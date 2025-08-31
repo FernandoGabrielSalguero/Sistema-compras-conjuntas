@@ -9,8 +9,8 @@ header('Content-Type: application/json; charset=utf-8');
 
 
 require_once __DIR__ . '/../../../../config.php';
-require_once __DIR__ . '/../model/drone_stock_controller.php';
+require_once __DIR__ . '/../model/drone_variables_controller.php';
 
 
-$model = new droneStockModel();
+$model = new droneVariablesModel();
 $model->pdo = $pdo;
