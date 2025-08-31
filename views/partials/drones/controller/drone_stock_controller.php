@@ -1,16 +1,31 @@
 <?php
-
-
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 header('Content-Type: application/json; charset=utf-8');
 
-
+// CONFIG global
 require_once __DIR__ . '/../../../../config.php';
-require_once __DIR__ . '/../model/drone_stock_controller.php';
 
+// MODELO de este módulo
+require_once __DIR__ . '/../model/drone_stock_model.php';
 
-$model = new droneStockModel();
+// Instancia e inyección de PDO
+$model = new DroneStockModel();
 $model->pdo = $pdo;
+
+// Healthcheck mínimo (para que la vista pueda verificar wiring)
+$connected = ($model instanceof DroneStockModel) && ($pdo instanceof PDO);
+
+echo json_encode([
+    'ok'      => $connected,
+    'message' => $connected
+        ? 'Controlador y modelo conectados correctamente Stock'
+        : 'Falla de wiring (revisá require y $pdo)',
+    // Datos útiles para debug rápido
+    'checks'  => [
+        'modelClass' => get_class($model),
+        'pdo'        => $pdo instanceof PDO,
+    ],
+]);
