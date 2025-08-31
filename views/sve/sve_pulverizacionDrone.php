@@ -41,13 +41,13 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
   <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
   <style>
-          .tab-panel {
-            display: none;
-          }
+    .tab-panel {
+      display: none;
+    }
 
-          .tab-panel.active {
-            display: block;
-          }
+    .tab-panel.active {
+      display: block;
+    }
   </style>
 
 </head>
@@ -136,7 +136,9 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
           <div class="tabs">
             <div class="tab-buttons">
               <button class="tab-button active" data-target="#panel-solicitudes">Solicitudes</button>
+              <button class="tab-button" data-target="#panel-calendario">Calendario</button>
               <button class="tab-button" data-target="#panel-stock">Stock</button>
+              <button class="tab-button" data-target="#panel-variables">Variables</button>
             </div>
           </div>
         </div>
@@ -148,7 +150,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             <?php
             $viewFile = __DIR__ . '/../partials/drones/view/drone_list_view.php';
             if (is_file($viewFile)) {
-              require $viewFile; // 👈 se incluye la VISTA directamente
+              require $viewFile;
             } else {
               echo '<p>No se encontró la vista <code>drone_list_view.php</code>.</p>';
             }
@@ -159,6 +161,17 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
           <div class="tab-panel" id="panel-stock">
             <p>Contenido de la pestaña Stock (próximamente).</p>
           </div>
+
+          <!-- Panel: Variables -->
+          <div class="tab-panel" id="panel-variables">
+            <p>Contenido de la pestaña Stock (próximamente).</p>
+          </div>
+
+          <!-- Panel: Calendario -->
+          <div class="tab-panel" id="panel-calendario">
+            <p>Contenido de la pestaña Stock (próximamente).</p>
+          </div>
+
         </div>
 
         <!-- contenedor del toastify -->
