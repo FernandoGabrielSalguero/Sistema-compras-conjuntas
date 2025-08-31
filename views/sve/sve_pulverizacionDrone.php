@@ -145,34 +145,56 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
         <!-- 🧩 Tarjeta separada para el contenido del tab -->
         <div class="card" id="tab-content-card" style="margin-top: 12px;">
-          <!-- Panel: Solicitudes (renderiza directamente la vista) -->
-          <div class="tab-panel active" id="panel-solicitudes">
-            <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_list_view.php';
-            if (is_file($viewFile)) {
-              require $viewFile;
-            } else {
-              echo '<p>No se encontró la vista <code>drone_list_view.php</code>.</p>';
-            }
-            ?>
-          </div>
 
-          <!-- Panel: Stock -->
-          <div class="tab-panel" id="panel-stock">
-            <p>Contenido de la pestaña Stock (próximamente).</p>
-          </div>
+  <!-- Panel: Solicitudes (renderiza directamente la vista) -->
+  <div class="tab-panel active" id="panel-solicitudes">
+    <?php
+      $viewFile = __DIR__ . '/../partials/drones/view/drone_list_view.php';
+      if (is_file($viewFile)) {
+        require $viewFile;
+      } else {
+        echo '<p>No se encontró la vista <code>drone_list_view.php</code>.</p>';
+      }
+    ?>
+  </div>
 
-          <!-- Panel: Variables -->
-          <div class="tab-panel" id="panel-variables">
-            <p>Contenido de la pestaña Variable (próximamente).</p>
-          </div>
+  <!-- Panel: Calendario -->
+  <div class="tab-panel" id="panel-calendario">
+    <?php
+      $viewFile = __DIR__ . '/../partials/drones/view/drone_calendar_view.php';
+      if (is_file($viewFile)) {
+        require $viewFile;
+      } else {
+        echo '<p>No se encontró la vista <code>drone_calendar_view.php</code>.</p>';
+      }
+    ?>
+  </div>
 
-          <!-- Panel: Calendario -->
-          <div class="tab-panel" id="panel-calendario">
-            <p>Contenido de la pestaña Calendario (próximamente).</p>
-          </div>
+  <!-- Panel: Stock -->
+  <div class="tab-panel" id="panel-stock">
+    <?php
+      $viewFile = __DIR__ . '/../partials/drones/view/drone_stock_view.php';
+      if (is_file($viewFile)) {
+        require $viewFile;
+      } else {
+        echo '<p>No se encontró la vista <code>drone_stock_view.php</code>.</p>';
+      }
+    ?>
+  </div>
 
-        </div>
+  <!-- Panel: Variables -->
+  <div class="tab-panel" id="panel-variables">
+    <?php
+      $viewFile = __DIR__ . '/../partials/drones/view/drone_variables_view.php';
+      if (is_file($viewFile)) {
+        require $viewFile;
+      } else {
+        echo '<p>No se encontró la vista <code>drone_variables_view.php</code>.</p>';
+      }
+    ?>
+  </div>
+
+</div>
 
         <!-- contenedor del toastify -->
         <div id="toast-container"></div>
