@@ -389,37 +389,13 @@ $sesion_payload = [
                     </div>
 
                     <!-- tratamiento / motivo -->
-                    <div class="gform-question" role="group" aria-labelledby="q_motivo_label" id="q_motivo">
-                        <div id="q_motivo_label" class="gform-legend">INDICAR EL MOTIVO POR EL QUE DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span></div>
-                        <div class="gform-options">
-                            <label class="gform-option">
-                                <input type="checkbox" id="motivo_mildiu" name="motivo[]" value="mildiu">
-                                <span>Curación para Peronospora o Mildiu</span>
-                            </label>
-                            <label class="gform-option">
-                                <input type="checkbox" id="motivo_oidio" name="motivo[]" value="oidio">
-                                <span>Curación para Oidio o Quintal</span>
-                            </label>
-                            <label class="gform-option">
-                                <input type="checkbox" id="motivo_lobesia" name="motivo[]" value="lobesia">
-                                <span>Curación para Lobesia</span>
-                            </label>
-                            <label class="gform-option">
-                                <input type="checkbox" id="motivo_podredumbre" name="motivo[]" value="podredumbre">
-                                <span>Curación para Podredumbre</span>
-                            </label>
-                            <label class="gform-option">
-                                <input type="checkbox" id="motivo_fertilizacion" name="motivo[]" value="fertilizacion">
-                                <span>Fertilización Foliar</span>
-                            </label>
-                            <label class="gform-option gform-option-otros">
-                                <input type="checkbox" id="motivo_otros_chk" name="motivo[]" value="otros" aria-controls="motivo_otros">
-                                <span>Otros:</span>
-                                <input type="text" id="motivo_otros" name="motivo_otros" class="gform-input gform-input-inline oculto" placeholder="Especificar" disabled>
-                            </label>
-                        </div>
-                        <div class="gform-error">Seleccioná al menos una opción.</div>
-                    </div>
+<div class="gform-question" role="group" aria-labelledby="q_motivo_label" id="q_motivo">
+    <div id="q_motivo_label" class="gform-legend">INDICAR EL MOTIVO POR EL QUE DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span></div>
+    <div class="gform-options" id="motivo_dynamic">
+        <div class="gform-helper">Cargando patologías…</div>
+    </div>
+    <div class="gform-error">Seleccioná al menos una opción.</div>
+</div>
 
                     <!-- rango_fecha -->
                     <div class="gform-question" role="group" aria-labelledby="q_rango_label" id="q_rango">
@@ -440,91 +416,17 @@ $sesion_payload = [
                     </div>
 
                     <!-- assist_product -->
-                    <div class="gform-question" role="group" aria-labelledby="q_productos_label" id="q_productos">
-                        <div id="q_productos_label" class="gform-legend">
-                            En el caso de necesitar productos fitosanitarios para realizar la pulverización indicar los que sean necesarios. <span class="gform-required">*</span>
-                        </div>
+<div class="gform-question" role="group" aria-labelledby="q_productos_label" id="q_productos">
+    <div id="q_productos_label" class="gform-legend">
+        En el caso de necesitar productos fitosanitarios para realizar la pulverización indicar los que sean necesarios. <span class="gform-required">*</span>
+    </div>
 
-                        <div class="gform-options gopts-with-complement">
-                            <!-- Lobesia -->
-                            <div class="gform-optbox" id="opt_lobesia">
-                                <label class="gform-option">
-                                    <input type="checkbox" id="prod_lobesia" name="productos[]" value="lobesia" data-complement="#cmp-lobesia">
-                                    <span>Productos para Lobesia/Polilla de la Vid</span>
-                                </label>
-                                <div id="cmp-lobesia" class="gform-complement" hidden>
-                                    <div class="gform-miniopts">
-                                        <span>¿Tenés el producto?</span>
-                                        <label><input type="radio" id="src_lobesia_sve" name="src-lobesia" value="sve" checked> No</label>
-                                        <label><input type="radio" id="src_lobesia_yo" name="src-lobesia" value="yo"> Sí</label>
-                                    </div>
-                                    <div class="gform-brand" id="brand_lobesia" hidden>
-                                        <input type="text" class="gform-input gform-input-inline" id="marca_lobesia" name="marca-lobesia" placeholder="Marca del producto">
-                                        <div class="gform-helper">Indicá marca y, si aplica, concentración/composición.</div>
-                                    </div>
-                                </div>
-                            </div>
+    <div class="gform-options gopts-with-complement" id="productos_dynamic">
+        <div class="gform-helper">Primero seleccioná una o más patologías arriba. Acá se habilitarán las opciones por cada una.</div>
+    </div>
 
-                            <!-- Peronospora -->
-                            <div class="gform-optbox" id="opt_peronospora">
-                                <label class="gform-option">
-                                    <input type="checkbox" id="prod_peronospora" name="productos[]" value="peronospora" data-complement="#cmp-peronospora">
-                                    <span>Productos para Peronospora de la vid</span>
-                                </label>
-                                <div id="cmp-peronospora" class="gform-complement" hidden>
-                                    <div class="gform-miniopts">
-                                        <span>¿Tenés el producto?</span>
-                                        <label><input type="radio" id="src_peronospora_sve" name="src-peronospora" value="sve" checked> No</label>
-                                        <label><input type="radio" id="src_peronospora_yo" name="src-peronospora" value="yo"> Sí</label>
-                                    </div>
-                                    <div class="gform-brand" id="brand_peronospora" hidden>
-                                        <input type="text" class="gform-input gform-input-inline" id="marca_peronospora" name="marca-peronospora" placeholder="Marca del producto">
-                                        <div class="gform-helper">Indicá marca y, si aplica, concentración/composición.</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Oidio -->
-                            <div class="gform-optbox" id="opt_oidio">
-                                <label class="gform-option">
-                                    <input type="checkbox" id="prod_oidio" name="productos[]" value="oidio" data-complement="#cmp-oidio">
-                                    <span>Productos para Oidio/Quintal de la vid</span>
-                                </label>
-                                <div id="cmp-oidio" class="gform-complement" hidden>
-                                    <div class="gform-miniopts">
-                                        <span>¿Tenés el producto?</span>
-                                        <label><input type="radio" id="src_oidio_sve" name="src-oidio" value="sve" checked> No</label>
-                                        <label><input type="radio" id="src_oidio_yo" name="src-oidio" value="yo"> Sí</label>
-                                    </div>
-                                    <div class="gform-brand" id="brand_oidio" hidden>
-                                        <input type="text" class="gform-input gform-input-inline" id="marca_oidio" name="marca-oidio" placeholder="Marca del producto">
-                                        <div class="gform-helper">Indicá marca y, si aplica, concentración/composición.</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Podredumbre -->
-                            <div class="gform-optbox" id="opt_podredumbre">
-                                <label class="gform-option">
-                                    <input type="checkbox" id="prod_podredumbre" name="productos[]" value="podredumbre" data-complement="#cmp-podredumbre">
-                                    <span>Productos para Podredimbre de los racimos</span>
-                                </label>
-                                <div id="cmp-podredumbre" class="gform-complement" hidden>
-                                    <div class="gform-miniopts">
-                                        <span>¿Tenés el producto?</span>
-                                        <label><input type="radio" id="src_podredumbre_sve" name="src-podredumbre" value="sve" checked> No</label>
-                                        <label><input type="radio" id="src_podredumbre_yo" name="src-podredumbre" value="yo"> Sí</label>
-                                    </div>
-                                    <div class="gform-brand" id="brand_podredumbre" hidden>
-                                        <input type="text" class="gform-input gform-input-inline" id="marca_podredumbre" name="marca-podredumbre" placeholder="Marca del producto">
-                                        <div class="gform-helper">Indicá marca y, si aplica, concentración/composición.</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="gform-error">Seleccioná al menos una opción.</div>
-                    </div>
+    <div class="gform-error">Seleccioná al menos una opción.</div>
+</div>
 
                     <!-- dirección -->
                     <div class="gform-question span-2" role="group" aria-labelledby="q_direccion_label" id="q_direccion">
@@ -647,6 +549,147 @@ $sesion_payload = [
             const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
             const form = $('#form-dron');
+// --- ENDPOINTS auxiliares ---
+const apiGet = async (params) => {
+  const url = `${API_URL}?${new URLSearchParams(params).toString()}`;
+  const res = await fetch(url, { method: 'GET', credentials: 'same-origin', cache: 'no-store' });
+  const json = await res.json().catch(() => ({}));
+  if (!json?.ok) throw new Error(json?.error || 'Error de red');
+  return json.data || json; // data.items o items
+};
+
+// Cargar patologías dinámicas
+async function cargarPatologias() {
+  const data = await apiGet({ action: 'patologias' });
+  const items = data.items || [];
+  const cont = document.getElementById('motivo_dynamic');
+  if (!cont) return;
+
+  const otrosHTML = `
+    <label class="gform-option gform-option-otros">
+      <input type="checkbox" id="motivo_otros_chk" name="motivo[]" value="otros" aria-controls="motivo_otros">
+      <span>Otros:</span>
+      <input type="text" id="motivo_otros" name="motivo_otros" class="gform-input gform-input-inline oculto" placeholder="Especificar" disabled>
+    </label>
+  `;
+
+  if (!items.length) {
+    cont.innerHTML = `<div class="gform-helper">No hay patologías activas.</div>${otrosHTML}`;
+    return;
+  }
+
+  cont.innerHTML = items.map(p => `
+    <label class="gform-option">
+      <input type="checkbox" name="motivo[]" value="${p.id}" data-patologia-nombre="${p.nombre}">
+      <span>${p.nombre}</span>
+    </label>
+  `).join('') + otrosHTML;
+
+  // vincular "Otros"
+  const chkOtros = document.getElementById('motivo_otros_chk');
+  const inputOtros = document.getElementById('motivo_otros');
+  if (chkOtros && inputOtros) {
+    const syncOtros = () => {
+      inputOtros.disabled = !chkOtros.checked;
+      inputOtros.classList.toggle('oculto', !chkOtros.checked);
+      if (!chkOtros.checked) inputOtros.value = '';
+    };
+    chkOtros.addEventListener('change', syncOtros);
+    syncOtros();
+  }
+
+  // cada cambio de patología reconstruye la sección productos
+  cont.addEventListener('change', () => reconstruirProductos());
+}
+
+// Construir sección de productos según patologías seleccionadas
+async function reconstruirProductos() {
+  const wrap = document.getElementById('productos_dynamic');
+  if (!wrap) return;
+  const patChecks = Array.from(document.querySelectorAll('#motivo_dynamic input[type="checkbox"][name="motivo[]"]'))
+    .filter(i => i.value !== 'otros' && i.checked);
+
+  if (!patChecks.length) {
+    wrap.innerHTML = `<div class="gform-helper">Primero seleccioná una o más patologías arriba. Acá se habilitarán las opciones por cada una.</div>`;
+    return;
+  }
+
+  // Render base (lazy fetch de productos por patología)
+  wrap.innerHTML = patChecks.map(chk => {
+    const pid = chk.value;
+    const pnom = chk.dataset.patologiaNombre || chk.nextElementSibling?.textContent || `Patología #${pid}`;
+    return `
+      <div class="gform-optbox" data-patologia-id="${pid}" data-patologia-nombre="${pnom}">
+        <label class="gform-option">
+          <input type="checkbox" name="productos[]" value="${pid}" data-complement="#cmp-pat-${pid}">
+          <span>Productos para ${pnom}</span>
+        </label>
+        <div id="cmp-pat-${pid}" class="gform-complement" hidden>
+          <div class="gform-miniopts">
+            <span>¿Tenés el producto?</span>
+            <label><input type="radio" name="src-${pid}" value="sve" checked> No</label>
+            <label><input type="radio" name="src-${pid}" value="yo"> Sí</label>
+          </div>
+          <div class="gform-brand" id="brand_${pid}" hidden>
+            <input type="text" class="gform-input gform-input-inline" id="marca_${pid}" placeholder="Marca del producto">
+            <div class="gform-helper">Indicá marca y, si aplica, concentración/composición.</div>
+          </div>
+          <div class="gform-brand" id="sve_${pid}">
+            <select class="gform-input gform-input-inline" id="sel_prod_${pid}">
+              <option value="">Seleccioná un producto SVE…</option>
+            </select>
+            <div class="gform-helper">Mostrando productos del stock asociados a ${pnom}.</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // activar complementos
+  Array.from(wrap.querySelectorAll('input[type="checkbox"][data-complement]')).forEach(cb => {
+    const cmpSel = cb.dataset.complement;
+    const cmp = document.querySelector(cmpSel);
+    const sync = () => { if (cmp) cmp.hidden = !cb.checked; };
+    cb.addEventListener('change', sync);
+    sync();
+  });
+
+  // radios -> mostrar marca o select
+  Array.from(wrap.querySelectorAll('.gform-optbox')).forEach(async (box) => {
+    const pid = box.dataset.patologiaId;
+    const rbNo = box.querySelector(`input[type="radio"][name="src-${pid}"][value="sve"]`);
+    const rbSi = box.querySelector(`input[type="radio"][name="src-${pid}"][value="yo"]`);
+    const brand = box.querySelector(`#brand_${pid}`);
+    const sveWrap = box.querySelector(`#sve_${pid}`);
+    const sel = box.querySelector(`#sel_prod_${pid}`);
+
+    const sync = () => {
+      const yo = rbSi?.checked;
+      if (brand) brand.hidden = !yo;
+      if (sveWrap) sveWrap.hidden = !!yo;
+      if (!yo && sel && !sel.dataset.loaded) {
+        // cargar productos SVE asociados
+        apiGet({ action: 'productos', patologia_id: pid }).then(data => {
+          const items = data.items || [];
+          sel.innerHTML = `<option value="">Seleccioná un producto SVE…</option>` +
+            items.map(it => `<option value="${it.id}">${it.nombre}</option>`).join('');
+          sel.dataset.loaded = '1';
+        }).catch(() => {
+          sel.innerHTML = `<option value="">No se pudieron cargar productos</option>`;
+        });
+      }
+    };
+    rbNo?.addEventListener('change', sync);
+    rbSi?.addEventListener('change', sync);
+    sync();
+  });
+}
+
+// Carga inicial
+cargarPatologias().catch(() => {
+  const cont = document.getElementById('motivo_dynamic');
+  if (cont) cont.innerHTML = `<div class="gform-helper">No se pudieron cargar las patologías.</div>`;
+});
 
             // ---- Sesión (inyectada desde PHP)
             const sessionData = (() => {
@@ -957,11 +1000,14 @@ $sesion_payload = [
 
                 const rangos = (payload.rango_fecha || []).map(v => labelRango[v] || v);
 
-                const prodsItems = (payload.productos || []).map(p => {
-                    const fuente = p.fuente === 'yo' ? 'Proveedor propio' : 'SVE';
-                    const marca = p.marca ? ` — Marca: ${escapeHTML(p.marca)}` : '';
-                    return `<li>${escapeHTML(labelProducto[p.tipo] || p.tipo)} <small>(${fuente}${marca})</small></li>`;
-                }).join('');
+const prodsItems = (payload.productos || []).map(p => {
+    const fuente = p.fuente === 'yo' ? 'Proveedor propio' : 'SVE';
+    const detalle = p.fuente === 'yo'
+        ? (p.marca ? ` — Marca: ${escapeHTML(p.marca)}` : '')
+        : (p.producto_nombre ? ` — Producto: ${escapeHTML(p.producto_nombre)}` : '');
+    const pat = p.patologia_nombre || `Patología #${p.patologia_id}`;
+    return `<li>${escapeHTML(pat)} <small>(${fuente}${detalle})</small></li>`;
+}).join('');
 
                 const ubic = payload.ubicacion || {};
                 const coords = (ubic.lat && ubic.lng) ?
@@ -1077,44 +1123,26 @@ $sesion_payload = [
                 must(document.getElementById('q_rango'), getValuesChecked('input[type="checkbox"][name="rango_fecha[]"]', form).length > 0);
 
                 // Productos (al menos uno) + si fuente = "yo", exigir marca
-                const productosMarcados = getValuesChecked('input[type="checkbox"][name="productos[]"]', form);
-                let prodOk = productosMarcados.length > 0;
-                if (prodOk) {
-                    const checks = [{
-                            tipo: 'lobesia',
-                            src: 'src-lobesia',
-                            marca: '#marca_lobesia',
-                            chk: '#prod_lobesia'
-                        },
-                        {
-                            tipo: 'peronospora',
-                            src: 'src-peronospora',
-                            marca: '#marca_peronospora',
-                            chk: '#prod_peronospora'
-                        },
-                        {
-                            tipo: 'oidio',
-                            src: 'src-oidio',
-                            marca: '#marca_oidio',
-                            chk: '#prod_oidio'
-                        },
-                        {
-                            tipo: 'podredumbre',
-                            src: 'src-podredumbre',
-                            marca: '#marca_podredumbre',
-                            chk: '#prod_podredumbre'
-                        },
-                    ];
-                    for (const it of checks) {
-                        if (!document.querySelector(it.chk)?.checked) continue;
-                        const fuente = form.querySelector(`input[type="radio"][name="${it.src}"]:checked`)?.value;
-                        if (fuente === 'yo' && !document.querySelector(it.marca)?.value.trim()) {
-                            prodOk = false;
-                            break;
-                        }
-                    }
-                }
-                must(document.getElementById('q_productos'), prodOk);
+                // Productos (dinámico): al menos un checkbox por patología + validar fuente
+const productosMarcados = getValuesChecked('input[type="checkbox"][name="productos[]"]', form);
+let prodOk = productosMarcados.length > 0;
+if (prodOk) {
+  for (const pid of productosMarcados) {
+    const box = document.querySelector(`.gform-optbox[data-patologia-id="${pid}"]`);
+    if (!box) continue;
+    const fuente = form.querySelector(`input[type="radio"][name="src-${pid}"]:checked`)?.value;
+    if (!fuente) { prodOk = false; break; }
+    if (fuente === 'yo') {
+      const marca = box.querySelector(`#marca_${pid}`)?.value?.trim();
+      if (!marca) { prodOk = false; break; }
+    } else {
+      const sel = box.querySelector(`#sel_prod_${pid}`);
+      if (!sel || !sel.value) { prodOk = false; break; }
+    }
+  }
+}
+must(document.getElementById('q_productos'), prodOk);
+
 
                 // Observaciones (obligatorio según tu UI)
                 const obsOk = !!document.getElementById('observaciones')?.value.trim();
@@ -1171,49 +1199,26 @@ $sesion_payload = [
                     },
                     rango_fecha: getCheckboxValues('rango_fecha[]'),
                     productos: (() => {
-                        const result = [];
-                        [{
-                                key: 'lobesia',
-                                chk: '#prod_lobesia',
-                                srcName: 'src-lobesia',
-                                marca: '#marca_lobesia'
-                            },
-                            {
-                                key: 'peronospora',
-                                chk: '#prod_peronospora',
-                                srcName: 'src-peronospora',
-                                marca: '#marca_peronospora'
-                            },
-                            {
-                                key: 'oidio',
-                                chk: '#prod_oidio',
-                                srcName: 'src-oidio',
-                                marca: '#marca_oidio'
-                            },
-                            {
-                                key: 'podredumbre',
-                                chk: '#prod_podredumbre',
-                                srcName: 'src-podredumbre',
-                                marca: '#marca_podredumbre'
-                            },
-                        ].forEach(({
-                            key,
-                            chk,
-                            srcName,
-                            marca
-                        }) => {
-                            const isChecked = $(chk)?.checked;
-                            if (!isChecked) return;
-                            const fuente = getRadioValue(srcName);
-                            const marcaVal = fuente === 'yo' ? ($(marca)?.value?.trim() || null) : null;
-                            result.push({
-                                tipo: key,
-                                fuente,
-                                marca: marcaVal
-                            });
-                        });
-                        return result;
-                    })(),
+    const out = [];
+    document.querySelectorAll('.gform-optbox[data-patologia-id]').forEach(box => {
+        const pid = parseInt(box.dataset.patologiaId, 10);
+        const pnom = box.dataset.patologiaNombre || '';
+        const chk = box.querySelector('input[type="checkbox"][name="productos[]"]');
+        if (!chk || !chk.checked) return;
+
+        const fuente = getRadioValue(`src-${pid}`);
+        if (fuente === 'yo') {
+            const marca = box.querySelector(`#marca_${pid}`)?.value?.trim() || null;
+            out.push({ patologia_id: pid, patologia_nombre: pnom, fuente: 'yo', marca });
+        } else {
+            const sel = box.querySelector(`#sel_prod_${pid}`);
+            const producto_id = sel && sel.value ? parseInt(sel.value, 10) : null;
+            const producto_nombre = sel ? sel.options[sel.selectedIndex]?.textContent : null;
+            out.push({ patologia_id: pid, patologia_nombre: pnom, fuente: 'sve', producto_id, producto_nombre });
+        }
+    });
+    return out;
+})(),
                     direccion: getDireccionFromForm(),
                     ubicacion: {
                         en_finca: getRadioValue('en_finca'),

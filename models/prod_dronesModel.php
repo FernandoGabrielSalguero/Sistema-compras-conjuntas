@@ -3,11 +3,9 @@ class prodDronesModel
 {
     private $pdo;
 
-    // Enums/whitelists (de tu schema)
+    // Whitelists
     private array $yesNo = ['si','no'];
-    private array $motivos = ['mildiu','oidio','lobesia','podredumbre','fertilizacion','otros'];
     private array $rangos = ['enero_q1','enero_q2','febrero_q1','febrero_q2','octubre_q1','octubre_q2','noviembre_q1','noviembre_q2','diciembre_q1','diciembre_q2'];
-    private array $prodTipos = ['lobesia','peronospora','oidio','podredumbre'];
     private array $fuentes = ['sve','yo'];
 
     public function __construct(PDO $pdo)
@@ -17,6 +15,22 @@ class prodDronesModel
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     }
+
+    public function getPatologiasActivas(): array {
+    $sql = "SELECT id, nombre FROM dron_patologias WHERE activo='si' ORDER BY nombre ASC";
+    return $this->pdo->query($sql)->fetchAll() ?: [];
+}
+
+public function getProductosPorPatologia(int $patologiaId): array {
+    $sql = "SELECT p.id, p.nombre
+            FROM dron_productos_stock p
+            JOIN dron_productos_stock_patologias sp ON sp.producto_id = p.id
+            WHERE sp.patologia_id = :pid
+            ORDER BY p.nombre ASC";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([':pid'=>$patologiaId]);
+    return $st->fetchAll() ?: [];
+}
 
     public function crearSolicitud(array $data, array $session): int
     {
@@ -132,35 +146,59 @@ class prodDronesModel
                     }
                 }
             }
+// 3) Motivos (dinámico)
+$motivo = $data['motivo'] ?? [];
+$opc    = (array)($motivo['opciones'] ?? []);
+$otrosT = $nn($motivo['otros'] ?? null);
 
-            // 3) Motivos
-            $motivo = $data['motivo'] ?? [];
-            $opc    = (array)($motivo['opciones'] ?? []);
-            $otrosT = $nn($motivo['otros'] ?? null);
+if ($opc) {
+    $stM = $this->pdo->prepare("INSERT INTO dron_solicitudes_motivos (solicitud_id, patologia_id, motivo, otros_text) VALUES (?, ?, ?, ?)");
+    foreach ($opc as $m) {
+        if ($m === 'otros') {
+            $stM->execute([$solicitudId, null, 'otros', $otrosT]);
+            continue;
+        }
+        $pid = (int)$m;
+        // validar que exista patología
+        $chk = $this->pdo->prepare("SELECT 1 FROM dron_patologias WHERE id = ?");
+        $chk->execute([$pid]);
+        if ($chk->fetchColumn()) {
+            $stM->execute([$solicitudId, $pid, null, null]);
+        }
+    }
+}
 
-            if ($opc) {
-                $stM = $this->pdo->prepare("INSERT INTO dron_solicitudes_motivos (solicitud_id, motivo, otros_text) VALUES (?, ?, ?)");
-                foreach ($opc as $m) {
-                    if (!in_array($m, $this->motivos, true)) continue;
-                    $ot = ($m === 'otros') ? $otrosT : null;
-                    $stM->execute([$solicitudId, $m, $ot]);
-                }
-            }
+// 4) Productos (dinámico por patología)
+$prods = (array)($data['productos'] ?? []);
+if ($prods) {
+    $stP = $this->pdo->prepare("INSERT INTO dron_solicitudes_productos (solicitud_id, patologia_id, producto_id, fuente, marca) VALUES (?, ?, ?, ?, ?)");
+    foreach ($prods as $p) {
+        $pid    = isset($p['patologia_id']) ? (int)$p['patologia_id'] : 0;
+        $fuente = $p['fuente'] ?? null;
+        $marca  = $nn($p['marca'] ?? null);
+        $prodId = isset($p['producto_id']) ? (int)$p['producto_id'] : null;
 
-            // 4) Productos
-            $prods = (array)($data['productos'] ?? []);
-            if ($prods) {
-                $stP = $this->pdo->prepare("INSERT INTO dron_solicitudes_productos (solicitud_id, tipo, fuente, marca) VALUES (?, ?, ?, ?)");
-                foreach ($prods as $p) {
-                    $tipo   = $p['tipo']   ?? null;
-                    $fuente = $p['fuente'] ?? null;
-                    $marca  = $nn($p['marca'] ?? null);
-                    if (!in_array($tipo, $this->prodTipos, true)) continue;
-                    if (!in_array($fuente, $this->fuentes,  true)) continue;
-                    // si fuente = 'yo' y no hay marca, igual permitimos NULL (tu schema lo permite)
-                    $stP->execute([$solicitudId, $tipo, $fuente, $marca]);
-                }
-            }
+        if ($pid <= 0) continue;
+        if (!in_array($fuente, $this->fuentes, true)) continue;
+
+        // validar patología
+        $chk = $this->pdo->prepare("SELECT 1 FROM dron_patologias WHERE id = ?");
+        $chk->execute([$pid]);
+        if (!$chk->fetchColumn()) continue;
+
+        if ($fuente === 'sve') {
+            if (!$prodId) continue;
+            // validar que el producto esté asociado a esa patología
+            $vp = $this->pdo->prepare("SELECT 1 FROM dron_productos_stock_patologias WHERE producto_id = ? AND patologia_id = ?");
+            $vp->execute([$prodId, $pid]);
+            if (!$vp->fetchColumn()) continue;
+            $stP->execute([$solicitudId, $pid, $prodId, 'sve', null]);
+        } else { // 'yo'
+            if (!$marca) continue; // exigir marca cuando es propio
+            $stP->execute([$solicitudId, $pid, null, 'yo', $marca]);
+        }
+    }
+}
 
             $this->pdo->commit();
             return $solicitudId;

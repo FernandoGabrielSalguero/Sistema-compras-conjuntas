@@ -27,6 +27,39 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/prod_dronesModel.php';
 
 try {
+    $model = new prodDronesModel($pdo);
+
+    // --- GET: catálogos ---
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $action = $_GET['action'] ?? '';
+        if ($action === 'patologias') {
+            $items = $model->getPatologiasActivas();
+            http_response_code(200);
+            ob_clean();
+            echo json_encode(['ok'=>true, 'data'=>['items'=>$items]], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        if ($action === 'productos') {
+            $pid = isset($_GET['patologia_id']) ? (int)$_GET['patologia_id'] : 0;
+            if ($pid <= 0) {
+                http_response_code(400);
+                ob_clean();
+                echo json_encode(['ok'=>false,'error'=>'patologia_id inválido']);
+                exit;
+            }
+            $items = $model->getProductosPorPatologia($pid);
+            http_response_code(200);
+            ob_clean();
+            echo json_encode(['ok'=>true, 'data'=>['items'=>$items]], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        http_response_code(400);
+        ob_clean();
+        echo json_encode(['ok'=>false,'error'=>'Acción GET no soportada']);
+        exit;
+    }
+
+    // --- POST: crear solicitud ---
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
         ob_clean();
@@ -43,20 +76,15 @@ try {
         exit;
     }
 
-    // IMPORTANTE: $pdo debe venir de config.php y no imprimir nada.
-    $model = new prodDronesModel($pdo);
-    $id    = $model->crearSolicitud($data, $_SESSION);
+    $id = $model->crearSolicitud($data, $_SESSION);
 
     http_response_code(200);
     ob_clean();
-    echo json_encode([
-        'ok'      => true,
-        'id'      => $id,
-        'message' => 'Solicitud registrada correctamente'
-    ], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['ok'=>true,'id'=>$id,'message'=>'Solicitud registrada correctamente'], JSON_UNESCAPED_UNICODE);
     exit;
 
 } catch (InvalidArgumentException $e) {
+
     http_response_code(400);
     ob_clean();
     echo json_encode(['ok'=>false, 'error'=>$e->getMessage()]);
