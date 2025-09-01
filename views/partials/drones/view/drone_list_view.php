@@ -109,11 +109,6 @@
                         </div>
 
                         <div class="input-group" style="grid-column:1/-1;">
-                            <label>Productos seleccionados por el productor</label>
-                            <ul id="f-productos" class="product-list" aria-live="polite"></ul>
-                        </div>
-
-                        <div class="input-group" style="grid-column:1/-1;">
                             <label for="f-observaciones">Observaciones del productor</label>
                             <div class="input-icon material">
                                 <span class="material-icons mi">notes</span>
@@ -284,7 +279,7 @@
                             </div>
                         </div>
 
-                                                <!-- ======= Agenda ======= -->
+                        <!-- ======= Agenda ======= -->
                         <div class="form-separator"><span class="material-icons mi">event</span>Agenda</div>
 
                         <div class="input-group" style="grid-column:1/-1;">
@@ -350,6 +345,31 @@
                                 <input type="text" id="f-tamano_gota" name="tamano_gota" placeholder="Tamaño de gota" />
                             </div>
                         </div>
+
+                        <div class="form-separator"><span class="material-icons mi">science</span>Productos a utilizar</div>
+
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <div class="table-responsive">
+                                <table class="prod-table" id="tabla-productos">
+                                    <thead>
+                                        <tr>
+                                            <th style="min-width:280px;">Producto</th>
+                                            <th style="min-width:180px;">Principio activo</th>
+                                            <th style="min-width:120px;">Dosis</th>
+                                            <th style="min-width:110px;">Unidad</th>
+                                            <th style="min-width:110px;">Orden mezcla</th>
+                                            <th style="min-width:140px;">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <button type="button" class="btn btn-aceptar" id="btn-add-prod" style="margin-top:8px;">
+                                Añadir producto
+                            </button>
+                            <div class="gform-helper">Elegí la fuente (SVE/Productor). Si es SVE, seleccioná del stock; si es del productor, escribí el nombre y el principio activo.</div>
+                        </div>
+
 
                     </form>
                 </div>
@@ -632,6 +652,51 @@
         background: #eef2ff;
         color: #4338ca;
         white-space: nowrap
+    }
+
+    /* Estilos para la tabla responsiva */
+    .table-responsive {
+        overflow: auto;
+    }
+
+    .prod-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .prod-table th,
+    .prod-table td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 8px;
+        vertical-align: middle;
+    }
+
+    .prod-table input[type="text"],
+    .prod-table input[type="number"],
+    .prod-table select {
+        width: 100%;
+        height: 36px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0 8px;
+    }
+
+    .prod-row .campo-sve,
+    .prod-row .campo-yo {
+        display: none;
+    }
+
+    .prod-row.fuente-sve .campo-sve {
+        display: block;
+    }
+
+    .prod-row.fuente-yo .campo-yo {
+        display: block;
+    }
+
+    .prod-actions {
+        display: flex;
+        gap: 6px;
     }
 </style>
 
@@ -941,21 +1006,219 @@
             `<span class="pill pill--empty">Sin motivos</span>`;
 
         // Productos (tabla mini)
-        const ulProd = document.getElementById('f-productos');
-        if ((productos || []).length) {
-            ulProd.innerHTML = productos.map(p => `
-    <li>
-      <span class="material-icons mi">science</span>
-      <div>
-        <div class="title">${esc(cap(p.tipo))}${p.marca ? ` — ${esc(p.marca)}` : ''}</div>
-        <div class="sub">Fuente: ${esc(p.fuente === 'sve' ? 'SVE' : 'Propio')}</div>
-      </div>
-      <span class="badge product-badge">${esc(p.fuente === 'sve' ? 'SVE' : 'Yo')}</span>
-    </li>
-  `).join('');
-        } else {
-            ulProd.innerHTML = `<li><span class="sub">Sin productos</span></li>`;
+        let __stockCache = null;
+        async function loadStock(q = '') {
+            if (__stockCache && q === '') return __stockCache;
+            const res = await fetch(`${API}?action=list_stock&q=${encodeURIComponent(q)}`);
+            const json = await res.json();
+            if (!json.ok) throw new Error(json.error || 'No se pudo cargar stock');
+            __stockCache = json.data.items || [];
+            return __stockCache;
         }
+
+        function stockPAById(id) {
+            const it = (__stockCache || []).find(x => String(x.id) === String(id));
+            return it ? it.principio_activo || '' : '';
+        }
+
+        // --- Render de la tabla de productos
+        const tablaProd = document.getElementById('tabla-productos');
+        const tbodyProd = tablaProd.querySelector('tbody');
+        document.getElementById('btn-add-prod').addEventListener('click', async () => {
+            await ensureStockLoaded();
+            addRow({});
+        });
+
+        async function ensureStockLoaded() {
+            if (!__stockCache) await loadStock();
+        }
+
+        function unidadOptions(sel) {
+            const opts = ['ml/ha', 'g/ha', 'L/ha', 'kg/ha'];
+            return opts.map(u => `<option value="${u}" ${sel===u?'selected':''}>${u}</option>`).join('');
+        }
+
+        function productoCellHTML(p) {
+            const fuente = (p.fuente === 'yo' ? 'yo' : 'sve');
+            const prodId = p.producto_id ?? '';
+            const marca = p.marca ?? '';
+            const stockOpts = (__stockCache || []).map(s =>
+                `<option value="${s.id}" ${String(s.id)===String(prodId)?'selected':''}>${esc(s.nombre)}</option>`
+            ).join('');
+            return `
+      <div style="display:flex; gap:8px;">
+        <select class="fuente" style="max-width:160px;">
+          <option value="sve" ${fuente==='sve'?'selected':''}>SVE</option>
+          <option value="yo"  ${fuente==='yo'?'selected':''}>Productor</option>
+        </select>
+        <div class="campo-sve" style="flex:1;">
+          <select class="producto_id">
+            <option value="">Seleccioná del stock…</option>
+            ${stockOpts}
+          </select>
+        </div>
+        <div class="campo-yo" style="flex:1;">
+          <input type="text" class="marca" placeholder="Nombre comercial" value="${esc(marca)}" />
+        </div>
+      </div>
+    `;
+        }
+
+        function rowHTML(p) {
+            const fuente = (p.fuente === 'yo' ? 'yo' : 'sve');
+            const pa = p.principio_activo ?? (p.producto_id ? stockPAById(p.producto_id) : '');
+            return `
+      <tr class="prod-row fuente-${fuente}" data-id="${p.id || ''}">
+        <td>${productoCellHTML(p)}</td>
+        <td><input type="text" class="principio_activo" ${fuente==='sve'?'readonly':''} value="${esc(pa)}"></td>
+        <td><input type="number" step="0.01" class="dosis" value="${p.dosis ?? ''}"></td>
+        <td>
+          <select class="unidad">${unidadOptions(p.unidad)}</select>
+        </td>
+        <td><input type="number" step="1" min="1" class="orden_mezcla" value="${p.orden_mezcla ?? ''}"></td>
+        <td class="prod-actions">
+          <button type="button" class="btn btn-aceptar btn-guardar">Guardar</button>
+          <button type="button" class="btn btn-cancelar btn-eliminar">Eliminar</button>
+        </td>
+      </tr>
+    `;
+        }
+
+        function bindRowEvents(tr) {
+            const fuenteSel = tr.querySelector('.fuente');
+            const sveBox = tr.querySelector('.campo-sve');
+            const yoBox = tr.querySelector('.campo-yo');
+            const prodSel = tr.querySelector('.producto_id');
+            const marcaIn = tr.querySelector('.marca');
+            const paIn = tr.querySelector('.principio_activo');
+
+            function syncFuente() {
+                const f = fuenteSel.value === 'yo' ? 'yo' : 'sve';
+                tr.classList.toggle('fuente-sve', f === 'sve');
+                tr.classList.toggle('fuente-yo', f === 'yo');
+                paIn.readOnly = (f === 'sve');
+                if (f === 'sve' && prodSel.value) paIn.value = stockPAById(prodSel.value);
+            }
+            fuenteSel.addEventListener('change', syncFuente);
+            syncFuente();
+
+            prodSel?.addEventListener('change', () => {
+                if (prodSel.value) paIn.value = stockPAById(prodSel.value);
+            });
+
+            tr.querySelector('.btn-guardar').addEventListener('click', () => saveRow(tr));
+            tr.querySelector('.btn-eliminar').addEventListener('click', () => deleteRow(tr));
+        }
+
+        async function addRow(p) {
+            await ensureStockLoaded();
+            const tmp = document.createElement('tbody');
+            tmp.innerHTML = rowHTML(p);
+            const tr = tmp.firstElementChild;
+            tbodyProd.appendChild(tr);
+            bindRowEvents(tr);
+        }
+
+        async function renderProductosTable(productos) {
+            await ensureStockLoaded();
+            tbodyProd.innerHTML = '';
+            (productos || []).forEach(p => addRow(p));
+        }
+
+        async function saveRow(tr) {
+            const id = tr.dataset.id ? parseInt(tr.dataset.id, 10) : null;
+            const f = tr.querySelector('.fuente').value === 'yo' ? 'yo' : 'sve';
+            const pid = tr.querySelector('.producto_id')?.value || null;
+            const marca = tr.querySelector('.marca')?.value?.trim() || null;
+            const pa = tr.querySelector('.principio_activo')?.value?.trim() || null;
+            const dosis = tr.querySelector('.dosis')?.value || null;
+            const unidad = tr.querySelector('.unidad')?.value || null;
+            const orden = tr.querySelector('.orden_mezcla')?.value || null;
+
+            const payload = {
+                id,
+                solicitud_id: currentDetalle.solicitud.id,
+                fuente: f,
+                producto_id: f === 'sve' ? (pid ? Number(pid) : null) : null,
+                marca: f === 'yo' ? marca : null,
+                principio_activo: f === 'yo' ? pa : null,
+                dosis: dosis !== '' ? Number(dosis) : null,
+                unidad: unidad || null,
+                orden_mezcla: orden !== '' ? Number(orden) : null
+            };
+
+            try {
+                showSpinner(true);
+                const res = await fetch(API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'upsert_producto',
+                        data: payload
+                    })
+                });
+                const json = await res.json();
+                if (!json.ok) throw new Error(json.error || 'No se pudo guardar el producto');
+                if (!id && json.id) tr.dataset.id = String(json.id);
+                window.showToast?.('success', 'Producto guardado');
+            } catch (e) {
+                console.error(e);
+                window.showToast?.('error', 'No se pudo guardar');
+            } finally {
+                showSpinner(false);
+            }
+        }
+
+        async function deleteRow(tr) {
+            const id = tr.dataset.id ? Number(tr.dataset.id) : 0;
+            if (!id) {
+                tr.remove();
+                return;
+            }
+            if (!confirm('¿Eliminar este producto?')) return;
+            try {
+                showSpinner(true);
+                const res = await fetch(API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'delete_producto',
+                        id,
+                        solicitud_id: currentDetalle.solicitud.id
+                    })
+                });
+                const json = await res.json();
+                if (!json.ok) throw new Error(json.error || 'No se pudo eliminar');
+                tr.remove();
+                window.showToast?.('success', 'Producto eliminado');
+            } catch (e) {
+                console.error(e);
+                window.showToast?.('error', 'No se pudo eliminar');
+            } finally {
+                showSpinner(false);
+            }
+        }
+
+        // Hook: cuando abrís el drawer, renderizá la tabla
+        const _fillFormOriginal = fillForm;
+        fillForm = async function({
+            solicitud,
+            motivos,
+            productos,
+            rangos
+        }) {
+            _fillFormOriginal({
+                solicitud,
+                motivos,
+                productos: [],
+                rangos
+            }); // evitamos pintar el UL anterior
+            await renderProductosTable(productos);
+        };
 
         // Rangos (chips)
         const contRangos = document.getElementById('f-rangos');
