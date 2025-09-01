@@ -127,8 +127,8 @@
 
 <style>
   /* Inline mínimo y no invasivo */
-  .badge { display:inline-block; padding:2px 6px; border-radius:12px; font-size:.75rem; background:#eef2ff; }
-  .badge + .badge { margin-left:4px; }
+.badge { display:inline-block; padding:2px 8px; border-radius:9999px; font-size:.75rem; line-height:1.2; background:#dbeafe; color:#1e3a8a; border:1px solid #bfdbfe; font-weight:600; }
+.badge + .badge { margin-left:6px; }
   .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 </style>
 

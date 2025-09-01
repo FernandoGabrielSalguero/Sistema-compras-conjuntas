@@ -41,10 +41,20 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
   <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
   <style>
-.tab-panel { display: none; }
-    .tab-panel.active { display: block; }
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
     /* Sin fondo/sombra del contenedor solo cuando se active Variables */
-    #tab-content-card.no-chrome { background: transparent !important; box-shadow: none !important; border: 0 !important; }
+    #tab-content-card.no-chrome {
+      background: transparent !important;
+      box-shadow: none !important;
+      border: 0 !important;
+    }
   </style>
 
 </head>
@@ -224,7 +234,8 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         // Quitar fondo/sombra del contenedor solo en Variables
         const wrapper = document.getElementById('tab-content-card');
         if (wrapper) {
-          wrapper.classList.toggle('no-chrome', targetSel === '#panel-variables');
+          const sinChrome = (targetSel === '#panel-variables' || targetSel === '#panel-stock');
+          wrapper.classList.toggle('no-chrome', sinChrome);
         }
       }
 
