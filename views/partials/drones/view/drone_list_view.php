@@ -925,22 +925,33 @@
         drawer.addEventListener('animationend', onEnd, true);
     }
 
-    function closeDrawer() {
-        drawer.classList.add('closing');
-        drawer.setAttribute('aria-hidden', 'true'); // <<< important
-        const onEnd = (e) => {
-            if (e.target !== drawerPanel) return;
-            drawer.classList.remove('closing');
-            drawer.classList.add('hidden');
-            drawer.removeEventListener('animationend', onEnd, true);
-            currentDetalle = null;
-            // devolver el foco al botón que abrió el drawer si existe
-            if (lastFocus && typeof lastFocus.focus === 'function') {
-                lastFocus.focus();
-            }
-        };
-        drawer.addEventListener('animationend', onEnd, true);
+function closeDrawer() {
+    // 1) Mover el foco fuera del área que vamos a ocultar
+    const active = document.activeElement;
+    if (active && drawer.contains(active)) {
+        if (lastFocus && typeof lastFocus.focus === 'function') {
+            lastFocus.focus(); // vuelve al disparador del drawer
+        } else {
+            // fallback seguro al body
+            document.body.setAttribute('tabindex', '-1');
+            document.body.focus();
+            document.body.removeAttribute('tabindex');
+        }
     }
+
+    // 2) Ahora sí ocultamos con aria-hidden
+    drawer.classList.add('closing');
+    drawer.setAttribute('aria-hidden', 'true');
+
+    const onEnd = (e) => {
+        if (e.target !== drawerPanel) return;
+        drawer.classList.remove('closing');
+        drawer.classList.add('hidden');
+        drawer.removeEventListener('animationend', onEnd, true);
+        currentDetalle = null;
+    };
+    drawer.addEventListener('animationend', onEnd, true);
+}
 
 
     drawerOverlay.addEventListener('click', closeDrawer);
@@ -1176,16 +1187,15 @@
 
             try {
                 showSpinner(true);
-                const res = await fetch(DRONE_API, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        action: 'upsert_producto',
-                        data: payload
-                    })
-                });
+const res = await fetch(`${DRONE_API}?action=upsert_producto`, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        data: payload
+    })
+});
                 const json = await res.json();
                 if (!json.ok) throw new Error(json.error || 'No se pudo guardar el producto');
                 if (!id && json.id) tr.dataset.id = String(json.id);
@@ -1207,17 +1217,16 @@
             if (!confirm('¿Eliminar este producto?')) return;
             try {
                 showSpinner(true);
-                const res = await fetch(DRONE_API, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        action: 'delete_producto',
-                        id,
-                        solicitud_id: currentDetalle.solicitud.id
-                    })
-                });
+const res = await fetch(`${DRONE_API}?action=delete_producto`, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        id,
+        solicitud_id: currentDetalle.solicitud.id
+    })
+});
                 const json = await res.json();
                 if (!json.ok) throw new Error(json.error || 'No se pudo eliminar');
                 tr.remove();
@@ -1306,16 +1315,15 @@
         showSpinner(true);
         try {
             // a) Guardar solicitud
-            const saveSolicitud = fetch(DRONE_API, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'update_solicitud',
-                    data: payloadSolicitud
-                })
-            }).then(r => r.json());
+const saveSolicitud = fetch(`${DRONE_API}?action=update_solicitud`, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        data: payloadSolicitud
+    })
+}).then(r => r.json());
 
             // b) Guardar/actualizar cada producto
             const saveProductos = productosPayload.map(d =>
