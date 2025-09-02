@@ -707,6 +707,7 @@
 </style>
 
 <script>
+    window.DEBUG = true;
     // Endpoint global del módulo Drone (evita collisions con otras páginas)
     const DRONE_API = '../partials/drones/controller/drone_list_controller.php';
 
@@ -835,23 +836,35 @@
             });
 
             // Eventos "Ver detalle"
-            els.cards.querySelectorAll('.btn-view').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.dataset.id;
-                    try {
-                        const res = await fetch(`${API}?action=get_solicitud&id=${encodeURIComponent(id)}`);
-                        const json = await res.json();
-                        if (json.ok) {
-                            if (window.DEBUG) console.log('Detalle solicitud:', json.data);
-                            openDrawer(json.data);
-                        } else {
-                            console.error(json.error || 'No se pudo obtener el detalle');
-                        }
-                    } catch (e) {
-                        console.error(e);
-                    }
-                });
-            });
+            btn.addEventListener('click', async () => {
+    const id = btn.dataset.id;
+    const url = `${API}?action=get_solicitud&id=${encodeURIComponent(id)}`;
+    try {
+        if (window.DEBUG) {
+            console.groupCollapsed('[SVE] GET get_solicitud');
+            console.log('URL:', url);
+            console.groupEnd();
+        }
+        const res = await fetch(url, { cache: 'no-store' });
+        const json = await res.json();
+        if (window.DEBUG) {
+            console.groupCollapsed('[SVE] RES get_solicitud');
+            console.log('status:', res.status);
+            console.log('json:', json);
+            console.groupEnd();
+        }
+        if (json.ok) {
+            openDrawer(json.data);
+        } else {
+            console.error(json.error || 'No se pudo obtener el detalle');
+            window.showToast?.('error', json.error || 'No se pudo obtener el detalle');
+        }
+    } catch (e) {
+        console.error(e);
+        window.showToast?.('error', 'Error de red al obtener el detalle');
+    }
+});
+
         }
 
         // Filtro en vivo
@@ -1283,26 +1296,35 @@ async function renderProductosTable(productos) {
         const errors = [];
 
         rows.forEach((tr, idx) => {
-            const id = tr.dataset.id ? parseInt(tr.dataset.id, 10) : null;
-            const f = tr.querySelector('.fuente')?.value === 'yo' ? 'yo' : 'sve';
-            const pid = tr.querySelector('.producto_id')?.value || null;
-            const marca = tr.querySelector('.marca')?.value?.trim() || null;
-            const pa = tr.querySelector('.principio_activo')?.value?.trim() || null;
-            const dosis = tr.querySelector('.dosis')?.value || null;
-            const unidad = tr.querySelector('.unidad')?.value || null;
-            const orden = tr.querySelector('.orden_mezcla')?.value || null;
+    const id = tr.dataset.id ? parseInt(tr.dataset.id, 10) : null;
+    const f = tr.querySelector('.fuente')?.value === 'yo' ? 'yo' : 'sve';
+    const pid = tr.querySelector('.producto_id')?.value || null;
+    const marca = tr.querySelector('.marca')?.value?.trim() || null;
+    const pa = tr.querySelector('.principio_activo')?.value?.trim() || null;
+    const dosis = tr.querySelector('.dosis')?.value || null;
+    const unidad = tr.querySelector('.unidad')?.value || null;
+    const orden = tr.querySelector('.orden_mezcla')?.value || null;
 
-            const d = {
-                id,
-                solicitud_id: currentDetalle?.solicitud?.id,
-                fuente: f,
-                producto_id: f === 'sve' ? (pid ? Number(pid) : null) : null,
-                marca: f === 'yo' ? marca : null,
-                principio_activo: f === 'yo' ? pa : null,
-                dosis: (dosis !== '' && dosis != null) ? Number(dosis) : null,
-                unidad: unidad || null,
-                orden_mezcla: (orden !== '' && orden != null) ? Number(orden) : null
-            };
+    const d = {
+        id,
+        solicitud_id: currentDetalle?.solicitud?.id,
+        fuente: f,
+        producto_id: f === 'sve' ? (pid ? Number(pid) : null) : null,
+        marca: f === 'yo' ? marca : null,
+        principio_activo: f === 'yo' ? pa : null,
+        dosis: (dosis !== '' && dosis != null) ? Number(dosis) : null,
+        unidad: unidad || null,
+        orden_mezcla: (orden !== '' && orden != null) ? Number(orden) : null
+    };
+
+    if (window.DEBUG) {
+        console.groupCollapsed(`[SVE] collectProductosPayload :: fila ${idx + 1}`);
+        console.log('fuente:', f);
+        console.log('producto_id:', d.producto_id, 'marca:', d.marca, 'PA:', d.principio_activo);
+        console.log('dosis:', d.dosis, 'unidad:', d.unidad, 'orden:', d.orden_mezcla);
+        console.log('raw-select producto_id:', tr.querySelector('.producto_id')?.value);
+        console.groupEnd();
+    }
 
             // Reglas de mínimos
             if (!id) {
