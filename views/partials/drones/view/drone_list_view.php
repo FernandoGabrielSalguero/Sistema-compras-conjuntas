@@ -1260,38 +1260,56 @@
 
     }
 
-    function collectProductosPayload() {
-        const rows = Array.from(document.querySelectorAll('#tabla-productos tbody tr'));
-        return rows.map(tr => {
-            const id = tr.dataset.id ? parseInt(tr.dataset.id, 10) : null;
-            const f = tr.querySelector('.fuente')?.value === 'yo' ? 'yo' : 'sve';
-            const pid = tr.querySelector('.producto_id')?.value || null;
-            const marca = tr.querySelector('.marca')?.value?.trim() || null;
-            const pa = tr.querySelector('.principio_activo')?.value?.trim() || null;
-            const dosis = tr.querySelector('.dosis')?.value || null;
-            const unidad = tr.querySelector('.unidad')?.value || null;
-            const orden = tr.querySelector('.orden_mezcla')?.value || null;
+function collectProductosPayload() {
+    const rows = Array.from(document.querySelectorAll('#tabla-productos tbody tr'));
+    const data = [];
+    const errors = [];
 
-            return {
-                id,
-                solicitud_id: currentDetalle?.solicitud?.id,
-                fuente: f,
-                producto_id: f === 'sve' ? (pid ? Number(pid) : null) : null,
-                marca: f === 'yo' ? marca : null,
-                principio_activo: f === 'yo' ? pa : null,
-                dosis: (dosis !== '' && dosis != null) ? Number(dosis) : null,
-                unidad: unidad || null,
-                orden_mezcla: (orden !== '' && orden != null) ? Number(orden) : null
-            };
-        }).filter(p => {
-            // Para filas nuevas, exigimos datos mínimos:
-            if (!p.id) {
-                if (p.fuente === 'sve') return !!p.producto_id;
-                return !!(p.marca && p.principio_activo);
+    rows.forEach((tr, idx) => {
+        const id = tr.dataset.id ? parseInt(tr.dataset.id, 10) : null;
+        const f = tr.querySelector('.fuente')?.value === 'yo' ? 'yo' : 'sve';
+        const pid = tr.querySelector('.producto_id')?.value || null;
+        const marca = tr.querySelector('.marca')?.value?.trim() || null;
+        const pa = tr.querySelector('.principio_activo')?.value?.trim() || null;
+        const dosis = tr.querySelector('.dosis')?.value || null;
+        const unidad = tr.querySelector('.unidad')?.value || null;
+        const orden = tr.querySelector('.orden_mezcla')?.value || null;
+
+        const d = {
+            id,
+            solicitud_id: currentDetalle?.solicitud?.id,
+            fuente: f,
+            producto_id: f === 'sve' ? (pid ? Number(pid) : null) : null,
+            marca: f === 'yo' ? marca : null,
+            principio_activo: f === 'yo' ? pa : null,
+            dosis: (dosis !== '' && dosis != null) ? Number(dosis) : null,
+            unidad: unidad || null,
+            orden_mezcla: (orden !== '' && orden != null) ? Number(orden) : null
+        };
+
+        // Reglas de mínimos
+        if (!id) {
+            // fila nueva: si no cumple, se omite
+            if (f === 'sve' && !d.producto_id) return;
+            if (f === 'yo' && !(d.marca && d.principio_activo)) return;
+            data.push(d);
+        } else {
+            // fila existente: si no cumple, marcamos error (para no enviar datos inválidos al backend)
+            if (f === 'sve' && !d.producto_id) {
+                errors.push(`Fila ${idx + 1}: en fuente SVE debes seleccionar un producto del stock.`);
+                return;
             }
-            return true;
-        });
-    }
+            if (f === 'yo' && !(d.marca && d.principio_activo)) {
+                errors.push(`Fila ${idx + 1}: en fuente Productor completa Marca y Principio activo.`);
+                return;
+            }
+            data.push(d);
+        }
+    });
+
+    return { data, errors };
+}
+
 
 
     // Serializar form => objeto plano
@@ -1309,62 +1327,45 @@
         return obj;
     }
 
-    // Guardar cambios (solo tabla principal v1)
-    formDetalle.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!currentDetalle) return;
+    // Guardar cambios (transaccional en 1 llamada)
+formDetalle.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentDetalle) return;
 
-        // 1) Datos principales de la solicitud
-        const payloadSolicitud = formToJSON(formDetalle);
-        payloadSolicitud.id = Number(payloadSolicitud.id || currentDetalle.solicitud.id);
+    const payloadSolicitud = formToJSON(formDetalle);
+    payloadSolicitud.id = Number(payloadSolicitud.id || currentDetalle.solicitud.id);
 
-        // 2) Productos (todas las filas)
-        const productosPayload = collectProductosPayload();
+    const productosPayload = collectProductosPayload();
+    if (productosPayload.errors.length) {
+        const msg = productosPayload.errors.join('\n');
+        window.showToast?.('error', msg);
+        alert('Corregí estos errores antes de guardar:\n\n' + msg);
+        return;
+    }
 
-        showSpinner(true);
-        try {
-            // a) Guardar solicitud
-            const saveSolicitud = fetch(`${DRONE_API}?action=update_solicitud`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    data: payloadSolicitud
-                })
-            }).then(r => r.json());
+    showSpinner(true);
+    try {
+        const res = await fetch(`${DRONE_API}?action=save_all`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                solicitud: payloadSolicitud,
+                productos: productosPayload.data
+            })
+        });
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || 'No se pudieron guardar los cambios');
 
-            // b) Guardar/actualizar cada producto
-            const saveProductos = productosPayload.map(d =>
-                fetch(`${DRONE_API}?action=upsert_producto`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        data: d
-                    })
-                }).then(r => r.json())
-            );
+        window.showToast?.('success', 'Cambios guardados');
+        closeDrawer();
+        window.refreshSolicitudes?.();
+    } catch (err) {
+        console.error(err);
+        window.showToast?.('error', err?.message || 'No se pudieron guardar los cambios');
+        alert(err?.message || 'No se pudieron guardar los cambios.');
+    } finally {
+        showSpinner(false);
+    }
+});
 
-            const [resSol, ...resProds] = await Promise.all([saveSolicitud, ...saveProductos]);
-
-            if (!resSol?.ok) throw new Error(resSol?.error || 'No se pudo guardar la solicitud');
-            const prodError = resProds.find(r => !r?.ok);
-            if (prodError) throw new Error(prodError.error || 'No se pudo guardar algún producto');
-
-            // éxito total
-            window.showToast?.('success', 'Cambios guardados');
-            closeDrawer();
-            if (typeof window.refreshSolicitudes === 'function') {
-                window.refreshSolicitudes();
-            }
-        } catch (err) {
-            console.error(err);
-            window.showToast?.('error', err?.message || 'No se pudieron guardar los cambios');
-            alert('No se pudieron guardar los cambios. Revisá los campos requeridos.');
-        } finally {
-            showSpinner(false);
-        }
-    });
 </script>

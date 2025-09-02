@@ -86,8 +86,13 @@ try {
                     echo json_encode(['ok' => false, 'error' => 'solicitud_id inválido']);
                     break;
                 }
-                $out = $model->upsertProductoSolicitud($sid, $d);
-                echo json_encode(['ok' => true] + $out);
+                try {
+                    $out = $model->upsertProductoSolicitud($sid, $d);
+                    echo json_encode(['ok' => true] + $out);
+                } catch (InvalidArgumentException $e) {
+                    http_response_code(422);
+                    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+                }
                 break;
             }
 
@@ -103,6 +108,30 @@ try {
                 }
                 $ok = $model->eliminarProductoSolicitud($pid, $sid);
                 echo json_encode(['ok' => (bool)$ok]);
+                break;
+            }
+
+        case 'save_all': {
+                $raw = file_get_contents('php://input') ?: '';
+                $json = json_decode($raw, true) ?: [];
+
+                $sol = $json['solicitud'] ?? [];
+                $prods = $json['productos'] ?? [];
+
+                $sid = isset($sol['id']) ? (int)$sol['id'] : 0;
+                if ($sid <= 0) {
+                    http_response_code(400);
+                    echo json_encode(['ok' => false, 'error' => 'ID de solicitud inválido']);
+                    break;
+                }
+
+                try {
+                    $out = $model->guardarTodo($sid, $sol, is_array($prods) ? $prods : []);
+                    echo json_encode(['ok' => true, 'data' => $out]);
+                } catch (InvalidArgumentException $e) {
+                    http_response_code(422);
+                    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+                }
                 break;
             }
 

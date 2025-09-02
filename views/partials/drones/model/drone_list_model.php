@@ -98,8 +98,8 @@ class DroneListModel
         $st->execute([':id' => $id]);
         $motivos = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-// Productos (con nombre, principio activo y detalles)
-$st = $this->pdo->prepare("
+        // Productos (con nombre, principio activo y detalles)
+        $st = $this->pdo->prepare("
     SELECT
         sp.id,
         sp.fuente,
@@ -115,8 +115,8 @@ $st = $this->pdo->prepare("
     WHERE sp.solicitud_id = :id
     ORDER BY (sp.orden_mezcla IS NULL), sp.orden_mezcla, sp.id
 ");
-$st->execute([':id' => $id]);
-$productos = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        $st->execute([':id' => $id]);
+        $productos = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
         // Rangos
         $st = $this->pdo->prepare("
@@ -136,103 +136,160 @@ $productos = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
     public function actualizarSolicitud(int $id, array $data): bool
-{
-    // Campos permitidos a actualizar (tabla principal)
-    $allowed = [
-        'piloto','fecha_visita','hora_visita','observaciones','estado','motivo_cancelacion',
-        'obs_piloto','responsable','volumen_ha','velocidad_vuelo','alto_vuelo','tamano_gota',
-        'dir_provincia','dir_localidad','dir_calle','dir_numero','en_finca',
-        'linea_tension','zona_restringida','corriente_electrica','agua_potable',
-        'libre_obstaculos','area_despegue','ubicacion_lat','ubicacion_lng','ubicacion_acc'
-    ];
+    {
+        $allowed = [
+            'piloto',
+            'fecha_visita',
+            'hora_visita',
+            'observaciones',
+            'estado',
+            'motivo_cancelacion',
+            'obs_piloto',
+            'responsable',
+            'volumen_ha',
+            'velocidad_vuelo',
+            'alto_vuelo',
+            'tamano_gota',
+            'dir_provincia',
+            'dir_localidad',
+            'dir_calle',
+            'dir_numero',
+            'en_finca',
+            'linea_tension',
+            'zona_restringida',
+            'corriente_electrica',
+            'agua_potable',
+            'libre_obstaculos',
+            'area_despegue',
+            'ubicacion_lat',
+            'ubicacion_lng',
+            'ubicacion_acc'
+        ];
 
-    $set = [];
-    $params = [':id' => $id];
+        // Enums NOT NULL en la tabla (no permitir setearlos a NULL accidentalmente)
+        $notNullEnums = ['en_finca', 'linea_tension', 'zona_restringida', 'corriente_electrica', 'agua_potable', 'libre_obstaculos', 'area_despegue'];
 
-    foreach ($allowed as $col) {
-        if (array_key_exists($col, $data)) {
+        $set = [];
+        $params = [':id' => $id];
+
+        foreach ($allowed as $col) {
+            if (!array_key_exists($col, $data)) continue;
+
+            // si es enum NOT NULL y viene null/'' => ignoramos ese campo
+            if (in_array($col, $notNullEnums, true) && ($data[$col] === null || $data[$col] === '')) {
+                continue;
+            }
+
             $set[] = " $col = :$col ";
             $params[":$col"] = $data[$col];
         }
+
+        if (!$set) return false;
+
+        $sql = "UPDATE dron_solicitudes SET " . implode(',', $set) . " WHERE id = :id";
+        $st  = $this->pdo->prepare($sql);
+        return $st->execute($params);
     }
 
-    if (!$set) {
-        return false; // nada para actualizar
+
+
+    public function listarStockProductos(string $q = ''): array
+    {
+        $sql = "SELECT id, nombre, principio_activo FROM dron_productos_stock";
+        $params = [];
+        if ($q !== '') {
+            $sql .= " WHERE nombre LIKE :q OR principio_activo LIKE :q";
+            $params[':q'] = "%$q%";
+        }
+        $sql .= " ORDER BY nombre ASC LIMIT 200";
+        $st = $this->pdo->prepare($sql);
+        $st->execute($params);
+        return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
-    $sql = "UPDATE dron_solicitudes SET ".implode(',', $set)." WHERE id = :id";
-    $st  = $this->pdo->prepare($sql);
-    return $st->execute($params);
-}
+    public function upsertProductoSolicitud(int $solicitudId, array $d): array
+    {
+        // normalizar
+        $id     = isset($d['id']) ? (int)$d['id'] : 0;
+        $fuente = ($d['fuente'] ?? '') === 'yo' ? 'yo' : 'sve';
+        $prodId = isset($d['producto_id']) ? (int)$d['producto_id'] : null;
+        $marca  = trim($d['marca'] ?? '') ?: null;
+        $pa     = trim($d['principio_activo'] ?? '') ?: null;        // obligatorio si fuente=yo
+        $dosis  = isset($d['dosis']) ? (float)$d['dosis'] : null;
+        $unidad = in_array(($d['unidad'] ?? ''), ['ml/ha', 'g/ha', 'L/ha', 'kg/ha'], true) ? $d['unidad'] : null;
+        $orden  = isset($d['orden_mezcla']) && $d['orden_mezcla'] !== '' ? (int)$d['orden_mezcla'] : null;
 
+        if ($fuente === 'sve') {
+            if (!$prodId) throw new InvalidArgumentException('producto_id requerido para fuente SVE');
+            $marca = null; // no aplica
+            $pa    = null; // se toma del stock al leer
+        } else {
+            if (!$marca) throw new InvalidArgumentException('marca requerida para fuente del productor');
+            if (!$pa)    throw new InvalidArgumentException('principio_activo requerido para fuente del productor');
+            $prodId = null;
+        }
 
-public function listarStockProductos(string $q = ''): array
-{
-    $sql = "SELECT id, nombre, principio_activo FROM dron_productos_stock";
-    $params = [];
-    if ($q !== '') {
-        $sql .= " WHERE nombre LIKE :q OR principio_activo LIKE :q";
-        $params[':q'] = "%$q%";
-    }
-    $sql .= " ORDER BY nombre ASC LIMIT 200";
-    $st = $this->pdo->prepare($sql);
-    $st->execute($params);
-    return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
-}
-
-public function upsertProductoSolicitud(int $solicitudId, array $d): array
-{
-    // normalizar
-    $id     = isset($d['id']) ? (int)$d['id'] : 0;
-    $fuente = ($d['fuente'] ?? '') === 'yo' ? 'yo' : 'sve';
-    $prodId = isset($d['producto_id']) ? (int)$d['producto_id'] : null;
-    $marca  = trim($d['marca'] ?? '') ?: null;
-    $pa     = trim($d['principio_activo'] ?? '') ?: null;        // obligatorio si fuente=yo
-    $dosis  = isset($d['dosis']) ? (float)$d['dosis'] : null;
-    $unidad = in_array(($d['unidad'] ?? ''), ['ml/ha','g/ha','L/ha','kg/ha'], true) ? $d['unidad'] : null;
-    $orden  = isset($d['orden_mezcla']) && $d['orden_mezcla'] !== '' ? (int)$d['orden_mezcla'] : null;
-
-    if ($fuente === 'sve') {
-        if (!$prodId) throw new InvalidArgumentException('producto_id requerido para fuente SVE');
-        $marca = null; // no aplica
-        $pa    = null; // se toma del stock al leer
-    } else {
-        if (!$marca) throw new InvalidArgumentException('marca requerida para fuente del productor');
-        if (!$pa)    throw new InvalidArgumentException('principio_activo requerido para fuente del productor');
-        $prodId = null;
-    }
-
-    if ($id > 0) {
-        $sql = "UPDATE dron_solicitudes_productos
+        if ($id > 0) {
+            $sql = "UPDATE dron_solicitudes_productos
                 SET fuente=:fuente, producto_id=:producto_id, marca=:marca,
                     principio_activo=:principio_activo, dosis=:dosis, unidad=:unidad, orden_mezcla=:orden
                 WHERE id=:id AND solicitud_id=:sid";
-        $st = $this->pdo->prepare($sql);
-        $st->execute([
-            ':fuente'=>$fuente, ':producto_id'=>$prodId, ':marca'=>$marca,
-            ':principio_activo'=>$pa, ':dosis'=>$dosis, ':unidad'=>$unidad, ':orden'=>$orden,
-            ':id'=>$id, ':sid'=>$solicitudId
-        ]);
-        return ['id'=>$id];
-    } else {
-        $sql = "INSERT INTO dron_solicitudes_productos
+            $st = $this->pdo->prepare($sql);
+            $st->execute([
+                ':fuente' => $fuente,
+                ':producto_id' => $prodId,
+                ':marca' => $marca,
+                ':principio_activo' => $pa,
+                ':dosis' => $dosis,
+                ':unidad' => $unidad,
+                ':orden' => $orden,
+                ':id' => $id,
+                ':sid' => $solicitudId
+            ]);
+            return ['id' => $id];
+        } else {
+            $sql = "INSERT INTO dron_solicitudes_productos
                 (solicitud_id, fuente, producto_id, marca, principio_activo, dosis, unidad, orden_mezcla)
                 VALUES (:sid, :fuente, :producto_id, :marca, :principio_activo, :dosis, :unidad, :orden)";
-        $st = $this->pdo->prepare($sql);
-        $st->execute([
-            ':sid'=>$solicitudId, ':fuente'=>$fuente, ':producto_id'=>$prodId, ':marca'=>$marca,
-            ':principio_activo'=>$pa, ':dosis'=>$dosis, ':unidad'=>$unidad, ':orden'=>$orden
-        ]);
-        return ['id'=>(int)$this->pdo->lastInsertId()];
+            $st = $this->pdo->prepare($sql);
+            $st->execute([
+                ':sid' => $solicitudId,
+                ':fuente' => $fuente,
+                ':producto_id' => $prodId,
+                ':marca' => $marca,
+                ':principio_activo' => $pa,
+                ':dosis' => $dosis,
+                ':unidad' => $unidad,
+                ':orden' => $orden
+            ]);
+            return ['id' => (int)$this->pdo->lastInsertId()];
+        }
     }
-}
 
-public function eliminarProductoSolicitud(int $solProdId, int $solicitudId): bool
-{
-    $st = $this->pdo->prepare("DELETE FROM dron_solicitudes_productos WHERE id=:id AND solicitud_id=:sid");
-    return $st->execute([':id'=>$solProdId, ':sid'=>$solicitudId]);
-}
+    public function eliminarProductoSolicitud(int $solProdId, int $solicitudId): bool
+    {
+        $st = $this->pdo->prepare("DELETE FROM dron_solicitudes_productos WHERE id=:id AND solicitud_id=:sid");
+        return $st->execute([':id' => $solProdId, ':sid' => $solicitudId]);
+    }
 
+    public function guardarTodo(int $solicitudId, array $solicitudData, array $productos): array
+    {
+        $this->pdo->beginTransaction();
+        try {
+            // actualizar datos principales (si no hay cambios, devuelve false y seguimos)
+            $this->actualizarSolicitud($solicitudId, $solicitudData);
 
+            $ids = [];
+            foreach ($productos as $p) {
+                $out = $this->upsertProductoSolicitud($solicitudId, $p);
+                if (isset($out['id'])) $ids[] = (int)$out['id'];
+            }
 
+            $this->pdo->commit();
+            return ['solicitud_id' => $solicitudId, 'productos_ids' => $ids];
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
 }
