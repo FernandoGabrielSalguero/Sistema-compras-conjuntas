@@ -901,14 +901,24 @@
     const formDetalle = document.getElementById('detalle-form');
     let currentDetalle = null;
 
+    let lastFocus = null;
+
     function openDrawer(data) {
         currentDetalle = data;
+        lastFocus = document.activeElement;
+
+        drawer.setAttribute('aria-hidden', 'false'); // <<< important
         drawer.classList.remove('hidden', 'closing');
         drawer.classList.add('opening');
+
+        // Aseguramos que el panel sea focuseable y tomamos el foco
+        drawerPanel.setAttribute('tabindex', '-1');
+        setTimeout(() => drawerPanel.focus(), 0);
+
         fillForm(data);
 
         const onEnd = (e) => {
-            if (e.target !== drawer.querySelector('.sv-drawer__panel')) return;
+            if (e.target !== drawerPanel) return;
             drawer.classList.remove('opening');
             drawer.removeEventListener('animationend', onEnd, true);
         };
@@ -917,12 +927,17 @@
 
     function closeDrawer() {
         drawer.classList.add('closing');
+        drawer.setAttribute('aria-hidden', 'true'); // <<< important
         const onEnd = (e) => {
-            if (e.target !== drawer.querySelector('.sv-drawer__panel')) return;
+            if (e.target !== drawerPanel) return;
             drawer.classList.remove('closing');
             drawer.classList.add('hidden');
             drawer.removeEventListener('animationend', onEnd, true);
             currentDetalle = null;
+            // devolver el foco al botón que abrió el drawer si existe
+            if (lastFocus && typeof lastFocus.focus === 'function') {
+                lastFocus.focus();
+            }
         };
         drawer.addEventListener('animationend', onEnd, true);
     }
@@ -1087,10 +1102,11 @@
           <select class="unidad">${unidadOptions(p.unidad)}</select>
         </td>
         <td><input type="number" step="1" min="1" class="orden_mezcla" value="${p.orden_mezcla ?? ''}"></td>
-        <td class="prod-actions">
-          <button type="button" class="btn btn-aceptar btn-guardar">Guardar</button>
-          <button type="button" class="btn btn-cancelar btn-eliminar">Eliminar</button>
-        </td>
+<td class="prod-actions">
+  <button type="button" class="btn btn-cancelar btn-eliminar" title="Eliminar">
+    <span class="material-icons mi" aria-hidden="true">delete</span>
+  </button>
+</td>
       </tr>
     `;
         }
@@ -1117,8 +1133,8 @@
                 if (prodSel.value) paIn.value = stockPAById(prodSel.value);
             });
 
-            tr.querySelector('.btn-guardar').addEventListener('click', () => saveRow(tr));
             tr.querySelector('.btn-eliminar').addEventListener('click', () => deleteRow(tr));
+
         }
 
         async function addRow(p) {
@@ -1226,6 +1242,40 @@
 
     }
 
+    function collectProductosPayload() {
+        const rows = Array.from(document.querySelectorAll('#tabla-productos tbody tr'));
+        return rows.map(tr => {
+            const id = tr.dataset.id ? parseInt(tr.dataset.id, 10) : null;
+            const f = tr.querySelector('.fuente')?.value === 'yo' ? 'yo' : 'sve';
+            const pid = tr.querySelector('.producto_id')?.value || null;
+            const marca = tr.querySelector('.marca')?.value?.trim() || null;
+            const pa = tr.querySelector('.principio_activo')?.value?.trim() || null;
+            const dosis = tr.querySelector('.dosis')?.value || null;
+            const unidad = tr.querySelector('.unidad')?.value || null;
+            const orden = tr.querySelector('.orden_mezcla')?.value || null;
+
+            return {
+                id,
+                solicitud_id: currentDetalle?.solicitud?.id,
+                fuente: f,
+                producto_id: f === 'sve' ? (pid ? Number(pid) : null) : null,
+                marca: f === 'yo' ? marca : null,
+                principio_activo: f === 'yo' ? pa : null,
+                dosis: (dosis !== '' && dosis != null) ? Number(dosis) : null,
+                unidad: unidad || null,
+                orden_mezcla: (orden !== '' && orden != null) ? Number(orden) : null
+            };
+        }).filter(p => {
+            // Para filas nuevas, exigimos datos mínimos:
+            if (!p.id) {
+                if (p.fuente === 'sve') return !!p.producto_id;
+                return !!(p.marca && p.principio_activo);
+            }
+            return true;
+        });
+    }
+
+
     // Serializar form => objeto plano
     function formToJSON(form) {
         const fd = new FormData(form);
@@ -1245,30 +1295,58 @@
     formDetalle.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentDetalle) return;
-        const payload = formToJSON(formDetalle);
-        payload.id = Number(payload.id || currentDetalle.solicitud.id);
+
+        // 1) Datos principales de la solicitud
+        const payloadSolicitud = formToJSON(formDetalle);
+        payloadSolicitud.id = Number(payloadSolicitud.id || currentDetalle.solicitud.id);
+
+        // 2) Productos (todas las filas)
+        const productosPayload = collectProductosPayload();
+
+        showSpinner(true);
         try {
-            showSpinner(true);
-            const res = await fetch(DRONE_API, {
+            // a) Guardar solicitud
+            const saveSolicitud = fetch(DRONE_API, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     action: 'update_solicitud',
-                    data: payload
+                    data: payloadSolicitud
                 })
-            });
-            const json = await res.json();
-            if (!json.ok) throw new Error(json.error || 'No se pudo guardar');
+            }).then(r => r.json());
+
+            // b) Guardar/actualizar cada producto
+            const saveProductos = productosPayload.map(d =>
+                fetch(DRONE_API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'upsert_producto',
+                        data: d
+                    })
+                }).then(r => r.json())
+            );
+
+            const [resSol, ...resProds] = await Promise.all([saveSolicitud, ...saveProductos]);
+
+            if (!resSol?.ok) throw new Error(resSol?.error || 'No se pudo guardar la solicitud');
+            const prodError = resProds.find(r => !r?.ok);
+            if (prodError) throw new Error(prodError.error || 'No se pudo guardar algún producto');
+
+            // éxito total
+            window.showToast?.('success', 'Cambios guardados');
             closeDrawer();
-            // Refrescamos listado para ver cambios
             if (typeof window.refreshSolicitudes === 'function') {
                 window.refreshSolicitudes();
             }
         } catch (err) {
             console.error(err);
-            alert('No se pudo guardar los cambios.');
+            window.showToast?.('error', err?.message || 'No se pudieron guardar los cambios');
+            alert('No se pudieron guardar los cambios. Revisá los campos requeridos.');
         } finally {
             showSpinner(false);
         }
