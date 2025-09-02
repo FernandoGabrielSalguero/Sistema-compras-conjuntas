@@ -707,9 +707,13 @@
 </style>
 
 <script>
+    // Endpoint global del módulo Drone (evita collisions con otras páginas)
+    const DRONE_API = '../partials/drones/controller/drone_list_controller.php';
+
     (function() {
 
-        const API = '../partials/drones/controller/drone_list_controller.php';
+        // Usa la constante global para evitar scope issues
+        const API = DRONE_API;
 
         const $ = (s, ctx = document) => ctx.querySelector(s);
         const $$ = (s, ctx = document) => Array.from(ctx.querySelectorAll(s));
@@ -1016,7 +1020,7 @@
         let __stockCache = null;
         async function loadStock(q = '') {
             if (__stockCache && q === '') return __stockCache;
-            const res = await fetch(`${API}?action=list_stock&q=${encodeURIComponent(q)}`);
+            const res = await fetch(`${DRONE_API}?action=list_stock&q=${encodeURIComponent(q)}`);
             const json = await res.json();
             if (!json.ok) throw new Error(json.error || 'No se pudo cargar stock');
             __stockCache = json.data.items || [];
@@ -1156,7 +1160,7 @@
 
             try {
                 showSpinner(true);
-                const res = await fetch(API, {
+                const res = await fetch(DRONE_API, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1187,7 +1191,7 @@
             if (!confirm('¿Eliminar este producto?')) return;
             try {
                 showSpinner(true);
-                const res = await fetch(API, {
+                const res = await fetch(DRONE_API, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1245,7 +1249,7 @@
         payload.id = Number(payload.id || currentDetalle.solicitud.id);
         try {
             showSpinner(true);
-            const res = await fetch(API, {
+            const res = await fetch(DRONE_API, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
