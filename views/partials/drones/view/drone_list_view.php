@@ -58,8 +58,6 @@
     <!-- Alert container opcional -->
     <div class="alert-container" id="alertContainer"></div>
 
-
-    <!-- Drawer lateral de detalle/edición -->
     <!-- Drawer lateral de detalle/edición -->
     <div id="drawer" class="sv-drawer hidden" aria-hidden="true">
         <div class="sv-drawer__overlay" data-close></div>
@@ -276,6 +274,14 @@
                             <div class="input-icon material">
                                 <span class="material-icons mi">place</span>
                                 <input type="number" id="f-ubicacion_lng" name="ubicacion_lng" placeholder="-68.12345678" step="0.00000001" />
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="f-superficie_ha">Superficie (ha)</label>
+                            <div class="input-icon material">
+                                <span class="material-icons mi">square_foot</span>
+                                <input type="number" id="f-superficie_ha" name="superficie_ha" placeholder="0.00" step="0.01" readonly />
                             </div>
                         </div>
 
@@ -832,7 +838,7 @@
                         const res = await fetch(`${API}?action=get_solicitud&id=${encodeURIComponent(id)}`);
                         const json = await res.json();
                         if (json.ok) {
-                            console.log('Detalle solicitud:', json.data); // 👈 toda la info en consola
+                            if (window.DEBUG) console.log('Detalle solicitud:', json.data);
                             openDrawer(json.data);
                         } else {
                             console.error(json.error || 'No se pudo obtener el detalle');
@@ -950,7 +956,7 @@
 
 
     // --- Rellenar formulario con el detalle ---
-    function fillForm({
+    async function fillForm({
         solicitud,
         motivos,
         productos,
@@ -987,6 +993,7 @@
             'f-agua_potable': 'agua_potable',
             'f-libre_obstaculos': 'libre_obstaculos',
             'f-area_despegue': 'area_despegue',
+            'f-superficie_ha': 'superficie_ha'
         };
         Object.entries(map).forEach(([id, key]) => {
             const el = document.getElementById(id);
@@ -1203,29 +1210,16 @@
             }
         }
 
-        // Hook: cuando abrís el drawer, renderizá la tabla
-        const _fillFormOriginal = fillForm;
-        fillForm = async function({
-            solicitud,
-            motivos,
-            productos,
-            rangos
-        }) {
-            _fillFormOriginal({
-                solicitud,
-                motivos,
-                productos: [],
-                rangos
-            }); // evitamos pintar el UL anterior
-            await renderProductosTable(productos);
-        };
-
         // Rangos (chips)
         const contRangos = document.getElementById('f-rangos');
         const prettyRangos = (rangos || []).map(r => PRETTY_RANGO[r.rango] || r.rango);
         contRangos.innerHTML = prettyRangos.length ?
             prettyRangos.map(txt => `<span class="pill"><span class="material-icons mi">calendar_month</span>${esc(txt)}</span>`).join('') :
             `<span class="pill pill--empty">Sin rangos</span>`;
+
+        // Render de productos (luego de haber creado y enlazado la tabla)
+        await renderProductosTable(productos);
+
     }
 
     // Serializar form => objeto plano

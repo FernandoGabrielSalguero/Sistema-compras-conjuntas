@@ -86,11 +86,14 @@ class DroneListModel
             return [];
         }
 
-        // Motivos
+        // Motivos: cuando 'motivo' es NULL, tomamos el nombre de la patología
         $st = $this->pdo->prepare("
-            SELECT motivo, otros_text
-            FROM dron_solicitudes_motivos
-            WHERE solicitud_id = :id
+            SELECT 
+                COALESCE(sm.motivo, dp.nombre) AS motivo,
+                sm.otros_text
+            FROM dron_solicitudes_motivos sm
+            LEFT JOIN dron_patologias dp ON dp.id = sm.patologia_id
+            WHERE sm.solicitud_id = :id
         ");
         $st->execute([':id' => $id]);
         $motivos = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
