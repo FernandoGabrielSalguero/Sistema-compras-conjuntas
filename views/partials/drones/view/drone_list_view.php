@@ -1166,11 +1166,20 @@
             bindRowEvents(tr);
         }
 
-        async function renderProductosTable(productos) {
-            await ensureStockLoaded();
-            tbodyProd.innerHTML = '';
-            (productos || []).forEach(p => addRow(p));
-        }
+async function renderProductosTable(productos) {
+  await ensureStockLoaded();
+  tbodyProd.innerHTML = '';
+  (productos || []).forEach(async p => {
+    // mapear producto_id si viene vacío
+    if (p.fuente === 'sve' && !p.producto_id && p.principio_activo) {
+      const match = (__stockCache || []).find(
+        s => s.principio_activo === p.principio_activo
+      );
+      if (match) p.producto_id = match.id;
+    }
+    await addRow(p);
+  });
+}
 
         async function saveRow(tr) {
             const id = tr.dataset.id ? parseInt(tr.dataset.id, 10) : null;
@@ -1261,6 +1270,14 @@
     }
 
     function collectProductosPayload() {
+        console.log('Fila', idx+1, {
+   fuente: f,
+   producto_id: d.producto_id,
+   selectVal: tr.querySelector('.producto_id')?.value,
+   options: Array.from(tr.querySelector('.producto_id')?.options || [])
+     .map(o => ({value:o.value, text:o.text, sel:o.selected}))
+});
+
         const rows = Array.from(document.querySelectorAll('#tabla-productos tbody tr'));
         const data = [];
         const errors = [];
