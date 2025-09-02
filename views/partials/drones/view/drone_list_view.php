@@ -925,33 +925,33 @@
         drawer.addEventListener('animationend', onEnd, true);
     }
 
-function closeDrawer() {
-    // 1) Mover el foco fuera del área que vamos a ocultar
-    const active = document.activeElement;
-    if (active && drawer.contains(active)) {
-        if (lastFocus && typeof lastFocus.focus === 'function') {
-            lastFocus.focus(); // vuelve al disparador del drawer
-        } else {
-            // fallback seguro al body
-            document.body.setAttribute('tabindex', '-1');
-            document.body.focus();
-            document.body.removeAttribute('tabindex');
+    function closeDrawer() {
+        // 1) Mover el foco fuera del área que vamos a ocultar
+        const active = document.activeElement;
+        if (active && drawer.contains(active)) {
+            if (lastFocus && typeof lastFocus.focus === 'function') {
+                lastFocus.focus(); // vuelve al disparador del drawer
+            } else {
+                // fallback seguro al body
+                document.body.setAttribute('tabindex', '-1');
+                document.body.focus();
+                document.body.removeAttribute('tabindex');
+            }
         }
+
+        // 2) Ahora sí ocultamos con aria-hidden
+        drawer.classList.add('closing');
+        drawer.setAttribute('aria-hidden', 'true');
+
+        const onEnd = (e) => {
+            if (e.target !== drawerPanel) return;
+            drawer.classList.remove('closing');
+            drawer.classList.add('hidden');
+            drawer.removeEventListener('animationend', onEnd, true);
+            currentDetalle = null;
+        };
+        drawer.addEventListener('animationend', onEnd, true);
     }
-
-    // 2) Ahora sí ocultamos con aria-hidden
-    drawer.classList.add('closing');
-    drawer.setAttribute('aria-hidden', 'true');
-
-    const onEnd = (e) => {
-        if (e.target !== drawerPanel) return;
-        drawer.classList.remove('closing');
-        drawer.classList.add('hidden');
-        drawer.removeEventListener('animationend', onEnd, true);
-        currentDetalle = null;
-    };
-    drawer.addEventListener('animationend', onEnd, true);
-}
 
 
     drawerOverlay.addEventListener('click', closeDrawer);
@@ -1061,10 +1061,19 @@ function closeDrawer() {
         // --- Render de la tabla de productos
         const tablaProd = document.getElementById('tabla-productos');
         const tbodyProd = tablaProd.querySelector('tbody');
-        document.getElementById('btn-add-prod').addEventListener('click', async () => {
-            await ensureStockLoaded();
-            addRow({});
-        });
+        const btnAdd = document.getElementById('btn-add-prod');
+        // Reemplaza cualquier handler previo y evita multi-clicks
+        let addingRow = false;
+        btnAdd.onclick = async () => {
+            if (addingRow) return;
+            addingRow = true;
+            try {
+                await ensureStockLoaded();
+                await addRow({});
+            } finally {
+                addingRow = false;
+            }
+        };
 
         async function ensureStockLoaded() {
             if (!__stockCache) await loadStock();
@@ -1187,15 +1196,15 @@ function closeDrawer() {
 
             try {
                 showSpinner(true);
-const res = await fetch(`${DRONE_API}?action=upsert_producto`, {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        data: payload
-    })
-});
+                const res = await fetch(`${DRONE_API}?action=upsert_producto`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        data: payload
+                    })
+                });
                 const json = await res.json();
                 if (!json.ok) throw new Error(json.error || 'No se pudo guardar el producto');
                 if (!id && json.id) tr.dataset.id = String(json.id);
@@ -1217,16 +1226,16 @@ const res = await fetch(`${DRONE_API}?action=upsert_producto`, {
             if (!confirm('¿Eliminar este producto?')) return;
             try {
                 showSpinner(true);
-const res = await fetch(`${DRONE_API}?action=delete_producto`, {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        id,
-        solicitud_id: currentDetalle.solicitud.id
-    })
-});
+                const res = await fetch(`${DRONE_API}?action=delete_producto`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id,
+                        solicitud_id: currentDetalle.solicitud.id
+                    })
+                });
                 const json = await res.json();
                 if (!json.ok) throw new Error(json.error || 'No se pudo eliminar');
                 tr.remove();
@@ -1315,25 +1324,24 @@ const res = await fetch(`${DRONE_API}?action=delete_producto`, {
         showSpinner(true);
         try {
             // a) Guardar solicitud
-const saveSolicitud = fetch(`${DRONE_API}?action=update_solicitud`, {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        data: payloadSolicitud
-    })
-}).then(r => r.json());
+            const saveSolicitud = fetch(`${DRONE_API}?action=update_solicitud`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    data: payloadSolicitud
+                })
+            }).then(r => r.json());
 
             // b) Guardar/actualizar cada producto
             const saveProductos = productosPayload.map(d =>
-                fetch(DRONE_API, {
+                fetch(`${DRONE_API}?action=upsert_producto`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        action: 'upsert_producto',
                         data: d
                     })
                 }).then(r => r.json())
