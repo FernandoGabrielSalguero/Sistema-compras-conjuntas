@@ -5,7 +5,6 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 header('Content-Type: application/json; charset=utf-8');
-$DEBUG = isset($_GET['debug']) || (isset($_POST['debug']) && $_POST['debug']);
 
 // Config (root del proyecto) y Modelo del módulo
 require_once __DIR__ . '/../../../../config.php';
@@ -39,15 +38,12 @@ try {
                     break;
                 }
                 $detalle = $model->obtenerSolicitud($id);
-                if ($DEBUG) {
-                    error_log('[SVE] get_solicitud id=' . $id . ' => ' . json_encode($detalle, JSON_UNESCAPED_UNICODE));
-                }
                 if (!$detalle) {
                     http_response_code(404);
-                    echo json_encode(['ok' => false, 'error' => 'Solicitud no encontrada'], JSON_UNESCAPED_UNICODE);
+                    echo json_encode(['ok' => false, 'error' => 'Solicitud no encontrada']);
                     break;
                 }
-                echo json_encode(['ok' => true, 'data' => $detalle], JSON_UNESCAPED_UNICODE);
+                echo json_encode(['ok' => true, 'data' => $detalle]);
                 break;
             }
 
@@ -91,14 +87,8 @@ try {
                     break;
                 }
                 try {
-                    if ($DEBUG) {
-                        error_log('[SVE] upsert_producto sid=' . $sid . ' payload=' . json_encode($d, JSON_UNESCAPED_UNICODE));
-                    }
                     $out = $model->upsertProductoSolicitud($sid, $d);
-                    if ($DEBUG) {
-                        error_log('[SVE] upsert_producto result=' . json_encode($out, JSON_UNESCAPED_UNICODE));
-                    }
-                    echo json_encode(['ok' => true] + $out, JSON_UNESCAPED_UNICODE);
+                    echo json_encode(['ok' => true] + $out);
                 } catch (InvalidArgumentException $e) {
                     http_response_code(422);
                     echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
@@ -121,36 +111,29 @@ try {
                 break;
             }
 
-        case 'save_all': {
-                $raw = file_get_contents('php://input') ?: '';
-                $json = json_decode($raw, true) ?: [];
+            case 'save_all': {
+        $raw = file_get_contents('php://input') ?: '';
+        $json = json_decode($raw, true) ?: [];
 
-                $sol = $json['solicitud'] ?? [];
-                $prods = $json['productos'] ?? [];
+        $sol = $json['solicitud'] ?? [];
+        $prods = $json['productos'] ?? [];
 
-                $sid = isset($sol['id']) ? (int)$sol['id'] : 0;
-                if ($sid <= 0) {
-                    http_response_code(400);
-                    echo json_encode(['ok' => false, 'error' => 'ID de solicitud inválido']);
-                    break;
-                }
+        $sid = isset($sol['id']) ? (int)$sol['id'] : 0;
+        if ($sid <= 0) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'ID de solicitud inválido']);
+            break;
+        }
 
-                try {
-                    if ($DEBUG) {
-                        error_log('[SVE] save_all sid=' . $sid . ' solicitud=' . json_encode($sol, JSON_UNESCAPED_UNICODE));
-                        error_log('[SVE] save_all productos=' . json_encode($prods, JSON_UNESCAPED_UNICODE));
-                    }
-                    $out = $model->guardarTodo($sid, $sol, is_array($prods) ? $prods : []);
-                    if ($DEBUG) {
-                        error_log('[SVE] save_all result=' . json_encode($out, JSON_UNESCAPED_UNICODE));
-                    }
-                    echo json_encode(['ok' => true, 'data' => $out], JSON_UNESCAPED_UNICODE);
-                } catch (InvalidArgumentException $e) {
-                    http_response_code(422);
-                    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
-                }
-                break;
-            }
+        try {
+            $out = $model->guardarTodo($sid, $sol, is_array($prods) ? $prods : []);
+            echo json_encode(['ok' => true, 'data' => $out]);
+        } catch (InvalidArgumentException $e) {
+            http_response_code(422);
+            echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+        }
+        break;
+    }
 
 
         default: {
@@ -161,8 +144,5 @@ try {
     }
 } catch (Throwable $e) {
     http_response_code(500);
-    if ($DEBUG) {
-        error_log('[SVE] ERROR 500: ' . $e->getMessage());
-    }
-    echo json_encode(['ok' => false, 'error' => 'Error del servidor', 'detail' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['ok' => false, 'error' => 'Error del servidor', 'detail' => $e->getMessage()]);
 }
