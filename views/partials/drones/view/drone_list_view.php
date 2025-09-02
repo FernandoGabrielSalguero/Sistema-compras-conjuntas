@@ -1261,6 +1261,15 @@
     }
 
 function collectProductosPayload() {
+
+    console.log('Fila', idx+1, {
+   fuente: f,
+   producto_id: d.producto_id,
+   selectVal: tr.querySelector('.producto_id')?.value,
+   options: Array.from(tr.querySelector('.producto_id')?.options || []).map(o => ({value:o.value, text:o.text, sel:o.selected}))
+});
+
+
     const rows = Array.from(document.querySelectorAll('#tabla-productos tbody tr'));
     const data = [];
     const errors = [];
