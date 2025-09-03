@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 ini_set('display_errors', '1');
@@ -13,7 +14,8 @@ require_once __DIR__ . '/../../../../config.php';
 // MODELO
 require_once __DIR__ . '/../model/drone_stock_model.php';
 
-function json_out(bool $ok, $dataOrError): void {
+function json_out(bool $ok, $dataOrError): void
+{
     echo json_encode(
         $ok ? ['ok' => true, 'data' => $dataOrError] : ['ok' => false, 'error' => (string)$dataOrError],
         JSON_UNESCAPED_UNICODE
@@ -43,25 +45,43 @@ try {
     $action = $_GET['action'] ?? $body['action'] ?? ($_POST['action'] ?? '');
 
     // Helpers de sanitización
-    $str = function($v): ?string {
+    $str = function ($v): ?string {
         if ($v === null) return null;
         $v = trim((string)$v);
         $v = strip_tags($v);
         return $v === '' ? null : $v;
     };
-    $int = function($v): int {
+    $int = function ($v): int {
         return max(0, (int)$v);
     };
-    $arrInt = function($v): array {
+    $dec = function ($v): float {
+        $s = trim((string)$v);
+        if ($s === '') return 0.0;
+        // admite "1.234,56" y "1234.56"
+        $s = str_replace([' ', "\xc2\xa0"], '', $s);
+        if (strpos($s, ',') !== false && strpos($s, '.') !== false) {
+            $s = str_replace('.', '', $s);
+            $s = str_replace(',', '.', $s);
+        } else {
+            $s = str_replace(',', '.', $s);
+        }
+        $f = (float)$s;
+        return $f < 0 ? 0.0 : $f;
+    };
+    $yn = function ($v): string {
+        $val = is_bool($v) ? $v : in_array(strtolower((string)$v), ['1', 'true', 'si', 'sí', 'on', 'yes'], true);
+        return $val ? 'si' : 'no';
+    };
+    $arrInt = function ($v): array {
         if (!is_array($v)) return [];
         $out = [];
         foreach ($v as $x) {
             $n = (int)$x;
             if ($n > 0) $out[] = $n;
         }
-        // Únicos
         return array_values(array_unique($out));
     };
+
 
     switch ($action) {
         case 'list':
@@ -83,10 +103,12 @@ try {
             $detalle = $str($body['detalle'] ?? $_POST['detalle'] ?? null);
             $principio = $str($body['principio_activo'] ?? $_POST['principio_activo'] ?? null);
             $cantidad = $int($body['cantidad_deposito'] ?? $_POST['cantidad_deposito'] ?? 0);
+            $costo = $dec($body['costo_hectarea'] ?? $_POST['costo_hectarea'] ?? 0);
+            $activo = $yn($body['activo'] ?? $_POST['activo'] ?? 'si');
             $pat = $arrInt($body['patologias'] ?? $_POST['patologias'] ?? []);
             if (count($pat) > 6) $pat = array_slice($pat, 0, 6);
 
-            $id = $model->createProduct($nombre, $detalle, $principio, $cantidad, $pat);
+            $id = $model->createProduct($nombre, $detalle, $principio, $cantidad, $pat, $costo, $activo);
             json_out(true, ['id' => $id]);
             break;
 
@@ -99,12 +121,15 @@ try {
             $detalle = $str($body['detalle'] ?? $_POST['detalle'] ?? null);
             $principio = $str($body['principio_activo'] ?? $_POST['principio_activo'] ?? null);
             $cantidad = $int($body['cantidad_deposito'] ?? $_POST['cantidad_deposito'] ?? 0);
+            $costo = $dec($body['costo_hectarea'] ?? $_POST['costo_hectarea'] ?? 0);
+            $activo = $yn($body['activo'] ?? $_POST['activo'] ?? 'si');
             $pat = $arrInt($body['patologias'] ?? $_POST['patologias'] ?? []);
             if (count($pat) > 6) $pat = array_slice($pat, 0, 6);
 
-            $ok = $model->updateProduct($id, $nombre, $detalle, $principio, $cantidad, $pat);
+            $ok = $model->updateProduct($id, $nombre, $detalle, $principio, $cantidad, $pat, $costo, $activo);
             json_out(true, ['updated' => $ok]);
             break;
+
 
         case 'delete':
             if ($method !== 'POST') json_out(false, 'Método no permitido.');
