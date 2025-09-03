@@ -51,12 +51,12 @@
           </label>
         </div>
 
-        <!-- <div class="input-group" style="grid-column: 1 / -1;">
+        <div class="input-group" style="grid-column: 1 / -1;">
           <label for="detalle">Detalle</label>
           <div class="input-icon input-icon-name">
             <input type="text" id="detalle" name="detalle" placeholder="Descripción breve del producto" />
           </div>
-        </div> -->
+        </div>
 
         <!-- Patologías (hasta 6 selects) -->
         <div class="input-group">
