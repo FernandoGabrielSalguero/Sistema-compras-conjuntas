@@ -26,13 +26,18 @@ try {
         out(['ok'=>true, 'message'=>'Variables API OK']);
     }
 
-    $allowed = ['patologias','produccion'];
+    $allowed = ['patologias','produccion','costo_hectarea'];
     if (!in_array($entity, $allowed, true)) {
-        out(['ok'=>false,'error'=>'Entidad inválida (use patologias|produccion)'], 400);
+        out(['ok'=>false,'error'=>'Entidad inválida (use patologias|produccion|costo_hectarea)'], 400);
     }
 
     if ($method === 'GET') {
         if ($action === 'list') {
+            // Para costo_hectarea devolvemos fila única (si existe)
+            if ($entity === 'costo_hectarea') {
+                $row = $model->getCostoHectarea();
+                out(['ok'=>true, 'data'=>$row ? [$row] : []]);
+            }
             $q = trim((string)($_GET['q'] ?? ''));
             $inactivos = (($_GET['inactivos'] ?? '0') === '1');
             $data = $model->list($entity, $q, $inactivos);
@@ -40,6 +45,10 @@ try {
         }
 
         if ($action === 'get') {
+            if ($entity === 'costo_hectarea') {
+                $row = $model->getCostoHectarea();
+                out(['ok'=>true, 'data'=>$row]);
+            }
             $id = (int)($_GET['id'] ?? 0);
             if ($id <= 0) out(['ok'=>false,'error'=>'ID inválido'], 400);
             $row = $model->get($entity, $id);
@@ -50,11 +59,22 @@ try {
         out(['ok'=>false,'error'=>'Acción GET no soportada'], 400);
     }
 
-    // POST (sin CSRF, como solicitaste)
+    // POST (sin CSRF)
     $raw = file_get_contents('php://input');
     $json = json_decode($raw ?: '[]', true) ?? [];
 
     if ($action === 'create' || $action === 'update') {
+        if ($entity === 'costo_hectarea') {
+            $costo  = (float)($json['costo'] ?? $_POST['costo'] ?? -1);
+            $moneda = trim((string)($json['moneda'] ?? $_POST['moneda'] ?? 'Pesos'));
+            if (!is_finite($costo) || $costo < 0) out(['ok'=>false,'error'=>'Costo inválido'], 422);
+            if ($moneda === '' || mb_strlen($moneda) > 20) out(['ok'=>false,'error'=>'Moneda inválida (1-20)'], 422);
+            $ok = $model->setCostoHectarea($costo, $moneda);
+            if ($ok) out(['ok'=>true,'data'=>['id'=>1,'costo'=>$costo,'moneda'=>$moneda]]);
+            out(['ok'=>false,'error'=>'No se pudo actualizar'], 500);
+        }
+
+        // Patologías/Producción
         $id = isset($json['id']) ? (int)$json['id'] : (isset($_POST['id'])?(int)$_POST['id']:0);
         $nombre = trim((string)($json['nombre'] ?? $_POST['nombre'] ?? ''));
         $descripcion = trim((string)($json['descripcion'] ?? $_POST['descripcion'] ?? ''));
@@ -78,6 +98,9 @@ try {
     }
 
     if ($action === 'delete') {
+        if ($entity === 'costo_hectarea') {
+            out(['ok'=>false,'error'=>'Acción no permitida para costo_hectarea'], 400);
+        }
         $id = isset($json['id']) ? (int)$json['id'] : (isset($_POST['id'])?(int)$_POST['id']:0);
         if ($id <= 0) out(['ok'=>false,'error'=>'ID inválido'], 422);
 

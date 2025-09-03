@@ -125,6 +125,36 @@
       </table>
     </div>
   </div>
+
+
+    <!-- Costo por hectárea -->
+  <div id="card-costo" class="card tabla-card" aria-labelledby="h-costo">
+    <h4 id="h-costo">Costo por hectárea</h4>
+    <p class="muted" style="margin-top:-6px;color:#64748b;">Variable única (tabla: <code>dron_costo_hectarea</code>).</p>
+
+    <form id="form-costo" class="form-grid grid-3" autocomplete="off" aria-describedby="c-msg">
+      <div class="input-group">
+        <label for="c-valor">Costo (por ha)</label>
+        <div class="input-icon input-icon-money">
+          <input type="number" id="c-valor" name="costo" placeholder="Ej.: 1200.00" step="0.01" min="0" required />
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="c-moneda">Moneda</label>
+        <div class="input-icon input-icon-money">
+          <input type="text" id="c-moneda" name="moneda" placeholder="Pesos" maxlength="20" value="Pesos" />
+        </div>
+      </div>
+      <div class="form-grid grid-3">
+        <button id="c-submit" type="submit" class="btn btn-aceptar">Guardar</button>
+        <button id="c-cancel" type="button" class="btn btn-cancelar">Cancelar</button>
+        <button id="c-recargar" type="button" class="btn btn-info">Recargar</button>
+      </div>
+    </form>
+
+    <div id="c-msg" role="status" aria-live="polite" class="muted" style="margin:6px 0;"></div>
+  </div>
+
 </div>
 
 <style>
@@ -284,10 +314,58 @@
   $('#r-q').addEventListener('input', debounce(loadProduccion, 300));
   $('#r-inactivos').addEventListener('change', loadProduccion);
 
+    // ---------- Costo por hectárea (singleton) ----------
+  function parseDecimal(v) {
+    if (v == null) return NaN;
+    // admitir coma como separador decimal
+    const s = String(v).replace(/\./g,'').replace(',', '.'); // "1.234,56" -> "1234,56"
+    return parseFloat(s);
+  }
+
+  async function loadCosto() {
+    const res = await fetch(DVAR_API+'?action=get&entity=costo_hectarea&t='+Date.now(), { cache:'no-store' })
+      .then(r=>r.json()).catch(()=>({ok:false,error:'Error de red'}));
+    if (!res.ok) { show('error', res.error || 'No se pudo cargar Costo por hectárea'); return; }
+    const row = res.data || {};
+    $('#c-valor').value  = (row.costo != null) ? Number(row.costo).toFixed(2) : '';
+    $('#c-moneda').value = row.moneda || 'Pesos';
+  }
+
+  document.getElementById('form-costo').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const costo  = parseDecimal($('#c-valor').value);
+    const moneda = $('#c-moneda').value.trim() || 'Pesos';
+
+    if (!isFinite(costo) || costo < 0) {
+      show('error','Ingresá un costo válido (>= 0)'); return;
+    }
+
+    const res = await fetch(DVAR_API+'?action=update&entity=costo_hectarea', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ costo: Number(costo.toFixed(2)), moneda })
+    }).then(r=>r.json()).catch(()=>({ok:false,error:'Error de red'}));
+
+    if (res.ok) {
+      show('success','Costo actualizado');
+      await loadCosto();
+    } else {
+      show('error', res.error || 'No se pudo actualizar el costo');
+    }
+  });
+
+  document.getElementById('c-cancel').addEventListener('click', async ()=>{
+    await loadCosto();
+    show('info','Cambios descartados');
+  });
+  document.getElementById('c-recargar').addEventListener('click', loadCosto);
+
+
   (async function init(){
     try { await fetch(DVAR_API+'?action=health&t='+Date.now(), {cache:'no-store'}).then(r=>r.json()); } catch(_) {}
     await loadPatologias();
     await loadProduccion();
+    await loadCosto();
   })();
 })();
 </script>
