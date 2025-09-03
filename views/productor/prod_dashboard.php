@@ -79,7 +79,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             <header class="navbar">
                 <h4>¡Qué bueno verte de nuevo <?php echo htmlspecialchars($nombre); ?>!</h4>
                 <div class="action-footer">
-                    <a class="btn btn-cancelar" location.href='../../../logout.php'>Salir</a>
+                    <a class="btn btn-cancelar" onclick="location.href='../../../logout.php'">Salir</a>
                 </div>
             </header>
 
