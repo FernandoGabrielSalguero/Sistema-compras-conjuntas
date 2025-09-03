@@ -105,17 +105,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
                     <div class="card">
                         <div class="card-title">
-                            <span class="material-icons">shopping_cart</span>
-                            <h3>Mercado Digital</h3>
-                        </div>
-                        <p>Ingresá al catálogo y realizá tus pedidos disponibles.</p>
-                        <div class="action-footer">
-                            <a class="btn btn-aceptar" href="prod_mercadoDigital.php">Ir al mercado</a>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-title">
                             <span class="material-icons">receipt_long</span>
                             <h3>Mis pedidos</h3>
                         </div>
@@ -125,27 +114,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         </div>
                     </div>
 
-                    <div class="card">
-                        <div class="card-title">
-                            <span class="material-icons">analytics</span>
-                            <h3>Consolidado</h3>
-                        </div>
-                        <p>Resumen de productos y montos por operativo.</p>
-                        <div class="action-footer">
-                            <a class="btn btn-aceptar" href="prod_consolidado.php">Abrir consolidado</a>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-title">
-                            <span class="material-icons">person</span>
-                            <h3>Mi información</h3>
-                        </div>
-                        <p>Datos de tu cuenta y medios de contacto.</p>
-                        <div class="action-footer">
-                            <a class="btn btn-aceptar" href="prod_usuarioInformacion.php">Editar datos</a>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Contenedores para Toast -->
