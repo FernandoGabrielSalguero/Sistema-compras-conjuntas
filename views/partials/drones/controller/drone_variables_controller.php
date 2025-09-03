@@ -26,7 +26,7 @@ try {
         out(['ok'=>true, 'message'=>'Variables API OK']);
     }
 
-    $allowed = ['patologias','produccion','costo_hectarea'];
+        $allowed = ['patologias','produccion','formas_pago','costo_hectarea'];
     if (!in_array($entity, $allowed, true)) {
         out(['ok'=>false,'error'=>'Entidad inválida (use patologias|produccion|costo_hectarea)'], 400);
     }

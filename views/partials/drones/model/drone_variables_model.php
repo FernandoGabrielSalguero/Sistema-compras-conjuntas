@@ -15,8 +15,9 @@ final class DroneVariableModel
     private function tableFor(string $entity): string
     {
         switch ($entity) {
-            case 'patologias': return 'dron_patologias';
-            case 'produccion': return 'dron_produccion';
+            case 'patologias':     return 'dron_patologias';
+            case 'produccion':     return 'dron_produccion';
+            case 'formas_pago':    return 'dron_formas_pago';
             case 'costo_hectarea': return 'dron_costo_hectarea';
             default: throw new InvalidArgumentException('Entidad inválida');
         }
