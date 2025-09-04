@@ -146,6 +146,63 @@ $sesion_payload = [
                 grid-template-columns: 1fr 1fr;
             }
         }
+
+        /* ==== Modal cancelación (mobile-first) ==== */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 10000;
+        }
+
+        .modal.is-open {
+            display: flex;
+        }
+
+        .modal-content {
+            width: min(560px, 100%);
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, .25);
+            overflow: hidden;
+        }
+
+        .modal-header,
+        .modal-actions {
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-actions {
+            border-top: 1px solid #eee;
+            border-bottom: 0;
+            justify-content: flex-end;
+        }
+
+        .modal-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .modal-body {
+            padding: 1rem 1.25rem;
+            color: #475569;
+        }
+
+        .modal-close {
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -240,7 +297,7 @@ $sesion_payload = [
             function renderItems(items, total, pageNow) {
                 listado.innerHTML = items.map(it => {
                     const estadoClass = `estado-${it.estado}`;
-                    const puedeCancelar = (it.estado === 'pendiente' || it.estado === 'en_proceso');
+                    const puedeCancelar = (it.estado === 'pendiente');
                     return `
         <article class="pedido-card" aria-label="Solicitud #${it.id}">
           <div class="pedido-head">
@@ -286,28 +343,89 @@ $sesion_payload = [
                 }
             }
 
-            // Delegación: cancelar
-            listado.addEventListener('click', async (ev) => {
-                const btn = ev.target.closest('button.btn-cancelar');
-                if (!btn) return;
-                const id = btn.dataset.id;
-                const ok = confirm(`¿Cancelar la solicitud #${id}?`);
-                if (!ok) return;
+            // ====== Modal de cancelación ======
+            const modalCancel = document.getElementById('modalCancel');
+            const modalCancelIdText = document.getElementById('modalCancelIdText');
+            const btnModalConfirm = document.getElementById('btnModalConfirm');
+            let __pendingCancelId = null;
+
+            function openCancelModal(id) {
+                __pendingCancelId = Number(id);
+                modalCancelIdText.textContent = `#${__pendingCancelId}`;
+                modalCancel.classList.add('is-open');
+                modalCancel.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+                setTimeout(() => btnModalConfirm?.focus(), 0);
+            }
+
+            function closeCancelModal() {
+                __pendingCancelId = null;
+                modalCancel.classList.remove('is-open');
+                modalCancel.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+            }
+            window.closeCancelModal = closeCancelModal;
+
+            modalCancel?.addEventListener('click', (e) => {
+                if (e.target === modalCancel) closeCancelModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modalCancel?.classList.contains('is-open')) closeCancelModal();
+            });
+
+            btnModalConfirm?.addEventListener('click', async () => {
+                if (!__pendingCancelId) return closeCancelModal();
+                const id = __pendingCancelId;
 
                 try {
+                    btnModalConfirm.disabled = true;
+                    btnModalConfirm.textContent = 'Cancelando…';
                     window.showSpinner?.();
+
                     await apiPost({
                         action: 'cancel',
-                        id: Number(id)
+                        id
                     });
-                    window.showToast?.('success', 'Solicitud cancelada.');
-                    load();
+
+                    // Actualización inmediata en la tarjeta
+                    const card = listado.querySelector(`.pedido-card .btn-cancelar[data-id="${id}"]`)?.closest('.pedido-card');
+                    if (card) {
+                        const badge = card.querySelector('.estado-badge');
+                        badge.textContent = 'cancelado';
+                        badge.className = 'estado-badge estado-cancelado';
+                        const btn = card.querySelector('.btn-cancelar');
+                        if (btn) btn.remove();
+                    }
+
+                    // Aviso y refresco suave del listado
+                    window.showAlert?.('success', '¡Solicitud cancelada correctamente!');
+                    closeCancelModal();
+                    await load(); // sincroniza con servidor sin recargar página
                 } catch (e) {
                     window.showToast?.('error', e.message || 'No se pudo cancelar.');
                 } finally {
+                    btnModalConfirm.disabled = false;
+                    btnModalConfirm.textContent = 'Sí, cancelar';
                     window.hideSpinner?.();
                 }
             });
+
+// Delegación: abrir modal desde cada tarjeta (solo si está pendiente)
+listado.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('button.btn-cancelar');
+    if (!btn) return;
+
+    const card = btn.closest('.pedido-card');
+    const badge = card?.querySelector('.estado-badge');
+    const esPendiente = badge?.classList.contains('estado-pendiente');
+
+    if (!esPendiente) {
+        window.showToast?.('error', 'Solo se pueden cancelar solicitudes pendientes.');
+        return;
+    }
+    openCancelModal(btn.dataset.id);
+});
+
 
             // Paginación
             pag.addEventListener('click', (ev) => {
