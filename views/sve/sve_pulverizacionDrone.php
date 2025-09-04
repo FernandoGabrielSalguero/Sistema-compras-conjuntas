@@ -142,10 +142,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
           <!-- 🔘 Tarjeta con los botones del tab -->
           <div class="tabs">
             <div class="tab-buttons">
-              <button class="tab-button active" data-target="#panel-solicitudes" data-panel="solicitudes">Solicitudes</button>
-              <button class="tab-button" data-target="#panel-calendario" data-panel="calendario">Calendario</button>
-              <button class="tab-button" data-target="#panel-stock" data-panel="stock">Stock</button>
-              <button class="tab-button" data-target="#panel-variables" data-panel="variables">Variables</button>
+              <button class="tab-button active" data-target="#panel-solicitudes">Solicitudes</button>
+              <button class="tab-button" data-target="#panel-calendario">Calendario</button>
+              <button class="tab-button" data-target="#panel-stock">Stock</button>
+              <button class="tab-button" data-target="#panel-variables">Variables</button>
             </div>
           </div>
         </div>
@@ -155,58 +155,50 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
           <!-- Panel: Solicitudes -->
           <div class="tab-panel active" id="panel-solicitudes">
-            <div class="panel-slot" data-slot="solicitudes">
-              <?php
-              $viewFile = __DIR__ . '/../partials/drones/view/drone_list_view.php';
-              if (is_file($viewFile)) {
-                require $viewFile;
-              } else {
-                echo '<p>No se encontró la vista <code>drone_list_view.php</code>.</p>';
-              }
-              ?>
-            </div>
+            <?php
+            $viewFile = __DIR__ . '/../partials/drones/view/drone_list_view.php';
+            if (is_file($viewFile)) {
+              require $viewFile;
+            } else {
+              echo '<p>No se encontró la vista <code>drone_list_view.php</code>.</p>';
+            }
+            ?>
           </div>
 
           <!-- Panel: Calendario -->
           <div class="tab-panel" id="panel-calendario">
-            <div class="panel-slot" data-slot="calendario">
-              <?php
-              $viewFile = __DIR__ . '/../partials/drones/view/drone_calendar_view.php';
-              if (is_file($viewFile)) {
-                require $viewFile;
-              } else {
-                echo '<p>No se encontró la vista <code>drone_calendar_view.php</code>.</p>';
-              }
-              ?>
-            </div>
+            <?php
+            $viewFile = __DIR__ . '/../partials/drones/view/drone_calendar_view.php';
+            if (is_file($viewFile)) {
+              require $viewFile;
+            } else {
+              echo '<p>No se encontró la vista <code>drone_calendar_view.php</code>.</p>';
+            }
+            ?>
           </div>
 
           <!-- Panel: Stock -->
           <div class="tab-panel" id="panel-stock">
-            <div class="panel-slot" data-slot="stock">
-              <?php
-              $viewFile = __DIR__ . '/../partials/drones/view/drone_stock_view.php';
-              if (is_file($viewFile)) {
-                require $viewFile;
-              } else {
-                echo '<p>No se encontró la vista <code>drone_stock_view.php</code>.</p>';
-              }
-              ?>
-            </div>
+            <?php
+            $viewFile = __DIR__ . '/../partials/drones/view/drone_stock_view.php';
+            if (is_file($viewFile)) {
+              require $viewFile;
+            } else {
+              echo '<p>No se encontró la vista <code>drone_stock_view.php</code>.</p>';
+            }
+            ?>
           </div>
 
           <!-- Panel: Variables -->
           <div class="tab-panel" id="panel-variables">
-            <div class="panel-slot" data-slot="variables">
-              <?php
-              $viewFile = __DIR__ . '/../partials/drones/view/drone_variables_view.php';
-              if (is_file($viewFile)) {
-                require $viewFile;
-              } else {
-                echo '<p>No se encontró la vista <code>drone_variables_view.php</code>.</p>';
-              }
-              ?>
-            </div>
+            <?php
+            $viewFile = __DIR__ . '/../partials/drones/view/drone_variables_view.php';
+            if (is_file($viewFile)) {
+              require $viewFile;
+            } else {
+              echo '<p>No se encontró la vista <code>drone_variables_view.php</code>.</p>';
+            }
+            ?>
           </div>
 
         </div>
@@ -227,53 +219,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
   <!-- JS simple para alternar contenido entre tarjetas -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const API_TABS = '../../controllers/sve_tabsController.php';
       const buttons = document.querySelectorAll('.tab-buttons .tab-button');
       const panels = document.querySelectorAll('#tab-content-card .tab-panel');
 
-      // Ejecuta <script> inline de un HTML reinyectado
-      function runInlineScripts(container) {
-        const scripts = Array.from(container.querySelectorAll('script'))
-          .filter(sc => !sc.src); // solo inline
-        scripts.forEach(sc => {
-          try {
-            new Function(sc.textContent)();
-          } catch (e) {
-            console.error('Script inline del panel falló:', e);
-          }
-        });
-      }
-
-      async function loadPanel(panelKey, targetSel) {
-        const panel = document.querySelector(targetSel);
-        if (!panel) return;
-
-        const slot = panel.querySelector('.panel-slot');
-        try {
-          window.showSpinner?.();
-          const res = await fetch(`${API_TABS}?panel=${encodeURIComponent(panelKey)}`, {
-            credentials: 'same-origin',
-            cache: 'no-store'
-          });
-          const json = await res.json();
-          if (!json?.ok) throw new Error(json?.error || 'No se pudo cargar el panel.');
-
-          // Reinyectar HTML
-          if (slot) {
-            slot.innerHTML = json.html || '';
-            runInlineScripts(slot);
-          } else {
-            panel.innerHTML = json.html || '';
-            runInlineScripts(panel);
-          }
-        } catch (e) {
-          window.showToast?.('error', e.message || 'Error cargando panel.');
-        } finally {
-          window.hideSpinner?.();
-        }
-      }
-
-      function activate(targetSel, panelKey) {
+      function activate(targetSel) {
         buttons.forEach(b => b.classList.remove('active'));
         panels.forEach(p => p.classList.remove('active'));
 
@@ -282,30 +231,20 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         if (btn) btn.classList.add('active');
         if (panel) panel.classList.add('active');
 
-        // Chrome visual del wrapper
+        // Quitar fondo/sombra del contenedor solo en Variables
         const wrapper = document.getElementById('tab-content-card');
         if (wrapper) {
-          const sinChrome = (panelKey === 'variables' || panelKey === 'stock');
+          const sinChrome = (targetSel === '#panel-variables' || targetSel === '#panel-stock');
           wrapper.classList.toggle('no-chrome', sinChrome);
         }
-
-        // Recarga dinámica del panel
-        if (panelKey) loadPanel(panelKey, targetSel);
       }
 
       buttons.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const targetSel = btn.dataset.target;
-          const panelKey = btn.dataset.panel; // solicitudes | calendario | stock | variables
-          activate(targetSel, panelKey);
-        });
+        btn.addEventListener('click', () => activate(btn.dataset.target));
       });
 
-      // Estado inicial: mantener render server-side y además refrescar dinámico
-      const defaultBtn = document.querySelector('.tab-buttons .tab-button.active');
-      const initialTarget = defaultBtn?.dataset.target || '#panel-solicitudes';
-      const initialKey = defaultBtn?.dataset.panel || 'solicitudes';
-      activate(initialTarget, initialKey);
+      // Estado inicial por si el framework no lo setea
+      activate('#panel-solicitudes');
     });
   </script>
 
