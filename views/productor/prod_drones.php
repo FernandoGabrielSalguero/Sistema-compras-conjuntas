@@ -227,7 +227,7 @@ $sesion_payload = [
                 <div class="card header-card">
                     <div>
                         <h4><?php echo htmlspecialchars($nombre); ?></h4>
-                        <p>¿Queres ir al inicio?</p>
+                        <p>¿Queres ir al atras?</p>
                     </div>
                     <a class="btn btn-info" href="prod_dashboard.php">Apreta acá</a>
                 </div>
@@ -383,50 +383,60 @@ $sesion_payload = [
                     <!-- hectareas -->
                     <div class="gform-question" data-required="true" id="q_superficie">
                         <label class="gform-label" for="superficie_ha">SUPERFICIE (en hectáreas) PARA LAS QUE DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span></label>
-                        <div class="gform-helper">Debe colocar solamente el número de hectáreas a pulverizar</div>
-                        <input class="gform-input" id="superficie_ha" name="superficie_ha" type="number" placeholder="Tu respuesta" />
-                        <div class="gform-error">Esta pregunta es obligatoria.</div>
+                        <div class="gform-helper">Ingresá sólo el número de hectáreas a pulverizar (máximo 20&nbsp;ha).</div>
+                        <input class="gform-input" id="superficie_ha" name="superficie_ha" type="number" inputmode="decimal" min="0.1" max="20" step="0.01" placeholder="Ej.: 3.5" aria-describedby="sup_help" />
+                        <div class="gform-error">Debe ser un número &gt; 0 y ≤ 20.</div>
+                    </div>
+
+                    <!-- método de pago -->
+                    <div class="gform-question" data-required="true" id="q_metodo_pago">
+                        <label class="gform-label" for="metodo_pago">MÉTODO DE PAGO <span class="gform-required">*</span></label>
+                        <div class="gform-helper">Elegí una opción disponible.</div>
+                        <select class="gform-input" id="metodo_pago" name="metodo_pago" aria-required="true">
+                            <option value="">Cargando métodos…</option>
+                        </select>
+                        <div class="gform-error">Seleccioná un método de pago.</div>
                     </div>
 
                     <!-- tratamiento / motivo -->
-<div class="gform-question" role="group" aria-labelledby="q_motivo_label" id="q_motivo">
-    <div id="q_motivo_label" class="gform-legend">INDICAR EL MOTIVO POR EL QUE DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span></div>
-    <div class="gform-options" id="motivo_dynamic">
-        <div class="gform-helper">Cargando patologías…</div>
-    </div>
-    <div class="gform-error">Seleccioná al menos una opción.</div>
-</div>
+                    <div class="gform-question" role="group" aria-labelledby="q_motivo_label" id="q_motivo">
+                        <div id="q_motivo_label" class="gform-legend">INDICAR EL MOTIVO POR EL QUE DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span></div>
+                        <div class="gform-options" id="motivo_dynamic">
+                            <div class="gform-helper">Cargando patologías…</div>
+                        </div>
+                        <div class="gform-error">Seleccioná al menos una opción.</div>
+                    </div>
 
                     <!-- rango_fecha -->
                     <div class="gform-question" role="group" aria-labelledby="q_rango_label" id="q_rango">
                         <div id="q_rango_label" class="gform-legend">INDICAR EN QUE MOMENTO DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span></div>
                         <div class="gform-options">
-                            <label class="gform-option"><input type="checkbox" id="rango_ene_1" name="rango_fecha[]" value="enero_q1"><span>Primera quincena de Enero</span></label>
-                            <label class="gform-option"><input type="checkbox" id="rango_ene_2" name="rango_fecha[]" value="enero_q2"><span>Segunda quincena de Enero</span></label>
-                            <label class="gform-option"><input type="checkbox" id="rango_feb_1" name="rango_fecha[]" value="febrero_q1"><span>Primera quincena de Febrero</span></label>
-                            <label class="gform-option"><input type="checkbox" id="rango_feb_2" name="rango_fecha[]" value="febrero_q2"><span>Segunda quincena de Febrero</span></label>
                             <label class="gform-option"><input type="checkbox" id="rango_oct_1" name="rango_fecha[]" value="octubre_q1"><span>Primera quincena de Octubre</span></label>
                             <label class="gform-option"><input type="checkbox" id="rango_oct_2" name="rango_fecha[]" value="octubre_q2"><span>Segunda quincena de Octubre</span></label>
                             <label class="gform-option"><input type="checkbox" id="rango_nov_1" name="rango_fecha[]" value="noviembre_q1"><span>Primera quincena de Noviembre</span></label>
                             <label class="gform-option"><input type="checkbox" id="rango_nov_2" name="rango_fecha[]" value="noviembre_q2"><span>Segunda quincena de Noviembre</span></label>
                             <label class="gform-option"><input type="checkbox" id="rango_dic_1" name="rango_fecha[]" value="diciembre_q1"><span>Primera quincena de Diciembre</span></label>
                             <label class="gform-option"><input type="checkbox" id="rango_dic_2" name="rango_fecha[]" value="diciembre_q2"><span>Segunda quincena de Diciembre</span></label>
+                            <label class="gform-option"><input type="checkbox" id="rango_ene_1" name="rango_fecha[]" value="enero_q1"><span>Primera quincena de Enero</span></label>
+                            <label class="gform-option"><input type="checkbox" id="rango_ene_2" name="rango_fecha[]" value="enero_q2"><span>Segunda quincena de Enero</span></label>
+                            <label class="gform-option"><input type="checkbox" id="rango_feb_2" name="rango_fecha[]" value="febrero_q2"><span>Segunda quincena de Febrero</span></label>
+                            <label class="gform-option"><input type="checkbox" id="rango_feb_1" name="rango_fecha[]" value="febrero_q1"><span>Primera quincena de Febrero</span></label>
                         </div>
                         <div class="gform-error">Seleccioná al menos una opción.</div>
                     </div>
 
                     <!-- assist_product -->
-<div class="gform-question" role="group" aria-labelledby="q_productos_label" id="q_productos">
-    <div id="q_productos_label" class="gform-legend">
-        En el caso de necesitar productos fitosanitarios para realizar la pulverización indicar los que sean necesarios. <span class="gform-required">*</span>
-    </div>
+                    <div class="gform-question" role="group" aria-labelledby="q_productos_label" id="q_productos">
+                        <div id="q_productos_label" class="gform-legend">
+                            En el caso de necesitar productos fitosanitarios para realizar la pulverización indicar los que sean necesarios. <span class="gform-required">*</span>
+                        </div>
 
-    <div class="gform-options gopts-with-complement" id="productos_dynamic">
-        <div class="gform-helper">Primero seleccioná una o más patologías arriba. Acá se habilitarán las opciones por cada una.</div>
-    </div>
+                        <div class="gform-options gopts-with-complement" id="productos_dynamic">
+                            <div class="gform-helper">Primero seleccioná una o más patologías arriba. Acá se habilitarán las opciones por cada una.</div>
+                        </div>
 
-    <div class="gform-error">Seleccioná al menos una opción.</div>
-</div>
+                        <div class="gform-error">Seleccioná al menos una opción.</div>
+                    </div>
 
                     <!-- dirección -->
                     <div class="gform-question span-2" role="group" aria-labelledby="q_direccion_label" id="q_direccion">
@@ -549,23 +559,83 @@ $sesion_payload = [
             const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
             const form = $('#form-dron');
-// --- ENDPOINTS auxiliares ---
-const apiGet = async (params) => {
-  const url = `${API_URL}?${new URLSearchParams(params).toString()}`;
-  const res = await fetch(url, { method: 'GET', credentials: 'same-origin', cache: 'no-store' });
-  const json = await res.json().catch(() => ({}));
-  if (!json?.ok) throw new Error(json?.error || 'Error de red');
-  return json.data || json; // data.items o items
-};
+            // --- ENDPOINTS auxiliares ---
+            const apiGet = async (params) => {
+                const url = `${API_URL}?${new URLSearchParams(params).toString()}`;
+                const res = await fetch(url, {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store'
+                });
+                const json = await res.json().catch(() => ({}));
+                if (!json?.ok) throw new Error(json?.error || 'Error de red');
+                return json.data || json; // data.items o items
+            };
 
-// Cargar patologías dinámicas
-async function cargarPatologias() {
-  const data = await apiGet({ action: 'patologias' });
-  const items = data.items || [];
-  const cont = document.getElementById('motivo_dynamic');
-  if (!cont) return;
+            // Cache de costo por hectárea (servicio base)
+            let COSTO_BASE = {
+                costo: 0,
+                moneda: 'Pesos'
+            };
 
-  const otrosHTML = `
+            async function cargarCostoBase() {
+                try {
+                    const data = await apiGet({
+                        action: 'costo'
+                    });
+                    COSTO_BASE.costo = Number(data.costo || 0);
+                    COSTO_BASE.moneda = data.moneda || 'Pesos';
+                } catch {}
+            }
+
+            // Llenar método de pago
+            async function cargarFormasPago() {
+                const sel = document.getElementById('metodo_pago');
+                if (!sel) return;
+                try {
+                    const data = await apiGet({
+                        action: 'formas_pago'
+                    });
+                    const items = data.items || [];
+                    sel.innerHTML = `<option value="">Seleccioná…</option>` +
+                        items.map(it => `<option value="${it.id}">${it.nombre}</option>`).join('');
+                } catch {
+                    sel.innerHTML = `<option value="">No disponible</option>`;
+                }
+            }
+
+            // Calcular costos (base + productos SVE)
+            function calcularCostos(payload) {
+                const sup = Math.max(0, Number(payload.superficie_ha || 0));
+                const base = sup * Number(COSTO_BASE.costo || 0);
+
+                let costoProductos = 0;
+                (payload.productos || []).forEach(p => {
+                    if (p.fuente === 'sve' && p.producto_id) {
+                        const sel = document.querySelector(`#sel_prod_${p.patologia_id}`);
+                        const costo = sel?.selectedOptions?.[0]?.dataset?.costo;
+                        costoProductos += sup * Number(costo || 0);
+                    }
+                });
+
+                return {
+                    moneda: COSTO_BASE.moneda || 'Pesos',
+                    base,
+                    productos: costoProductos,
+                    total: base + costoProductos
+                };
+            }
+
+            // Cargar patologías dinámicas
+            async function cargarPatologias() {
+                const data = await apiGet({
+                    action: 'patologias'
+                });
+                const items = data.items || [];
+                const cont = document.getElementById('motivo_dynamic');
+                if (!cont) return;
+
+                const otrosHTML = `
     <label class="gform-option gform-option-otros">
       <input type="checkbox" id="motivo_otros_chk" name="motivo[]" value="otros" aria-controls="motivo_otros">
       <span>Otros:</span>
@@ -573,52 +643,52 @@ async function cargarPatologias() {
     </label>
   `;
 
-  if (!items.length) {
-    cont.innerHTML = `<div class="gform-helper">No hay patologías activas.</div>${otrosHTML}`;
-    return;
-  }
+                if (!items.length) {
+                    cont.innerHTML = `<div class="gform-helper">No hay patologías activas.</div>${otrosHTML}`;
+                    return;
+                }
 
-  cont.innerHTML = items.map(p => `
+                cont.innerHTML = items.map(p => `
     <label class="gform-option">
       <input type="checkbox" name="motivo[]" value="${p.id}" data-patologia-nombre="${p.nombre}">
       <span>${p.nombre}</span>
     </label>
   `).join('') + otrosHTML;
 
-  // vincular "Otros"
-  const chkOtros = document.getElementById('motivo_otros_chk');
-  const inputOtros = document.getElementById('motivo_otros');
-  if (chkOtros && inputOtros) {
-    const syncOtros = () => {
-      inputOtros.disabled = !chkOtros.checked;
-      inputOtros.classList.toggle('oculto', !chkOtros.checked);
-      if (!chkOtros.checked) inputOtros.value = '';
-    };
-    chkOtros.addEventListener('change', syncOtros);
-    syncOtros();
-  }
+                // vincular "Otros"
+                const chkOtros = document.getElementById('motivo_otros_chk');
+                const inputOtros = document.getElementById('motivo_otros');
+                if (chkOtros && inputOtros) {
+                    const syncOtros = () => {
+                        inputOtros.disabled = !chkOtros.checked;
+                        inputOtros.classList.toggle('oculto', !chkOtros.checked);
+                        if (!chkOtros.checked) inputOtros.value = '';
+                    };
+                    chkOtros.addEventListener('change', syncOtros);
+                    syncOtros();
+                }
 
-  // cada cambio de patología reconstruye la sección productos
-  cont.addEventListener('change', () => reconstruirProductos());
-}
+                // cada cambio de patología reconstruye la sección productos
+                cont.addEventListener('change', () => reconstruirProductos());
+            }
 
-// Construir sección de productos según patologías seleccionadas
-async function reconstruirProductos() {
-  const wrap = document.getElementById('productos_dynamic');
-  if (!wrap) return;
-  const patChecks = Array.from(document.querySelectorAll('#motivo_dynamic input[type="checkbox"][name="motivo[]"]'))
-    .filter(i => i.value !== 'otros' && i.checked);
+            // Construir sección de productos según patologías seleccionadas
+            async function reconstruirProductos() {
+                const wrap = document.getElementById('productos_dynamic');
+                if (!wrap) return;
+                const patChecks = Array.from(document.querySelectorAll('#motivo_dynamic input[type="checkbox"][name="motivo[]"]'))
+                    .filter(i => i.value !== 'otros' && i.checked);
 
-  if (!patChecks.length) {
-    wrap.innerHTML = `<div class="gform-helper">Primero seleccioná una o más patologías arriba. Acá se habilitarán las opciones por cada una.</div>`;
-    return;
-  }
+                if (!patChecks.length) {
+                    wrap.innerHTML = `<div class="gform-helper">Primero seleccioná una o más patologías arriba. Acá se habilitarán las opciones por cada una.</div>`;
+                    return;
+                }
 
-  // Render base (lazy fetch de productos por patología)
-  wrap.innerHTML = patChecks.map(chk => {
-    const pid = chk.value;
-    const pnom = chk.dataset.patologiaNombre || chk.nextElementSibling?.textContent || `Patología #${pid}`;
-    return `
+                // Render base (lazy fetch de productos por patología)
+                wrap.innerHTML = patChecks.map(chk => {
+                    const pid = chk.value;
+                    const pnom = chk.dataset.patologiaNombre || chk.nextElementSibling?.textContent || `Patología #${pid}`;
+                    return `
       <div class="gform-optbox" data-patologia-id="${pid}" data-patologia-nombre="${pnom}">
         <label class="gform-option">
           <input type="checkbox" name="productos[]" value="${pid}" data-complement="#cmp-pat-${pid}">
@@ -643,53 +713,60 @@ async function reconstruirProductos() {
         </div>
       </div>
     `;
-  }).join('');
+                }).join('');
 
-  // activar complementos
-  Array.from(wrap.querySelectorAll('input[type="checkbox"][data-complement]')).forEach(cb => {
-    const cmpSel = cb.dataset.complement;
-    const cmp = document.querySelector(cmpSel);
-    const sync = () => { if (cmp) cmp.hidden = !cb.checked; };
-    cb.addEventListener('change', sync);
-    sync();
-  });
+                // activar complementos
+                Array.from(wrap.querySelectorAll('input[type="checkbox"][data-complement]')).forEach(cb => {
+                    const cmpSel = cb.dataset.complement;
+                    const cmp = document.querySelector(cmpSel);
+                    const sync = () => {
+                        if (cmp) cmp.hidden = !cb.checked;
+                    };
+                    cb.addEventListener('change', sync);
+                    sync();
+                });
 
-  // radios -> mostrar marca o select
-  Array.from(wrap.querySelectorAll('.gform-optbox')).forEach(async (box) => {
-    const pid = box.dataset.patologiaId;
-    const rbNo = box.querySelector(`input[type="radio"][name="src-${pid}"][value="sve"]`);
-    const rbSi = box.querySelector(`input[type="radio"][name="src-${pid}"][value="yo"]`);
-    const brand = box.querySelector(`#brand_${pid}`);
-    const sveWrap = box.querySelector(`#sve_${pid}`);
-    const sel = box.querySelector(`#sel_prod_${pid}`);
+                // radios -> mostrar marca o select
+                Array.from(wrap.querySelectorAll('.gform-optbox')).forEach(async (box) => {
+                    const pid = box.dataset.patologiaId;
+                    const rbNo = box.querySelector(`input[type="radio"][name="src-${pid}"][value="sve"]`);
+                    const rbSi = box.querySelector(`input[type="radio"][name="src-${pid}"][value="yo"]`);
+                    const brand = box.querySelector(`#brand_${pid}`);
+                    const sveWrap = box.querySelector(`#sve_${pid}`);
+                    const sel = box.querySelector(`#sel_prod_${pid}`);
 
-    const sync = () => {
-      const yo = rbSi?.checked;
-      if (brand) brand.hidden = !yo;
-      if (sveWrap) sveWrap.hidden = !!yo;
-      if (!yo && sel && !sel.dataset.loaded) {
-        // cargar productos SVE asociados
-        apiGet({ action: 'productos', patologia_id: pid }).then(data => {
-          const items = data.items || [];
-          sel.innerHTML = `<option value="">Seleccioná un producto SVE…</option>` +
-            items.map(it => `<option value="${it.id}">${it.nombre}</option>`).join('');
-          sel.dataset.loaded = '1';
-        }).catch(() => {
-          sel.innerHTML = `<option value="">No se pudieron cargar productos</option>`;
-        });
-      }
-    };
-    rbNo?.addEventListener('change', sync);
-    rbSi?.addEventListener('change', sync);
-    sync();
-  });
-}
+                    const sync = () => {
+                        const yo = rbSi?.checked;
+                        if (brand) brand.hidden = !yo;
+                        if (sveWrap) sveWrap.hidden = !!yo;
+                        if (!yo && sel && !sel.dataset.loaded) {
+                            // cargar productos SVE asociados
+                            apiGet({
+                                action: 'productos',
+                                patologia_id: pid
+                            }).then(data => {
+                                const items = data.items || [];
+                                sel.innerHTML = `<option value="">Seleccioná un producto SVE…</option>` +
+                                    items.map(it => `<option value="${it.id}" data-costo="${Number(it.costo_hectarea || 0)}">${it.nombre}</option>`).join('');
+                                sel.dataset.loaded = '1';
+                            }).catch(() => {
+                                sel.innerHTML = `<option value="">No se pudieron cargar productos</option>`;
+                            });
+                        }
+                    };
+                    rbNo?.addEventListener('change', sync);
+                    rbSi?.addEventListener('change', sync);
+                    sync();
+                });
+            }
 
-// Carga inicial
-cargarPatologias().catch(() => {
-  const cont = document.getElementById('motivo_dynamic');
-  if (cont) cont.innerHTML = `<div class="gform-helper">No se pudieron cargar las patologías.</div>`;
-});
+            // Carga inicial
+            cargarPatologias().catch(() => {
+                const cont = document.getElementById('motivo_dynamic');
+                if (cont) cont.innerHTML = `<div class="gform-helper">No se pudieron cargar las patologías.</div>`;
+                cargarFormasPago();
+cargarCostoBase();
+            });
 
             // ---- Sesión (inyectada desde PHP)
             const sessionData = (() => {
@@ -730,6 +807,7 @@ cargarPatologias().catch(() => {
                 cerrarModal();
             };
             // Cerrar al hacer click fuera del contenido y con ESC
+
             modal?.addEventListener('click', (e) => {
                 if (e.target === modal) cerrarModal();
             });
@@ -737,84 +815,59 @@ cargarPatologias().catch(() => {
                 if (e.key === 'Escape' && modal?.classList.contains('is-open')) cerrarModal();
             });
 
-            // Exponer a los botones con onclick=""
+            // Exponer utilidades
             window.cerrarModal = cerrarModal;
 
             window.confirmarEnvio = async () => {
-                if (!__ultimoPayload) return cerrarModal();
+    if (!__ultimoPayload) return cerrarModal();
 
-                try {
-                    setConfirmBtnLoading(true);
+    try {
+        setConfirmBtnLoading(true);
 
-                    const res = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        credentials: 'same-origin',
-                        body: JSON.stringify(__ultimoPayload)
-                    });
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify(__ultimoPayload)
+        });
 
-                    const raw = await res.text(); // <- cuerpo crudo
-                    let data = null;
-                    try {
-                        data = JSON.parse(raw);
-                    } catch {
-                        console.warn('Respuesta NO-JSON del backend:', raw);
-                    }
+        const raw = await res.text();
+        let data = null;
+        try { data = JSON.parse(raw); } catch {}
 
-                    if (!res.ok || !data?.ok) {
-                        const msg = data?.error || `Error ${res.status} al registrar la solicitud.`;
-                        console.error('Detalle backend:', {
-                            status: res.status,
-                            raw
-                        });
-                        window.showToast?.('error', msg) || alert(msg);
-                        return;
-                    }
+        if (!res.ok || !data?.ok) {
+            const msg = data?.error || `Error ${res.status} al registrar la solicitud.`;
+            window.showToast?.('error', msg);
+            return;
+        }
 
-                    window.showToast?.('success', `Solicitud registrada (#${data.id}).`);
-                    cerrarModal();
-                    form.reset();
+        window.showToast?.('success', `Solicitud registrada (#${data.id}).`);
+        cerrarModal();
+        form.reset();
 
-                    // reset de UI complementos/marcas
-                    $$('input[type="checkbox"][data-complement]').forEach(cb => {
-                        const cmp = document.querySelector(cb.dataset.complement);
-                        if (cmp) cmp.hidden = true;
-                    });
-                    ['#brand_lobesia', '#brand_peronospora', '#brand_oidio', '#brand_podredumbre']
-                    .forEach(sel => {
-                        const b = $(sel);
-                        if (b) b.hidden = true;
-                    });
-                    if (typeof chkOtros !== 'undefined' && chkOtros) {
-                        chkOtros.checked = false;
-                        if (inputOtros) {
-                            inputOtros.value = '';
-                            inputOtros.disabled = true;
-                            inputOtros.classList.add('oculto');
-                        }
-                    }
-                    if (typeof clearGeo === 'function') clearGeo();
+        // Reset UI dinámicos
+        $$('input[type="checkbox"][data-complement]').forEach(cb => {
+            const cmp = document.querySelector(cb.dataset.complement);
+            if (cmp) cmp.hidden = true;
+        });
+        const otrosChk = document.getElementById('motivo_otros_chk');
+        const otrosTxt = document.getElementById('motivo_otros');
+        if (otrosChk && otrosTxt) {
+            otrosChk.checked = false;
+            otrosTxt.value = '';
+            otrosTxt.disabled = true;
+            otrosTxt.classList.add('oculto');
+        }
+        if (typeof clearGeo === 'function') clearGeo();
+        reconstruirProductos(); // vuelve a estado base
 
-                } catch (err) {
-                    console.error(err);
-                    window.showToast?.('error', 'No se pudo enviar la solicitud. Verificá tu conexión.');
-                } finally {
-                    setConfirmBtnLoading(false);
-                }
-            };
+    } catch {
+        window.showToast?.('error', 'No se pudo enviar la solicitud. Verificá tu conexión.');
+    } finally {
+        setConfirmBtnLoading(false);
+    }
+};
 
-
-
-
-            // Cerrar al hacer click fuera del contenido y con ESC
-            modal?.addEventListener('click', (e) => {
-                if (e.target === modal) cerrarModal();
-            });
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && modal?.style.display !== 'none') cerrarModal();
-            });
 
             // -------- UI: "Otros" en Motivo
             const chkOtros = $('#motivo_otros_chk');
@@ -1000,19 +1053,46 @@ cargarPatologias().catch(() => {
 
                 const rangos = (payload.rango_fecha || []).map(v => labelRango[v] || v);
 
-const prodsItems = (payload.productos || []).map(p => {
-    const fuente = p.fuente === 'yo' ? 'Proveedor propio' : 'SVE';
-    const detalle = p.fuente === 'yo'
-        ? (p.marca ? ` — Marca: ${escapeHTML(p.marca)}` : '')
-        : (p.producto_nombre ? ` — Producto: ${escapeHTML(p.producto_nombre)}` : '');
-    const pat = p.patologia_nombre || `Patología #${p.patologia_id}`;
-    return `<li>${escapeHTML(pat)} <small>(${fuente}${detalle})</small></li>`;
-}).join('');
+                const prodsItems = (payload.productos || []).map(p => {
+                    const fuente = p.fuente === 'yo' ? 'Proveedor propio' : 'SVE';
+                    const detalle = p.fuente === 'yo' ?
+                        (p.marca ? ` — Marca: ${escapeHTML(p.marca)}` : '') :
+                        (p.producto_nombre ? ` — Producto: ${escapeHTML(p.producto_nombre)}` : '');
+                    const pat = p.patologia_nombre || `Patología #${p.patologia_id}`;
+                    return `<li>${escapeHTML(pat)} <small>(${fuente}${detalle})</small></li>`;
+                }).join('');
 
                 const ubic = payload.ubicacion || {};
                 const coords = (ubic.lat && ubic.lng) ?
                     `${escapeHTML(ubic.lat)}, ${escapeHTML(ubic.lng)} (±${escapeHTML(ubic.acc)} m)` :
                     '—';
+
+                const formaPagoSel = document.getElementById('metodo_pago');
+                const formaPagoTxt = (function() {
+                    if (!payload.forma_pago_id || !formaPagoSel) return '—';
+                    const opt = formaPagoSel.querySelector(`option[value="${payload.forma_pago_id}"]`);
+                    return opt ? opt.textContent : '—';
+                })();
+
+                const costos = calcularCostos(payload);
+                const fmt = (n) => new Intl.NumberFormat('es-AR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(Number(n || 0));
+                const costoHTML = `
+  <h4 style="margin-top:1rem;">Costo estimado</h4>
+  <div class="tabla-wrapper">
+    <table class="data-table">
+      <thead><tr><th>Concepto</th><th>Importe (${escapeHTML(costos.moneda)})</th></tr></thead>
+      <tbody>
+        <tr><td>Servicio base (${fmt(payload.superficie_ha)} ha × ${fmt(COSTO_BASE.costo)}/${costos.moneda})</td><td style="text-align:right;">${fmt(costos.base)}</td></tr>
+        <tr><td>Productos SVE (${fmt(payload.superficie_ha)} ha)</td><td style="text-align:right;">${fmt(costos.productos)}</td></tr>
+        <tr><td style="font-weight:700;">Total estimado</td><td style="text-align:right;font-weight:700;">${fmt(costos.total)}</td></tr>
+      </tbody>
+    </table>
+  </div>
+`;
+
 
                 return `
     <div class="modal-summary">
@@ -1046,19 +1126,13 @@ const prodsItems = (payload.productos || []).map(p => {
         <dd>${formatDireccion(payload.direccion)}</dd>
 
         <dt>Motivo</dt>
-        <dd>${motivos.length ? escapeHTML(motivos.join(', ')) : '—'}</dd>
+<dd>${motivos.length ? escapeHTML(motivos.join(', ')) : '—'}</dd>
 
-        <dt>Momento preferido</dt>
-        <dd>${rangos.length ? escapeHTML(rangos.join(', ')) : '—'}</dd>
+<dt>Método de pago</dt>
+<dd>${escapeHTML(formaPagoTxt)}</dd>
 
-        <dt>Productos</dt>
-        <dd>${prodsItems ? `<ul class="prod-list">${prodsItems}</ul>` : '—'}</dd>
+${costoHTML}
 
-        <dt>En la finca ahora</dt>
-        <dd>${toSiNo(ubic.en_finca)}</dd>
-
-        <dt>Coordenadas</dt>
-        <dd>${coords}</dd>
 
         <dt>Observaciones</dt>
         <dd><div class="note">${escapeHTML(payload.observaciones ?? '—')}</div></dd>
@@ -1106,9 +1180,15 @@ const prodsItems = (payload.productos || []).map(p => {
                 must(document.getElementById('q_area_despegue'), atLeastOneChecked('input[type="radio"][name="area_despegue"]', form));
                 must(document.getElementById('q_ubicacion'), atLeastOneChecked('input[type="radio"][name="en_finca"]', form)); // ya viene con NO marcado, igual chequeo
 
-                // Superficie (número > 0)
+                // Superficie (número > 0 y ≤ 20)
                 const supEl = document.getElementById('superficie_ha');
-                const supOk = supEl && supEl.value.trim() !== '' && !isNaN(supEl.value) && Number(supEl.value) > 0;
+                let supOk = false;
+                if (supEl) {
+                    const val = parseFloat(supEl.value);
+                    supOk = !isNaN(val) && val > 0 && val <= 20;
+                    const err = document.querySelector('#q_superficie .gform-error');
+                    if (err) err.textContent = 'Debe ser un número > 0 y ≤ 20.';
+                }
                 must(document.getElementById('q_superficie'), supOk);
 
                 // Motivo (al menos uno) y "Otros" con texto si está marcado
@@ -1124,24 +1204,33 @@ const prodsItems = (payload.productos || []).map(p => {
 
                 // Productos (al menos uno) + si fuente = "yo", exigir marca
                 // Productos (dinámico): al menos un checkbox por patología + validar fuente
-const productosMarcados = getValuesChecked('input[type="checkbox"][name="productos[]"]', form);
-let prodOk = productosMarcados.length > 0;
-if (prodOk) {
-  for (const pid of productosMarcados) {
-    const box = document.querySelector(`.gform-optbox[data-patologia-id="${pid}"]`);
-    if (!box) continue;
-    const fuente = form.querySelector(`input[type="radio"][name="src-${pid}"]:checked`)?.value;
-    if (!fuente) { prodOk = false; break; }
-    if (fuente === 'yo') {
-      const marca = box.querySelector(`#marca_${pid}`)?.value?.trim();
-      if (!marca) { prodOk = false; break; }
-    } else {
-      const sel = box.querySelector(`#sel_prod_${pid}`);
-      if (!sel || !sel.value) { prodOk = false; break; }
-    }
-  }
-}
-must(document.getElementById('q_productos'), prodOk);
+                const productosMarcados = getValuesChecked('input[type="checkbox"][name="productos[]"]', form);
+                let prodOk = productosMarcados.length > 0;
+                if (prodOk) {
+                    for (const pid of productosMarcados) {
+                        const box = document.querySelector(`.gform-optbox[data-patologia-id="${pid}"]`);
+                        if (!box) continue;
+                        const fuente = form.querySelector(`input[type="radio"][name="src-${pid}"]:checked`)?.value;
+                        if (!fuente) {
+                            prodOk = false;
+                            break;
+                        }
+                        if (fuente === 'yo') {
+                            const marca = box.querySelector(`#marca_${pid}`)?.value?.trim();
+                            if (!marca) {
+                                prodOk = false;
+                                break;
+                            }
+                        } else {
+                            const sel = box.querySelector(`#sel_prod_${pid}`);
+                            if (!sel || !sel.value) {
+                                prodOk = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                must(document.getElementById('q_productos'), prodOk);
 
 
                 // Observaciones (obligatorio según tu UI)
@@ -1178,10 +1267,12 @@ must(document.getElementById('q_productos'), prodOk);
 
                 // 1) Validación custom
                 if (!validateGForm()) {
-                    // Si querés también mostrar un toast del framework (si está disponible):
                     window.showToast?.('error', 'Revisá los campos marcados en rojo.');
                     return;
                 }
+
+                const mpSel = document.getElementById('metodo_pago');
+                must(document.getElementById('q_metodo_pago'), !!mpSel && !!mpSel.value);
 
                 const motivos = getCheckboxValues('motivo[]');
                 const payload = {
@@ -1193,32 +1284,47 @@ must(document.getElementById('q_productos'), prodOk);
                     libre_obstaculos: getRadioValue('libre_obstaculos'),
                     area_despegue: getRadioValue('area_despegue'),
                     superficie_ha: $('#superficie_ha')?.value?.trim() || null,
+                    forma_pago_id: (() => {
+                        const v = $('#metodo_pago')?.value;
+                        return v ? parseInt(v, 10) : null;
+                    })(),
                     motivo: {
                         opciones: motivos,
                         otros: chkOtros?.checked ? (inputOtros?.value?.trim() || null) : null,
                     },
                     rango_fecha: getCheckboxValues('rango_fecha[]'),
                     productos: (() => {
-    const out = [];
-    document.querySelectorAll('.gform-optbox[data-patologia-id]').forEach(box => {
-        const pid = parseInt(box.dataset.patologiaId, 10);
-        const pnom = box.dataset.patologiaNombre || '';
-        const chk = box.querySelector('input[type="checkbox"][name="productos[]"]');
-        if (!chk || !chk.checked) return;
+                        const out = [];
+                        document.querySelectorAll('.gform-optbox[data-patologia-id]').forEach(box => {
+                            const pid = parseInt(box.dataset.patologiaId, 10);
+                            const pnom = box.dataset.patologiaNombre || '';
+                            const chk = box.querySelector('input[type="checkbox"][name="productos[]"]');
+                            if (!chk || !chk.checked) return;
 
-        const fuente = getRadioValue(`src-${pid}`);
-        if (fuente === 'yo') {
-            const marca = box.querySelector(`#marca_${pid}`)?.value?.trim() || null;
-            out.push({ patologia_id: pid, patologia_nombre: pnom, fuente: 'yo', marca });
-        } else {
-            const sel = box.querySelector(`#sel_prod_${pid}`);
-            const producto_id = sel && sel.value ? parseInt(sel.value, 10) : null;
-            const producto_nombre = sel ? sel.options[sel.selectedIndex]?.textContent : null;
-            out.push({ patologia_id: pid, patologia_nombre: pnom, fuente: 'sve', producto_id, producto_nombre });
-        }
-    });
-    return out;
-})(),
+                            const fuente = getRadioValue(`src-${pid}`);
+                            if (fuente === 'yo') {
+                                const marca = box.querySelector(`#marca_${pid}`)?.value?.trim() || null;
+                                out.push({
+                                    patologia_id: pid,
+                                    patologia_nombre: pnom,
+                                    fuente: 'yo',
+                                    marca
+                                });
+                            } else {
+                                const sel = box.querySelector(`#sel_prod_${pid}`);
+                                const producto_id = sel && sel.value ? parseInt(sel.value, 10) : null;
+                                const producto_nombre = sel ? sel.options[sel.selectedIndex]?.textContent : null;
+                                out.push({
+                                    patologia_id: pid,
+                                    patologia_nombre: pnom,
+                                    fuente: 'sve',
+                                    producto_id,
+                                    producto_nombre
+                                });
+                            }
+                        });
+                        return out;
+                    })(),
                     direccion: getDireccionFromForm(),
                     ubicacion: {
                         en_finca: getRadioValue('en_finca'),
@@ -1231,6 +1337,7 @@ must(document.getElementById('q_productos'), prodOk);
 
                     sesion: sessionData
                 };
+
 
                 // Guardamos para confirmar y mostramos el resumen en el modal
                 __ultimoPayload = payload;
