@@ -245,7 +245,7 @@ $sesion_payload = [
                             </button>
                         </div>
                         <div class="modal-body">
-                            <p>Vas a cancelar la solicitud <strong id="modalCancelIdText">#</strong>. Esta acción actualizará el estado a <b>cancelado</b> y registrará el motivo <i>“Cancelado por productor”</i>.</p>
+                            <p>Vas a cancelar la solicitud <strong id="modalCancelIdText">#</strong>. Esta acción actualizará el estado a <b>cancelado</b> y registrará el motivo <i>“Cancelado por productor”. Esta acción no se puede revertir.</i>.</p>
                         </div>
                         <div class="modal-actions">
                             <button class="btn btn-cancelar" onclick="closeCancelModal()">Volver</button>
