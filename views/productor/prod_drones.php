@@ -180,6 +180,78 @@ $sesion_payload = [
             background: #fafafa;
         }
 
+        /* === Costos (mobile-first) === */
+        .costos-block {
+            margin-top: 1rem;
+        }
+
+        .costos-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin: 0 0 .5rem 0;
+        }
+
+        .costos-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .costos-item {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: .75rem;
+            padding: .75rem .9rem;
+            line-height: 1.2;
+        }
+
+        .costos-item+.costos-item {
+            border-top: 1px solid #f2f2f2;
+        }
+
+        .costos-label {
+            font-weight: 500;
+            color: #333;
+            flex: 1 1 auto;
+            min-width: 0;
+            /* evita overflow en textos largos */
+        }
+
+        .costos-help {
+            display: block;
+            font-size: .85rem;
+            color: #666;
+            margin-top: .15rem;
+            word-break: break-word;
+        }
+
+        .costos-amount {
+            flex: 0 0 auto;
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .costos-total {
+            font-weight: 800;
+        }
+
+        .costos-total .costos-amount {
+            font-size: 1.05rem;
+        }
+
+        /* asegura que nada se salga del modal en mobile */
+        .modal-body {
+            overflow-x: hidden;
+        }
+
+
+
         /* --- GForm validation feedback --- */
         .gform-question .gform-error {
             display: none;
@@ -765,7 +837,7 @@ $sesion_payload = [
                 const cont = document.getElementById('motivo_dynamic');
                 if (cont) cont.innerHTML = `<div class="gform-helper">No se pudieron cargar las patologías.</div>`;
             });
-            
+
             cargarFormasPago();
             cargarCostoBase();
 
@@ -820,54 +892,58 @@ $sesion_payload = [
             window.cerrarModal = cerrarModal;
 
             window.confirmarEnvio = async () => {
-    if (!__ultimoPayload) return cerrarModal();
+                if (!__ultimoPayload) return cerrarModal();
 
-    try {
-        setConfirmBtnLoading(true);
+                try {
+                    setConfirmBtnLoading(true);
 
-        const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify(__ultimoPayload)
-        });
+                    const res = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify(__ultimoPayload)
+                    });
 
-        const raw = await res.text();
-        let data = null;
-        try { data = JSON.parse(raw); } catch {}
+                    const raw = await res.text();
+                    let data = null;
+                    try {
+                        data = JSON.parse(raw);
+                    } catch {}
 
-        if (!res.ok || !data?.ok) {
-            const msg = data?.error || `Error ${res.status} al registrar la solicitud.`;
-            window.showToast?.('error', msg);
-            return;
-        }
+                    if (!res.ok || !data?.ok) {
+                        const msg = data?.error || `Error ${res.status} al registrar la solicitud.`;
+                        window.showToast?.('error', msg);
+                        return;
+                    }
 
-        window.showToast?.('success', `Solicitud registrada (#${data.id}).`);
-        cerrarModal();
-        form.reset();
+                    window.showToast?.('success', `Solicitud registrada (#${data.id}).`);
+                    cerrarModal();
+                    form.reset();
 
-        // Reset UI dinámicos
-        $$('input[type="checkbox"][data-complement]').forEach(cb => {
-            const cmp = document.querySelector(cb.dataset.complement);
-            if (cmp) cmp.hidden = true;
-        });
-        const otrosChk = document.getElementById('motivo_otros_chk');
-        const otrosTxt = document.getElementById('motivo_otros');
-        if (otrosChk && otrosTxt) {
-            otrosChk.checked = false;
-            otrosTxt.value = '';
-            otrosTxt.disabled = true;
-            otrosTxt.classList.add('oculto');
-        }
-        if (typeof clearGeo === 'function') clearGeo();
-        reconstruirProductos(); // vuelve a estado base
+                    // Reset UI dinámicos
+                    $$('input[type="checkbox"][data-complement]').forEach(cb => {
+                        const cmp = document.querySelector(cb.dataset.complement);
+                        if (cmp) cmp.hidden = true;
+                    });
+                    const otrosChk = document.getElementById('motivo_otros_chk');
+                    const otrosTxt = document.getElementById('motivo_otros');
+                    if (otrosChk && otrosTxt) {
+                        otrosChk.checked = false;
+                        otrosTxt.value = '';
+                        otrosTxt.disabled = true;
+                        otrosTxt.classList.add('oculto');
+                    }
+                    if (typeof clearGeo === 'function') clearGeo();
+                    reconstruirProductos(); // vuelve a estado base
 
-    } catch {
-        window.showToast?.('error', 'No se pudo enviar la solicitud. Verificá tu conexión.');
-    } finally {
-        setConfirmBtnLoading(false);
-    }
-};
+                } catch {
+                    window.showToast?.('error', 'No se pudo enviar la solicitud. Verificá tu conexión.');
+                } finally {
+                    setConfirmBtnLoading(false);
+                }
+            };
 
 
             // -------- UI: "Otros" en Motivo
@@ -1048,6 +1124,7 @@ $sesion_payload = [
                 return parts.length ? parts.join(', ') : '—';
             }
 
+            // Resumen render
             function renderResumenHTML(payload) {
                 const motivos = (payload.motivo.opciones || []).map(v => labelMotivo[v] || v);
                 if (payload.motivo.otros) motivos.push(`Otros: ${escapeHTML(payload.motivo.otros)}`);
@@ -1063,13 +1140,8 @@ $sesion_payload = [
                     return `<li>${escapeHTML(pat)} <small>(${fuente}${detalle})</small></li>`;
                 }).join('');
 
-                const ubic = payload.ubicacion || {};
-                const coords = (ubic.lat && ubic.lng) ?
-                    `${escapeHTML(ubic.lat)}, ${escapeHTML(ubic.lng)} (±${escapeHTML(ubic.acc)} m)` :
-                    '—';
-
                 const formaPagoSel = document.getElementById('metodo_pago');
-                const formaPagoTxt = (function() {
+                const formaPagoTxt = (() => {
                     if (!payload.forma_pago_id || !formaPagoSel) return '—';
                     const opt = formaPagoSel.querySelector(`option[value="${payload.forma_pago_id}"]`);
                     return opt ? opt.textContent : '—';
@@ -1080,66 +1152,78 @@ $sesion_payload = [
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                 }).format(Number(n || 0));
-                const costoHTML = `
-  <h4 style="margin-top:1rem;">Costo estimado</h4>
-  <div class="tabla-wrapper">
-    <table class="data-table">
-      <thead><tr><th>Concepto</th><th>Importe (${escapeHTML(costos.moneda)})</th></tr></thead>
-      <tbody>
-        <tr><td>Servicio base (${fmt(payload.superficie_ha)} ha × ${fmt(COSTO_BASE.costo)}/${costos.moneda})</td><td style="text-align:right;">${fmt(costos.base)}</td></tr>
-        <tr><td>Productos SVE (${fmt(payload.superficie_ha)} ha)</td><td style="text-align:right;">${fmt(costos.productos)}</td></tr>
-        <tr><td style="font-weight:700;">Total estimado</td><td style="text-align:right;font-weight:700;">${fmt(costos.total)}</td></tr>
-      </tbody>
-    </table>
-  </div>
-`;
 
+                const costosHTML = `
+                  <div class="costos-block" role="group" aria-label="Costo estimado">
+                    <h4 class="costos-title">Costo estimado</h4>
+                    <ul class="costos-list" role="list">
+                      <li class="costos-item">
+                        <div class="costos-label">
+                          Servicio base
+                          <span class="costos-help">${fmt(payload.superficie_ha)} ha × ${fmt(COSTO_BASE.costo)}/${escapeHTML(costos.moneda)}</span>
+                        </div>
+                        <div class="costos-amount">${fmt(costos.base)}</div>
+                      </li>
+                      <li class="costos-item">
+                        <div class="costos-label">
+                          Productos SVE
+                          <span class="costos-help">${fmt(payload.superficie_ha)} ha</span>
+                        </div>
+                        <div class="costos-amount">${fmt(costos.productos)}</div>
+                      </li>
+                      <li class="costos-item costos-total" aria-label="Total estimado">
+                        <div class="costos-label">Total estimado</div>
+                        <div class="costos-amount">${fmt(costos.total)}</div>
+                      </li>
+                    </ul>
+                  </div>
+                `;
 
                 return `
-    <div class="modal-summary">
-      <dl>
-        <dt>Representante en finca</dt>
-        <dd>${toSiNo(payload.representante)}</dd>
+                  <div class="modal-summary">
+                    <dl>
+                      <dt>Representante en finca</dt>
+                      <dd>${toSiNo(payload.representante)}</dd>
 
-        <dt>Líneas de media/alta tensión (&lt;30m)</dt>
-        <dd>${toSiNo(payload.linea_tension)}</dd>
+                      <dt>Líneas de media/alta tensión (&lt;30m)</dt>
+                      <dd>${toSiNo(payload.linea_tension)}</dd>
 
-        <dt>Zona de vuelo restringida (&lt;3km)</dt>
-        <dd>${toSiNo(payload.zona_restringida)}</dd>
+                      <dt>Zona de vuelo restringida (&lt;3km)</dt>
+                      <dd>${toSiNo(payload.zona_restringida)}</dd>
 
-        <dt>Corriente eléctrica disponible</dt>
-        <dd>${toSiNo(payload.corriente_electrica)}</dd>
+                      <dt>Corriente eléctrica disponible</dt>
+                      <dd>${toSiNo(payload.corriente_electrica)}</dd>
 
-        <dt>Agua potable disponible</dt>
-        <dd>${toSiNo(payload.agua_potable)}</dd>
+                      <dt>Agua potable disponible</dt>
+                      <dd>${toSiNo(payload.agua_potable)}</dd>
 
-        <dt>Cuarteles libres de obstáculos</dt>
-        <dd>${toSiNo(payload.libre_obstaculos)}</dd>
+                      <dt>Cuarteles libres de obstáculos</dt>
+                      <dd>${toSiNo(payload.libre_obstaculos)}</dd>
 
-        <dt>Área de despegue apropiada</dt>
-        <dd>${toSiNo(payload.area_despegue)}</dd>
+                      <dt>Área de despegue apropiada</dt>
+                      <dd>${toSiNo(payload.area_despegue)}</dd>
 
-        <dt>Superficie (ha)</dt>
-        <dd>${escapeHTML(payload.superficie_ha ?? '—')}</dd>
+                      <dt>Superficie (ha)</dt>
+                      <dd>${escapeHTML(payload.superficie_ha ?? '—')}</dd>
 
-        <!-- NUEVO: Dirección -->
-        <dt>Dirección</dt>
-        <dd>${formatDireccion(payload.direccion)}</dd>
+                      <dt>Dirección</dt>
+                      <dd>${formatDireccion(payload.direccion)}</dd>
 
-        <dt>Motivo</dt>
-<dd>${motivos.length ? escapeHTML(motivos.join(', ')) : '—'}</dd>
+                      <dt>Motivo</dt>
+                      <dd>${motivos.length ? escapeHTML(motivos.join(', ')) : '—'}</dd>
 
-<dt>Método de pago</dt>
-<dd>${escapeHTML(formaPagoTxt)}</dd>
+                      <dt>Método de pago</dt>
+                      <dd>${escapeHTML(formaPagoTxt)}</dd>
 
-${costoHTML}
+                      
+                      <dt>Observaciones</dt>
+                      <dd><div class="note">${escapeHTML(payload.observaciones ?? '—')}</div></dd>
 
+                      ${costosHTML}
 
-        <dt>Observaciones</dt>
-        <dd><div class="note">${escapeHTML(payload.observaciones ?? '—')}</div></dd>
-      </dl>
-    </div>
-  `;
+                    </dl>
+                  </div>
+                `;
             }
 
 
@@ -1260,8 +1344,6 @@ ${costoHTML}
                 return ok;
             }
 
-
-
             // -------- Submit: construir payload y abrir modal
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -1272,12 +1354,12 @@ ${costoHTML}
                     return;
                 }
 
-const mpSel = document.getElementById('metodo_pago');
-flag(document.getElementById('q_metodo_pago'), !!mpSel && !!mpSel.value);
-if (!mpSel || !mpSel.value) {
-  window.showToast?.('error', 'Seleccioná un método de pago.');
-  return;
-}
+                const mpSel = document.getElementById('metodo_pago');
+                flag(document.getElementById('q_metodo_pago'), !!mpSel && !!mpSel.value);
+                if (!mpSel || !mpSel.value) {
+                    window.showToast?.('error', 'Seleccioná un método de pago.');
+                    return;
+                }
 
                 const motivos = getCheckboxValues('motivo[]');
                 const payload = {
@@ -1342,7 +1424,6 @@ if (!mpSel || !mpSel.value) {
 
                     sesion: sessionData
                 };
-
 
                 // Guardamos para confirmar y mostramos el resumen en el modal
                 __ultimoPayload = payload;
