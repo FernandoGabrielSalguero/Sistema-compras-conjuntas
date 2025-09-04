@@ -764,9 +764,10 @@ $sesion_payload = [
             cargarPatologias().catch(() => {
                 const cont = document.getElementById('motivo_dynamic');
                 if (cont) cont.innerHTML = `<div class="gform-helper">No se pudieron cargar las patologías.</div>`;
-                cargarFormasPago();
-cargarCostoBase();
             });
+            
+            cargarFormasPago();
+            cargarCostoBase();
 
             // ---- Sesión (inyectada desde PHP)
             const sessionData = (() => {
@@ -1187,7 +1188,7 @@ ${costoHTML}
                     const val = parseFloat(supEl.value);
                     supOk = !isNaN(val) && val > 0 && val <= 20;
                     const err = document.querySelector('#q_superficie .gform-error');
-                    if (err) err.textContent = 'Debe ser un número > 0 y ≤ 20.';
+                    if (err) err.textContent = 'Debe ser un número mayor a 0 y menor a 20.';
                 }
                 must(document.getElementById('q_superficie'), supOk);
 
@@ -1271,8 +1272,12 @@ ${costoHTML}
                     return;
                 }
 
-                const mpSel = document.getElementById('metodo_pago');
-                must(document.getElementById('q_metodo_pago'), !!mpSel && !!mpSel.value);
+const mpSel = document.getElementById('metodo_pago');
+flag(document.getElementById('q_metodo_pago'), !!mpSel && !!mpSel.value);
+if (!mpSel || !mpSel.value) {
+  window.showToast?.('error', 'Seleccioná un método de pago.');
+  return;
+}
 
                 const motivos = getCheckboxValues('motivo[]');
                 const payload = {
