@@ -234,6 +234,26 @@ $sesion_payload = [
                     <div id="listado" class="listado" aria-live="polite"></div>
                     <div id="paginacion" class="form-buttons" style="justify-content:center; margin-top: .5rem;"></div>
                 </div>
+
+                <!-- Modal de confirmación de cancelación -->
+                <div id="modalCancel" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modalCancelTitle">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 id="modalCancelTitle" class="modal-title">¿Cancelar la solicitud?</h3>
+                            <button type="button" class="modal-close" aria-label="Cerrar" onclick="closeCancelModal()">
+                                <span class="material-icons">close</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Vas a cancelar la solicitud <strong id="modalCancelIdText">#</strong>. Esta acción actualizará el estado a <b>cancelado</b> y registrará el motivo <i>“Cancelado por productor”</i>.</p>
+                        </div>
+                        <div class="modal-actions">
+                            <button class="btn btn-cancelar" onclick="closeCancelModal()">Volver</button>
+                            <button id="btnModalConfirm" class="btn btn-aceptar">Sí, cancelar</button>
+                        </div>
+                    </div>
+                </div>
+
             </section>
         </div>
     </div>
@@ -350,13 +370,19 @@ $sesion_payload = [
             let __pendingCancelId = null;
 
             function openCancelModal(id) {
+                if (!modalCancel) {
+                    window.showToast?.('error', 'No se pudo abrir el modal.');
+                    return;
+                }
                 __pendingCancelId = Number(id);
-                modalCancelIdText.textContent = `#${__pendingCancelId}`;
+                const idLabel = modalCancelIdText || modalCancel.querySelector('#modalCancelIdText');
+                if (idLabel) idLabel.textContent = `#${__pendingCancelId}`;
                 modalCancel.classList.add('is-open');
                 modalCancel.setAttribute('aria-hidden', 'false');
                 document.body.style.overflow = 'hidden';
                 setTimeout(() => btnModalConfirm?.focus(), 0);
             }
+
 
             function closeCancelModal() {
                 __pendingCancelId = null;
@@ -410,21 +436,21 @@ $sesion_payload = [
                 }
             });
 
-// Delegación: abrir modal desde cada tarjeta (solo si está pendiente)
-listado.addEventListener('click', (ev) => {
-    const btn = ev.target.closest('button.btn-cancelar');
-    if (!btn) return;
+            // Delegación: abrir modal desde cada tarjeta (solo si está pendiente)
+            listado.addEventListener('click', (ev) => {
+                const btn = ev.target.closest('button.btn-cancelar');
+                if (!btn) return;
 
-    const card = btn.closest('.pedido-card');
-    const badge = card?.querySelector('.estado-badge');
-    const esPendiente = badge?.classList.contains('estado-pendiente');
+                const card = btn.closest('.pedido-card');
+                const badge = card?.querySelector('.estado-badge');
+                const esPendiente = badge?.classList.contains('estado-pendiente');
 
-    if (!esPendiente) {
-        window.showToast?.('error', 'Solo se pueden cancelar solicitudes pendientes.');
-        return;
-    }
-    openCancelModal(btn.dataset.id);
-});
+                if (!esPendiente) {
+                    window.showToast?.('error', 'Solo se pueden cancelar solicitudes pendientes.');
+                    return;
+                }
+                openCancelModal(btn.dataset.id);
+            });
 
 
             // Paginación
