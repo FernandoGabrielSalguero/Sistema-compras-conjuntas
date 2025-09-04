@@ -234,6 +234,47 @@ class prodDronesModel
                 }
             }
 
+ // 5) Guardar costos estimados en dron_solicitudes_costos
+            $costoRow = $this->getCostoHectarea();
+            $costoBaseHa = (float)($costoRow['costo'] ?? 0);
+            $moneda      = $costoRow['moneda'] ?? 'Pesos';
+
+            $sup = $mainRow['superficie_ha'];
+            $baseTotal = $sup * $costoBaseHa;
+
+            // Calcular productos_total desde payload (solo fuente sve)
+            $productosTotal = 0.0;
+            foreach ($prods as $p) {
+                if (($p['fuente'] ?? '') === 'sve' && !empty($p['producto_id'])) {
+                    // buscar costo_hectarea actual
+                    $chk = $this->pdo->prepare("SELECT costo_hectarea FROM dron_productos_stock WHERE id=? AND activo='si'");
+                    $chk->execute([(int)$p['producto_id']]);
+                    $costoHa = (float)$chk->fetchColumn();
+                    $productosTotal += $sup * $costoHa;
+                }
+            }
+            $total = $baseTotal + $productosTotal;
+
+            $desglose = [
+                'superficie_ha' => $sup,
+                'costo_base_ha' => $costoBaseHa,
+                'productos'     => $prods,
+            ];
+
+            $stC = $this->pdo->prepare("INSERT INTO dron_solicitudes_costos
+                (solicitud_id, moneda, costo_base_por_ha, base_ha, base_total, productos_total, total, desglose_json)
+                VALUES (:sid, :moneda, :costo_base_por_ha, :base_ha, :base_total, :productos_total, :total, :desglose_json)");
+            $stC->execute([
+                ':sid'             => $solicitudId,
+                ':moneda'          => $moneda,
+                ':costo_base_por_ha' => $costoBaseHa,
+                ':base_ha'         => $sup,
+                ':base_total'      => $baseTotal,
+                ':productos_total' => $productosTotal,
+                ':total'           => $total,
+                ':desglose_json'   => json_encode($desglose, JSON_UNESCAPED_UNICODE),
+            ]);
+
             $this->pdo->commit();
             return $solicitudId;
         } catch (Throwable $e) {
