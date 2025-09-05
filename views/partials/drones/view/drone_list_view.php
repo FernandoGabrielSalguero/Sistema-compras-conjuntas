@@ -926,12 +926,13 @@
                     try {
                         const res = await fetch(`${API}?action=get_solicitud&id=${encodeURIComponent(id)}`);
                         const json = await res.json();
-                        if (json.ok) {
-                            if (window.DEBUG) console.log('Detalle solicitud:', json.data);
-                            openDrawer(json.data);
-                        } else {
-                            console.error(json.error || 'No se pudo obtener el detalle');
-                        }
+if (json.ok) {
+    console.log('[DEBUG] Respuesta completa get_solicitud:', json);
+    if (window.DEBUG) console.log('Detalle solicitud:', json.data);
+    openDrawer(json.data);
+} else {
+    console.error(json.error || 'No se pudo obtener el detalle');
+}
                     } catch (e) {
                         console.error(e);
                     }
