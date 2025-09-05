@@ -246,6 +246,7 @@ VALUES
 
             // 4) Productos (dinámico por patología)
             $prods = (array)($data['productos'] ?? []);
+            $validProds = []; // <-- nuevo array sólo con válidos
             if ($prods) {
                 $stP = $this->pdo->prepare("INSERT INTO dron_solicitudes_productos (solicitud_id, patologia_id, producto_id, fuente, marca) VALUES (?, ?, ?, ?, ?)");
                 foreach ($prods as $p) {
@@ -269,12 +270,15 @@ VALUES
                         $vp->execute([$prodId, $pid]);
                         if (!$vp->fetchColumn()) continue;
                         $stP->execute([$solicitudId, $pid, $prodId, 'sve', null]);
+                        $validProds[] = ['patologia_id' => $pid, 'fuente' => 'sve', 'producto_id' => $prodId];
                     } else { // 'yo'
                         if (!$marca) continue; // exigir marca cuando es propio
                         $stP->execute([$solicitudId, $pid, null, 'yo', $marca]);
+                        $validProds[] = ['patologia_id' => $pid, 'fuente' => 'yo', 'marca' => $marca];
                     }
                 }
             }
+
 
             // 5) Guardar costos estimados en dron_solicitudes_costos
             $costoRow = $this->getCostoHectarea();
@@ -286,9 +290,8 @@ VALUES
 
             // Calcular productos_total desde payload (solo fuente sve)
             $productosTotal = 0.0;
-            foreach ($prods as $p) {
-                if (($p['fuente'] ?? '') === 'sve' && !empty($p['producto_id'])) {
-                    // buscar costo_hectarea actual
+            foreach ($validProds as $p) {
+                if ($p['fuente'] === 'sve' && !empty($p['producto_id'])) {
                     $chk = $this->pdo->prepare("SELECT costo_hectarea FROM dron_productos_stock WHERE id=? AND activo='si'");
                     $chk->execute([(int)$p['producto_id']]);
                     $costoHa = (float)$chk->fetchColumn();
@@ -300,8 +303,9 @@ VALUES
             $desglose = [
                 'superficie_ha' => $sup,
                 'costo_base_ha' => $costoBaseHa,
-                'productos'     => $prods,
+                'productos'     => $validProds, // <-- ya no guardamos basura
             ];
+
 
             $stC = $this->pdo->prepare("INSERT INTO dron_solicitudes_costos
                 (solicitud_id, moneda, costo_base_por_ha, base_ha, base_total, productos_total, total, desglose_json)
