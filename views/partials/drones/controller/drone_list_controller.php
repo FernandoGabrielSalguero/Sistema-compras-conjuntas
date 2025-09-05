@@ -1,7 +1,9 @@
 <?php
 // views/partials/drones/controller/drone_list_controller.php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+declare(strict_types=1);
+
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
 header('Content-Type: application/json; charset=utf-8');
@@ -26,7 +28,7 @@ try {
                     'fecha_visita' => isset($_GET['fecha_visita']) ? trim($_GET['fecha_visita']) : '',
                 ];
                 $data = $model->listarSolicitudes($filters);
-                echo json_encode(['ok' => true, 'data' => $data]);
+                echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE);
                 break;
             }
 
@@ -34,16 +36,16 @@ try {
                 $id = (int)($_GET['id'] ?? 0);
                 if ($id <= 0) {
                     http_response_code(400);
-                    echo json_encode(['ok' => false, 'error' => 'ID inválido']);
+                    echo json_encode(['ok' => false, 'error' => 'ID inválido'], JSON_UNESCAPED_UNICODE);
                     break;
                 }
                 $detalle = $model->obtenerSolicitud($id);
                 if (!$detalle) {
                     http_response_code(404);
-                    echo json_encode(['ok' => false, 'error' => 'Solicitud no encontrada']);
+                    echo json_encode(['ok' => false, 'error' => 'Solicitud no encontrada'], JSON_UNESCAPED_UNICODE);
                     break;
                 }
-                echo json_encode(['ok' => true, 'data' => $detalle]);
+                echo json_encode(['ok' => true, 'data' => $detalle], JSON_UNESCAPED_UNICODE);
                 break;
             }
 
@@ -60,19 +62,23 @@ try {
                 $id = isset($data['id']) ? (int)$data['id'] : 0;
                 if ($id <= 0) {
                     http_response_code(400);
-                    echo json_encode(['ok' => false, 'error' => 'ID inválido']);
+                    echo json_encode(['ok' => false, 'error' => 'ID inválido'], JSON_UNESCAPED_UNICODE);
                     break;
                 }
 
                 $ok = $model->actualizarSolicitud($id, $data);
-                echo json_encode(['ok' => (bool)$ok]);
+                echo json_encode(['ok' => (bool)$ok], JSON_UNESCAPED_UNICODE);
                 break;
             }
 
         case 'list_stock': {
                 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
-                $items = $model->listarStockProductos($q);
-                echo json_encode(['ok' => true, 'data' => ['items' => $items]]);
+                $ids = [];
+                if (!empty($_GET['ids'])) {
+                    $ids = array_filter(array_map('intval', explode(',', $_GET['ids'])));
+                }
+                $items = $model->listarStockProductos($q, $ids);
+                echo json_encode(['ok' => true, 'data' => ['items' => $items]], JSON_UNESCAPED_UNICODE);
                 break;
             }
 
@@ -83,15 +89,15 @@ try {
                 $sid = isset($d['solicitud_id']) ? (int)$d['solicitud_id'] : 0;
                 if ($sid <= 0) {
                     http_response_code(400);
-                    echo json_encode(['ok' => false, 'error' => 'solicitud_id inválido']);
+                    echo json_encode(['ok' => false, 'error' => 'solicitud_id inválido'], JSON_UNESCAPED_UNICODE);
                     break;
                 }
                 try {
                     $out = $model->upsertProductoSolicitud($sid, $d);
-                    echo json_encode(['ok' => true] + $out);
+                    echo json_encode(['ok' => true] + $out, JSON_UNESCAPED_UNICODE);
                 } catch (InvalidArgumentException $e) {
                     http_response_code(422);
-                    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+                    echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
                 }
                 break;
             }
@@ -103,46 +109,45 @@ try {
                 $pid = isset($json['id']) ? (int)$json['id'] : 0;
                 if ($sid <= 0 || $pid <= 0) {
                     http_response_code(400);
-                    echo json_encode(['ok' => false, 'error' => 'Parámetros inválidos']);
+                    echo json_encode(['ok' => false, 'error' => 'Parámetros inválidos'], JSON_UNESCAPED_UNICODE);
                     break;
                 }
                 $ok = $model->eliminarProductoSolicitud($pid, $sid);
-                echo json_encode(['ok' => (bool)$ok]);
+                echo json_encode(['ok' => (bool)$ok], JSON_UNESCAPED_UNICODE);
                 break;
             }
 
-            case 'save_all': {
-        $raw = file_get_contents('php://input') ?: '';
-        $json = json_decode($raw, true) ?: [];
+        case 'save_all': {
+                $raw = file_get_contents('php://input') ?: '';
+                $json = json_decode($raw, true) ?: [];
 
-        $sol = $json['solicitud'] ?? [];
-        $prods = $json['productos'] ?? [];
+                $sol = $json['solicitud'] ?? [];
+                $prods = $json['productos'] ?? [];
 
-        $sid = isset($sol['id']) ? (int)$sol['id'] : 0;
-        if ($sid <= 0) {
-            http_response_code(400);
-            echo json_encode(['ok' => false, 'error' => 'ID de solicitud inválido']);
-            break;
-        }
+                $sid = isset($sol['id']) ? (int)$sol['id'] : 0;
+                if ($sid <= 0) {
+                    http_response_code(400);
+                    echo json_encode(['ok' => false, 'error' => 'ID de solicitud inválido'], JSON_UNESCAPED_UNICODE);
+                    break;
+                }
 
-        try {
-            $out = $model->guardarTodo($sid, $sol, is_array($prods) ? $prods : []);
-            echo json_encode(['ok' => true, 'data' => $out]);
-        } catch (InvalidArgumentException $e) {
-            http_response_code(422);
-            echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
-        }
-        break;
-    }
-
+                try {
+                    $out = $model->guardarTodo($sid, $sol, is_array($prods) ? $prods : []);
+                    echo json_encode(['ok' => true, 'data' => $out], JSON_UNESCAPED_UNICODE);
+                } catch (InvalidArgumentException $e) {
+                    http_response_code(422);
+                    echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+                }
+                break;
+            }
 
         default: {
                 http_response_code(400);
-                echo json_encode(['ok' => false, 'error' => 'Acción no soportada']);
+                echo json_encode(['ok' => false, 'error' => 'Acción no soportada'], JSON_UNESCAPED_UNICODE);
                 break;
             }
     }
 } catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => 'Error del servidor', 'detail' => $e->getMessage()]);
+    echo json_encode(['ok' => false, 'error' => 'Error del servidor', 'detail' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
 }

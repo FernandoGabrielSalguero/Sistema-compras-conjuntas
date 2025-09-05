@@ -98,23 +98,25 @@ class DroneListModel
         $st->execute([':id' => $id]);
         $motivos = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-        // Productos (con nombre, principio activo y detalles)
+        // Productos (con nombre, principio activo, costo del stock si aplica y detalles)
         $st = $this->pdo->prepare("
-    SELECT
-        sp.id,
-        sp.fuente,
-        sp.marca,
-        sp.producto_id,
-        COALESCE(ps.nombre, sp.marca)           AS producto,
-        COALESCE(ps.principio_activo, sp.principio_activo) AS principio_activo,
-        sp.dosis,
-        sp.unidad,
-        sp.orden_mezcla
-    FROM dron_solicitudes_productos sp
-    LEFT JOIN dron_productos_stock ps ON ps.id = sp.producto_id
-    WHERE sp.solicitud_id = :id
-    ORDER BY (sp.orden_mezcla IS NULL), sp.orden_mezcla, sp.id
-");
+            SELECT
+                sp.id,
+                sp.fuente,
+                sp.marca,
+                sp.producto_id,
+                COALESCE(ps.nombre, sp.marca) AS producto,
+                COALESCE(ps.principio_activo, sp.principio_activo) AS principio_activo,
+                ps.costo_hectarea,
+                sp.dosis,
+                sp.unidad,
+                sp.orden_mezcla
+            FROM dron_solicitudes_productos sp
+            LEFT JOIN dron_productos_stock ps ON ps.id = sp.producto_id
+            WHERE sp.solicitud_id = :id
+            ORDER BY (sp.orden_mezcla IS NULL), sp.orden_mezcla, sp.id
+        ");
+
         $st->execute([':id' => $id]);
         $productos = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
@@ -127,11 +129,31 @@ class DroneListModel
         $st->execute([':id' => $id]);
         $rangos = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
+        // Costo base vigente (toma el último registro)
+        $st = $this->pdo->query("SELECT costo, COALESCE(moneda,'Pesos') AS moneda FROM dron_costo_hectarea ORDER BY updated_at DESC LIMIT 1");
+        $costoBase = $st->fetch(PDO::FETCH_ASSOC) ?: ['costo' => 0, 'moneda' => 'Pesos'];
+
+        // Costos guardados (si existen)
+        $st = $this->pdo->prepare("SELECT moneda, costo_base_por_ha, base_ha, base_total, productos_total, total, desglose_json
+                                FROM dron_solicitudes_costos WHERE solicitud_id = :id");
+        $st->execute([':id' => $id]);
+        $costos = $st->fetch(PDO::FETCH_ASSOC) ?: null;
+
+        // Formas de pago activas
+        $st = $this->pdo->query("SELECT id, nombre, descripcion FROM dron_formas_pago WHERE activo='si' ORDER BY nombre ASC");
+        $formasPago = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        // Enriquecer solicitud con auxiliares útiles al front
+        $sol['costo_base_ha'] = (float)$costoBase['costo'];
+        $sol['costo_moneda']  = $costoBase['moneda'];
+        $sol['formas_pago']   = $formasPago;
+
         return [
             'solicitud' => $sol,
             'motivos'   => $motivos,
             'productos' => $productos,
             'rangos'    => $rangos,
+            'costos'    => $costos
         ];
     }
 
@@ -163,11 +185,14 @@ class DroneListModel
             'area_despegue',
             'ubicacion_lat',
             'ubicacion_lng',
-            'ubicacion_acc'
+            'ubicacion_acc',
+            'forma_pago_id',
+            'aprob_cooperativa'
         ];
 
         // Enums NOT NULL en la tabla (no permitir setearlos a NULL accidentalmente)
-        $notNullEnums = ['en_finca', 'linea_tension', 'zona_restringida', 'corriente_electrica', 'agua_potable', 'libre_obstaculos', 'area_despegue'];
+        $notNullEnums = ['en_finca', 'linea_tension', 'zona_restringida', 'corriente_electrica', 'agua_potable', 'libre_obstaculos', 'area_despegue', 'aprob_cooperativa'];
+
 
         $set = [];
         $params = [':id' => $id];
@@ -193,19 +218,32 @@ class DroneListModel
 
 
 
-    public function listarStockProductos(string $q = ''): array
+    /**
+     * Lista productos de stock. Opcionalmente filtra por texto o por IDs específicos (para preseleccionar en UI).
+     * @param string $q
+     * @param int[] $ids
+     */
+    public function listarStockProductos(string $q = '', array $ids = []): array
     {
-        $sql = "SELECT id, nombre, principio_activo FROM dron_productos_stock";
+        $sql = "SELECT id, nombre, principio_activo, costo_hectarea FROM dron_productos_stock";
         $params = [];
+        $w = [];
         if ($q !== '') {
-            $sql .= " WHERE nombre LIKE :q OR principio_activo LIKE :q";
+            $w[] = "(nombre LIKE :q OR principio_activo LIKE :q)";
             $params[':q'] = "%$q%";
         }
-        $sql .= " ORDER BY nombre ASC LIMIT 200";
+        if ($ids) {
+            $in = implode(',', array_fill(0, count($ids), '?'));
+            $w[] = "id IN ($in)";
+            $params = array_merge($params, $ids);
+        }
+        if ($w) $sql .= " WHERE " . implode(' AND ', $w);
+        $sql .= " ORDER BY nombre ASC LIMIT 500";
         $st = $this->pdo->prepare($sql);
-        $st->execute($params);
+        $st->execute(array_values($params));
         return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
+
 
     public function upsertProductoSolicitud(int $solicitudId, array $d): array
     {
@@ -272,24 +310,105 @@ class DroneListModel
         return $st->execute([':id' => $solProdId, ':sid' => $solicitudId]);
     }
 
+    private function costoBaseVigente(): array
+    {
+        $st = $this->pdo->query("SELECT costo, COALESCE(moneda,'Pesos') AS moneda FROM dron_costo_hectarea ORDER BY updated_at DESC LIMIT 1");
+        $row = $st->fetch(PDO::FETCH_ASSOC) ?: ['costo' => 0, 'moneda' => 'Pesos'];
+        return ['costo' => (float)$row['costo'], 'moneda' => $row['moneda']];
+    }
+
+    /**
+     * Recalcula totales a partir de la solicitud y productos actuales (sin persistir).
+     */
+    public function calcularCostosTotales(int $solicitudId): array
+    {
+        $st = $this->pdo->prepare("SELECT superficie_ha FROM dron_solicitudes WHERE id=:id");
+        $st->execute([':id' => $solicitudId]);
+        $sup = (float)($st->fetchColumn() ?: 0);
+
+        $base = $this->costoBaseVigente();
+        $baseTotal = round($base['costo'] * $sup, 2);
+
+        // suma de productos SVE (costo_hectarea * superficie)
+        $st = $this->pdo->prepare("
+            SELECT COALESCE(ps.costo_hectarea,0) AS ch
+            FROM dron_solicitudes_productos sp
+            LEFT JOIN dron_productos_stock ps ON ps.id = sp.producto_id
+            WHERE sp.solicitud_id = :sid AND sp.fuente='sve' AND sp.producto_id IS NOT NULL
+        ");
+        $st->execute([':sid' => $solicitudId]);
+        $chs = $st->fetchAll(PDO::FETCH_COLUMN) ?: [];
+        $prodTotal = 0.0;
+        foreach ($chs as $ch) $prodTotal += ((float)$ch) * $sup;
+        $prodTotal = round($prodTotal, 2);
+
+        $total = round($baseTotal + $prodTotal, 2);
+
+        return [
+            'moneda' => $base['moneda'],
+            'costo_base_por_ha' => $base['costo'],
+            'base_ha' => $sup,
+            'base_total' => $baseTotal,
+            'productos_total' => $prodTotal,
+            'total' => $total,
+            'desglose_json' => null
+        ];
+    }
+
+    /**
+     * Inserta/actualiza la fila de costos de la solicitud.
+     */
+    public function upsertCostos(int $solicitudId, array $c): void
+    {
+        $st = $this->pdo->prepare("SELECT id FROM dron_solicitudes_costos WHERE solicitud_id=:sid");
+        $st->execute([':sid' => $solicitudId]);
+        $id = (int)($st->fetchColumn() ?: 0);
+        if ($id > 0) {
+            $sql = "UPDATE dron_solicitudes_costos
+                    SET moneda=:moneda, costo_base_por_ha=:cph, base_ha=:bha, base_total=:bt, productos_total=:pt, total=:tot, desglose_json=:dj, updated_at=NOW()
+                    WHERE solicitud_id=:sid";
+        } else {
+            $sql = "INSERT INTO dron_solicitudes_costos (solicitud_id, moneda, costo_base_por_ha, base_ha, base_total, productos_total, total, desglose_json)
+                    VALUES (:sid, :moneda, :cph, :bha, :bt, :pt, :tot, :dj)";
+        }
+        $st = $this->pdo->prepare($sql);
+        $st->execute([
+            ':sid' => $solicitudId,
+            ':moneda' => $c['moneda'],
+            ':cph' => $c['costo_base_por_ha'],
+            ':bha' => $c['base_ha'],
+            ':bt' => $c['base_total'],
+            ':pt' => $c['productos_total'],
+            ':tot' => $c['total'],
+            ':dj' => $c['desglose_json']
+        ]);
+    }
+
+
     public function guardarTodo(int $solicitudId, array $solicitudData, array $productos): array
     {
         $this->pdo->beginTransaction();
         try {
-            // actualizar datos principales (si no hay cambios, devuelve false y seguimos)
+            // 1) actualizar datos principales
             $this->actualizarSolicitud($solicitudId, $solicitudData);
 
+            // 2) upsert de productos
             $ids = [];
             foreach ($productos as $p) {
                 $out = $this->upsertProductoSolicitud($solicitudId, $p);
                 if (isset($out['id'])) $ids[] = (int)$out['id'];
             }
 
+            // 3) recálculo y upsert de costos
+            $costos = $this->calcularCostosTotales($solicitudId);
+            $this->upsertCostos($solicitudId, $costos);
+
             $this->pdo->commit();
-            return ['solicitud_id' => $solicitudId, 'productos_ids' => $ids];
+            return ['solicitud_id' => $solicitudId, 'productos_ids' => $ids, 'costos' => $costos];
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
         }
     }
+
 }

@@ -376,6 +376,78 @@
                             <div class="gform-helper">Elegí la fuente (SVE/Productor). Si es SVE, seleccioná del stock; si es del productor, escribí el nombre y el principio activo.</div>
                         </div>
 
+                                                <!-- ======= Facturación y costos ======= -->
+                        <div class="form-separator"><span class="material-icons mi">receipt_long</span>Facturación y costos</div>
+
+                        <div class="input-group">
+                            <label for="f-forma_pago_id">Forma de pago</label>
+                            <div class="input-icon material">
+                                <span class="material-icons mi">payments</span>
+                                <select id="f-forma_pago_id" name="forma_pago_id" aria-describedby="ayuda-forma-pago"></select>
+                            </div>
+                            <small id="ayuda-forma-pago" class="gform-helper">Seleccioná el método de facturación.</small>
+                        </div>
+
+                        <div class="input-group" id="grp-aprob-coop" style="display:none;">
+                            <label for="f-aprob_cooperativa">Aprobación de cooperativa</label>
+                            <div class="input-icon material">
+                                <span class="material-icons mi">rule</span>
+                                <select id="f-aprob_cooperativa" name="aprob_cooperativa" aria-live="polite">
+                                    <option value="Analizando">Analizando</option>
+                                    <option value="Aprobado">Aprobado</option>
+                                    <option value="Cancelado">Cancelado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group" style="grid-column:1/-1;">
+                            <div class="cost-grid">
+                                <div class="cost-item">
+                                    <label for="f-cost-moneda">Moneda</label>
+                                    <div class="input-icon material">
+                                        <span class="material-icons mi">attach_money</span>
+                                        <input type="text" id="f-cost-moneda" readonly />
+                                    </div>
+                                </div>
+                                <div class="cost-item">
+                                    <label for="f-cost-base-ha">Costo base por ha</label>
+                                    <div class="input-icon material">
+                                        <span class="material-icons mi">calculate</span>
+                                        <input type="number" id="f-cost-base-ha" step="0.01" readonly />
+                                    </div>
+                                </div>
+                                <div class="cost-item">
+                                    <label for="f-superficie_ha">Superficie (ha)</label>
+                                    <div class="input-icon material">
+                                        <span class="material-icons mi">square_foot</span>
+                                        <input type="number" id="f-superficie_ha" name="superficie_ha" placeholder="0.00" step="0.01" readonly />
+                                    </div>
+                                </div>
+                                <div class="cost-item">
+                                    <label for="f-cost-base-total">Total base</label>
+                                    <div class="input-icon material">
+                                        <span class="material-icons mi">functions</span>
+                                        <input type="number" id="f-cost-base-total" step="0.01" readonly />
+                                    </div>
+                                </div>
+                                <div class="cost-item">
+                                    <label for="f-cost-productos-total">Total productos</label>
+                                    <div class="input-icon material">
+                                        <span class="material-icons mi">science</span>
+                                        <input type="number" id="f-cost-productos-total" step="0.01" readonly />
+                                    </div>
+                                </div>
+                                <div class="cost-item">
+                                    <label for="f-cost-total">Total del servicio</label>
+                                    <div class="input-icon material">
+                                        <span class="material-icons mi">receipt</span>
+                                        <input type="number" id="f-cost-total" step="0.01" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="gform-helper">Los costos se recalculan al cambiar productos o al guardar.</div>
+                        </div>
+
 
                     </form>
                 </div>
@@ -703,6 +775,19 @@
     .prod-actions {
         display: flex;
         gap: 6px;
+    }
+
+    /* ---- Costos ---- */
+    .cost-grid{
+        display:grid;
+        grid-template-columns: repeat(6, minmax(160px,1fr));
+        gap:12px
+    }
+    @media (max-width: 1100px){
+        .cost-grid{grid-template-columns: repeat(2,minmax(160px,1fr));}
+    }
+    .cost-item input[readonly]{
+        background:#f9fafb;
     }
 </style>
 
@@ -1044,12 +1129,22 @@
 
         // Productos (tabla mini)
         let __stockCache = null;
-        async function loadStock(q = '') {
-            if (__stockCache && q === '') return __stockCache;
-            const res = await fetch(`${DRONE_API}?action=list_stock&q=${encodeURIComponent(q)}`);
+        async function loadStock(q = '', ids = []) {
+            // cache sólo sirve para q vacío y sin ids forzados
+            if (__stockCache && q === '' && (!ids || !ids.length)) return __stockCache;
+            const u = new URLSearchParams();
+            u.set('action','list_stock');
+            if (q) u.set('q', q);
+            if (ids && ids.length) u.set('ids', ids.join(','));
+            const res = await fetch(`${DRONE_API}?${u.toString()}`);
             const json = await res.json();
             if (!json.ok) throw new Error(json.error || 'No se pudo cargar stock');
-            __stockCache = json.data.items || [];
+            // si pedimos por ids, mergeamos para que estén siempre presentes
+            const items = json.data.items || [];
+            if (!__stockCache) __stockCache = [];
+            const byId = new Map(__stockCache.map(i => [String(i.id), i]));
+            items.forEach(i => byId.set(String(i.id), i));
+            __stockCache = Array.from(byId.values());
             return __stockCache;
         }
 
@@ -1110,6 +1205,7 @@
     `;
         }
 
+
         function rowHTML(p) {
             const fuente = (p.fuente === 'yo' ? 'yo' : 'sve');
             const pa = p.principio_activo ?? (p.producto_id ? stockPAById(p.producto_id) : '');
@@ -1133,10 +1229,7 @@
 
         function bindRowEvents(tr) {
             const fuenteSel = tr.querySelector('.fuente');
-            const sveBox = tr.querySelector('.campo-sve');
-            const yoBox = tr.querySelector('.campo-yo');
             const prodSel = tr.querySelector('.producto_id');
-            const marcaIn = tr.querySelector('.marca');
             const paIn = tr.querySelector('.principio_activo');
 
             function syncFuente() {
@@ -1144,18 +1237,53 @@
                 tr.classList.toggle('fuente-sve', f === 'sve');
                 tr.classList.toggle('fuente-yo', f === 'yo');
                 paIn.readOnly = (f === 'sve');
-                if (f === 'sve' && prodSel.value) paIn.value = stockPAById(prodSel.value);
+                if (f === 'sve' && prodSel?.value) paIn.value = stockPAById(prodSel.value);
+                recalcTotalsClient();
             }
-            fuenteSel.addEventListener('change', syncFuente);
+            fuenteSel?.addEventListener('change', syncFuente);
             syncFuente();
 
             prodSel?.addEventListener('change', () => {
                 if (prodSel.value) paIn.value = stockPAById(prodSel.value);
+                recalcTotalsClient();
             });
 
-            tr.querySelector('.btn-eliminar').addEventListener('click', () => deleteRow(tr));
+            ['input','change'].forEach(ev=>{
+                tr.querySelectorAll('.dosis,.unidad,.orden_mezcla,.marca,.principio_activo').forEach(el=>{
+                    el.addEventListener(ev, recalcTotalsClient);
+                });
+            });
 
+            tr.querySelector('.btn-eliminar').addEventListener('click', () => {
+                deleteRow(tr);
+                recalcTotalsClient();
+            });
         }
+
+            // ---- Cálculo de costos en cliente (feedback) ----
+    function recalcTotalsClient(){
+        try{
+            const sup = Number(document.getElementById('f-superficie_ha').value || 0);
+            const baseHa = Number(document.getElementById('f-cost-base-ha').value || 0);
+            const baseTotal = +(sup * baseHa).toFixed(2);
+
+            // suma de costos por producto del stock (fuente SVE)
+            let prodTotal = 0;
+            document.querySelectorAll('#tabla-productos tbody tr').forEach(tr=>{
+                const isSVE = (tr.querySelector('.fuente')?.value || 'sve') === 'sve';
+                if (!isSVE) return;
+                const id = tr.querySelector('.producto_id')?.value;
+                if (!id) return;
+                const it = (__stockCache||[]).find(x=>String(x.id)===String(id));
+                const ch = Number(it?.costo_hectarea || 0);
+                prodTotal += ch * sup;
+            });
+
+            document.getElementById('f-cost-base-total').value = baseTotal.toFixed(2);
+            document.getElementById('f-cost-productos-total').value = (+prodTotal).toFixed(2);
+            document.getElementById('f-cost-total').value = (baseTotal + prodTotal).toFixed(2);
+        }catch(_){}
+    }
 
         async function addRow(p) {
             await ensureStockLoaded();
@@ -1167,9 +1295,16 @@
         }
 
         async function renderProductosTable(productos) {
-            await ensureStockLoaded();
+            // cargamos stock incluyendo ids actuales para que el combo se pre-seleccione correctamente
+            const ids = (productos || []).map(p => p.producto_id).filter(Boolean);
+            await loadStock('', ids);
             tbodyProd.innerHTML = '';
-            (productos || []).forEach(p => addRow(p));
+            for (const p of (productos || [])) {
+                // addRow es async
+                // eslint-disable-next-line no-await-in-loop
+                await addRow(p);
+            }
+            recalcTotalsClient();
         }
 
         async function saveRow(tr) {
@@ -1256,7 +1391,35 @@
             `<span class="pill pill--empty">Sin rangos</span>`;
 
         // Render de productos (luego de haber creado y enlazado la tabla)
-        await renderProductosTable(productos);
+                await renderProductosTable(productos);
+        // costos / forma de pago / aprobación
+        try{
+            const moneda = solicitud.moneda_base || (solicitud.costo_moneda || 'Pesos');
+            const costoBaseHa = Number(solicitud.costo_base_ha || 0);
+            document.getElementById('f-cost-moneda').value = moneda;
+            document.getElementById('f-cost-base-ha').value = costoBaseHa.toFixed(2);
+        }catch(_){}
+        const selFP = document.getElementById('f-forma_pago_id');
+        selFP.innerHTML = (solicitud.formas_pago || []).map(fp=>`<option value="${fp.id}">${esc(fp.nombre)}</option>`).join('');
+        if (solicitud.forma_pago_id) selFP.value = String(solicitud.forma_pago_id);
+        // toggle aprobación por forma de pago (id 6)
+        const grpAprob = document.getElementById('grp-aprob-coop');
+        function toggleAprob(){ grpAprob.style.display = (String(selFP.value)==='6') ? 'block' : 'none'; }
+        selFP.addEventListener('change', toggleAprob);
+        toggleAprob();
+        const aprob = document.getElementById('f-aprob_cooperativa');
+        if (solicitud.aprob_cooperativa) aprob.value = solicitud.aprob_cooperativa;
+
+        // superficie y costos guardados si hubiera
+        const sup = Number(solicitud.superficie_ha || 0);
+        document.getElementById('f-superficie_ha').value = sup ? sup.toFixed(2) : '';
+        if (solicitud.costos && solicitud.costos.total){
+            document.getElementById('f-cost-base-total').value = Number(solicitud.costos.base_total||0).toFixed(2);
+            document.getElementById('f-cost-productos-total').value = Number(solicitud.costos.productos_total||0).toFixed(2);
+            document.getElementById('f-cost-total').value = Number(solicitud.costos.total||0).toFixed(2);
+        }
+        recalcTotalsClient();
+
 
     }
 
@@ -1348,19 +1511,6 @@
 
         showSpinner(true);
         try {
-            // DEBUG: imprime en consola lo que se envía al backend
-            const url = `${DRONE_API}?action=save_all`;
-            const bodyPayload = {
-                solicitud: payloadSolicitud,
-                productos: productosPayload.data
-            };
-
-            console.groupCollapsed('[SVE] POST save_all');
-            console.log('URL:', url);
-            console.log('payloadSolicitud:', payloadSolicitud);
-            console.log('productosPayload.data:', productosPayload.data);
-            console.log('fetch body JSON:', JSON.stringify(bodyPayload));
-            console.groupEnd();
             const res = await fetch(`${DRONE_API}?action=save_all`, {
                 method: 'POST',
                 headers: {
