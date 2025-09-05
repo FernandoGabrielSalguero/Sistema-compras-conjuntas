@@ -143,24 +143,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     </script>
 
     <script>
-        // Avisos de cierre de operativos
-        window.addEventListener('DOMContentLoaded', () => {
-            <?php if (!empty($cierre_info)): ?>
-                const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-                if (Array.isArray(cierreData.pendientes)) {
-                    cierreData.pendientes.forEach(op => {
-                        const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s). Contactate con tu cooperativa para poder comprar productos en el operativo.`;
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('info', mensaje);
-                        } else if (typeof showToast === 'function') {
-                            showToast('info', mensaje);
-                        } else {
-                            console.log('[AVISO]', mensaje);
-                        }
-                    });
-                }
-            <?php endif; ?>
-        });
+
     </script>
 </body>
 
