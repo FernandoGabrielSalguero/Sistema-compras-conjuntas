@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
-ob_start();                                
+ob_start();
 
 session_start();
 header('Content-Type: application/json; charset=UTF-8');
@@ -13,11 +14,12 @@ $mwPath = __DIR__ . '/../middleware/authMiddleware.php';
 if (file_exists($mwPath)) {
     require_once $mwPath;
     if (function_exists('checkAccess')) {
-        try { checkAccess('productor'); } 
-        catch (Throwable $e) {
+        try {
+            checkAccess('productor');
+        } catch (Throwable $e) {
             http_response_code(403);
             ob_clean();
-            echo json_encode(['ok'=>false,'error'=>'Acceso denegado']);
+            echo json_encode(['ok' => false, 'error' => 'Acceso denegado']);
             exit;
         }
     }
@@ -29,54 +31,62 @@ require_once __DIR__ . '/../models/prod_dronesModel.php';
 try {
     $model = new prodDronesModel($pdo);
 
-// --- GET: catálogos ---
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $action = $_GET['action'] ?? '';
+    // --- GET: catálogos ---
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $action = $_GET['action'] ?? '';
 
-    if ($action === 'patologias') {
-        $items = $model->getPatologiasActivas(); // ya filtra activo='si'
-        http_response_code(200);
-        ob_clean();
-        echo json_encode(['ok'=>true, 'data'=>['items'=>$items]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        exit;
-    }
-
-    if ($action === 'productos') {
-        $pid = isset($_GET['patologia_id']) ? (int)$_GET['patologia_id'] : 0;
-        if ($pid <= 0) {
-            http_response_code(400);
+        if ($action === 'patologias') {
+            $items = $model->getPatologiasActivas(); // ya filtra activo='si'
+            http_response_code(200);
             ob_clean();
-            echo json_encode(['ok'=>false,'error'=>'patologia_id inválido']);
+            echo json_encode(['ok' => true, 'data' => ['items' => $items]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             exit;
         }
-        $items = $model->getProductosPorPatologia($pid); // trae sólo activos + costo_hectarea
-        http_response_code(200);
+
+        if ($action === 'cooperativas') {
+            $items = $model->getCooperativasHabilitadas();
+            http_response_code(200);
+            ob_clean();
+            echo json_encode(['ok' => true, 'data' => ['items' => $items]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            exit;
+        }
+
+        if ($action === 'productos') {
+            $pid = isset($_GET['patologia_id']) ? (int)$_GET['patologia_id'] : 0;
+            if ($pid <= 0) {
+                http_response_code(400);
+                ob_clean();
+                echo json_encode(['ok' => false, 'error' => 'patologia_id inválido']);
+                exit;
+            }
+            $items = $model->getProductosPorPatologia($pid); // trae sólo activos + costo_hectarea
+            http_response_code(200);
+            ob_clean();
+            echo json_encode(['ok' => true, 'data' => ['items' => $items]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            exit;
+        }
+
+        if ($action === 'formas_pago') {
+            $items = $model->getFormasPagoActivas(); // incluye descripcion
+            http_response_code(200);
+            ob_clean();
+            echo json_encode(['ok' => true, 'data' => ['items' => $items]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            exit;
+        }
+
+        if ($action === 'costo') {
+            $row = $model->getCostoHectarea();
+            http_response_code(200);
+            ob_clean();
+            echo json_encode(['ok' => true, 'data' => $row], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            exit;
+        }
+
+        http_response_code(400);
         ob_clean();
-        echo json_encode(['ok'=>true, 'data'=>['items'=>$items]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        echo json_encode(['ok' => false, 'error' => 'Acción GET no soportada']);
         exit;
     }
-
-    if ($action === 'formas_pago') {
-        $items = $model->getFormasPagoActivas(); // incluye descripcion
-        http_response_code(200);
-        ob_clean();
-        echo json_encode(['ok'=>true, 'data'=>['items'=>$items]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        exit;
-    }
-
-    if ($action === 'costo') {
-        $row = $model->getCostoHectarea();
-        http_response_code(200);
-        ob_clean();
-        echo json_encode(['ok'=>true, 'data'=>$row], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        exit;
-    }
-
-    http_response_code(400);
-    ob_clean();
-    echo json_encode(['ok'=>false,'error'=>'Acción GET no soportada']);
-    exit;
-}
 
 
     // --- POST: crear solicitud ---
@@ -100,25 +110,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     http_response_code(200);
     ob_clean();
-    echo json_encode(['ok'=>true,'id'=>$id,'message'=>'Solicitud registrada correctamente'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['ok' => true, 'id' => $id, 'message' => 'Solicitud registrada correctamente'], JSON_UNESCAPED_UNICODE);
     exit;
-
 } catch (InvalidArgumentException $e) {
 
     http_response_code(400);
     ob_clean();
-    echo json_encode(['ok'=>false, 'error'=>$e->getMessage()]);
+    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
     exit;
-
 } catch (RuntimeException $e) {
     http_response_code(403);
     ob_clean();
-    echo json_encode(['ok'=>false, 'error'=>$e->getMessage()]);
+    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
     exit;
-
 } catch (Throwable $e) {
     http_response_code(500);
     ob_clean();
-    echo json_encode(['ok'=>false, 'error'=>'Error interno.', 'detail'=>$e->getMessage()]);
+    echo json_encode(['ok' => false, 'error' => 'Error interno.', 'detail' => $e->getMessage()]);
     exit;
 }

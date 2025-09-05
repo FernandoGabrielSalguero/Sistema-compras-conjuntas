@@ -472,9 +472,12 @@ $sesion_payload = [
 
                         <!-- Input condicional para ID=6 -->
                         <div id="wrap_coop_cuota" class="gform-field" style="margin-top:.6rem; display:none;">
-                            <label class="gform-label" for="coop_descuento_nombre">Colocá el nombre de la cooperativa</label>
-                            <input class="gform-input" id="coop_descuento_nombre" name="coop_descuento_nombre" type="text" placeholder="Ej.: Cooperativa San Martín">
-                            <div class="gform-error" id="coop_descuento_error" style="display:none;">Este campo es obligatorio para este método de pago.</div>
+                            <label class="gform-label" for="coop_descuento_id_real">Seleccioná la cooperativa</label>
+                            <select class="gform-input" id="coop_descuento_id_real" name="coop_descuento_id_real">
+                                <option value="">Cargando cooperativas…</option>
+                            </select>
+                            <div class="gform-helper">Se listan sólo cooperativas habilitadas en la plataforma.</div>
+                            <div class="gform-error" id="coop_descuento_error" style="display:none;">Debés seleccionar una cooperativa.</div>
                         </div>
                     </div>
 
@@ -686,7 +689,25 @@ $sesion_payload = [
                     COSTO_BASE.costo = Number(data.costo || 0);
                     COSTO_BASE.moneda = data.moneda || 'Pesos';
                 } catch {
-                    /* silencio intencional */ }
+                    /* silencio intencional */
+                }
+            }
+
+            // Cargar cooperativas habilitadas (usuarios.rol='cooperativa' y permiso_ingreso='Habilitado')
+            async function cargarCooperativas() {
+                const sel = document.getElementById('coop_descuento_id_real');
+                if (!sel) return;
+                try {
+                    const data = await apiGet({
+                        action: 'cooperativas'
+                    });
+                    const items = data.items || [];
+                    sel.innerHTML = `<option value="">Seleccioná…</option>` +
+                        items.map(c => `<option value="${c.id_real}">${c.usuario}</option>`).join('');
+                    sel.dataset.loaded = '1';
+                } catch {
+                    sel.innerHTML = `<option value="">No disponible</option>`;
+                }
             }
 
             // ===== Helpers de costos y resumen (scope superior: disponibles desde el inicio) =====
@@ -769,21 +790,30 @@ $sesion_payload = [
                 const sel = document.getElementById('metodo_pago');
                 const desc = document.getElementById('metodo_pago_desc');
                 const coopWrap = document.getElementById('wrap_coop_cuota');
+                const coopSel = document.getElementById('coop_descuento_id_real');
                 if (!sel) return;
                 try {
-                    const data = await apiGet({ action: 'formas_pago' });
+                    const data = await apiGet({
+                        action: 'formas_pago'
+                    });
                     const items = data.items || [];
                     sel.innerHTML = `<option value="">Seleccioná…</option>` +
                         items.map(it =>
                             `<option value="${it.id}" data-descripcion="${(it.descripcion || '').replace(/"/g,'&quot;')}">${it.nombre}</option>`
                         ).join('');
 
-                    const onMetodoChange = () => {
+                    const onMetodoChange = async () => {
                         const op = sel.selectedOptions[0];
                         const id = parseInt(sel.value || '0', 10);
                         const d = op ? (op.dataset.descripcion || '') : '';
                         if (desc) desc.textContent = d || '';
-                        if (coopWrap) coopWrap.style.display = (id === 6 ? 'block' : 'none');
+
+                        if (coopWrap) {
+                            coopWrap.style.display = (id === 6 ? 'block' : 'none');
+                            if (id === 6 && coopSel && !coopSel.dataset.loaded) {
+                                await cargarCooperativas(); // llena el select de cooperativas
+                            }
+                        }
                         actualizarResumenInline();
                     };
                     sel.addEventListener('change', onMetodoChange);
@@ -794,7 +824,6 @@ $sesion_payload = [
                     if (coopWrap) coopWrap.style.display = 'none';
                 }
             }
-
 
             // Cargar patologías dinámicas
             async function cargarPatologias() {
@@ -1377,13 +1406,13 @@ $sesion_payload = [
                     window.showToast?.('error', 'Seleccioná un método de pago.');
                     return false;
                 }
-                // Si es 6, exigir nombre de la cooperativa
+                // Si es 6, exigir selección de cooperativa (guardaremos su id_real)
                 let coopOK = true;
                 if (parseInt(mpSel.value, 10) === 6) {
                     const wrap = document.getElementById('wrap_coop_cuota');
-                    const input = document.getElementById('coop_descuento_nombre');
+                    const selCoop = document.getElementById('coop_descuento_id_real');
                     const err = document.getElementById('coop_descuento_error');
-                    coopOK = !!(input && input.value.trim());
+                    coopOK = !!(selCoop && selCoop.value);
                     if (wrap) wrap.classList.toggle('has-error', !coopOK);
                     if (err) err.style.display = coopOK ? 'none' : 'block';
                 }
@@ -1505,16 +1534,16 @@ $sesion_payload = [
                     libre_obstaculos: getRadioValue('libre_obstaculos'),
                     area_despegue: getRadioValue('area_despegue'),
                     superficie_ha: $('#superficie_ha')?.value?.trim() || null,
-                     forma_pago_id: (() => {
+                    forma_pago_id: (() => {
                         const v = $('#metodo_pago')?.value;
                         return v ? parseInt(v, 10) : null;
                     })(),
+                    // Enviamos el id_real seleccionado en el combo (se guarda en coop_descuento_nombre)
                     coop_descuento_nombre: (() => {
                         const mp = $('#metodo_pago')?.value;
-                        const inpt = document.getElementById('coop_descuento_nombre');
-                        return (parseInt(mp || '0', 10) === 6 && inpt) ? (inpt.value.trim() || null) : null;
+                        const sel = document.getElementById('coop_descuento_id_real');
+                        return (parseInt(mp || '0', 10) === 6 && sel) ? (sel.value || null) : null;
                     })(),
-
                     motivo: {
                         opciones: motivos,
                         otros: chkOtros?.checked ? (inputOtros?.value?.trim() || null) : null,
