@@ -658,6 +658,7 @@ $sesion_payload = [
             const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
             const form = $('#form-dron');
+
             // --- ENDPOINTS auxiliares ---
             const apiGet = async (params) => {
                 const url = `${API_URL}?${new URLSearchParams(params).toString()}`;
@@ -684,47 +685,18 @@ $sesion_payload = [
                     });
                     COSTO_BASE.costo = Number(data.costo || 0);
                     COSTO_BASE.moneda = data.moneda || 'Pesos';
-                } catch {}
-            }
-
-            // Llenar método de pago
-            async function cargarFormasPago() {
-                const sel = document.getElementById('metodo_pago');
-                const desc = document.getElementById('metodo_pago_desc');
-                const coopWrap = document.getElementById('wrap_coop_cuota');
-                if (!sel) return;
-                try {
-                    const data = await apiGet({
-                        action: 'formas_pago'
-                    });
-                    const items = data.items || [];
-                    sel.innerHTML = `<option value="">Seleccioná…</option>` +
-                        items.map(it =>
-                            `<option value="${it.id}" data-descripcion="${(it.descripcion||'').replace(/"/g,'&quot;')}">${it.nombre}</option>`
-                        ).join('');
-
-                    const onMetodoChange = () => {
-                        const op = sel.selectedOptions[0];
-                        const id = parseInt(sel.value || '0', 10);
-                        const d = op ? (op.dataset.descripcion || '') : '';
-                        if (desc) desc.textContent = d || '';
-                        // mostrar/ocultar input cooperativa cuando id = 6
-                        if (coopWrap) coopWrap.style.display = (id === 6 ? 'block' : 'none');
-                        // actualizar resumen inline porque el método puede influir (si más adelante hacés descuentos)
-                        actualizarResumenInline();
-                    };
-                    sel.addEventListener('change', onMetodoChange);
-                    onMetodoChange(); // init
-
                 } catch {
-                    sel.innerHTML = `<option value="">No disponible</option>`;
-                    if (desc) desc.textContent = '';
-                    if (coopWrap) coopWrap.style.display = 'none';
-                }
+                    /* silencio intencional */ }
             }
 
+            // ===== Helpers de costos y resumen (scope superior: disponibles desde el inicio) =====
+            const fmtARS = (n) =>
+                new Intl.NumberFormat('es-AR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })
+                .format(Number(n || 0));
 
-            // Calcular costos (base + productos SVE)
             function calcularCostos(payload) {
                 const sup = Math.max(0, Number(payload.superficie_ha || 0));
                 const base = sup * Number(COSTO_BASE.costo || 0);
@@ -745,6 +717,84 @@ $sesion_payload = [
                     total: base + costoProductos
                 };
             }
+
+            function buildPayloadMin() {
+                const prods = [];
+                document.querySelectorAll('.gform-optbox[data-patologia-id]').forEach(box => {
+                    const pid = parseInt(box.dataset.patologiaId, 10);
+                    const chk = box.querySelector('input[type="checkbox"][name="productos[]"]');
+                    if (!chk || !chk.checked) return;
+                    const fuente = form.querySelector(`input[type="radio"][name="src-${pid}"]:checked`)?.value;
+                    if (fuente === 'yo') {
+                        const marca = box.querySelector(`#marca_${pid}`)?.value?.trim() || null;
+                        prods.push({
+                            patologia_id: pid,
+                            fuente: 'yo',
+                            marca
+                        });
+                    } else {
+                        const sel = box.querySelector(`#sel_prod_${pid}`);
+                        const producto_id = sel && sel.value ? parseInt(sel.value, 10) : null;
+                        const producto_nombre = sel ? sel.options[sel.selectedIndex]?.textContent : null;
+                        prods.push({
+                            patologia_id: pid,
+                            fuente: 'sve',
+                            producto_id,
+                            producto_nombre
+                        });
+                    }
+                });
+
+                return {
+                    superficie_ha: document.getElementById('superficie_ha')?.value?.trim() || null,
+                    productos: prods
+                };
+            }
+
+            function actualizarResumenInline() {
+                const rcBase = document.getElementById('rc_base');
+                const rcProd = document.getElementById('rc_prod');
+                const rcTotal = document.getElementById('rc_total');
+                if (!rcBase || !rcProd || !rcTotal) return;
+
+                const payload = buildPayloadMin();
+                const costos = calcularCostos(payload);
+                rcBase.textContent = `${fmtARS(costos.base)} ${costos.moneda || ''}`;
+                rcProd.textContent = `${fmtARS(costos.productos)} ${costos.moneda || ''}`;
+                rcTotal.textContent = `${fmtARS(costos.total)} ${costos.moneda || ''}`;
+            }
+
+            // Llenar método de pago
+            async function cargarFormasPago() {
+                const sel = document.getElementById('metodo_pago');
+                const desc = document.getElementById('metodo_pago_desc');
+                const coopWrap = document.getElementById('wrap_coop_cuota');
+                if (!sel) return;
+                try {
+                    const data = await apiGet({ action: 'formas_pago' });
+                    const items = data.items || [];
+                    sel.innerHTML = `<option value="">Seleccioná…</option>` +
+                        items.map(it =>
+                            `<option value="${it.id}" data-descripcion="${(it.descripcion || '').replace(/"/g,'&quot;')}">${it.nombre}</option>`
+                        ).join('');
+
+                    const onMetodoChange = () => {
+                        const op = sel.selectedOptions[0];
+                        const id = parseInt(sel.value || '0', 10);
+                        const d = op ? (op.dataset.descripcion || '') : '';
+                        if (desc) desc.textContent = d || '';
+                        if (coopWrap) coopWrap.style.display = (id === 6 ? 'block' : 'none');
+                        actualizarResumenInline();
+                    };
+                    sel.addEventListener('change', onMetodoChange);
+                    onMetodoChange(); // init
+                } catch (e) {
+                    sel.innerHTML = `<option value="">No disponible</option>`;
+                    if (desc) desc.textContent = '';
+                    if (coopWrap) coopWrap.style.display = 'none';
+                }
+            }
+
 
             // Cargar patologías dinámicas
             async function cargarPatologias() {
@@ -841,6 +891,7 @@ $sesion_payload = [
                     const cmp = document.querySelector(cmpSel);
                     const sync = () => {
                         if (cmp) cmp.hidden = !cb.checked;
+                        actualizarResumenInline();
                     };
                     cb.addEventListener('change', sync);
                     sync();
@@ -859,26 +910,34 @@ $sesion_payload = [
                         const yo = rbSi?.checked;
                         if (brand) brand.hidden = !yo;
                         if (sveWrap) sveWrap.hidden = !!yo;
+                        actualizarResumenInline();
                         if (!yo && sel && !sel.dataset.loaded) {
                             // cargar productos SVE asociados
                             apiGet({
-                                action: 'productos',
-                                patologia_id: pid
-                            }).then(data => {
-                                const items = data.items || [];
-                                sel.innerHTML = `<option value="">Seleccioná un producto SVE…</option>` +
-                                    items.map(it => `<option value="${it.id}" data-costo="${Number(it.costo_hectarea || 0)}">${it.nombre}</option>`).join('');
-                                sel.dataset.loaded = '1';
-                            }).catch(() => {
-                                sel.innerHTML = `<option value="">No se pudieron cargar productos</option>`;
-                            });
+                                    action: 'productos',
+                                    patologia_id: pid
+                                })
+                                .then(data => {
+                                    const items = (data.items || []);
+                                    sel.innerHTML = `<option value="">Seleccioná un producto SVE…</option>` +
+                                        items.map(it => `<option value="${it.id}" data-costo="${Number(it.costo_hectarea || 0)}">${it.nombre}</option>`).join('');
+                                    sel.dataset.loaded = '1';
+                                })
+                                .catch(() => {
+                                    sel.innerHTML = `<option value="">No se pudieron cargar productos</option>`;
+                                });
                         }
                     };
                     rbNo?.addEventListener('change', sync);
                     rbSi?.addEventListener('change', sync);
+                    sel?.addEventListener('change', actualizarResumenInline);
                     sync();
                 });
+
+                // recálculo inicial tras reconstruir
+                actualizarResumenInline();
             }
+
 
             // Carga inicial
             cargarPatologias().catch(() => {
@@ -887,36 +946,10 @@ $sesion_payload = [
             });
 
             cargarFormasPago();
-            cargarCostoBase();
-cargarCostoBase().then(()=> actualizarResumenInline());
+            cargarCostoBase().then(actualizarResumenInline);
 
-// superficie cambia
-document.getElementById('superficie_ha')?.addEventListener('input', actualizarResumenInline);
-
-// cuando se reconstruyen productos, también hay que escuchar cambios
-async function reconstruirProductos() {
-  // ... (tu contenido actual)
-  // al final de cada ciclo de box, luego de 'sync();' agregá:
-  // 1) cuando el usuario tilda/ destilda el checkbox de producto
-  wrap.querySelectorAll('input[type="checkbox"][name="productos[]"]').forEach(cb=>{
-    cb.addEventListener('change', actualizarResumenInline);
-  });
-  // 2) cuando cambia fuente (sve/yo) o el select del producto sve
-  Array.from(wrap.querySelectorAll('.gform-optbox')).forEach(box=>{
-    const pid = box.dataset.patologiaId;
-    const rbNo = box.querySelector(`input[type="radio"][name="src-${pid}"][value="sve"]`);
-    const rbSi = box.querySelector(`input[type="radio"][name="src-${pid}"][value="yo"]`);
-    const sel = box.querySelector(`#sel_prod_${pid}`);
-    rbNo?.addEventListener('change', actualizarResumenInline);
-    rbSi?.addEventListener('change', actualizarResumenInline);
-    sel?.addEventListener('change', actualizarResumenInline);
-  });
-
-  // recálculo inicial tras reconstruir
-  actualizarResumenInline();
-}
-
-
+            // superficie cambia
+            document.getElementById('superficie_ha')?.addEventListener('input', actualizarResumenInline);
 
             // ---- Sesión (inyectada desde PHP)
             const sessionData = (() => {
@@ -1224,47 +1257,10 @@ async function reconstruirProductos() {
                     return opt ? opt.textContent : '—';
                 })();
 
-                const fmtARS = (n) => new Intl.NumberFormat('es-AR',{minimumFractionDigits:2, maximumFractionDigits:2}).format(Number(n||0));
-
-function buildPayloadMin() {
-  const motivosSel = Array.from(document.querySelectorAll('#motivo_dynamic input[type="checkbox"][name="motivo[]"]:checked')).map(i => i.value);
-  // productos seleccionados (solo los tildados y si fuente = sve con select elegido)
-  const prods = [];
-  document.querySelectorAll('.gform-optbox[data-patologia-id]').forEach(box=>{
-    const pid = parseInt(box.dataset.patologiaId,10);
-    const chk = box.querySelector('input[type="checkbox"][name="productos[]"]');
-    if (!chk || !chk.checked) return;
-    const fuente = form.querySelector(`input[type="radio"][name="src-${pid}"]:checked`)?.value;
-    if (fuente === 'yo') {
-      const marca = box.querySelector(`#marca_${pid}`)?.value?.trim() || null;
-      prods.push({ patologia_id: pid, fuente: 'yo', marca });
-    } else {
-      const sel = box.querySelector(`#sel_prod_${pid}`);
-      const producto_id = sel && sel.value ? parseInt(sel.value,10) : null;
-      const producto_nombre = sel ? sel.options[sel.selectedIndex]?.textContent : null;
-      prods.push({ patologia_id: pid, fuente: 'sve', producto_id, producto_nombre });
-    }
-  });
-
-  return {
-    superficie_ha: document.getElementById('superficie_ha')?.value?.trim() || null,
-    productos: prods
-  };
-}
-
-function actualizarResumenInline() {
-  const rcBase = document.getElementById('rc_base');
-  const rcProd = document.getElementById('rc_prod');
-  const rcTotal = document.getElementById('rc_total');
-  if (!rcBase || !rcProd || !rcTotal) return;
-
-  const payload = buildPayloadMin();
-  const costos = calcularCostos(payload);
-  rcBase.textContent = `${fmtARS(costos.base)} ${costos.moneda||''}`;
-  rcProd.textContent = `${fmtARS(costos.productos)} ${costos.moneda||''}`;
-  rcTotal.textContent = `${fmtARS(costos.total)} ${costos.moneda||''}`;
-}
-
+                const fmtARS = (n) => new Intl.NumberFormat('es-AR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(Number(n || 0));
 
                 const costos = calcularCostos(payload);
                 const fmt = (n) => new Intl.NumberFormat('es-AR', {
@@ -1375,23 +1371,23 @@ function actualizarResumenInline() {
                 };
 
                 // Método de pago ya validado arriba
-const mpSel = document.getElementById('metodo_pago');
-flag(document.getElementById('q_metodo_pago'), !!mpSel && !!mpSel.value);
-if (!mpSel || !mpSel.value) {
-  window.showToast?.('error', 'Seleccioná un método de pago.');
-  return false;
-}
-// Si es 6, exigir nombre de la cooperativa
-let coopOK = true;
-if (parseInt(mpSel.value,10) === 6) {
-  const wrap = document.getElementById('wrap_coop_cuota');
-  const input = document.getElementById('coop_descuento_nombre');
-  const err = document.getElementById('coop_descuento_error');
-  coopOK = !!(input && input.value.trim());
-  if (wrap) wrap.classList.toggle('has-error', !coopOK);
-  if (err) err.style.display = coopOK ? 'none' : 'block';
-}
-if (!coopOK) return false;
+                const mpSel = document.getElementById('metodo_pago');
+                flag(document.getElementById('q_metodo_pago'), !!mpSel && !!mpSel.value);
+                if (!mpSel || !mpSel.value) {
+                    window.showToast?.('error', 'Seleccioná un método de pago.');
+                    return false;
+                }
+                // Si es 6, exigir nombre de la cooperativa
+                let coopOK = true;
+                if (parseInt(mpSel.value, 10) === 6) {
+                    const wrap = document.getElementById('wrap_coop_cuota');
+                    const input = document.getElementById('coop_descuento_nombre');
+                    const err = document.getElementById('coop_descuento_error');
+                    coopOK = !!(input && input.value.trim());
+                    if (wrap) wrap.classList.toggle('has-error', !coopOK);
+                    if (err) err.style.display = coopOK ? 'none' : 'block';
+                }
+                if (!coopOK) return false;
 
                 // Radios obligatorios
                 must(document.getElementById('q_representante'), atLeastOneChecked('input[type="radio"][name="representante"]', form));
@@ -1509,20 +1505,15 @@ if (!coopOK) return false;
                     libre_obstaculos: getRadioValue('libre_obstaculos'),
                     area_despegue: getRadioValue('area_despegue'),
                     superficie_ha: $('#superficie_ha')?.value?.trim() || null,
-                    forma_pago_id: (() => {
+                     forma_pago_id: (() => {
                         const v = $('#metodo_pago')?.value;
                         return v ? parseInt(v, 10) : null;
                     })(),
-
-                    forma_pago_id: (() => {
-  const v = $('#metodo_pago')?.value;
-  return v ? parseInt(v, 10) : null;
-})(),
-coop_descuento_nombre: (() => {
-  const mp = $('#metodo_pago')?.value;
-  const inpt = document.getElementById('coop_descuento_nombre');
-  return (parseInt(mp||'0',10) === 6 && inpt) ? (inpt.value.trim() || null) : null;
-})(),
+                    coop_descuento_nombre: (() => {
+                        const mp = $('#metodo_pago')?.value;
+                        const inpt = document.getElementById('coop_descuento_nombre');
+                        return (parseInt(mp || '0', 10) === 6 && inpt) ? (inpt.value.trim() || null) : null;
+                    })(),
 
                     motivo: {
                         opciones: motivos,
@@ -1579,7 +1570,7 @@ coop_descuento_nombre: (() => {
                 if (resumenModal) resumenModal.innerHTML = renderResumenHTML(payload);
                 abrirModal();
 
-                
+
 
                 // NOTA: no imprimimos en consola acá. Solo cuando el usuario confirma en el modal.
             });

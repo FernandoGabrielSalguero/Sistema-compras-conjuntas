@@ -35,9 +35,13 @@ class prodDronesModel
         return $st->fetchAll() ?: [];
     }
 
-    public function getFormasPagoActivas(): array
+ public function getFormasPagoActivas(): array
     {
-        $sql = "SELECT id, nombre FROM dron_formas_pago WHERE activo = 'si' ORDER BY nombre ASC";
+        // traemos descripcion porque el front la muestra al seleccionar
+        $sql = "SELECT id, nombre, COALESCE(descripcion,'') AS descripcion
+                FROM dron_formas_pago
+                WHERE activo = 'si'
+                ORDER BY nombre ASC";
         return $this->pdo->query($sql)->fetchAll() ?: [];
     }
 
@@ -108,6 +112,7 @@ class prodDronesModel
         if ($formaPagoId === 6 && $coopDesc === '') {
             throw new InvalidArgumentException('Debe indicar el nombre de la cooperativa para este método de pago.');
         }
+
         $chkFp = $this->pdo->prepare("SELECT 1 FROM dron_formas_pago WHERE id = ? AND activo = 'si'");
         $chkFp->execute([$formaPagoId]);
         if (!$chkFp->fetchColumn()) {
@@ -124,8 +129,9 @@ class prodDronesModel
             }
         }
 
-        // ---- Observaciones + cooperativa (si FP = 6)
-        $coopDesc = $nn($data['coop_nombre'] ?? null);   // viene del front cuando el método = 6
+                // ---- Observaciones + cooperativa (ID 6)
+        // Guardamos la cooperativa en su propia columna. No alteramos 'observaciones'.
+        $coopDesc = $nn($data['coop_descuento_nombre'] ?? null);  // del front
         $obsUser  = $nn($data['observaciones'] ?? null);
 
         if ($formaPagoId === 6 && !empty($coopDesc)) {
@@ -134,28 +140,27 @@ class prodDronesModel
         }
 
         $mainRow = [
-            'productor_id_real'   => $productorIdReal,
-            'representante'       => $main['representante'],
-            'linea_tension'       => $main['linea_tension'],
-            'zona_restringida'    => $main['zona_restringida'],
-            'corriente_electrica' => $main['corriente_electrica'],
-            'agua_potable'        => $main['agua_potable'],
-            'libre_obstaculos'    => $main['libre_obstaculos'],
-            'area_despegue'       => $main['area_despegue'],
-            'superficie_ha'       => $main['superficie_ha'],
-            'forma_pago_id'       => $formaPagoId,
-            'dir_provincia'       => $nn($dir['provincia'] ?? null),
-            'dir_localidad'       => $nn($dir['localidad'] ?? null),
-            'dir_calle'           => $nn($dir['calle'] ?? null),
-            'dir_numero'          => $nn($dir['numero'] ?? null),
-            'en_finca'            => $enFinca,
-            'ubicacion_lat'       => isset($ubic['lat']) ? (float)$ubic['lat'] : null,
-            'ubicacion_lng'       => isset($ubic['lng']) ? (float)$ubic['lng'] : null,
-            'ubicacion_acc'       => isset($ubic['acc']) ? (float)$ubic['acc'] : null,
-            'ubicacion_ts'        => $isoToMysql($ubic['timestamp'] ?? null),
-
-            // <- aquí antes tenías el error
-            'observaciones'       => $obsUser,
+                'productor_id_real'     => $productorIdReal,
+                'representante'         => $main['representante'],
+                'linea_tension'         => $main['linea_tension'],
+                'zona_restringida'      => $main['zona_restringida'],
+                'corriente_electrica'   => $main['corriente_electrica'],
+                'agua_potable'          => $main['agua_potable'],
+                'libre_obstaculos'      => $main['libre_obstaculos'],
+                'area_despegue'         => $main['area_despegue'],
+                'superficie_ha'         => $main['superficie_ha'],
+                'forma_pago_id'         => $formaPagoId,
+                'coop_descuento_nombre' => ($formaPagoId === 6 ? $coopDesc : null),
+                'dir_provincia'         => $nn($dir['provincia'] ?? null),
+                'dir_localidad'         => $nn($dir['localidad'] ?? null),
+                'dir_calle'             => $nn($dir['calle'] ?? null),
+                'dir_numero'            => $nn($dir['numero'] ?? null),
+                'en_finca'              => $enFinca,
+                'ubicacion_lat'         => isset($ubic['lat']) ? (float)$ubic['lat'] : null,
+                'ubicacion_lng'         => isset($ubic['lng']) ? (float)$ubic['lng'] : null,
+                'ubicacion_acc'         => isset($ubic['acc']) ? (float)$ubic['acc'] : null,
+                'ubicacion_ts'          => $isoToMysql($ubic['timestamp'] ?? null),
+                'observaciones'         => $obsUser,
 
             // Snapshot de sesión
             'ses_usuario'         => $nn($session['usuario']   ?? null),
@@ -172,16 +177,17 @@ class prodDronesModel
         $this->pdo->beginTransaction();
         try {
             // 1) Inserto cabecera
-            $sql = "INSERT INTO dron_solicitudes
+                        $sql = "INSERT INTO dron_solicitudes
                 (productor_id_real, representante, linea_tension, zona_restringida, corriente_electrica, agua_potable, libre_obstaculos, area_despegue,
-                 superficie_ha, forma_pago_id, dir_provincia, dir_localidad, dir_calle, dir_numero, en_finca,
+                 superficie_ha, forma_pago_id, coop_descuento_nombre, dir_provincia, dir_localidad, dir_calle, dir_numero, en_finca,
                  ubicacion_lat, ubicacion_lng, ubicacion_acc, ubicacion_ts, observaciones,
                  ses_usuario, ses_rol, ses_nombre, ses_correo, ses_telefono, ses_direccion, ses_cuit, ses_last_activity_ts)
                 VALUES
                 (:productor_id_real, :representante, :linea_tension, :zona_restringida, :corriente_electrica, :agua_potable, :libre_obstaculos, :area_despegue,
-                 :superficie_ha, :forma_pago_id, :dir_provincia, :dir_localidad, :dir_calle, :dir_numero, :en_finca,
+                 :superficie_ha, :forma_pago_id, :coop_descuento_nombre, :dir_provincia, :dir_localidad, :dir_calle, :dir_numero, :en_finca,
                  :ubicacion_lat, :ubicacion_lng, :ubicacion_acc, :ubicacion_ts, :observaciones,
                  :ses_usuario, :ses_rol, :ses_nombre, :ses_correo, :ses_telefono, :ses_direccion, :ses_cuit, :ses_last_activity_ts)";
+
 
             $st = $this->pdo->prepare($sql);
             $st->execute($mainRow);

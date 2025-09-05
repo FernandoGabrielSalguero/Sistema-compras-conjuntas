@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 
     if ($action === 'formas_pago') {
-        $items = $model->getFormasPagoActivas();
+        $items = $model->getFormasPagoActivas(); // incluye descripcion
         http_response_code(200);
         ob_clean();
         echo json_encode(['ok'=>true, 'data'=>['items'=>$items]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
