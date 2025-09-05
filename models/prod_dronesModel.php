@@ -103,6 +103,11 @@ class prodDronesModel
         if ($formaPagoId <= 0) {
             throw new InvalidArgumentException('Debe seleccionar un método de pago.');
         }
+        // Si forma de pago es "Descuento por cuenta y orden de la cuota de vino" (ID 6), exigir nombre de cooperativa
+        $coopDesc = trim((string)($data['coop_descuento_nombre'] ?? ''));
+        if ($formaPagoId === 6 && $coopDesc === '') {
+            throw new InvalidArgumentException('Debe indicar el nombre de la cooperativa para este método de pago.');
+        }
         $chkFp = $this->pdo->prepare("SELECT 1 FROM dron_formas_pago WHERE id = ? AND activo = 'si'");
         $chkFp->execute([$formaPagoId]);
         if (!$chkFp->fetchColumn()) {
@@ -117,6 +122,15 @@ class prodDronesModel
                     throw new InvalidArgumentException("Dirección incompleta: falta {$req}.");
                 }
             }
+        }
+
+        // ---- Observaciones + cooperativa (si FP = 6)
+        $coopDesc = $nn($data['coop_nombre'] ?? null);   // viene del front cuando el método = 6
+        $obsUser  = $nn($data['observaciones'] ?? null);
+
+        if ($formaPagoId === 6 && !empty($coopDesc)) {
+            // Anteponemos la cooperativa y conservamos lo que haya escrito el usuario
+            $obsUser = trim("Cooperativa (cuota de vino): {$coopDesc}" . ($obsUser ? " | {$obsUser}" : ''));
         }
 
         $mainRow = [
@@ -139,8 +153,11 @@ class prodDronesModel
             'ubicacion_lng'       => isset($ubic['lng']) ? (float)$ubic['lng'] : null,
             'ubicacion_acc'       => isset($ubic['acc']) ? (float)$ubic['acc'] : null,
             'ubicacion_ts'        => $isoToMysql($ubic['timestamp'] ?? null),
-            'observaciones'       => $nn($data['observaciones'] ?? null),
-            // Snapshot de la sesión (desde servidor, no del JSON)
+
+            // <- aquí antes tenías el error
+            'observaciones'       => $obsUser,
+
+            // Snapshot de sesión
             'ses_usuario'         => $nn($session['usuario']   ?? null),
             'ses_rol'             => $nn($session['rol']       ?? null),
             'ses_nombre'          => $nn($session['nombre']    ?? null),
@@ -234,7 +251,7 @@ class prodDronesModel
                 }
             }
 
- // 5) Guardar costos estimados en dron_solicitudes_costos
+            // 5) Guardar costos estimados en dron_solicitudes_costos
             $costoRow = $this->getCostoHectarea();
             $costoBaseHa = (float)($costoRow['costo'] ?? 0);
             $moneda      = $costoRow['moneda'] ?? 'Pesos';
