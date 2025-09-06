@@ -152,12 +152,6 @@ $sesion_payload = [
             }
         }
 
-        .btn-cancelar-soft[disabled] {
-  opacity: .55;
-  cursor: not-allowed;
-  border-style: dashed;
-}
-
         /* ==== Modal cancelación (mobile-first) ==== */
         .modal {
             position: fixed;
@@ -329,7 +323,7 @@ $sesion_payload = [
             function renderItems(items, total, pageNow) {
                 listado.innerHTML = items.map(it => {
                     const estadoClass = `estado-${it.estado}`;
-                    const puedeCancelar = (['procesando', 'aprobada_coop'].includes(it.estado));
+                    const puedeCancelar = (['ingresada', 'aprobada_coop'].includes(it.estado));
 
                     return `
         <article class="pedido-card" aria-label="Solicitud #${it.id}">
@@ -351,7 +345,7 @@ $sesion_payload = [
     data-id="${it.id}"
     aria-label="Cancelar solicitud ${it.id}"
     ${puedeCancelar ? '' : 'disabled'}
-    title="${puedeCancelar ? 'Cancelar solicitud' : 'Solo se puede cancelar en estado PROCESANDO o APROBADA_COOP'}"
+    title="${puedeCancelar ? 'Cancelar solicitud' : 'Solo se puede cancelar en estado INGRESADA o APROBADA_COOP'}"
   >Cancelar</button>
 </div>
         </article>
