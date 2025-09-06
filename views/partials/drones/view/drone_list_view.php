@@ -357,32 +357,38 @@
                 els.cards.appendChild(card);
             });
 
-            els.cards.querySelectorAll('.btn-view').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.dataset.id;
-                    try {
-                        // 1) Traemos los datos del backend
-                        const res = await fetch(`${DRONE_API}?action=get_solicitud&id=${encodeURIComponent(id)}`, {
-                            cache: 'no-store'
-                        });
-                        const json = await res.json();
-                        if (!json.ok) throw new Error(json.error || 'Error');
+            els.cards.querySelectorAll('.btn-view').forEach(btn=>{
+  btn.addEventListener('click', async () => {
+    const id = btn.dataset.id;
+    try{
+      const url  = `${DRONE_API}?action=get_solicitud&id=${encodeURIComponent(id)}`;
+      const res  = await fetch(url, { cache:'no-store' });
+      const json = await res.json();
+      if(!json.ok) throw new Error(json.error || 'Error');
 
-                        // 2) Imprimimos en consola TODO lo recibido (detalle mínimo según tu modelo)
-                        console.log('Solicitud seleccionada:', json.data);
+      // 🔎 Log completo en consola (solicitud base + costos + items + recetas + motivos + rangos + eventos + piloto + forma_pago + productor)
+      console.group(`Solicitud #${id}`);
+      console.log('Payload completo:', json.data);
+      console.log('Solicitud:', json.data.solicitud);
+      console.log('Piloto:', json.data.piloto);
+      console.log('Forma de pago:', json.data.forma_pago);
+      console.log('Productor:', json.data.productor);
+      console.log('Costos:', json.data.costos);
+      console.log('Items:', json.data.items);
+      console.log('Motivos:', json.data.motivos);
+      console.log('Rangos:', json.data.rangos);
+      console.log('Eventos:', json.data.eventos);
+      console.groupEnd();
 
-                        // 3) Abrimos el drawer (mostrando #id como antes)
-                        openDrawer({
-                            id
-                        });
-                    } catch (err) {
-                        console.error('No se pudo obtener la solicitud', err);
-                        openDrawer({
-                            id
-                        }); // abrimos igual para mantener UX
-                    }
-                });
-            });
+      // Abrimos el drawer como siempre (mostrar #id)
+      openDrawer({ id });
+    }catch(err){
+      console.error('No se pudo obtener la solicitud', err);
+      openDrawer({ id }); // abrimos igual para mantener UX
+    }
+  });
+});
+
         }
 
         // Drawer (solo UI, sin guardar)
