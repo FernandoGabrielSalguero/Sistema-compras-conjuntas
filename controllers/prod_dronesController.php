@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 ini_set('display_errors', '0');
@@ -9,7 +8,7 @@ ob_start();
 session_start();
 header('Content-Type: application/json; charset=UTF-8');
 
-// Middleware (si aplica en tu proyecto)
+// Middleware (igual que antes)
 $mwPath = __DIR__ . '/../middleware/authMiddleware.php';
 if (file_exists($mwPath)) {
     require_once $mwPath;
@@ -31,12 +30,12 @@ require_once __DIR__ . '/../models/prod_dronesModel.php';
 try {
     $model = new prodDronesModel($pdo);
 
-    // --- GET: catálogos ---
+    // GET catálogos (sin cambios)
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $action = $_GET['action'] ?? '';
 
         if ($action === 'patologias') {
-            $items = $model->getPatologiasActivas(); // ya filtra activo='si'
+            $items = $model->getPatologiasActivas();
             http_response_code(200);
             ob_clean();
             echo json_encode(['ok' => true, 'data' => ['items' => $items]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -59,7 +58,7 @@ try {
                 echo json_encode(['ok' => false, 'error' => 'patologia_id inválido']);
                 exit;
             }
-            $items = $model->getProductosPorPatologia($pid); // trae sólo activos + costo_hectarea
+            $items = $model->getProductosPorPatologia($pid);
             http_response_code(200);
             ob_clean();
             echo json_encode(['ok' => true, 'data' => ['items' => $items]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -67,7 +66,7 @@ try {
         }
 
         if ($action === 'formas_pago') {
-            $items = $model->getFormasPagoActivas(); // incluye descripcion
+            $items = $model->getFormasPagoActivas();
             http_response_code(200);
             ob_clean();
             echo json_encode(['ok' => true, 'data' => ['items' => $items]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -88,8 +87,7 @@ try {
         exit;
     }
 
-
-    // --- POST: crear solicitud ---
+    // POST: crear solicitud (usa el modelo nuevo)
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
         ob_clean();
@@ -112,8 +110,8 @@ try {
     ob_clean();
     echo json_encode(['ok' => true, 'id' => $id, 'message' => 'Solicitud registrada correctamente'], JSON_UNESCAPED_UNICODE);
     exit;
-} catch (InvalidArgumentException $e) {
 
+} catch (InvalidArgumentException $e) {
     http_response_code(400);
     ob_clean();
     echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
