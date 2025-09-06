@@ -120,10 +120,13 @@
                     <div class="card">
                         <h2 style="color: #5b21b6;">Programar visita</h2>
                         <div class="form-grid grid-4">
-                            <label for="fecha_visita_edit">Fecha visita</label>
-                            <div class="input-icon input-icon-date">
-                                <input type="date" id="fecha_visita_edit" name="fecha_visita_edit" />
+                            <div class="input-group">
+                                <label for="fecha_visita_edit">Fecha visita</label>
+                                <div class="input-icon input-icon-date">
+                                    <input type="date" id="fecha_visita_edit" name="fecha_visita_edit" />
+                                </div>
                             </div>
+
                             <div class="input-group">
                                 <label for="hora_visita_desde">Hora desde</label>
                                 <div class="input-icon input-icon-time">
