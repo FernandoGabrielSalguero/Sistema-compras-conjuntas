@@ -141,6 +141,12 @@ try {
                 break;
             }
 
+        case 'list_pilotos': {
+                $items = $model->listarPilotos();
+                echo json_encode(['ok' => true, 'data' => ['items' => $items]], JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
         default: {
                 http_response_code(400);
                 echo json_encode(['ok' => false, 'error' => 'Acción no soportada'], JSON_UNESCAPED_UNICODE);

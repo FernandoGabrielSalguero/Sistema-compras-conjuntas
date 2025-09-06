@@ -151,7 +151,7 @@ final class DroneListModel
                 'producto_id'     => $esSVE ? (int)($r['producto_id'] ?? 0) : null,
                 'marca'           => $esSVE ? null : ($r['producto'] ?? null), // nombre del productor
                 'producto'        => $r['producto'],
-                'principio_activo'=> $esSVE ? ($r['pa_stock'] ?? null) : ($r['principio_activo'] ?? null),
+                'principio_activo' => $esSVE ? ($r['pa_stock'] ?? null) : ($r['principio_activo'] ?? null),
                 'dosis'           => $r['dosis'],
                 'unidad'          => $r['unidad'],
                 'orden_mezcla'    => $r['orden_mezcla'],
@@ -235,8 +235,13 @@ final class DroneListModel
 
         // Enums NOT NULL (no setear a NULL)
         $notNullEnums = [
-            'en_finca','linea_tension','zona_restringida','corriente_electrica',
-            'agua_potable','libre_obstaculos','area_despegue'
+            'en_finca',
+            'linea_tension',
+            'zona_restringida',
+            'corriente_electrica',
+            'agua_potable',
+            'libre_obstaculos',
+            'area_despegue'
         ];
 
         $set = [];
@@ -299,7 +304,7 @@ final class DroneListModel
 
         $pa     = trim($d['principio_activo'] ?? '');
         $dosis  = isset($d['dosis']) && $d['dosis'] !== '' ? (float)$d['dosis'] : null;
-        $unidad = in_array(($d['unidad'] ?? ''), ['ml/ha','g/ha','L/ha','kg/ha'], true) ? $d['unidad'] : null;
+        $unidad = in_array(($d['unidad'] ?? ''), ['ml/ha', 'g/ha', 'L/ha', 'kg/ha'], true) ? $d['unidad'] : null;
         $orden  = isset($d['orden_mezcla']) && $d['orden_mezcla'] !== '' ? (int)$d['orden_mezcla'] : null;
 
         if ($fuente === 'sve') {
@@ -327,18 +332,18 @@ final class DroneListModel
             ]);
 
             // Upsert receta principal (tomamos la primera receta del item si existe)
-            $rid = (int)($this->pdo->query("SELECT id FROM drones_solicitud_item_receta WHERE solicitud_item_id=".(int)$id." ORDER BY id ASC LIMIT 1")->fetchColumn() ?: 0);
+            $rid = (int)($this->pdo->query("SELECT id FROM drones_solicitud_item_receta WHERE solicitud_item_id=" . (int)$id . " ORDER BY id ASC LIMIT 1")->fetchColumn() ?: 0);
             if ($rid > 0) {
                 $sql = "UPDATE drones_solicitud_item_receta
                         SET principio_activo=:pa, dosis=:dosis, unidad=:unidad, orden_mezcla=:orden, updated_at=NOW()
                         WHERE id=:rid";
                 $st = $this->pdo->prepare($sql);
-                $st->execute([':pa'=>$pa ?: null, ':dosis'=>$dosis, ':unidad'=>$unidad, ':orden'=>$orden, ':rid'=>$rid]);
+                $st->execute([':pa' => $pa ?: null, ':dosis' => $dosis, ':unidad' => $unidad, ':orden' => $orden, ':rid' => $rid]);
             } else {
                 $sql = "INSERT INTO drones_solicitud_item_receta (solicitud_item_id, principio_activo, dosis, unidad, orden_mezcla)
                         VALUES (:sid, :pa, :dosis, :unidad, :orden)";
                 $st = $this->pdo->prepare($sql);
-                $st->execute([':sid'=>$id, ':pa'=>$pa ?: null, ':dosis'=>$dosis, ':unidad'=>$unidad, ':orden'=>$orden]);
+                $st->execute([':sid' => $id, ':pa' => $pa ?: null, ':dosis' => $dosis, ':unidad' => $unidad, ':orden' => $orden]);
             }
 
             return ['id' => $id];
@@ -360,7 +365,7 @@ final class DroneListModel
         $sql = "INSERT INTO drones_solicitud_item_receta (solicitud_item_id, principio_activo, dosis, unidad, orden_mezcla)
                 VALUES (:sid, :pa, :dosis, :unidad, :orden)";
         $st = $this->pdo->prepare($sql);
-        $st->execute([':sid'=>$newId, ':pa'=>($fuente==='productor' ? $pa : null), ':dosis'=>$dosis, ':unidad'=>$unidad, ':orden'=>$orden]);
+        $st->execute([':sid' => $newId, ':pa' => ($fuente === 'productor' ? $pa : null), ':dosis' => $dosis, ':unidad' => $unidad, ':orden' => $orden]);
 
         return ['id' => $newId];
     }
@@ -444,7 +449,7 @@ final class DroneListModel
         $st = $this->pdo->prepare($sql);
         $st->execute([
             ':sid'   => $solicitudId,
-            ':moneda'=> $c['moneda'],
+            ':moneda' => $c['moneda'],
             ':cph'   => $c['costo_base_por_ha'],
             ':bha'   => $c['base_ha'],
             ':bt'    => $c['base_total'],
@@ -481,5 +486,21 @@ final class DroneListModel
             $this->pdo->rollBack();
             throw $e;
         }
+    }
+
+    /**
+     * Listamos pilotos activos (para asignar a la solicitud).
+     */
+    public function listarPilotos(): array
+    {
+        $st = $this->pdo->prepare("
+        SELECT id, nombre, telefono, zona_asignada, correo
+        FROM dron_pilotos
+        WHERE activo = 'si'
+        ORDER BY nombre ASC
+        LIMIT 1000
+    ");
+        $st->execute();
+        return $st->fetchAll() ?: [];
     }
 }

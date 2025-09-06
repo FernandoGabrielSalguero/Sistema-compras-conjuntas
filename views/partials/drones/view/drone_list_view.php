@@ -34,10 +34,11 @@
                 <div class="input-icon input-icon-globe">
                     <select id="estado" name="estado">
                         <option value="">Todos</option>
-                        <option value="pendiente">Pendiente</option>
-                        <option value="en_proceso">En proceso</option>
-                        <option value="completado">Completado</option>
-                        <option value="cancelado">Cancelado</option>
+                        <option value="ingresada">Ingresada</option>
+                        <option value="procesando">Procesando</option>
+                        <option value="aprobada_coop">Aprobada coop</option>
+                        <option value="cancelada">Cancelada</option>
+                        <option value="completada">Completada</option>
                     </select>
                 </div>
             </div>
@@ -191,10 +192,11 @@
                             <div class="input-icon material">
                                 <span class="material-icons mi">flag</span>
                                 <select id="f-estado" name="estado">
-                                    <option value="pendiente">Pendiente</option>
-                                    <option value="en_proceso">En proceso</option>
-                                    <option value="completado">Completado</option>
-                                    <option value="cancelado">Cancelado</option>
+                                    <option value="ingresada">Ingresada</option>
+                                    <option value="procesando">Procesando</option>
+                                    <option value="aprobada_coop">Aprobada coop</option>
+                                    <option value="cancelada">Cancelada</option>
+                                    <option value="completada">Completada</option>
                                 </select>
                             </div>
                         </div>
@@ -316,8 +318,9 @@
                             <label for="f-piloto">Piloto</label>
                             <div class="input-icon material">
                                 <span class="material-icons mi">flight</span>
-                                <input type="text" id="f-piloto" name="piloto" placeholder="Nombre del piloto" />
+                                <select id="f-piloto" name="piloto" aria-describedby="ayuda-piloto"></select>
                             </div>
+                            <small id="ayuda-piloto" class="gform-helper">Seleccioná un piloto activo de SVE.</small>
                         </div>
 
                         <div class="input-group">
@@ -376,7 +379,7 @@
                             <div class="gform-helper">Elegí la fuente (SVE/Productor). Si es SVE, seleccioná del stock; si es del productor, escribí el nombre y el principio activo.</div>
                         </div>
 
-                                                <!-- ======= Facturación y costos ======= -->
+                        <!-- ======= Facturación y costos ======= -->
                         <div class="form-separator"><span class="material-icons mi">receipt_long</span>Facturación y costos</div>
 
                         <div class="input-group">
@@ -778,16 +781,20 @@
     }
 
     /* ---- Costos ---- */
-    .cost-grid{
-        display:grid;
-        grid-template-columns: repeat(6, minmax(160px,1fr));
-        gap:12px
+    .cost-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(160px, 1fr));
+        gap: 12px
     }
-    @media (max-width: 1100px){
-        .cost-grid{grid-template-columns: repeat(2,minmax(160px,1fr));}
+
+    @media (max-width: 1100px) {
+        .cost-grid {
+            grid-template-columns: repeat(2, minmax(160px, 1fr));
+        }
     }
-    .cost-item input[readonly]{
-        background:#f9fafb;
+
+    .cost-item input[readonly] {
+        background: #f9fafb;
     }
 </style>
 
@@ -821,14 +828,16 @@
 
         function prettyEstado(e) {
             switch ((e || '').toLowerCase()) {
-                case 'pendiente':
-                    return 'Pendiente';
-                case 'en_proceso':
-                    return 'En proceso';
-                case 'completado':
-                    return 'Completado';
-                case 'cancelado':
-                    return 'Cancelado';
+                case 'ingresada':
+                    return 'Ingresada';
+                case 'procesando':
+                    return 'Procesando';
+                case 'aprobada_coop':
+                    return 'Aprobada coop';
+                case 'cancelada':
+                    return 'Cancelada';
+                case 'completada':
+                    return 'Completada';
                 default:
                     return e || '';
             }
@@ -836,13 +845,15 @@
 
         function badgeClass(e) {
             switch ((e || '').toLowerCase()) {
-                case 'pendiente':
+                case 'ingresada':
                     return 'warning';
-                case 'en_proceso':
+                case 'procesando':
                     return 'info';
-                case 'completado':
+                case 'aprobada_coop':
+                    return 'primary';
+                case 'completada':
                     return 'success';
-                case 'cancelado':
+                case 'cancelada':
                     return 'danger';
                 default:
                     return 'secondary';
@@ -863,6 +874,37 @@
                 show ? window.showSpinnerGlobal() : window.hideSpinnerGlobal();
             }
         }
+
+        // --- Pilotos dinámicos ---
+        async function fetchPilotos() {
+            try {
+                const res = await fetch(`${DRONE_API}?action=list_pilotos`, {
+                    cache: 'no-store'
+                });
+                const json = await res.json();
+                if (!json.ok) throw new Error(json.error || 'No se pudo cargar pilotos');
+                return json.data.items || [];
+            } catch (e) {
+                console.error(e);
+                return [];
+            }
+        }
+
+        async function populatePilotosSelect(selectedNombre = '') {
+            const sel = document.getElementById('f-piloto');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">— Seleccionar —</option>';
+            const items = await fetchPilotos();
+            items.forEach(p => {
+                // p.nombre (mostrado/guardado), p.id disponible por si quisieras guardar el id en el futuro
+                const opt = document.createElement('option');
+                opt.value = p.nombre;
+                opt.textContent = p.nombre;
+                if (selectedNombre && selectedNombre === p.nombre) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
 
         async function load() {
             const params = new URLSearchParams({
@@ -926,13 +968,13 @@
                     try {
                         const res = await fetch(`${API}?action=get_solicitud&id=${encodeURIComponent(id)}`);
                         const json = await res.json();
-if (json.ok) {
-    console.log('[DEBUG] Respuesta completa get_solicitud:', json);
-    if (window.DEBUG) console.log('Detalle solicitud:', json.data);
-    openDrawer(json.data);
-} else {
-    console.error(json.error || 'No se pudo obtener el detalle');
-}
+                        if (json.ok) {
+                            console.log('[DEBUG] Respuesta completa get_solicitud:', json);
+                            if (window.DEBUG) console.log('Detalle solicitud:', json.data);
+                            openDrawer(json.data);
+                        } else {
+                            console.error(json.error || 'No se pudo obtener el detalle');
+                        }
                     } catch (e) {
                         console.error(e);
                     }
@@ -1116,6 +1158,7 @@ if (json.ok) {
             if (!el) return;
             el.value = solicitud[key] ?? '';
         });
+        await populatePilotosSelect(solicitud.piloto || '');
 
         // Motivos (chips)
         const contMotivos = document.getElementById('f-motivos');
@@ -1134,7 +1177,7 @@ if (json.ok) {
             // cache sólo sirve para q vacío y sin ids forzados
             if (__stockCache && q === '' && (!ids || !ids.length)) return __stockCache;
             const u = new URLSearchParams();
-            u.set('action','list_stock');
+            u.set('action', 'list_stock');
             if (q) u.set('q', q);
             if (ids && ids.length) u.set('ids', ids.join(','));
             const res = await fetch(`${DRONE_API}?${u.toString()}`);
@@ -1249,8 +1292,8 @@ if (json.ok) {
                 recalcTotalsClient();
             });
 
-            ['input','change'].forEach(ev=>{
-                tr.querySelectorAll('.dosis,.unidad,.orden_mezcla,.marca,.principio_activo').forEach(el=>{
+            ['input', 'change'].forEach(ev => {
+                tr.querySelectorAll('.dosis,.unidad,.orden_mezcla,.marca,.principio_activo').forEach(el => {
                     el.addEventListener(ev, recalcTotalsClient);
                 });
             });
@@ -1261,30 +1304,30 @@ if (json.ok) {
             });
         }
 
-            // ---- Cálculo de costos en cliente (feedback) ----
-    function recalcTotalsClient(){
-        try{
-            const sup = Number(document.getElementById('f-superficie_ha').value || 0);
-            const baseHa = Number(document.getElementById('f-cost-base-ha').value || 0);
-            const baseTotal = +(sup * baseHa).toFixed(2);
+        // ---- Cálculo de costos en cliente (feedback) ----
+        function recalcTotalsClient() {
+            try {
+                const sup = Number(document.getElementById('f-superficie_ha').value || 0);
+                const baseHa = Number(document.getElementById('f-cost-base-ha').value || 0);
+                const baseTotal = +(sup * baseHa).toFixed(2);
 
-            // suma de costos por producto del stock (fuente SVE)
-            let prodTotal = 0;
-            document.querySelectorAll('#tabla-productos tbody tr').forEach(tr=>{
-                const isSVE = (tr.querySelector('.fuente')?.value || 'sve') === 'sve';
-                if (!isSVE) return;
-                const id = tr.querySelector('.producto_id')?.value;
-                if (!id) return;
-                const it = (__stockCache||[]).find(x=>String(x.id)===String(id));
-                const ch = Number(it?.costo_hectarea || 0);
-                prodTotal += ch * sup;
-            });
+                // suma de costos por producto del stock (fuente SVE)
+                let prodTotal = 0;
+                document.querySelectorAll('#tabla-productos tbody tr').forEach(tr => {
+                    const isSVE = (tr.querySelector('.fuente')?.value || 'sve') === 'sve';
+                    if (!isSVE) return;
+                    const id = tr.querySelector('.producto_id')?.value;
+                    if (!id) return;
+                    const it = (__stockCache || []).find(x => String(x.id) === String(id));
+                    const ch = Number(it?.costo_hectarea || 0);
+                    prodTotal += ch * sup;
+                });
 
-            document.getElementById('f-cost-base-total').value = baseTotal.toFixed(2);
-            document.getElementById('f-cost-productos-total').value = (+prodTotal).toFixed(2);
-            document.getElementById('f-cost-total').value = (baseTotal + prodTotal).toFixed(2);
-        }catch(_){}
-    }
+                document.getElementById('f-cost-base-total').value = baseTotal.toFixed(2);
+                document.getElementById('f-cost-productos-total').value = (+prodTotal).toFixed(2);
+                document.getElementById('f-cost-total').value = (baseTotal + prodTotal).toFixed(2);
+            } catch (_) {}
+        }
 
         async function addRow(p) {
             await ensureStockLoaded();
@@ -1392,20 +1435,23 @@ if (json.ok) {
             `<span class="pill pill--empty">Sin rangos</span>`;
 
         // Render de productos (luego de haber creado y enlazado la tabla)
-                await renderProductosTable(productos);
+        await renderProductosTable(productos);
         // costos / forma de pago / aprobación
-        try{
-            const moneda = solicitud.moneda_base || (solicitud.costo_moneda || 'Pesos');
+        try {
+            const moneda = solicitud.costo_moneda || 'Pesos';
             const costoBaseHa = Number(solicitud.costo_base_ha || 0);
             document.getElementById('f-cost-moneda').value = moneda;
             document.getElementById('f-cost-base-ha').value = costoBaseHa.toFixed(2);
-        }catch(_){}
+        } catch (_) {}
         const selFP = document.getElementById('f-forma_pago_id');
-        selFP.innerHTML = (solicitud.formas_pago || []).map(fp=>`<option value="${fp.id}">${esc(fp.nombre)}</option>`).join('');
+        selFP.innerHTML = (solicitud.formas_pago || []).map(fp => `<option value="${fp.id}">${esc(fp.nombre)}</option>`).join('');
         if (solicitud.forma_pago_id) selFP.value = String(solicitud.forma_pago_id);
         // toggle aprobación por forma de pago (id 6)
         const grpAprob = document.getElementById('grp-aprob-coop');
-        function toggleAprob(){ grpAprob.style.display = (String(selFP.value)==='6') ? 'block' : 'none'; }
+
+        function toggleAprob() {
+            grpAprob.style.display = (String(selFP.value) === '6') ? 'block' : 'none';
+        }
         selFP.addEventListener('change', toggleAprob);
         toggleAprob();
         const aprob = document.getElementById('f-aprob_cooperativa');
@@ -1414,10 +1460,10 @@ if (json.ok) {
         // superficie y costos guardados si hubiera
         const sup = Number(solicitud.superficie_ha || 0);
         document.getElementById('f-superficie_ha').value = sup ? sup.toFixed(2) : '';
-        if (solicitud.costos && solicitud.costos.total){
-            document.getElementById('f-cost-base-total').value = Number(solicitud.costos.base_total||0).toFixed(2);
-            document.getElementById('f-cost-productos-total').value = Number(solicitud.costos.productos_total||0).toFixed(2);
-            document.getElementById('f-cost-total').value = Number(solicitud.costos.total||0).toFixed(2);
+        if (solicitud.costos && solicitud.costos.total) {
+            document.getElementById('f-cost-base-total').value = Number(solicitud.costos.base_total || 0).toFixed(2);
+            document.getElementById('f-cost-productos-total').value = Number(solicitud.costos.productos_total || 0).toFixed(2);
+            document.getElementById('f-cost-total').value = Number(solicitud.costos.total || 0).toFixed(2);
         }
         recalcTotalsClient();
 
@@ -1523,7 +1569,10 @@ if (json.ok) {
                 })
             });
             const json = await res.json();
-            console.log('[SVE] Respuesta save_all ->', { status: res.status, json });
+            console.log('[SVE] Respuesta save_all ->', {
+                status: res.status,
+                json
+            });
             if (!json.ok) throw new Error(json.error || 'No se pudieron guardar los cambios');
 
             window.showToast?.('success', 'Cambios guardados');
