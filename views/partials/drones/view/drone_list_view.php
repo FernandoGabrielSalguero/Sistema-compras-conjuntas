@@ -71,7 +71,6 @@
     <div class="form-grid grid-3">
 
     </div>
-
 </div>
 
 
@@ -155,7 +154,72 @@
                             </div>
                         </div>
 
+
+
+
+
+
+                        <!-- Dirección -->
                         <div class="form-grid grid-4">
+                            <div class="input-group">
+                                <label for="dir_provincia">Provincia</label>
+                                <div class="input-icon input-icon-location">
+                                    <input type="text" id="dir_provincia" name="dir_provincia" placeholder="Provincia" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="dir_localidad">Localidad</label>
+                                <div class="input-icon input-icon-location">
+                                    <input type="text" id="dir_localidad" name="dir_localidad" placeholder="Localidad" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="dir_calle">Calle</label>
+                                <div class="input-icon input-icon-location">
+                                    <input type="text" id="dir_calle" name="dir_calle" placeholder="Calle" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="dir_numero">Número</label>
+                                <div class="input-icon input-icon-hash">
+                                    <input type="text" id="dir_numero" name="dir_numero" placeholder="N°" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ubicación -->
+                        <div class="form-grid grid-4">
+                            <div class="input-group">
+                                <label for="ubicacion_lat">Latitud</label>
+                                <div class="input-icon input-icon-location">
+                                    <input type="number" step="0.0000001" id="ubicacion_lat" name="ubicacion_lat" placeholder="-32.0000000" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="ubicacion_lng">Longitud</label>
+                                <div class="input-icon input-icon-location">
+                                    <input type="number" step="0.0000001" id="ubicacion_lng" name="ubicacion_lng" placeholder="-68.0000000" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="ubicacion_acc">Precisión (m)</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" id="ubicacion_acc" name="ubicacion_acc" placeholder="0.00" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="ubicacion_ts">Fecha/hora ubicación</label>
+                                <div class="input-icon input-icon-date">
+                                    <input type="datetime-local" id="ubicacion_ts" name="ubicacion_ts" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- datos estructurales -->
+                    <div class="card">
+    <h2 style="color: #5b21b6;">Datos estructurales</h2>
+<div class="form-grid grid-4">
                             <!-- Flags SI/NO -->
                             <div class="input-group">
                                 <label for="representante">Representante</label>
@@ -230,63 +294,7 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Dirección -->
-                        <div class="form-grid grid-4">
-                            <div class="input-group">
-                                <label for="dir_provincia">Provincia</label>
-                                <div class="input-icon input-icon-location">
-                                    <input type="text" id="dir_provincia" name="dir_provincia" placeholder="Provincia" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="dir_localidad">Localidad</label>
-                                <div class="input-icon input-icon-location">
-                                    <input type="text" id="dir_localidad" name="dir_localidad" placeholder="Localidad" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="dir_calle">Calle</label>
-                                <div class="input-icon input-icon-location">
-                                    <input type="text" id="dir_calle" name="dir_calle" placeholder="Calle" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="dir_numero">Número</label>
-                                <div class="input-icon input-icon-hash">
-                                    <input type="text" id="dir_numero" name="dir_numero" placeholder="N°" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Ubicación -->
-                        <div class="form-grid grid-4">
-                            <div class="input-group">
-                                <label for="ubicacion_lat">Latitud</label>
-                                <div class="input-icon input-icon-location">
-                                    <input type="number" step="0.0000001" id="ubicacion_lat" name="ubicacion_lat" placeholder="-32.0000000" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="ubicacion_lng">Longitud</label>
-                                <div class="input-icon input-icon-location">
-                                    <input type="number" step="0.0000001" id="ubicacion_lng" name="ubicacion_lng" placeholder="-68.0000000" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="ubicacion_acc">Precisión (m)</label>
-                                <div class="input-icon input-icon-hashtag">
-                                    <input type="number" step="0.01" id="ubicacion_acc" name="ubicacion_acc" placeholder="0.00" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="ubicacion_ts">Fecha/hora ubicación</label>
-                                <div class="input-icon input-icon-date">
-                                    <input type="datetime-local" id="ubicacion_ts" name="ubicacion_ts" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+</div>
 
                     <!-- Asignaciones -->
                     <div class="card">
