@@ -300,6 +300,7 @@
                     <!-- Costos -->
                     <div class="card">
                         <div class="form-separator"><span class="material-icons mi">attach_money</span>Costos</div>
+                        <h3>Costos</h3>
                         <div class="form-grid grid-4">
                             <div class="input-group">
                                 <label for="costo_moneda">Moneda</label>
