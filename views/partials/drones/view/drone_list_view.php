@@ -119,20 +119,16 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- observaciones del productor -->
-                    <div class="card">
-                        <h2 style="color: #5b21b6;">Datos inciales</h2>
-                        
+                        <!-- observaciones -->
                             <div class="input-group">
                                 <label for="observaciones">Observaciones</label>
                                 <div class="input-icon input-icon-edit">
                                     <input type="text" id="observaciones" name="observaciones" placeholder="Notas internas" />
                                 </div>
                             </div>
-                        
                     </div>
+
+
 
                     <!-- Programar visita -->
                     <div class="card">
