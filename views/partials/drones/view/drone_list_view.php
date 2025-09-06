@@ -62,13 +62,17 @@
             </div>
             <div class="sv-drawer__body">
                 <div class="card" style="box-shadow:none;">
-                    <div class="form-separator"><span class="material-icons mi">info</span>Formulario en construcción</div>
-                    <p style="color:#6b7280;">
-                        Esta vista fue limpiada. El formulario y los métodos de actualización están deshabilitados.
-                    </p>
-                    <div class="gform-helper">
-                        Podés usar esta estructura para volver a montar campos, validaciones y guardados más adelante.
+                    <div class="form-separator">
+                        <span class="material-icons mi">data_object</span>
+                        Detalle de la solicitud (JSON legible)
                     </div>
+
+                    <div class="flex-row" style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                        <button class="btn" id="btn-copy-json" type="button" title="Copiar JSON">Copiar JSON</button>
+                        <small style="color:#6b7280">Incluye etiquetas con el nombre de la tabla de origen.</small>
+                    </div>
+
+                    <pre id="drawer-json" class="code-block" style="max-height:55vh; overflow:auto; background:#0b1020; color:#d1d5db; border-radius:12px; padding:14px; font-size:12.5px; line-height:1.5; white-space:pre-wrap; word-break:break-word;"></pre>
                 </div>
             </div>
             <div class="sv-drawer__footer">
@@ -357,37 +361,43 @@
                 els.cards.appendChild(card);
             });
 
-            els.cards.querySelectorAll('.btn-view').forEach(btn=>{
-  btn.addEventListener('click', async () => {
-    const id = btn.dataset.id;
-    try{
-      const url  = `${DRONE_API}?action=get_solicitud&id=${encodeURIComponent(id)}`;
-      const res  = await fetch(url, { cache:'no-store' });
-      const json = await res.json();
-      if(!json.ok) throw new Error(json.error || 'Error');
+            els.cards.querySelectorAll('.btn-view').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.dataset.id;
+                    try {
+                        const url = `${DRONE_API}?action=get_solicitud&id=${encodeURIComponent(id)}`;
+                        const res = await fetch(url, {
+                            cache: 'no-store'
+                        });
+                        const json = await res.json();
+                        if (!json.ok) throw new Error(json.error || 'Error');
 
-      // 🔎 Log completo en consola (solicitud base + costos + items + recetas + motivos + rangos + eventos + piloto + forma_pago + productor)
-      console.group(`Solicitud #${id}`);
-      console.log('Payload completo:', json.data);
-      console.log('Solicitud:', json.data.solicitud);
-      console.log('Piloto:', json.data.piloto);
-      console.log('Forma de pago:', json.data.forma_pago);
-      console.log('Productor:', json.data.productor);
-      console.log('Costos:', json.data.costos);
-      console.log('Items:', json.data.items);
-      console.log('Motivos:', json.data.motivos);
-      console.log('Rangos:', json.data.rangos);
-      console.log('Eventos:', json.data.eventos);
-      console.groupEnd();
+                        // 🔎 Log completo en consola (solicitud base + costos + items + recetas + motivos + rangos + eventos + piloto + forma_pago + productor)
+                        console.group(`Solicitud #${id}`);
+                        console.log('Payload completo:', json.data);
+                        console.log('Solicitud:', json.data.solicitud);
+                        console.log('Piloto:', json.data.piloto);
+                        console.log('Forma de pago:', json.data.forma_pago);
+                        console.log('Productor:', json.data.productor);
+                        console.log('Costos:', json.data.costos);
+                        console.log('Items:', json.data.items);
+                        console.log('Motivos:', json.data.motivos);
+                        console.log('Rangos:', json.data.rangos);
+                        console.log('Eventos:', json.data.eventos);
+                        console.groupEnd();
 
-      // Abrimos el drawer como siempre (mostrar #id)
-      openDrawer({ id });
-    }catch(err){
-      console.error('No se pudo obtener la solicitud', err);
-      openDrawer({ id }); // abrimos igual para mantener UX
-    }
-  });
-});
+                        // Abrimos el drawer como siempre (mostrar #id)
+                        openDrawer({
+                            id: btn.dataset.id, hydrate:true
+                        });
+                    } catch (err) {
+                        console.error('No se pudo obtener la solicitud', err);
+                        openDrawer({
+                            id
+                        }); // abrimos igual para mantener UX
+                    }
+                });
+            });
 
         }
 
@@ -401,7 +411,8 @@
         let lastFocus = null;
 
         async function openDrawer({
-            id
+            id,
+            hydrate = false
         }) {
             lastFocus = document.activeElement;
             drawerId.textContent = `#${id}`;
@@ -416,7 +427,122 @@
                 drawer.removeEventListener('animationend', onEnd, true);
             };
             drawer.addEventListener('animationend', onEnd, true);
+
+            // Limpia el contenedor y deja un "cargando" simpático
+            const pre = document.getElementById('drawer-json');
+            if (pre) {
+                pre.textContent = 'Cargando solicitud…';
+            }
+
+            // Botón copiar
+            const btnCopy = document.getElementById('btn-copy-json');
+            if (btnCopy && pre) {
+                btnCopy.onclick = async () => {
+                    try {
+                        await navigator.clipboard.writeText(pre.textContent || '');
+                        btnCopy.textContent = '¡Copiado!';
+                        setTimeout(() => btnCopy.textContent = 'Copiar JSON', 1200);
+                    } catch (e) {
+                        console.error('No se pudo copiar', e);
+                    }
+                };
+            }
+
+            // Si debemos hidratar, pedimos al backend y renderizamos
+            if (hydrate) {
+                try {
+                    const url = `${DRONE_API}?action=get_solicitud&id=${encodeURIComponent(id)}`;
+                    const res = await fetch(url, {
+                        cache: 'no-store'
+                    });
+                    const json = await res.json();
+                    if (!json.ok) throw new Error(json.error || 'Error');
+
+                    // Log completo para devtools
+                    console.group(`Solicitud #${id}`);
+                    console.log('Payload completo:', json.data);
+                    console.groupEnd();
+
+                    // Construimos un objeto con etiquetas por tabla
+                    const pretty = buildSolicitudPayloadEtiquetado(json.data);
+
+                    // Pintamos
+                    if (pre) {
+                        pre.textContent = JSON.stringify(pretty, null, 2);
+                    }
+                } catch (err) {
+                    console.error('No se pudo obtener la solicitud', err);
+                    if (pre) pre.textContent = `Error cargando la solicitud: ${err.message || err}`;
+                }
+            }
         }
+
+        function sanitizeEmpty(v){ return (v===null || v===undefined) ? null : v; }
+
+function buildSolicitudPayloadEtiquetado(apiData){
+  // apiData viene del backend: { solicitud, piloto, forma_pago, productor, costos, items, motivos, rangos, eventos }
+  const s = apiData?.solicitud || {};
+
+  // Estructura con etiquetas de origen
+  const payload = {
+    "tabla:drones_solicitud": {
+      ...s,
+      id: s.id ? Number(s.id) : s.id,
+      piloto_id: sanitizeEmpty(s.piloto_id),
+      forma_pago_id: sanitizeEmpty(s.forma_pago_id),
+      productor_id_real: sanitizeEmpty(s.productor_id_real),
+      // Normalizamos campos de tiempo si vinieran como string
+      fecha_visita: sanitizeEmpty(s.fecha_visita),
+      hora_visita_desde: sanitizeEmpty(s.hora_visita_desde),
+      hora_visita_hasta: sanitizeEmpty(s.hora_visita_hasta),
+      created_at: sanitizeEmpty(s.created_at),
+      updated_at: sanitizeEmpty(s.updated_at)
+    },
+
+    "tabla:dron_pilotos": sanitizeEmpty(apiData?.piloto) || null,
+
+    "tabla:dron_formas_pago": sanitizeEmpty(apiData?.forma_pago) || null,
+
+    "tabla:usuarios (productor)": sanitizeEmpty(apiData?.productor) || null,
+
+    "tabla:drones_solicitud_costos": sanitizeEmpty(apiData?.costos) || null,
+
+    "tabla:drones_solicitud_item (+ joins)": Array.isArray(apiData?.items) ? apiData.items.map(it => ({
+      ...it,
+      id: Number(it.id),
+      solicitud_id: Number(it.solicitud_id),
+      patologia_id: sanitizeEmpty(it.patologia_id),
+      producto_id: sanitizeEmpty(it.producto_id),
+      "join:dron_patologias.nombre": sanitizeEmpty(it.patologia_nombre) || null,
+      "join:dron_productos_stock.nombre": sanitizeEmpty(it.producto_nombre) || null,
+      "join:dron_productos_stock.principio_activo": sanitizeEmpty(it.principio_activo) || null,
+      "join:dron_productos_stock.costo_hectarea": sanitizeEmpty(it.producto_costo_hectarea) || null,
+      "tabla:drones_solicitud_item_receta": Array.isArray(it.recetas) ? it.recetas : []
+    })) : [],
+
+    "tabla:drones_solicitud_motivo (+ join)": Array.isArray(apiData?.motivos) ? apiData.motivos.map(m => ({
+      ...m,
+      id: Number(m.id),
+      solicitud_id: Number(m.solicitud_id),
+      "join:dron_patologias.nombre": sanitizeEmpty(m.patologia_nombre) || null
+    })) : [],
+
+    "tabla:drones_solicitud_rango": Array.isArray(apiData?.rangos) ? apiData.rangos.map(r => ({
+      ...r,
+      id: Number(r.id),
+      solicitud_id: Number(r.solicitud_id)
+    })) : [],
+
+    "tabla:drones_solicitud_evento": Array.isArray(apiData?.eventos) ? apiData.eventos.map(e => ({
+      ...e,
+      id: Number(e.id),
+      solicitud_id: Number(e.solicitud_id)
+    })) : []
+  };
+
+  return payload;
+}
+
 
         function closeDrawer() {
             const active = document.activeElement;
