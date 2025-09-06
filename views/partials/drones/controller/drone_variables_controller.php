@@ -26,14 +26,13 @@ try {
         out(['ok'=>true, 'message'=>'Variables API OK']);
     }
 
-        $allowed = ['patologias','produccion','formas_pago','costo_hectarea'];
-    if (!in_array($entity, $allowed, true)) {
-        out(['ok'=>false,'error'=>'Entidad inválida (use patologias|produccion|costo_hectarea)'], 400);
+    $allowed = ['patologias','produccion','formas_pago','pilotos','costo_hectarea'];
+    if ($entity !== '' && !in_array($entity, $allowed, true)) {
+        out(['ok'=>false,'error'=>'Entidad inválida (use patologias|produccion|formas_pago|pilotos|costo_hectarea)'], 400);
     }
 
     if ($method === 'GET') {
         if ($action === 'list') {
-            // Para costo_hectarea devolvemos fila única (si existe)
             if ($entity === 'costo_hectarea') {
                 $row = $model->getCostoHectarea();
                 out(['ok'=>true, 'data'=>$row ? [$row] : []]);
@@ -60,7 +59,7 @@ try {
     }
 
     // POST (sin CSRF)
-    $raw = file_get_contents('php://input');
+    $raw  = file_get_contents('php://input');
     $json = json_decode($raw ?: '[]', true) ?? [];
 
     if ($action === 'create' || $action === 'update') {
@@ -74,17 +73,35 @@ try {
             out(['ok'=>false,'error'=>'No se pudo actualizar'], 500);
         }
 
-        // Patologías/Producción
+        if ($entity === 'pilotos') {
+            $id            = isset($json['id']) ? (int)$json['id'] : (isset($_POST['id'])?(int)$_POST['id']:0);
+            $nombre        = trim((string)($json['nombre'] ?? $_POST['nombre'] ?? ''));
+            $telefono      = trim((string)($json['telefono'] ?? $_POST['telefono'] ?? ''));
+            $zona_asignada = trim((string)($json['zona_asignada'] ?? $_POST['zona_asignada'] ?? ''));
+            $correo        = trim((string)($json['correo'] ?? $_POST['correo'] ?? ''));
+
+            if ($nombre === '' || mb_strlen($nombre) > 100) out(['ok'=>false,'error'=>'Nombre requerido (1-100)'], 422);
+            if ($telefono !== '' && mb_strlen($telefono) > 20) out(['ok'=>false,'error'=>'Teléfono inválido (<=20)' ], 422);
+            if ($zona_asignada !== '' && mb_strlen($zona_asignada) > 100) out(['ok'=>false,'error'=>'Zona inválida (<=100)'], 422);
+            if ($correo === '' || mb_strlen($correo) > 100 || !filter_var($correo, FILTER_VALIDATE_EMAIL)) out(['ok'=>false,'error'=>'Correo inválido'], 422);
+
+            if ($action === 'create') {
+                $newId = $model->createPiloto($nombre, $telefono !== '' ? $telefono : null, $zona_asignada !== '' ? $zona_asignada : null, $correo);
+                out(['ok'=>true,'data'=>['id'=>$newId]]);
+            } else {
+                if ($id <= 0) out(['ok'=>false,'error'=>'ID inválido'], 422);
+                $ok = $model->updatePiloto($id, $nombre, $telefono !== '' ? $telefono : null, $zona_asignada !== '' ? $zona_asignada : null, $correo);
+                out(['ok'=>true,'data'=>['id'=>$id]]);
+            }
+        }
+
+        // Patologías/Producción/Formas de pago (genérico)
         $id = isset($json['id']) ? (int)$json['id'] : (isset($_POST['id'])?(int)$_POST['id']:0);
         $nombre = trim((string)($json['nombre'] ?? $_POST['nombre'] ?? ''));
         $descripcion = trim((string)($json['descripcion'] ?? $_POST['descripcion'] ?? ''));
 
-        if ($nombre === '' || mb_strlen($nombre) > 100) {
-            out(['ok'=>false,'error'=>'Nombre requerido (1-100)'], 422);
-        }
-        if ($descripcion !== '' && mb_strlen($descripcion) > 255) {
-            out(['ok'=>false,'error'=>'Descripción demasiado larga (<=255)'], 422);
-        }
+        if ($nombre === '' || mb_strlen($nombre) > 100) out(['ok'=>false,'error'=>'Nombre requerido (1-100)'], 422);
+        if ($descripcion !== '' && mb_strlen($descripcion) > 255) out(['ok'=>false,'error'=>'Descripción demasiado larga (<=255)'], 422);
         $descripcion = ($descripcion === '') ? null : $descripcion;
 
         if ($action === 'create') {
@@ -98,17 +115,16 @@ try {
     }
 
     if ($action === 'delete') {
-        if ($entity === 'costo_hectarea') {
-            out(['ok'=>false,'error'=>'Acción no permitida para costo_hectarea'], 400);
-        }
-        $id = isset($json['id']) ? (int)$json['id'] : (isset($_POST['id'])?(int)$_POST['id']:0);
-        if ($id <= 0) out(['ok'=>false,'error'=>'ID inválido'], 422);
+        if ($entity === 'costo_hectarea') out(['ok'=>false,'error'=>'Acción no permitida para costo_hectarea'], 400);
 
-        $row = $model->get($entity, $id);
+        $rawId = isset($json['id']) ? (int)$json['id'] : (isset($_POST['id'])?(int)$_POST['id']:0);
+        if ($rawId <= 0) out(['ok'=>false,'error'=>'ID inválido'], 422);
+
+        $row = $model->get($entity, $rawId);
         if (!$row) out(['ok'=>false,'error'=>'No encontrado'], 404);
         $to = ($row['activo'] === 'si') ? false : true;
         $model->setActivo($entity, (int)$row['id'], $to);
-        out(['ok'=>true, 'data'=>['id'=>$id, 'activo'=>$to ? 'si':'no']]);
+        out(['ok'=>true, 'data'=>['id'=>$rawId, 'activo'=>$to ? 'si':'no']]);
     }
 
     out(['ok'=>false,'error'=>'Acción POST no soportada'], 400);
