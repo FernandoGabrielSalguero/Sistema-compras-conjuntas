@@ -152,6 +152,12 @@ $sesion_payload = [
             }
         }
 
+        .btn-cancelar-soft[disabled] {
+  opacity: .55;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
         /* ==== Modal cancelación (mobile-first) ==== */
         .modal {
             position: fixed;
