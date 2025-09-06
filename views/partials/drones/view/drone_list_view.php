@@ -128,8 +128,6 @@
                             </div>
                     </div>
 
-
-
                     <!-- Programar visita -->
                     <div class="card">
                         <h2 style="color: #5b21b6;">Programar visita</h2>
@@ -376,7 +374,7 @@
 
                     <!-- Motivos -->
                     <div class="card">
-                        <div class="form-separator"><span class="material-icons mi">bug_report</span>Motivos (patologías)</div>
+                        <h2 style="color: #5b21b6;">Patologias</h2>
                         <div class="tabla-wrapper">
                             <table class="data-table" id="tabla-motivos" aria-label="Motivos de la solicitud">
                                 <thead>
@@ -398,7 +396,7 @@
 
                     <!-- Items -->
                     <div class="card">
-                        <div class="form-separator"><span class="material-icons mi">inventory_2</span>Items (productos + recetas)</div>
+                        <h2 style="color: #5b21b6;">Productos y receta</h2>
                         <div class="tabla-wrapper">
                             <table class="data-table" id="tabla-items" aria-label="Items">
                                 <thead>
@@ -424,7 +422,7 @@
 
                     <!-- Rangos -->
                     <div class="card">
-                        <div class="form-separator"><span class="material-icons mi">date_range</span>Rangos (ventanas de aplicación)</div>
+                        <h2 style="color: #5b21b6;">Rangos de fechas seleccionadas</h2>
                         <div class="tabla-wrapper">
                             <table class="data-table" id="tabla-rangos" aria-label="Rangos">
                                 <thead>
