@@ -349,6 +349,8 @@
                                 </div>
                             </div>
                         </div>
+                        <br>
+                        <h4 style="color: #5b21b6;">Resumen de costo del servivio</h4>
                         <div id="costos-resumen" class="costos-resumen card" style="margin-top:8px;padding:12px;"></div>
                     </div>
 
@@ -394,26 +396,11 @@
                         <div id="productos-list" class="productos-list"></div>
 
                         <!-- Alta de producto (sin costo manual) -->
-                        <div class="form-grid grid-4" style="margin-top:12px;">
+                        <div class="form-grid" style="margin-top:12px;">
                             <div class="input-group">
                                 <label for="producto_new">Producto</label>
                                 <div class="input-icon input-icon-edit">
                                     <select id="producto_new"></select>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="producto_new_fuente">Fuente</label>
-                                <div class="input-icon input-icon-toggle">
-                                    <select id="producto_new_fuente">
-                                        <option value="sve">sve</option>
-                                        <option value="productor">productor</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="producto_new_patologia">Patología</label>
-                                <div class="input-icon input-icon-edit">
-                                    <select id="producto_new_patologia"></select>
                                 </div>
                             </div>
                         </div>
@@ -995,20 +982,22 @@
             state.items.forEach((it, idx) => {
                 const pInfo = catalog.productos.find(p => String(p.id) === String(it.producto_id));
                 const nombre = it.nombre_producto || pInfo?.nombre || `Producto #${it.producto_id}`;
-                const pat = catalog.patologias.find(p => String(p.id) === String(it.patologia_id));
+                const pat = it.patologia_id ?
+                    catalog.patologias.find(p => String(p.id) === String(it.patologia_id)) :
+                    null;
                 const costo = it.costo_hectarea_snapshot ?? pInfo?.costo_hectarea ?? null;
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'producto-item';
                 wrapper.innerHTML = `
-        <div>
-          <strong>${esc(nombre)}</strong>
-          <div class="meta">Fuente: ${esc(it.fuente||'sve')} · Patología: ${esc(pat ? pat.nombre : '—')}</div>
-          <div class="meta">Costo/ha: $${fmtNum(costo)}</div>
-        </div>
-        <div class="acciones">
-          <button type="button" class="btn btn-cancelar" data-role="quitar">Quitar</button>
-        </div>`;
+      <div>
+        <strong>${esc(nombre)}</strong>
+        <div class="meta">Fuente: sve${pat ? ` · Patología: ${esc(pat.nombre)}` : ''}</div>
+        <div class="meta">Costo/ha: $${fmtNum(costo)}</div>
+      </div>
+      <div class="acciones">
+        <button type="button" class="btn btn-cancelar" data-role="quitar">Quitar</button>
+      </div>`;
                 wrapper.querySelector('[data-role="quitar"]').addEventListener('click', () => {
                     state.items.splice(idx, 1);
                     renderProductos();
@@ -1018,6 +1007,7 @@
                 $listProd.appendChild(wrapper);
             });
         }
+
 
         // receta combinada
         function ensureRecetaSlots() {
@@ -1109,11 +1099,28 @@
 
         // estado cancelada -> mostrar motivo
         function toggleMotivo() {
-            const sel = document.querySelector('#form-solicitud #estado'); // <- el del drawer
+            const sel = document.querySelector('#form-solicitud #estado'); // el del drawer
             const grp = $('#grp_motivo_cancelacion');
-            if (!sel || !grp) return;
-            grp.style.display = (String(sel.value).toLowerCase() === 'cancelada') ? '' : 'none';
+            const help = $('#estadoHelp'); // texto debajo del select
+            const motivo = $('#motivo_cancelacion');
+
+            if (!sel || !grp || !help || !motivo) return;
+
+            const isCancelada = String(sel.value).toLowerCase() === 'cancelada';
+            grp.style.display = isCancelada ? '' : 'none';
+
+            motivo.required = isCancelada;
+            help.textContent = isCancelada ?
+                'Seleccionaste “Cancelada”. Indicá el motivo en el campo de abajo.' :
+                'Seleccioná el estado actual.';
+
+            if (isCancelada) {
+                setTimeout(() => motivo.focus(), 0);
+            } else {
+                motivo.value = motivo.value; // no tocar el valor; solo quitamos el required
+            }
         }
+
 
         // rellenar formulario
         function fillForm(d) {
@@ -1153,9 +1160,6 @@
             });
             fillSelect($('#producto_new'), catalog.productos, {
                 placeholder: 'Seleccionar producto'
-            });
-            fillSelect($('#producto_new_patologia'), catalog.patologias, {
-                placeholder: 'Patología asociada'
             });
 
             // opción "Otra" en patologías
@@ -1274,16 +1278,17 @@
             renderRangos();
         });
 
-        // Alta de producto (toma costo del stock automáticamente)
+        // productos
         $('#btn_add_producto')?.addEventListener('click', () => {
             const pid = $('#producto_new').value;
-            const fuente = $('#producto_new_fuente').value || 'sve';
-            const patId = $('#producto_new_patologia').value;
-            if (!pid || !patId) return showAlert('error', 'Elegí producto y patología');
+            if (!pid) return showAlert('error', 'Elegí un producto');
 
+            const fuente = 'sve';
+            const patologiaIdAuto = state.motivos[0]?.patologia_id ?? null;
             const prod = catalog.productos.find(p => String(p.id) === String(pid));
+
             state.items.push({
-                patologia_id: Number(patId),
+                patologia_id: patologiaIdAuto,
                 fuente,
                 producto_id: Number(pid),
                 nombre_producto: prod?.nombre || null,
@@ -1298,11 +1303,11 @@
             });
 
             $('#producto_new').value = '';
-            $('#producto_new_patologia').value = '';
             renderProductos();
             renderRecetaCombinada();
             recalcCostos();
         });
+
 
         // Costos live
         $('#base_ha')?.addEventListener('input', recalcCostos);
