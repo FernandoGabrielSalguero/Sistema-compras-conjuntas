@@ -1481,33 +1481,56 @@
     })();
 
     // Funciones para borrar
-    /* == DEBUG PEDIDO (se puede comentar cuando no se use) ===================== */
-    let __ULTIMO_PEDIDO__ = null;
+    /* == DEBUG PEDIDO (re-fetch al backend) ==================================== */
+let __ULTIMO_PEDIDO__ = null;
 
-    function debugPedidoPretty(data) {
-        try {
-            console.groupCollapsed('[Pedido] Detalle completo');
-            console.log('Solicitud:', data.solicitud);
-            console.log('Costos:', data.costos);
-            console.log('Items:', data.items);
-            console.log('Motivos:', data.motivos);
-            console.log('Rangos:', data.rangos);
-            console.log('Productor:', data.productor);
-            console.log('Piloto:', data.piloto);
-            console.log('Forma de pago:', data.forma_pago);
-            console.log('Eventos:', data.eventos);
-            console.log('JSON:', JSON.stringify(data, null, 2));
-        } finally {
-            console.groupEnd();
-        }
+function debugPedidoPretty(data) {
+  try {
+    console.groupCollapsed('[Pedido] Detalle completo');
+    console.log('Solicitud:', data.solicitud);
+    console.log('Costos:', data.costos);
+    console.log('Items:', data.items);
+    console.log('Motivos:', data.motivos);
+    console.log('Rangos:', data.rangos);
+    console.log('Productor:', data.productor);
+    console.log('Piloto:', data.piloto);
+    console.log('Forma de pago:', data.forma_pago);
+    console.log('Eventos:', data.eventos);
+    console.log('JSON:', JSON.stringify(data, null, 2));
+  } finally {
+    console.groupEnd();
+  }
+}
+
+function getCurrentSolicitudId() {
+  const t = (document.getElementById('drawer-id')?.textContent || '').trim();
+  const m = t.match(/#?(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+async function fetchPedidoById(id) {
+  const url = `${DRONE_API}?action=get_solicitud_full&id=${encodeURIComponent(id)}`;
+  const res = await fetch(url, { cache: 'no-store' });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'Error');
+  return json.data;
+}
+
+document.getElementById('btn-debug-pedido')?.addEventListener('click', async () => {
+  try {
+    const id = getCurrentSolicitudId();
+    if (!id) {
+      console.warn('No hay ID de solicitud en el drawer.');
+      return;
     }
-    // botón
-    document.getElementById('btn-debug-pedido')?.addEventListener('click', () => {
-        if (!__ULTIMO_PEDIDO__) {
-            console.warn('No hay datos cargados todavía.');
-            return;
-        }
-        debugPedidoPretty(__ULTIMO_PEDIDO__);
-    });
-    /* ======================================================================== */
+    // Re-fetch siempre para tener lo último del backend
+    const data = await fetchPedidoById(id);
+    __ULTIMO_PEDIDO__ = data;     // refresco el cache local también
+    debugPedidoPretty(data);      // imprime todo legible
+  } catch (e) {
+    console.error('No se pudo obtener el pedido:', e);
+  }
+});
+/* ========================================================================= */
+
 </script>
