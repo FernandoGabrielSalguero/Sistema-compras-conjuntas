@@ -340,7 +340,13 @@ $sesion_payload = [
             <div class="row"><span class="label">Costo del servicio</span><span class="value">${fmtNum(it.costo_total)} ${it.moneda||''}</span></div>
           </div>
           <div class="card-actions">
-            ${puedeCancelar ? `<button class="btn btn-cancelar btn-cancelar-soft" data-id="${it.id}" aria-label="Cancelar solicitud ${it.id}">Cancelar</button>` : ''}
+            ${puedeCancelar ? `<button
+  class="btn btn-cancelar btn-cancelar-soft"
+  data-id="${it.id}"
+  aria-label="Cancelar solicitud ${it.id}"
+  ${puedeCancelar ? '' : 'disabled'}
+  title="${puedeCancelar ? 'Cancelar solicitud' : 'Solo se puede cancelar en estado PROCESANDO o APROBADA_COOP'}"
+>Cancelar</button>` : ''}
           </div>
         </article>
       `;
@@ -447,8 +453,10 @@ $sesion_payload = [
 
             // Delegación: abrir modal desde cada tarjeta (solo si está pendiente)
             listado.addEventListener('click', (ev) => {
-                const btn = ev.target.closest('button.btn-cancelar');
-                if (!btn) return;
+const btn = ev.target.closest('button.btn-cancelar');
+if (!btn) return;
+if (btn.hasAttribute('disabled')) return; // evita abrir modal si está deshabilitado
+
 
                 const card = btn.closest('.pedido-card');
                 const badge = card?.querySelector('.estado-badge');
