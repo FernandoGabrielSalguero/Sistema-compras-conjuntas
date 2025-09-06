@@ -339,15 +339,15 @@ $sesion_payload = [
 
             <div class="row"><span class="label">Costo del servicio</span><span class="value">${fmtNum(it.costo_total)} ${it.moneda||''}</span></div>
           </div>
-          <div class="card-actions">
-            ${puedeCancelar ? `<button
-  class="btn btn-cancelar btn-cancelar-soft"
-  data-id="${it.id}"
-  aria-label="Cancelar solicitud ${it.id}"
-  ${puedeCancelar ? '' : 'disabled'}
-  title="${puedeCancelar ? 'Cancelar solicitud' : 'Solo se puede cancelar en estado PROCESANDO o APROBADA_COOP'}"
->Cancelar</button>` : ''}
-          </div>
+<div class="card-actions">
+  <button
+    class="btn btn-cancelar btn-cancelar-soft"
+    data-id="${it.id}"
+    aria-label="Cancelar solicitud ${it.id}"
+    ${puedeCancelar ? '' : 'disabled'}
+    title="${puedeCancelar ? 'Cancelar solicitud' : 'Solo se puede cancelar en estado PROCESANDO o APROBADA_COOP'}"
+  >Cancelar</button>
+</div>
         </article>
       `;
                 }).join('') || `<div class="gform-helper">No hay pedidos todavía.</div>`;
