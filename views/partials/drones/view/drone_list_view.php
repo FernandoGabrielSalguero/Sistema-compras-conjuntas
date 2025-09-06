@@ -66,18 +66,18 @@
                 <form id="form-solicitud" class="form" autocomplete="off" novalidate>
 
 
-<div class="card">
-    <h2 style="color: #5b21b6;">Datos inciales</h2>
-    <div class="form-grid grid-3">
+                    <div class="card">
+                        <h2 style="color: #5b21b6;">Datos inciales</h2>
+                        <div class="form-grid grid-3">
 
-    </div>
-</div>
+                        </div>
+                    </div>
 
 
-<!-- datos iniciales del pedido -->
-                <div class="card">
-                    <h2 style="color: #5b21b6;">Datos inciales</h2>
-                    <div class="form-grid grid-3">
+                    <!-- datos iniciales del pedido -->
+                    <div class="card">
+                        <h2 style="color: #5b21b6;">Datos inciales</h2>
+                        <div class="form-grid grid-3">
                             <div class="input-group">
                                 <label for="productor_id_real">Productor ID real</label>
                                 <div class="input-icon input-icon-id">
@@ -125,8 +125,8 @@
                                     <input type="text" id="observaciones" name="observaciones" placeholder="Notas internas" />
                                 </div>
                             </div>
+                        </div>
                     </div>
-                </div>
 
                     <!-- Programar visita -->
                     <div class="card">
@@ -153,12 +153,11 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-
-
-
-
-
+                    <!-- Dirección brindada por el productor -->
+                    <div class="card">
+                        <h2 style="color: #5b21b6;">Dirección</h2>
                         <!-- Dirección -->
                         <div class="form-grid grid-4">
                             <div class="input-group">
@@ -186,7 +185,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <!-- Ubicación -->
                         <div class="form-grid grid-4">
                             <div class="input-group">
@@ -218,8 +216,8 @@
 
                     <!-- datos estructurales -->
                     <div class="card">
-    <h2 style="color: #5b21b6;">Datos estructurales</h2>
-<div class="form-grid grid-4">
+                        <h2 style="color: #5b21b6;">Datos estructurales</h2>
+                        <div class="form-grid grid-4">
                             <!-- Flags SI/NO -->
                             <div class="input-group">
                                 <label for="representante">Representante</label>
@@ -294,7 +292,7 @@
                                 </div>
                             </div>
                         </div>
-</div>
+                    </div>
 
                     <!-- Asignaciones -->
                     <div class="card">
