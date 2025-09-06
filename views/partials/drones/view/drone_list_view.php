@@ -131,7 +131,7 @@
                     <!-- Programar visita -->
                     <div class="card">
                         <h2 style="color: #5b21b6;">Programar visita</h2>
-                        <div class="form-grid grid-3">
+                        <div class="form-grid grid-4">
                             <div class="input-group">
                                 <label for="fecha_visita">Fecha visita</label>
                                 <div class="input-icon input-icon-date">
@@ -152,6 +152,14 @@
                                     <input type="time" id="hora_visita_hasta" name="hora_visita_hasta" />
                                 </div>
                             </div>
+
+                            <div class="input-group">
+                                <label for="piloto_id">Piloto (ID)</label>
+                                <div class="input-icon input-icon-id">
+                                    <input type="number" id="piloto_id" name="piloto_id" min="1" placeholder="ID de dron_pilotos" />
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
@@ -187,8 +195,8 @@
                         </div>
 
                         <!-- Ubicación -->
+                        <h5 style="color: #5b21b6;">Ubicación provista por el celular del productor</h5>
                         <div class="form-grid grid-4">
-                            <h5 style="color: #5b21b6;">Ubicación provista por el celular del productor</h5>
                             <div class="input-group">
                                 <label for="ubicacion_lat">Latitud</label>
                                 <div class="input-icon input-icon-location">
@@ -298,14 +306,8 @@
 
                     <!-- Asignaciones -->
                     <div class="card">
-                        <div class="form-separator"><span class="material-icons mi">group</span>Asignación de piloto y forma de pago</div>
-                        <div class="form-grid grid-3">
-                            <div class="input-group">
-                                <label for="piloto_id">Piloto (ID)</label>
-                                <div class="input-icon input-icon-id">
-                                    <input type="number" id="piloto_id" name="piloto_id" min="1" placeholder="ID de dron_pilotos" />
-                                </div>
-                            </div>
+                        <h2 style="color: #5b21b6;">Forma de pago</h2>
+                        <div class="form-grid grid-2">
                             <div class="input-group">
                                 <label for="forma_pago_id">Forma de pago (ID)</label>
                                 <div class="input-icon input-icon-id">
