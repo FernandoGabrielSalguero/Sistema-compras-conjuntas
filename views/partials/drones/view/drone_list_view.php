@@ -64,49 +64,21 @@
             <div class="sv-drawer__body">
                 <!-- FORMULARIO COMPLETO -->
                 <form id="form-solicitud" class="form" autocomplete="off" novalidate>
-                    <!-- Datos base -->
-                    <div class="card">
-                        <div class="form-separator"><span class="material-icons mi">receipt_long</span>Datos generales del pedido</div>
-                        <div class="form-grid grid-3">
+
+<!-- datos iniciales del pedido -->
+                <div class="card">
+                    <h2 style="color: #5b21b6;">Datos inciales</h2>
+                    <div class="form-grid grid-3">
                             <div class="input-group">
                                 <label for="productor_id_real">Productor ID real</label>
                                 <div class="input-icon input-icon-id">
                                     <input type="text" id="productor_id_real" name="productor_id_real" placeholder="P0000" />
                                 </div>
                             </div>
-
                             <div class="input-group">
                                 <label for="ses_usuario">Nombre productor</label>
                                 <div class="input-icon input-icon-name">
                                     <input type="text" id="ses_usuario" name="ses_usuario" placeholder="Nombre y apellido" />
-                                </div>
-                            </div>
-
-                            <div class="input-group">
-                                <label for="superficie_ha">Superficie (ha)</label>
-                                <div class="input-icon input-icon-hashtag">
-                                    <input type="number" step="0.01" min="0" id="superficie_ha" name="superficie_ha" placeholder="0.00" />
-                                </div>
-                            </div>
-
-                            <div class="input-group">
-                                <label for="fecha_visita">Fecha visita</label>
-                                <div class="input-icon input-icon-date">
-                                    <input type="date" id="fecha_visita" name="fecha_visita" />
-                                </div>
-                            </div>
-
-                            <div class="input-group">
-                                <label for="hora_visita_desde">Hora desde</label>
-                                <div class="input-icon input-icon-time">
-                                    <input type="time" id="hora_visita_desde" name="hora_visita_desde" />
-                                </div>
-                            </div>
-
-                            <div class="input-group">
-                                <label for="hora_visita_hasta">Hora hasta</label>
-                                <div class="input-icon input-icon-time">
-                                    <input type="time" id="hora_visita_hasta" name="hora_visita_hasta" />
                                 </div>
                             </div>
 
@@ -137,6 +109,46 @@
                                     <input type="text" id="observaciones" name="observaciones" placeholder="Notas internas" />
                                 </div>
                             </div>
+                    </div>
+                </div>
+
+                    <!-- Datos base -->
+                    <div class="card">
+                        <div class="form-separator"><span class="material-icons mi">receipt_long</span>Datos generales del pedido</div>
+                        <div class="form-grid grid-3">
+
+
+
+
+                            <div class="input-group">
+                                <label for="superficie_ha">Superficie (ha)</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" min="0" id="superficie_ha" name="superficie_ha" placeholder="0.00" />
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="fecha_visita">Fecha visita</label>
+                                <div class="input-icon input-icon-date">
+                                    <input type="date" id="fecha_visita" name="fecha_visita" />
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="hora_visita_desde">Hora desde</label>
+                                <div class="input-icon input-icon-time">
+                                    <input type="time" id="hora_visita_desde" name="hora_visita_desde" />
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="hora_visita_hasta">Hora hasta</label>
+                                <div class="input-icon input-icon-time">
+                                    <input type="time" id="hora_visita_hasta" name="hora_visita_hasta" />
+                                </div>
+                            </div>
+
+                            
                         </div>
 
                         <div class="form-grid grid-4">
