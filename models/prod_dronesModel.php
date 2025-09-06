@@ -214,47 +214,65 @@ class prodDronesModel
                 }
             }
 
-            // 4) Productos
-            $prods      = (array)($data['productos'] ?? []);
-            $validProds = [];
+            // 4) Productos (nuevo esquema con 2 tablas)
+            $prods = (array)($data['productos'] ?? []);
             if ($prods) {
-                $stP = $this->pdo->prepare("INSERT INTO dron_solicitudes_productos (solicitud_id,patologia_id,producto_id,fuente,marca) VALUES (?,?,?,?,?)");
+                $stSve = $this->pdo->prepare(
+                    "INSERT INTO dron_solicitudes_productos_sve
+         (solicitud_id, patologia_id, producto_id, costo_hectarea_snapshot, total_producto)
+         VALUES (?, ?, ?, ?, ?)"
+                );
+                $stYo  = $this->pdo->prepare(
+                    "INSERT INTO dron_solicitudes_productos_yo
+         (solicitud_id, patologia_id, marca, principio_activo, dosis, unidad, orden_mezcla)
+         VALUES (?, ?, ?, ?, ?, ?, ?)"
+                );
+
                 foreach ($prods as $p) {
                     $pid    = isset($p['patologia_id']) ? (int)$p['patologia_id'] : 0;
                     $fuente = $p['fuente'] ?? null;
-                    $marca  = $nn($p['marca'] ?? null);
-                    $prodId = isset($p['producto_id']) ? (int)$p['producto_id'] : null;
 
+                    // validar patología
                     if ($pid <= 0) continue;
-                    if (!in_array($fuente, $this->fuentes, true)) continue;
-
-                    $chk = $this->pdo->prepare("SELECT 1 FROM dron_patologias WHERE id=?");
-                    $chk->execute([$pid]);
-                    if (!$chk->fetchColumn()) continue;
+                    $chkPat = $this->pdo->prepare("SELECT 1 FROM dron_patologias WHERE id=?");
+                    $chkPat->execute([$pid]);
+                    if (!$chkPat->fetchColumn()) continue;
 
                     if ($fuente === 'sve') {
-                        if ($prodId) {
-                            // validar que el producto esté en stock
-                            $vp = $this->pdo->prepare("SELECT 1 FROM dron_productos_stock_patologias WHERE producto_id = ? AND patologia_id = ?");
-                            $vp->execute([$prodId, $pid]);
-                            if ($vp->fetchColumn()) {
-                                $stP->execute([$solicitudId, $pid, $prodId, 'sve', null]);
-                                $validProds[] = ['patologia_id' => $pid, 'fuente' => 'sve', 'producto_id' => $prodId];
-                            }
-                        } else {
-                            // Guardar placeholder claro para que no quede NULL fantasma
-                            $stP->execute([$solicitudId, $pid, 0, 'sve', 'PENDIENTE']);
-                            $validProds[] = ['patologia_id' => $pid, 'fuente' => 'sve', 'producto_id' => 0, 'nota' => 'PENDIENTE'];
+                        $productoId = isset($p['producto_id']) ? (int)$p['producto_id'] : 0;
+                        if ($productoId <= 0) {
+                            // descartar filas inválidas en el nuevo esquema
+                            continue;
                         }
-                    } else { // fuente = yo
-                        if ($marca) {
-                            $stP->execute([$solicitudId, $pid, null, 'yo', $marca]);
-                            $validProds[] = ['patologia_id' => $pid, 'fuente' => 'yo', 'marca' => $marca];
-                        } else {
-                            // Guardar placeholder claro en marca
-                            $stP->execute([$solicitudId, $pid, null, 'yo', 'PENDIENTE']);
-                            $validProds[] = ['patologia_id' => $pid, 'fuente' => 'yo', 'marca' => 'PENDIENTE'];
+
+                        // costo snapshot
+                        $q = $this->pdo->prepare("SELECT costo_hectarea FROM dron_productos_stock WHERE id=? AND activo='si'");
+                        $q->execute([$productoId]);
+                        $costoHa = (float)$q->fetchColumn();
+                        // si no existe/activo, descartar
+                        if ($costoHa <= 0 && $costoHa !== 0.0) continue;
+
+                        $sup = (float)$mainRow['superficie_ha'];
+                        $totalProd = $sup * $costoHa;
+
+                        $stSve->execute([$solicitudId, $pid, $productoId, $costoHa, $totalProd]);
+                        $validProds[] = ['patologia_id' => $pid, 'fuente' => 'sve', 'producto_id' => $productoId, 'costo_ha' => $costoHa];
+                    } elseif ($fuente === 'yo') {
+                        $marca  = $nn($p['marca'] ?? null);
+                        if (!$marca) {
+                            // descartar filas inválidas en el nuevo esquema
+                            continue;
                         }
+                        $stYo->execute([
+                            $solicitudId,
+                            $pid,
+                            $marca,
+                            $nn($p['principio_activo'] ?? null),
+                            isset($p['dosis']) ? (float)$p['dosis'] : null,
+                            $nn($p['unidad'] ?? null),
+                            isset($p['orden_mezcla']) ? (int)$p['orden_mezcla'] : null
+                        ]);
+                        $validProds[] = ['patologia_id' => $pid, 'fuente' => 'yo', 'marca' => $marca];
                     }
                 }
             }
