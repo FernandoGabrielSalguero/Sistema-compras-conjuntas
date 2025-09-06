@@ -74,9 +74,9 @@
                                 </div>
                             </div>
                             <div class="input-group">
-                                <label for="ses_usuario">Nombre productor</label>
+                                <label for="ses_usuario_edit">Nombre productor</label>
                                 <div class="input-icon input-icon-name">
-                                    <input type="text" id="ses_usuario" name="ses_usuario" placeholder="Nombre y apellido" />
+                                    <input type="text" id="ses_usuario_edit" name="ses_usuario_edit" placeholder="Nombre y apellido" />
                                 </div>
                             </div>
 
@@ -120,11 +120,9 @@
                     <div class="card">
                         <h2 style="color: #5b21b6;">Programar visita</h2>
                         <div class="form-grid grid-4">
-                            <div class="input-group">
-                                <label for="fecha_visita">Fecha visita</label>
-                                <div class="input-icon input-icon-date">
-                                    <input type="date" id="fecha_visita" name="fecha_visita" />
-                                </div>
+                            <label for="fecha_visita_edit">Fecha visita</label>
+                            <div class="input-icon input-icon-date">
+                                <input type="date" id="fecha_visita_edit" name="fecha_visita_edit" />
                             </div>
                             <div class="input-group">
                                 <label for="hora_visita_desde">Hora desde</label>
@@ -469,7 +467,11 @@
                 </form>
             </div>
 
-            <div class="sv-drawer__footer" aria-hidden="true"></div>
+            <div class="sv-drawer__footer" aria-hidden="true">
+                <button type="button" id="btn-debug-pedido" class="btn btn-info" title="Debug pedido">
+                    <span class="material-icons">bug_report</span>
+                </button>
+            </div>
         </aside>
     </div>
 </div>
@@ -892,24 +894,32 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.innerHTML = `
-        <div class="product-header">
-          <h4>${esc(it.ses_usuario||'—')}</h4>
-          <p>Pedido número: ${esc(it.id??'')}</p>
+  <div class="product-header">
+    <h4>${esc(it.ses_usuario||'—')}</h4>
+    <p>Pedido número: ${esc(it.id??'')}</p>
+  </div>
+  <div class="product-body">
+    <div class="user-info">
+      <div>
+        <strong>${esc(it.piloto||'Sin piloto asignado')}</strong>
+        <div class="role">
+          Fecha visita: ${esc(it.fecha_visita||'—')}${it.hora_visita?` (${esc(it.hora_visita)})`:''}
         </div>
-        <div class="product-body">
-          <div class="user-info">
-            <div>
-              <strong>${esc(it.piloto||'Sin piloto asignado')}</strong>
-              <div class="role">Fecha visita: ${esc(it.fecha_visita||'')} ${it.hora_visita?`(${esc(it.hora_visita)})`:''}</div>
-            </div>
-          </div>
-          <p class="description">${esc(it.observaciones||'')}</p>
-          <hr />
-          <div class="product-footer">
-            <div class="metric"><span class="badge ${badgeClass(it.estado)}">${prettyEstado(it.estado)}</span></div>
-            <button class="btn-view" data-id="${it.id}">Ver detalle</button>
-          </div>
-        </div>`;
+      </div>
+    </div>
+
+    <p class="description">
+      ${esc(it.observaciones||'')}
+      ${it.total!=null ? ` | El costo de este pedido es de $${esc(String(it.total).replace('.',','))}` : ''}
+    </p>
+
+    <hr />
+    <div class="product-footer">
+      <div class="metric"><span class="badge ${badgeClass(it.estado)}">${prettyEstado(it.estado)}</span></div>
+      <button class="btn-view" data-id="${it.id}">Ver detalle</button>
+    </div>
+  </div>`;
+
                 els.cards.appendChild(card);
             });
 
@@ -1099,27 +1109,23 @@
 
         // estado cancelada -> mostrar motivo
         function toggleMotivo() {
-            const sel = document.querySelector('#form-solicitud #estado'); // el del drawer
-            const grp = $('#grp_motivo_cancelacion');
-            const help = $('#estadoHelp'); // texto debajo del select
-            const motivo = $('#motivo_cancelacion');
-
+            const sel = document.querySelector('#form-solicitud #estado');
+            const grp = document.querySelector('#grp_motivo_cancelacion');
+            const help = document.querySelector('#estadoHelp');
+            const motivo = document.querySelector('#motivo_cancelacion');
             if (!sel || !grp || !help || !motivo) return;
 
             const isCancelada = String(sel.value).toLowerCase() === 'cancelada';
-            grp.style.display = isCancelada ? '' : 'none';
+            grp.style.display = isCancelada ? 'block' : 'none'; // <-- antes: ''
 
             motivo.required = isCancelada;
             help.textContent = isCancelada ?
                 'Seleccionaste “Cancelada”. Indicá el motivo en el campo de abajo.' :
                 'Seleccioná el estado actual.';
 
-            if (isCancelada) {
-                setTimeout(() => motivo.focus(), 0);
-            } else {
-                motivo.value = motivo.value; // no tocar el valor; solo quitamos el required
-            }
+            if (isCancelada) setTimeout(() => motivo.focus(), 0);
         }
+
 
 
         // rellenar formulario
@@ -1128,9 +1134,9 @@
 
             const s = d.solicitud || {};
             setV('productor_id_real', s.productor_id_real);
-            setV('ses_usuario', s.ses_usuario ?? d?.productor?.usuario ?? '');
+            setV('ses_usuario_edit', s.ses_usuario ?? d?.productor?.usuario ?? '');
             setV('superficie_ha', fmtNum(s.superficie_ha));
-            setV('fecha_visita', s.fecha_visita);
+            setV('fecha_visita_edit', s.fecha_visita);
             setV('hora_visita_desde', s.hora_visita_desde);
             setV('hora_visita_hasta', s.hora_visita_hasta);
             setV('estado', s.estado);
@@ -1183,7 +1189,11 @@
             recalcCostos();
 
             // forma de pago - placeholder "No aplica" si viene vacío
-            setV('coop_descuento_nombre', s.coop_descuento_nombre || '');
+            setV(
+                'coop_descuento_nombre',
+                s.coop_descuento_nombre ||
+                (d?.productor?.cooperativas?.[0]?.cooperativa_usuario ?? '')
+            );
             $('#coop_descuento_nombre').placeholder = 'No aplica';
 
             // motivos
@@ -1319,9 +1329,9 @@
                 id: Number(($('#drawer-id').textContent || '').replace('#', '')) || null,
                 solicitud: {
                     productor_id_real: getV('productor_id_real'),
-                    ses_usuario: getV('ses_usuario'),
+                    ses_usuario: getV('ses_usuario_edit'),
                     superficie_ha: parseNum(getV('superficie_ha')),
-                    fecha_visita: getV('fecha_visita'),
+                    fecha_visita: getV('fecha_visita_edit'),
                     hora_visita_desde: getV('hora_visita_desde'),
                     hora_visita_hasta: getV('hora_visita_hasta'),
                     estado: getV('estado'),
@@ -1466,4 +1476,35 @@
 
         load(); // arranque
     })();
+
+    // Funciones para borrar
+    /* == DEBUG PEDIDO (se puede comentar cuando no se use) ===================== */
+    let __ULTIMO_PEDIDO__ = null;
+
+    function debugPedidoPretty(data) {
+        try {
+            console.groupCollapsed('[Pedido] Detalle completo');
+            console.log('Solicitud:', data.solicitud);
+            console.log('Costos:', data.costos);
+            console.log('Items:', data.items);
+            console.log('Motivos:', data.motivos);
+            console.log('Rangos:', data.rangos);
+            console.log('Productor:', data.productor);
+            console.log('Piloto:', data.piloto);
+            console.log('Forma de pago:', data.forma_pago);
+            console.log('Eventos:', data.eventos);
+            console.log('JSON:', JSON.stringify(data, null, 2));
+        } finally {
+            console.groupEnd();
+        }
+    }
+    // botón
+    document.getElementById('btn-debug-pedido')?.addEventListener('click', () => {
+        if (!__ULTIMO_PEDIDO__) {
+            console.warn('No hay datos cargados todavía.');
+            return;
+        }
+        debugPedidoPretty(__ULTIMO_PEDIDO__);
+    });
+    /* ======================================================================== */
 </script>

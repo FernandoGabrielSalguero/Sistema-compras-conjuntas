@@ -41,29 +41,32 @@ final class DroneListModel
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-        $sql = "
-            SELECT
-                s.id,
-                s.ses_usuario,
-                p.nombre AS piloto,
-                s.piloto_id,
-                s.productor_id_real,
-                s.fecha_visita,
-                CASE
-                  WHEN s.hora_visita_desde IS NOT NULL AND s.hora_visita_hasta IS NOT NULL THEN
-                    CONCAT(LPAD(HOUR(s.hora_visita_desde),2,'0'), ':', LPAD(MINUTE(s.hora_visita_desde),2,'0'),
-                           ' - ',
-                           LPAD(HOUR(s.hora_visita_hasta),2,'0'),  ':', LPAD(MINUTE(s.hora_visita_hasta),2,'0'))
-                  ELSE NULL
-                END AS hora_visita,
-                s.observaciones,
-                s.estado,
-                s.motivo_cancelacion
-            FROM drones_solicitud s
-            LEFT JOIN dron_pilotos p ON p.id = s.piloto_id
-            $whereSql
-            ORDER BY s.created_at DESC, s.id DESC
-        ";
+$sql = "
+  SELECT
+      s.id,
+      s.ses_usuario,
+      p.nombre AS piloto,
+      s.piloto_id,
+      s.productor_id_real,
+      s.fecha_visita,
+      CASE
+        WHEN s.hora_visita_desde IS NOT NULL AND s.hora_visita_hasta IS NOT NULL THEN
+          CONCAT(LPAD(HOUR(s.hora_visita_desde),2,'0'), ':', LPAD(MINUTE(s.hora_visita_desde),2,'0'),
+                 ' - ',
+                 LPAD(HOUR(s.hora_visita_hasta),2,'0'),  ':', LPAD(MINUTE(s.hora_visita_hasta),2,'0'))
+        ELSE NULL
+      END AS hora_visita,
+      s.observaciones,
+      s.estado,
+      s.motivo_cancelacion,
+      c.total AS total
+  FROM drones_solicitud s
+  LEFT JOIN dron_pilotos p ON p.id = s.piloto_id
+  LEFT JOIN drones_solicitud_costos c ON c.solicitud_id = s.id
+  $whereSql
+  ORDER BY s.created_at DESC, s.id DESC
+";
+
 
         $st = $this->pdo->prepare($sql);
         foreach ($params as $k => $v) $st->bindValue($k, $v);
