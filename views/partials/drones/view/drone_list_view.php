@@ -455,16 +455,16 @@
                             </div>
                         </div>
 
-                        <!-- receta -->
-                        <div class="card">
-                            <h2 style="color:#5b21b6;">Receta</h2>
-                            <div id="recetas-container"></div>
-                        </div>
-
                         <div class="form-buttons">
                             <button type="button" class="btn btn-info" id="btn_add_producto">Agregar producto</button>
                         </div>
                     </div>
+
+                                            <!-- receta -->
+                        <div class="card">
+                            <h2 style="color:#5b21b6;">Receta</h2>
+                            <div id="recetas-container"></div>
+                        </div>
 
 
                     <!-- Rangos -->
