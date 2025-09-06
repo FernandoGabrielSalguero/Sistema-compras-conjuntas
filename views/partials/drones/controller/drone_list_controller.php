@@ -1,5 +1,5 @@
 <?php
-// CONTROLLER LIMPIO: sólo lectura, sin endpoints de guardado
+// CONTROLLER: lectura + actualización
 declare(strict_types=1);
 
 ini_set('display_errors','1');
@@ -10,6 +10,13 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../../../../config.php';
 require_once __DIR__ . '/../model/drone_list_model.php';
+
+function read_json_body(): array {
+    $raw = file_get_contents('php://input');
+    if ($raw === false || $raw === '') return [];
+    $data = json_decode($raw, true);
+    return is_array($data) ? $data : [];
+}
 
 try {
     $model  = new DroneListModel($pdo);
@@ -37,13 +44,50 @@ try {
                 echo json_encode(['ok'=>false,'error'=>'ID inválido'], JSON_UNESCAPED_UNICODE);
                 break;
             }
-            $detalle = $model->obtenerSolicitud($id);
+            $detalle = $model->obtenerSolicitudFull($id);
             if (!$detalle) {
                 http_response_code(404);
                 echo json_encode(['ok'=>false,'error'=>'Solicitud no encontrada'], JSON_UNESCAPED_UNICODE);
                 break;
             }
             echo json_encode(['ok'=>true, 'data'=>$detalle], JSON_UNESCAPED_UNICODE);
+            break;
+        }
+
+        case 'get_solicitud_full': {
+            $id = (int)($_GET['id'] ?? 0);
+            if ($id <= 0) {
+                http_response_code(400);
+                echo json_encode(['ok'=>false,'error'=>'ID inválido'], JSON_UNESCAPED_UNICODE);
+                break;
+            }
+            $detalle = $model->obtenerSolicitudFull($id);
+            if (!$detalle) {
+                http_response_code(404);
+                echo json_encode(['ok'=>false,'error'=>'Solicitud no encontrada'], JSON_UNESCAPED_UNICODE);
+                break;
+            }
+            echo json_encode(['ok'=>true, 'data'=>$detalle], JSON_UNESCAPED_UNICODE);
+            break;
+        }
+
+        case 'update_solicitud': {
+            $body = read_json_body();
+            try {
+                if (!isset($body['id'])) {
+                    http_response_code(400);
+                    echo json_encode(['ok'=>false,'error'=>'Falta id'], JSON_UNESCAPED_UNICODE);
+                    break;
+                }
+                $updatedId = $model->actualizarSolicitud($body);
+                echo json_encode(['ok'=>true, 'data'=>['id'=>$updatedId]], JSON_UNESCAPED_UNICODE);
+            } catch (InvalidArgumentException $e) {
+                http_response_code(400);
+                echo json_encode(['ok'=>false,'error'=>$e->getMessage()], JSON_UNESCAPED_UNICODE);
+            } catch (Throwable $e) {
+                http_response_code(500);
+                echo json_encode(['ok'=>false,'error'=>'Error al actualizar','detail'=>$e->getMessage()], JSON_UNESCAPED_UNICODE);
+            }
             break;
         }
 
