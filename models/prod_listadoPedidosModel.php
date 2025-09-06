@@ -90,7 +90,7 @@ LIMIT :limit OFFSET :offset";
         }
 
         // Solo se puede cancelar en: 'procesando' o 'aprobada_coop'
-        if (!in_array($estado, ['procesando','aprobada_coop'], true)) {
+        if (!in_array($estado, ['ingresada','aprobada_coop'], true)) {
             throw new InvalidArgumentException('La solicitud no puede ser cancelada en su estado actual.');
         }
 
