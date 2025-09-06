@@ -65,6 +65,16 @@
                 <!-- FORMULARIO COMPLETO -->
                 <form id="form-solicitud" class="form" autocomplete="off" novalidate>
 
+
+<div class="card">
+    <h2 style="color: #5b21b6;">Datos inciales</h2>
+    <div class="form-grid grid-3">
+
+    </div>
+
+</div>
+
+
 <!-- datos iniciales del pedido -->
                 <div class="card">
                     <h2 style="color: #5b21b6;">Datos inciales</h2>
@@ -104,6 +114,13 @@
                             </div>
 
                             <div class="input-group">
+                                <label for="superficie_ha">Superficie (ha)</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" min="0" id="superficie_ha" name="superficie_ha" placeholder="0.00" />
+                                </div>
+                            </div>
+
+                            <div class="input-group">
                                 <label for="observaciones">Observaciones</label>
                                 <div class="input-icon input-icon-edit">
                                     <input type="text" id="observaciones" name="observaciones" placeholder="Notas internas" />
@@ -112,21 +129,10 @@
                     </div>
                 </div>
 
-                    <!-- Datos base -->
+                    <!-- Programar visita -->
                     <div class="card">
-                        <div class="form-separator"><span class="material-icons mi">receipt_long</span>Datos generales del pedido</div>
+                        <h2 style="color: #5b21b6;">Programar visita</h2>
                         <div class="form-grid grid-3">
-
-
-
-
-                            <div class="input-group">
-                                <label for="superficie_ha">Superficie (ha)</label>
-                                <div class="input-icon input-icon-hashtag">
-                                    <input type="number" step="0.01" min="0" id="superficie_ha" name="superficie_ha" placeholder="0.00" />
-                                </div>
-                            </div>
-
                             <div class="input-group">
                                 <label for="fecha_visita">Fecha visita</label>
                                 <div class="input-icon input-icon-date">
@@ -147,8 +153,6 @@
                                     <input type="time" id="hora_visita_hasta" name="hora_visita_hasta" />
                                 </div>
                             </div>
-
-                            
                         </div>
 
                         <div class="form-grid grid-4">
