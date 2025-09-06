@@ -1,5 +1,5 @@
 <?php
-// VISTA LIMPIA: lista + drawer sin lógica de edición/guardar
+
 ?>
 
 <!-- Framework SVE -->
@@ -66,7 +66,7 @@
                 <form id="form-solicitud" class="form" autocomplete="off" novalidate>
                     <!-- Datos base -->
                     <div class="card">
-                        <div class="form-separator"><span class="material-icons mi">receipt_long</span>Facturación y costos</div>
+                        <div class="form-separator"><span class="material-icons mi">receipt_long</span>Datos generales del pedido</div>
                         <div class="form-grid grid-3">
                             <div class="input-group">
                                 <label for="productor_id_real">Productor ID real</label>
@@ -630,6 +630,22 @@
         background: #FEE2E2;
         color: #B91C1C
     }
+
+    /* Shim para inputs dentro de tablas con estructura .input-icon */
+    .data-table td .input-icon {
+        display: block;
+    }
+
+    .data-table td .input-icon input,
+    .data-table td .input-icon select,
+    .data-table td .input-icon textarea {
+        width: 100%;
+    }
+
+    /* Asegura que .form-separator tenga margen incluso en tablas/entornos estrechos */
+    .card .form-separator {
+        margin: 8px 0 16px;
+    }
 </style>
 
 <script>
@@ -754,7 +770,7 @@
                 btn.addEventListener('click', async () => {
                     const id = btn.dataset.id;
                     try {
-                        const url  = `${DRONE_API}?action=get_solicitud_full&id=${encodeURIComponent(id)}`;
+                        const url = `${DRONE_API}?action=get_solicitud_full&id=${encodeURIComponent(id)}`;
 
                         const res = await fetch(url, {
                             cache: 'no-store'
@@ -780,7 +796,7 @@
 
         }
 
-                // ---------- Helpers de UI de edición ----------
+        // ---------- Helpers de UI de edición ----------
         function el(tag, attrs = {}, children = []) {
             const n = document.createElement(tag);
             Object.entries(attrs).forEach(([k, v]) => {
@@ -809,91 +825,262 @@
         // Render filas dinámicas (motivos/items/rangos)
         function makeMotivoRow(i, m = {}) {
             const tr = el('tr', {}, [
-                el('td', {}, [String(i+1)]),
-                el('td', {}, [el('input', {type:'number', class:'mini-input', min:'1', value: m.patologia_id ?? '', 'aria-label':'patologia_id'})]),
-                el('td', {}, [el('select', {class:'mini-input', 'aria-label':'es_otros'}, [
-                    el('option', {value:'0'}, ['0']),
-                    el('option', {value:'1', selected: m.es_otros ? 'selected': null}, ['1'])
+                el('td', {}, [String(i + 1)]),
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-hashtag'
+                }, [
+                    el('input', {
+                        type: 'number',
+                        min: '1',
+                        value: m.patologia_id ?? '',
+                        'aria-label': 'patologia_id'
+                    })
                 ])]),
-                el('td', {}, [el('input', {type:'text', class:'mini-input', value: m.otros_text ?? '', 'aria-label':'otros_text'})]),
-                el('td', {class:'table-actions'}, [
-                    el('button', {type:'button', class:'btn btn-cancelar', onClick: () => tr.remove()}, ['Quitar'])
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-toggle'
+                }, [
+                    el('select', {
+                        'aria-label': 'es_otros'
+                    }, [
+                        el('option', {
+                            value: '0'
+                        }, ['0']),
+                        el('option', {
+                            value: '1',
+                            selected: m.es_otros ? 'selected' : null
+                        }, ['1'])
+                    ])
+                ])]),
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-edit'
+                }, [
+                    el('input', {
+                        type: 'text',
+                        value: m.otros_text ?? '',
+                        'aria-label': 'otros_text'
+                    })
+                ])]),
+                el('td', {
+                    class: 'table-actions'
+                }, [
+                    el('button', {
+                        type: 'button',
+                        class: 'btn btn-cancelar',
+                        onClick: () => tr.remove()
+                    }, ['Quitar'])
                 ])
             ]);
             return tr;
         }
 
+
         function makeRecetaTable(recetas = []) {
             const wrap = el('div');
-            const table = el('table', {class:'data-table', 'aria-label':'Recetas'}, [
-                el('thead',{},[el('tr',{},[
-                    el('th',{},['#']),
-                    el('th',{},['principio_activo']),
-                    el('th',{},['dosis']),
-                    el('th',{},['unidad']),
-                    el('th',{},['orden_mezcla']),
-                    el('th',{},['notas']),
-                    el('th',{},['Acciones'])
+            const table = el('table', {
+                class: 'data-table',
+                'aria-label': 'Recetas'
+            }, [
+                el('thead', {}, [el('tr', {}, [
+                    el('th', {}, ['#']),
+                    el('th', {}, ['principio_activo']),
+                    el('th', {}, ['dosis']),
+                    el('th', {}, ['unidad']),
+                    el('th', {}, ['orden_mezcla']),
+                    el('th', {}, ['notas']),
+                    el('th', {}, ['Acciones'])
                 ])]),
-                el('tbody',{},[])
+                el('tbody', {}, [])
             ]);
             const tbody = table.querySelector('tbody');
-            recetas.forEach((r,idx)=>{
+            recetas.forEach((r, idx) => {
                 tbody.appendChild(makeRecetaRow(idx, r));
             });
-            const btnAdd = el('button',{type:'button', class:'btn btn-info', onClick:()=>{
-                tbody.appendChild(makeRecetaRow(tbody.children.length, {}));
-            }},['Agregar receta']);
+            const btnAdd = el('button', {
+                type: 'button',
+                class: 'btn btn-info',
+                onClick: () => {
+                    tbody.appendChild(makeRecetaRow(tbody.children.length, {}));
+                }
+            }, ['Agregar receta']);
             wrap.appendChild(table);
-            wrap.appendChild(el('div',{class:'form-buttons'},[btnAdd]));
+            wrap.appendChild(el('div', {
+                class: 'form-buttons'
+            }, [btnAdd]));
             return wrap;
         }
 
         function makeRecetaRow(i, r = {}) {
             const tr = el('tr', {}, [
-                el('td', {}, [String(i+1)]),
-                el('td', {}, [el('input',{type:'text',class:'mini-input',value:r.principio_activo ?? '', 'aria-label':'principio_activo'})]),
-                el('td', {}, [el('input',{type:'number',step:'0.001',class:'mini-input',value:r.dosis ?? '', 'aria-label':'dosis'})]),
-                el('td', {}, [el('input',{type:'text',class:'mini-input',value:r.unidad ?? '', 'aria-label':'unidad'})]),
-                el('td', {}, [el('input',{type:'number',class:'mini-input',value:r.orden_mezcla ?? '', 'aria-label':'orden_mezcla'})]),
-                el('td', {}, [el('input',{type:'text',class:'mini-input',value:r.notas ?? '', 'aria-label':'notas'})]),
-                el('td', {class:'table-actions'}, [
-                    el('button', {type:'button', class:'btn btn-cancelar', onClick: () => tr.remove()}, ['Quitar'])
+                el('td', {}, [String(i + 1)]),
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-edit'
+                }, [
+                    el('input', {
+                        type: 'text',
+                        value: r.principio_activo ?? '',
+                        'aria-label': 'principio_activo'
+                    })
+                ])]),
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-hashtag'
+                }, [
+                    el('input', {
+                        type: 'number',
+                        step: '0.001',
+                        value: r.dosis ?? '',
+                        'aria-label': 'dosis'
+                    })
+                ])]),
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-edit'
+                }, [
+                    el('input', {
+                        type: 'text',
+                        value: r.unidad ?? '',
+                        'aria-label': 'unidad'
+                    })
+                ])]),
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-hashtag'
+                }, [
+                    el('input', {
+                        type: 'number',
+                        value: r.orden_mezcla ?? '',
+                        'aria-label': 'orden_mezcla'
+                    })
+                ])]),
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-edit'
+                }, [
+                    el('input', {
+                        type: 'text',
+                        value: r.notas ?? '',
+                        'aria-label': 'notas'
+                    })
+                ])]),
+                el('td', {
+                    class: 'table-actions'
+                }, [
+                    el('button', {
+                        type: 'button',
+                        class: 'btn btn-cancelar',
+                        onClick: () => tr.remove()
+                    }, ['Quitar'])
                 ])
             ]);
             return tr;
         }
+
 
         function makeItemRow(i, it = {}) {
             const tr = el('tr', {}, [
-                el('td', {}, [String(i+1)]),
-                el('td', {}, [el('input',{type:'number',class:'mini-input',min:'1',value:it.patologia_id ?? '', 'aria-label':'patologia_id'})]),
-                el('td', {}, [el('select',{class:'mini-input','aria-label':'fuente'},[
-                    el('option',{value:'sve', selected: it.fuente === 'sve' ? 'selected': null},['sve']),
-                    el('option',{value:'productor', selected: it.fuente === 'productor' ? 'selected': null},['productor'])
+                el('td', {}, [String(i + 1)]),
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-hashtag'
+                }, [
+                    el('input', {
+                        type: 'number',
+                        min: '1',
+                        value: it.patologia_id ?? '',
+                        'aria-label': 'patologia_id'
+                    })
                 ])]),
-                el('td', {}, [el('input',{type:'number',class:'mini-input',min:'1',value:it.producto_id ?? '', 'aria-label':'producto_id'})]),
-                el('td', {}, [el('input',{type:'text',class:'mini-input',value:it.nombre_producto ?? '', 'aria-label':'nombre_producto'})]),
-                el('td', {}, [el('input',{type:'number',step:'0.01',class:'mini-input',value:it.costo_hectarea_snapshot ?? '', 'aria-label':'costo_hectarea_snapshot'})]),
-                el('td', {}, [el('input',{type:'number',step:'0.01',class:'mini-input',value:it.total_producto_snapshot ?? '', 'aria-label':'total_producto_snapshot'})]),
-                el('td', {}, [ makeRecetaTable(it.recetas || []) ]),
-                el('td', {class:'table-actions'}, [
-                    el('button', {type:'button', class:'btn btn-cancelar', onClick: () => tr.remove()}, ['Quitar'])
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-toggle'
+                }, [
+                    el('select', {
+                        'aria-label': 'fuente'
+                    }, [
+                        el('option', {
+                            value: 'sve',
+                            selected: it.fuente === 'sve' ? 'selected' : null
+                        }, ['sve']),
+                        el('option', {
+                            value: 'productor',
+                            selected: it.fuente === 'productor' ? 'selected' : null
+                        }, ['productor'])
+                    ])
+                ])]),
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-id'
+                }, [
+                    el('input', {
+                        type: 'number',
+                        min: '1',
+                        value: it.producto_id ?? '',
+                        'aria-label': 'producto_id'
+                    })
+                ])]),
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-edit'
+                }, [
+                    el('input', {
+                        type: 'text',
+                        value: it.nombre_producto ?? '',
+                        'aria-label': 'nombre_producto'
+                    })
+                ])]),
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-hashtag'
+                }, [
+                    el('input', {
+                        type: 'number',
+                        step: '0.01',
+                        value: it.costo_hectarea_snapshot ?? '',
+                        'aria-label': 'costo_hectarea_snapshot'
+                    })
+                ])]),
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-hashtag'
+                }, [
+                    el('input', {
+                        type: 'number',
+                        step: '0.01',
+                        value: it.total_producto_snapshot ?? '',
+                        'aria-label': 'total_producto_snapshot'
+                    })
+                ])]),
+                el('td', {}, [makeRecetaTable(it.recetas || [])]),
+                el('td', {
+                    class: 'table-actions'
+                }, [
+                    el('button', {
+                        type: 'button',
+                        class: 'btn btn-cancelar',
+                        onClick: () => tr.remove()
+                    }, ['Quitar'])
                 ])
             ]);
             return tr;
         }
 
+
         function makeRangoRow(i, r = {}) {
             const tr = el('tr', {}, [
-                el('td', {}, [String(i+1)]),
-                el('td', {}, [el('input',{type:'text',class:'mini-input',value:r.rango ?? '', placeholder:'octubre_q1', 'aria-label':'rango'})]),
-                el('td', {class:'table-actions'}, [
-                    el('button', {type:'button', class:'btn btn-cancelar', onClick: () => tr.remove()}, ['Quitar'])
+                el('td', {}, [String(i + 1)]),
+                el('td', {}, [el('div', {
+                    class: 'input-icon input-icon-date'
+                }, [
+                    el('input', {
+                        type: 'text',
+                        value: r.rango ?? '',
+                        placeholder: 'octubre_q1',
+                        'aria-label': 'rango'
+                    })
+                ])]),
+                el('td', {
+                    class: 'table-actions'
+                }, [
+                    el('button', {
+                        type: 'button',
+                        class: 'btn btn-cancelar',
+                        onClick: () => tr.remove()
+                    }, ['Quitar'])
                 ])
             ]);
             return tr;
         }
+
 
         function fillForm(d) {
             // ID
@@ -910,11 +1097,11 @@
             setV('motivo_cancelacion', s.motivo_cancelacion);
             setV('observaciones', s.observaciones);
             // Flags
-            ['representante','linea_tension','zona_restringida','corriente_electrica','agua_potable','libre_obstaculos','area_despegue','en_finca']
-                .forEach(k => setV(k, s[k]));
+            ['representante', 'linea_tension', 'zona_restringida', 'corriente_electrica', 'agua_potable', 'libre_obstaculos', 'area_despegue', 'en_finca']
+            .forEach(k => setV(k, s[k]));
             // Dirección + ubicación
-            ['dir_provincia','dir_localidad','dir_calle','dir_numero','ubicacion_lat','ubicacion_lng','ubicacion_acc','ubicacion_ts']
-                .forEach(k => setV(k, s[k]));
+            ['dir_provincia', 'dir_localidad', 'dir_calle', 'dir_numero', 'ubicacion_lat', 'ubicacion_lng', 'ubicacion_acc', 'ubicacion_ts']
+            .forEach(k => setV(k, s[k]));
             // Asignaciones y costos
             setV('piloto_id', s.piloto_id);
             setV('forma_pago_id', s.forma_pago_id);
@@ -931,17 +1118,17 @@
             // Motivos
             const tbm = document.querySelector('#tabla-motivos tbody');
             tbm.innerHTML = '';
-            (d.motivos || []).forEach((m,idx)=> tbm.appendChild(makeMotivoRow(idx,m)));
+            (d.motivos || []).forEach((m, idx) => tbm.appendChild(makeMotivoRow(idx, m)));
 
             // Items
             const tbi = document.querySelector('#tabla-items tbody');
             tbi.innerHTML = '';
-            (d.items || []).forEach((it,idx)=> tbi.appendChild(makeItemRow(idx,it)));
+            (d.items || []).forEach((it, idx) => tbi.appendChild(makeItemRow(idx, it)));
 
             // Rangos
             const tbr = document.querySelector('#tabla-rangos tbody');
             tbr.innerHTML = '';
-            (d.rangos || []).forEach((r,idx)=> tbr.appendChild(makeRangoRow(idx,r)));
+            (d.rangos || []).forEach((r, idx) => tbr.appendChild(makeRangoRow(idx, r)));
         }
 
         function serializeTable(tbody, schema) {
@@ -957,7 +1144,7 @@
                     const input = cell ? cell.querySelector('input,select,textarea') : null;
                     let val = input ? input.value : null;
                     if (col.type === 'number') val = val === '' ? null : Number(val);
-                    if (col.type === 'int') val = val === '' ? null : parseInt(val,10);
+                    if (col.type === 'int') val = val === '' ? null : parseInt(val, 10);
                     if (col.type === 'bool01') val = input && input.value === '1' ? 1 : 0;
                     row[col.k] = (val === '' ? null : val);
                 });
@@ -967,36 +1154,44 @@
         }
 
         // Botones de agregar
-        document.getElementById('add-motivo').addEventListener('click', ()=>{
+        document.getElementById('add-motivo').addEventListener('click', () => {
             document.querySelector('#tabla-motivos tbody').appendChild(makeMotivoRow(document.querySelector('#tabla-motivos tbody').children.length, {}));
         });
-        document.getElementById('add-item').addEventListener('click', ()=>{
+        document.getElementById('add-item').addEventListener('click', () => {
             document.querySelector('#tabla-items tbody').appendChild(makeItemRow(document.querySelector('#tabla-items tbody').children.length, {}));
         });
-        document.getElementById('add-rango').addEventListener('click', ()=>{
+        document.getElementById('add-rango').addEventListener('click', () => {
             document.querySelector('#tabla-rangos tbody').appendChild(makeRangoRow(document.querySelector('#tabla-rangos tbody').children.length, {}));
         });
 
         // Guardar
-        document.getElementById('btn-guardar').addEventListener('click', async ()=>{
+        document.getElementById('btn-guardar').addEventListener('click', async () => {
             const tbm = document.querySelector('#tabla-motivos tbody');
             const tbi = document.querySelector('#tabla-items tbody');
             const tbr = document.querySelector('#tabla-rangos tbody');
 
-            const motivos = serializeTable(tbm, [
-                {k:'patologia_id', type:'int'},
-                {k:'es_otros', type:'bool01'},
-                {k:'otros_text', type:'text'}
+            const motivos = serializeTable(tbm, [{
+                    k: 'patologia_id',
+                    type: 'int'
+                },
+                {
+                    k: 'es_otros',
+                    type: 'bool01'
+                },
+                {
+                    k: 'otros_text',
+                    type: 'text'
+                }
             ]);
 
             // Items + recetas
             const items = [];
-            Array.from(tbi.children).forEach(tr=>{
+            Array.from(tbi.children).forEach(tr => {
                 const tds = tr.querySelectorAll('td');
                 const obj = {
-                    patologia_id: parseInt(tds[1].querySelector('input').value || '0',10) || null,
+                    patologia_id: parseInt(tds[1].querySelector('input').value || '0', 10) || null,
                     fuente: tds[2].querySelector('select').value || null,
-                    producto_id: tds[3].querySelector('input').value === '' ? null : parseInt(tds[3].querySelector('input').value,10),
+                    producto_id: tds[3].querySelector('input').value === '' ? null : parseInt(tds[3].querySelector('input').value, 10),
                     nombre_producto: tds[4].querySelector('input').value || null,
                     costo_hectarea_snapshot: tds[5].querySelector('input').value === '' ? null : parseFloat(tds[5].querySelector('input').value),
                     total_producto_snapshot: tds[6].querySelector('input').value === '' ? null : parseFloat(tds[6].querySelector('input').value),
@@ -1005,13 +1200,13 @@
                 // recetas
                 const recetasTable = tds[7].querySelector('tbody');
                 const recetas = [];
-                Array.from(recetasTable.children).forEach((rr,idx)=>{
+                Array.from(recetasTable.children).forEach((rr, idx) => {
                     const rtd = rr.querySelectorAll('td');
                     recetas.push({
                         principio_activo: rtd[1].querySelector('input').value || null,
                         dosis: rtd[2].querySelector('input').value === '' ? null : parseFloat(rtd[2].querySelector('input').value),
                         unidad: rtd[3].querySelector('input').value || null,
-                        orden_mezcla: rtd[4].querySelector('input').value === '' ? null : parseInt(rtd[4].querySelector('input').value,10),
+                        orden_mezcla: rtd[4].querySelector('input').value === '' ? null : parseInt(rtd[4].querySelector('input').value, 10),
                         notas: rtd[5].querySelector('input').value || null
                     });
                 });
@@ -1019,13 +1214,14 @@
                 items.push(obj);
             });
 
-            const rangos = serializeTable(tbr, [
-                {k:'rango', type:'text'}
-            ]);
+            const rangos = serializeTable(tbr, [{
+                k: 'rango',
+                type: 'text'
+            }]);
 
             // Base
             const payload = {
-                id: Number((document.getElementById('drawer-id').textContent || '').replace('#','')) || null,
+                id: Number((document.getElementById('drawer-id').textContent || '').replace('#', '')) || null,
                 solicitud: {
                     productor_id_real: getV('productor_id_real'),
                     ses_usuario: getV('ses_usuario'),
@@ -1052,8 +1248,8 @@
                     ubicacion_lng: getV('ubicacion_lng') ? parseFloat(getV('ubicacion_lng')) : null,
                     ubicacion_acc: getV('ubicacion_acc') ? parseFloat(getV('ubicacion_acc')) : null,
                     ubicacion_ts: getV('ubicacion_ts'),
-                    piloto_id: getV('piloto_id') ? parseInt(getV('piloto_id'),10) : null,
-                    forma_pago_id: getV('forma_pago_id') ? parseInt(getV('forma_pago_id'),10) : null,
+                    piloto_id: getV('piloto_id') ? parseInt(getV('piloto_id'), 10) : null,
+                    forma_pago_id: getV('forma_pago_id') ? parseInt(getV('forma_pago_id'), 10) : null,
                     coop_descuento_nombre: getV('coop_descuento_nombre')
                 },
                 costos: {
@@ -1070,21 +1266,26 @@
                 rangos
             };
 
-            if (!payload.id) { showAlert('error','ID de solicitud no válido'); return; }
+            if (!payload.id) {
+                showAlert('error', 'ID de solicitud no válido');
+                return;
+            }
 
-            try{
+            try {
                 const res = await fetch(`${DRONE_API}?action=update_solicitud`, {
-                    method:'POST',
-                    headers: {'Content-Type':'application/json'},
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify(payload),
-                    cache:'no-store'
+                    cache: 'no-store'
                 });
                 const json = await res.json();
-                if(!json.ok) throw new Error(json.error || 'Error');
-                showAlert('success','¡Operación completada con éxito!');
+                if (!json.ok) throw new Error(json.error || 'Error');
+                showAlert('success', '¡Operación completada con éxito!');
                 closeDrawer();
                 debouncedLoad();
-            }catch(err){
+            } catch (err) {
                 showAlert('error', `No se pudo guardar: ${err.message}`);
             }
         });
