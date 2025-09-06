@@ -33,19 +33,19 @@ final class ProdListadoPedidosModel
                s.estado,
                COALESCE(c.total, 0) AS costo_total,
                COALESCE(c.moneda, 'Pesos') AS moneda,
-               -- Patologías: nombre de la patología o 'otros' con texto
+               -- Patologías: nombre o 'otros' según el nuevo esquema (es_otros)
                TRIM(BOTH ',' FROM COALESCE(GROUP_CONCAT(DISTINCT
                       CASE
-                         WHEN sm.motivo = 'otros' THEN sm.otros_text
+                         WHEN sm.es_otros = 1 THEN sm.otros_text
                          WHEN sm.patologia_id IS NOT NULL THEN dp.nombre
-                         ELSE sm.motivo
+                         ELSE NULL
                       END
                       ORDER BY dp.nombre SEPARATOR ', '
                ), '')) AS patologias
-        FROM dron_solicitudes s
-        LEFT JOIN dron_solicitudes_costos c
+        FROM drones_solicitud s
+        LEFT JOIN drones_solicitud_costos c
                ON c.solicitud_id = s.id
-        LEFT JOIN dron_solicitudes_motivos sm
+        LEFT JOIN drones_solicitud_motivo sm
                ON sm.solicitud_id = s.id
         LEFT JOIN dron_patologias dp
                ON dp.id = sm.patologia_id
@@ -53,6 +53,7 @@ final class ProdListadoPedidosModel
         GROUP BY s.id
         ORDER BY s.created_at DESC, s.id DESC
         LIMIT :limit OFFSET :offset";
+
         $st = $this->pdo->prepare($sql);
         $st->bindValue(':pid', $productorIdReal, PDO::PARAM_STR);
         $st->bindValue(':limit', $limit, PDO::PARAM_INT);
@@ -68,21 +69,27 @@ final class ProdListadoPedidosModel
      */
     public function cancelar(int $solicitudId, string $productorIdReal): void
     {
-        // Validar pertenencia y estado
-        $stSel = $this->pdo->prepare("SELECT estado FROM dron_solicitudes WHERE id = :id AND productor_id_real = :pid");
+        // Validar pertenencia y estado actual
+        $stSel = $this->pdo->prepare("
+            SELECT estado
+              FROM drones_solicitud
+             WHERE id = :id AND productor_id_real = :pid
+        ");
         $stSel->execute([':id' => $solicitudId, ':pid' => $productorIdReal]);
         $estado = $stSel->fetchColumn();
         if ($estado === false) {
             throw new RuntimeException('Solicitud no encontrada.');
         }
-        if ($estado === 'cancelado' || $estado === 'completado') {
+
+        // Solo se puede cancelar en: 'procesando' o 'aprobada_coop'
+        if (!in_array($estado, ['procesando','aprobada_coop'], true)) {
             throw new InvalidArgumentException('La solicitud no puede ser cancelada en su estado actual.');
         }
 
         $stUp = $this->pdo->prepare("
-            UPDATE dron_solicitudes
-               SET estado = 'cancelado',
-                   motivo_cancelacion = 'Cancelado por productor',
+            UPDATE drones_solicitud
+               SET estado = 'cancelada',
+                   motivo_cancelacion = 'Cancelada por productor',
                    updated_at = CURRENT_TIMESTAMP
              WHERE id = :id AND productor_id_real = :pid
         ");
@@ -91,4 +98,6 @@ final class ProdListadoPedidosModel
             throw new RuntimeException('No se pudo cancelar la solicitud.');
         }
     }
+
+
 }

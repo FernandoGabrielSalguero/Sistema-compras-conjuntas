@@ -108,22 +108,27 @@ $sesion_payload = [
             line-height: 1;
         }
 
-        .estado-pendiente {
+        .estado-ingresada {
             background: #e6f4ff;
             color: #0b72b9;
         }
 
-        .estado-en_proceso {
+        .estado-procesando {
             background: #fff7e6;
             color: #b6720b;
         }
 
-        .estado-completado {
+        .estado-aprobada_coop {
+            background: #f0f9ff;
+            color: #075985;
+        }
+
+        .estado-completada {
             background: #e8f5e9;
             color: #2e7d32;
         }
 
-        .estado-cancelado {
+        .estado-cancelada {
             background: #ffe8e8;
             color: #b71c1c;
         }
@@ -245,7 +250,8 @@ $sesion_payload = [
                             </button>
                         </div>
                         <div class="modal-body">
-                            <p>Vas a cancelar la solicitud <strong id="modalCancelIdText">#</strong>. Esta acción actualizará el estado a <b>cancelado</b> y registrará el motivo <i>“Cancelado por productor”. Esta acción no se puede revertir.</i>.</p>
+                            <p>Vas a cancelar la solicitud <strong id="modalCancelIdText">#</strong>. Esta acción actualizará el estado a <b>cancelada</b> y registrará el motivo <i>“Cancelada por productor”. Esta acción no se puede revertir.</i>.</p>
+
                         </div>
                         <div class="modal-actions">
                             <button class="btn btn-cancelar" onclick="closeCancelModal()">Volver</button>
@@ -317,7 +323,8 @@ $sesion_payload = [
             function renderItems(items, total, pageNow) {
                 listado.innerHTML = items.map(it => {
                     const estadoClass = `estado-${it.estado}`;
-                    const puedeCancelar = (it.estado === 'pendiente');
+                    const puedeCancelar = (['procesando', 'aprobada_coop'].includes(it.estado));
+
                     return `
         <article class="pedido-card" aria-label="Solicitud #${it.id}">
           <div class="pedido-head">
@@ -417,8 +424,8 @@ $sesion_payload = [
                     const card = listado.querySelector(`.pedido-card .btn-cancelar[data-id="${id}"]`)?.closest('.pedido-card');
                     if (card) {
                         const badge = card.querySelector('.estado-badge');
-                        badge.textContent = 'cancelado';
-                        badge.className = 'estado-badge estado-cancelado';
+                        badge.textContent = 'cancelada';
+                        badge.className = 'estado-badge estado-cancelada';
                         const btn = card.querySelector('.btn-cancelar');
                         if (btn) btn.remove();
                     }
@@ -443,10 +450,12 @@ $sesion_payload = [
 
                 const card = btn.closest('.pedido-card');
                 const badge = card?.querySelector('.estado-badge');
-                const esPendiente = badge?.classList.contains('estado-pendiente');
+                const estado = badge?.textContent?.trim()?.toLowerCase() || '';
+                const cancelables = ['procesando', 'aprobada_coop'];
+                const esCancelable = cancelables.includes(estado);
 
-                if (!esPendiente) {
-                    window.showToast?.('error', 'Solo se pueden cancelar solicitudes pendientes.');
+                if (!esCancelable) {
+                    window.showToast?.('error', 'Solo se pueden cancelar solicitudes en estado PROCESANDO o APROBADA_COOP.');
                     return;
                 }
                 openCancelModal(btn.dataset.id);
