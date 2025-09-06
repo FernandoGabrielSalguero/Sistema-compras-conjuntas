@@ -66,7 +66,7 @@
                 <form id="form-solicitud" class="form" autocomplete="off" novalidate>
                     <!-- Datos base -->
                     <div class="card">
-                        <div class="form-separator"><h3 class="material-icons mi">manage_search</h3>Datos de la solicitud</div>
+                        <div class="form-separator"><span class="material-icons mi">receipt_long</span>Facturación y costos</div>
                         <div class="form-grid grid-3">
                             <div class="input-group">
                                 <label for="productor_id_real">Productor ID real</label>
