@@ -103,6 +103,9 @@
                                 </div>
                             </div>
 
+<div class="form-separator"><span class="material-icons mi">more_horiz</span>— Separador: tu texto aquí —</div>
+
+
                             <div class="input-group">
                                 <label for="hora_visita_hasta">Hora hasta</label>
                                 <div class="input-icon input-icon-time">
