@@ -299,8 +299,7 @@
 
                     <!-- Costos -->
                     <div class="card">
-                        <div class="form-separator"><span class="material-icons mi">attach_money</span>Costos</div>
-                        <h3>Costos</h3>
+                        <h2 style="color: #5b21b6;">Costos</h2>
                         <div class="form-grid grid-4">
                             <div class="input-group">
                                 <label for="costo_moneda">Moneda</label>
@@ -499,6 +498,7 @@
         overflow: auto;
         -webkit-overflow-scrolling: touch;
         padding: 16px 20px;
+        background-color: darkgray;
     }
 
     @keyframes slideInRight {
