@@ -185,8 +185,10 @@
                                 </div>
                             </div>
                         </div>
+
                         <!-- Ubicación -->
                         <div class="form-grid grid-4">
+                            <h5 style="color: #5b21b6;">Ubicación provista por el celular del productor</h5>
                             <div class="input-group">
                                 <label for="ubicacion_lat">Latitud</label>
                                 <div class="input-icon input-icon-location">
