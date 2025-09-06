@@ -21,62 +21,66 @@ final class DroneListModel
      * a partir de hora_visita_desde/hasta.
      */
     public function listarSolicitudes(array $f): array
-    {
-        $where  = [];
-        $params = [];
+{
+    $where  = [];
+    $params = [];
 
-        if (!empty($f['q'])) {
-            $where[]      = "(s.ses_usuario LIKE :q OR s.piloto LIKE :q OR s.productor_id_real LIKE :q)";
-            $params[':q'] = '%' . $f['q'] . '%';
-        }
-        if (!empty($f['ses_usuario'])) {
-            $where[]                   = "s.ses_usuario LIKE :ses_usuario";
-            $params[':ses_usuario']    = '%' . $f['ses_usuario'] . '%';
-        }
-        if (!empty($f['piloto'])) {
-            $where[]                = "s.piloto LIKE :piloto";
-            $params[':piloto']      = '%' . $f['piloto'] . '%';
-        }
-        if (!empty($f['estado'])) {
-            $where[]                = "s.estado = :estado";
-            $params[':estado']      = strtolower(trim($f['estado']));
-        }
-        if (!empty($f['fecha_visita'])) {
-            $where[]                     = "s.fecha_visita = :fecha_visita";
-            $params[':fecha_visita']     = $f['fecha_visita']; // YYYY-MM-DD
-        }
-
-        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-
-        $sql = "
-            SELECT
-                s.id,
-                s.ses_usuario,
-                s.piloto,
-                s.productor_id_real,
-                s.fecha_visita,
-                CASE
-                  WHEN s.hora_visita_desde IS NOT NULL AND s.hora_visita_hasta IS NOT NULL THEN
-                    CONCAT(LPAD(HOUR(s.hora_visita_desde),2,'0'), ':', LPAD(MINUTE(s.hora_visita_desde),2,'0'),
-                           ' - ',
-                           LPAD(HOUR(s.hora_visita_hasta),2,'0'),  ':', LPAD(MINUTE(s.hora_visita_hasta),2,'0'))
-                  ELSE NULL
-                END AS hora_visita,
-                s.observaciones,
-                s.estado,
-                s.motivo_cancelacion
-            FROM drones_solicitud s
-            $whereSql
-            ORDER BY s.created_at DESC, s.id DESC
-        ";
-
-        $st = $this->pdo->prepare($sql);
-        foreach ($params as $k => $v) $st->bindValue($k, $v);
-        $st->execute();
-        $rows = $st->fetchAll() ?: [];
-
-        return ['items' => $rows, 'total' => count($rows)];
+    if (!empty($f['q'])) {
+        $where[]      = "(s.ses_usuario LIKE :q OR p.nombre LIKE :q OR s.productor_id_real LIKE :q)";
+        $params[':q'] = '%' . $f['q'] . '%';
     }
+    if (!empty($f['ses_usuario'])) {
+        $where[]                = "s.ses_usuario LIKE :ses_usuario";
+        $params[':ses_usuario'] = '%' . $f['ses_usuario'] . '%';
+    }
+    if (!empty($f['piloto'])) {
+        // ahora filtramos por NOMBRE del piloto (tabla dron_pilotos)
+        $where[]           = "p.nombre LIKE :piloto";
+        $params[':piloto'] = '%' . $f['piloto'] . '%';
+    }
+    if (!empty($f['estado'])) {
+        $where[]           = "s.estado = :estado";
+        $params[':estado'] = strtolower(trim($f['estado']));
+    }
+    if (!empty($f['fecha_visita'])) {
+        $where[]                  = "s.fecha_visita = :fecha_visita";
+        $params[':fecha_visita']  = $f['fecha_visita']; // YYYY-MM-DD
+    }
+
+    $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+    $sql = "
+        SELECT
+            s.id,
+            s.ses_usuario,
+            p.nombre AS piloto,       -- nombre mostrado
+            s.piloto_id,              -- id que se guarda
+            s.productor_id_real,
+            s.fecha_visita,
+            CASE
+              WHEN s.hora_visita_desde IS NOT NULL AND s.hora_visita_hasta IS NOT NULL THEN
+                CONCAT(LPAD(HOUR(s.hora_visita_desde),2,'0'), ':', LPAD(MINUTE(s.hora_visita_desde),2,'0'),
+                       ' - ',
+                       LPAD(HOUR(s.hora_visita_hasta),2,'0'),  ':', LPAD(MINUTE(s.hora_visita_hasta),2,'0'))
+              ELSE NULL
+            END AS hora_visita,
+            s.observaciones,
+            s.estado,
+            s.motivo_cancelacion
+        FROM drones_solicitud s
+        LEFT JOIN dron_pilotos p ON p.id = s.piloto_id
+        $whereSql
+        ORDER BY s.created_at DESC, s.id DESC
+    ";
+
+    $st = $this->pdo->prepare($sql);
+    foreach ($params as $k => $v) $st->bindValue($k, $v);
+    $st->execute();
+    $rows = $st->fetchAll() ?: [];
+
+    return ['items' => $rows, 'total' => count($rows)];
+}
+
 
     /**
      * Detalle completo de una solicitud con:
@@ -90,7 +94,12 @@ final class DroneListModel
     public function obtenerSolicitud(int $id): array
     {
         // Solicitud principal
-        $st = $this->pdo->prepare("SELECT * FROM drones_solicitud WHERE id = :id");
+        $st = $this->pdo->prepare("
+    SELECT s.*, p.nombre AS piloto
+    FROM drones_solicitud s
+    LEFT JOIN dron_pilotos p ON p.id = s.piloto_id
+    WHERE s.id = :id
+");
         $st->execute([':id' => $id]);
         $sol = $st->fetch();
         if (!$sol) return [];
@@ -201,37 +210,38 @@ final class DroneListModel
     public function actualizarSolicitud(int $id, array $data): bool
     {
         $allowed = [
-            'piloto',
-            'fecha_visita',
-            // la vista usa un solo campo "hora_visita"; si llega lo ignoramos.
-            'hora_visita_desde',
-            'hora_visita_hasta',
-            'observaciones',
-            'estado',
-            'motivo_cancelacion',
-            'obs_piloto',
-            'responsable',
-            'volumen_ha',
-            'velocidad_vuelo',
-            'alto_vuelo',
-            'tamano_gota',
-            'dir_provincia',
-            'dir_localidad',
-            'dir_calle',
-            'dir_numero',
-            'en_finca',
-            'linea_tension',
-            'zona_restringida',
-            'corriente_electrica',
-            'agua_potable',
-            'libre_obstaculos',
-            'area_despegue',
-            'ubicacion_lat',
-            'ubicacion_lng',
-            'ubicacion_acc',
-            'forma_pago_id',
-            'aprob_cooperativa'
-        ];
+    'piloto_id',         // <--- guardamos id
+    'fecha_visita',
+    // la vista usa un solo campo "hora_visita"; si llega lo ignoramos.
+    'hora_visita_desde',
+    'hora_visita_hasta',
+    'observaciones',
+    'estado',
+    'motivo_cancelacion',
+    'obs_piloto',
+    'responsable',
+    'volumen_ha',
+    'velocidad_vuelo',
+    'alto_vuelo',
+    'tamano_gota',
+    'dir_provincia',
+    'dir_localidad',
+    'dir_calle',
+    'dir_numero',
+    'en_finca',
+    'linea_tension',
+    'zona_restringida',
+    'corriente_electrica',
+    'agua_potable',
+    'libre_obstaculos',
+    'area_despegue',
+    'ubicacion_lat',
+    'ubicacion_lng',
+    'ubicacion_acc',
+    'forma_pago_id',
+    'aprob_cooperativa'
+];
+
 
         // Enums NOT NULL (no setear a NULL)
         $notNullEnums = [

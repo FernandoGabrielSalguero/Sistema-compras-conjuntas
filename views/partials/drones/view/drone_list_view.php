@@ -314,14 +314,15 @@
                         <!-- ======= Parámetros de vuelo ======= -->
                         <div class="form-separator"><span class="material-icons mi">tune</span>Parámetros de vuelo</div>
 
-                        <div class="input-group">
-                            <label for="f-piloto">Piloto</label>
-                            <div class="input-icon material">
-                                <span class="material-icons mi">flight</span>
-                                <select id="f-piloto" name="piloto" aria-describedby="ayuda-piloto"></select>
-                            </div>
-                            <small id="ayuda-piloto" class="gform-helper">Seleccioná un piloto activo de SVE.</small>
-                        </div>
+<div class="input-group">
+    <label for="f-piloto">Piloto</label>
+    <div class="input-icon material">
+        <span class="material-icons mi">flight</span>
+        <!-- value será el ID, label el nombre -->
+        <select id="f-piloto" name="piloto_id" aria-describedby="ayuda-piloto"></select>
+    </div>
+    <small id="ayuda-piloto" class="gform-helper">Seleccioná un piloto activo de SVE.</small>
+</div>
 
                         <div class="input-group">
                             <label for="f-volumen_ha">Volumen (ha)</label>
@@ -875,35 +876,32 @@
             }
         }
 
-        // --- Pilotos dinámicos ---
-        async function fetchPilotos() {
-            try {
-                const res = await fetch(`${DRONE_API}?action=list_pilotos`, {
-                    cache: 'no-store'
-                });
-                const json = await res.json();
-                if (!json.ok) throw new Error(json.error || 'No se pudo cargar pilotos');
-                return json.data.items || [];
-            } catch (e) {
-                console.error(e);
-                return [];
-            }
-        }
+// --- Pilotos dinámicos (id como value) ---
+async function fetchPilotos() {
+    try {
+        const res = await fetch(`${DRONE_API}?action=list_pilotos`, { cache: 'no-store' });
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || 'No se pudo cargar pilotos');
+        return json.data.items || [];
+    } catch (e) {
+        console.error(e);
+        return [];
+    }
+}
 
-        async function populatePilotosSelect(selectedNombre = '') {
-            const sel = document.getElementById('f-piloto');
-            if (!sel) return;
-            sel.innerHTML = '<option value="">— Seleccionar —</option>';
-            const items = await fetchPilotos();
-            items.forEach(p => {
-                // p.nombre (mostrado/guardado), p.id disponible por si quisieras guardar el id en el futuro
-                const opt = document.createElement('option');
-                opt.value = p.nombre;
-                opt.textContent = p.nombre;
-                if (selectedNombre && selectedNombre === p.nombre) opt.selected = true;
-                sel.appendChild(opt);
-            });
-        }
+async function populatePilotosSelectById(selectedId = '') {
+    const sel = document.getElementById('f-piloto');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— Seleccionar —</option>';
+    const items = await fetchPilotos();
+    items.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = String(p.id);   // guardamos id
+        opt.textContent = p.nombre; // mostramos nombre
+        if (selectedId && String(selectedId) === String(p.id)) opt.selected = true;
+        sel.appendChild(opt);
+    });
+}
 
 
         async function load() {
@@ -1127,7 +1125,6 @@
             'f-id': 'id',
             'f-productor_id_real': 'productor_id_real',
             'f-ses_usuario': 'ses_usuario',
-            'f-piloto': 'piloto',
             'f-fecha_visita': 'fecha_visita',
             'f-hora_visita': 'hora_visita',
             'f-estado': 'estado',
@@ -1158,7 +1155,7 @@
             if (!el) return;
             el.value = solicitud[key] ?? '';
         });
-        await populatePilotosSelect(solicitud.piloto || '');
+        await populatePilotosSelectById(solicitud.piloto_id || '');
 
         // Motivos (chips)
         const contMotivos = document.getElementById('f-motivos');
