@@ -97,7 +97,7 @@
                             <div class="input-group" id="grp_motivo_cancelacion">
                                 <label for="motivo_cancelacion">Motivo cancelación</label>
                                 <div class="input-icon input-icon-edit">
-                                    <input type="text" id="motivo_cancelacion" name="motivo_cancelacion" placeholder="Si estado=cancelada" />
+                                    <input type="text" id="motivo_cancelacion" name="motivo_cancelacion" placeholder="Indicar motivo de cancelación" />
                                 </div>
                             </div>
 
@@ -747,6 +747,24 @@
     #grp_motivo_cancelacion {
         display: none;
     }
+
+    .mini-block { margin-top: 6px; }
+.mini-title {
+  font-size: .83rem;
+  color: #5b21b6;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.price { font-weight: 600; }
+.motivo-cancel {
+  display: inline-block;
+  margin-left: 10px;
+  font-size: .82rem;
+  color: #9b1c1c;       /* rojito suave */
+  background: #fee2e2;  /* igual que .badge.danger pero más liviano */
+  padding: 2px 8px;
+  border-radius: 999px;
+}
 </style>
 
 <script>
@@ -896,7 +914,7 @@
             items.forEach(it => {
                 const card = document.createElement('div');
                 card.className = 'product-card';
-                card.innerHTML = `
+card.innerHTML = `
   <div class="product-header">
     <h4>${esc(it.ses_usuario||'—')}</h4>
     <p>Pedido número: ${esc(it.id??'')}</p>
@@ -906,22 +924,33 @@
       <div>
         <strong>${esc(it.piloto||'Sin piloto asignado')}</strong>
         <div class="role">
-          Fecha visita: ${esc(it.fecha_visita||'—')}${it.hora_visita?` (${esc(it.hora_visita)})`:''}
+          Fecha visita: ${esc(it.fecha_visita||'')}
+          ${it.hora_visita ? `(${esc(it.hora_visita)})` : ''}
         </div>
       </div>
     </div>
 
-    <p class="description">
-      ${esc(it.observaciones||'')}
-      ${it.total!=null ? ` | El costo de este pedido es de $${esc(String(it.total).replace('.',','))}` : ''}
-    </p>
+    <div class="mini-block">
+      <div class="mini-title">Observaciones productor</div>
+      <p class="description">${esc(it.observaciones||'—')}</p>
+    </div>
+
+    <div class="mini-block">
+      <div class="mini-title">Costo servicio</div>
+      <p class="price">$${fmtNum(it.costo_total ?? 0)}</p>
+    </div>
 
     <hr />
+
     <div class="product-footer">
-      <div class="metric"><span class="badge ${badgeClass(it.estado)}">${prettyEstado(it.estado)}</span></div>
+      <div class="metric">
+        <span class="badge ${badgeClass(it.estado)}">${prettyEstado(it.estado)}</span>
+        ${it.motivo_cancelacion ? `<span class="motivo-cancel">${esc(it.motivo_cancelacion)}</span>` : ''}
+      </div>
       <button class="btn-view" data-id="${it.id}">Ver detalle</button>
     </div>
   </div>`;
+
 
                 els.cards.appendChild(card);
             });
