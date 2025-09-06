@@ -5,7 +5,8 @@ declare(strict_types=1);
 final class DroneListModel
 {
     private PDO $pdo;
-    public function __construct(PDO $pdo){
+    public function __construct(PDO $pdo)
+    {
         $this->pdo = $pdo;
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
@@ -65,11 +66,11 @@ final class DroneListModel
         ";
 
         $st = $this->pdo->prepare($sql);
-        foreach ($params as $k=>$v) $st->bindValue($k,$v);
+        foreach ($params as $k => $v) $st->bindValue($k, $v);
         $st->execute();
         $rows = $st->fetchAll() ?: [];
 
-        return ['items'=>$rows, 'total'=>count($rows)];
+        return ['items' => $rows, 'total' => count($rows)];
     }
 
     /** Detalle FULL para el formulario de edición. */
@@ -85,13 +86,13 @@ final class DroneListModel
             LEFT JOIN dron_formas_pago fp ON fp.id = s.forma_pago_id
             WHERE s.id = :id
         ");
-        $st->execute([':id'=>$id]);
+        $st->execute([':id' => $id]);
         $sol = $st->fetch();
         if (!$sol) return [];
 
         // costos
         $st = $this->pdo->prepare("SELECT * FROM drones_solicitud_costos WHERE solicitud_id = :id");
-        $st->execute([':id'=>$id]);
+        $st->execute([':id' => $id]);
         $costos = $st->fetch() ?: null;
 
         // items
@@ -107,15 +108,16 @@ final class DroneListModel
             WHERE i.solicitud_id = :id
             ORDER BY i.id ASC
         ");
-        $st->execute([':id'=>$id]);
+        $st->execute([':id' => $id]);
         $items = $st->fetchAll();
 
         // recetas por item
         $stRec = $this->pdo->prepare("SELECT * FROM drones_solicitud_item_receta WHERE solicitud_item_id = :sid ORDER BY id ASC");
         foreach ($items as &$it) {
-            $stRec->execute([':sid'=>$it['id']]);
+            $stRec->execute([':sid' => $it['id']]);
             $it['recetas'] = $stRec->fetchAll() ?: [];
-        } unset($it);
+        }
+        unset($it);
 
         // motivos
         $st = $this->pdo->prepare("
@@ -125,12 +127,12 @@ final class DroneListModel
             WHERE m.solicitud_id = :id
             ORDER BY m.id ASC
         ");
-        $st->execute([':id'=>$id]);
+        $st->execute([':id' => $id]);
         $motivos = $st->fetchAll();
 
         // rangos
         $st = $this->pdo->prepare("SELECT * FROM drones_solicitud_rango WHERE solicitud_id = :id ORDER BY id ASC");
-        $st->execute([':id'=>$id]);
+        $st->execute([':id' => $id]);
         $rangos = $st->fetchAll();
 
         // productor (usuario)
@@ -144,7 +146,7 @@ final class DroneListModel
                 WHERE u.id_real = :idr
                 LIMIT 1
             ");
-            $st->execute([':idr'=>$sol['productor_id_real']]);
+            $st->execute([':idr' => $sol['productor_id_real']]);
             $prod = $st->fetch() ?: null;
 
             // cooperativas
@@ -155,7 +157,7 @@ final class DroneListModel
                     LEFT JOIN usuarios u ON u.id_real = rpc.cooperativa_id_real
                     WHERE rpc.productor_id_real = :idr
                 ");
-                $st2->execute([':idr'=>$sol['productor_id_real']]);
+                $st2->execute([':idr' => $sol['productor_id_real']]);
                 $prod['cooperativas'] = $st2->fetchAll() ?: [];
             }
         }
@@ -173,12 +175,34 @@ final class DroneListModel
                 'zona_asignada' => $sol['piloto_zona_asignada'] ?? null,
                 'correo' => $sol['piloto_correo'] ?? null
             ],
-            'forma_pago'=> [
+            'forma_pago' => [
                 'nombre' => $sol['forma_pago_nombre'] ?? null,
                 'descripcion' => $sol['forma_pago_descripcion'] ?? null
             ],
             'eventos'   => [] // opcional: cargar si hace falta
         ];
+    }
+
+    /** ---- Catálogos para selects ---- */
+    public function listPilotos(): array
+    {
+        $st = $this->pdo->query("SELECT id, nombre FROM dron_pilotos WHERE activo='si' ORDER BY nombre");
+        return $st->fetchAll() ?: [];
+    }
+    public function listFormasPago(): array
+    {
+        $st = $this->pdo->query("SELECT id, nombre FROM dron_formas_pago WHERE activo='si' ORDER BY nombre");
+        return $st->fetchAll() ?: [];
+    }
+    public function listPatologias(): array
+    {
+        $st = $this->pdo->query("SELECT id, nombre FROM dron_patologias WHERE activo='si' ORDER BY nombre");
+        return $st->fetchAll() ?: [];
+    }
+    public function listProductos(): array
+    {
+        $st = $this->pdo->query("SELECT id, nombre, costo_hectarea FROM dron_productos_stock WHERE activo='si' ORDER BY nombre");
+        return $st->fetchAll() ?: [];
     }
 
     /** Actualiza solicitud + tablas relacionadas con estrategia de sincronización. */
@@ -198,7 +222,7 @@ final class DroneListModel
         try {
             // Validación mínima de estado
             $estado = isset($s['estado']) ? strtolower((string)$s['estado']) : null;
-            $validEstados = ['ingresada','procesando','aprobada_coop','cancelada','completada'];
+            $validEstados = ['ingresada', 'procesando', 'aprobada_coop', 'cancelada', 'completada'];
             if ($estado !== null && !in_array($estado, $validEstados, true)) {
                 throw new InvalidArgumentException('Estado no válido');
             }
@@ -242,7 +266,7 @@ final class DroneListModel
                 ':representante'     => self::yn($s['representante'] ?? null),
                 ':linea_tension'     => self::yn($s['linea_tension'] ?? null),
                 ':zona_restringida'  => self::yn($s['zona_restringida'] ?? null),
-                ':corriente_electrica'=> self::yn($s['corriente_electrica'] ?? null),
+                ':corriente_electrica' => self::yn($s['corriente_electrica'] ?? null),
                 ':agua_potable'      => self::yn($s['agua_potable'] ?? null),
                 ':libre_obstaculos'  => self::yn($s['libre_obstaculos'] ?? null),
                 ':area_despegue'     => self::yn($s['area_despegue'] ?? null),
@@ -265,31 +289,31 @@ final class DroneListModel
                 ':observaciones'     => self::n($s['observaciones'] ?? null),
                 ':ses_usuario'       => self::n($s['ses_usuario'] ?? null),
                 ':estado'            => $estado,
-                ':motivo_cancelacion'=> self::n($s['motivo_cancelacion'] ?? null),
+                ':motivo_cancelacion' => self::n($s['motivo_cancelacion'] ?? null),
                 ':id'                => $id
             ]);
 
             // Costos (upsert simple: delete+insert)
-            $this->pdo->prepare("DELETE FROM drones_solicitud_costos WHERE solicitud_id=:id")->execute([':id'=>$id]);
+            $this->pdo->prepare("DELETE FROM drones_solicitud_costos WHERE solicitud_id=:id")->execute([':id' => $id]);
             if ($c) {
                 $this->pdo->prepare("
                     INSERT INTO drones_solicitud_costos
                     (solicitud_id, moneda, costo_base_por_ha, base_ha, base_total, productos_total, total, desglose_json, created_at)
                     VALUES (:sid, :moneda, :costo_base_por_ha, :base_ha, :base_total, :productos_total, :total, :desglose_json, NOW())
                 ")->execute([
-                    ':sid'=>$id,
-                    ':moneda'=> self::n($c['moneda'] ?? 'Pesos'),
-                    ':costo_base_por_ha'=> self::dec($c['costo_base_por_ha'] ?? null),
-                    ':base_ha'=> self::dec($c['base_ha'] ?? null),
-                    ':base_total'=> self::dec($c['base_total'] ?? null),
-                    ':productos_total'=> self::dec($c['productos_total'] ?? null),
-                    ':total'=> self::dec($c['total'] ?? null),
-                    ':desglose_json'=> self::n($c['desglose_json'] ?? null),
+                    ':sid' => $id,
+                    ':moneda' => self::n($c['moneda'] ?? 'Pesos'),
+                    ':costo_base_por_ha' => self::dec($c['costo_base_por_ha'] ?? null),
+                    ':base_ha' => self::dec($c['base_ha'] ?? null),
+                    ':base_total' => self::dec($c['base_total'] ?? null),
+                    ':productos_total' => self::dec($c['productos_total'] ?? null),
+                    ':total' => self::dec($c['total'] ?? null),
+                    ':desglose_json' => self::n($c['desglose_json'] ?? null),
                 ]);
             }
 
             // Motivos
-            $this->pdo->prepare("DELETE FROM drones_solicitud_motivo WHERE solicitud_id=:id")->execute([':id'=>$id]);
+            $this->pdo->prepare("DELETE FROM drones_solicitud_motivo WHERE solicitud_id=:id")->execute([':id' => $id]);
             if ($motivos) {
                 $insM = $this->pdo->prepare("
                     INSERT INTO drones_solicitud_motivo (solicitud_id, patologia_id, es_otros, otros_text, created_at)
@@ -297,17 +321,17 @@ final class DroneListModel
                 ");
                 foreach ($motivos as $m) {
                     $insM->execute([
-                        ':sid'=>$id,
-                        ':pid'=> self::intOrNull($m['patologia_id'] ?? null),
+                        ':sid' => $id,
+                        ':pid' => self::intOrNull($m['patologia_id'] ?? null),
                         ':es' => !empty($m['es_otros']) ? 1 : 0,
-                        ':txt'=> self::n($m['otros_text'] ?? null)
+                        ':txt' => self::n($m['otros_text'] ?? null)
                     ]);
                 }
             }
 
             // Items + recetas
-            $this->pdo->prepare("DELETE r FROM drones_solicitud_item_receta r INNER JOIN drones_solicitud_item i ON i.id=r.solicitud_item_id WHERE i.solicitud_id=:id")->execute([':id'=>$id]);
-            $this->pdo->prepare("DELETE FROM drones_solicitud_item WHERE solicitud_id=:id")->execute([':id'=>$id]);
+            $this->pdo->prepare("DELETE r FROM drones_solicitud_item_receta r INNER JOIN drones_solicitud_item i ON i.id=r.solicitud_item_id WHERE i.solicitud_id=:id")->execute([':id' => $id]);
+            $this->pdo->prepare("DELETE FROM drones_solicitud_item WHERE solicitud_id=:id")->execute([':id' => $id]);
             if ($items) {
                 $insI = $this->pdo->prepare("
                     INSERT INTO drones_solicitud_item
@@ -321,31 +345,31 @@ final class DroneListModel
                 ");
                 foreach ($items as $it) {
                     $insI->execute([
-                        ':sid'=>$id,
-                        ':pid'=> self::intOrNull($it['patologia_id'] ?? null),
-                        ':fuente'=> in_array(($it['fuente'] ?? ''), ['sve','productor'], true) ? $it['fuente'] : 'sve',
-                        ':prod'=> self::intOrNull($it['producto_id'] ?? null),
-                        ':chs'=> self::dec($it['costo_hectarea_snapshot'] ?? null),
-                        ':tps'=> self::dec($it['total_producto_snapshot'] ?? null),
+                        ':sid' => $id,
+                        ':pid' => self::intOrNull($it['patologia_id'] ?? null),
+                        ':fuente' => in_array(($it['fuente'] ?? ''), ['sve', 'productor'], true) ? $it['fuente'] : 'sve',
+                        ':prod' => self::intOrNull($it['producto_id'] ?? null),
+                        ':chs' => self::dec($it['costo_hectarea_snapshot'] ?? null),
+                        ':tps' => self::dec($it['total_producto_snapshot'] ?? null),
                         ':np' => self::n($it['nombre_producto'] ?? null)
                     ]);
                     $iid = (int)$this->pdo->lastInsertId();
                     foreach ($it['recetas'] ?? [] as $r) {
                         $insR->execute([
-                            ':iid'=>$iid,
-                            ':pa'=> self::n($r['principio_activo'] ?? null),
-                            ':dosis'=> self::dec($r['dosis'] ?? null),
-                            ':unidad'=> self::n($r['unidad'] ?? null),
-                            ':orden'=> self::intOrNull($r['orden_mezcla'] ?? null),
-                            ':notas'=> self::n($r['notas'] ?? null),
-                            ':cb'=> self::n($s['ses_usuario'] ?? 'sistema')
+                            ':iid' => $iid,
+                            ':pa' => self::n($r['principio_activo'] ?? null),
+                            ':dosis' => self::dec($r['dosis'] ?? null),
+                            ':unidad' => self::n($r['unidad'] ?? null),
+                            ':orden' => self::intOrNull($r['orden_mezcla'] ?? null),
+                            ':notas' => self::n($r['notas'] ?? null),
+                            ':cb' => self::n($s['ses_usuario'] ?? 'sistema')
                         ]);
                     }
                 }
             }
 
             // Rangos
-            $this->pdo->prepare("DELETE FROM drones_solicitud_rango WHERE solicitud_id=:id")->execute([':id'=>$id]);
+            $this->pdo->prepare("DELETE FROM drones_solicitud_rango WHERE solicitud_id=:id")->execute([':id' => $id]);
             if ($rangos) {
                 $insRango = $this->pdo->prepare("
                     INSERT INTO drones_solicitud_rango (solicitud_id, rango, created_at)
@@ -353,8 +377,8 @@ final class DroneListModel
                 ");
                 foreach ($rangos as $r) {
                     $insRango->execute([
-                        ':sid'=>$id,
-                        ':rango'=> self::n($r['rango'] ?? null)
+                        ':sid' => $id,
+                        ':rango' => self::n($r['rango'] ?? null)
                     ]);
                 }
             }
@@ -364,9 +388,9 @@ final class DroneListModel
                 INSERT INTO drones_solicitud_evento (solicitud_id, tipo, detalle, payload, actor, created_at)
                 VALUES (:sid, 'actualizacion', 'Actualización vía panel', :payload, :actor, NOW())
             ")->execute([
-                ':sid'=>$id,
-                ':payload'=> json_encode($p, JSON_UNESCAPED_UNICODE),
-                ':actor'=> self::n($s['ses_usuario'] ?? 'sistema')
+                ':sid' => $id,
+                ':payload' => json_encode($p, JSON_UNESCAPED_UNICODE),
+                ':actor' => self::n($s['ses_usuario'] ?? 'sistema')
             ]);
 
             $this->pdo->commit();
@@ -378,13 +402,32 @@ final class DroneListModel
     }
 
     // ---- utilidades de saneo/casteo ----
-    private static function n($v){ return $v === '' ? null : $v; }
-    private static function intOrNull($v){ return ($v === '' || $v === null) ? null : (int)$v; }
-    private static function dec($v){ return ($v === '' || $v === null) ? null : (float)$v; }
-    private static function d($v){ return ($v === '' || $v === null) ? null : $v; }
-    private static function t($v){ return ($v === '' || $v === null) ? null : $v; }
-    private static function dt($v){ return ($v === '' || $v === null) ? null : str_replace('T',' ', $v); }
-    private static function yn($v){
+    private static function n($v)
+    {
+        return $v === '' ? null : $v;
+    }
+    private static function intOrNull($v)
+    {
+        return ($v === '' || $v === null) ? null : (int)$v;
+    }
+    private static function dec($v)
+    {
+        return ($v === '' || $v === null) ? null : (float)$v;
+    }
+    private static function d($v)
+    {
+        return ($v === '' || $v === null) ? null : $v;
+    }
+    private static function t($v)
+    {
+        return ($v === '' || $v === null) ? null : $v;
+    }
+    private static function dt($v)
+    {
+        return ($v === '' || $v === null) ? null : str_replace('T', ' ', $v);
+    }
+    private static function yn($v)
+    {
         $v = strtolower((string)($v ?? 'no'));
         return $v === 'si' ? 'si' : 'no';
     }

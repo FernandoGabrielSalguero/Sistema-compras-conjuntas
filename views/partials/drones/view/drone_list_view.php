@@ -105,7 +105,7 @@
                                 <small id="estadoHelp" class="helper-text">Seleccioná el estado actual.</small>
                             </div>
 
-                            <div class="input-group">
+                            <div class="input-group" id="grp_motivo_cancelacion">
                                 <label for="motivo_cancelacion">Motivo cancelación</label>
                                 <div class="input-icon input-icon-edit">
                                     <input type="text" id="motivo_cancelacion" name="motivo_cancelacion" placeholder="Si estado=cancelada" />
@@ -120,12 +120,12 @@
                             </div>
                         </div>
                         <!-- observaciones -->
-                            <div class="input-group">
-                                <label for="observaciones">Observaciones</label>
-                                <div class="input-icon input-icon-edit">
-                                    <input type="text" id="observaciones" name="observaciones" placeholder="Notas internas" />
-                                </div>
+                        <div class="input-group">
+                            <label for="observaciones">Observaciones</label>
+                            <div class="input-icon input-icon-edit">
+                                <input type="text" id="observaciones" name="observaciones" placeholder="Notas internas" />
                             </div>
+                        </div>
                     </div>
 
                     <!-- Programar visita -->
@@ -154,9 +154,12 @@
                             </div>
 
                             <div class="input-group">
-                                <label for="piloto_id">Piloto (ID)</label>
+                                <label for="piloto_id">Piloto</label>
                                 <div class="input-icon input-icon-id">
-                                    <input type="number" id="piloto_id" name="piloto_id" min="1" placeholder="ID de dron_pilotos" />
+                                    <select id="piloto_id" name="piloto_id">
+                                        <option value="">Seleccionar piloto</option>
+                                        <!-- opciones por JS -->
+                                    </select>
                                 </div>
                             </div>
 
@@ -195,6 +198,7 @@
                         </div>
 
                         <!-- Ubicación -->
+                        <br>
                         <h5 style="color: #5b21b6;">Ubicación provista por el celular del productor</h5>
                         <div class="form-grid grid-4">
                             <div class="input-group">
@@ -216,10 +220,8 @@
                                 </div>
                             </div>
                             <div class="input-group">
-                                <label for="ubicacion_ts">Fecha/hora ubicación</label>
-                                <div class="input-icon input-icon-date">
-                                    <input type="datetime-local" id="ubicacion_ts" name="ubicacion_ts" />
-                                </div>
+                                <label class="sr-only" for="btn-abrir-ubicacion">Abrir ubicación</label>
+                                <button type="button" id="btn-abrir-ubicacion" class="btn btn-info">Abrir ubicación</button>
                             </div>
                         </div>
                     </div>
@@ -304,14 +306,17 @@
                         </div>
                     </div>
 
-                    <!-- Asignaciones -->
+                    <!-- Forma de pago -->
                     <div class="card">
                         <h2 style="color: #5b21b6;">Forma de pago</h2>
                         <div class="form-grid grid-2">
                             <div class="input-group">
-                                <label for="forma_pago_id">Forma de pago (ID)</label>
+                                <label for="forma_pago_id">Forma de pago</label>
                                 <div class="input-icon input-icon-id">
-                                    <input type="number" id="forma_pago_id" name="forma_pago_id" min="1" placeholder="ID de dron_formas_pago" />
+                                    <select id="forma_pago_id" name="forma_pago_id">
+                                        <option value="">Seleccionar forma de pago</option>
+                                        <!-- opciones por JS -->
+                                    </select>
                                 </div>
                             </div>
                             <div class="input-group">
@@ -364,81 +369,136 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="input-group">
+                        <!-- <div class="input-group">
                             <label for="desglose_json">Desglose JSON</label>
                             <div class="input-icon input-icon-code">
                                 <textarea id="desglose_json" name="desglose_json" rows="3" placeholder='{"superficie_ha":...}'></textarea>
                             </div>
+                        </div> -->
+                        <div id="costos-resumen" class="costos-resumen card" style="margin-top:8px;padding:12px;">
+                            <!-- Se completa por JS -->
                         </div>
                     </div>
 
                     <!-- Motivos -->
                     <div class="card">
-                        <h2 style="color: #5b21b6;">Patologias</h2>
-                        <div class="tabla-wrapper">
-                            <table class="data-table" id="tabla-motivos" aria-label="Motivos de la solicitud">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>patologia_id</th>
-                                        <th>es_otros</th>
-                                        <th>otros_text</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                        <h2 style="color:#5b21b6;">Patologías</h2>
+
+                        <!-- Listado actual como chips -->
+                        <div id="patologias-chips" class="chips"></div>
+
+                        <!-- Alta de nueva patología -->
+                        <div class="form-grid grid-3" style="margin-top:12px;">
+                            <div class="input-group">
+                                <label for="patologia_new">Agregar patología</label>
+                                <div class="input-icon input-icon-edit">
+                                    <select id="patologia_new"></select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Otros</label>
+                                <div class="input-icon input-icon-toggle">
+                                    <select id="patologia_new_otro">
+                                        <option value="0">No</option>
+                                        <option value="1">Sí</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="input-group" id="grp_patologia_otro_text" style="display:none;">
+                                <label for="patologia_new_text">Texto</label>
+                                <div class="input-icon input-icon-edit">
+                                    <input type="text" id="patologia_new_text" placeholder="Detalle otros" />
+                                </div>
+                            </div>
                         </div>
+
                         <div class="form-buttons">
-                            <button type="button" class="btn btn-info" id="add-motivo">Agregar motivo</button>
+                            <button type="button" class="btn btn-info" id="btn_add_patologia">Agregar</button>
                         </div>
                     </div>
 
-                    <!-- Items -->
+
+                    <!-- Productos -->
                     <div class="card">
-                        <h2 style="color: #5b21b6;">Productos y receta</h2>
-                        <div class="tabla-wrapper">
-                            <table class="data-table" id="tabla-items" aria-label="Items">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>patologia_id</th>
-                                        <th>fuente</th>
-                                        <th>producto_id</th>
-                                        <th>nombre_producto</th>
-                                        <th>costo_hectarea_snapshot</th>
-                                        <th>total_producto_snapshot</th>
-                                        <th>Recetas</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                        <h2 style="color:#5b21b6;">Productos</h2>
+
+                        <div id="productos-list" class="productos-list"></div>
+
+                        <!-- Alta de producto -->
+                        <div class="form-grid grid-4" style="margin-top:12px;">
+                            <div class="input-group">
+                                <label for="producto_new">Producto</label>
+                                <div class="input-icon input-icon-edit">
+                                    <select id="producto_new"></select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="producto_new_fuente">Fuente</label>
+                                <div class="input-icon input-icon-toggle">
+                                    <select id="producto_new_fuente">
+                                        <option value="sve">sve</option>
+                                        <option value="productor">productor</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="producto_new_patologia">Patología</label>
+                                <div class="input-icon input-icon-edit">
+                                    <select id="producto_new_patologia"></select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="producto_new_costo">Costo/ha</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" id="producto_new_costo" placeholder="0" />
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- receta -->
+                        <div class="card">
+                            <h2 style="color:#5b21b6;">Receta</h2>
+                            <div id="recetas-container"></div>
+                        </div>
+
                         <div class="form-buttons">
-                            <button type="button" class="btn btn-info" id="add-item">Agregar item</button>
+                            <button type="button" class="btn btn-info" id="btn_add_producto">Agregar producto</button>
                         </div>
                     </div>
+
 
                     <!-- Rangos -->
                     <div class="card">
-                        <h2 style="color: #5b21b6;">Rangos de fechas seleccionadas</h2>
-                        <div class="tabla-wrapper">
-                            <table class="data-table" id="tabla-rangos" aria-label="Rangos">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>rango</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                        <div class="form-buttons">
-                            <button type="button" class="btn btn-info" id="add-rango">Agregar rango</button>
+                        <h2 style="color:#5b21b6;">Rangos de fechas seleccionadas</h2>
+
+                        <div id="rangos-chips" class="chips"></div>
+
+                        <div class="form-grid grid-3" style="margin-top:12px;">
+                            <div class="input-group">
+                                <label for="rango_new">Agregar rango</label>
+                                <div class="input-icon input-icon-date">
+                                    <select id="rango_new">
+                                        <option value="">Seleccionar</option>
+                                        <option>enero_q1</option>
+                                        <option>enero_q2</option>
+                                        <option>febrero_q1</option>
+                                        <option>febrero_q2</option>
+                                        <option>octubre_q1</option>
+                                        <option>octubre_q2</option>
+                                        <option>noviembre_q1</option>
+                                        <option>noviembre_q2</option>
+                                        <option>diciembre_q1</option>
+                                        <option>diciembre_q2</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label class="sr-only" for="btn_add_rango">Agregar</label>
+                                <button type="button" id="btn_add_rango" class="btn btn-info">Agregar</button>
+                            </div>
                         </div>
                     </div>
+
 
                     <!-- Acciones -->
                     <div class="form-buttons">
@@ -673,102 +733,129 @@
     .card .form-separator {
         margin: 8px 0 16px;
     }
+
+    /* Chips/píldoras */
+.chips { display:flex; gap:8px; flex-wrap:wrap; }
+.chip-pill {
+  display:inline-flex; align-items:center; gap:6px;
+  background:#eef; border-radius:999px; padding:4px 10px;
+}
+.chip-pill .close { cursor:pointer; border:0; background:transparent; font-weight:bold; }
+
+/* Lista de productos */
+.producto-item {
+  border:1px solid #eee; border-radius:12px; padding:10px; margin-bottom:8px;
+  display:grid; grid-template-columns: 1fr auto; gap:6px;
+}
+.producto-item .meta { font-size:.9rem; color:#6b7280; }
+.producto-item .acciones { display:flex; gap:8px; align-items:center; }
+.costos-resumen p { margin:.25rem 0; }
+
+/* Ocultar por defecto el motivo hasta que el estado sea cancelada */
+#grp_motivo_cancelacion { display:none; }
 </style>
 
 <script>
-    const DRONE_API = '../partials/drones/controller/drone_list_controller.php';
+const DRONE_API = '../partials/drones/controller/drone_list_controller.php';
 
-    (function() {
-        const $ = (s, ctx = document) => ctx.querySelector(s);
-        const $$ = (s, ctx = document) => Array.from(ctx.querySelectorAll(s));
-        const els = {
-            piloto: $('#piloto'),
-            ses_usuario: $('#ses_usuario'),
-            estado: $('#estado'),
-            fecha_visita: $('#fecha_visita'),
-            cards: $('#cards')
-        };
+(function () {
+  const $ = (s, ctx = document) => ctx.querySelector(s);
+  const $$ = (s, ctx = document) => Array.from(ctx.querySelectorAll(s));
+  const els = {
+    piloto: $('#piloto'),
+    ses_usuario: $('#ses_usuario'),
+    estado: $('#estado'),
+    fecha_visita: $('#fecha_visita'),
+    cards: $('#cards')
+  };
 
-        function debounce(fn, t = 300) {
-            let id;
-            return (...a) => {
-                clearTimeout(id);
-                id = setTimeout(() => fn(...a), t);
-            }
-        }
+  // ------- helpers -------
+  function debounce(fn, t = 300) { let id; return (...a) => { clearTimeout(id); id = setTimeout(() => fn(...a), t); } }
+  function esc(s) { return (s ?? '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+  const fmtNum = (v) => {
+    if (v === null || v === undefined || v === '') return '';
+    const n = Number(v);
+    if (!Number.isFinite(n)) return '';
+    // entero => sin decimales
+    return Number.isInteger(n) ? String(n) : String(n).replace('.', ',');
+  };
+  const parseNum = (v) => (v === '' || v === null || v === undefined) ? null : Number(String(v).replace(',','.'));
 
-        function prettyEstado(e) {
-            switch ((e || '').toLowerCase()) {
-                case 'ingresada':
-                    return 'Ingresada';
-                case 'procesando':
-                    return 'Procesando';
-                case 'aprobada_coop':
-                    return 'Aprobada coop';
-                case 'cancelada':
-                    return 'Cancelada';
-                case 'completada':
-                    return 'Completada';
-                default:
-                    return e || '';
-            }
-        }
+  const catalog = { pilotos: [], formasPago: [], patologias: [], productos: [] };
+  const state = { motivos: [], rangos: [], items: [] }; // items incluye recetas
 
-        function badgeClass(e) {
-            switch ((e || '').toLowerCase()) {
-                case 'ingresada':
-                    return 'warning';
-                case 'procesando':
-                    return 'info';
-                case 'aprobada_coop':
-                    return 'primary';
-                case 'completada':
-                    return 'success';
-                case 'cancelada':
-                    return 'danger';
-                default:
-                    return 'secondary';
-            }
-        }
+  const getFilters = () => ({
+    piloto: els.piloto.value.trim(),
+    ses_usuario: els.ses_usuario.value.trim(),
+    estado: els.estado.value,
+    fecha_visita: els.fecha_visita.value
+  });
 
-        function esc(s) {
-            return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-        }
+  async function loadCatalogs() {
+    const qs = (a) => fetch(`${DRONE_API}?action=${a}`, { cache:'no-store' }).then(r=>r.json());
+    const [pi, fp, pa, pr] = await Promise.all([
+      qs('list_pilotos'), qs('list_formas_pago'), qs('list_patologias'), qs('list_productos')
+    ]);
+    catalog.pilotos    = pi.ok ? pi.data : [];
+    catalog.formasPago = fp.ok ? fp.data : [];
+    catalog.patologias = pa.ok ? pa.data : [];
+    catalog.productos  = pr.ok ? pr.data : [];
+  }
 
-        function getFilters() {
-            return {
-                piloto: els.piloto.value.trim(),
-                ses_usuario: els.ses_usuario.value.trim(),
-                estado: els.estado.value,
-                fecha_visita: els.fecha_visita.value
-            };
-        }
+  function fillSelect(sel, data, { valueKey='id', labelKey='nombre', selected=null, placeholder=null } = {}) {
+    sel.innerHTML = '';
+    if (placeholder !== null) {
+      const op = document.createElement('option');
+      op.value = ''; op.textContent = placeholder; sel.appendChild(op);
+    }
+    data.forEach(r => {
+      const op = document.createElement('option');
+      op.value = r[valueKey]; op.textContent = r[labelKey];
+      if (selected !== null && String(selected) === String(r[valueKey])) op.selected = true;
+      sel.appendChild(op);
+    });
+  }
 
-        async function load() {
-            const params = new URLSearchParams({
-                action: 'list_solicitudes',
-                ...getFilters()
-            });
-            try {
-                const res = await fetch(`${DRONE_API}?${params.toString()}`, {
-                    cache: 'no-store'
-                });
-                const json = await res.json();
-                if (!json.ok) throw new Error(json.error || 'Error');
-                renderCards(json.data.items || []);
-            } catch (e) {
-                console.error(e);
-                els.cards.innerHTML = '<div class="card">Ocurrió un error cargando las solicitudes.</div>';
-            }
-        }
+  // ------- list & cards -------
+  async function load() {
+    const params = new URLSearchParams({ action: 'list_solicitudes', ...getFilters() });
+    try {
+      const res = await fetch(`${DRONE_API}?${params.toString()}`, { cache: 'no-store' });
+      const json = await res.json(); if (!json.ok) throw new Error(json.error || 'Error');
+      renderCards(json.data.items || []);
+    } catch (e) {
+      console.error(e);
+      els.cards.innerHTML = '<div class="card">Ocurrió un error cargando las solicitudes.</div>';
+    }
+  }
 
-        function renderCards(items) {
-            els.cards.innerHTML = '';
-            items.forEach(it => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
+  function prettyEstado(e) {
+    switch((e||'').toLowerCase()){
+      case 'ingresada':return 'Ingresada';
+      case 'procesando':return 'Procesando';
+      case 'aprobada_coop':return 'Aprobada coop';
+      case 'cancelada':return 'Cancelada';
+      case 'completada':return 'Completada';
+      default:return e||'';
+    }
+  }
+  function badgeClass(e){
+    switch((e||'').toLowerCase()){
+      case 'ingresada':return 'warning';
+      case 'procesando':return 'info';
+      case 'aprobada_coop':return 'primary';
+      case 'completada':return 'success';
+      case 'cancelada':return 'danger';
+      default:return 'secondary';
+    }
+  }
+
+  function renderCards(items) {
+    els.cards.innerHTML = '';
+    items.forEach(it => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `
         <div class="product-header">
           <h4>${esc(it.ses_usuario || '—')}</h4>
           <p>Pedido número: ${esc(it.id ?? '')}</p>
@@ -788,595 +875,442 @@
             </div>
             <button class="btn-view" data-id="${it.id}">Ver detalle</button>
           </div>
+        </div>`;
+      els.cards.appendChild(card);
+    });
+
+    els.cards.querySelectorAll('.btn-view').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        try {
+          await loadCatalogs();
+          const url = `${DRONE_API}?action=get_solicitud_full&id=${encodeURIComponent(id)}`;
+          const res = await fetch(url, { cache:'no-store' });
+          const json = await res.json(); if (!json.ok) throw new Error(json.error || 'Error');
+          fillForm(json.data);
+          openDrawer({ id });
+        } catch (err) {
+          console.error('No se pudo obtener la solicitud', err);
+          openDrawer({ id }); // abrimos igual para mantener UX
+        }
+      });
+    });
+  }
+
+  // ------- Renderizadores de tarjetas dinámicas -------
+  const $chipsPat = $('#patologias-chips');
+  const $chipsRan = $('#rangos-chips');
+  const $listProd  = $('#productos-list');
+  const $recetas   = $('#recetas-container');
+
+  function renderPatologias() {
+    if (!$chipsPat) return;
+    $chipsPat.innerHTML = '';
+    state.motivos.forEach((m, i) => {
+      const pat = catalog.patologias.find(p => String(p.id) === String(m.patologia_id));
+      const label = pat ? pat.nombre : (m.patologia_nombre || `ID ${m.patologia_id}`);
+      const extra = m.es_otros ? ` (otros: ${m.otros_text || '—'})` : '';
+      const div = document.createElement('div');
+      div.className = 'chip-pill';
+      div.innerHTML = `<span>${esc(label)}${esc(extra)}</span><button class="close" aria-label="Quitar">&times;</button>`;
+      div.querySelector('.close').addEventListener('click', () => { state.motivos.splice(i,1); renderPatologias(); });
+      $chipsPat.appendChild(div);
+    });
+  }
+
+  function renderRangos() {
+    if (!$chipsRan) return;
+    $chipsRan.innerHTML = '';
+    state.rangos.forEach((r, i) => {
+      const div = document.createElement('div');
+      div.className = 'chip-pill';
+      div.innerHTML = `<span>${esc(r.rango)}</span><button class="close" aria-label="Quitar">&times;</button>`;
+      div.querySelector('.close').addEventListener('click', () => { state.rangos.splice(i,1); renderRangos(); });
+      $chipsRan.appendChild(div);
+    });
+  }
+
+  function renderProductos() {
+    if (!$listProd) return;
+    $listProd.innerHTML = '';
+    state.items.forEach((it, idx) => {
+      const pInfo = catalog.productos.find(p => String(p.id) === String(it.producto_id));
+      const nombre = it.nombre_producto || (pInfo ? pInfo.nombre : `Producto #${it.producto_id}`);
+      const pat = catalog.patologias.find(p => String(p.id) === String(it.patologia_id));
+      const wrapper = document.createElement('div');
+      wrapper.className = 'producto-item';
+      wrapper.innerHTML = `
+        <div>
+          <strong>${esc(nombre)}</strong>
+          <div class="meta">Fuente: ${esc(it.fuente || 'sve')} · Patología: ${esc(pat ? pat.nombre : '—')}</div>
+          <div class="meta">Costo/ha:
+            <input type="number" step="0.01" class="mini-input" data-role="costo" value="${fmtNum(it.costo_hectarea_snapshot ?? pInfo?.costo_hectarea ?? '')}" />
+          </div>
         </div>
-      `;
-                els.cards.appendChild(card);
-            });
+        <div class="acciones">
+          <button type="button" class="btn btn-cancelar" data-role="quitar">Quitar</button>
+        </div>`;
+      wrapper.querySelector('[data-role="costo"]').addEventListener('input', (e) => {
+        state.items[idx].costo_hectarea_snapshot = parseNum(e.target.value);
+        recalcCostos();
+      });
+      wrapper.querySelector('[data-role="quitar"]').addEventListener('click', () => {
+        state.items.splice(idx,1); renderProductos(); renderRecetas(); recalcCostos();
+      });
+      $listProd.appendChild(wrapper);
+    });
+  }
 
-            els.cards.querySelectorAll('.btn-view').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.dataset.id;
-                    try {
-                        const url = `${DRONE_API}?action=get_solicitud_full&id=${encodeURIComponent(id)}`;
+  function renderRecetas() {
+    if (!$recetas) return;
+    $recetas.innerHTML = '';
+    state.items.forEach((it, idx) => {
+      const pInfo = catalog.productos.find(p => String(p.id) === String(it.producto_id));
+      const nombre = it.nombre_producto || pInfo?.nombre || `Producto #${it.producto_id}`;
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<h3 style="color:#5b21b6;">${esc(nombre)}</h3>`;
+      const table = document.createElement('table');
+      table.className = 'data-table';
+      table.innerHTML = `
+        <thead><tr>
+          <th>#</th><th>principio_activo</th><th>dosis</th><th>unidad</th><th>orden_mezcla</th><th>notas</th><th>Acciones</th>
+        </tr></thead><tbody></tbody>`;
+      const tb = table.querySelector('tbody');
 
-                        const res = await fetch(url, {
-                            cache: 'no-store'
-                        });
-                        const json = await res.json();
-                        if (!json.ok) throw new Error(json.error || 'Error');
+      (it.recetas || []).forEach((r, i) => {
+        tb.appendChild(makeRecetaRow(idx, i, r));
+      });
 
-                        // Cargar formulario con detalle completo
-                        const detalle = json.data;
-                        fillForm(detalle);
-                        openDrawer({
-                            id
-                        });
+      const btnAdd = document.createElement('button');
+      btnAdd.className = 'btn btn-info';
+      btnAdd.type = 'button';
+      btnAdd.textContent = 'Agregar receta';
+      btnAdd.addEventListener('click', () => {
+        if (!state.items[idx].recetas) state.items[idx].recetas = [];
+        state.items[idx].recetas.push({principio_activo:'', dosis:null, unidad:'', orden_mezcla:null, notas:''});
+        renderRecetas();
+      });
 
-                    } catch (err) {
-                        console.error('No se pudo obtener la solicitud', err);
-                        openDrawer({
-                            id
-                        }); // abrimos igual para mantener UX
-                    }
-                });
-            });
+      card.appendChild(table);
+      card.appendChild(document.createElement('div')).appendChild(btnAdd);
+      $recetas.appendChild(card);
+    });
+  }
 
-        }
+  function makeRecetaRow(itemIdx, i, r) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td><div class="input-icon input-icon-edit"><input type="text" value="${esc(r.principio_activo||'')}"></div></td>
+      <td><div class="input-icon input-icon-hashtag"><input type="number" step="0.001" value="${fmtNum(r.dosis)}"></div></td>
+      <td><div class="input-icon input-icon-edit"><input type="text" value="${esc(r.unidad||'')}"></div></td>
+      <td><div class="input-icon input-icon-hashtag"><input type="number" value="${fmtNum(r.orden_mezcla)}"></div></td>
+      <td><div class="input-icon input-icon-edit"><input type="text" value="${esc(r.notas||'')}"></div></td>
+      <td class="table-actions"><button type="button" class="btn btn-cancelar">Quitar</button></td>
+    `;
+    const [pa, dosis, uni, ord, nots] = tr.querySelectorAll('input');
+    pa.addEventListener('input',  e => state.items[itemIdx].recetas[i].principio_activo = e.target.value );
+    dosis.addEventListener('input',e => state.items[itemIdx].recetas[i].dosis = parseNum(e.target.value) );
+    uni.addEventListener('input',  e => state.items[itemIdx].recetas[i].unidad = e.target.value );
+    ord.addEventListener('input',  e => state.items[itemIdx].recetas[i].orden_mezcla = parseNum(e.target.value) );
+    nots.addEventListener('input', e => state.items[itemIdx].recetas[i].notas = e.target.value );
+    tr.querySelector('.btn-cancelar').addEventListener('click', () => { state.items[itemIdx].recetas.splice(i,1); renderRecetas(); });
+    return tr;
+  }
 
-        // ---------- Helpers de UI de edición ----------
-        function el(tag, attrs = {}, children = []) {
-            const n = document.createElement(tag);
-            Object.entries(attrs).forEach(([k, v]) => {
-                if (k === 'class') n.className = v;
-                else if (k === 'dataset') Object.entries(v).forEach(([dk, dv]) => n.dataset[dk] = dv);
-                else if (k.startsWith('on') && typeof v === 'function') n.addEventListener(k.slice(2), v);
-                else n.setAttribute(k, v);
-            });
-            children.forEach(c => n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c));
-            return n;
-        }
+  function recalcCostos() {
+    const base_ha = parseNum($('#base_ha')?.value);
+    const costo_base = parseNum($('#costo_base_por_ha')?.value);
+    const base_total = (base_ha || 0) * (costo_base || 0);
+    $('#base_total') && ($('#base_total').value = fmtNum(base_total));
 
-        function setV(id, val) {
-            const node = document.getElementById(id);
-            if (!node) return;
-            if (node.type === 'checkbox') node.checked = Boolean(val);
-            else node.value = (val ?? '') === null ? '' : String(val ?? '');
-        }
+    let productos_total = 0;
+    state.items.forEach(it => {
+      const ch = Number(it.costo_hectarea_snapshot || 0);
+      productos_total += ch * (base_ha || 0);
+      it.total_producto_snapshot = ch * (base_ha || 0);
+    });
+    $('#productos_total') && ($('#productos_total').value = fmtNum(productos_total));
 
-        function getV(id) {
-            const node = document.getElementById(id);
-            if (!node) return null;
-            return node.value === '' ? null : node.value;
-        }
+    const total = base_total + productos_total;
+    $('#total') && ($('#total').value = fmtNum(total));
 
-        // Render filas dinámicas (motivos/items/rangos)
-        function makeMotivoRow(i, m = {}) {
-            const tr = el('tr', {}, [
-                el('td', {}, [String(i + 1)]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-hashtag'
-                }, [
-                    el('input', {
-                        type: 'number',
-                        min: '1',
-                        value: m.patologia_id ?? '',
-                        'aria-label': 'patologia_id'
-                    })
-                ])]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-toggle'
-                }, [
-                    el('select', {
-                        'aria-label': 'es_otros'
-                    }, [
-                        el('option', {
-                            value: '0'
-                        }, ['0']),
-                        el('option', {
-                            value: '1',
-                            selected: m.es_otros ? 'selected' : null
-                        }, ['1'])
-                    ])
-                ])]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-edit'
-                }, [
-                    el('input', {
-                        type: 'text',
-                        value: m.otros_text ?? '',
-                        'aria-label': 'otros_text'
-                    })
-                ])]),
-                el('td', {
-                    class: 'table-actions'
-                }, [
-                    el('button', {
-                        type: 'button',
-                        class: 'btn btn-cancelar',
-                        onClick: () => tr.remove()
-                    }, ['Quitar'])
-                ])
-            ]);
-            return tr;
-        }
+    const resumen = $('#costos-resumen');
+    if (resumen) {
+      const baseTxt = `Base: ${fmtNum(base_ha||0)} ha × $${fmtNum(costo_base||0)} = $${fmtNum(base_total)}`;
+      const prodsTxt = `Productos: $${fmtNum(productos_total)}`;
+      const totalTxt = `<strong>Total: $${fmtNum(total)}</strong>`;
+      resumen.innerHTML = `<p>${baseTxt}</p><p>${prodsTxt}</p><p>${totalTxt}</p>`;
+    }
+  }
 
+  // ------- fill form principal -------
+  function setV(id, val) {
+    const node = document.getElementById(id);
+    if (!node) return;
+    if (node.type === 'checkbox') node.checked = Boolean(val);
+    else node.value = (val ?? '') === null ? '' : String(val ?? '');
+  }
+  function getV(id) {
+    const node = document.getElementById(id);
+    if (!node) return null;
+    return node.value === '' ? null : node.value;
+  }
 
-        function makeRecetaTable(recetas = []) {
-            const wrap = el('div');
-            const table = el('table', {
-                class: 'data-table',
-                'aria-label': 'Recetas'
-            }, [
-                el('thead', {}, [el('tr', {}, [
-                    el('th', {}, ['#']),
-                    el('th', {}, ['principio_activo']),
-                    el('th', {}, ['dosis']),
-                    el('th', {}, ['unidad']),
-                    el('th', {}, ['orden_mezcla']),
-                    el('th', {}, ['notas']),
-                    el('th', {}, ['Acciones'])
-                ])]),
-                el('tbody', {}, [])
-            ]);
-            const tbody = table.querySelector('tbody');
-            recetas.forEach((r, idx) => {
-                tbody.appendChild(makeRecetaRow(idx, r));
-            });
-            const btnAdd = el('button', {
-                type: 'button',
-                class: 'btn btn-info',
-                onClick: () => {
-                    tbody.appendChild(makeRecetaRow(tbody.children.length, {}));
-                }
-            }, ['Agregar receta']);
-            wrap.appendChild(table);
-            wrap.appendChild(el('div', {
-                class: 'form-buttons'
-            }, [btnAdd]));
-            return wrap;
-        }
+  function toggleMotivo() {
+    const sel = $('#estado');
+    const grp = $('#grp_motivo_cancelacion');
+    if (!sel || !grp) return;
+    grp.style.display = (sel.value.toLowerCase() === 'cancelada') ? '' : 'none';
+  }
 
-        function makeRecetaRow(i, r = {}) {
-            const tr = el('tr', {}, [
-                el('td', {}, [String(i + 1)]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-edit'
-                }, [
-                    el('input', {
-                        type: 'text',
-                        value: r.principio_activo ?? '',
-                        'aria-label': 'principio_activo'
-                    })
-                ])]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-hashtag'
-                }, [
-                    el('input', {
-                        type: 'number',
-                        step: '0.001',
-                        value: r.dosis ?? '',
-                        'aria-label': 'dosis'
-                    })
-                ])]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-edit'
-                }, [
-                    el('input', {
-                        type: 'text',
-                        value: r.unidad ?? '',
-                        'aria-label': 'unidad'
-                    })
-                ])]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-hashtag'
-                }, [
-                    el('input', {
-                        type: 'number',
-                        value: r.orden_mezcla ?? '',
-                        'aria-label': 'orden_mezcla'
-                    })
-                ])]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-edit'
-                }, [
-                    el('input', {
-                        type: 'text',
-                        value: r.notas ?? '',
-                        'aria-label': 'notas'
-                    })
-                ])]),
-                el('td', {
-                    class: 'table-actions'
-                }, [
-                    el('button', {
-                        type: 'button',
-                        class: 'btn btn-cancelar',
-                        onClick: () => tr.remove()
-                    }, ['Quitar'])
-                ])
-            ]);
-            return tr;
-        }
+  function fillForm(d) {
+    // id
+    $('#drawer-id').textContent = d?.solicitud?.id ? `#${d.solicitud.id}` : '';
 
+    const s = d.solicitud || {};
+    setV('productor_id_real', s.productor_id_real);
+    setV('ses_usuario', s.ses_usuario ?? d?.productor?.usuario ?? '');
+    setV('superficie_ha', fmtNum(s.superficie_ha));
+    setV('fecha_visita', s.fecha_visita);
+    setV('hora_visita_desde', s.hora_visita_desde);
+    setV('hora_visita_hasta', s.hora_visita_hasta);
+    setV('estado', s.estado); toggleMotivo();
+    setV('motivo_cancelacion', s.motivo_cancelacion);
+    setV('observaciones', s.observaciones);
 
-        function makeItemRow(i, it = {}) {
-            const tr = el('tr', {}, [
-                el('td', {}, [String(i + 1)]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-hashtag'
-                }, [
-                    el('input', {
-                        type: 'number',
-                        min: '1',
-                        value: it.patologia_id ?? '',
-                        'aria-label': 'patologia_id'
-                    })
-                ])]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-toggle'
-                }, [
-                    el('select', {
-                        'aria-label': 'fuente'
-                    }, [
-                        el('option', {
-                            value: 'sve',
-                            selected: it.fuente === 'sve' ? 'selected' : null
-                        }, ['sve']),
-                        el('option', {
-                            value: 'productor',
-                            selected: it.fuente === 'productor' ? 'selected' : null
-                        }, ['productor'])
-                    ])
-                ])]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-id'
-                }, [
-                    el('input', {
-                        type: 'number',
-                        min: '1',
-                        value: it.producto_id ?? '',
-                        'aria-label': 'producto_id'
-                    })
-                ])]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-edit'
-                }, [
-                    el('input', {
-                        type: 'text',
-                        value: it.nombre_producto ?? '',
-                        'aria-label': 'nombre_producto'
-                    })
-                ])]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-hashtag'
-                }, [
-                    el('input', {
-                        type: 'number',
-                        step: '0.01',
-                        value: it.costo_hectarea_snapshot ?? '',
-                        'aria-label': 'costo_hectarea_snapshot'
-                    })
-                ])]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-hashtag'
-                }, [
-                    el('input', {
-                        type: 'number',
-                        step: '0.01',
-                        value: it.total_producto_snapshot ?? '',
-                        'aria-label': 'total_producto_snapshot'
-                    })
-                ])]),
-                el('td', {}, [makeRecetaTable(it.recetas || [])]),
-                el('td', {
-                    class: 'table-actions'
-                }, [
-                    el('button', {
-                        type: 'button',
-                        class: 'btn btn-cancelar',
-                        onClick: () => tr.remove()
-                    }, ['Quitar'])
-                ])
-            ]);
-            return tr;
-        }
+    // flags
+    ['representante','linea_tension','zona_restringida','corriente_electrica','agua_potable','libre_obstaculos','area_despegue','en_finca']
+      .forEach(k => setV(k, s[k]));
 
+    // dir + ubica
+    ['dir_provincia','dir_localidad','dir_calle','dir_numero','ubicacion_lat','ubicacion_lng','ubicacion_acc']
+      .forEach(k => setV(k, s[k]));
 
-        function makeRangoRow(i, r = {}) {
-            const tr = el('tr', {}, [
-                el('td', {}, [String(i + 1)]),
-                el('td', {}, [el('div', {
-                    class: 'input-icon input-icon-date'
-                }, [
-                    el('input', {
-                        type: 'text',
-                        value: r.rango ?? '',
-                        placeholder: 'octubre_q1',
-                        'aria-label': 'rango'
-                    })
-                ])]),
-                el('td', {
-                    class: 'table-actions'
-                }, [
-                    el('button', {
-                        type: 'button',
-                        class: 'btn btn-cancelar',
-                        onClick: () => tr.remove()
-                    }, ['Quitar'])
-                ])
-            ]);
-            return tr;
-        }
+    // selects de catálogos
+    fillSelect($('#piloto_id'), catalog.pilotos, { selected: s.piloto_id, placeholder:'Seleccionar piloto' });
+    fillSelect($('#forma_pago_id'), catalog.formasPago, { selected: s.forma_pago_id, placeholder:'Seleccionar forma de pago' });
+    fillSelect($('#patologia_new'), catalog.patologias, { placeholder:'Seleccionar patología' });
+    fillSelect($('#producto_new'), catalog.productos, { placeholder:'Seleccionar producto' });
+    fillSelect($('#producto_new_patologia'), catalog.patologias, { placeholder:'Patología asociada' });
 
+    // costos
+    const c = d.costos || {};
+    setV('costo_moneda', c.moneda);
+    setV('costo_base_por_ha', fmtNum(c.costo_base_por_ha));
+    setV('base_ha', fmtNum(c.base_ha));
+    setV('base_total', fmtNum(c.base_total));
+    setV('productos_total', fmtNum(c.productos_total));
+    setV('total', fmtNum(c.total));
+    recalcCostos();
 
-        function fillForm(d) {
-            // ID
-            setV('drawer-id', d?.solicitud?.id ? `#${d.solicitud.id}` : '');
-            // Base
-            const s = d.solicitud || {};
-            setV('productor_id_real', s.productor_id_real);
-            setV('ses_usuario', s.ses_usuario ?? d?.productor?.usuario ?? '');
-            setV('superficie_ha', s.superficie_ha);
-            setV('fecha_visita', s.fecha_visita);
-            setV('hora_visita_desde', s.hora_visita_desde);
-            setV('hora_visita_hasta', s.hora_visita_hasta);
-            setV('estado', s.estado);
-            setV('motivo_cancelacion', s.motivo_cancelacion);
-            setV('observaciones', s.observaciones);
-            // Flags
-            ['representante', 'linea_tension', 'zona_restringida', 'corriente_electrica', 'agua_potable', 'libre_obstaculos', 'area_despegue', 'en_finca']
-            .forEach(k => setV(k, s[k]));
-            // Dirección + ubicación
-            ['dir_provincia', 'dir_localidad', 'dir_calle', 'dir_numero', 'ubicacion_lat', 'ubicacion_lng', 'ubicacion_acc', 'ubicacion_ts']
-            .forEach(k => setV(k, s[k]));
-            // Asignaciones y costos
-            setV('piloto_id', s.piloto_id);
-            setV('forma_pago_id', s.forma_pago_id);
-            setV('coop_descuento_nombre', s.coop_descuento_nombre);
-            const c = d.costos || {};
-            setV('costo_moneda', c.moneda);
-            setV('costo_base_por_ha', c.costo_base_por_ha);
-            setV('base_ha', c.base_ha);
-            setV('base_total', c.base_total);
-            setV('productos_total', c.productos_total);
-            setV('total', c.total);
-            document.getElementById('desglose_json').value = c.desglose_json ?? '';
+    // estados dinámicos
+    state.motivos = (d.motivos || []).map(m => ({
+      patologia_id: m.patologia_id, es_otros: Number(m.es_otros) ? 1 : 0,
+      otros_text: m.otros_text || '', patologia_nombre: m.patologia_nombre
+    }));
+    renderPatologias();
 
-            // Motivos
-            const tbm = document.querySelector('#tabla-motivos tbody');
-            tbm.innerHTML = '';
-            (d.motivos || []).forEach((m, idx) => tbm.appendChild(makeMotivoRow(idx, m)));
+    state.rangos = (d.rangos || []).map(r => ({ rango: r.rango }));
+    renderRangos();
 
-            // Items
-            const tbi = document.querySelector('#tabla-items tbody');
-            tbi.innerHTML = '';
-            (d.items || []).forEach((it, idx) => tbi.appendChild(makeItemRow(idx, it)));
+    state.items = (d.items || []).map(it => ({
+      patologia_id: it.patologia_id,
+      fuente: it.fuente || 'sve',
+      producto_id: it.producto_id,
+      nombre_producto: it.producto_nombre || it.nombre_producto || null,
+      costo_hectarea_snapshot: it.costo_hectarea_snapshot ?? it.producto_costo_hectarea ?? null,
+      total_producto_snapshot: it.total_producto_snapshot ?? null,
+      recetas: (it.recetas || []).map(r => ({
+        principio_activo: r.principio_activo, dosis: r.dosis, unidad: r.unidad,
+        orden_mezcla: r.orden_mezcla, notas: r.notas
+      }))
+    }));
+    renderProductos();
+    renderRecetas();
+    recalcCostos();
+  }
 
-            // Rangos
-            const tbr = document.querySelector('#tabla-rangos tbody');
-            tbr.innerHTML = '';
-            (d.rangos || []).forEach((r, idx) => tbr.appendChild(makeRangoRow(idx, r)));
-        }
+  // ----- listeners de UI estática -----
+  $('#estado')?.addEventListener('change', toggleMotivo);
 
-        function serializeTable(tbody, schema) {
-            // schema: [{k:'patologia_id', type:'number'}, ...]
-            const rows = [];
-            Array.from(tbody.children).forEach(tr => {
-                const cells = Array.from(tr.querySelectorAll('td'));
-                const row = {};
-                let ci = 0;
-                schema.forEach(col => {
-                    // Busca el primer input/select dentro de la celda desplazada
-                    const cell = cells[++ci]; // el 0 es el contador "#"
-                    const input = cell ? cell.querySelector('input,select,textarea') : null;
-                    let val = input ? input.value : null;
-                    if (col.type === 'number') val = val === '' ? null : Number(val);
-                    if (col.type === 'int') val = val === '' ? null : parseInt(val, 10);
-                    if (col.type === 'bool01') val = input && input.value === '1' ? 1 : 0;
-                    row[col.k] = (val === '' ? null : val);
-                });
-                rows.push(row);
-            });
-            return rows;
-        }
+  $('#btn-abrir-ubicacion')?.addEventListener('click', () => {
+    const lat = getV('ubicacion_lat'); const lng = getV('ubicacion_lng');
+    if (!lat || !lng) { showAlert('error','Cargá latitud y longitud primero'); return; }
+    const url = `https://www.google.com/maps?q=${lat},${lng}`;
+    window.open(url, '_blank');
+  });
 
-        // Botones de agregar
-        document.getElementById('add-motivo').addEventListener('click', () => {
-            document.querySelector('#tabla-motivos tbody').appendChild(makeMotivoRow(document.querySelector('#tabla-motivos tbody').children.length, {}));
-        });
-        document.getElementById('add-item').addEventListener('click', () => {
-            document.querySelector('#tabla-items tbody').appendChild(makeItemRow(document.querySelector('#tabla-items tbody').children.length, {}));
-        });
-        document.getElementById('add-rango').addEventListener('click', () => {
-            document.querySelector('#tabla-rangos tbody').appendChild(makeRangoRow(document.querySelector('#tabla-rangos tbody').children.length, {}));
-        });
+  // Patologías: alta
+  $('#patologia_new_otro')?.addEventListener('change', (e)=>{
+    $('#grp_patologia_otro_text').style.display = e.target.value === '1' ? '' : 'none';
+  });
+  $('#btn_add_patologia')?.addEventListener('click', ()=>{
+    const id  = $('#patologia_new').value;
+    if (!id) return;
+    const es  = $('#patologia_new_otro').value === '1' ? 1 : 0;
+    const txt = $('#patologia_new_text').value.trim();
+    state.motivos.push({ patologia_id: Number(id), es_otros: es, otros_text: es?txt:'' });
+    $('#patologia_new').value = ''; $('#patologia_new_otro').value='0'; $('#patologia_new_text').value='';
+    $('#grp_patologia_otro_text').style.display='none';
+    renderPatologias();
+  });
 
-        // Guardar
-        document.getElementById('btn-guardar').addEventListener('click', async () => {
-            const tbm = document.querySelector('#tabla-motivos tbody');
-            const tbi = document.querySelector('#tabla-items tbody');
-            const tbr = document.querySelector('#tabla-rangos tbody');
+  // Rangos: alta
+  $('#btn_add_rango')?.addEventListener('click', ()=>{
+    const r = $('#rango_new').value; if (!r) return;
+    state.rangos.push({ rango:r }); $('#rango_new').value='';
+    renderRangos();
+  });
 
-            const motivos = serializeTable(tbm, [{
-                    k: 'patologia_id',
-                    type: 'int'
-                },
-                {
-                    k: 'es_otros',
-                    type: 'bool01'
-                },
-                {
-                    k: 'otros_text',
-                    type: 'text'
-                }
-            ]);
+  // Productos: precargar costo al elegir
+  $('#producto_new')?.addEventListener('change', (e)=>{
+    const prod = catalog.productos.find(p => String(p.id) === String(e.target.value));
+    $('#producto_new_costo').value = prod ? fmtNum(prod.costo_hectarea) : '';
+  });
 
-            // Items + recetas
-            const items = [];
-            Array.from(tbi.children).forEach(tr => {
-                const tds = tr.querySelectorAll('td');
-                const obj = {
-                    patologia_id: parseInt(tds[1].querySelector('input').value || '0', 10) || null,
-                    fuente: tds[2].querySelector('select').value || null,
-                    producto_id: tds[3].querySelector('input').value === '' ? null : parseInt(tds[3].querySelector('input').value, 10),
-                    nombre_producto: tds[4].querySelector('input').value || null,
-                    costo_hectarea_snapshot: tds[5].querySelector('input').value === '' ? null : parseFloat(tds[5].querySelector('input').value),
-                    total_producto_snapshot: tds[6].querySelector('input').value === '' ? null : parseFloat(tds[6].querySelector('input').value),
-                    recetas: []
-                };
-                // recetas
-                const recetasTable = tds[7].querySelector('tbody');
-                const recetas = [];
-                Array.from(recetasTable.children).forEach((rr, idx) => {
-                    const rtd = rr.querySelectorAll('td');
-                    recetas.push({
-                        principio_activo: rtd[1].querySelector('input').value || null,
-                        dosis: rtd[2].querySelector('input').value === '' ? null : parseFloat(rtd[2].querySelector('input').value),
-                        unidad: rtd[3].querySelector('input').value || null,
-                        orden_mezcla: rtd[4].querySelector('input').value === '' ? null : parseInt(rtd[4].querySelector('input').value, 10),
-                        notas: rtd[5].querySelector('input').value || null
-                    });
-                });
-                obj.recetas = recetas;
-                items.push(obj);
-            });
+  // Productos: alta
+  $('#btn_add_producto')?.addEventListener('click', ()=>{
+    const pid = $('#producto_new').value;
+    const fuente = $('#producto_new_fuente').value || 'sve';
+    const patId = $('#producto_new_patologia').value;
+    const costo = parseNum($('#producto_new_costo').value);
+    if (!pid || !patId) { showAlert('error','Elegí producto y patología'); return; }
+    const prod = catalog.productos.find(p => String(p.id) === String(pid));
+    state.items.push({
+      patologia_id: Number(patId),
+      fuente, producto_id: Number(pid),
+      nombre_producto: prod?.nombre || null,
+      costo_hectarea_snapshot: costo,
+      recetas: []
+    });
+    // limpiar
+    $('#producto_new').value=''; $('#producto_new_patologia').value=''; $('#producto_new_costo').value='';
+    renderProductos(); renderRecetas(); recalcCostos();
+  });
 
-            const rangos = serializeTable(tbr, [{
-                k: 'rango',
-                type: 'text'
-            }]);
+  // Costos: recalcular live
+  $('#base_ha')?.addEventListener('input', recalcCostos);
+  $('#costo_base_por_ha')?.addEventListener('input', recalcCostos);
 
-            // Base
-            const payload = {
-                id: Number((document.getElementById('drawer-id').textContent || '').replace('#', '')) || null,
-                solicitud: {
-                    productor_id_real: getV('productor_id_real'),
-                    ses_usuario: getV('ses_usuario'),
-                    superficie_ha: getV('superficie_ha') ? parseFloat(getV('superficie_ha')) : null,
-                    fecha_visita: getV('fecha_visita'),
-                    hora_visita_desde: getV('hora_visita_desde'),
-                    hora_visita_hasta: getV('hora_visita_hasta'),
-                    estado: getV('estado'),
-                    motivo_cancelacion: getV('motivo_cancelacion'),
-                    observaciones: getV('observaciones'),
-                    representante: getV('representante'),
-                    linea_tension: getV('linea_tension'),
-                    zona_restringida: getV('zona_restringida'),
-                    corriente_electrica: getV('corriente_electrica'),
-                    agua_potable: getV('agua_potable'),
-                    libre_obstaculos: getV('libre_obstaculos'),
-                    area_despegue: getV('area_despegue'),
-                    en_finca: getV('en_finca'),
-                    dir_provincia: getV('dir_provincia'),
-                    dir_localidad: getV('dir_localidad'),
-                    dir_calle: getV('dir_calle'),
-                    dir_numero: getV('dir_numero'),
-                    ubicacion_lat: getV('ubicacion_lat') ? parseFloat(getV('ubicacion_lat')) : null,
-                    ubicacion_lng: getV('ubicacion_lng') ? parseFloat(getV('ubicacion_lng')) : null,
-                    ubicacion_acc: getV('ubicacion_acc') ? parseFloat(getV('ubicacion_acc')) : null,
-                    ubicacion_ts: getV('ubicacion_ts'),
-                    piloto_id: getV('piloto_id') ? parseInt(getV('piloto_id'), 10) : null,
-                    forma_pago_id: getV('forma_pago_id') ? parseInt(getV('forma_pago_id'), 10) : null,
-                    coop_descuento_nombre: getV('coop_descuento_nombre')
-                },
-                costos: {
-                    moneda: getV('costo_moneda'),
-                    costo_base_por_ha: getV('costo_base_por_ha') ? parseFloat(getV('costo_base_por_ha')) : null,
-                    base_ha: getV('base_ha') ? parseFloat(getV('base_ha')) : null,
-                    base_total: getV('base_total') ? parseFloat(getV('base_total')) : null,
-                    productos_total: getV('productos_total') ? parseFloat(getV('productos_total')) : null,
-                    total: getV('total') ? parseFloat(getV('total')) : null,
-                    desglose_json: document.getElementById('desglose_json').value || null
-                },
-                motivos,
-                items,
-                rangos
-            };
+  // Guardar
+  $('#btn-guardar')?.addEventListener('click', async ()=>{
+    const payload = {
+      id: Number(($('#drawer-id').textContent || '').replace('#','')) || null,
+      solicitud: {
+        productor_id_real: getV('productor_id_real'),
+        ses_usuario: getV('ses_usuario'),
+        superficie_ha: parseNum(getV('superficie_ha')),
+        fecha_visita: getV('fecha_visita'),
+        hora_visita_desde: getV('hora_visita_desde'),
+        hora_visita_hasta: getV('hora_visita_hasta'),
+        estado: getV('estado'),
+        motivo_cancelacion: getV('motivo_cancelacion'),
+        observaciones: getV('observaciones'),
+        representante: getV('representante'),
+        linea_tension: getV('linea_tension'),
+        zona_restringida: getV('zona_restringida'),
+        corriente_electrica: getV('corriente_electrica'),
+        agua_potable: getV('agua_potable'),
+        libre_obstaculos: getV('libre_obstaculos'),
+        area_despegue: getV('area_despegue'),
+        en_finca: getV('en_finca'),
+        dir_provincia: getV('dir_provincia'),
+        dir_localidad: getV('dir_localidad'),
+        dir_calle: getV('dir_calle'),
+        dir_numero: getV('dir_numero'),
+        ubicacion_lat: parseNum(getV('ubicacion_lat')),
+        ubicacion_lng: parseNum(getV('ubicacion_lng')),
+        ubicacion_acc: parseNum(getV('ubicacion_acc')),
+        ubicacion_ts: null, // ya no se usa
+        piloto_id: getV('piloto_id') ? parseInt(getV('piloto_id'),10) : null,
+        forma_pago_id: getV('forma_pago_id') ? parseInt(getV('forma_pago_id'),10) : null,
+        coop_descuento_nombre: getV('coop_descuento_nombre')
+      },
+      costos: {
+        moneda: getV('costo_moneda'),
+        costo_base_por_ha: parseNum(getV('costo_base_por_ha')),
+        base_ha: parseNum(getV('base_ha')),
+        base_total: parseNum(getV('base_total')),
+        productos_total: parseNum(getV('productos_total')),
+        total: parseNum(getV('total')),
+        desglose_json: null
+      },
+      motivos: state.motivos.map(m => ({
+        patologia_id: m.patologia_id ? Number(m.patologia_id) : null,
+        es_otros: m.es_otros ? 1 : 0,
+        otros_text: m.es_otros ? (m.otros_text || null) : null
+      })),
+      items: state.items.map(it => ({
+        patologia_id: it.patologia_id ? Number(it.patologia_id) : null,
+        fuente: it.fuente || 'sve',
+        producto_id: it.producto_id ? Number(it.producto_id) : null,
+        nombre_producto: it.nombre_producto || null,
+        costo_hectarea_snapshot: it.costo_hectarea_snapshot ?? null,
+        total_producto_snapshot: it.total_producto_snapshot ?? null,
+        recetas: (it.recetas||[]).map(r => ({
+          principio_activo: r.principio_activo || null,
+          dosis: r.dosis ?? null,
+          unidad: r.unidad || null,
+          orden_mezcla: r.orden_mezcla ?? null,
+          notas: r.notas || null
+        }))
+      })),
+      rangos: state.rangos.map(r => ({ rango: r.rango }))
+    };
 
-            if (!payload.id) {
-                showAlert('error', 'ID de solicitud no válido');
-                return;
-            }
+    if (!payload.id) { showAlert('error','ID de solicitud no válido'); return; }
+    try{
+      const res = await fetch(`${DRONE_API}?action=update_solicitud`, {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload), cache:'no-store'
+      });
+      const json = await res.json();
+      if(!json.ok) throw new Error(json.error || 'Error');
+      showAlert('success','¡Operación completada con éxito!'); closeDrawer(); debouncedLoad();
+    }catch(err){ showAlert('error', `No se pudo guardar: ${err.message}`); }
+  });
 
-            try {
-                const res = await fetch(`${DRONE_API}?action=update_solicitud`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload),
-                    cache: 'no-store'
-                });
-                const json = await res.json();
-                if (!json.ok) throw new Error(json.error || 'Error');
-                showAlert('success', '¡Operación completada con éxito!');
-                closeDrawer();
-                debouncedLoad();
-            } catch (err) {
-                showAlert('error', `No se pudo guardar: ${err.message}`);
-            }
-        });
+  // Drawer (igual que antes)
+  const drawer = document.getElementById('drawer');
+  const drawerPanel = drawer.querySelector('.sv-drawer__panel');
+  const drawerOverlay = drawer.querySelector('.sv-drawer__overlay');
+  const drawerClose = document.getElementById('drawer-close');
+  const drawerCancel = document.getElementById('drawer-cancel');
+  let lastFocus = null;
 
+  async function openDrawer({ id }) {
+    lastFocus = document.activeElement;
+    $('#drawer-id').textContent = `#${id}`;
+    drawer.setAttribute('aria-hidden','false');
+    drawer.classList.remove('hidden','closing');
+    drawer.classList.add('opening');
+    drawerPanel.setAttribute('tabindex','-1');
+    setTimeout(()=>drawerPanel.focus(),0);
+    const onEnd = (e)=>{ if (e.target!==drawerPanel) return; drawer.classList.remove('opening'); drawer.removeEventListener('animationend', onEnd, true); };
+    drawer.addEventListener('animationend', onEnd, true);
+  }
+  function closeDrawer() {
+    const active = document.activeElement;
+    if (active && drawer.contains(active)) {
+      if (lastFocus && typeof lastFocus.focus==='function') { lastFocus.focus(); }
+      else { document.body.setAttribute('tabindex','-1'); document.body.focus(); document.body.removeAttribute('tabindex'); }
+    }
+    drawer.classList.add('closing'); drawer.setAttribute('aria-hidden','true');
+    const onEnd = (e)=>{ if (e.target!==drawerPanel) return; drawer.classList.remove('closing'); drawer.classList.add('hidden'); drawer.removeEventListener('animationend', onEnd, true); };
+    drawer.addEventListener('animationend', onEnd, true);
+  }
+  drawerOverlay.addEventListener('click', closeDrawer);
+  drawerClose.addEventListener('click', closeDrawer);
+  drawerCancel.addEventListener('click', closeDrawer);
 
-        // Drawer (solo UI, sin guardar)
-        const drawer = document.getElementById('drawer');
-        const drawerPanel = drawer.querySelector('.sv-drawer__panel');
-        const drawerOverlay = drawer.querySelector('.sv-drawer__overlay');
-        const drawerClose = document.getElementById('drawer-close');
-        const drawerCancel = document.getElementById('drawer-cancel');
-        const drawerId = document.getElementById('drawer-id');
-        let lastFocus = null;
+  // Filtro en vivo
+  const debouncedLoad = debounce(load, 300);
+  els.piloto.addEventListener('input', debouncedLoad);
+  els.ses_usuario.addEventListener('input', debouncedLoad);
+  els.estado.addEventListener('change', debouncedLoad);
+  els.fecha_visita.addEventListener('change', debouncedLoad);
 
-        async function openDrawer({
-            id
-        }) {
-            lastFocus = document.activeElement;
-            drawerId.textContent = `#${id}`;
-            drawer.setAttribute('aria-hidden', 'false');
-            drawer.classList.remove('hidden', 'closing');
-            drawer.classList.add('opening');
-            drawerPanel.setAttribute('tabindex', '-1');
-            setTimeout(() => drawerPanel.focus(), 0);
-            const onEnd = (e) => {
-                if (e.target !== drawerPanel) return;
-                drawer.classList.remove('opening');
-                drawer.removeEventListener('animationend', onEnd, true);
-            };
-            drawer.addEventListener('animationend', onEnd, true);
-        }
-
-        function closeDrawer() {
-            const active = document.activeElement;
-            if (active && drawer.contains(active)) {
-                if (lastFocus && typeof lastFocus.focus === 'function') {
-                    lastFocus.focus();
-                } else {
-                    document.body.setAttribute('tabindex', '-1');
-                    document.body.focus();
-                    document.body.removeAttribute('tabindex');
-                }
-            }
-            drawer.classList.add('closing');
-            drawer.setAttribute('aria-hidden', 'true');
-            const onEnd = (e) => {
-                if (e.target !== drawerPanel) return;
-                drawer.classList.remove('closing');
-                drawer.classList.add('hidden');
-                drawer.removeEventListener('animationend', onEnd, true);
-            };
-            drawer.addEventListener('animationend', onEnd, true);
-        }
-        drawerOverlay.addEventListener('click', closeDrawer);
-        drawerClose.addEventListener('click', closeDrawer);
-        drawerCancel.addEventListener('click', closeDrawer);
-
-        // Filtro en vivo
-        const debouncedLoad = debounce(load, 300);
-        els.piloto.addEventListener('input', debouncedLoad);
-        els.ses_usuario.addEventListener('input', debouncedLoad);
-        els.estado.addEventListener('change', debouncedLoad);
-        els.fecha_visita.addEventListener('change', debouncedLoad);
-
-        load();
-    })();
+  load(); // arranque
+})();
 </script>
