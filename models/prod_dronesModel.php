@@ -5,8 +5,8 @@ class prodDronesModel
 
     // Whitelists
     private array $yesNo   = ['si', 'no'];
-    private array $rangos  = ['enero_q1','enero_q2','febrero_q1','febrero_q2','octubre_q1','octubre_q2','noviembre_q1','noviembre_q2','diciembre_q1','diciembre_q2'];
-    private array $fuentes = ['sve','yo'];
+    private array $rangos  = ['enero_q1', 'enero_q2', 'febrero_q1', 'febrero_q2', 'octubre_q1', 'octubre_q2', 'noviembre_q1', 'noviembre_q2', 'diciembre_q1', 'diciembre_q2'];
+    private array $fuentes = ['sve', 'yo'];
 
     public function __construct(PDO $pdo)
     {
@@ -15,12 +15,14 @@ class prodDronesModel
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     }
 
-    public function getPatologiasActivas(): array {
+    public function getPatologiasActivas(): array
+    {
         $sql = "SELECT id, nombre FROM dron_patologias WHERE activo='si' ORDER BY nombre ASC";
         return $this->pdo->query($sql)->fetchAll() ?: [];
     }
 
-    public function getProductosPorPatologia(int $patologiaId): array {
+    public function getProductosPorPatologia(int $patologiaId): array
+    {
         $sql = "SELECT p.id, p.nombre, p.costo_hectarea
                   FROM dron_productos_stock p
                   JOIN dron_productos_stock_patologias sp ON sp.producto_id = p.id
@@ -32,7 +34,8 @@ class prodDronesModel
         return $st->fetchAll() ?: [];
     }
 
-    public function getFormasPagoActivas(): array {
+    public function getFormasPagoActivas(): array
+    {
         $sql = "SELECT id, nombre, COALESCE(descripcion,'') AS descripcion
                   FROM dron_formas_pago
                  WHERE activo='si'
@@ -40,7 +43,8 @@ class prodDronesModel
         return $this->pdo->query($sql)->fetchAll() ?: [];
     }
 
-    public function getCooperativasHabilitadas(): array {
+    public function getCooperativasHabilitadas(): array
+    {
         $sql = "SELECT usuario, id_real
                   FROM usuarios
                  WHERE rol='cooperativa'
@@ -49,7 +53,8 @@ class prodDronesModel
         return $this->pdo->query($sql)->fetchAll() ?: [];
     }
 
-    public function getCostoHectarea(): array {
+    public function getCostoHectarea(): array
+    {
         $sql = "SELECT costo, COALESCE(moneda,'Pesos') AS moneda
                   FROM dron_costo_hectarea
               ORDER BY updated_at DESC
@@ -122,7 +127,7 @@ class prodDronesModel
 
         $enFinca = $siNo($ubic['en_finca'] ?? null) ?? 'no';
         if ($enFinca === 'no') {
-            foreach (['provincia','localidad','calle','numero'] as $req) {
+            foreach (['provincia', 'localidad', 'calle', 'numero'] as $req) {
                 if (empty($dir[$req])) throw new InvalidArgumentException("Dirección incompleta: falta {$req}.");
             }
         }
@@ -162,7 +167,7 @@ class prodDronesModel
             'ses_telefono'          => $nn($session['telefono']  ?? null),
             'ses_direccion'         => $nn($session['direccion'] ?? null),
             'ses_cuit'              => $session['cuit'] ?? null,
-            'ses_last_activity_ts'  => isset($session['LAST_ACTIVITY']) ? date('Y-m-d H:i:s',(int)$session['LAST_ACTIVITY']) : null,
+            'ses_last_activity_ts'  => isset($session['LAST_ACTIVITY']) ? date('Y-m-d H:i:s', (int)$session['LAST_ACTIVITY']) : null,
         ];
 
         $this->pdo->beginTransaction();
@@ -187,7 +192,7 @@ class prodDronesModel
             if ($rangos) {
                 $stR = $this->pdo->prepare("INSERT INTO dron_solicitudes_rangos (solicitud_id,rango) VALUES (?,?)");
                 foreach ($rangos as $r) {
-                    if (in_array($r,$this->rangos,true)) $stR->execute([$solicitudId,$r]);
+                    if (in_array($r, $this->rangos, true)) $stR->execute([$solicitudId, $r]);
                 }
             }
 
@@ -199,13 +204,13 @@ class prodDronesModel
                 $stM = $this->pdo->prepare("INSERT INTO dron_solicitudes_motivos (solicitud_id,patologia_id,motivo,otros_text) VALUES (?,?,?,?)");
                 foreach ($opc as $m) {
                     if ($m === 'otros') {
-                        $stM->execute([$solicitudId,null,'otros',$otrosT]);
+                        $stM->execute([$solicitudId, null, 'otros', $otrosT]);
                         continue;
                     }
                     $pid = (int)$m;
                     $chk = $this->pdo->prepare("SELECT 1 FROM dron_patologias WHERE id=?");
                     $chk->execute([$pid]);
-                    if ($chk->fetchColumn()) $stM->execute([$solicitudId,$pid,null,null]);
+                    if ($chk->fetchColumn()) $stM->execute([$solicitudId, $pid, null, null]);
                 }
             }
 
@@ -221,37 +226,49 @@ class prodDronesModel
                     $prodId = isset($p['producto_id']) ? (int)$p['producto_id'] : null;
 
                     if ($pid <= 0) continue;
-                    if (!in_array($fuente,$this->fuentes,true)) continue;
+                    if (!in_array($fuente, $this->fuentes, true)) continue;
 
                     $chk = $this->pdo->prepare("SELECT 1 FROM dron_patologias WHERE id=?");
                     $chk->execute([$pid]);
                     if (!$chk->fetchColumn()) continue;
 
                     if ($fuente === 'sve') {
-                        if (!$prodId) continue;
-                        $vp = $this->pdo->prepare("SELECT 1 FROM dron_productos_stock_patologias WHERE producto_id=? AND patologia_id=?");
-                        $vp->execute([$prodId,$pid]);
-                        if (!$vp->fetchColumn()) continue;
-                        $stP->execute([$solicitudId,$pid,$prodId,'sve',null]);
-                        $validProds[] = ['patologia_id'=>$pid,'fuente'=>'sve','producto_id'=>$prodId];
-                    } else {
-                        if (!$marca) continue;
-                        $stP->execute([$solicitudId,$pid,null,'yo',$marca]);
-                        $validProds[] = ['patologia_id'=>$pid,'fuente'=>'yo','marca'=>$marca];
+                        if ($prodId) {
+                            // validar que el producto esté en stock
+                            $vp = $this->pdo->prepare("SELECT 1 FROM dron_productos_stock_patologias WHERE producto_id = ? AND patologia_id = ?");
+                            $vp->execute([$prodId, $pid]);
+                            if ($vp->fetchColumn()) {
+                                $stP->execute([$solicitudId, $pid, $prodId, 'sve', null]);
+                                $validProds[] = ['patologia_id' => $pid, 'fuente' => 'sve', 'producto_id' => $prodId];
+                            }
+                        } else {
+                            // Guardar placeholder claro para que no quede NULL fantasma
+                            $stP->execute([$solicitudId, $pid, 0, 'sve', 'PENDIENTE']);
+                            $validProds[] = ['patologia_id' => $pid, 'fuente' => 'sve', 'producto_id' => 0, 'nota' => 'PENDIENTE'];
+                        }
+                    } else { // fuente = yo
+                        if ($marca) {
+                            $stP->execute([$solicitudId, $pid, null, 'yo', $marca]);
+                            $validProds[] = ['patologia_id' => $pid, 'fuente' => 'yo', 'marca' => $marca];
+                        } else {
+                            // Guardar placeholder claro en marca
+                            $stP->execute([$solicitudId, $pid, null, 'yo', 'PENDIENTE']);
+                            $validProds[] = ['patologia_id' => $pid, 'fuente' => 'yo', 'marca' => 'PENDIENTE'];
+                        }
                     }
                 }
             }
 
             // 5) Costos
             $costoRow   = $this->getCostoHectarea();
-            $costoBaseHa= (float)($costoRow['costo'] ?? 0);
+            $costoBaseHa = (float)($costoRow['costo'] ?? 0);
             $moneda     = $costoRow['moneda'] ?? 'Pesos';
             $sup        = $mainRow['superficie_ha'];
             $baseTotal  = $sup * $costoBaseHa;
 
             $productosTotal = 0.0;
             foreach ($validProds as $p) {
-                if ($p['fuente']==='sve' && !empty($p['producto_id'])) {
+                if ($p['fuente'] === 'sve' && !empty($p['producto_id'])) {
                     $chk = $this->pdo->prepare("SELECT costo_hectarea FROM dron_productos_stock WHERE id=? AND activo='si'");
                     $chk->execute([(int)$p['producto_id']]);
                     $costoHa = (float)$chk->fetchColumn();
@@ -260,23 +277,23 @@ class prodDronesModel
             }
             $total    = $baseTotal + $productosTotal;
             $desglose = [
-                'superficie_ha'=>$sup,
-                'costo_base_ha'=>$costoBaseHa,
-                'productos'   =>$validProds,
+                'superficie_ha' => $sup,
+                'costo_base_ha' => $costoBaseHa,
+                'productos'   => $validProds,
             ];
 
             $stC = $this->pdo->prepare("INSERT INTO dron_solicitudes_costos
                 (solicitud_id,moneda,costo_base_por_ha,base_ha,base_total,productos_total,total,desglose_json)
                 VALUES (:sid,:moneda,:costo_base_por_ha,:base_ha,:base_total,:productos_total,:total,:desglose_json)");
             $stC->execute([
-                ':sid'=>$solicitudId,
-                ':moneda'=>$moneda,
-                ':costo_base_por_ha'=>$costoBaseHa,
-                ':base_ha'=>$sup,
-                ':base_total'=>$baseTotal,
-                ':productos_total'=>$productosTotal,
-                ':total'=>$total,
-                ':desglose_json'=>json_encode($desglose,JSON_UNESCAPED_UNICODE),
+                ':sid' => $solicitudId,
+                ':moneda' => $moneda,
+                ':costo_base_por_ha' => $costoBaseHa,
+                ':base_ha' => $sup,
+                ':base_total' => $baseTotal,
+                ':productos_total' => $productosTotal,
+                ':total' => $total,
+                ':desglose_json' => json_encode($desglose, JSON_UNESCAPED_UNICODE),
             ]);
 
             $this->pdo->commit();
