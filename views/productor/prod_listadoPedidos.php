@@ -461,11 +461,11 @@ if (btn.hasAttribute('disabled')) return; // evita abrir modal si está deshabil
                 const card = btn.closest('.pedido-card');
                 const badge = card?.querySelector('.estado-badge');
                 const estado = badge?.textContent?.trim()?.toLowerCase() || '';
-                const cancelables = ['procesando', 'aprobada_coop'];
+                const cancelables = ['ingresada', 'aprobada_coop'];
                 const esCancelable = cancelables.includes(estado);
 
                 if (!esCancelable) {
-                    window.showToast?.('error', 'Solo se pueden cancelar solicitudes en estado PROCESANDO o APROBADA_COOP.');
+                    window.showToast?.('error', 'Solo se pueden cancelar solicitudes en estado INGRESADA o APROBADA_COOP.');
                     return;
                 }
                 openCancelModal(btn.dataset.id);
