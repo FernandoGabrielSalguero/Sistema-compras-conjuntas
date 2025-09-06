@@ -4,84 +4,69 @@ class prodDronesModel
     private $pdo;
 
     // Whitelists
-    private array $yesNo = ['si', 'no'];
-    private array $rangos = ['enero_q1', 'enero_q2', 'febrero_q1', 'febrero_q2', 'octubre_q1', 'octubre_q2', 'noviembre_q1', 'noviembre_q2', 'diciembre_q1', 'diciembre_q2'];
-    private array $fuentes = ['sve', 'yo'];
+    private array $yesNo   = ['si', 'no'];
+    private array $rangos  = ['enero_q1','enero_q2','febrero_q1','febrero_q2','octubre_q1','octubre_q2','noviembre_q1','noviembre_q2','diciembre_q1','diciembre_q2'];
+    private array $fuentes = ['sve','yo'];
 
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
-        // Por si tu config no lo setea
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     }
 
-    public function getPatologiasActivas(): array
-    {
+    public function getPatologiasActivas(): array {
         $sql = "SELECT id, nombre FROM dron_patologias WHERE activo='si' ORDER BY nombre ASC";
         return $this->pdo->query($sql)->fetchAll() ?: [];
     }
 
-    public function getProductosPorPatologia(int $patologiaId): array
-    {
+    public function getProductosPorPatologia(int $patologiaId): array {
         $sql = "SELECT p.id, p.nombre, p.costo_hectarea
-            FROM dron_productos_stock p
-            JOIN dron_productos_stock_patologias sp ON sp.producto_id = p.id
-            WHERE sp.patologia_id = :pid
-              AND p.activo = 'si'
-            ORDER BY p.nombre ASC";
+                  FROM dron_productos_stock p
+                  JOIN dron_productos_stock_patologias sp ON sp.producto_id = p.id
+                 WHERE sp.patologia_id = :pid
+                   AND p.activo = 'si'
+              ORDER BY p.nombre ASC";
         $st = $this->pdo->prepare($sql);
         $st->execute([':pid' => $patologiaId]);
         return $st->fetchAll() ?: [];
     }
 
-    public function getFormasPagoActivas(): array
-    {
-        // traemos descripcion porque el front la muestra al seleccionar
+    public function getFormasPagoActivas(): array {
         $sql = "SELECT id, nombre, COALESCE(descripcion,'') AS descripcion
-                FROM dron_formas_pago
-                WHERE activo = 'si'
-                ORDER BY nombre ASC";
+                  FROM dron_formas_pago
+                 WHERE activo='si'
+              ORDER BY nombre ASC";
         return $this->pdo->query($sql)->fetchAll() ?: [];
     }
 
-    public function getCooperativasHabilitadas(): array
-    {
+    public function getCooperativasHabilitadas(): array {
         $sql = "SELECT usuario, id_real
-            FROM usuarios
-            WHERE rol = 'cooperativa'
-              AND permiso_ingreso = 'Habilitado'
-            ORDER BY usuario ASC";
+                  FROM usuarios
+                 WHERE rol='cooperativa'
+                   AND permiso_ingreso='Habilitado'
+              ORDER BY usuario ASC";
         return $this->pdo->query($sql)->fetchAll() ?: [];
     }
 
-    public function getCostoHectarea(): array
-    {
-        $sql = "SELECT costo, COALESCE(moneda, 'Pesos') AS moneda
-            FROM dron_costo_hectarea
-            ORDER BY updated_at DESC
-            LIMIT 1";
+    public function getCostoHectarea(): array {
+        $sql = "SELECT costo, COALESCE(moneda,'Pesos') AS moneda
+                  FROM dron_costo_hectarea
+              ORDER BY updated_at DESC
+                 LIMIT 1";
         $row = $this->pdo->query($sql)->fetch() ?: null;
         return $row ?: ['costo' => 0.00, 'moneda' => 'Pesos'];
     }
 
-
     public function crearSolicitud(array $data, array $session): int
     {
-        // Seguridad: ID real SIEMPRE desde la sesión del servidor
         $productorIdReal = $session['id_real'] ?? null;
         if (!$productorIdReal) {
             throw new RuntimeException('Sesión inválida (id_real ausente).');
         }
 
-        // ------- Normalización de datos
         $nn = fn($v) => $v === '' ? null : $v;
-
-        $siNo = function ($v) {
-            $v = strtolower((string)$v);
-            return in_array($v, $this->yesNo, true) ? $v : null;
-        };
-
+        $siNo = fn($v) => in_array(strtolower((string)$v), $this->yesNo, true) ? strtolower($v) : null;
         $isoToMysql = function ($iso) {
             if (!$iso) return null;
             try {
@@ -109,52 +94,42 @@ class prodDronesModel
             if ($v === null) throw new InvalidArgumentException("Campo requerido faltante: {$k}");
         }
 
-        $dir = $data['direccion'] ?? [];
+        $dir  = $data['direccion'] ?? [];
         $ubic = $data['ubicacion'] ?? [];
 
-        // Método de pago (obligatorio y activo)
         $formaPagoId = isset($data['forma_pago_id']) ? (int)$data['forma_pago_id'] : 0;
         if ($formaPagoId <= 0) {
             throw new InvalidArgumentException('Debe seleccionar un método de pago.');
         }
-        // Si forma de pago es 6, exigir cooperativa (id_real) y validar que exista/habilitada
-        $coopDesc = trim((string)($data['coop_descuento_nombre'] ?? '')); // aquí llega el id_real
+
+        $coopDesc = trim((string)($data['coop_descuento_nombre'] ?? ''));
         if ($formaPagoId === 6) {
             if ($coopDesc === '') {
                 throw new InvalidArgumentException('Debe seleccionar una cooperativa.');
             }
-            $chkCoop = $this->pdo->prepare(
-                "SELECT 1 FROM usuarios WHERE rol='cooperativa' AND permiso_ingreso='Habilitado' AND id_real = ?"
-            );
+            $chkCoop = $this->pdo->prepare("SELECT 1 FROM usuarios WHERE rol='cooperativa' AND permiso_ingreso='Habilitado' AND id_real=?");
             $chkCoop->execute([$coopDesc]);
             if (!$chkCoop->fetchColumn()) {
                 throw new InvalidArgumentException('Cooperativa inválida o no habilitada.');
             }
         }
 
-        $chkFp = $this->pdo->prepare("SELECT 1 FROM dron_formas_pago WHERE id = ? AND activo = 'si'");
+        $chkFp = $this->pdo->prepare("SELECT 1 FROM dron_formas_pago WHERE id=? AND activo='si'");
         $chkFp->execute([$formaPagoId]);
         if (!$chkFp->fetchColumn()) {
             throw new InvalidArgumentException('Método de pago inválido o inactivo.');
         }
 
         $enFinca = $siNo($ubic['en_finca'] ?? null) ?? 'no';
-        // Si no está en finca, dirección obligatoria completa
         if ($enFinca === 'no') {
-            foreach (['provincia', 'localidad', 'calle', 'numero'] as $req) {
-                if (empty($dir[$req])) {
-                    throw new InvalidArgumentException("Dirección incompleta: falta {$req}.");
-                }
+            foreach (['provincia','localidad','calle','numero'] as $req) {
+                if (empty($dir[$req])) throw new InvalidArgumentException("Dirección incompleta: falta {$req}.");
             }
         }
 
-        // ---- Observaciones + cooperativa (ID 6)
-        // Del front recibimos el id_real de la cooperativa en 'coop_descuento_nombre'.
         $coopDesc = $nn($data['coop_descuento_nombre'] ?? null);
         $obsUser  = $nn($data['observaciones'] ?? null);
-
         if ($formaPagoId === 6 && !empty($coopDesc)) {
-            // Anteponemos la cooperativa y conservamos lo que haya escrito el usuario
             $obsUser = trim("Cooperativa (cuota de vino): {$coopDesc}" . ($obsUser ? " | {$obsUser}" : ''));
         }
 
@@ -180,34 +155,29 @@ class prodDronesModel
             'ubicacion_acc'         => isset($ubic['acc']) ? (float)$ubic['acc'] : null,
             'ubicacion_ts'          => $isoToMysql($ubic['timestamp'] ?? null),
             'observaciones'         => $obsUser,
-
-            // Snapshot de sesión
-            'ses_usuario'         => $nn($session['usuario']   ?? null),
-            'ses_rol'             => $nn($session['rol']       ?? null),
-            'ses_nombre'          => $nn($session['nombre']    ?? null),
-            'ses_correo'          => $nn($session['correo']    ?? null),
-            'ses_telefono'        => $nn($session['telefono']  ?? null),
-            'ses_direccion'       => $nn($session['direccion'] ?? null),
-            'ses_cuit'            => $session['cuit'] ?? null,
-            'ses_last_activity_ts' => isset($session['LAST_ACTIVITY']) ? date('Y-m-d H:i:s', (int)$session['LAST_ACTIVITY']) : null,
+            'ses_usuario'           => $nn($session['usuario']   ?? null),
+            'ses_rol'               => $nn($session['rol']       ?? null),
+            'ses_nombre'            => $nn($session['nombre']    ?? null),
+            'ses_correo'            => $nn($session['correo']    ?? null),
+            'ses_telefono'          => $nn($session['telefono']  ?? null),
+            'ses_direccion'         => $nn($session['direccion'] ?? null),
+            'ses_cuit'              => $session['cuit'] ?? null,
+            'ses_last_activity_ts'  => isset($session['LAST_ACTIVITY']) ? date('Y-m-d H:i:s',(int)$session['LAST_ACTIVITY']) : null,
         ];
-
 
         $this->pdo->beginTransaction();
         try {
-            // 1) Inserto cabecera
+            // 1) Cabecera
             $sql = "INSERT INTO dron_solicitudes
-    (productor_id_real, representante, linea_tension, zona_restringida, corriente_electrica, agua_potable, libre_obstaculos, area_despegue,
-     superficie_ha, forma_pago_id, coop_descuento_nombre, dir_provincia, dir_localidad, dir_calle, dir_numero, en_finca,
-     ubicacion_lat, ubicacion_lng, ubicacion_acc, ubicacion_ts, observaciones,
-     ses_usuario, ses_rol, ses_nombre, ses_correo, ses_telefono, ses_direccion, ses_cuit, ses_last_activity_ts)
-VALUES
-    (:productor_id_real, :representante, :linea_tension, :zona_restringida, :corriente_electrica, :agua_potable, :libre_obstaculos, :area_despegue,
-     :superficie_ha, :forma_pago_id, :coop_descuento_nombre, :dir_provincia, :dir_localidad, :dir_calle, :dir_numero, :en_finca,
-     :ubicacion_lat, :ubicacion_lng, :ubicacion_acc, :ubicacion_ts, :observaciones,
-     :ses_usuario, :ses_rol, :ses_nombre, :ses_correo, :ses_telefono, :ses_direccion, :ses_cuit, :ses_last_activity_ts)";
-
-
+   (productor_id_real,representante,linea_tension,zona_restringida,corriente_electrica,agua_potable,libre_obstaculos,area_despegue,
+    superficie_ha,forma_pago_id,coop_descuento_nombre,dir_provincia,dir_localidad,dir_calle,dir_numero,en_finca,
+    ubicacion_lat,ubicacion_lng,ubicacion_acc,ubicacion_ts,observaciones,
+    ses_usuario,ses_rol,ses_nombre,ses_correo,ses_telefono,ses_direccion,ses_cuit,ses_last_activity_ts)
+    VALUES
+   (:productor_id_real,:representante,:linea_tension,:zona_restringida,:corriente_electrica,:agua_potable,:libre_obstaculos,:area_despegue,
+    :superficie_ha,:forma_pago_id,:coop_descuento_nombre,:dir_provincia,:dir_localidad,:dir_calle,:dir_numero,:en_finca,
+    :ubicacion_lat,:ubicacion_lng,:ubicacion_acc,:ubicacion_ts,:observaciones,
+    :ses_usuario,:ses_rol,:ses_nombre,:ses_correo,:ses_telefono,:ses_direccion,:ses_cuit,:ses_last_activity_ts)";
             $st = $this->pdo->prepare($sql);
             $st->execute($mainRow);
             $solicitudId = (int)$this->pdo->lastInsertId();
@@ -215,40 +185,35 @@ VALUES
             // 2) Rangos
             $rangos = (array)($data['rango_fecha'] ?? []);
             if ($rangos) {
-                $stR = $this->pdo->prepare("INSERT INTO dron_solicitudes_rangos (solicitud_id, rango) VALUES (?, ?)");
+                $stR = $this->pdo->prepare("INSERT INTO dron_solicitudes_rangos (solicitud_id,rango) VALUES (?,?)");
                 foreach ($rangos as $r) {
-                    if (in_array($r, $this->rangos, true)) {
-                        $stR->execute([$solicitudId, $r]);
-                    }
+                    if (in_array($r,$this->rangos,true)) $stR->execute([$solicitudId,$r]);
                 }
             }
-            // 3) Motivos (dinámico)
+
+            // 3) Motivos
             $motivo = $data['motivo'] ?? [];
             $opc    = (array)($motivo['opciones'] ?? []);
             $otrosT = $nn($motivo['otros'] ?? null);
-
             if ($opc) {
-                $stM = $this->pdo->prepare("INSERT INTO dron_solicitudes_motivos (solicitud_id, patologia_id, motivo, otros_text) VALUES (?, ?, ?, ?)");
+                $stM = $this->pdo->prepare("INSERT INTO dron_solicitudes_motivos (solicitud_id,patologia_id,motivo,otros_text) VALUES (?,?,?,?)");
                 foreach ($opc as $m) {
                     if ($m === 'otros') {
-                        $stM->execute([$solicitudId, null, 'otros', $otrosT]);
+                        $stM->execute([$solicitudId,null,'otros',$otrosT]);
                         continue;
                     }
                     $pid = (int)$m;
-                    // validar que exista patología
-                    $chk = $this->pdo->prepare("SELECT 1 FROM dron_patologias WHERE id = ?");
+                    $chk = $this->pdo->prepare("SELECT 1 FROM dron_patologias WHERE id=?");
                     $chk->execute([$pid]);
-                    if ($chk->fetchColumn()) {
-                        $stM->execute([$solicitudId, $pid, null, null]);
-                    }
+                    if ($chk->fetchColumn()) $stM->execute([$solicitudId,$pid,null,null]);
                 }
             }
 
-            // 4) Productos (dinámico por patología)
-            $prods = (array)($data['productos'] ?? []);
-            $validProds = []; // <-- nuevo array sólo con válidos
+            // 4) Productos
+            $prods      = (array)($data['productos'] ?? []);
+            $validProds = [];
             if ($prods) {
-                $stP = $this->pdo->prepare("INSERT INTO dron_solicitudes_productos (solicitud_id, patologia_id, producto_id, fuente, marca) VALUES (?, ?, ?, ?, ?)");
+                $stP = $this->pdo->prepare("INSERT INTO dron_solicitudes_productos (solicitud_id,patologia_id,producto_id,fuente,marca) VALUES (?,?,?,?,?)");
                 foreach ($prods as $p) {
                     $pid    = isset($p['patologia_id']) ? (int)$p['patologia_id'] : 0;
                     $fuente = $p['fuente'] ?? null;
@@ -256,69 +221,62 @@ VALUES
                     $prodId = isset($p['producto_id']) ? (int)$p['producto_id'] : null;
 
                     if ($pid <= 0) continue;
-                    if (!in_array($fuente, $this->fuentes, true)) continue;
+                    if (!in_array($fuente,$this->fuentes,true)) continue;
 
-                    // validar patología
-                    $chk = $this->pdo->prepare("SELECT 1 FROM dron_patologias WHERE id = ?");
+                    $chk = $this->pdo->prepare("SELECT 1 FROM dron_patologias WHERE id=?");
                     $chk->execute([$pid]);
                     if (!$chk->fetchColumn()) continue;
 
                     if ($fuente === 'sve') {
                         if (!$prodId) continue;
-                        // validar que el producto esté asociado a esa patología
-                        $vp = $this->pdo->prepare("SELECT 1 FROM dron_productos_stock_patologias WHERE producto_id = ? AND patologia_id = ?");
-                        $vp->execute([$prodId, $pid]);
+                        $vp = $this->pdo->prepare("SELECT 1 FROM dron_productos_stock_patologias WHERE producto_id=? AND patologia_id=?");
+                        $vp->execute([$prodId,$pid]);
                         if (!$vp->fetchColumn()) continue;
-                        $stP->execute([$solicitudId, $pid, $prodId, 'sve', null]);
-                        $validProds[] = ['patologia_id' => $pid, 'fuente' => 'sve', 'producto_id' => $prodId];
-                    } else { // 'yo'
-                        if (!$marca) continue; // exigir marca cuando es propio
-                        $stP->execute([$solicitudId, $pid, null, 'yo', $marca]);
-                        $validProds[] = ['patologia_id' => $pid, 'fuente' => 'yo', 'marca' => $marca];
+                        $stP->execute([$solicitudId,$pid,$prodId,'sve',null]);
+                        $validProds[] = ['patologia_id'=>$pid,'fuente'=>'sve','producto_id'=>$prodId];
+                    } else {
+                        if (!$marca) continue;
+                        $stP->execute([$solicitudId,$pid,null,'yo',$marca]);
+                        $validProds[] = ['patologia_id'=>$pid,'fuente'=>'yo','marca'=>$marca];
                     }
                 }
             }
 
+            // 5) Costos
+            $costoRow   = $this->getCostoHectarea();
+            $costoBaseHa= (float)($costoRow['costo'] ?? 0);
+            $moneda     = $costoRow['moneda'] ?? 'Pesos';
+            $sup        = $mainRow['superficie_ha'];
+            $baseTotal  = $sup * $costoBaseHa;
 
-            // 5) Guardar costos estimados en dron_solicitudes_costos
-            $costoRow = $this->getCostoHectarea();
-            $costoBaseHa = (float)($costoRow['costo'] ?? 0);
-            $moneda      = $costoRow['moneda'] ?? 'Pesos';
-
-            $sup = $mainRow['superficie_ha'];
-            $baseTotal = $sup * $costoBaseHa;
-
-            // Calcular productos_total desde payload (solo fuente sve)
             $productosTotal = 0.0;
             foreach ($validProds as $p) {
-                if ($p['fuente'] === 'sve' && !empty($p['producto_id'])) {
+                if ($p['fuente']==='sve' && !empty($p['producto_id'])) {
                     $chk = $this->pdo->prepare("SELECT costo_hectarea FROM dron_productos_stock WHERE id=? AND activo='si'");
                     $chk->execute([(int)$p['producto_id']]);
                     $costoHa = (float)$chk->fetchColumn();
                     $productosTotal += $sup * $costoHa;
                 }
             }
-            $total = $baseTotal + $productosTotal;
-
+            $total    = $baseTotal + $productosTotal;
             $desglose = [
-                'superficie_ha' => $sup,
-                'costo_base_ha' => $costoBaseHa,
-                'productos'     => $validProds, // <-- ya no guardamos basura
+                'superficie_ha'=>$sup,
+                'costo_base_ha'=>$costoBaseHa,
+                'productos'   =>$validProds,
             ];
 
-
             $stC = $this->pdo->prepare("INSERT INTO dron_solicitudes_costos
-                (solicitud_id, moneda, costo_base_por_ha, base_ha, base_total, productos_total, total, desglose_json)
-                VALUES (:sid, :moneda, :costo_base_por_ha, :base_ha, :base_total, :productos_total, :total, :desglose_json)");
+                (solicitud_id,moneda,costo_base_por_ha,base_ha,base_total,productos_total,total,desglose_json)
+                VALUES (:sid,:moneda,:costo_base_por_ha,:base_ha,:base_total,:productos_total,:total,:desglose_json)");
             $stC->execute([
-                ':sid'             => $solicitudId,
-                ':moneda'          => $moneda,
-                ':costo_base_por_ha' => $costoBaseHa,
-                ':base_ha'         => $sup,
-                ':base_total'      => $baseTotal,
-                ':productos_total' => $productosTotal,
-                ':total'           => $total,
-                ':desglose_json'   => json_encode($desglose, JSON_UNESCAPED_UNICODE),
+                ':sid'=>$solicitudId,
+                ':moneda'=>$moneda,
+                ':costo_base_por_ha'=>$costoBaseHa,
+                ':base_ha'=>$sup,
+                ':base_total'=>$baseTotal,
+                ':productos_total'=>$productosTotal,
+                ':total'=>$total,
+                ':desglose_json'=>json_encode($desglose,JSON_UNESCAPED_UNICODE),
             ]);
 
             $this->pdo->commit();
