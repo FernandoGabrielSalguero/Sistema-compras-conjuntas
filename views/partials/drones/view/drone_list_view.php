@@ -174,28 +174,49 @@ const DRONE_API = '../partials/drones/controller/drone_list_controller.php';
     items.forEach(it=>{
       const card = document.createElement('div');
       card.className = 'product-card';
-      card.innerHTML = `
-        <div class="product-header">
-          <h4>${esc(it.ses_usuario || '—')}</h4>
-          <p>Pedido número: ${esc(it.id ?? '')}</p>
-        </div>
-        <div class="product-body">
-          <div class="user-info">
-            <div>
-              <strong>${esc(it.piloto || 'Sin piloto asignado')}</strong>
-              <div class="role">Fecha visita: ${esc(it.fecha_visita || '')} ${it.hora_visita ? `(${esc(it.hora_visita)})`:''}</div>
-            </div>
-          </div>
-          <p class="description">${esc(it.observaciones || '')}</p>
-          <hr />
-          <div class="product-footer">
-            <div class="metric">
-              <span class="badge ${badgeClass(it.estado)}">${prettyEstado(it.estado)}</span>
-            </div>
-            <button class="btn-view" data-id="${it.id}">Ver detalle</button>
-          </div>
-        </div>
-      `;
+     card.innerHTML = `
+  <div class="product-header">
+    <h4>${esc(it.ses_usuario || '—')}</h4>
+    <p>Pedido número: ${esc(it.id ?? '')}</p>
+  </div>
+  <div class="product-body">
+    <div class="user-info">
+      <div>
+        <strong>${esc(it.piloto || 'Sin piloto asignado')}</strong>
+        <div class="role">Fecha visita: ${esc(it.fecha_visita || '')} ${it.hora_visita ? `(${esc(it.hora_visita)})`:''}</div>
+      </div>
+    </div>
+
+    <p class="description" style="margin-top:6px;">
+      <span style="display:block; font-weight:600; color:#5b21b6;">Forma de pago:</span>
+      ${(() => {
+          const nombre = it.forma_pago_nombre || '—';
+          if (String(it.forma_pago_id) === '6') {
+            const estado = it.aprob_cooperativa ? ` <em style="color:#6b7280;">(${esc(it.aprob_cooperativa)})</em>` : '';
+            return `${esc(nombre)}${estado}`;
+          }
+          return esc(nombre);
+      })()}
+    </p>
+
+    <p class="description" style="margin-top:6px;">
+      <span style="display:block; font-weight:600; color:#5b21b6;">Cooperativa (pertenencia):</span>
+      ${(() => {
+          const nom = it.coop_pertenece_nombre || '—';
+          const idr = it.coop_pertenece_id_real ? ` | ${esc(it.coop_pertenece_id_real)}` : '';
+          return `${esc(nom)}${idr}`;
+      })()}
+    </p>
+
+    <hr />
+    <div class="product-footer">
+      <div class="metric">
+        <span class="badge ${badgeClass(it.estado)}">${prettyEstado(it.estado)}</span>
+      </div>
+      <button class="btn-view" data-id="${it.id}">Ver detalle</button>
+    </div>
+  </div>
+`;
       els.cards.appendChild(card);
     });
 
