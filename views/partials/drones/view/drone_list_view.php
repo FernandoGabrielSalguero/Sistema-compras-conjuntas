@@ -124,7 +124,7 @@
                     <!-- observaciones del productor -->
                     <div class="card">
                         <h2 style="color: #5b21b6;">Datos inciales</h2>
-                        <div class="form-grid grid-1">
+                        <div class="form-grid">
                             <div class="input-group">
                                 <label for="observaciones">Observaciones</label>
                                 <div class="input-icon input-icon-edit">
