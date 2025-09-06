@@ -556,12 +556,20 @@
         animation: fadeOut .20s ease both;
     }
 
-    .product-card .badge {
+.product-card .badge {
         display: inline-block;
         padding: 2px 8px;
         border-radius: 999px;
         font-size: .8rem
     }
+    /* ---- UI inline extra para el formulario ---- */
+    .helper-text{font-size:.85rem;color:#6b7280}
+    .mini-input{width:100%}
+    .table-actions{display:flex;gap:8px;justify-content:center}
+    .chip{display:inline-block;padding:2px 8px;border-radius:999px;background:#eef}
+    .nowrap{white-space:nowrap}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    textarea#desglose_json{min-height:96px}
 
     .badge.warning {
         background: #FEF3C7;
