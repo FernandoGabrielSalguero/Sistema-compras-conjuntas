@@ -4,10 +4,10 @@ declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 
+session_start();
+
 require_once '../../middleware/authMiddleware.php';
 checkAccess('productor');
-
-session_start();
 $nombre  = $_SESSION['nombre']  ?? 'Sin nombre';
 $idReal  = $_SESSION['id_real'] ?? null;
 
@@ -334,7 +334,9 @@ $sesion_payload = [
           <div class="pedido-meta">
             <div class="row"><span class="label">Hectáreas</span><span class="value">${fmtNum(it.superficie_ha)}</span></div>
             <div class="row"><span class="label">Fecha de visita</span><span class="value">${fmtFecha(it.fecha_visita)}</span></div>
-            <div class="row"><span class="label">Patologías</span><span class="value" style="white-space:normal; text-align:right;">${it.patologias || '—'}</span></div>
+<div class="row"><span class="label">Horario de visita</span><span class="value">${it.hora_visita || '—'}</span></div>
+<div class="row"><span class="label">Patologías</span><span class="value" style="white-space:normal; text-align:right;">${it.patologias || '—'}</span></div>
+
             <div class="row"><span class="label">Costo del servicio</span><span class="value">${fmtNum(it.costo_total)} ${it.moneda||''}</span></div>
           </div>
           <div class="card-actions">
