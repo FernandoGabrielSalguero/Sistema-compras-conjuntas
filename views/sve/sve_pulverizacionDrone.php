@@ -143,6 +143,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
           <div class="tabs">
             <div class="tab-buttons">
               <button class="tab-button active" data-target="#panel-solicitudes">Solicitudes</button>
+              <button class="tab-button active" data-target="#panel-protocolo">Protocolo</button>
               <button class="tab-button" data-target="#panel-calendario">Calendario</button>
               <button class="tab-button" data-target="#panel-stock">Stock</button>
               <button class="tab-button" data-target="#panel-variables">Variables</button>
@@ -161,6 +162,18 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
               require $viewFile;
             } else {
               echo '<p>No se encontró la vista <code>drone_list_view.php</code>.</p>';
+            }
+            ?>
+          </div>
+
+          <!-- Panel: Protocolo -->
+          <div class="tab-panel active" id="panel-protocolo">
+            <?php
+            $viewFile = __DIR__ . '/../partials/drones/view/drone_protocol_view.php';
+            if (is_file($viewFile)) {
+              require $viewFile;
+            } else {
+              echo '<p>No se encontró la vista <code>drone_protocol_view.php</code>.</p>';
             }
             ?>
           </div>
@@ -218,18 +231,18 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
   <!-- JS simple para alternar contenido entre tarjetas -->
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
       const buttons = document.querySelectorAll('.tab-buttons .tab-button');
-      const panels  = document.querySelectorAll('#tab-content-card .tab-panel');
+      const panels = document.querySelectorAll('#tab-content-card .tab-panel');
       const STORAGE_KEY = 'sve_drone_tab';
 
       function activate(targetSel) {
         buttons.forEach(b => b.classList.remove('active'));
         panels.forEach(p => p.classList.remove('active'));
 
-        const btn   = Array.from(buttons).find(b => b.dataset.target === targetSel);
+        const btn = Array.from(buttons).find(b => b.dataset.target === targetSel);
         const panel = document.querySelector(targetSel);
-        if (btn)   btn.classList.add('active');
+        if (btn) btn.classList.add('active');
         if (panel) panel.classList.add('active');
 
         // Quitar fondo/sombra del contenedor solo en Variables o Stock

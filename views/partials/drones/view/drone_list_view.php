@@ -347,7 +347,7 @@
                                         <option value="">Seleccionar cooperativa</option>
                                     </select>
                                 </div>
-                                <small id="coopHelp" class="helper-text">Se guardará el código interno (id_real).</small>
+                                <!-- <small id="coopHelp" class="helper-text">Se guardará el código interno (id_real).</small> -->
                             </div>
                         </div>
                     </div>
