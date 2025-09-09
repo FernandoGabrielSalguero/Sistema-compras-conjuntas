@@ -299,7 +299,7 @@ $sesion_payload = [
                 <div class="card header-card">
                     <div>
                         <h4><?php echo htmlspecialchars($nombre); ?></h4>
-                        <p>¿Queres ir al atras?</p>
+                        <p>¿Queres ir atras?</p>
                     </div>
                     <a class="btn btn-info" href="prod_dashboard.php">Apreta acá</a>
                 </div>
@@ -314,7 +314,7 @@ $sesion_payload = [
                             ¿A LA HORA DE TOMAR EL SERVICIO PODREMOS CONTAR CON UN REPRESENTATE DE LA PROPIEDAD EN LA FINCA? <span class="gform-required">*</span>
                         </div>
                         <div class="gform-helper">
-                            El represéntate de la propiedad deberá, recibir al piloto indicarle los cuarteles a pulverizar, darle asistencia si la requiere y firmar el registro fitosanitario.
+                            El represéntate de la propiedad deberá recibir al piloto, indicarle los cuarteles a pulverizar, darle asistencia si la requiere y firmar el registro fitosanitario.
                         </div>
                         <div class="gform-options">
                             <label class="gform-option">
@@ -437,7 +437,7 @@ $sesion_payload = [
                             ¿EL/ LOS CUARTELES A PULVERIZAR CUENTAN CON UN ÁREA DE DESPEGUE APROPIADA? <span class="gform-required">*</span>
                         </div>
                         <div class="gform-helper">
-                            Por área apropiada se refiere a un callejón despejado y libre de obstáculos en un área de 4 m x 4 m.
+                            Por área apropiada se refiere a un callejón despejado y libre de obstáculos en un área de 5 m x 5 m.
                         </div>
                         <div class="gform-options">
                             <label class="gform-option">
