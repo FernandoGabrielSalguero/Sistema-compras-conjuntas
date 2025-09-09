@@ -108,7 +108,10 @@ try {
                 echo json_encode(['ok' => true, 'data' => $model->listProductos()], JSON_UNESCAPED_UNICODE);
                 break;
             }
-
+        case 'list_cooperativas': {
+                echo json_encode(['ok' => true, 'data' => $model->listCooperativas()], JSON_UNESCAPED_UNICODE);
+                break;
+            }
 
         default: {
                 http_response_code(400);
