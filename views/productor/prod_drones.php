@@ -299,7 +299,7 @@ $sesion_payload = [
                 <div class="card header-card">
                     <div>
                         <h4><?php echo htmlspecialchars($nombre); ?></h4>
-                        <p>¿Queres ir atras?</p>
+                        <p>¿Queres ir atrás?</p>
                     </div>
                     <a class="btn btn-info" href="prod_dashboard.php">Apreta acá</a>
                 </div>
