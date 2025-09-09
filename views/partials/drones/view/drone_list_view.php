@@ -288,6 +288,52 @@
                         </div>
                     </div>
 
+                    <!-- Parámetros de vuelo -->
+                    <div class="card">
+                        <h2 style="color:#5b21b6;">Parámetros de vuelo</h2>
+                        <div class="form-grid grid-4">
+                            <div class="input-group">
+                                <label for="volumen_ha">Volumen por hectárea</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" min="0" id="volumen_ha" name="volumen_ha" placeholder="0.00" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="velocidad_vuelo">Velocidad de vuelo</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" min="0" id="velocidad_vuelo" name="velocidad_vuelo" placeholder="0.00" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="alto_vuelo">Alto vuelo</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" min="0" id="alto_vuelo" name="alto_vuelo" placeholder="0.00" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="ancho_pasada">Ancho pasada</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" min="0" id="ancho_pasada" name="ancho_pasada" placeholder="0.00" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-grid grid-2">
+                            <div class="input-group">
+                                <label for="tamano_gota">Tamaño gota</label>
+                                <div class="input-icon input-icon-edit">
+                                    <input type="text" id="tamano_gota" name="tamano_gota" placeholder="Fina/Media/Gruesa u otro" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="param_observaciones">Observaciones</label>
+                                <div class="input-icon input-icon-edit">
+                                    <input type="text" id="param_observaciones" name="param_observaciones" placeholder="Notas de parámetros de vuelo" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
                     <!-- Forma de pago -->
                     <div class="card">
                         <h2 style="color: #5b21b6;">Forma de pago</h2>
@@ -300,14 +346,19 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="input-group">
+                            <div class="input-group" id="grp_coop_descuento" style="display:none;">
                                 <label for="coop_descuento_nombre">Coop. descuento</label>
-                                <div class="input-icon input-icon-edit">
-                                    <input type="text" id="coop_descuento_nombre" name="coop_descuento_nombre" placeholder="No aplica" />
+                                <div class="input-icon input-icon-id">
+                                    <!-- Muestra nombre de la cooperativa pero guarda id_real -->
+                                    <select id="coop_descuento_nombre" name="coop_descuento_nombre" aria-describedby="coopHelp">
+                                        <option value="">Seleccionar cooperativa</option>
+                                    </select>
                                 </div>
+                                <small id="coopHelp" class="helper-text">Se guardará el código interno (id_real).</small>
                             </div>
                         </div>
                     </div>
+
 
                     <!-- Costos -->
                     <div class="card">
@@ -503,7 +554,13 @@
         position: absolute;
         inset: 0;
         background: #0006;
-        opacity: 0
+        opacity: 0;
+        pointer-events: all;
+    }
+
+    /* Mantener overlay visible mientras el drawer esté abierto */
+    .sv-drawer[aria-hidden="false"] .sv-drawer__overlay {
+        opacity: 1;
     }
 
     .sv-drawer__panel {
@@ -748,29 +805,42 @@
         display: none;
     }
 
-    .mini-block { margin-top: 6px; }
-.mini-title {
-  font-size: .83rem;
-  color: #5b21b6;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-.price { font-weight: 600; }
-.motivo-cancel {
-  display: inline-block;
-  margin-left: 10px;
-  font-size: .82rem;
-  color: #9b1c1c;       /* rojito suave */
-  background: #fee2e2;  /* igual que .badge.danger pero más liviano */
-  padding: 2px 8px;
-  border-radius: 999px;
-}
+    .mini-block {
+        margin-top: 6px;
+    }
+
+    .mini-title {
+        font-size: .83rem;
+        color: #5b21b6;
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+
+    .price {
+        font-weight: 600;
+    }
+
+    .motivo-cancel {
+        display: inline-block;
+        margin-left: 10px;
+        font-size: .82rem;
+        color: #9b1c1c;
+        /* rojito suave */
+        background: #fee2e2;
+        /* igual que .badge.danger pero más liviano */
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
 </style>
 
 <script>
     const DRONE_API = '../partials/drones/controller/drone_list_controller.php';
 
     (function() {
+        // Evita doble inicialización si el view se monta dos veces
+        if (window.__SVE_DRONE_LIST_INIT__) return;
+        window.__SVE_DRONE_LIST_INIT__ = true;
+
         const $ = (s, ctx = document) => ctx.querySelector(s);
         const $$ = (s, ctx = document) => Array.from(ctx.querySelectorAll(s));
 
@@ -806,7 +876,8 @@
             pilotos: [],
             formasPago: [],
             patologias: [],
-            productos: []
+            productos: [],
+            cooperativas: []
         };
         const state = {
             motivos: [],
@@ -825,13 +896,18 @@
             const qs = (a) => fetch(`${DRONE_API}?action=${a}`, {
                 cache: 'no-store'
             }).then(r => r.json());
-            const [pi, fp, pa, pr] = await Promise.all([
-                qs('list_pilotos'), qs('list_formas_pago'), qs('list_patologias'), qs('list_productos')
+            const [pi, fp, pa, pr, co] = await Promise.all([
+                qs('list_pilotos'),
+                qs('list_formas_pago'),
+                qs('list_patologias'),
+                qs('list_productos'),
+                qs('list_cooperativas')
             ]);
             catalog.pilotos = pi.ok ? pi.data : [];
             catalog.formasPago = fp.ok ? fp.data : [];
             catalog.patologias = pa.ok ? pa.data : [];
             catalog.productos = pr.ok ? pr.data : [];
+            catalog.cooperativas = co.ok ? co.data : [];
         }
 
         function fillSelect(sel, data, {
@@ -857,19 +933,24 @@
         }
 
         // listado
+        let currentListAbort = null;
         async function load() {
             const params = new URLSearchParams({
                 action: 'list_solicitudes',
                 ...getFilters()
             });
             try {
+                if (currentListAbort) currentListAbort.abort();
+                currentListAbort = new AbortController();
                 const res = await fetch(`${DRONE_API}?${params.toString()}`, {
-                    cache: 'no-store'
+                    cache: 'no-store',
+                    signal: currentListAbort.signal
                 });
                 const json = await res.json();
                 if (!json.ok) throw new Error(json.error || 'Error');
                 renderCards(json.data.items || []);
             } catch (e) {
+                if (e.name === 'AbortError') return; // se canceló por nueva consulta
                 console.error(e);
                 els.cards.innerHTML = '<div class="card">Ocurrió un error cargando las solicitudes.</div>';
             }
@@ -914,7 +995,7 @@
             items.forEach(it => {
                 const card = document.createElement('div');
                 card.className = 'product-card';
-card.innerHTML = `
+                card.innerHTML = `
   <div class="product-header">
     <h4>${esc(it.ses_usuario||'—')}</h4>
     <p>Pedido número: ${esc(it.id??'')}</p>
@@ -984,6 +1065,15 @@ card.innerHTML = `
         const $chipsPat = $('#patologias-chips');
         const $chipsRan = $('#rangos-chips');
         const $listProd = $('#productos-list');
+
+        // parámetros de vuelo
+        const pv = d.parametros || {};
+        setV('volumen_ha', fmtNum(pv.volumen_ha));
+        setV('velocidad_vuelo', fmtNum(pv.velocidad_vuelo));
+        setV('alto_vuelo', fmtNum(pv.alto_vuelo));
+        setV('ancho_pasada', fmtNum(pv.ancho_pasada));
+        setV('tamano_gota', pv.tamano_gota);
+        setV('param_observaciones', pv.observaciones);
 
         function renderPatologias() {
             if (!$chipsPat) return;
@@ -1139,6 +1229,7 @@ card.innerHTML = `
             return n.value === '' ? null : n.value;
         }
 
+        document.getElementById('forma_pago_id')?.addEventListener('change', toggleCoopField);
         // estado cancelada -> mostrar motivo
         function toggleMotivo() {
             const sel = document.querySelector('#form-solicitud #estado');
@@ -1158,7 +1249,17 @@ card.innerHTML = `
             if (isCancelada) setTimeout(() => motivo.focus(), 0);
         }
 
-
+        // Forma de pago = Cooperativa => mostrar selector de cooperativas
+        function toggleCoopField() {
+            const sel = document.getElementById('forma_pago_id');
+            const grp = document.getElementById('grp_coop_descuento');
+            const coSel = document.getElementById('coop_descuento_nombre');
+            if (!sel || !grp) return;
+            const fp = catalog.formasPago.find(f => String(f.id) === String(sel.value));
+            const isCoop = fp && String(fp.nombre || '').toLowerCase() === 'cooperativa';
+            grp.style.display = isCoop ? '' : 'none';
+            if (!isCoop && coSel) coSel.value = '';
+        }
 
         // rellenar formulario
         function fillForm(d) {
@@ -1193,6 +1294,14 @@ card.innerHTML = `
                 selected: s.forma_pago_id,
                 placeholder: 'Seleccionar forma de pago'
             });
+            /* Cooperativas: mostrar nombre pero guardar id_real */
+            fillSelect($('#coop_descuento_nombre'), catalog.cooperativas, {
+                valueKey: 'id_real',
+                labelKey: 'usuario',
+                selected: s.coop_descuento_nombre,
+                placeholder: 'Seleccionar cooperativa'
+            });
+            toggleCoopField();
             fillSelect($('#patologia_new'), catalog.patologias, {
                 placeholder: 'Seleccionar patología'
             });
@@ -1219,14 +1328,6 @@ card.innerHTML = `
             setV('productos_total', fmtNum(c.productos_total));
             setV('total', fmtNum(c.total));
             recalcCostos();
-
-            // forma de pago - placeholder "No aplica" si viene vacío
-            setV(
-                'coop_descuento_nombre',
-                s.coop_descuento_nombre ||
-                (d?.productor?.cooperativas?.[0]?.cooperativa_usuario ?? '')
-            );
-            $('#coop_descuento_nombre').placeholder = 'No aplica';
 
             // motivos
             state.motivos = (d.motivos || []).map(m => ({
@@ -1387,10 +1488,9 @@ card.innerHTML = `
                     ubicacion_ts: null,
                     piloto_id: getV('piloto_id') ? parseInt(getV('piloto_id'), 10) : null,
                     forma_pago_id: getV('forma_pago_id') ? parseInt(getV('forma_pago_id'), 10) : null,
-                    coop_descuento_nombre: (() => {
-                        const v = getV('coop_descuento_nombre') || '';
-                        return v.trim().toLowerCase() === 'no aplica' ? null : (v || null);
-                    })()
+                    // Guardamos id_real de la cooperativa (o null si no aplica)
+                    coop_descuento_nombre: getV('coop_descuento_nombre')
+
                 },
                 costos: {
                     moneda: getV('costo_moneda'),
@@ -1423,7 +1523,16 @@ card.innerHTML = `
                 })),
                 rangos: state.rangos.map(r => ({
                     rango: r.rango
-                }))
+                })),
+                parametros: {
+                    volumen_ha: parseNum(getV('volumen_ha')),
+                    velocidad_vuelo: parseNum(getV('velocidad_vuelo')),
+                    alto_vuelo: parseNum(getV('alto_vuelo')),
+                    ancho_pasada: parseNum(getV('ancho_pasada')),
+                    tamano_gota: getV('tamano_gota'),
+                    observaciones: getV('param_observaciones')
+                }
+
             };
 
             if (!payload.id) {
@@ -1511,55 +1620,55 @@ card.innerHTML = `
 
     // Funciones para borrar
     /* == DEBUG PEDIDO (re-fetch al backend) ==================================== */
-let __ULTIMO_PEDIDO__ = null;
+    let __ULTIMO_PEDIDO__ = null;
 
-function debugPedidoPretty(data) {
-  try {
-    console.groupCollapsed('[Pedido] Detalle completo');
-    console.log('Solicitud:', data.solicitud);
-    console.log('Costos:', data.costos);
-    console.log('Items:', data.items);
-    console.log('Motivos:', data.motivos);
-    console.log('Rangos:', data.rangos);
-    console.log('Productor:', data.productor);
-    console.log('Piloto:', data.piloto);
-    console.log('Forma de pago:', data.forma_pago);
-    console.log('Eventos:', data.eventos);
-    console.log('JSON:', JSON.stringify(data, null, 2));
-  } finally {
-    console.groupEnd();
-  }
-}
-
-function getCurrentSolicitudId() {
-  const t = (document.getElementById('drawer-id')?.textContent || '').trim();
-  const m = t.match(/#?(\d+)/);
-  return m ? parseInt(m[1], 10) : null;
-}
-
-async function fetchPedidoById(id) {
-  const url = `${DRONE_API}?action=get_solicitud_full&id=${encodeURIComponent(id)}`;
-  const res = await fetch(url, { cache: 'no-store' });
-  const json = await res.json();
-  if (!json.ok) throw new Error(json.error || 'Error');
-  return json.data;
-}
-
-document.getElementById('btn-debug-pedido')?.addEventListener('click', async () => {
-  try {
-    const id = getCurrentSolicitudId();
-    if (!id) {
-      console.warn('No hay ID de solicitud en el drawer.');
-      return;
+    function debugPedidoPretty(data) {
+        try {
+            console.groupCollapsed('[Pedido] Detalle completo');
+            console.log('Solicitud:', data.solicitud);
+            console.log('Costos:', data.costos);
+            console.log('Items:', data.items);
+            console.log('Motivos:', data.motivos);
+            console.log('Rangos:', data.rangos);
+            console.log('Productor:', data.productor);
+            console.log('Piloto:', data.piloto);
+            console.log('Forma de pago:', data.forma_pago);
+            console.log('Eventos:', data.eventos);
+            console.log('JSON:', JSON.stringify(data, null, 2));
+        } finally {
+            console.groupEnd();
+        }
     }
-    // Re-fetch siempre para tener lo último del backend
-    const data = await fetchPedidoById(id);
-    __ULTIMO_PEDIDO__ = data;     // refresco el cache local también
-    debugPedidoPretty(data);      // imprime todo legible
-  } catch (e) {
-    console.error('No se pudo obtener el pedido:', e);
-  }
-});
-/* ========================================================================= */
 
+    function getCurrentSolicitudId() {
+        const t = (document.getElementById('drawer-id')?.textContent || '').trim();
+        const m = t.match(/#?(\d+)/);
+        return m ? parseInt(m[1], 10) : null;
+    }
+
+    async function fetchPedidoById(id) {
+        const url = `${DRONE_API}?action=get_solicitud_full&id=${encodeURIComponent(id)}`;
+        const res = await fetch(url, {
+            cache: 'no-store'
+        });
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || 'Error');
+        return json.data;
+    }
+
+    document.getElementById('btn-debug-pedido')?.addEventListener('click', async () => {
+        try {
+            const id = getCurrentSolicitudId();
+            if (!id) {
+                console.warn('No hay ID de solicitud en el drawer.');
+                return;
+            }
+            // Re-fetch siempre para tener lo último del backend
+            const data = await fetchPedidoById(id);
+            __ULTIMO_PEDIDO__ = data; // refresco el cache local también
+            debugPedidoPretty(data); // imprime todo legible
+        } catch (e) {
+            console.error('No se pudo obtener el pedido:', e);
+        }
+    });
 </script>

@@ -40,8 +40,8 @@ final class DroneListModel
         }
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-        
-$sql = "
+
+        $sql = "
     SELECT
         s.id,
         s.ses_usuario,
@@ -138,6 +138,11 @@ $sql = "
         $st->execute([':id' => $id]);
         $rangos = $st->fetchAll();
 
+        // parámetros de vuelo
+        $st = $this->pdo->prepare("SELECT * FROM drones_solicitud_parametros WHERE solicitud_id = :id LIMIT 1");
+        $st->execute([':id' => $id]);
+        $parametros = $st->fetch() ?: null;
+
         // productor (usuario)
         $prod = null;
         if (!empty($sol['productor_id_real'])) {
@@ -166,23 +171,24 @@ $sql = "
         }
 
         return [
-            'solicitud' => $sol,
-            'costos'    => $costos,
-            'items'     => $items,
-            'motivos'   => $motivos,
-            'rangos'    => $rangos,
-            'productor' => $prod,
-            'piloto'    => [
+            'solicitud'   => $sol,
+            'costos'      => $costos,
+            'items'       => $items,
+            'motivos'     => $motivos,
+            'rangos'      => $rangos,
+            'parametros'  => $parametros,
+            'productor'   => $prod,
+            'piloto'      => [
                 'nombre' => $sol['piloto_nombre'] ?? null,
                 'telefono' => $sol['piloto_telefono'] ?? null,
                 'zona_asignada' => $sol['piloto_zona_asignada'] ?? null,
                 'correo' => $sol['piloto_correo'] ?? null
             ],
-            'forma_pago' => [
+            'forma_pago'  => [
                 'nombre' => $sol['forma_pago_nombre'] ?? null,
                 'descripcion' => $sol['forma_pago_descripcion'] ?? null
             ],
-            'eventos'   => [] // opcional: cargar si hace falta
+            'eventos'     => [] // opcional: cargar si hace falta
         ];
     }
 
@@ -207,6 +213,16 @@ $sql = "
         $st = $this->pdo->query("SELECT id, nombre, costo_hectarea FROM dron_productos_stock WHERE activo='si' ORDER BY nombre");
         return $st->fetchAll() ?: [];
     }
+    // Listado de cooperativas
+    public function listCooperativas(): array
+    {
+        $sql = "SELECT id_real, usuario FROM usuarios 
+                WHERE rol = 'cooperativa' AND permiso_ingreso = 'Habilitado'
+                ORDER BY usuario";
+        $st = $this->pdo->query($sql);
+        return $st->fetchAll() ?: [];
+    }
+
 
     /** Actualiza solicitud + tablas relacionadas con estrategia de sincronización. */
     public function actualizarSolicitud(array $p): int
@@ -216,10 +232,11 @@ $sql = "
         }
         $id = $p['id'];
         $s  = $p['solicitud'] ?? [];
-        $c  = $p['costos']    ?? null;
-        $motivos = $p['motivos'] ?? [];
-        $items   = $p['items']   ?? [];
-        $rangos  = $p['rangos']  ?? [];
+        $c          = $p['costos']      ?? null;
+        $motivos    = $p['motivos']     ?? [];
+        $items      = $p['items']       ?? [];
+        $rangos     = $p['rangos']      ?? [];
+        $parametros = $p['parametros']  ?? null;
 
         $this->pdo->beginTransaction();
         try {
@@ -385,6 +402,25 @@ $sql = "
                     ]);
                 }
             }
+
+            // Parámetros de vuelo (upsert simple)
+            $this->pdo->prepare("DELETE FROM drones_solicitud_parametros WHERE solicitud_id=:id")->execute([':id' => $id]);
+            if ($parametros) {
+                $this->pdo->prepare("
+                    INSERT INTO drones_solicitud_parametros
+                    (solicitud_id, volumen_ha, velocidad_vuelo, alto_vuelo, ancho_pasada, tamano_gota, observaciones, created_at)
+                    VALUES (:sid, :vol, :vel, :alto, :ancho, :gota, :obs, NOW())
+                ")->execute([
+                    ':sid'  => $id,
+                    ':vol'  => self::dec($parametros['volumen_ha'] ?? null),
+                    ':vel'  => self::dec($parametros['velocidad_vuelo'] ?? null),
+                    ':alto' => self::dec($parametros['alto_vuelo'] ?? null),
+                    ':ancho' => self::dec($parametros['ancho_pasada'] ?? null),
+                    ':gota' => self::n($parametros['tamano_gota'] ?? null),
+                    ':obs'  => self::n($parametros['observaciones'] ?? null),
+                ]);
+            }
+
 
             // Evento audit
             $this->pdo->prepare("
