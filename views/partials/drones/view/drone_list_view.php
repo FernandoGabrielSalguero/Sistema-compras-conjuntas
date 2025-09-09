@@ -309,21 +309,21 @@
                                     <input type="number" step="0.01" min="0" id="ancho_pasada" name="ancho_pasada" placeholder="0.00" />
                                 </div>
                             </div>
-                        </div>
-                        <div class="form-grid grid-2">
                             <div class="input-group">
                                 <label for="tamano_gota">Tamaño gota</label>
                                 <div class="input-icon input-icon-edit">
                                     <input type="text" id="tamano_gota" name="tamano_gota" placeholder="Fina/Media/Gruesa u otro" />
                                 </div>
                             </div>
+                        </div>
+
                             <div class="input-group">
                                 <label for="param_observaciones">Observaciones</label>
                                 <div class="input-icon input-icon-edit">
                                     <input type="text" id="param_observaciones" name="param_observaciones" placeholder="Notas de parámetros de vuelo" />
                                 </div>
                             </div>
-                        </div>
+                        
                     </div>
 
 
@@ -825,7 +825,9 @@
         border-radius: 999px;
     }
 
-    #cards { min-height: 80px; }
+    #cards {
+        min-height: 80px;
+    }
 </style>
 
 <script>
