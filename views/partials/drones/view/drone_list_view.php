@@ -58,7 +58,7 @@
 
                     <!-- Datos iniciales -->
                     <div class="card">
-                        <h2 style="color: #5b21b6;">Datos inciales</h2>
+                        <h2 style="color: #5b21b6;">Datos iniciales</h2>
                         <div class="form-grid grid-2">
                             <div class="input-group">
                                 <label for="productor_id_real">Productor ID real</label>
