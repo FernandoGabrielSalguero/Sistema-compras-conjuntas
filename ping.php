@@ -1,4 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/middleware/sessionManager.php'; // unifica config y session_start
 $_SESSION['LAST_ACTIVITY'] = time();
-http_response_code(204); // No Content
+refreshSessionCookie();
+http_response_code(204);

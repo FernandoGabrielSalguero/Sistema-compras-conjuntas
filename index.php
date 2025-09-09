@@ -4,24 +4,14 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Configurar duración de sesión en 20 minutos
-ini_set('session.gc_maxlifetime', 1200); // 20 minutos
-session_set_cookie_params([
-    'lifetime' => 1200, // también 20 minutos
-    'path' => '/',
-    'domain' => '',
-    'secure' => isset($_SERVER['HTTPS']),
-    'httponly' => true,
-    'samesite' => 'Lax'
-]);
-session_start();
-
+require_once __DIR__ . '/middleware/sessionManager.php'; // << NUEVO (trae session_start con config unificada)
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/models/AuthModel.php';
 
 $error = '';
+$cierre_info = null;
 
-// Mensaje si viene por expiración
+// Mensaje si viene por expiración (lo tenías en la versión anterior)
 if (isset($_GET['expired']) && $_GET['expired'] == 1) {
     $error = "La sesión expiró por inactividad. Por favor, iniciá sesión nuevamente.";
 }
@@ -50,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['id_real'] = $user['id_real'];
         $_SESSION['cuit'] = $user['cuit'];
         $_SESSION['LAST_ACTIVITY'] = time();
+        refreshSessionCookie();
 
         switch ($user['rol']) {
             case 'cooperativa':
