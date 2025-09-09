@@ -218,20 +218,21 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
   <!-- JS simple para alternar contenido entre tarjetas -->
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const buttons = document.querySelectorAll('.tab-buttons .tab-button');
-      const panels = document.querySelectorAll('#tab-content-card .tab-panel');
+      const panels  = document.querySelectorAll('#tab-content-card .tab-panel');
+      const STORAGE_KEY = 'sve_drone_tab';
 
       function activate(targetSel) {
         buttons.forEach(b => b.classList.remove('active'));
         panels.forEach(p => p.classList.remove('active'));
 
-        const btn = Array.from(buttons).find(b => b.dataset.target === targetSel);
+        const btn   = Array.from(buttons).find(b => b.dataset.target === targetSel);
         const panel = document.querySelector(targetSel);
-        if (btn) btn.classList.add('active');
+        if (btn)   btn.classList.add('active');
         if (panel) panel.classList.add('active');
 
-        // Quitar fondo/sombra del contenedor solo en Variables
+        // Quitar fondo/sombra del contenedor solo en Variables o Stock
         const wrapper = document.getElementById('tab-content-card');
         if (wrapper) {
           const sinChrome = (targetSel === '#panel-variables' || targetSel === '#panel-stock');
@@ -240,13 +241,20 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
       }
 
       buttons.forEach(btn => {
-        btn.addEventListener('click', () => activate(btn.dataset.target));
+        btn.addEventListener('click', () => {
+          const target = btn.dataset.target;
+          // Guardamos la pestaña seleccionada y recargamos
+          sessionStorage.setItem(STORAGE_KEY, target);
+          window.location.reload();
+        });
       });
 
-      // Estado inicial por si el framework no lo setea
-      activate('#panel-solicitudes');
+      // Al cargar, activamos la pestaña que quedó guardada (o 'Solicitudes' por defecto)
+      const initial = sessionStorage.getItem(STORAGE_KEY) || '#panel-solicitudes';
+      activate(initial);
     });
   </script>
+
 
   <!-- Contenedor exclusivo para impresión -->
   <div id="printArea" class="only-print"></div>

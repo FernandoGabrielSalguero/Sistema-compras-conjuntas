@@ -1,12 +1,5 @@
 <?php
 ?>
-<!-- Framework SVE -->
-<link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css" />
-<script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
-
-<!-- Material Icons -->
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
 <div class="content">
     <!-- Filtros mínimos -->
@@ -831,6 +824,8 @@
         padding: 2px 8px;
         border-radius: 999px;
     }
+
+    #cards { min-height: 80px; }
 </style>
 
 <script>
@@ -1066,14 +1061,6 @@
         const $chipsRan = $('#rangos-chips');
         const $listProd = $('#productos-list');
 
-        // parámetros de vuelo
-        const pv = d.parametros || {};
-        setV('volumen_ha', fmtNum(pv.volumen_ha));
-        setV('velocidad_vuelo', fmtNum(pv.velocidad_vuelo));
-        setV('alto_vuelo', fmtNum(pv.alto_vuelo));
-        setV('ancho_pasada', fmtNum(pv.ancho_pasada));
-        setV('tamano_gota', pv.tamano_gota);
-        setV('param_observaciones', pv.observaciones);
 
         function renderPatologias() {
             if (!$chipsPat) return;
