@@ -286,7 +286,7 @@
                         <h2 style="color:#5b21b6;">Parámetros de vuelo</h2>
                         <div class="form-grid grid-4">
                             <div class="input-group">
-                                <label for="volumen_ha">Volumen por hectárea</label>
+                                <label for="volumen_ha">Vol / hectárea</label>
                                 <div class="input-icon input-icon-hashtag">
                                     <input type="number" step="0.01" min="0" id="volumen_ha" name="volumen_ha" placeholder="0.00" />
                                 </div>
