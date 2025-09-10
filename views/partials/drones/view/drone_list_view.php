@@ -109,40 +109,6 @@
                         </div>
                     </div>
 
-                    <!-- Programar visita -->
-                    <div class="card">
-                        <h2 style="color: #5b21b6;">Programar visita</h2>
-                        <div class="form-grid grid-4">
-                            <div class="input-group">
-                                <label for="fecha_visita_edit">Fecha visita</label>
-                                <div class="input-icon input-icon-date">
-                                    <input type="date" id="fecha_visita_edit" name="fecha_visita_edit" />
-                                </div>
-                            </div>
-
-                            <div class="input-group">
-                                <label for="hora_visita_desde">Hora desde</label>
-                                <div class="input-icon input-icon-time">
-                                    <input type="time" id="hora_visita_desde" name="hora_visita_desde" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="hora_visita_hasta">Hora hasta</label>
-                                <div class="input-icon input-icon-time">
-                                    <input type="time" id="hora_visita_hasta" name="hora_visita_hasta" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="piloto_id">Piloto</label>
-                                <div class="input-icon input-icon-id">
-                                    <select id="piloto_id" name="piloto_id">
-                                        <option value="">Seleccionar piloto</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Dirección -->
                     <div class="card">
                         <h2 style="color: #5b21b6;">Dirección</h2>
@@ -281,52 +247,6 @@
                         </div>
                     </div>
 
-                    <!-- Parámetros de vuelo -->
-                    <div class="card">
-                        <h2 style="color:#5b21b6;">Parámetros de vuelo</h2>
-                        <div class="form-grid grid-4">
-                            <div class="input-group">
-                                <label for="volumen_ha">Vol / hectárea</label>
-                                <div class="input-icon input-icon-hashtag">
-                                    <input type="number" step="0.01" min="0" id="volumen_ha" name="volumen_ha" placeholder="0.00" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="velocidad_vuelo">Velocidad de vuelo</label>
-                                <div class="input-icon input-icon-hashtag">
-                                    <input type="number" step="0.01" min="0" id="velocidad_vuelo" name="velocidad_vuelo" placeholder="0.00" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="alto_vuelo">Alto vuelo</label>
-                                <div class="input-icon input-icon-hashtag">
-                                    <input type="number" step="0.01" min="0" id="alto_vuelo" name="alto_vuelo" placeholder="0.00" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="ancho_pasada">Ancho pasada</label>
-                                <div class="input-icon input-icon-hashtag">
-                                    <input type="number" step="0.01" min="0" id="ancho_pasada" name="ancho_pasada" placeholder="0.00" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="tamano_gota">Tamaño gota</label>
-                                <div class="input-icon input-icon-edit">
-                                    <input type="text" id="tamano_gota" name="tamano_gota" placeholder="Fina/Media/Gruesa u otro" />
-                                </div>
-                            </div>
-                        </div>
-
-                            <div class="input-group">
-                                <label for="param_observaciones">Observaciones</label>
-                                <div class="input-icon input-icon-edit">
-                                    <input type="text" id="param_observaciones" name="param_observaciones" placeholder="Notas de parámetros de vuelo" />
-                                </div>
-                            </div>
-                        
-                    </div>
-
-
                     <!-- Forma de pago -->
                     <div class="card">
                         <h2 style="color: #5b21b6;">Forma de pago</h2>
@@ -350,53 +270,6 @@
                                 <!-- <small id="coopHelp" class="helper-text">Se guardará el código interno (id_real).</small> -->
                             </div>
                         </div>
-                    </div>
-
-
-                    <!-- Costos -->
-                    <div class="card">
-                        <h2 style="color: #5b21b6;">Costos</h2>
-                        <div class="form-grid grid-4">
-                            <div class="input-group">
-                                <label for="costo_moneda">Moneda</label>
-                                <div class="input-icon input-icon-currency">
-                                    <input type="text" id="costo_moneda" name="costo_moneda" placeholder="Pesos" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="costo_base_por_ha">Costo base/ha</label>
-                                <div class="input-icon input-icon-hashtag">
-                                    <input type="number" step="0.01" id="costo_base_por_ha" name="costo_base_por_ha" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="base_ha">Base ha</label>
-                                <div class="input-icon input-icon-hashtag">
-                                    <input type="number" step="0.01" id="base_ha" name="base_ha" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="base_total">Base total</label>
-                                <div class="input-icon input-icon-hashtag">
-                                    <input type="number" step="0.01" id="base_total" name="base_total" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="productos_total">Productos total</label>
-                                <div class="input-icon input-icon-hashtag">
-                                    <input type="number" step="0.01" id="productos_total" name="productos_total" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="total">Total</label>
-                                <div class="input-icon input-icon-hashtag">
-                                    <input type="number" step="0.01" id="total" name="total" />
-                                </div>
-                            </div>
-                        </div>
-                        <br>
-                        <h4 style="color: #5b21b6;">Resumen de costo del servivio</h4>
-                        <div id="costos-resumen" class="costos-resumen card" style="margin-top:8px;padding:12px;"></div>
                     </div>
 
                     <!-- Patologías -->
@@ -455,7 +328,7 @@
                         </div>
                     </div>
 
-                    <!-- Receta (tabla única para todos los productos) -->
+                    <!-- Receta -->
                     <div class="card">
                         <h2 style="color:#5b21b6;">Receta</h2>
                         <table class="data-table" id="tabla-receta-combinada" aria-label="Receta">
@@ -471,6 +344,51 @@
                             </thead>
                             <tbody></tbody>
                         </table>
+                    </div>
+
+                    <!-- Parámetros de vuelo -->
+                    <div class="card">
+                        <h2 style="color:#5b21b6;">Parámetros de vuelo</h2>
+                        <div class="form-grid grid-4">
+                            <div class="input-group">
+                                <label for="volumen_ha">Vol / hectárea</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" min="0" id="volumen_ha" name="volumen_ha" placeholder="0.00" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="velocidad_vuelo">Velocidad de vuelo</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" min="0" id="velocidad_vuelo" name="velocidad_vuelo" placeholder="0.00" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="alto_vuelo">Alto vuelo</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" min="0" id="alto_vuelo" name="alto_vuelo" placeholder="0.00" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="ancho_pasada">Ancho pasada</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" min="0" id="ancho_pasada" name="ancho_pasada" placeholder="0.00" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="tamano_gota">Tamaño gota</label>
+                                <div class="input-icon input-icon-edit">
+                                    <input type="text" id="tamano_gota" name="tamano_gota" placeholder="Fina/Media/Gruesa u otro" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="param_observaciones">Observaciones</label>
+                            <div class="input-icon input-icon-edit">
+                                <input type="text" id="param_observaciones" name="param_observaciones" placeholder="Notas de parámetros de vuelo" />
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- Rangos -->
@@ -504,6 +422,102 @@
                             </div>
                         </div>
                     </div>
+
+
+                    <!-- Programar visita -->
+                    <div class="card">
+                        <h2 style="color: #5b21b6;">Programar visita</h2>
+                        <div class="form-grid grid-4">
+                            <div class="input-group">
+                                <label for="fecha_visita_edit">Fecha visita</label>
+                                <div class="input-icon input-icon-date">
+                                    <input type="date" id="fecha_visita_edit" name="fecha_visita_edit" />
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="hora_visita_desde">Hora desde</label>
+                                <div class="input-icon input-icon-time">
+                                    <input type="time" id="hora_visita_desde" name="hora_visita_desde" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="hora_visita_hasta">Hora hasta</label>
+                                <div class="input-icon input-icon-time">
+                                    <input type="time" id="hora_visita_hasta" name="hora_visita_hasta" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="piloto_id">Piloto</label>
+                                <div class="input-icon input-icon-id">
+                                    <select id="piloto_id" name="piloto_id">
+                                        <option value="">Seleccionar piloto</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
+
+
+
+                    <!-- Costos -->
+                    <div class="card">
+                        <h2 style="color: #5b21b6;">Costos</h2>
+                        <div class="form-grid grid-4">
+                            <div class="input-group">
+                                <label for="costo_moneda">Moneda</label>
+                                <div class="input-icon input-icon-currency">
+                                    <input type="text" id="costo_moneda" name="costo_moneda" placeholder="Pesos" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="costo_base_por_ha">Costo base/ha</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" id="costo_base_por_ha" name="costo_base_por_ha" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="base_ha">Base ha</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" id="base_ha" name="base_ha" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="base_total">Base total</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" id="base_total" name="base_total" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="productos_total">Productos total</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" id="productos_total" name="productos_total" />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="total">Total</label>
+                                <div class="input-icon input-icon-hashtag">
+                                    <input type="number" step="0.01" id="total" name="total" />
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <h4 style="color: #5b21b6;">Resumen de costo del servivio</h4>
+                        <div id="costos-resumen" class="costos-resumen card" style="margin-top:8px;padding:12px;"></div>
+                    </div>
+
+
+
+
+
+
+
+
 
                     <!-- Acciones -->
                     <div class="form-buttons">
