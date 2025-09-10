@@ -53,10 +53,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $coopNombre = '';
             $coopCorreo = null;
 
-            $stmtCoop = $pdo->prepare("SELECT nombre, correo FROM usuarios WHERE id_real = ? LIMIT 1");
+            $stmtCoop = $pdo->prepare("
+            SELECT ui.nombre AS nombre, ui.correo AS correo
+            FROM usuarios u
+            LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+            WHERE u.id_real = ?
+            LIMIT 1
+        ");
             $stmtCoop->execute([$data['cooperativa']]);
             if ($row = $stmtCoop->fetch(PDO::FETCH_ASSOC)) {
-                $coopNombre = (string)$row['nombre'];
+                $coopNombre = (string)($row['nombre'] ?? '');
                 $coopCorreo = $row['correo'] ?? null;
             }
 
@@ -65,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtOp = $pdo->prepare("SELECT nombre FROM operativos WHERE id = ? LIMIT 1");
             $stmtOp->execute([$data['operativo_id']]);
             if ($row = $stmtOp->fetch(PDO::FETCH_ASSOC)) {
-                $opNombre = (string)$row['nombre'];
+                $opNombre = (string)($row['nombre'] ?? '');
             }
 
             //    c) Items (recalculo por seguridad)
@@ -143,6 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         exit;
     }
+
 
 
     // 👉 Acción: Actualizar datos del productor (CUIT y teléfono)
