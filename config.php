@@ -25,3 +25,14 @@ try {
 } catch (PDOException $e) {
     die('Error de conexión: ' . $e->getMessage());
 }
+
+// ==== SMTP (Hostinger) ====
+if (!defined('MAIL_HOST')) {
+    define('MAIL_HOST', 'smtp.hostinger.com');
+    define('MAIL_PORT', 465);
+    define('MAIL_SECURE', 'ssl'); 
+    define('MAIL_USER', 'contacto@sve.com.ar');   // <--- AJUSTAR
+    define('MAIL_PASS', 'W]17i|5HsTTk');         // <--- AJUSTAR
+    define('MAIL_FROM', 'contacto@sve.com.ar');   // igual a MAIL_USER
+    define('MAIL_FROM_NAME', 'SVE Notificaciones');
+}

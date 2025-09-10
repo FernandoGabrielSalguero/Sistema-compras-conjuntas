@@ -724,6 +724,7 @@ grupo.innerHTML = `
                             console.log('✅ Respuesta JSON:', json);
 
                             if (json.success) {
+                                const extra = (json.mail_ok === false) ? ' (correo no enviado)' : '';
                                 showAlert('success', json.message);
                                 location.reload();
                             } else {
