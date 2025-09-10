@@ -1,5 +1,7 @@
 <?php
-// Silenciar errores en pantalla, pero seguir registrándolos en logs
+
+declare(strict_types=1);
+
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/../logs/errores.log');
@@ -7,6 +9,9 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/coop_MercadoDigitalModel.php';
+require_once __DIR__ . '/../mail/Mail.php';
+
+use SVE\Mail\Maill;
 
 $model = new CoopMercadoDigitalModel($pdo);
 
@@ -37,16 +42,108 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 👉 Acción: Guardar pedido
     if ($data['accion'] === 'guardar_pedido') {
+        header('Content-Type: application/json; charset=utf-8');
+
         try {
-            $resultado = $model->guardarPedidoConDetalles($data);
-            echo json_encode(['success' => true, 'message' => 'Pedido guardado con éxito', 'pedido_id' => $resultado]);
-        } catch (Exception $e) {
+            // 1) Guardar pedido y obtener ID
+            $pedidoId = $model->guardarPedidoConDetalles($data);
+
+            // 2) Preparar datos para e-mail
+            //    a) Cooperativa (se recibe id_real en $data['cooperativa'])
+            $coopNombre = '';
+            $coopCorreo = null;
+
+            $stmtCoop = $pdo->prepare("SELECT nombre, correo FROM usuarios WHERE id_real = ? LIMIT 1");
+            $stmtCoop->execute([$data['cooperativa']]);
+            if ($row = $stmtCoop->fetch(PDO::FETCH_ASSOC)) {
+                $coopNombre = (string)$row['nombre'];
+                $coopCorreo = $row['correo'] ?? null;
+            }
+
+            //    b) Operativo
+            $opNombre = '';
+            $stmtOp = $pdo->prepare("SELECT nombre FROM operativos WHERE id = ? LIMIT 1");
+            $stmtOp->execute([$data['operativo_id']]);
+            if ($row = $stmtOp->fetch(PDO::FETCH_ASSOC)) {
+                $opNombre = (string)$row['nombre'];
+            }
+
+            //    c) Items (recalculo por seguridad)
+            $items = [];
+            if (!empty($data['productos']) && is_array($data['productos'])) {
+                foreach ($data['productos'] as $p) {
+                    $nombre   = (string)($p['nombre'] ?? 'Producto');
+                    $cantidad = (float)($p['cantidad'] ?? 0);
+                    $unidad   = (string)($p['unidad'] ?? '');
+                    $precio   = (float)($p['precio'] ?? 0);
+                    $alicuota = (float)($p['alicuota'] ?? 0);
+
+                    if ($cantidad <= 0 || $precio < 0) {
+                        continue;
+                    }
+
+                    $subtotal = $precio * $cantidad;
+                    $iva      = $subtotal * ($alicuota / 100.0);
+                    $total    = $subtotal + $iva;
+
+                    $items[] = [
+                        'nombre'   => $nombre,
+                        'cantidad' => $cantidad,
+                        'unidad'   => $unidad,
+                        'precio'   => $precio,
+                        'alicuota' => $alicuota,
+                        'subtotal' => $subtotal,
+                        'iva'      => $iva,
+                        'total'    => $total,
+                    ];
+                }
+            }
+
+            //    d) Totales
+            $totales = [
+                'sin_iva' => (float)($data['totales']['sin_iva'] ?? 0),
+                'iva'     => (float)($data['totales']['iva'] ?? 0),
+                'con_iva' => (float)($data['totales']['con_iva'] ?? 0),
+            ];
+
+            // 3) Enviar correo
+            $mailOk = false;
+            $mailError = null;
+
+            try {
+                $mailResp = Maill::enviarPedidoCreado([
+                    'cooperativa_nombre' => $coopNombre ?: 'Cooperativa',
+                    'cooperativa_correo' => $coopCorreo,            // puede ser null; el método agrega siempre lacruzg@
+                    'operativo_nombre'   => $opNombre ?: 'Operativo',
+                    'items'              => $items,
+                    'totales'            => $totales,
+                ]);
+                $mailOk    = (bool)($mailResp['ok'] ?? false);
+                $mailError = $mailResp['error'] ?? null;
+            } catch (\Throwable $e) {
+                $mailOk = false;
+                $mailError = $e->getMessage();
+                error_log('✉️ Error al enviar correo de pedido: ' . $mailError);
+            }
+
+            echo json_encode([
+                'success'   => true,
+                'message'   => 'Pedido guardado con éxito',
+                'pedido_id' => $pedidoId,
+                'mail_ok'   => $mailOk,
+                'mail_error' => $mailError,
+            ], JSON_UNESCAPED_UNICODE);
+        } catch (\Throwable $e) {
             http_response_code(500);
             error_log("🧨 Error al guardar pedido: " . $e->getMessage());
-            echo json_encode(['success' => false, 'message' => 'Error al guardar el pedido: ' . $e->getMessage()]);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error al guardar el pedido: ' . $e->getMessage()
+            ], JSON_UNESCAPED_UNICODE);
         }
         exit;
     }
+
 
     // 👉 Acción: Actualizar datos del productor (CUIT y teléfono)
     if ($data['accion'] === 'actualizar_datos_productor') {
