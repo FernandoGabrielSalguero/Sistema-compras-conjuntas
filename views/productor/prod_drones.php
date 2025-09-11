@@ -455,8 +455,8 @@ $sesion_payload = [
                     <!-- hectareas -->
                     <div class="gform-question" data-required="true" id="q_superficie">
                         <label class="gform-label" for="superficie_ha">SUPERFICIE (en hectáreas) PARA LAS QUE DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span></label>
-                        <div class="gform-helper">Ingresá sólo el número de hectáreas a pulverizar (máximo 20&nbsp;ha).</div>
-                        <input class="gform-input" id="superficie_ha" name="superficie_ha" type="number" inputmode="decimal" min="0.1" max="20" step="0.01" placeholder="Ej.: 3.5" aria-describedby="sup_help" />
+                        <div class="gform-helper">Ingresá sólo el número de hectáreas a pulverizar (máximo 20&nbsp;ha por mes por productor).</div>
+                        <input class="gform-input" id="superficie_ha" name="superficie_ha" type="number" inputmode="decimal" step="0.01" placeholder="Ej.: 6" aria-describedby="sup_help" />
                         <div class="gform-error">Debe ser un número &gt; 0 y ≤ 20.</div>
                     </div>
 
