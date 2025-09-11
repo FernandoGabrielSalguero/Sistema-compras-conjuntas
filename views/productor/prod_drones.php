@@ -455,9 +455,9 @@ $sesion_payload = [
                     <!-- hectareas -->
                     <div class="gform-question" data-required="true" id="q_superficie">
                         <label class="gform-label" for="superficie_ha">SUPERFICIE (en hectáreas) PARA LAS QUE DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span></label>
-                        <div class="gform-helper">Ingresá sólo el número de hectáreas a pulverizar (máximo 20&nbsp;ha por mes por productor).</div>
-                        <input class="gform-input" id="superficie_ha" name="superficie_ha" type="number" inputmode="decimal" step="0.01" placeholder="Ej.: 6" aria-describedby="sup_help" />
-                        <div class="gform-error">Debe ser un número &gt; 0 y ≤ 20.</div>
+                        <div class="gform-helper">Ingresá sólo el número de hectáreas a pulverizar. Máximo 20 héctareas por mes por productor.</div>
+                        <input class="gform-input" id="superficie_ha" name="superficie_ha" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="Ej.: 3.5" />
+                        <div class="gform-error">Debe ser un número &gt; 0.</div>
                     </div>
 
                     <!-- método de pago -->
@@ -494,18 +494,18 @@ $sesion_payload = [
                     <div class="gform-question" role="group" aria-labelledby="q_rango_label" id="q_rango">
                         <div id="q_rango_label" class="gform-legend">INDICAR EN QUE MOMENTO DESEA CONTRATAR EL SERVICIO<span class="gform-required">*</span></div>
                         <div class="gform-options">
-                            <label class="gform-option"><input type="checkbox" id="rango_oct_1" name="rango_fecha[]" value="octubre_q1"><span>Primera quincena de Octubre</span></label>
-                            <label class="gform-option"><input type="checkbox" id="rango_oct_2" name="rango_fecha[]" value="octubre_q2"><span>Segunda quincena de Octubre</span></label>
-                            <label class="gform-option"><input type="checkbox" id="rango_nov_1" name="rango_fecha[]" value="noviembre_q1"><span>Primera quincena de Noviembre</span></label>
-                            <label class="gform-option"><input type="checkbox" id="rango_nov_2" name="rango_fecha[]" value="noviembre_q2"><span>Segunda quincena de Noviembre</span></label>
-                            <label class="gform-option"><input type="checkbox" id="rango_dic_1" name="rango_fecha[]" value="diciembre_q1"><span>Primera quincena de Diciembre</span></label>
-                            <label class="gform-option"><input type="checkbox" id="rango_dic_2" name="rango_fecha[]" value="diciembre_q2"><span>Segunda quincena de Diciembre</span></label>
-                            <label class="gform-option"><input type="checkbox" id="rango_ene_1" name="rango_fecha[]" value="enero_q1"><span>Primera quincena de Enero</span></label>
-                            <label class="gform-option"><input type="checkbox" id="rango_ene_2" name="rango_fecha[]" value="enero_q2"><span>Segunda quincena de Enero</span></label>
-                            <label class="gform-option"><input type="checkbox" id="rango_feb_2" name="rango_fecha[]" value="febrero_q2"><span>Segunda quincena de Febrero</span></label>
-                            <label class="gform-option"><input type="checkbox" id="rango_feb_1" name="rango_fecha[]" value="febrero_q1"><span>Primera quincena de Febrero</span></label>
+                            <label class="gform-option"><input type="radio" id="rango_oct_1" name="rango_fecha" value="octubre_q1"><span>Primera quincena de Octubre</span></label>
+                            <label class="gform-option"><input type="radio" id="rango_oct_2" name="rango_fecha" value="octubre_q2"><span>Segunda quincena de Octubre</span></label>
+                            <label class="gform-option"><input type="radio" id="rango_nov_1" name="rango_fecha" value="noviembre_q1"><span>Primera quincena de Noviembre</span></label>
+                            <label class="gform-option"><input type="radio" id="rango_nov_2" name="rango_fecha" value="noviembre_q2"><span>Segunda quincena de Noviembre</span></label>
+                            <label class="gform-option"><input type="radio" id="rango_dic_1" name="rango_fecha" value="diciembre_q1"><span>Primera quincena de Diciembre</span></label>
+                            <label class="gform-option"><input type="radio" id="rango_dic_2" name="rango_fecha" value="diciembre_q2"><span>Segunda quincena de Diciembre</span></label>
+                            <label class="gform-option"><input type="radio" id="rango_ene_1" name="rango_fecha" value="enero_q1"><span>Primera quincena de Enero</span></label>
+                            <label class="gform-option"><input type="radio" id="rango_ene_2" name="rango_fecha" value="enero_q2"><span>Segunda quincena de Enero</span></label>
+                            <label class="gform-option"><input type="radio" id="rango_feb_1" name="rango_fecha" value="febrero_q1"><span>Primera quincena de Febrero</span></label>
+                            <label class="gform-option"><input type="radio" id="rango_feb_2" name="rango_fecha" value="febrero_q2"><span>Segunda quincena de Febrero</span></label>
                         </div>
-                        <div class="gform-error">Seleccioná al menos una opción.</div>
+                        <div class="gform-error">Seleccioná una opción.</div>
                     </div>
 
                     <!-- assist_product -->
@@ -578,13 +578,12 @@ $sesion_payload = [
                         <input type="hidden" name="ubicacion_ts" id="ubicacion_ts">
                     </div>
 
-                    <!-- information -->
-                    <div class="gform-question span-2" data-required="true" id="q_observaciones">
-                        <label class="gform-label" for="observaciones">OBSERVACIONES <span class="gform-required">*</span></label>
-                        <div class="gform-helper">Podes dejar tu comentario o consulta aquí.</div>
-                        <textarea class="gform-input gform-textarea" id="observaciones" name="observaciones" rows="3" placeholder="Tu respuesta"></textarea>
-                        <div class="gform-error">Esta pregunta es obligatoria.</div>
-                    </div>
+                    <!-- observaciones -->
+<div class="gform-question span-2" id="q_observaciones">
+    <label class="gform-label" for="observaciones">OBSERVACIONES</label>
+    <div class="gform-helper">Opcional: dejá tu comentario o consulta aquí.</div>
+    <textarea class="gform-input gform-textarea" id="observaciones" name="observaciones" rows="3" placeholder="Tu respuesta (opcional)"></textarea>
+</div>
 
                     <!-- Resumen de costos dinámico -->
                     <div id="resumen-costos-inline" class="card" style="margin-top:1rem;">
@@ -1011,14 +1010,7 @@ $sesion_payload = [
                 $('#btn_solicitar')?.focus();
             };
             // Exponer a los botones con onclick=""
-            window.cerrarModal = cerrarModal;
-            window.confirmarEnvio = () => {
-                if (!__ultimoPayload) return cerrarModal();
-                console.log('DRON :: payload listo para enviar', __ultimoPayload);
-                // fetch(...) // <- envío real si querés
-                cerrarModal();
-            };
-            // Cerrar al hacer click fuera del contenido y con ESC
+window.cerrarModal = cerrarModal;
 
             modal?.addEventListener('click', (e) => {
                 if (e.target === modal) cerrarModal();
@@ -1076,6 +1068,11 @@ $sesion_payload = [
                     }
                     if (typeof clearGeo === 'function') clearGeo();
                     reconstruirProductos(); // vuelve a estado base
+
+                    // Redirigir al inicio tras guardar
+                    setTimeout(() => {
+                        window.location.href = 'prod_dashboard.php';
+                    }, 1200);
 
                 } catch {
                     window.showToast?.('error', 'No se pudo enviar la solicitud. Verificá tu conexión.');
@@ -1268,7 +1265,7 @@ $sesion_payload = [
                 const motivos = (payload.motivo.opciones || []).map(v => labelMotivo[v] || v);
                 if (payload.motivo.otros) motivos.push(`Otros: ${escapeHTML(payload.motivo.otros)}`);
 
-                const rangos = (payload.rango_fecha || []).map(v => labelRango[v] || v);
+                const rangoSel = payload.rango_fecha ? (labelRango[payload.rango_fecha] || payload.rango_fecha) : '—';
 
                 const prodsItems = (payload.productos || []).map(p => {
                     const fuente = p.fuente === 'yo' ? 'Proveedor propio' : 'SVE';
@@ -1360,8 +1357,12 @@ $sesion_payload = [
                       <dd>${escapeHTML(formaPagoTxt)}</dd>
 
                       
+                      <dt>Momento deseado</dt>
+                      <dd>${escapeHTML(rangoSel)}</dd>
+
                       <dt>Observaciones</dt>
                       <dd><div class="note">${escapeHTML(payload.observaciones ?? '—')}</div></dd>
+
 
                       ${costosHTML}
 
@@ -1428,14 +1429,14 @@ $sesion_payload = [
                 must(document.getElementById('q_area_despegue'), atLeastOneChecked('input[type="radio"][name="area_despegue"]', form));
                 must(document.getElementById('q_ubicacion'), atLeastOneChecked('input[type="radio"][name="en_finca"]', form)); // ya viene con NO marcado, igual chequeo
 
-                // Superficie (número > 0 y ≤ 20)
+                // Superficie (número > 0, sin tope máximo)
                 const supEl = document.getElementById('superficie_ha');
                 let supOk = false;
                 if (supEl) {
                     const val = parseFloat(supEl.value);
-                    supOk = !isNaN(val) && val > 0 && val <= 20;
+                    supOk = !isNaN(val) && val > 0;
                     const err = document.querySelector('#q_superficie .gform-error');
-                    if (err) err.textContent = 'Debe ser un número mayor a 0 y menor a 20.';
+                    if (err) err.textContent = 'Debe ser un número mayor a 0.';
                 }
                 must(document.getElementById('q_superficie'), supOk);
 
@@ -1447,8 +1448,9 @@ $sesion_payload = [
                 }
                 must(document.getElementById('q_motivo'), motivoOk);
 
-                // Rango de fechas (al menos uno)
-                must(document.getElementById('q_rango'), getValuesChecked('input[type="checkbox"][name="rango_fecha[]"]', form).length > 0);
+                // Rango de fechas (selección única)
+                must(document.getElementById('q_rango'), atLeastOneChecked('input[type="radio"][name="rango_fecha"]', form));
+
 
                 // Productos (al menos uno) + si fuente = "yo", exigir marca
                 // Productos (dinámico): al menos un checkbox por patología + validar fuente
@@ -1480,10 +1482,8 @@ $sesion_payload = [
                 }
                 must(document.getElementById('q_productos'), prodOk);
 
-
-                // Observaciones (obligatorio según tu UI)
-                const obsOk = !!document.getElementById('observaciones')?.value.trim();
-                must(document.getElementById('q_observaciones'), obsOk);
+// Observaciones (opcional)
+flag(document.getElementById('q_observaciones'), true);
 
                 // Dirección requerida si no está en la finca
                 const enFincaVal = getRadioValue('en_finca');
@@ -1548,7 +1548,7 @@ $sesion_payload = [
                         opciones: motivos,
                         otros: chkOtros?.checked ? (inputOtros?.value?.trim() || null) : null,
                     },
-                    rango_fecha: getCheckboxValues('rango_fecha[]'),
+                    rango_fecha: getRadioValue('rango_fecha'),
                     productos: (() => {
                         const out = [];
                         document.querySelectorAll('.gform-optbox[data-patologia-id]').forEach(box => {
