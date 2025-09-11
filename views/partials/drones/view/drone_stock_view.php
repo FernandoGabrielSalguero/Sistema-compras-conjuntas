@@ -315,11 +315,11 @@
           if (v === '') return 0;
           // quitar espacios (incluye nbsp)
           v = v.replace(/\s|[\u00A0]/g, '');
-          // si tiene coma y punto, asumimos que el punto es separador de miles y la coma es decimal
+          // si hay coma y punto, el punto es miles y la coma es decimal
           if (v.includes(',') && v.includes('.')) {
             v = v.replace(/\./g, '').replace(',', '.');
           } else {
-            // sólo coma o sólo punto: la coma pasa a punto, el punto queda igual
+            // sólo coma o sólo punto
             v = v.replace(',', '.');
           }
           const n = Number.parseFloat(v);
@@ -339,8 +339,13 @@
         showAlert('error', 'El costo por hectárea no puede ser negativo.');
         return;
       }
-      if (payload.patologias.length > 6) {
-        showAlert('error', 'Máximo 6 patologías.');
+      // Robustez: asegurar arreglo válido de patologías
+      if (!Array.isArray(payload.patologias)) {
+        payload.patologias = [];
+      }
+      // (El backend ya limita a 6. Validación blanda: no numéricos)
+      if (payload.patologias.some((x) => Number.isNaN(Number.parseInt(String(x), 10)))) {
+        showAlert('error', 'Patologías inválidas.');
         return;
       }
 
