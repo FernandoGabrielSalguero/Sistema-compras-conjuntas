@@ -309,13 +309,22 @@
         nombre: $('#nombre').value.trim(),
         principio_activo: $('#principio_activo').value.trim(),
         cantidad_deposito: parseInt($('#cantidad_deposito').value, 10) || 0,
-        costo_hectarea: (function(v) {
-          v = String(v || '0').replace(/\./g, '').replace(',', '.');
-          return parseFloat(v) || 0;
+        // Normaliza decimales: soporta "1200", "1200.50", "1.200,50"
+        costo_hectarea: (function (v) {
+          v = String(v ?? '').trim();
+          if (v === '') return 0;
+          // quitar espacios (incluye nbsp)
+          v = v.replace(/\s|[\u00A0]/g, '');
+          // si tiene coma y punto, asumimos que el punto es separador de miles y la coma es decimal
+          if (v.includes(',') && v.includes('.')) {
+            v = v.replace(/\./g, '').replace(',', '.');
+          } else {
+            // sólo coma o sólo punto: la coma pasa a punto, el punto queda igual
+            v = v.replace(',', '.');
+          }
+          const n = Number.parseFloat(v);
+          return Number.isFinite(n) ? n : 0;
         })($('#costo_hectarea').value),
-        activo: $('#activo').checked ? 'si' : 'no',
-        detalle: $('#detalle').value.trim(),
-        patologias: leerPatologiasDelForm()
       };
 
       if (!payload.nombre) {
