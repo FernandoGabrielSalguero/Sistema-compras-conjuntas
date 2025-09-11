@@ -100,8 +100,8 @@ class prodDronesModel
             'area_despegue'       => $siNo($data['area_despegue'] ?? null),
             'superficie_ha'       => isset($data['superficie_ha']) ? (float)$data['superficie_ha'] : 0,
         ];
-        if ($main['superficie_ha'] <= 0 || $main['superficie_ha'] > 20) {
-            throw new InvalidArgumentException('La superficie debe ser un número mayor a 0 y menor o igual a 20.');
+        if ($main['superficie_ha'] <= 0 || $main['superficie_ha'] > 200) {
+            throw new InvalidArgumentException('La superficie debe ser un número mayor a 0 y menor o igual a 200.');
         }
         foreach ($main as $k => $v) {
             if ($v === null) throw new InvalidArgumentException("Campo requerido faltante: {$k}");
