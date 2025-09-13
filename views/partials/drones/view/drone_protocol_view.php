@@ -84,6 +84,7 @@ declare(strict_types=1);
 
         <div id="protocolo-contenido" class="protocolo" hidden>
           <div class="protocolo-bloque">
+
             <h3 style="color: #5b21b6;">Fecha de la visita</h3>
             <div class="grid-2">
               <div class="input-group">
@@ -100,7 +101,8 @@ declare(strict_types=1);
               </div>
             </div>
 
-            <div class="grid-3">
+            <h3 style="color: #5b21b6;">Dirección</h3>
+            <div class="grid-4">
               <div class="input-group">
                 <label for="pv_provincia">Provincia</label>
                 <div class="input-icon input-icon-location">
