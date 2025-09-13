@@ -1598,10 +1598,6 @@ flag(document.getElementById('q_observaciones'), true);
                 __ultimoPayload = payload;
                 if (resumenModal) resumenModal.innerHTML = renderResumenHTML(payload);
                 abrirModal();
-
-
-
-                // NOTA: no imprimimos en consola acá. Solo cuando el usuario confirma en el modal.
             });
 
         })();

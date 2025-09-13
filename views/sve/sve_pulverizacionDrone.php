@@ -137,13 +137,13 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         <!-- Bienvenida -->
         <div class="card">
           <h2>Hola! </h2>
-          <p>Te presentamos el gestor de proyectos de vuelo. Armar todos los protocolos y los registros fitosanitarios desde esta página</p>
+          <p>Te presentamos el gestor de proyectos de vuelo. Desde acá, vas a controlar todo el servicio de pulverización con drones.</p>
 
           <!-- 🔘 Tarjeta con los botones del tab -->
           <div class="tabs">
             <div class="tab-buttons">
               <button class="tab-button active" data-target="#panel-solicitudes">Solicitudes</button>
-              <button class="tab-button active" data-target="#panel-formulario">Formulario</button>
+              <button class="tab-button active" data-target="#panel-formulario">Nuevo servicio</button>
               <button class="tab-button active" data-target="#panel-protocolo">Protocolo</button>
               <button class="tab-button" data-target="#panel-calendario">Calendario</button>
               <button class="tab-button" data-target="#panel-registro">Registro fito sanitario</button>
