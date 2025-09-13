@@ -5,47 +5,49 @@ declare(strict_types=1);
 <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
 
 <div class="content">
+  <!-- Encabezado con filtros -->
   <div class="card" style="background-color:#5b21b6;">
     <h3 style="color:white;">Módulo: Protocolo</h3>
     <p style="color:white;margin:0;">Gestión y visualización de protocolos de servicio de dron.</p>
+
+    <form id="filtros-form" class="filtros" aria-label="Filtros de búsqueda" style="margin-top:10px;">
+      <div class="grid-3">
+        <div class="input-group">
+          <label for="filtro_nombre" style="color:#fff;">Nombre del productor</label>
+          <div class="input-icon input-icon-search">
+            <input type="text" id="filtro_nombre" name="nombre" placeholder="Buscar por nombre" autocomplete="off" />
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="filtro_estado" style="color:#fff;">Estado</label>
+          <div class="input-icon input-icon-filter">
+            <select id="filtro_estado" name="estado" aria-label="Filtrar por estado">
+              <option value="">Todos</option>
+              <option value="ingresada">Ingresada</option>
+              <option value="procesando">Procesando</option>
+              <option value="aprobada_coop">Aprobada coop</option>
+              <option value="cancelada">Cancelada</option>
+              <option value="completada">Completada</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group" style="align-self:end;">
+          <div class="form-grid grid-3" style="gap:.5rem;">
+            <button type="submit" class="btn btn-info">Aplicar</button>
+            <button type="button" id="btn-limpiar" class="btn btn-cancelar">Limpiar</button>
+            <button type="button" id="btn-refrescar" class="btn btn-aceptar">Refrescar</button>
+          </div>
+        </div>
+      </div>
+    </form>
   </div>
 
   <!-- Layout 33% / 66% -->
   <div class="card" style="padding:0;border:none;background:transparent;">
     <div class="protocol-grid">
-      <!-- Columna izquierda: 33% -->
+      <!-- Columna izquierda: 33% (solo listado) -->
       <aside class="card" aria-labelledby="listado-title">
         <h3 id="listado-title">Servicios</h3>
-
-        <form id="filtros-form" class="filtros" aria-label="Filtros de búsqueda">
-          <div class="input-group">
-            <label for="filtro_nombre">Nombre del productor</label>
-            <div class="input-icon input-icon-name">
-              <input type="text" id="filtro_nombre" name="nombre" placeholder="Buscar por nombre" autocomplete="off" />
-            </div>
-          </div>
-
-          <div class="input-group">
-            <label for="filtro_estado">Estado</label>
-            <div class="input-icon input-icon-name">
-              <select id="filtro_estado" name="estado" aria-label="Filtrar por estado">
-                <option value="">Todos</option>
-                <option value="ingresada">Ingresada</option>
-                <option value="procesando">Procesando</option>
-                <option value="aprobada_coop">Aprobada coop</option>
-                <option value="cancelada">Cancelada</option>
-                <option value="completada">Completada</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-grid grid-3" style="gap:.5rem;margin-top:.5rem;">
-            <button type="submit" class="btn btn-info">Aplicar</button>
-            <button type="button" id="btn-limpiar" class="btn btn-cancelar">Limpiar</button>
-            <button type="button" id="btn-refrescar" class="btn btn-aceptar">Refrescar</button>
-          </div>
-        </form>
-
         <div class="tabla-wrapper" style="margin-top:10px;">
           <table class="data-table" aria-describedby="listado-title">
             <thead>
@@ -63,34 +65,92 @@ declare(strict_types=1);
         </div>
       </aside>
 
-      <!-- Columna derecha: 66% -->
-      <section class="card" aria-labelledby="protocolo-title">
-        <h3 id="protocolo-title">Protocolo</h3>
+      <!-- Columna derecha: 66% (Protocolo lectura) -->
+      <section class="card protocolo-card" aria-labelledby="protocolo-title">
+        <div class="protocolo-header">
+          <img src="assets/png/logo%20con%20color%20original.png" alt="Logo" class="protocolo-logo" />
+          <h3 id="protocolo-title" style="margin-left:56px;">Protocolo</h3>
+        </div>
         <div id="protocol-health" class="muted" aria-live="polite" style="margin-top:-6px;">Verificando conexión…</div>
 
         <div id="protocolo-contenido" class="protocolo" hidden>
           <div class="protocolo-bloque">
             <h4>Datos de visita</h4>
             <div class="grid-2">
-              <div class="input-group"><label for="pv_fecha">Fecha visita</label><div class="input-icon input-icon-name"><input id="pv_fecha" readonly></div></div>
-              <div class="input-group"><label for="pv_rango">Horario</label><div class="input-icon input-icon-name"><input id="pv_rango" readonly></div></div>
+              <div class="input-group">
+                <label for="pv_fecha">Fecha visita</label>
+                <div class="input-icon input-icon-calendar">
+                  <input id="pv_fecha" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="pv_rango">Horario</label>
+                <div class="input-icon input-icon-clock">
+                  <input id="pv_rango" readonly>
+                </div>
+              </div>
             </div>
             <div class="grid-2">
-              <div class="input-group"><label for="pv_provincia">Provincia</label><div class="input-icon input-icon-name"><input id="pv_provincia" readonly></div></div>
-              <div class="input-group"><label for="pv_localidad">Localidad</label><div class="input-icon input-icon-name"><input id="pv_localidad" readonly></div></div>
+              <div class="input-group">
+                <label for="pv_provincia">Provincia</label>
+                <div class="input-icon input-icon-location">
+                  <input id="pv_provincia" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="pv_localidad">Localidad</label>
+                <div class="input-icon input-icon-location">
+                  <input id="pv_localidad" readonly>
+                </div>
+              </div>
             </div>
             <div class="grid-2">
-              <div class="input-group"><label for="pv_calle">Calle</label><div class="input-icon input-icon-name"><input id="pv_calle" readonly></div></div>
-              <div class="input-group"><label for="pv_numero">Número</label><div class="input-icon input-icon-name"><input id="pv_numero" readonly></div></div>
+              <div class="input-group">
+                <label for="pv_calle">Calle</label>
+                <div class="input-icon input-icon-home">
+                  <input id="pv_calle" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="pv_numero">Número</label>
+                <div class="input-icon input-icon-hashtag">
+                  <input id="pv_numero" readonly>
+                </div>
+              </div>
             </div>
             <div class="grid-3">
-              <div class="input-group"><label for="pv_lat">Lat</label><div class="input-icon input-icon-name"><input id="pv_lat" readonly></div></div>
-              <div class="input-group"><label for="pv_lng">Lng</label><div class="input-icon input-icon-name"><input id="pv_lng" readonly></div></div>
-              <div class="input-group"><label for="pv_usuario">Usuario</label><div class="input-icon input-icon-name"><input id="pv_usuario" readonly></div></div>
+              <div class="input-group">
+                <label for="pv_lat">Lat</label>
+                <div class="input-icon input-icon-gps">
+                  <input id="pv_lat" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="pv_lng">Lng</label>
+                <div class="input-icon input-icon-compass">
+                  <input id="pv_lng" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="pv_usuario">Usuario</label>
+                <div class="input-icon input-icon-user">
+                  <input id="pv_usuario" readonly>
+                </div>
+              </div>
             </div>
             <div class="grid-2">
-              <div class="input-group"><label for="pv_estado">Estado</label><div class="input-icon input-icon-name"><input id="pv_estado" readonly></div></div>
-              <div class="input-group"><label for="pv_motivo">Motivo cancelación</label><div class="input-icon input-icon-name"><input id="pv_motivo" readonly></div></div>
+              <div class="input-group">
+                <label for="pv_estado">Estado</label>
+                <div class="input-icon input-icon-flag">
+                  <input id="pv_estado" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="pv_motivo">Motivo cancelación</label>
+                <div class="input-icon input-icon-warning">
+                  <input id="pv_motivo" readonly>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -118,14 +178,44 @@ declare(strict_types=1);
           <div class="protocolo-bloque">
             <h4>Parámetros de vuelo</h4>
             <div class="grid-3">
-              <div class="input-group"><label for="pp_volumen">Volumen/ha</label><div class="input-icon input-icon-name"><input id="pp_volumen" readonly></div></div>
-              <div class="input-group"><label for="pp_velocidad">Velocidad vuelo</label><div class="input-icon input-icon-name"><input id="pp_velocidad" readonly></div></div>
-              <div class="input-group"><label for="pp_alto">Alto vuelo</label><div class="input-icon input-icon-name"><input id="pp_alto" readonly></div></div>
+              <div class="input-group">
+                <label for="pp_volumen">Volumen/ha</label>
+                <div class="input-icon input-icon-droplet">
+                  <input id="pp_volumen" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="pp_velocidad">Velocidad vuelo</label>
+                <div class="input-icon input-icon-speed">
+                  <input id="pp_velocidad" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="pp_alto">Alto vuelo</label>
+                <div class="input-icon input-icon-arrow-up">
+                  <input id="pp_alto" readonly>
+                </div>
+              </div>
             </div>
             <div class="grid-3">
-              <div class="input-group"><label for="pp_ancho">Ancho pasada</label><div class="input-icon input-icon-name"><input id="pp_ancho" readonly></div></div>
-              <div class="input-group"><label for="pp_gota">Tamaño de gota</label><div class="input-icon input-icon-name"><input id="pp_gota" readonly></div></div>
-              <div class="input-group"><label for="pp_obs">Observaciones</label><div class="input-icon input-icon-name"><input id="pp_obs" readonly></div></div>
+              <div class="input-group">
+                <label for="pp_ancho">Ancho pasada</label>
+                <div class="input-icon input-icon-arrows">
+                  <input id="pp_ancho" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="pp_gota">Tamaño de gota</label>
+                <div class="input-icon input-icon-droplet">
+                  <input id="pp_gota" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="pp_obs">Observaciones</label>
+                <div class="input-icon input-icon-note">
+                  <input id="pp_obs" readonly>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -144,9 +234,14 @@ declare(strict_types=1);
   .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   @media (max-width: 768px){.grid-2,.grid-3{grid-template-columns:1fr}}
   [readonly]{background:#f8fafc}
-  /* FOUC avoidance for dynamic area */
+  /* Evitar FOUC del contenido dinámico */
   #protocolo-contenido[hidden]{display:none!important}
   tbody tr.is-active{outline:2px solid #5b21b6}
+
+  /* Encabezado con logo en protocolo */
+  .protocolo-card{position:relative;}
+  .protocolo-header{position:relative;min-height:48px;margin-bottom:6px;}
+  .protocolo-logo{position:absolute;left:0;top:0;width:44px;height:auto;border-radius:4px;}
 </style>
 
 <script>
@@ -183,12 +278,12 @@ declare(strict_types=1);
     e.preventDefault();
     cargarServicios();
   });
-  $('#btn-limpiar').addEventListener('click', function(){
+  $('#btn-limpiar')?.addEventListener('click', function(){
     inputs.nombre.value = '';
     inputs.estado.value = '';
     cargarServicios();
   });
-  $('#btn-refrescar').addEventListener('click', cargarServicios);
+  $('#btn-refrescar')?.addEventListener('click', cargarServicios);
 
   // Debounce en texto
   let to;
@@ -219,7 +314,7 @@ declare(strict_types=1);
       return;
     }
     tbodyServicios.innerHTML = '';
-    items.forEach((row, idx) => {
+    items.forEach((row) => {
       const tr = document.createElement('tr');
       tr.tabIndex = 0;
       tr.setAttribute('role','button');
@@ -271,7 +366,7 @@ declare(strict_types=1);
   function pintarDetalle(data) {
     contenido.hidden = false;
 
-    // drones_solicitud
+    // drones_solicitud (solo lectura)
     const d = data.solicitud;
     setVal('pv_fecha', d.fecha_visita || '');
     setVal('pv_rango', (d.hora_visita_desde || '') + (d.hora_visita_hasta ? ' - ' + d.hora_visita_hasta : ''));
