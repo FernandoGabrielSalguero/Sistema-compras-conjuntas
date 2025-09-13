@@ -192,28 +192,6 @@
             </div>
         </div>
 
-        <!-- geolocalización -->
-        <div class="gform-question span-2" role="group" aria-labelledby="q_ubicacion_label" id="q_ubicacion">
-            <div id="q_ubicacion_label" class="gform-label">¿Estás en la ubicación de la finca? <span class="gform-required">*</span></div>
-            <div class="gform-helper">Si estás en la finca, capturaremos coordenadas GPS (usar desde celular).</div>
-            <div class="gform-miniopts">
-                <label><input type="radio" id="en_finca_no" name="en_finca" value="no" checked>No</label>
-                <label><input type="radio" id="en_finca_si" name="en_finca" value="si">Sí</label>
-            </div>
-            <div class="gform-helper" id="ubicacion_status">No se capturarán coordenadas.</div>
-            <input type="hidden" name="lat" id="ubicacion_lat">
-            <input type="hidden" name="lng" id="ubicacion_lng">
-            <input type="hidden" name="acc" id="ubicacion_acc">
-            <input type="hidden" name="ubicacion_ts" id="ubicacion_ts">
-        </div>
-
-        <!-- observaciones -->
-        <div class="gform-question span-2" id="q_observaciones">
-            <label class="gform-label" for="observaciones">OBSERVACIONES</label>
-            <div class="gform-helper">Opcional</div>
-            <textarea class="gform-input gform-textarea" id="observaciones" name="observaciones" rows="3" placeholder="Tu respuesta (opcional)"></textarea>
-        </div>
-
         <!-- resumen costos -->
         <div id="resumen-costos-inline" class="card" style="margin-top:1rem;">
             <h4 style="margin:0 0 .5rem 0;">Resumen de costos</h4>
