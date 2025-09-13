@@ -42,7 +42,7 @@ declare(strict_types=1);
   </div>
 
   <!-- Layout 33% / 66% -->
-  <div class="card" style="padding:0;border:none;background:transparent;">
+  <div class="card" style="padding:0;border:none;background:transparent;box-shadow:none !important;">
     <div class="protocol-grid">
       <!-- Columna izquierda: 33% (solo listado) -->
       <aside class="card" aria-labelledby="listado-title">
