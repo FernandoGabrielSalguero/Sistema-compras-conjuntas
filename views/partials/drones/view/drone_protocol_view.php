@@ -83,7 +83,7 @@ declare(strict_types=1);
         <div id="protocol-health" class="muted" aria-live="polite" style="margin-top:-6px;">Verificando conexión…</div>
 
         <div id="protocolo-contenido" class="protocolo" hidden>
-          <div class="protocolo-bloque">
+          <di class="protocolo-bloque">
             <h3 style="color: #5b21b6;">Fecha de la visita</h3>
             <div class="grid-2">
               <div class="input-group">
@@ -99,7 +99,8 @@ declare(strict_types=1);
                 </div>
               </div>
             </div>
-
+            
+            <h4 style="color: #5b21b6;">Dirección</h4>
             <div class="grid-3">
               <div class="input-group">
                 <label for="pv_provincia">Provincia</label>
