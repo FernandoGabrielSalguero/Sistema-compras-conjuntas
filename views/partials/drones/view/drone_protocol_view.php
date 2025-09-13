@@ -85,7 +85,7 @@ declare(strict_types=1);
         <div id="protocolo-contenido" class="protocolo" hidden>
           <div class="protocolo-bloque">
             <h3 style="color: #5b21b6;">Datos de la visita</h3>
-            <div class="grid-2">
+            <div class="grid-3">
               <div class="input-group">
                 <label for="pv_fecha">Fecha visita</label>
                 <div class="input-icon input-icon-calendar">
