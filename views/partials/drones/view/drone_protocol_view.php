@@ -239,8 +239,8 @@ declare(strict_types=1);
 
   /* Encabezado con logo en protocolo */
   .protocolo-card{position:relative;}
-  .protocolo-header{position:relative;min-height:48px;margin-bottom:6px;}
-  .protocolo-logo{position:absolute;left:0;top:0;width:44px;height:auto;border-radius:4px;}
+  .protocolo-header{position:relative;min-height:148px;margin-bottom:6px;}
+  .protocolo-logo{position:absolute;left:0;top:0;width:144px;height:auto;border-radius:4px;}
 </style>
 
 <script>
