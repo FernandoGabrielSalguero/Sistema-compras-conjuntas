@@ -78,7 +78,7 @@ declare(strict_types=1);
       <section id="protocolo-section" class="card protocolo-card" aria-labelledby="protocolo-title">
         <div class="protocolo-header">
           <img src="../../../../assets/png/logo_con_color_original.png" alt="Logo" class="protocolo-logo" />
-          <h1 id="protocolo-title" style="margin-left:56px; color: #5b21b6;">Protocolo de vuelo programado</h1>
+          <h1 id="protocolo-title" style="margin-left:56px; color: #5b21b6;">PROTOCOLO SERVICIO DE DRONE</h1>
         </div>
         <div id="protocol-health" class="muted" aria-live="polite" style="margin-top:-6px;">Verificando conexión…</div>
 
