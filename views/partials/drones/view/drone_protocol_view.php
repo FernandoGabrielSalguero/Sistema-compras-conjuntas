@@ -151,10 +151,10 @@ declare(strict_types=1);
               </div>
               <div class="input-group">
                 <label for="btn-maps">Abrir en Google Maps</label>
-                  <button type="button" id="btn-maps" class="btn btn-info" aria-label="Abrir ubicación en Google Maps" disabled aria-disabled="true">
-                    Maps
-                  </button>
-                
+                <button type="button" id="btn-maps" class="btn btn-info" aria-label="Abrir ubicación en Google Maps" disabled aria-disabled="true">
+                  Maps
+                </button>
+
               </div>
             </div>
 
@@ -220,6 +220,7 @@ declare(strict_types=1);
                 </div>
               </div>
             </div>
+
             <div class="grid-3">
               <div class="input-group">
                 <label for="pp_ancho">Ancho pasada</label>
@@ -233,11 +234,12 @@ declare(strict_types=1);
                   <input id="pp_gota" readonly>
                 </div>
               </div>
-              <div class="input-group">
-                <label for="pp_obs">Observaciones</label>
-                <div class="input-icon input-icon-note">
-                  <input id="pp_obs" readonly>
-                </div>
+
+            </div>
+            <div class="input-group">
+              <label for="pp_obs">Observaciones</label>
+              <div class="input-icon input-icon-note">
+                <input id="pp_obs" readonly>
               </div>
             </div>
           </div>
