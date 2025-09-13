@@ -9,14 +9,6 @@
         <p style="color:white;margin:0;">Complete el siguiente formulario para registrar su solicitud.</p>
     </div>
 
-    <!-- Header -->
-    <div class="card header-card">
-        <div>
-            <h4><?= htmlspecialchars($sesion_payload['nombre'] ?: 'Productor') ?></h4>
-            <p>¿Querés volver al panel?</p>
-        </div>
-        <a class="btn btn-info" href="prod_dashboard.php" aria-label="Volver al panel del productor">Ir al panel</a>
-    </div>
 
     <!-- Formulario -->
     <form id="form-dron" class="gform-grid cols-2" novalidate>
