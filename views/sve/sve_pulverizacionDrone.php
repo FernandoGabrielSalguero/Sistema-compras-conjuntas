@@ -143,8 +143,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
           <div class="tabs">
             <div class="tab-buttons">
               <button class="tab-button active" data-target="#panel-solicitudes">Solicitudes</button>
+              <button class="tab-button active" data-target="#panel-formulario">Formulario</button>
               <button class="tab-button active" data-target="#panel-protocolo">Protocolo</button>
               <button class="tab-button" data-target="#panel-calendario">Calendario</button>
+              <button class="tab-button" data-target="#panel-registro">Reg Fito Sanitario</button>
               <button class="tab-button" data-target="#panel-stock">Stock</button>
               <button class="tab-button" data-target="#panel-variables">Variables</button>
             </div>
