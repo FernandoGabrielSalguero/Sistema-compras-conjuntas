@@ -83,7 +83,7 @@ declare(strict_types=1);
         <div id="protocol-health" class="muted" aria-live="polite" style="margin-top:-6px;">Verificando conexión…</div>
 
         <div id="protocolo-contenido" class="protocolo" hidden>
-          <di class="protocolo-bloque">
+          <div class="protocolo-bloque">
             <h3 style="color: #5b21b6;">Fecha de la visita</h3>
             <div class="grid-2">
               <div class="input-group">
@@ -100,8 +100,7 @@ declare(strict_types=1);
               </div>
             </div>
 
-            <h3 style="color: #5b21b6;">Dirección</h3>
-            <div class="grid-4">
+            <div class="grid-3">
               <div class="input-group">
                 <label for="pv_provincia">Provincia</label>
                 <div class="input-icon input-icon-location">
@@ -127,7 +126,7 @@ declare(strict_types=1);
                 </div>
               </div>
             </div>
-
+            
             <h4 style="color: #5b21b6;">Datos de Geolocalización</h4>
             <div class="grid-3">
               <div class="input-group">
@@ -149,9 +148,6 @@ declare(strict_types=1);
                 </div>
               </div>
             </div>
-            
-            
-            <h4 style="color: #5b21b6;">Estado de la solicitud</h4>
             <div class="grid-2">
               <div class="input-group">
                 <label for="pv_estado">Estado</label>
@@ -162,90 +158,90 @@ declare(strict_types=1);
               <div class="input-group">
                 <label for="pv_motivo">Motivo cancelación</label>
                 <div class="input-icon input-icon-warning">
-                  <input id="pv_motivo" placeholder="Esta cancelada aún" readonly>
+                  <input id="pv_motivo" readonly>
                 </div>
               </div>
             </div>
+          </div>
+
+          <div class="protocolo-bloque">
+            <h3 style="color: #5b21b6;">Productos a utilizar</h3>
+            <div class="tabla-wrapper">
+              <table class="data-table" aria-label="Productos y receta">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Producto</th>
+                    <th>Principio activo</th>
+                    <th>Dosis</th>
+                    <th>Orden mezcla</th>
+                    <th>Notas</th>
+                  </tr>
+                </thead>
+                <tbody id="tabla-items">
+                  <tr>
+                    <td colspan="6">Sin datos</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="protocolo-bloque">
+            <h3 style="color: #5b21b6;">Parametros de vuelo</h3>
+            <div class="grid-3">
+              <div class="input-group">
+                <label for="pp_volumen">Volumen/ha</label>
+                <div class="input-icon input-icon-droplet">
+                  <input id="pp_volumen" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="pp_velocidad">Velocidad vuelo</label>
+                <div class="input-icon input-icon-speed">
+                  <input id="pp_velocidad" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="pp_alto">Alto vuelo</label>
+                <div class="input-icon input-icon-arrow-up">
+                  <input id="pp_alto" readonly>
+                </div>
+              </div>
+            </div>
+            <div class="grid-3">
+              <div class="input-group">
+                <label for="pp_ancho">Ancho pasada</label>
+                <div class="input-icon input-icon-arrows">
+                  <input id="pp_ancho" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="pp_gota">Tamaño de gota</label>
+                <div class="input-icon input-icon-droplet">
+                  <input id="pp_gota" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="pp_obs">Observaciones</label>
+                <div class="input-icon input-icon-note">
+                  <input id="pp_obs" readonly>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="protocolo-bloque">
-          <h3 style="color: #5b21b6;">Productos a utilizar</h3>
-          <div class="tabla-wrapper">
-            <table class="data-table" aria-label="Productos y receta">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Producto</th>
-                  <th>Principio activo</th>
-                  <th>Dosis</th>
-                  <th>Orden mezcla</th>
-                  <th>Notas</th>
-                </tr>
-              </thead>
-              <tbody id="tabla-items">
-                <tr>
-                  <td colspan="6">Sin datos</td>
-                </tr>
-              </tbody>
-            </table>
+        <footer class="protocolo-footer" role="contentinfo" aria-label="Acciones del protocolo">
+          <div class="form-grid grid-1" style="justify-content:end;">
+            <button type="button" id="btn-descargar" class="btn btn-info" aria-label="Descargar protocolo como imagen">
+              Descargar
+            </button>
           </div>
-        </div>
-
-        <div class="protocolo-bloque">
-          <h3 style="color: #5b21b6;">Parametros de vuelo</h3>
-          <div class="grid-3">
-            <div class="input-group">
-              <label for="pp_volumen">Volumen/ha</label>
-              <div class="input-icon input-icon-droplet">
-                <input id="pp_volumen" readonly>
-              </div>
-            </div>
-            <div class="input-group">
-              <label for="pp_velocidad">Velocidad vuelo</label>
-              <div class="input-icon input-icon-speed">
-                <input id="pp_velocidad" readonly>
-              </div>
-            </div>
-            <div class="input-group">
-              <label for="pp_alto">Alto vuelo</label>
-              <div class="input-icon input-icon-arrow-up">
-                <input id="pp_alto" readonly>
-              </div>
-            </div>
-          </div>
-          <div class="grid-3">
-            <div class="input-group">
-              <label for="pp_ancho">Ancho pasada</label>
-              <div class="input-icon input-icon-arrows">
-                <input id="pp_ancho" readonly>
-              </div>
-            </div>
-            <div class="input-group">
-              <label for="pp_gota">Tamaño de gota</label>
-              <div class="input-icon input-icon-droplet">
-                <input id="pp_gota" readonly>
-              </div>
-            </div>
-            <div class="input-group">
-              <label for="pp_obs">Observaciones</label>
-              <div class="input-icon input-icon-note">
-                <input id="pp_obs" readonly>
-              </div>
-            </div>
-          </div>
-        </div>
+        </footer>
+      </section>
     </div>
-
-    <footer class="protocolo-footer" role="contentinfo" aria-label="Acciones del protocolo">
-      <div class="form-grid grid-1" style="justify-content:end;">
-        <button type="button" id="btn-descargar" class="btn btn-info" aria-label="Descargar protocolo como imagen">
-          Descargar
-        </button>
-      </div>
-    </footer>
-    </section>
   </div>
-</div>
 </div>
 
 <style>
@@ -343,13 +339,12 @@ declare(strict_types=1);
     font-weight: 600;
     line-height: 1.25;
   }
-
-  .protocolo-footer {
-    margin-top: 12px;
-    padding-top: 8px;
-    border-top: 1px solid #e5e7eb;
-    display: flex;
-    justify-content: flex-end;
+  .protocolo-footer{
+    margin-top:12px;
+    padding-top:8px;
+    border-top:1px solid #e5e7eb;
+    display:flex;
+    justify-content:flex-end;
   }
 </style>
 
@@ -458,7 +453,7 @@ declare(strict_types=1);
       });
     }
 
-    async function descargarComoImagen() {
+        async function descargarComoImagen() {
       try {
         if (!sectionEl) {
           showAlert('error', 'No se encontró la sección a exportar.');
@@ -476,7 +471,7 @@ declare(strict_types=1);
         });
         const dataURL = canvas.toDataURL('image/png');
         const a = document.createElement('a');
-        const hoy = new Date().toISOString().slice(0, 10);
+        const hoy = new Date().toISOString().slice(0,10);
         a.href = dataURL;
         a.download = `protocolo_${hoy}.png`;
         document.body.appendChild(a);
