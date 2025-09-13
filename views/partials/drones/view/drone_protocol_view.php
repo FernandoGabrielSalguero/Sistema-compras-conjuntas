@@ -150,12 +150,11 @@ declare(strict_types=1);
                 </div>
               </div>
               <div class="input-group">
-                <label for="btn-maps">Maps</label>
-                <div class="input-icon input-icon-location">
+                <label for="btn-maps">Abrir en Google Maps</label>
                   <button type="button" id="btn-maps" class="btn btn-info" aria-label="Abrir ubicación en Google Maps" disabled aria-disabled="true">
                     Maps
                   </button>
-                </div>
+                
               </div>
             </div>
 
