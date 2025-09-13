@@ -248,8 +248,12 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         // Quitar fondo/sombra del contenedor solo en Variables o Stock
         const wrapper = document.getElementById('tab-content-card');
         if (wrapper) {
-          const sinChrome = (targetSel === '#panel-variables' || targetSel === '#panel-stock');
-          wrapper.classList.toggle('no-chrome', sinChrome);
+        const sinChrome = (
+          targetSel === '#panel-variables' ||
+          targetSel === '#panel-stock' ||
+          targetSel === '#panel-protocolo'
+        );
+        wrapper.classList.toggle('no-chrome', sinChrome);
         }
       }
 
