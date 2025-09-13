@@ -113,7 +113,7 @@ declare(strict_types=1);
                 </div>
               </div>
             </div>
-            <div class="grid-2">
+            <div class="grid-3">
               <div class="input-group">
                 <label for="pv_calle">Calle</label>
                 <div class="input-icon input-icon-home">
@@ -148,7 +148,7 @@ declare(strict_types=1);
                 </div>
               </div>
             </div>
-            <div class="grid-2">
+            <div class="grid-3">
               <div class="input-group">
                 <label for="pv_estado">Estado</label>
                 <div class="input-icon input-icon-flag">
