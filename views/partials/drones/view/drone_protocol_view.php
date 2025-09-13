@@ -129,7 +129,7 @@ declare(strict_types=1);
               </div>
             </div>
             
-            <h4 style="color: #5b21b6;">Datos de Geolocalización</h4>
+            <h3 style="color: #5b21b6;">Datos de Geolocalización</h3>
             <div class="grid-3">
               <div class="input-group">
                 <label for="pv_lat">Lat</label>
@@ -150,6 +150,8 @@ declare(strict_types=1);
                 </div>
               </div>
             </div>
+
+            <h3 style="color: #5b21b6;">Estado de la solicitud</h3>
             <div class="grid-2">
               <div class="input-group">
                 <label for="pv_estado">Estado</label>
@@ -160,7 +162,7 @@ declare(strict_types=1);
               <div class="input-group">
                 <label for="pv_motivo">Motivo cancelación</label>
                 <div class="input-icon input-icon-warning">
-                  <input id="pv_motivo" readonly>
+                  <input id="pv_motivo" placeholder="NO esta cancelada aún" readonly>
                 </div>
               </div>
             </div>
