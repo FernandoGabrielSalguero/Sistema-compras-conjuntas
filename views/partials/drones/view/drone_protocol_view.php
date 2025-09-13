@@ -67,7 +67,7 @@ declare(strict_types=1);
       <!-- Columna derecha: 66% (Protocolo lectura) -->
       <section class="card protocolo-card" aria-labelledby="protocolo-title">
         <div class="protocolo-header">
-          <img src="../../../../png/logo_con_color_original.png" alt="Logo" class="protocolo-logo" />
+          <img src="../../../../assets/png/logo_con_color_original.png" alt="Logo" class="protocolo-logo" />
           <h3 id="protocolo-title" style="margin-left:56px;">Protocolo</h3>
         </div>
         <div id="protocol-health" class="muted" aria-live="polite" style="margin-top:-6px;">Verificando conexión…</div>
