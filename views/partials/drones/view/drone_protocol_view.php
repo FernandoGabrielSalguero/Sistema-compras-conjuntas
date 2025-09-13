@@ -81,7 +81,7 @@ declare(strict_types=1);
 
         <div id="protocolo-contenido" class="protocolo" hidden>
           <div class="protocolo-bloque">
-            <h4 style="color: #5b21b6;">Datos de la visita</h4>
+            <h5 style="color: #5b21b6;">Datos de la visita</h5>
             <div class="grid-2">
               <div class="input-group">
                 <label for="pv_fecha">Fecha visita</label>
@@ -124,6 +124,7 @@ declare(strict_types=1);
                 </div>
               </div>
             </div>
+            <h4 style="color: #5b21b6;">Datos de Geolocalización</h4>
             <div class="grid-3">
               <div class="input-group">
                 <label for="pv_lat">Lat</label>
@@ -161,7 +162,7 @@ declare(strict_types=1);
           </div>
 
           <div class="protocolo-bloque">
-            <h5 style="color: #5b21b6;">Productos a utilizar</h5>
+            <h4 style="color: #5b21b6;">Productos a utilizar</h4>
             <div class="tabla-wrapper">
               <table class="data-table" aria-label="Productos y receta">
                 <thead>
@@ -184,7 +185,7 @@ declare(strict_types=1);
           </div>
 
           <div class="protocolo-bloque">
-            <h5 style="color: #5b21b6;">Parametros de vuelo</h5>
+            <h4 style="color: #5b21b6;">Parametros de vuelo</h4>
             <div class="grid-3">
               <div class="input-group">
                 <label for="pp_volumen">Volumen/ha</label>
