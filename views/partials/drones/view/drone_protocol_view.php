@@ -339,6 +339,13 @@ declare(strict_types=1);
     font-weight: 600;
     line-height: 1.25;
   }
+  .protocolo-footer{
+    margin-top:12px;
+    padding-top:8px;
+    border-top:1px solid #e5e7eb;
+    display:flex;
+    justify-content:flex-end;
+  }
 </style>
 
 <script>
@@ -349,11 +356,16 @@ declare(strict_types=1);
     const healthEl = $('#protocol-health');
     const tbodyServicios = $('#tabla-servicios');
     const contenido = $('#protocolo-contenido');
+    const sectionEl = $('#protocolo-section');
+    const btnDescargar = $('#btn-descargar');
 
     const inputs = {
       nombre: $('#filtro_nombre'),
       estado: $('#filtro_estado')
     };
+
+    // Bind botón descargar
+    btnDescargar?.addEventListener('click', descargarComoImagen);
 
     // Healthcheck inicial
     fetch(API + '?t=' + Date.now(), {
@@ -440,6 +452,38 @@ declare(strict_types=1);
         tbodyServicios.appendChild(tr);
       });
     }
+
+        async function descargarComoImagen() {
+      try {
+        if (!sectionEl) {
+          showAlert('error', 'No se encontró la sección a exportar.');
+          return;
+        }
+        // Forzar fondo blanco y mostrar contenido oculto en el DOM clonado
+        const canvas = await html2canvas(sectionEl, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+          useCORS: true,
+          onclone: (clonedDoc) => {
+            const el = clonedDoc.querySelector('#protocolo-contenido');
+            if (el) el.hidden = false; // evitar FOUC en la exportación
+          }
+        });
+        const dataURL = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        const hoy = new Date().toISOString().slice(0,10);
+        a.href = dataURL;
+        a.download = `protocolo_${hoy}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        showAlert('success', 'Descarga generada correctamente.');
+      } catch (err) {
+        const msg = (err && err.message) ? err.message : String(err);
+        showAlert('error', 'No se pudo generar la imagen: ' + msg);
+      }
+    }
+
 
     function badgeClass(est) {
       switch (est) {
