@@ -5,6 +5,9 @@ declare(strict_types=1);
 <!-- Links CDN propio -->
 <link rel="preload" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css" as="style" onload="this.rel='stylesheet'">
 <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
+<!-- descargar imagen -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 <!-- Íconos de Material Design -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -72,7 +75,7 @@ declare(strict_types=1);
       </aside>
 
       <!-- Columna derecha: 66% (Protocolo lectura) -->
-      <section class="card protocolo-card" aria-labelledby="protocolo-title">
+      <section id="protocolo-section" class="card protocolo-card" aria-labelledby="protocolo-title">
         <div class="protocolo-header">
           <img src="../../../../assets/png/logo_con_color_original.png" alt="Logo" class="protocolo-logo" />
           <h3 id="protocolo-title" style="margin-left:56px;">Protocolo de vuelo programado</h3>
@@ -467,7 +470,7 @@ declare(strict_types=1);
             return;
           }
           pintarDetalle(json.data);
-          healthEl.textContent = 'Protocolo cargado';
+          healthEl.textContent = 'Protocolo cargado correctamente';
         })
         .catch(err => showAlert('error', err && err.message ? err.message : String(err)));
     }
