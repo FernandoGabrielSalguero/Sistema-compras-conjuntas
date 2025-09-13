@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 ?>
+<!-- Links CDN propio -->
 <link rel="preload" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css" as="style" onload="this.rel='stylesheet'">
 <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
+<!-- Íconos de Material Design -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
 <div class="content">
@@ -72,7 +75,7 @@ declare(strict_types=1);
       <section class="card protocolo-card" aria-labelledby="protocolo-title">
         <div class="protocolo-header">
           <img src="../../../../assets/png/logo_con_color_original.png" alt="Logo" class="protocolo-logo" />
-          <h3 id="protocolo-title" style="margin-left:56px;">Protocolo</h3>
+          <h3 id="protocolo-title" style="margin-left:56px;">Protocolo de vuelo programado</h3>
         </div>
         <div id="protocol-health" class="muted" aria-live="polite" style="margin-top:-6px;">Verificando conexión…</div>
 
