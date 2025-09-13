@@ -128,9 +128,9 @@ declare(strict_types=1);
                 </div>
               </div>
             </div>
-            
+
             <h3 style="color: #5b21b6;">Datos de Geolocalización</h3>
-            <div class="grid-3">
+            <div class="grid-4">
               <div class="input-group">
                 <label for="pv_lat">Lat</label>
                 <div class="input-icon input-icon-gps">
@@ -147,6 +147,14 @@ declare(strict_types=1);
                 <label for="pv_usuario">Usuario</label>
                 <div class="input-icon input-icon-user">
                   <input id="pv_usuario" readonly>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="btn-maps">Maps</label>
+                <div class="input-icon input-icon-location">
+                  <button type="button" id="btn-maps" class="btn btn-info" aria-label="Abrir ubicación en Google Maps" disabled aria-disabled="true">
+                    Maps
+                  </button>
                 </div>
               </div>
             </div>
@@ -282,10 +290,17 @@ declare(strict_types=1);
     gap: 8px
   }
 
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
   @media (max-width: 768px) {
 
     .grid-2,
-    .grid-3 {
+    .grid-3,
+    .grid-4 {
       grid-template-columns: 1fr
     }
   }
@@ -343,12 +358,13 @@ declare(strict_types=1);
     font-weight: 600;
     line-height: 1.25;
   }
-  .protocolo-footer{
-    margin-top:12px;
-    padding-top:8px;
-    border-top:1px solid #e5e7eb;
-    display:flex;
-    justify-content:flex-end;
+
+  .protocolo-footer {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
   }
 </style>
 
@@ -362,6 +378,7 @@ declare(strict_types=1);
     const contenido = $('#protocolo-contenido');
     const sectionEl = $('#protocolo-section');
     const btnDescargar = $('#btn-descargar');
+    const btnMaps = $('#btn-maps');
 
     const inputs = {
       nombre: $('#filtro_nombre'),
@@ -457,7 +474,7 @@ declare(strict_types=1);
       });
     }
 
-        async function descargarComoImagen() {
+    async function descargarComoImagen() {
       try {
         if (!sectionEl) {
           showAlert('error', 'No se encontró la sección a exportar.');
@@ -475,7 +492,7 @@ declare(strict_types=1);
         });
         const dataURL = canvas.toDataURL('image/png');
         const a = document.createElement('a');
-        const hoy = new Date().toISOString().slice(0,10);
+        const hoy = new Date().toISOString().slice(0, 10);
         a.href = dataURL;
         a.download = `protocolo_${hoy}.png`;
         document.body.appendChild(a);
@@ -488,6 +505,19 @@ declare(strict_types=1);
       }
     }
 
+    function updateMapsButton(lat, lng) {
+      if (!btnMaps) return;
+      const hasCoords = !!lat && !!lng;
+      btnMaps.disabled = !hasCoords;
+      btnMaps.setAttribute('aria-disabled', hasCoords ? 'false' : 'true');
+      btnMaps.onclick = null;
+      if (hasCoords) {
+        btnMaps.onclick = () => {
+          const url = `https://www.google.com/maps?q=${encodeURIComponent(String(lat))},${encodeURIComponent(String(lng))}`;
+          window.open(url, '_blank', 'noopener');
+        };
+      }
+    }
 
     function badgeClass(est) {
       switch (est) {
@@ -552,6 +582,15 @@ declare(strict_types=1);
       setVal('pv_usuario', d.ses_usuario || '');
       setVal('pv_estado', d.estado || '');
       setVal('pv_motivo', d.motivo_cancelacion || '');
+
+      // Habilitar/Deshabilitar botón Maps
+      updateMapsButton(d.ubicacion_lat, d.ubicacion_lng);
+
+      // Estado inicial botón Maps
+      if (btnMaps) {
+        btnMaps.disabled = true;
+        btnMaps.setAttribute('aria-disabled', 'true');
+      }
 
       // Items + receta
       const tbody = document.getElementById('tabla-items');
