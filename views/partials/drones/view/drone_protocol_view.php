@@ -162,7 +162,7 @@ declare(strict_types=1);
           </div>
 
           <div class="protocolo-bloque">
-            <h4 style="color: #5b21b6;">Productos a utilizar</h4>
+            <h3 style="color: #5b21b6;">Productos a utilizar</h3>
             <div class="tabla-wrapper">
               <table class="data-table" aria-label="Productos y receta">
                 <thead>
@@ -185,7 +185,7 @@ declare(strict_types=1);
           </div>
 
           <div class="protocolo-bloque">
-            <h4 style="color: #5b21b6;">Parametros de vuelo</h4>
+            <h3 style="color: #5b21b6;">Parametros de vuelo</h3>
             <div class="grid-3">
               <div class="input-group">
                 <label for="pp_volumen">Volumen/ha</label>
