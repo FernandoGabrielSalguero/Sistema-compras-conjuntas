@@ -231,6 +231,14 @@ declare(strict_types=1);
             </div>
           </div>
         </div>
+
+        <footer class="protocolo-footer" role="contentinfo" aria-label="Acciones del protocolo">
+          <div class="form-grid grid-3" style="justify-content:end;">
+            <button type="button" id="btn-descargar" class="btn btn-info" aria-label="Descargar protocolo como imagen">
+              Descargar
+            </button>
+          </div>
+        </footer>
       </section>
     </div>
   </div>
