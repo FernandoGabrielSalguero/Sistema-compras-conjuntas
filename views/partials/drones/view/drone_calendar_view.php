@@ -118,7 +118,7 @@
         item.innerHTML = `<strong>${rango}</strong> · ${ev.nombre}`;
         c.appendChild(item);
       });
-      healthEl.textContent = 'Controlador y modelo conectados correctamente ✅';
+      healthEl.textContent = '';
     }catch(e){
       healthEl.innerHTML = '<strong style="color:#b91c1c;">Error:</strong> ' + (e?.message || e);
     }
