@@ -78,14 +78,14 @@ declare(strict_types=1);
       <section id="protocolo-section" class="card protocolo-card" aria-labelledby="protocolo-title">
         <div class="protocolo-header">
           <img src="../../../../assets/png/logo_con_color_original.png" alt="Logo" class="protocolo-logo" />
-          <h2 id="protocolo-title" style="margin-left:56px; color: #5b21b6;">Protocolo de vuelo programado</h2>
+          <h1 id="protocolo-title" style="margin-left:56px; color: #5b21b6;">Protocolo de vuelo programado</h1>
         </div>
         <div id="protocol-health" class="muted" aria-live="polite" style="margin-top:-6px;">Verificando conexión…</div>
 
         <div id="protocolo-contenido" class="protocolo" hidden>
           <div class="protocolo-bloque">
-            <h3 style="color: #5b21b6;">Datos de la visita</h3>
-            <div class="grid-3">
+            <h3 style="color: #5b21b6;">Fecha de la visita</h3>
+            <div class="grid-2">
               <div class="input-group">
                 <label for="pv_fecha">Fecha visita</label>
                 <div class="input-icon input-icon-calendar">
@@ -99,6 +99,7 @@ declare(strict_types=1);
                 </div>
               </div>
             </div>
+
             <div class="grid-3">
               <div class="input-group">
                 <label for="pv_provincia">Provincia</label>
@@ -113,7 +114,6 @@ declare(strict_types=1);
                 </div>
               </div>
             </div>
-            <div class="grid-3">
               <div class="input-group">
                 <label for="pv_calle">Calle</label>
                 <div class="input-icon input-icon-home">
@@ -126,7 +126,7 @@ declare(strict_types=1);
                   <input id="pv_numero" readonly>
                 </div>
               </div>
-            </div>
+            
             <h4 style="color: #5b21b6;">Datos de Geolocalización</h4>
             <div class="grid-3">
               <div class="input-group">
