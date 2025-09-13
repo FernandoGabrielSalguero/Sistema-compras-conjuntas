@@ -42,7 +42,7 @@ declare(strict_types=1);
           <div class="form-grid grid-3" style="gap:.5rem;">
             <button type="submit" class="btn btn-info">Aplicar</button>
             <button type="button" id="btn-limpiar" class="btn btn-cancelar">Limpiar</button>
-            <button type="button" id="btn-refrescar" class="btn btn-aceptar">Refrescar</button>
+            <button type="button" id="btn-refrescar" class="btn btn-aceptar">Borrar filtro</button>
           </div>
         </div>
       </div>
