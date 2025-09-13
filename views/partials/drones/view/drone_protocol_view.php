@@ -7,8 +7,7 @@ declare(strict_types=1);
 <div class="content">
   <!-- Encabezado con filtros -->
   <div class="card" style="background-color:#5b21b6;">
-    <h3 style="color:white;">Módulo: Protocolo</h3>
-    <p style="color:white;margin:0;">Gestión y visualización de protocolos de servicio de dron.</p>
+    <h3 style="color:white;">Buscar protocolos</h3>
 
     <form id="filtros-form" class="filtros" aria-label="Filtros de búsqueda" style="margin-top:10px;">
       <div class="grid-3">
@@ -68,7 +67,7 @@ declare(strict_types=1);
       <!-- Columna derecha: 66% (Protocolo lectura) -->
       <section class="card protocolo-card" aria-labelledby="protocolo-title">
         <div class="protocolo-header">
-          <img src="assets/png/logo%20con%20color%20original.png" alt="Logo" class="protocolo-logo" />
+          <img src="assets/png/logo_con_color_original.png" alt="Logo" class="protocolo-logo" />
           <h3 id="protocolo-title" style="margin-left:56px;">Protocolo</h3>
         </div>
         <div id="protocol-health" class="muted" aria-live="polite" style="margin-top:-6px;">Verificando conexión…</div>
