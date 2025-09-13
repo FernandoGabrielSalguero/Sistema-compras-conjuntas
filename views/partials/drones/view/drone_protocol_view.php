@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 ?>
 <link rel="preload" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css" as="style" onload="this.rel='stylesheet'">
 <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
 <div class="content">
   <!-- Encabezado con filtros -->
@@ -58,7 +60,9 @@ declare(strict_types=1);
               </tr>
             </thead>
             <tbody id="tabla-servicios">
-              <tr><td colspan="4">Cargando…</td></tr>
+              <tr>
+                <td colspan="4">Cargando…</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -168,7 +172,9 @@ declare(strict_types=1);
                   </tr>
                 </thead>
                 <tbody id="tabla-items">
-                  <tr><td colspan="6">Sin datos</td></tr>
+                  <tr>
+                    <td colspan="6">Sin datos</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -225,168 +231,273 @@ declare(strict_types=1);
 
 <style>
   /* CSS mínimo para layout 33% / 66% sin romper CDN */
-  .protocol-grid{display:grid;grid-template-columns:1fr 2fr;gap:12px;}
-  @media (max-width: 1024px){.protocol-grid{grid-template-columns:1fr}}
-  .muted{color:#64748b}
-  .protocolo-bloque{margin-top:8px}
-  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  @media (max-width: 768px){.grid-2,.grid-3{grid-template-columns:1fr}}
-  [readonly]{background:#f8fafc}
-  /* Evitar FOUC del contenido dinámico */
-  #protocolo-contenido[hidden]{display:none!important}
-  tbody tr.is-active{outline:2px solid #5b21b6}
+  .protocol-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 12px;
+  }
 
-  /* Encabezado con logo en protocolo */
-  .protocolo-card{position:relative;}
-  .protocolo-header{position:relative;min-height:148px;margin-bottom:6px;}
-  .protocolo-logo{position:absolute;left:0;top:0;width:144px;height:auto;border-radius:4px;}
+  @media (max-width: 1024px) {
+    .protocol-grid {
+      grid-template-columns: 1fr
+    }
+  }
+
+  .muted {
+    color: #64748b
+  }
+
+  .protocolo-bloque {
+    margin-top: 8px
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px
+  }
+
+  @media (max-width: 768px) {
+
+    .grid-2,
+    .grid-3 {
+      grid-template-columns: 1fr
+    }
+  }
+
+  [readonly] {
+    background: #f8fafc
+  }
+
+  /* Evitar FOUC del contenido dinámico */
+  #protocolo-contenido[hidden] {
+    display: none !important
+  }
+
+  tbody tr.is-active {
+    outline: 2px solid #5b21b6
+  }
+
+  /* Encabezado con logo en protocolo (centrado real + logo mayor sin header alto) */
+  .protocolo-card {
+    position: relative;
+  }
+
+  .protocolo-header {
+    /* ✅ Ajustá altura/espaciado acá si querés más/menos “aire” */
+    min-height: 112px;
+    /* <-- AJUSTABLE */
+    margin-bottom: 8px;
+    /* <-- AJUSTABLE */
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    /* logo | título centrado | spacer */
+    align-items: center;
+    position: relative;
+    gap: 12px;
+  }
+
+  .protocolo-header::after {
+    content: "";
+  }
+
+  /* spacer para centrar el h3 de verdad */
+  .protocolo-logo {
+    width: 180px;
+    /* <-- AJUSTABLE (tamaño del logo) */
+    max-width: 28vw;
+    height: auto;
+    border-radius: 4px;
+    position: relative;
+    /* deja de ser absolute para no tapar el título */
+  }
+
+  .protocolo-header #protocolo-title {
+    margin: 0;
+    text-align: center;
+    font-weight: 600;
+    line-height: 1.25;
+  }
 </style>
 
 <script>
-(function () {
-  const API = '../partials/drones/controller/drone_protocol_controller.php';
-  const $ = (sel) => document.querySelector(sel);
+  (function() {
+    const API = '../partials/drones/controller/drone_protocol_controller.php';
+    const $ = (sel) => document.querySelector(sel);
 
-  const healthEl = $('#protocol-health');
-  const tbodyServicios = $('#tabla-servicios');
-  const contenido = $('#protocolo-contenido');
+    const healthEl = $('#protocol-health');
+    const tbodyServicios = $('#tabla-servicios');
+    const contenido = $('#protocolo-contenido');
 
-  const inputs = {
-    nombre: $('#filtro_nombre'),
-    estado: $('#filtro_estado')
-  };
+    const inputs = {
+      nombre: $('#filtro_nombre'),
+      estado: $('#filtro_estado')
+    };
 
-  // Healthcheck inicial
-  fetch(API + '?t=' + Date.now(), { cache: 'no-store' })
-    .then(r => r.json())
-    .then(json => {
-      if (json && json.ok) {
-        healthEl.textContent = 'Controlador y modelo conectados correctamente ✅';
-        cargarServicios();
-      } else {
-        healthEl.innerHTML = '<strong style="color:#b91c1c;">No se pudo verificar la conexión</strong> ❌';
-      }
-    })
-    .catch(e => {
-      healthEl.innerHTML = '<strong style="color:#b91c1c;">Error:</strong> ' + (e && e.message ? e.message : e);
-    });
-
-  // Eventos filtros
-  $('#filtros-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    cargarServicios();
-  });
-  $('#btn-limpiar')?.addEventListener('click', function(){
-    inputs.nombre.value = '';
-    inputs.estado.value = '';
-    cargarServicios();
-  });
-  $('#btn-refrescar')?.addEventListener('click', cargarServicios);
-
-  // Debounce en texto
-  let to;
-  inputs.nombre.addEventListener('input', function(){
-    clearTimeout(to);
-    to = setTimeout(cargarServicios, 350);
-  });
-
-  function cargarServicios() {
-    tbodyServicios.innerHTML = '<tr><td colspan="4">Cargando…</td></tr>';
-    const params = new URLSearchParams({
-      action: 'list',
-      nombre: inputs.nombre.value || '',
-      estado: inputs.estado.value || ''
-    });
-    fetch(API + '?' + params.toString(), { cache: 'no-store' })
+    // Healthcheck inicial
+    fetch(API + '?t=' + Date.now(), {
+        cache: 'no-store'
+      })
       .then(r => r.json())
       .then(json => {
-        if (!json.ok) { showAlert('error', json.error || 'No se pudo obtener el listado'); return; }
-        renderServicios(json.data);
+        if (json && json.ok) {
+          healthEl.textContent = 'Controlador y modelo conectados correctamente ✅';
+          cargarServicios();
+        } else {
+          healthEl.innerHTML = '<strong style="color:#b91c1c;">No se pudo verificar la conexión</strong> ❌';
+        }
       })
-      .catch(err => showAlert('error', err && err.message ? err.message : String(err)));
-  }
+      .catch(e => {
+        healthEl.innerHTML = '<strong style="color:#b91c1c;">Error:</strong> ' + (e && e.message ? e.message : e);
+      });
 
-  function renderServicios(items) {
-    if (!items || !items.length) {
-      tbodyServicios.innerHTML = '<tr><td colspan="4">Sin resultados</td></tr>';
-      return;
+    // Eventos filtros
+    $('#filtros-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      cargarServicios();
+    });
+    $('#btn-limpiar')?.addEventListener('click', function() {
+      inputs.nombre.value = '';
+      inputs.estado.value = '';
+      cargarServicios();
+    });
+    $('#btn-refrescar')?.addEventListener('click', cargarServicios);
+
+    // Debounce en texto
+    let to;
+    inputs.nombre.addEventListener('input', function() {
+      clearTimeout(to);
+      to = setTimeout(cargarServicios, 350);
+    });
+
+    function cargarServicios() {
+      tbodyServicios.innerHTML = '<tr><td colspan="4">Cargando…</td></tr>';
+      const params = new URLSearchParams({
+        action: 'list',
+        nombre: inputs.nombre.value || '',
+        estado: inputs.estado.value || ''
+      });
+      fetch(API + '?' + params.toString(), {
+          cache: 'no-store'
+        })
+        .then(r => r.json())
+        .then(json => {
+          if (!json.ok) {
+            showAlert('error', json.error || 'No se pudo obtener el listado');
+            return;
+          }
+          renderServicios(json.data);
+        })
+        .catch(err => showAlert('error', err && err.message ? err.message : String(err)));
     }
-    tbodyServicios.innerHTML = '';
-    items.forEach((row) => {
-      const tr = document.createElement('tr');
-      tr.tabIndex = 0;
-      tr.setAttribute('role','button');
-      tr.setAttribute('aria-label', 'Ver protocolo de ' + (row.productor_nombre || 'sin nombre'));
-      tr.addEventListener('click', () => seleccionar(row.id, tr));
-      tr.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); seleccionar(row.id, tr);} });
 
-      tr.innerHTML = `
+    function renderServicios(items) {
+      if (!items || !items.length) {
+        tbodyServicios.innerHTML = '<tr><td colspan="4">Sin resultados</td></tr>';
+        return;
+      }
+      tbodyServicios.innerHTML = '';
+      items.forEach((row) => {
+        const tr = document.createElement('tr');
+        tr.tabIndex = 0;
+        tr.setAttribute('role', 'button');
+        tr.setAttribute('aria-label', 'Ver protocolo de ' + (row.productor_nombre || 'sin nombre'));
+        tr.addEventListener('click', () => seleccionar(row.id, tr));
+        tr.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            seleccionar(row.id, tr);
+          }
+        });
+
+        tr.innerHTML = `
         <td>${row.id}</td>
         <td>${row.productor_nombre || ''}</td>
         <td><span class="badge ${badgeClass(row.estado)}">${row.estado}</span></td>
         <td>${row.fecha_visita || ''}</td>
       `;
-      tbodyServicios.appendChild(tr);
-    });
-  }
-
-  function badgeClass(est){
-    switch(est){
-      case 'completada': return 'success';
-      case 'procesando': return 'info';
-      case 'aprobada_coop': return 'primary';
-      case 'cancelada': return 'danger';
-      default: return 'warning';
+        tbodyServicios.appendChild(tr);
+      });
     }
-  }
 
-  function seleccionar(id, tr) {
-    [...tbodyServicios.querySelectorAll('tr')].forEach(x=>x.classList.remove('is-active'));
-    tr.classList.add('is-active');
-    cargarDetalle(id);
-  }
+    function badgeClass(est) {
+      switch (est) {
+        case 'completada':
+          return 'success';
+        case 'procesando':
+          return 'info';
+        case 'aprobada_coop':
+          return 'primary';
+        case 'cancelada':
+          return 'danger';
+        default:
+          return 'warning';
+      }
+    }
 
-  function cargarDetalle(id) {
-    healthEl.textContent = 'Cargando protocolo #' + id + '…';
-    const params = new URLSearchParams({ action: 'detail', id: String(id) });
-    fetch(API + '?' + params.toString(), { cache: 'no-store' })
-      .then(r => r.json())
-      .then(json => {
-        if (!json.ok) { showAlert('error', json.error || 'No se pudo obtener el protocolo'); return; }
-        pintarDetalle(json.data);
-        healthEl.textContent = 'Protocolo cargado';
-      })
-      .catch(err => showAlert('error', err && err.message ? err.message : String(err)));
-  }
+    function seleccionar(id, tr) {
+      [...tbodyServicios.querySelectorAll('tr')].forEach(x => x.classList.remove('is-active'));
+      tr.classList.add('is-active');
+      cargarDetalle(id);
+    }
 
-  function setVal(id, v){ const el = document.getElementById(id); if (el) el.value = v ?? ''; }
+    function cargarDetalle(id) {
+      healthEl.textContent = 'Cargando protocolo #' + id + '…';
+      const params = new URLSearchParams({
+        action: 'detail',
+        id: String(id)
+      });
+      fetch(API + '?' + params.toString(), {
+          cache: 'no-store'
+        })
+        .then(r => r.json())
+        .then(json => {
+          if (!json.ok) {
+            showAlert('error', json.error || 'No se pudo obtener el protocolo');
+            return;
+          }
+          pintarDetalle(json.data);
+          healthEl.textContent = 'Protocolo cargado';
+        })
+        .catch(err => showAlert('error', err && err.message ? err.message : String(err)));
+    }
 
-  function pintarDetalle(data) {
-    contenido.hidden = false;
+    function setVal(id, v) {
+      const el = document.getElementById(id);
+      if (el) el.value = v ?? '';
+    }
 
-    // drones_solicitud (solo lectura)
-    const d = data.solicitud;
-    setVal('pv_fecha', d.fecha_visita || '');
-    setVal('pv_rango', (d.hora_visita_desde || '') + (d.hora_visita_hasta ? ' - ' + d.hora_visita_hasta : ''));
-    setVal('pv_provincia', d.dir_provincia || '');
-    setVal('pv_localidad', d.dir_localidad || '');
-    setVal('pv_calle', d.dir_calle || '');
-    setVal('pv_numero', d.dir_numero || '');
-    setVal('pv_lat', d.ubicacion_lat || '');
-    setVal('pv_lng', d.ubicacion_lng || '');
-    setVal('pv_usuario', d.ses_usuario || '');
-    setVal('pv_estado', d.estado || '');
-    setVal('pv_motivo', d.motivo_cancelacion || '');
+    function pintarDetalle(data) {
+      contenido.hidden = false;
 
-    // Items + receta
-    const tbody = document.getElementById('tabla-items');
-    const rows = [];
-    if (Array.isArray(data.items) && data.items.length) {
-      data.items.forEach((it, idx) => {
-        if (it.receta && it.receta.length) {
-          it.receta.forEach((rc, j) => {
-            rows.push(`
+      // drones_solicitud (solo lectura)
+      const d = data.solicitud;
+      setVal('pv_fecha', d.fecha_visita || '');
+      setVal('pv_rango', (d.hora_visita_desde || '') + (d.hora_visita_hasta ? ' - ' + d.hora_visita_hasta : ''));
+      setVal('pv_provincia', d.dir_provincia || '');
+      setVal('pv_localidad', d.dir_localidad || '');
+      setVal('pv_calle', d.dir_calle || '');
+      setVal('pv_numero', d.dir_numero || '');
+      setVal('pv_lat', d.ubicacion_lat || '');
+      setVal('pv_lng', d.ubicacion_lng || '');
+      setVal('pv_usuario', d.ses_usuario || '');
+      setVal('pv_estado', d.estado || '');
+      setVal('pv_motivo', d.motivo_cancelacion || '');
+
+      // Items + receta
+      const tbody = document.getElementById('tabla-items');
+      const rows = [];
+      if (Array.isArray(data.items) && data.items.length) {
+        data.items.forEach((it, idx) => {
+          if (it.receta && it.receta.length) {
+            it.receta.forEach((rc, j) => {
+              rows.push(`
               <tr>
                 <td>${idx + 1}${it.receta.length > 1 ? '.'+(j+1) : ''}</td>
                 <td>${j===0 ? (it.nombre_producto || '') : ''}</td>
@@ -396,28 +507,28 @@ declare(strict_types=1);
                 <td>${rc.notas || ''}</td>
               </tr>
             `);
-          });
-        } else {
-          rows.push(`
+            });
+          } else {
+            rows.push(`
             <tr>
               <td>${idx + 1}</td>
               <td>${it.nombre_producto || ''}</td>
               <td colspan="4" class="muted">Sin receta cargada</td>
             </tr>
           `);
-        }
-      });
-    }
-    tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="6">Sin datos</td></tr>';
+          }
+        });
+      }
+      tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="6">Sin datos</td></tr>';
 
-    // parámetros
-    const p = data.parametros || {};
-    setVal('pp_volumen', p.volumen_ha ?? '');
-    setVal('pp_velocidad', p.velocidad_vuelo ?? '');
-    setVal('pp_alto', p.alto_vuelo ?? '');
-    setVal('pp_ancho', p.ancho_pasada ?? '');
-    setVal('pp_gota', p.tamano_gota ?? '');
-    setVal('pp_obs', p.observaciones || '');
-  }
-})();
+      // parámetros
+      const p = data.parametros || {};
+      setVal('pp_volumen', p.volumen_ha ?? '');
+      setVal('pp_velocidad', p.velocidad_vuelo ?? '');
+      setVal('pp_alto', p.alto_vuelo ?? '');
+      setVal('pp_ancho', p.ancho_pasada ?? '');
+      setVal('pp_gota', p.tamano_gota ?? '');
+      setVal('pp_obs', p.observaciones || '');
+    }
+  })();
 </script>
