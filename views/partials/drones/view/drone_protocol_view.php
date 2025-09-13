@@ -350,7 +350,7 @@ declare(strict_types=1);
       .then(r => r.json())
       .then(json => {
         if (json && json.ok) {
-          healthEl.textContent = 'Controlador y modelo conectados correctamente ✅';
+          healthEl.textContent = 'Selecciona un servicio en el panel izquierdo';
           cargarServicios();
         } else {
           healthEl.innerHTML = '<strong style="color:#b91c1c;">No se pudo verificar la conexión</strong> ❌';
