@@ -159,7 +159,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <div class="input-group">
                     <label for="telefono">Teléfono</label>
                     <div class="input-icon input-icon-phone">
-                        <input type="tel" id="telefono" name="telefono" placeholder="+54 9 387 123 4567" autocomplete="tel" required aria-required="true" />
+                        <input type="tel" id="telefono" name="telefono" placeholder="2618895420" autocomplete="tel" required aria-required="true" />
                     </div>
                 </div>
 

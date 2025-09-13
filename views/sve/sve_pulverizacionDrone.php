@@ -166,6 +166,18 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             ?>
           </div>
 
+          <!-- Panel: Formulario -->
+          <div class="tab-panel active" id="panel-formulario">
+            <?php
+            $viewFile = __DIR__ . '/../partials/drones/view/drone_formulario_view.php';
+            if (is_file($viewFile)) {
+              require $viewFile;
+            } else {
+              echo '<p>No se encontró la vista <code>drone_formulario_view.php</code>.</p>';
+            }
+            ?>
+          </div>
+
           <!-- Panel: Protocolo -->
           <div class="tab-panel active" id="panel-protocolo">
             <?php
@@ -186,6 +198,18 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
               require $viewFile;
             } else {
               echo '<p>No se encontró la vista <code>drone_calendar_view.php</code>.</p>';
+            }
+            ?>
+          </div>
+
+          <!-- Panel: Registro -->
+          <div class="tab-panel" id="panel-calendario">
+            <?php
+            $viewFile = __DIR__ . '/../partials/drones/view/drone_registro_view.php';
+            if (is_file($viewFile)) {
+              require $viewFile;
+            } else {
+              echo '<p>No se encontró la vista <code>drone_registro_view.php</code>.</p>';
             }
             ?>
           </div>
@@ -248,12 +272,12 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         // Quitar fondo/sombra del contenedor solo en Variables o Stock
         const wrapper = document.getElementById('tab-content-card');
         if (wrapper) {
-        const sinChrome = (
-          targetSel === '#panel-variables' ||
-          targetSel === '#panel-stock' ||
-          targetSel === '#panel-protocolo'
-        );
-        wrapper.classList.toggle('no-chrome', sinChrome);
+          const sinChrome = (
+            targetSel === '#panel-variables' ||
+            targetSel === '#panel-stock' ||
+            targetSel === '#panel-protocolo'
+          );
+          wrapper.classList.toggle('no-chrome', sinChrome);
         }
       }
 
