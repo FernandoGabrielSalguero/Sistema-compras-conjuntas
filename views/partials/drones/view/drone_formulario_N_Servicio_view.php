@@ -1,12 +1,12 @@
 <?php // views/partials/drones/view/drone_calendar_view.php ?>
 <div class="content">
   <div class="card" style="background-color:#5b21b6;">
-    <h3 style="color:white;">Módulo: Calendario</h3>
+    <h3 style="color:white;">Módulo: Registro nueva solicitud de servicio de pulverización con drones</h3>
     <p style="color:white;margin:0;">Plantilla mínima lista para empezar.</p>
   </div>
 
   <div id="calendar-root" class="card">
-    <h4>Esta es la vista del registro Fito Sanitario, próximamente va a estar disponible para su consumo.</h4>
+    <h4>Esta es l, próximamente va a estar disponible para su consumo.</h4>
     <div id="calendar-health" style="margin-top:8px;color:#64748b;">Verificando conexión…</div>
   </div>
 </div>
@@ -14,7 +14,7 @@
 <script>
 (function () {
   // Scoped: no contamina el global
-  const API = '../partials/drones/controller/drone_registro_controller.php';
+  const API = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
 
   // Chequeo opcional de wiring (podés quitarlo si no lo necesitás)
   const el = document.getElementById('registro-health');

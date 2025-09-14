@@ -171,11 +171,11 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
           <!-- Panel: Formulario -->
           <div class="tab-panel active" id="panel-formulario">
             <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_formulario_view.php';
+            $viewFile = __DIR__ . '/../partials/drones/view/drone_formulario_N_Servicio_view.php';
             if (is_file($viewFile)) {
               require $viewFile;
             } else {
-              echo '<p>No se encontró la vista <code>drone_formulario_view.php</code>.</p>';
+              echo '<p>No se encontró la vista <code>drone_formulario_N_Servicio_view.php</code>.</p>';
             }
             ?>
           </div>
