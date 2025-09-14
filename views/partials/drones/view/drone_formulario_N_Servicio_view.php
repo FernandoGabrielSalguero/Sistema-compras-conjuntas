@@ -203,16 +203,18 @@
           <input type="text" id="dir_numero" name="dir_numero" placeholder="Juan Pérez" required />
         </div>
       </div>
+
+      <!-- observaciones -->
+      <div class="input-group">
+        <label for="observaciones">Observaciones</label>
+        <div class="input-icon input-icon-comment">
+          <textarea id="observaciones" name="observaciones" maxlength="233" rows="3"
+            placeholder="Escribí un comentario..."></textarea>
+        </div>
+      </div>
   </div>
 
-  <!-- observaciones -->
-  <div class="input-group">
-    <label for="observaciones">Observaciones</label>
-    <div class="input-icon input-icon-comment">
-      <textarea id="observaciones" name="observaciones" maxlength="233" rows="3"
-        placeholder="Escribí un comentario..."></textarea>
-    </div>
-  </div>
+
 
   <!-- Botones -->
   <div class="form-buttons">
@@ -220,7 +222,6 @@
     <button class="btn btn-cancelar" type="reset">Cancelar</button>
   </div>
   </form>
-</div>
 </div>
 </div>
 
