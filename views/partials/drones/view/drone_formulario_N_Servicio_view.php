@@ -609,8 +609,8 @@ try {
 
       // Visibilidad de cooperativas
       const updateCoopVisibility = () => {
-        const isCoop = String(selFormaPago.value) === '6';
-        wrapCoop.style.display = isCoop ? '' : 'none';
+        const isCoop = String(selFormaPago.value).trim() === '6';
+        wrapCoop.classList.toggle('hidden', !isCoop);
         selCoop.toggleAttribute('required', isCoop);
         selCoop.setAttribute('aria-hidden', String(!isCoop));
         if (!isCoop) selCoop.value = '';
