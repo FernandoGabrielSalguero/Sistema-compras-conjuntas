@@ -305,313 +305,199 @@ declare(strict_types=1);
 </style>
 
 <script>
-  (function () {
-    'use strict';
+(function(){
+  'use strict';
+  const API = '/views/partials/drones/controller/drone_formulario_N_Servicio_controller.php';
 
-    const API = '/views/partials/drones/controller/drone_formulario_N_Servicio_controller.php';
+  // --------- helpers ----------
+  const $ = (s)=>document.querySelector(s);
+  const formaPago = $('#forma_pago_id');
+  const patologia = $('#patologia_id');
+  const coopSelect = $('#coop_descuento_id_real');
+  const coopGroup  = $('#coop-group');
+  const productosBody = $('#productos-body');
+  const form = $('#form-solicitud');
 
-    const $  = (sel) => document.querySelector(sel);
+  const dbg = {
+    panel: null,
+    log(obj, title='') {
+      if (!this.panel) return;
+      const card = document.createElement('div');
+      card.style.cssText = 'border:1px solid #e5e7eb;border-radius:8px;padding:10px;margin:8px 0;background:#fff';
+      const h = document.createElement('div');
+      h.textContent = title || 'DEBUG';
+      h.style.cssText = 'font-weight:700;margin-bottom:6px';
+      const pre = document.createElement('pre');
+      pre.style.margin='0';
+      pre.textContent = JSON.stringify(obj, null, 2);
+      card.appendChild(h); card.appendChild(pre);
+      this.panel.appendChild(card);
+    },
+    ensure() {
+      if (this.panel) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'card';
+      wrap.style.cssText = 'margin:16px 0;background:#f8fafc;border:1px dashed #94a3b8';
+      const h = document.createElement('div');
+      h.textContent = 'Panel de comprobación (datos crudos del backend)';
+      h.style.cssText = 'font-weight:700;margin-bottom:8px';
+      const btns = document.createElement('div');
+      btns.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px';
+      btns.innerHTML = `
+        <button id="btn-reload-all" class="btn">Recargar todos</button>
+        <button id="btn-force-options" class="btn">FORZAR CARGA DE OPCIONES</button>
+        <span style="color:#64748b">Si “forzar” muestra opciones, el problema es de datos; si no, es de UI/DOM.</span>
+      `;
+      const panel = document.createElement('div');
+      panel.id = 'debug-panel';
+      wrap.appendChild(h); wrap.appendChild(btns); wrap.appendChild(panel);
+      document.querySelector('.content')?.appendChild(wrap);
+      this.panel = panel;
 
-    const nombreInput   = $('#nombre');
-    const listaNombres  = $('#lista-nombres');
-    const productorIdReal = $('#productor_id_real');
-    const formaPago     = $('#forma_pago_id');      // ya no hay framework que reemplace nodos
-    const coopSelect    = $('#coop_descuento_id_real');
-    const coopGroup     = $('#coop-group');
-    const patologia     = $('#patologia_id');
-    const productosBody = $('#productos-body');
-
-    const btnPrev       = $('#btn-previsualizar');
-    const btnReset      = $('#btn-reset');
-    const modal         = $('#modal-resumen');
-    const btnConfirmar  = $('#btn-confirmar');
-    const btnCerrarModal= $('#btn-cerrar-modal');
-    const resumen       = $('#resumen-detalle');
-    const form          = $('#form-solicitud');
-
-    const showAlert = (type, msg) => alert(msg);
-    const debugLog  = (...a)=>console.log('[DEBUG]', ...a);
-
-    function openModal(){ modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false'); }
-    function closeModal(){ modal.classList.add('hidden');    modal.setAttribute('aria-hidden','true'); }
-    btnCerrarModal.addEventListener('click', closeModal);
-
-    btnReset.addEventListener('click', () => {
-      coopGroup.style.display = 'none';
-      coopSelect.required = false;
-      coopSelect.disabled = true;
-      coopSelect.setAttribute('aria-disabled', 'true');
-      coopSelect.value = '';
-    });
-
-    async function fetchJSON(url, options = {}) {
-      const res = await fetch(url, { cache: 'no-store', ...options });
-      const text = await res.text();
-      if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + url);
-      let json; try{ json = JSON.parse(text); } catch{ throw new Error('Respuesta no JSON'); }
-      return json;
-    }
-
-    // ===== Cargar combos iniciales (sin dependencias externas) =====
-    async function loadFormasPago() {
-      try {
-        const fp = await fetchJSON(API + '?action=formas_pago');
-        debugLog('Formas de pago:', fp);
-        if (fp.ok && Array.isArray(fp.data) && fp.data.length) {
-          formaPago.innerHTML = '<option value="">Seleccionar</option>' +
-            fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
-        } else {
-          formaPago.innerHTML = '<option value="">(sin datos)</option>';
-        }
-      } catch (e) {
-        debugLog('Error formas_pago:', e);
-        formaPago.innerHTML = '<option value="">(sin datos)</option>';
-      }
-      // Dispara change para coherencia con el resto de la lógica
-      formaPago.dispatchEvent(new Event('change', { bubbles:true }));
-    }
-
-    async function loadPatologias() {
-      try {
-        const pats = await fetchJSON(API + '?action=patologias');
-        debugLog('Patologías:', pats);
-        if (pats.ok && Array.isArray(pats.data) && pats.data.length) {
-          patologia.innerHTML = '<option value="">Seleccionar</option>' +
-            pats.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
-        } else {
-          patologia.innerHTML = '<option value="">(sin datos)</option>';
-        }
-      } catch (e) {
-        debugLog('Error patologias:', e);
-        patologia.innerHTML = '<option value="">(sin datos)</option>';
-      }
-      patologia.dispatchEvent(new Event('change', { bubbles:true }));
-    }
-
-    (async function init(){
-      await loadFormasPago();
-      await loadPatologias();
-      debugLog('View inicializada. API=', API);
-    })();
-
-    // ===== Autocomplete de productor =====
-    let acTimer;
-    nombreInput.addEventListener('input', () => {
-      productorIdReal.value = '';
-      const q = nombreInput.value.trim();
-      if (acTimer) clearTimeout(acTimer);
-      if (q.length < 2) { listaNombres.style.display = 'none'; listaNombres.innerHTML = ''; return; }
-      acTimer = setTimeout(async () => {
-        try {
-          const json = await fetchJSON(API + '?action=buscar_usuarios&q=' + encodeURIComponent(q));
-          if (!json || !json.ok) throw new Error('Respuesta inválida');
-          listaNombres.innerHTML = json.data.map((u, idx) =>
-            `<li role="option" data-id="${u.id_real}" aria-selected="${idx===0?'true':'false'}">${u.usuario}</li>`
-          ).join('');
-          listaNombres.style.display = json.data.length ? 'block' : 'none';
-        } catch (e) {
-          debugLog('Autocomplete error:', e);
-          listaNombres.style.display = 'none';
-          listaNombres.innerHTML = '';
-        }
-      }, 220);
-    });
-
-    listaNombres.addEventListener('click', (ev) => {
-      const li = ev.target.closest('li[data-id]');
-      if (!li) return;
-      nombreInput.value = li.textContent;
-      productorIdReal.value = li.dataset.id;
-      listaNombres.style.display = 'none';
-      listaNombres.innerHTML = '';
-    });
-
-    // ===== Forma de pago (id=6 -> coop visible) =====
-    formaPago.addEventListener('change', async () => {
-      const id = Number(formaPago.value || 0);
-      if (id === 6) {
-        coopGroup.style.display = 'block';
-        coopSelect.required = true;
-        coopSelect.disabled = false;
-        coopSelect.setAttribute('aria-disabled', 'false');
-
-        if (coopSelect.options.length <= 1) {
-          try {
-            const j = await fetchJSON(API + '?action=cooperativas');
-            if (j && j.ok && Array.isArray(j.data)) {
-              coopSelect.innerHTML = '<option value="">Seleccionar</option>' +
-                j.data.map(c => `<option value="${c.id_real}">${c.usuario}</option>`).join('');
-            } else {
-              showAlert('error', 'No se pudieron cargar cooperativas.');
-            }
-          } catch (e) {
-            showAlert('error', 'No se pudieron cargar cooperativas.');
-          }
-        }
-      } else {
-        coopGroup.style.display = 'none';
-        coopSelect.required = false;
-        coopSelect.value = '';
-        coopSelect.disabled = true;
-        coopSelect.setAttribute('aria-disabled', 'true');
-      }
-    });
-
-    // ===== Patología -> productos relacionados =====
-    patologia.addEventListener('change', async () => {
-      const val = patologia.value;
-      productosBody.innerHTML = '';
-      if (!val) return;
-      try {
-        const j = await fetchJSON(API + '?action=productos_por_patologia&patologia_id=' + encodeURIComponent(val));
-        if (!j || !j.ok) throw new Error('Respuesta inválida');
-        if (!j.data.length) {
-          productosBody.innerHTML = `<tr><td colspan="4">No hay productos sugeridos para esta patología.</td></tr>`;
-          return;
-        }
-        productosBody.innerHTML = j.data.map(p => `
-          <tr>
-            <td style="text-align:center;">
-              <input type="checkbox" class="prod-check" id="prod_${p.id}" data-pid="${p.id}" aria-label="Seleccionar ${p.nombre}">
-            </td>
-            <td><label for="prod_${p.id}">${p.nombre}</label></td>
-            <td style="text-align:center;">
-              <input type="radio" name="fuente_${p.id}" value="sve" disabled aria-label="SVE provee ${p.nombre}">
-            </td>
-            <td style="text-align:center;">
-              <input type="radio" name="fuente_${p.id}" value="productor" disabled aria-label="Productor provee ${p.nombre}">
-            </td>
-          </tr>
-        `).join('');
-
-        // Habilitar radios solo cuando se marque el producto
-        productosBody.querySelectorAll('.prod-check').forEach(chk => {
-          chk.addEventListener('change', (e) => {
-            const pid = e.target.dataset.pid;
-            const radios = productosBody.querySelectorAll(`input[name="fuente_${pid}"]`);
-            radios.forEach(r => {
-              r.disabled = !e.target.checked;
-              if (!e.target.checked) r.checked = false;
-            });
-          });
-        });
-      } catch (e) {
-        showAlert('error', 'Error al cargar productos.');
-      }
-    });
-
-    // ===== Previsualizar -> abrir modal con resumen =====
-    btnPrev.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (!form.reportValidity()) {
-        const firstInvalid = form.querySelector(':invalid');
-        if (firstInvalid) firstInvalid.focus();
-        showAlert('error', 'Completá los campos requeridos.');
-        return;
-      }
-      const data = getFormData();
-      resumen.innerHTML = renderResumen(data);
-      openModal();
-    });
-
-    // ===== Confirmar -> guardar =====
-    btnConfirmar.addEventListener('click', async () => {
-      const payload = getFormData();
-      try {
-        const res = await fetch(API, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        let json; try{ json = await res.json(); }catch{}
-        if (res.ok && json && json.ok) {
-          closeModal();
-          form.reset();
-          coopGroup.style.display = 'none';
-          coopSelect.required = false;
-          coopSelect.disabled = true;
-          coopSelect.setAttribute('aria-disabled', 'true');
-          showAlert('success', '¡Solicitud guardada! ID ' + json.data.id);
-        } else {
-          showAlert('error', (json && json.error) ? json.error : 'No se pudo guardar.');
-        }
-      } catch (e) {
-        showAlert('error', 'Error de red al guardar.');
-      }
-    });
-
-    function getFormData() {
-      const items = [];
-      productosBody.querySelectorAll('.prod-check:checked').forEach(chk => {
-        const pid = Number(chk.dataset.pid);
-        const fuenteSel = productosBody.querySelector(`input[name="fuente_${pid}"]:checked`);
-        items.push({ producto_id: pid, fuente: fuenteSel ? fuenteSel.value : '' });
+      $('#btn-reload-all').addEventListener('click', async ()=>{
+        this.panel.innerHTML='';
+        await renderAllDebug();
       });
-
-      return {
-        productor_id_real: productorIdReal.value || null,
-        nombre: nombreInput.value.trim(),
-        representante: $('#representante').value,
-        linea_tension: $('#linea_tension').value,
-        zona_restringida: $('#zona_restringida').value,
-        corriente_electrica: $('#corriente_electrica').value,
-        agua_potable: $('#agua_potable').value,
-        libre_obstaculos: $('#libre_obstaculos').value,
-        area_despegue: $('#area_despegue').value,
-        superficie_ha: parseFloat($('#superficie_ha').value),
-        forma_pago_id: Number(formaPago.value),
-        coop_descuento_id_real: (coopGroup.style.display === 'block') ? ($('#coop_descuento_id_real').value || null) : null,
-        patologia_id: Number($('#patologia_id').value),
-        rango: $('#rango').value,
-        items,
-        dir_provincia: $('#dir_provincia').value.trim(),
-        dir_localidad: $('#dir_localidad').value.trim(),
-        dir_calle: $('#dir_calle').value.trim(),
-        dir_numero: $('#dir_numero').value.trim(),
-        observaciones: $('#observaciones').value.trim()
-      };
+      $('#btn-force-options').addEventListener('click', ()=>{
+        forceFillOptions();
+      });
     }
+  };
 
-    function renderResumen(d) {
-      const prods = (d.items && d.items.length)
-        ? d.items.map(it => {
-            const row = productosBody.querySelector(`#prod_${it.producto_id}`)?.closest('tr');
-            const nombre = row ? row.querySelector('td:nth-child(2)').textContent.trim() : ('ID ' + it.producto_id);
-            return `${nombre} (${it.fuente || 'sin fuente'})`;
-          }).join('<br>')
-        : '—';
+  async function fetchJSON(url, options = {}) {
+    const res = await fetch(url, { cache:'no-store', ...options });
+    const text = await res.text();
+    let json = null, parseErr = null;
+    try { json = JSON.parse(text); } catch(e){ parseErr = String(e); }
+    return { okHTTP: res.ok, status: res.status, url, raw: text, json, parseErr };
+  }
 
-      const formaPagoText = formaPago.selectedOptions[0]?.textContent || '';
-      const coopEstaVisible = coopGroup.style.display === 'block' && !coopSelect.disabled;
-      const coopText = coopEstaVisible ? (coopSelect.selectedOptions[0]?.textContent || '—') : '—';
+  function clearSelect(sel) {
+    while (sel.options.length) sel.remove(0);
+  }
+  function fillSelect(sel, arr, valueKey, labelKey) {
+    clearSelect(sel);
+    sel.add(new Option('Seleccionar', ''), undefined);
+    arr.forEach(o => {
+      sel.add(new Option(String(o[labelKey]), String(o[valueKey])), undefined);
+    });
+  }
 
-      return `
-      <div class="tabla-wrapper">
-        <table class="data-table">
-          <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
-          <tbody>
-            <tr><td>Productor</td><td>${d.nombre} (${d.productor_id_real || 'sin ID'})</td></tr>
-            <tr><td>Representante</td><td>${d.representante}</td></tr>
-            <tr><td>Línea tensión</td><td>${d.linea_tension}</td></tr>
-            <tr><td>Zona restringida</td><td>${d.zona_restringida}</td></tr>
-            <tr><td>Corriente</td><td>${d.corriente_electrica}</td></tr>
-            <tr><td>Agua potable</td><td>${d.agua_potable}</td></tr>
-            <tr><td>Libre obstáculos</td><td>${d.libre_obstaculos}</td></tr>
-            <tr><td>Área despegue</td><td>${d.area_despegue}</td></tr>
-            <tr><td>Superficie (ha)</td><td>${d.superficie_ha}</td></tr>
-            <tr><td>Forma pago</td><td>${formaPagoText}</td></tr>
-            <tr><td>Cooperativa</td><td>${coopText}</td></tr>
-            <tr><td>Patología</td><td>${$('#patologia_id').selectedOptions[0]?.textContent || ''}</td></tr>
-            <tr><td>Rango</td><td>${d.rango}</td></tr>
-            <tr><td>Productos</td><td>${prods}</td></tr>
-            <tr><td>Provincia</td><td>${d.dir_provincia}</td></tr>
-            <tr><td>Localidad</td><td>${d.dir_localidad}</td></tr>
-            <tr><td>Calle</td><td>${d.dir_calle} ${d.dir_numero}</td></tr>
-            <tr><td>Observaciones</td><td>${d.observaciones || '—'}</td></tr>
-          </tbody>
-        </table>
-      </div>`;
+  function forceFillOptions() {
+    clearSelect(formaPago);
+    formaPago.add(new Option('Seleccionar',''), undefined);
+    formaPago.add(new Option('Descuento por cooperativa', '6'), undefined);
+    formaPago.add(new Option('E-chek', '4'), undefined);
+    formaPago.add(new Option('Transferencia Bancaria', '5'), undefined);
+    formaPago.dispatchEvent(new Event('change', {bubbles:true}));
+    alert('Cargué 3 opciones de PRUEBA en el select de métodos de pago.');
+  }
+
+  // --------- cargas reales ----------
+  async function loadFormasPago() {
+    const r = await fetchJSON(API + '?action=formas_pago');
+    dbg.log(r, 'GET formas_pago (respuesta cruda)');
+    if (!r.okHTTP) {
+      showError('formas_pago devolvió HTTP ' + r.status);
+      return false;
     }
+    if (!r.json || !r.json.ok || !Array.isArray(r.json.data)) {
+      showError('formas_pago: respuesta no válida (parseErr=' + (r.parseErr || 'ok') + ')');
+      return false;
+    }
+    fillSelect(formaPago, r.json.data, 'id', 'nombre');
+    formaPago.dispatchEvent(new Event('change', {bubbles:true}));
+    return true;
+  }
 
+  async function loadPatologias() {
+    const r = await fetchJSON(API + '?action=patologias');
+    dbg.log(r, 'GET patologias (respuesta cruda)');
+    if (r.okHTTP && r.json && r.json.ok && Array.isArray(r.json.data)) {
+      fillSelect(patologia, r.json.data, 'id', 'nombre');
+      patologia.dispatchEvent(new Event('change', {bubbles:true}));
+      return true;
+    }
+    showError('patologias: error ' + r.status);
+    return false;
+  }
+
+  async function loadCooperativas() {
+    const r = await fetchJSON(API + '?action=cooperativas');
+    dbg.log(r, 'GET cooperativas (respuesta cruda)');
+    if (r.okHTTP && r.json && r.json.ok && Array.isArray(r.json.data)) {
+      fillSelect(coopSelect, r.json.data, 'id_real', 'usuario');
+      return true;
+    }
+    showError('cooperativas: error ' + r.status);
+    return false;
+  }
+
+  // --------- UI y eventos ----------
+  function showError(msg){ console.error('[ERROR]', msg); alert(msg); }
+
+  formaPago.addEventListener('change', async ()=>{
+    const id = Number(formaPago.value || 0);
+    if (id === 6) {
+      coopGroup.style.display = 'block';
+      coopSelect.disabled = false;
+      coopSelect.setAttribute('aria-disabled','false');
+      if (coopSelect.options.length <= 1) await loadCooperativas();
+    } else {
+      coopGroup.style.display = 'none';
+      coopSelect.disabled = true;
+      coopSelect.setAttribute('aria-disabled','true');
+      coopSelect.value = '';
+    }
+  });
+
+  patologia.addEventListener('change', async ()=>{
+    const val = patologia.value;
+    productosBody.innerHTML = '';
+    if (!val) return;
+    const r = await fetchJSON(API + '?action=productos_por_patologia&patologia_id=' + encodeURIComponent(val));
+    dbg.log(r, 'GET productos_por_patologia (respuesta cruda)');
+    if (!r.okHTTP || !r.json || !r.json.ok) { showError('productos_por_patologia error'); return; }
+    const data = r.json.data || [];
+    if (!data.length) {
+      productosBody.innerHTML = `<tr><td colspan="4">No hay productos sugeridos para esta patología.</td></tr>`;
+      return;
+    }
+    productosBody.innerHTML = data.map(p => `
+      <tr>
+        <td style="text-align:center;">
+          <input type="checkbox" class="prod-check" id="prod_${p.id}" data-pid="${p.id}">
+        </td>
+        <td><label for="prod_${p.id}">${p.nombre}</label></td>
+        <td style="text-align:center;"><input type="radio" name="fuente_${p.id}" value="sve" disabled></td>
+        <td style="text-align:center;"><input type="radio" name="fuente_${p.id}" value="productor" disabled></td>
+      </tr>
+    `).join('');
+    productosBody.querySelectorAll('.prod-check').forEach(chk=>{
+      chk.addEventListener('change', (e)=>{
+        const pid = e.target.dataset.pid;
+        productosBody.querySelectorAll(`input[name="fuente_${pid}"]`).forEach(r=>{
+          r.disabled = !e.target.checked;
+          if (!e.target.checked) r.checked = false;
+        });
+      });
+    });
+  });
+
+  // --------- panel de debug y arranque ----------
+  dbg.ensure();
+
+  async function renderAllDebug(){
+    await loadFormasPago();
+    await loadPatologias();
+    // cooperativas solo para mostrar crudo
+    await loadCooperativas();
+  }
+
+  (async function init(){
+    await renderAllDebug();
   })();
+
+})();
 </script>
+
