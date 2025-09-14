@@ -383,6 +383,9 @@
       try { console.group(`API ▶ ${title}`); console.log(payload); console.groupEnd(); }
       catch { console.log(`API ▶ ${title}`, payload); }
     };
+    const onReady = (fn) => (document.readyState === 'loading'
+      ? document.addEventListener('DOMContentLoaded', fn, { once: true })
+      : fn());
 
     const apiGet = async (action, params = {}) => {
       const qs = new URLSearchParams({ action, ...params });
@@ -406,13 +409,14 @@
       sel.appendChild(opt);
     };
 
-    // Forzamos refresco visual si el framework envuelve el select
-    const refreshSelectVisual = (sel) => {
+    // Refresca la UI del select sin clonar (evitamos romper refs/listeners)
+    const refreshSelectUI = (sel) => {
       sel.selectedIndex = 0;
+      sel.dispatchEvent(new Event('input',  { bubbles: true }));
       sel.dispatchEvent(new Event('change', { bubbles: true }));
-      const clone = sel.cloneNode(true); // fallback duro
-      sel.replaceWith(clone);
-      return clone;
+      // micro reflow para frameworks que cachean
+      sel.style.outline = '0'; void sel.offsetHeight; sel.style.outline = '';
+      return sel;
     };
 
     const fillSelect = (sel, items, mapValue = (x)=>x.id, mapText = (x)=>x.nombre) => {
@@ -426,8 +430,8 @@
           sel.appendChild(o);
         }
       }
-      console.debug(`Select#${sel.id} cargado con`, sel.options.length, 'opciones');
-      return refreshSelectVisual(sel);
+      console.debug(`Select#${sel.id} opciones:`, sel.options.length);
+      return refreshSelectUI(sel);
     };
 
     /* ========= Matriz de productos ========= */
@@ -479,10 +483,10 @@
     /* ========= Carga y bindings ========= */
     const init = async () => {
       // Referencias
-      let selFormaPago = byId('forma_pago_id');
-      const wrapCoop = byId('wrap-cooperativa');
-      let selCoop = byId('coop_descuento_id_real');
-      const selPat = byId('patologia_id');
+      const selFormaPago = byId('forma_pago_id');
+      const wrapCoop     = byId('wrap-cooperativa');
+      const selCoop      = byId('coop_descuento_id_real');
+      const selPat       = byId('patologia_id');
 
       // Cargar data en paralelo
       const [fpRes, patRes, coopRes] = await Promise.all([
@@ -491,10 +495,10 @@
         apiGet('cooperativas')
       ]);
 
-      // Poblar selects
-      if (fpRes.ok) selFormaPago = fillSelect(selFormaPago, fpRes.data, x => x.id, x => x.nombre);
-      if (coopRes.ok) selCoop     = fillSelect(selCoop,     coopRes.data, x => x.id_real, x => x.usuario);
-      if (patRes.ok)  fillSelect(selPat,  patRes.data,  x => x.id,      x => x.nombre);
+      // Poblar selects (sin clonar nodos)
+      if (fpRes.ok) fillSelect(selFormaPago, fpRes.data, x => x.id,      x => x.nombre);
+      if (coopRes.ok) fillSelect(selCoop,     coopRes.data, x => x.id_real, x => x.usuario);
+      if (patRes.ok)  fillSelect(selPat,      patRes.data,  x => x.id,      x => x.nombre);
 
       // Mostrar/ocultar cooperativas según forma de pago
       const updateCoopVisibility = () => {
@@ -529,11 +533,7 @@
       }, { passive: true });
     };
 
-    if (document.readyState === 'loading') {
-      // Ejecutamos tras DOM listo (y después de que el framework haya tocado el DOM)
-      window.addEventListener('load', init, { once: true });
-    } else {
-      window.addEventListener('load', init, { once: true });
-    }
+    onReady(init);
   })();
 </script>
+
