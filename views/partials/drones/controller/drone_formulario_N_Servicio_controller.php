@@ -77,7 +77,14 @@ try {
             'coop_descuento_nombre' => !empty($data['coop_descuento_id_real']) ? substr((string)$data['coop_descuento_id_real'], 0, 100) : null,
             'patologia_id'        => isset($data['patologia_id']) ? (int)$data['patologia_id'] : null,
             'rango'               => (string)($data['rango'] ?? ''),
-            'productos'           => array_values(array_filter(array_map('intval', $data['productos'] ?? []))),
+                        // items: [{producto_id, fuente}]
+            'items'               => array_values(array_filter(array_map(function($it){
+                if (!is_array($it)) return null;
+                $pid = isset($it['producto_id']) ? (int)$it['producto_id'] : 0;
+                $fuente = in_array($it['fuente'] ?? '', ['sve','productor'], true) ? $it['fuente'] : '';
+                return $pid > 0 ? ['producto_id'=>$pid, 'fuente'=>$fuente] : null;
+            }, $data['items'] ?? []))),
+
             'productos_fuente'    => in_array($data['productos_fuente'] ?? '', ['sve', 'productor'], true) ? $data['productos_fuente'] : null,
             'dir_provincia'       => substr(trim((string)($data['dir_provincia'] ?? '')), 0, 100),
             'dir_localidad'       => substr(trim((string)($data['dir_localidad'] ?? '')), 0, 100),
@@ -98,9 +105,14 @@ try {
             $resp([], false, "Debe seleccionar cooperativa (forma de pago 6).");
             exit;
         }
-        if (!empty($payload['productos']) && empty($payload['productos_fuente'])) {
-            $resp([], false, "Debe indicar quién aporta los productos.");
-            exit;
+        // Si se incluyeron productos, cada item debe tener fuente
+        if (!empty($payload['items'])) {
+            foreach ($payload['items'] as $it) {
+                if (empty($it['fuente'])) {
+                    $resp([], false, "Indicá quién aporta cada producto seleccionado.");
+                    exit;
+                }
+            }
         }
 
         $res = $model->crearSolicitud($payload);

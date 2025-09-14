@@ -92,14 +92,16 @@ class DroneFormularioNservicioModel
             $str = $this->pdo->prepare($sqlR);
             $str->execute([$solicitudId, $d['rango']]);
 
-            // drones_solicitud_item (uno por producto)
-            if (!empty($d['productos'])) {
+            // drones_solicitud_item (uno por producto con su fuente)
+            if (!empty($d['items'])) {
                 $sqlI = "INSERT INTO drones_solicitud_item (solicitud_id, patologia_id, fuente, producto_id, nombre_producto)
                          VALUES (?,?,?,?,?)";
                 $sti = $this->pdo->prepare($sqlI);
-                foreach ($d['productos'] as $pid) {
-                    $nombre = $this->productoNombre((int)$pid);
-                    $sti->execute([$solicitudId, $d['patologia_id'], $d['productos_fuente'], $pid, $nombre]);
+                foreach ($d['items'] as $it) {
+                    $pid = (int)$it['producto_id'];
+                    $fuente = (string)$it['fuente'];
+                    $nombre = $this->productoNombre($pid);
+                    $sti->execute([$solicitudId, $d['patologia_id'], $fuente, $pid, $nombre]);
                 }
             }
 

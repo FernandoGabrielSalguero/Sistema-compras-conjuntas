@@ -129,10 +129,10 @@ declare(strict_types=1); ?>
         </div>
 
         <!-- coop_descuento_id_real (solo si forma_pago_id = 6) -->
-        <div class="input-group">
+        <div class="input-group" id="coop-group" style="display:none;">
           <label for="coop_descuento_id_real">Cooperativa (solo si aplica)</label>
           <div class="input-icon input-icon-globe">
-            <select id="coop_descuento_id_real" name="coop_descuento_id_real" disabled aria-disabled="true">
+            <select id="coop_descuento_id_real" name="coop_descuento_id_real" aria-disabled="true">
               <option value="">Seleccionar</option>
             </select>
           </div>
@@ -154,37 +154,41 @@ declare(strict_types=1); ?>
           <div class="input-icon">
             <select id="rango" name="rango" required>
               <option value="">Seleccionar</option>
-              <option value="enero_q1">enero_q1</option>
-              <option value="enero_q2">enero_q2</option>
-              <option value="febrero_q1">febrero_q1</option>
-              <option value="febrero_q2">febrero_q2</option>
-              <option value="octubre_q1">octubre_q1</option>
-              <option value="octubre_q2">octubre_q2</option>
-              <option value="noviembre_q1">noviembre_q1</option>
-              <option value="noviembre_q2">noviembre_q2</option>
-              <option value="diciembre_q1">diciembre_q1</option>
-              <option value="diciembre_q2">diciembre_q2</option>
+              <option value="octubre_q1">Primer quincena de octubre</option>
+              <option value="octubre_q2">Segunda quincena de octure</option>
+              <option value="noviembre_q1">Primer quincena de noviembre</option>
+              <option value="noviembre_q2">Segunda quincena de noviembre</option>
+              <option value="diciembre_q1">Primer quincena de diciembre</option>
+              <option value="diciembre_q2">Segunda quincena de diciembre</option>
+              <option value="enero_q1">Primer quincena de enero</option>
+              <option value="enero_q2">Segunda quincena de enero</option>
+              <option value="febrero_q1">Primer quincena de febrero</option>
+              <option value="febrero_q2">Segunda quincena de febrero</option>
             </select>
           </div>
         </div>
 
-        <!-- nombre_producto (según patologia) -->
-        <div class="input-group">
-          <label for="nombre_producto">Productos sugeridos según patología *</label>
+        <!-- nombre_producto (matriz por producto) -->
+        <div class="input-group" style="grid-column: 1 / -1;">
+          <label for="productos-grid">Productos sugeridos según patología *</label>
           <div class="input-icon">
-            <select id="nombre_producto" name="nombre_producto[]" multiple size="4" aria-multiselectable="true" required>
-              <!-- opciones dinámicas -->
-            </select>
-          </div>
-        </div>
-
-        <!-- fuente productos -->
-        <div class="input-group">
-          <label>¿Quién aporta los productos?</label>
-          <div class="input-icon">
-            <div role="radiogroup" aria-labelledby="fuente_label" class="form-grid grid-2">
-              <label><input type="radio" name="fuente" value="sve" required> SVE</label>
-              <label><input type="radio" name="fuente" value="productor" required> Productor</label>
+            <div id="productos-grid" class="card tabla-card" aria-live="polite">
+              <div class="tabla-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>✔</th>
+                      <th>Producto</th>
+                      <th>SVE</th>
+                      <th>Productor</th>
+                    </tr>
+                  </thead>
+                  <tbody id="productos-body">
+                    <!-- filas dinámicas -->
+                  </tbody>
+                </table>
+              </div>
+              <p id="productos-help" style="margin:.5rem 0 0 0;">Marcá el/los productos y elegí quién los aporta por fila.</p>
             </div>
           </div>
         </div>
@@ -267,6 +271,17 @@ declare(strict_types=1); ?>
   .modal.hidden {
     display: none;
   }
+
+  /* Mejora visual de la matriz de productos */
+  #productos-grid .data-table th,
+  #productos-grid .data-table td {
+    vertical-align: middle;
+  }
+
+  #productos-help {
+    font-size: .9rem;
+    color: #555;
+  }
 </style>
 
 <script>
@@ -282,8 +297,10 @@ declare(strict_types=1); ?>
     const productorIdReal = $('#productor_id_real');
     const formaPago = $('#forma_pago_id');
     const coopSelect = $('#coop_descuento_id_real');
+    const coopGroup = $('#coop-group');
     const patologia = $('#patologia_id');
-    const productos = $('#nombre_producto');
+    const productosBody = $('#productos-body');
+
     const btnPrev = $('#btn-previsualizar');
     const modal = $('#modal-resumen');
     const btnConfirmar = $('#btn-confirmar');
@@ -311,8 +328,11 @@ declare(strict_types=1); ?>
           fetch(API + '?action=formas_pago').then(r => r.json()),
           fetch(API + '?action=patologias').then(r => r.json()),
         ]);
-        if (fp.ok) {
-          formaPago.innerHTML = '<option value="">Seleccionar</option>' + fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+        if (fp.ok && Array.isArray(fp.data)) {
+          const opts = fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+          formaPago.innerHTML = '<option value="">Seleccionar</option>' + opts;
+        } else {
+          formaPago.innerHTML = '<option value="">(sin datos)</option>';
         }
         if (pats.ok) {
           patologia.innerHTML = '<option value="">Seleccionar</option>' + pats.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
@@ -355,11 +375,12 @@ declare(strict_types=1); ?>
       listaNombres.innerHTML = '';
     });
 
-    // Forma de pago -> habilitar coop si id=6
+    // Forma de pago -> mostrar/ocultar cooperativa si id=6
     formaPago.addEventListener('change', async () => {
       const id = Number(formaPago.value || 0);
       if (id === 6) {
-        coopSelect.disabled = false;
+        coopGroup.style.display = 'block';
+        coopSelect.setAttribute('required', 'required');
         coopSelect.setAttribute('aria-disabled', 'false');
         // cargar cooperativas si aún no
         if (coopSelect.options.length <= 1) {
@@ -367,32 +388,61 @@ declare(strict_types=1); ?>
           const j = await r.json();
           if (j.ok) {
             coopSelect.innerHTML = '<option value="">Seleccionar</option>' + j.data.map(c => `<option value="${c.id_real}">${c.usuario}</option>`).join('');
+          } else {
+            showAlert('error', 'No se pudieron cargar cooperativas.');
           }
         }
       } else {
+        coopGroup.style.display = 'none';
+        coopSelect.removeAttribute('required');
         coopSelect.value = '';
-        coopSelect.disabled = true;
         coopSelect.setAttribute('aria-disabled', 'true');
       }
     });
 
-    // Patología -> cargar productos relacionados
+
+    // Patología -> cargar productos relacionados (matriz)
     patologia.addEventListener('change', async () => {
-      productos.innerHTML = '';
+      productosBody.innerHTML = '';
       const val = patologia.value;
       if (!val) return;
       const r = await fetch(API + '?action=productos_por_patologia&patologia_id=' + encodeURIComponent(val));
       const j = await r.json();
       if (j.ok) {
         if (!j.data.length) {
-          productos.innerHTML = '<option value="">No hay productos sugeridos</option>';
+          productosBody.innerHTML = `<tr><td colspan="4">No hay productos sugeridos para esta patología.</td></tr>`;
           return;
         }
-        productos.innerHTML = j.data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+        productosBody.innerHTML = j.data.map(p => `
+      <tr>
+        <td style="text-align:center;">
+          <input type="checkbox" class="prod-check" id="prod_${p.id}" data-pid="${p.id}" aria-label="Seleccionar ${p.nombre}">
+        </td>
+        <td><label for="prod_${p.id}">${p.nombre}</label></td>
+        <td style="text-align:center;">
+          <input type="radio" name="fuente_${p.id}" value="sve" disabled aria-label="SVE provee ${p.nombre}">
+        </td>
+        <td style="text-align:center;">
+          <input type="radio" name="fuente_${p.id}" value="productor" disabled aria-label="Productor provee ${p.nombre}">
+        </td>
+      </tr>
+    `).join('');
+
+        // Habilitar radios solo cuando se marque el producto
+        productosBody.querySelectorAll('.prod-check').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const pid = e.target.dataset.pid;
+            productosBody.querySelectorAll(`input[name="fuente_${pid}"]`).forEach(r => {
+              r.disabled = !e.target.checked;
+              if (!e.target.checked) r.checked = false;
+            });
+          });
+        });
       } else {
         showAlert('error', 'Error al cargar productos.');
       }
     });
+
 
     // Previsualizar -> abrir modal con resumen
     btnPrev.addEventListener('click', (e) => {
@@ -434,8 +484,17 @@ declare(strict_types=1); ?>
     });
 
     function getFormData() {
-      const selProductos = $$('#nombre_producto option:checked').map(o => Number(o.value));
-      const fuente = (new FormData(form)).get('fuente') || '';
+      // Construir items [{producto_id, fuente}]
+      const items = [];
+      productosBody.querySelectorAll('.prod-check:checked').forEach(chk => {
+        const pid = Number(chk.dataset.pid);
+        const fuenteSel = productosBody.querySelector(`input[name="fuente_${pid}"]:checked`);
+        items.push({
+          producto_id: pid,
+          fuente: fuenteSel ? fuenteSel.value : ''
+        });
+      });
+
       return {
         productor_id_real: productorIdReal.value || null,
         nombre: nombreInput.value.trim(),
@@ -448,11 +507,10 @@ declare(strict_types=1); ?>
         area_despegue: $('#area_despegue').value,
         superficie_ha: parseFloat($('#superficie_ha').value),
         forma_pago_id: Number($('#forma_pago_id').value),
-        coop_descuento_id_real: $('#coop_descuento_id_real').disabled ? null : ($('#coop_descuento_id_real').value || null),
+        coop_descuento_id_real: (coopGroup.style.display === 'block') ? ($('#coop_descuento_id_real').value || null) : null,
         patologia_id: Number($('#patologia_id').value),
         rango: $('#rango').value,
-        productos: selProductos, // ids
-        productos_fuente: fuente, // 'sve'|'productor'
+        items, // << matriz de productos con fuente
         dir_provincia: $('#dir_provincia').value.trim(),
         dir_localidad: $('#dir_localidad').value.trim(),
         dir_calle: $('#dir_calle').value.trim(),
@@ -462,10 +520,13 @@ declare(strict_types=1); ?>
     }
 
     function renderResumen(d) {
-      const prods = d.productos.length ? d.productos.map(id => {
-        const opt = $('#nombre_producto').querySelector(`option[value="${id}"]`);
-        return opt ? opt.textContent : ('ID ' + id);
-      }).join(', ') : '—';
+      const prods = (d.items && d.items.length) ?
+        d.items.map(it => {
+          const row = productosBody.querySelector(`#prod_${it.producto_id}`)?.closest('tr');
+          const nombre = row ? row.querySelector('td:nth-child(2)').textContent.trim() : ('ID ' + it.producto_id);
+          return `${nombre} (${it.fuente || 'sin fuente'})`;
+        }).join('<br>') :
+        '—';
       return `
       <div class="tabla-wrapper">
         <table class="data-table">
