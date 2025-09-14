@@ -1,6 +1,5 @@
 <?php
 
-declare(strict_types=1);
 ?>
 <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
 <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
@@ -250,8 +249,6 @@ declare(strict_types=1);
 </div>
 
 <style>
-  /* ====== Responsive & UX mínimos (mobile-first) ====== */
-
   /* grilla fluida para inputs */
   .form-grid.grid-4 {
     display: grid;
@@ -369,8 +366,6 @@ declare(strict_types=1);
 
 <script>
   (function() {
-    'use strict';
-
     const API = '/views/partials/drones/controller/drone_formulario_N_Servicio_controller.php';
 
     // helpers cortos
