@@ -389,7 +389,8 @@ declare(strict_types=1);
     const nombreInput = $('#nombre');
     const listaNombres = $('#lista-nombres');
     const productorIdReal = $('#productor_id_real');
-    const getFormaPago = () => document.getElementById('forma_pago_id'); // <- NO cachear
+    // Usar selector dentro del formulario para evitar colisiones con IDs duplicados en otros partials
+    const getFormaPago = () => form.querySelector('#forma_pago_id'); // <- NO cachear
     const coopSelect = $('#coop_descuento_id_real');
     const coopGroup = $('#coop-group');
     const patologia = $('#patologia_id');
