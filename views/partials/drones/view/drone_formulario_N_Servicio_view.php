@@ -305,7 +305,7 @@ declare(strict_types=1);
 }
 
 #productos-grid tbody td:nth-child(2) {
-  text-align: left;       /* la columna de Producto va alineada a la izquierda */
+  text-align: center;       /* la columna de Producto va alineada a la izquierda */
   font-weight: 500;
 }
 
