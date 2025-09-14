@@ -1,31 +1,118 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+
+declare(strict_types=1);
+
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
 error_reporting(E_ALL);
 
 header('Content-Type: application/json; charset=utf-8');
 
-// CONFIG global
 require_once __DIR__ . '/../../../../config.php';
-
-// MODELO de este módulo
 require_once __DIR__ . '/../model/drone_formulario_N_Servicio_model.php';
 
-// Instancia e inyección de PDO
-$model = new DroneFormularioNservicioModel();
-$model->pdo = $pdo;
+$resp = fn(array $data = [], bool $ok = true, ?string $error = null) =>
+print json_encode($ok ? ['ok' => true, 'data' => $data] : ['ok' => false, 'error' => $error ?? 'Error'], JSON_UNESCAPED_UNICODE);
 
-// Healthcheck mínimo (para que la vista pueda verificar wiring)
-$connected = ($model instanceof DroneFormularioNservicioModel) && ($pdo instanceof PDO);
+try {
+    $model = new DroneFormularioNservicioModel();
+    $model->pdo = $pdo;
+    $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+    $action = $_GET['action'] ?? '';
 
-echo json_encode([
-    'ok'      => $connected,
-    'message' => $connected
-        ? 'Controlador y modelo conectados correctamente Formulario nuevo servicio'
-        : 'Falla de wiring (revisá require y $pdo)',
-    // Datos útiles para debug rápido
-    'checks'  => [
-        'modelClass' => get_class($model),
-        'pdo'        => $pdo instanceof PDO,
-    ],
-]);
+    if ($method === 'GET') {
+        switch ($action) {
+            case 'formas_pago':
+                $resp($model->formasPago());
+                break;
+            case 'patologias':
+                $resp($model->patologias());
+                break;
+            case 'cooperativas':
+                $resp($model->cooperativas());
+                break;
+            case 'buscar_usuarios':
+                $q = trim((string)($_GET['q'] ?? ''));
+                if (mb_strlen($q) < 2) {
+                    $resp([], true);
+                    break;
+                }
+                $resp($model->buscarUsuarios($q));
+                break;
+            case 'productos_por_patologia':
+                $pid = (int)($_GET['patologia_id'] ?? 0);
+                if ($pid <= 0) {
+                    $resp([], true);
+                    break;
+                }
+                $resp($model->productosPorPatologia($pid));
+                break;
+            default:
+                $resp(['message' => 'pong']);
+                break;
+        }
+        exit;
+    }
+
+    if ($method === 'POST') {
+        $raw = file_get_contents('php://input');
+        $data = json_decode($raw, true);
+        if (!is_array($data)) {
+            $resp([], false, 'JSON inválido');
+            exit;
+        }
+
+        // Sanitización mínima y normalización
+        $payload = [
+            'productor_id_real'   => empty($data['productor_id_real']) ? null : substr((string)$data['productor_id_real'], 0, 20),
+            'representante'       => in_array($data['representante'] ?? '', ['si', 'no'], true) ? $data['representante'] : null,
+            'linea_tension'       => in_array($data['linea_tension'] ?? '', ['si', 'no'], true) ? $data['linea_tension'] : null,
+            'zona_restringida'    => in_array($data['zona_restringida'] ?? '', ['si', 'no'], true) ? $data['zona_restringida'] : null,
+            'corriente_electrica' => in_array($data['corriente_electrica'] ?? '', ['si', 'no'], true) ? $data['corriente_electrica'] : null,
+            'agua_potable'        => in_array($data['agua_potable'] ?? '', ['si', 'no'], true) ? $data['agua_potable'] : null,
+            'libre_obstaculos'    => in_array($data['libre_obstaculos'] ?? '', ['si', 'no'], true) ? $data['libre_obstaculos'] : null,
+            'area_despegue'       => in_array($data['area_despegue'] ?? '', ['si', 'no'], true) ? $data['area_despegue'] : null,
+            'superficie_ha'       => isset($data['superficie_ha']) ? (float)$data['superficie_ha'] : null,
+            'forma_pago_id'       => isset($data['forma_pago_id']) ? (int)$data['forma_pago_id'] : null,
+            'coop_descuento_nombre' => !empty($data['coop_descuento_id_real']) ? substr((string)$data['coop_descuento_id_real'], 0, 100) : null,
+            'patologia_id'        => isset($data['patologia_id']) ? (int)$data['patologia_id'] : null,
+            'rango'               => (string)($data['rango'] ?? ''),
+            'productos'           => array_values(array_filter(array_map('intval', $data['productos'] ?? []))),
+            'productos_fuente'    => in_array($data['productos_fuente'] ?? '', ['sve', 'productor'], true) ? $data['productos_fuente'] : null,
+            'dir_provincia'       => substr(trim((string)($data['dir_provincia'] ?? '')), 0, 100),
+            'dir_localidad'       => substr(trim((string)($data['dir_localidad'] ?? '')), 0, 100),
+            'dir_calle'           => substr(trim((string)($data['dir_calle'] ?? '')), 0, 150),
+            'dir_numero'          => substr(trim((string)($data['dir_numero'] ?? '')), 0, 20),
+            'observaciones'       => isset($data['observaciones']) ? (string)$data['observaciones'] : null,
+        ];
+
+        // Validaciones mínimas
+        $requeridos = ['representante', 'linea_tension', 'zona_restringida', 'corriente_electrica', 'agua_potable', 'libre_obstaculos', 'area_despegue', 'superficie_ha', 'forma_pago_id', 'patologia_id', 'rango', 'dir_provincia', 'dir_localidad', 'dir_calle', 'dir_numero'];
+        foreach ($requeridos as $k) {
+            if (empty($payload[$k]) && $payload[$k] !== 0 && $payload[$k] !== '0') {
+                $resp([], false, "Campo requerido faltante: $k");
+                exit;
+            }
+        }
+        if ($payload['forma_pago_id'] === 6 && empty($payload['coop_descuento_nombre'])) {
+            $resp([], false, "Debe seleccionar cooperativa (forma de pago 6).");
+            exit;
+        }
+        if (!empty($payload['productos']) && empty($payload['productos_fuente'])) {
+            $resp([], false, "Debe indicar quién aporta los productos.");
+            exit;
+        }
+
+        $res = $model->crearSolicitud($payload);
+        if ($res['ok'] ?? false) {
+            $resp(['id' => $res['id']]);
+        } else {
+            $resp([], false, $res['error'] ?? 'No se pudo crear la solicitud');
+        }
+        exit;
+    }
+
+    $resp([], false, 'Método no permitido');
+} catch (Throwable $e) {
+    echo json_encode(['ok' => false, 'error' => 'Excepción: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+}
