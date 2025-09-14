@@ -19,11 +19,11 @@
           </div>
         </div>
 
-        <!-- Provincia -->
+        <!-- representante -->
         <div class="input-group">
-          <label for="provincia">¿A LA HORA DE TOMAR EL SERVICIO PODREMOS CONTAR CON UN REPRESENTATE DE LA PROPIEDAD EN LA FINCA? *</label>
-          <div class="input-icon input-icon-globe">
-            <select id="provincia" name="provincia" required>
+          <label for="representante">¿A LA HORA DE TOMAR EL SERVICIO PODREMOS CONTAR CON UN REPRESENTATE DE LA PROPIEDAD EN LA FINCA? *</label>
+          <div class="input-icon">
+            <select id="representante" name="representante" required>
               <option value="">Seleccionar</option>
               <option>Si</option>
               <option>No</option>
@@ -31,11 +31,11 @@
           </div>
         </div>
 
-        <!-- Provincia -->
+        <!-- linea_tension -->
         <div class="input-group">
-          <label for="provincia">¿EL/ LOS CUARTELES A PULVERIZAR CUENTAN CON ALGUNA LINEA DE MEDIA O ALTA TENSION A MENOS DE 30 METROS? *</label>
-          <div class="input-icon input-icon-globe">
-            <select id="provincia" name="provincia" required>
+          <label for="linea_tension">¿EL/ LOS CUARTELES A PULVERIZAR CUENTAN CON ALGUNA LINEA DE MEDIA O ALTA TENSION A MENOS DE 30 METROS? *</label>
+          <div class="input-icon">
+            <select id="linea_tension" name="linea_tension" required>
               <option value="">Seleccionar</option>
               <option>Si</option>
               <option>No</option>
@@ -43,22 +43,11 @@
           </div>
         </div>
 
-        <!-- Provincia -->
+        <!-- zona_restringida -->
         <div class="input-group">
-          <label for="provincia">¿EL/LOS CUARTELES A PULVERIZAR SE ENCUENTRA A MENOS DE 3 KM DE UN AEROPUERTO O ZONA DE VUELO RESTRINGIDA? *</label>
-          <div class="input-icon input-icon-globe">
-            <select id="provincia" name="provincia" required>
-              <option value="">Seleccionar</option>
-              <option>Si</option>
-              <option>No</option>
-            </select>
-          </div>
-        </div>
-        <!-- Provincia -->
-        <div class="input-group">
-          <label for="provincia">¿CUENTA CON DISPONIBILIDAD DE CORRIENTE ELÉCTRICA?*</label>
-          <div class="input-icon input-icon-globe">
-            <select id="provincia" name="provincia" required>
+          <label for="zona_restringida">¿EL/LOS CUARTELES A PULVERIZAR SE ENCUENTRA A MENOS DE 3 KM DE UN AEROPUERTO O ZONA DE VUELO RESTRINGIDA? *</label>
+          <div class="input-icon">
+            <select id="zona_restringida" name="zona_restringida" required>
               <option value="">Seleccionar</option>
               <option>Si</option>
               <option>No</option>
@@ -66,11 +55,11 @@
           </div>
         </div>
 
-        <!-- Provincia -->
+        <!-- corriente_electrica -->
         <div class="input-group">
-          <label for="provincia">¿EN LA PROPIEDAD HAY DISPONIBILIDAD DE AGUA POTABLE? *</label>
-          <div class="input-icon input-icon-globe">
-            <select id="provincia" name="provincia" required>
+          <label for="corriente_electrica">¿CUENTA CON DISPONIBILIDAD DE CORRIENTE ELÉCTRICA?*</label>
+          <div class="input-icon">
+            <select id="corriente_electrica" name="corriente_electrica" required>
               <option value="">Seleccionar</option>
               <option>Si</option>
               <option>No</option>
@@ -78,11 +67,11 @@
           </div>
         </div>
 
-        <!-- Provincia -->
+        <!-- agua_potable -->
         <div class="input-group">
-          <label for="provincia">¿ EL/LOS CUARTELES A PULVERIZAR ESTAN LIBRES DE OBSTÁCULOS? *</label>
-          <div class="input-icon input-icon-globe">
-            <select id="provincia" name="provincia" required>
+          <label for="agua_potable">¿EN LA PROPIEDAD HAY DISPONIBILIDAD DE AGUA POTABLE? *</label>
+          <div class="input-icon">
+            <select id="agua_potable" name="agua_potable" required>
               <option value="">Seleccionar</option>
               <option>Si</option>
               <option>No</option>
@@ -90,11 +79,11 @@
           </div>
         </div>
 
-        <!-- Provincia -->
+        <!-- libre_obstaculos -->
         <div class="input-group">
-          <label for="provincia">¿EL/ LOS CUARTELES A PULVERIZAR CUENTAN CON UN ÁREA DE DESPEGUE APROPIADA? *</label>
-          <div class="input-icon input-icon-globe">
-            <select id="provincia" name="provincia" required>
+          <label for="libre_obstaculos">¿ EL/LOS CUARTELES A PULVERIZAR ESTAN LIBRES DE OBSTÁCULOS? *</label>
+          <div class="input-icon">
+            <select id="libre_obstaculos" name="libre_obstaculos" required>
               <option value="">Seleccionar</option>
               <option>Si</option>
               <option>No</option>
@@ -102,11 +91,11 @@
           </div>
         </div>
 
-        <!-- Provincia -->
+        <!-- area_despegue -->
         <div class="input-group">
-          <label for="provincia">SUPERFICIE (en hectáreas) PARA LAS QUE DESEA CONTRATAR EL SERVICIO*</label>
-          <div class="input-icon input-icon-globe">
-            <select id="provincia" name="provincia" required>
+          <label for="area_despegue">¿EL/ LOS CUARTELES A PULVERIZAR CUENTAN CON UN ÁREA DE DESPEGUE APROPIADA? *</label>
+          <div class="input-icon">
+            <select id="area_despegue" name="area_despegue" required>
               <option value="">Seleccionar</option>
               <option>Si</option>
               <option>No</option>
@@ -114,11 +103,19 @@
           </div>
         </div>
 
-        <!-- Provincia -->
+        <!-- superficie_ha -->
         <div class="input-group">
-          <label for="provincia">MÉTODO DE PAGO *</label>
+          <label for="superficie_ha">¿CUATAS HECTAREAS VAMOS A PULVERIZAR</label>
+          <div class="input-icon">
+            <input type="number" id="superficie_ha" name="superficie_ha" placeholder="20" required />
+          </div>
+        </div>
+
+        <!-- forma_pago_id -->
+        <div class="input-group">
+          <label for="forma_pago_id">MÉTODO DE PAGO *</label>
           <div class="input-icon input-icon-globe">
-            <select id="provincia" name="provincia" required>
+            <select id="forma_pago_id" name="forma_pago_id" required>
               <option value="">Seleccionar</option>
               <option>Si</option>
               <option>No</option>
@@ -126,11 +123,23 @@
           </div>
         </div>
 
-        <!-- Provincia -->
+        <!-- coop_descuento_id_real -->
         <div class="input-group">
-          <label for="provincia">INDICAR EL MOTIVO POR EL QUE DESEA CONTRATAR EL SERVICIO*</label>
+          <label for="coop_descuento_id_real">Selecciona una cooperativa</label>
           <div class="input-icon input-icon-globe">
-            <select id="provincia" name="provincia" required>
+            <select id="coop_descuento_id_real" name="coop_descuento_id_real" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>div>
+
+        <!-- patologia_id -->
+        <div class="input-group">
+          <label for="patologia_id">INDICAR EL MOTIVO POR EL QUE DESEA CONTRATAR EL SERVICIO*</label>
+          <div class="input-icon">
+            <select id="patologia_id" name="patologia_id" required>
               <option value="">Seleccionar</option>
               <option>Si</option>
               <option>No</option>
@@ -138,11 +147,11 @@
           </div>
         </div>
 
-        <!-- Provincia -->
+        <!-- rango -->
         <div class="input-group">
-          <label for="provincia">INDICAR EN QUE MOMENTO DESEA CONTRATAR EL SERVICIO*</label>
-          <div class="input-icon input-icon-globe">
-            <select id="provincia" name="provincia" required>
+          <label for="rango">INDICAR EN QUE MOMENTO DESEA CONTRATAR EL SERVICIO*</label>
+          <div class="input-icon">
+            <select id="rango" name="rango" required>
               <option value="">Seleccionar</option>
               <option>Si</option>
               <option>No</option>
@@ -150,11 +159,11 @@
           </div>
         </div>
 
-        <!-- Provincia -->
+        <!-- nombre_producto -->
         <div class="input-group">
-          <label for="provincia">En el caso de necesitar productos fitosanitarios para realizar la pulverización indicar los que sean necesarios. *</label>
-          <div class="input-icon input-icon-globe">
-            <select id="provincia" name="provincia" required>
+          <label for="nombre_producto">En el caso de necesitar productos fitosanitarios para realizar la pulverización indicar los que sean necesarios. *</label>
+          <div class="input-icon">
+            <select id="nombre_producto" name="nombre_producto" required>
               <option value="">Seleccionar</option>
               <option>Si</option>
               <option>No</option>
@@ -162,58 +171,56 @@
           </div>
         </div>
 
-
-
-
-
-        <!-- Provincia -->
+        <!-- dir_provincia -->
         <div class="input-group">
-          <label for="provincia">Provincia</label>
-          <div class="input-icon input-icon-globe">
-            <select id="provincia" name="provincia" required>
-              <option value="">Seleccionar</option>
-              <option>Buenos Aires</option>
-              <option>Córdoba</option>
-              <option>Santa Fe</option>
-            </select>
+          <label for="dir_provincia">Provincia</label>
+          <div class="input-icon">
+            <input type="text" id="dir_provincia" name="dir_provincia" placeholder="Juan Pérez" required />
           </div>
         </div>
 
-        <!-- Localidad -->
+        <!-- dir_localidad -->
         <div class="input-group">
-          <label for="localidad">Localidad</label>
-          <div class="input-icon input-icon-city">
-            <input type="text" id="localidad" name="localidad" required />
+          <label for="dir_localidad">Localidad</label>
+          <div class="input-icon">
+            <input type="text" id="dir_localidad" name="dir_localidad" placeholder="Juan Pérez" required />
           </div>
         </div>
 
-
-        <!-- Dirección -->
+        <!-- dir_calle -->
         <div class="input-group">
-          <label for="direccion">Altura</label>
-          <div class="input-icon input-icon-address">
-            <input type="text" id="direccion" name="direccion" required />
+          <label for="dir_calle">Calle</label>
+          <div class="input-icon">
+            <input type="text" id="dir_calle" name="dir_calle" placeholder="Juan Pérez" required />
           </div>
         </div>
       </div>
 
-      <!-- Observaciones -->
+      <!-- dir_numero -->
       <div class="input-group">
-        <label for="observaciones">Observaciones</label>
-        <div class="input-icon input-icon-comment">
-          <textarea id="observaciones" name="observaciones" maxlength="233" rows="3"
-            placeholder="Escribí un comentario..."></textarea>
+        <label for="dir_numero">Número</label>
+        <div class="input-icon">
+          <input type="text" id="dir_numero" name="dir_numero" placeholder="Juan Pérez" required />
         </div>
-        <small class="char-count" data-for="observaciones">Quedan 233 caracteres.</small>
       </div>
-
-      <!-- Botones -->
-      <div class="form-buttons">
-        <button class="btn btn-aceptar" type="submit">Enviar</button>
-        <button class="btn btn-cancelar" type="reset">Cancelar</button>
-      </div>
-    </form>
   </div>
+
+  <!-- observaciones -->
+  <div class="input-group">
+    <label for="observaciones">Observaciones</label>
+    <div class="input-icon input-icon-comment">
+      <textarea id="observaciones" name="observaciones" maxlength="233" rows="3"
+        placeholder="Escribí un comentario..."></textarea>
+    </div>
+  </div>
+
+  <!-- Botones -->
+  <div class="form-buttons">
+    <button class="btn btn-aceptar" type="submit">Enviar</button>
+    <button class="btn btn-cancelar" type="reset">Cancelar</button>
+  </div>
+  </form>
+</div>
 </div>
 
 <script>
