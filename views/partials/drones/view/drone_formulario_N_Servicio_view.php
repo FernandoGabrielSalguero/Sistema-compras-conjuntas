@@ -3,7 +3,7 @@
 declare(strict_types=1);
 ?>
 <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
-<script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
+
 
 <div class="content">
   <div class="card" style="background-color:#5b21b6;">
@@ -870,3 +870,5 @@ declare(strict_types=1);
 
   })();
 </script>
+
+<script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
