@@ -314,12 +314,50 @@ declare(strict_types=1);
   @media (min-width: 1024px) {
     .form-grid.grid-4 { grid-template-columns: repeat(4, 1fr); }
   }
+
+  /* Inputs un toque más bajos SOLO en pantallas chicas */
+@media (max-width: 480px){
+  .form-modern input,
+  .form-modern select,
+  .form-modern textarea {
+    min-height: 38px;
+  }
+}
+
+/* La matriz entra completa en móvil (sin scroll horizontal) */
+@media (max-width: 480px){
+  #productos-grid .tabla-wrapper { overflow-x: visible; }
+  #productos-grid table.data-table {
+    min-width: 0;            /* quita el mínimo de 520px */
+    table-layout: fixed;     /* reparte columnas por ancho fijo */
+    width: 100%;
+  }
+  #productos-grid .data-table th,
+  #productos-grid .data-table td{
+    padding: .5rem .5rem;
+    font-size: .9rem;        /* texto un poco más chico */
+    white-space: normal;     /* permite salto de línea en nombre de producto */
+  }
+  /* Columna del check más estrecha */
+  #productos-grid .data-table th:first-child,
+  #productos-grid .data-table td:first-child{ width: 44px; }
+
+  /* Columnas SVE / Productor con ancho fijo y centradas */
+  #productos-grid .data-table th:nth-child(3),
+  #productos-grid .data-table td:nth-child(3),
+  #productos-grid .data-table th:nth-child(4),
+  #productos-grid .data-table td:nth-child(4){
+    width: 64px;
+    text-align: center;
+  }
+}
+
 </style>
 
 <script>
   (function() {
     'use strict';
-    const API = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
+    const API = '/partials/drones/controller/drone_formulario_N_Servicio_controller.php';
 
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
