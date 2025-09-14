@@ -390,8 +390,8 @@ declare(strict_types=1);
     const nombreInput = $('#nombre');
     const listaNombres = $('#lista-nombres');
     const productorIdReal = $('#productor_id_real');
-    // Usar selector dentro del formulario para evitar colisiones con IDs duplicados en otros partials
-    const getFormaPago = () => form.querySelector('#forma_pago_id'); // <- NO cachear
+// Obtener SIEMPRE por ID desde document: el framework puede mover el nodo fuera del <form>
+const getFormaPago = () => document.getElementById('forma_pago_id'); // <- NO cachear
     const coopSelect = $('#coop_descuento_id_real');
     const coopGroup = $('#coop-group');
     const patologia = $('#patologia_id');
@@ -596,6 +596,20 @@ declare(strict_types=1);
       });
 
       observer.observe(document.body, { childList: true, subtree: true });
+
+// Chequeo inicial por si el enhancer ya dejó el select sin opciones
+setTimeout(() => {
+  const el = getFormaPago();
+  if (el && el.options && el.options.length <= 1 && Array.isArray(formasPagoCache) && formasPagoCache.length) {
+    el.innerHTML = '<option value="">Seleccionar</option>' +
+      formasPagoCache.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+    el.selectedIndex = 0;
+    el.dispatchEvent(new Event('input',  { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    debugLog('Chequeo inicial post-load: reinyecté opciones forma de pago');
+  }
+}, 50);
+
     });
 
     // ===== Autocomplete de productor =====
