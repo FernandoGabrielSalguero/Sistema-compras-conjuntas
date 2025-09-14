@@ -120,24 +120,12 @@ declare(strict_types=1);
           </div>
         </div>
 
-        <!-- forma_pago_id -->
+        <!-- forma_pago_id (campo sencillo) -->
         <div class="input-group">
           <label for="forma_pago_id">Método de pago *</label>
-          <div class="input-icon">
-            <select id="forma_pago_id" name="forma_pago_id" required>
-              <option value="">Seleccionar</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- coop_descuento_id_real (solo si forma_pago_id = 6) -->
-        <div class="input-group" id="coop-group" style="display:none;">
-          <label for="coop_descuento_id_real">Cooperativa (solo si aplica)</label>
-          <div class="input-icon">
-            <select id="coop_descuento_id_real" name="coop_descuento_id_real" disabled aria-disabled="true">
-              <option value="">Seleccionar</option>
-            </select>
-          </div>
+          <select id="forma_pago_id" name="forma_pago_id" required>
+            <option value="">Seleccionar</option>
+          </select>
         </div>
 
         <!-- patologia_id -->
@@ -465,57 +453,39 @@ declare(strict_types=1);
     let _inited = false;
 
     // ===== Cargar combos iniciales =====
-async function loadFormasPago() {
-  try {
-    const fp = await fetchJSON(API + '?action=formas_pago');
-    debugLog('Formas de pago:', fp);
+    async function loadFormasPago() {
+      try {
+        const fp = await fetchJSON(API + '?action=formas_pago');
+        debugLog('Formas de pago:', fp);
 
-    if (fp.ok && Array.isArray(fp.data) && fp.data.length) {
-      // 1) Construyo options como en patología
-      const htmlOptions = '<option value="">Seleccionar</option>' +
-        fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+        const sel = document.getElementById('forma_pago_id');
+        if (!sel) return;
 
-      // 2) Reemplazo el nodo <select> COMPLETO para que el framework lo vuelva a “enhancear”
-      const oldSel = document.getElementById('forma_pago_id');
-      if (!oldSel) return; // safety
-
-      const newSel = oldSel.cloneNode(false); // clona el elemento <select> sin hijos
-      newSel.innerHTML = htmlOptions;
-      // preservo atributos críticos
-      newSel.id = 'forma_pago_id';
-      newSel.name = 'forma_pago_id';
-      newSel.required = true;
-      // reemplazo en el DOM
-      oldSel.parentNode.replaceChild(newSel, oldSel);
-
-      // 3) Intento notificar al framework si expone API; si no, al menos disparo eventos
-      if (typeof window.fsInitSelect === 'function') {
-        try { window.fsInitSelect(newSel); } catch(_) {}
-      }
-      newSel.dispatchEvent(new Event('input',  { bubbles: true }));
-      newSel.dispatchEvent(new Event('change', { bubbles: true }));
-
-      // 4) Actualizo referencia global (para getFormData/renderResumen)
-      //    Nota: como definimos 'formaPago' con const, obtengo la nueva ref por id cuando la necesite
-      //    y me aseguro de leerla siempre desde document al usarla
-      formasPagoCache = fp.data.slice();
-    } else {
-      // Sin datos
-      const oldSel = document.getElementById('forma_pago_id');
-      if (oldSel) {
-        oldSel.innerHTML = '<option value="">(sin datos)</option>';
-        oldSel.dispatchEvent(new Event('change', { bubbles: true }));
+        if (fp.ok && Array.isArray(fp.data) && fp.data.length) {
+          sel.innerHTML = '<option value="">Seleccionar</option>' +
+            fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+          sel.selectedIndex = 0;
+          sel.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
+        } else {
+          sel.innerHTML = '<option value="">(sin datos)</option>';
+          sel.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
+        }
+      } catch (e) {
+        debugLog('Error formas_pago:', e);
+        const sel = document.getElementById('forma_pago_id');
+        if (sel) {
+          sel.innerHTML = '<option value="">(sin datos)</option>';
+          sel.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
+        }
       }
     }
-  } catch (e) {
-    debugLog('Error formas_pago:', e);
-    const oldSel = document.getElementById('forma_pago_id');
-    if (oldSel) {
-      oldSel.innerHTML = '<option value="">(sin datos)</option>';
-      oldSel.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-  }
-}
+
 
 
 
