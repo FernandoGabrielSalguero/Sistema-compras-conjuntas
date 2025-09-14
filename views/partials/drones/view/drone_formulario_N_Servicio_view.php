@@ -123,9 +123,9 @@
         <div class="input-group">
           <label for="forma_pago_id">Método de pago *</label>
           <div class="input-icon">
-            <select id="forma_pago_id" name="forma_pago_id" required>
-              <option value="">Cargando...</option>
-            </select>
+<select id="forma_pago_id" name="forma_pago_id" required>
+  <option value="">Seleccionar</option>
+</select>
           </div>
         </div>
 
@@ -144,9 +144,9 @@
         <div class="input-group">
           <label for="patologia_id">Motivo del servicio *</label>
           <div class="input-icon">
-            <select id="patologia_id" name="patologia_id" required>
-              <option value="">Cargando...</option>
-            </select>
+<select id="patologia_id" name="patologia_id" required>
+  <option value="">Seleccionar</option>
+</select>
           </div>
         </div>
 
@@ -371,6 +371,8 @@
   }
 </style>
 
+
+
 <script>
   (function () {
     'use strict';
@@ -409,28 +411,14 @@
       sel.appendChild(opt);
     };
 
-    // Refresca la UI del select sin clonar (evitamos romper refs/listeners)
     const refreshSelectUI = (sel) => {
-      sel.selectedIndex = 0;
+      // Disparamos eventos reales para wrappers no reactivos (sin clonar nodos)
       sel.dispatchEvent(new Event('input',  { bubbles: true }));
       sel.dispatchEvent(new Event('change', { bubbles: true }));
-      // micro reflow para frameworks que cachean
+      // micro reflow
       sel.style.outline = '0'; void sel.offsetHeight; sel.style.outline = '';
       return sel;
     };
-
-    // Fuerza que el wrapper del framework re-lea la etiqueta visible:
-    // alterna a la opción 1 y vuelve a la 0, disparando 'change' reales
-    const forceLabelRefresh = (sel) => {
-      const prev = sel.selectedIndex; // normalmente 0
-      if (sel.options.length > 1) {
-        sel.selectedIndex = 1;
-        sel.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-      sel.selectedIndex = prev >= 0 ? prev : 0;
-      sel.dispatchEvent(new Event('change', { bubbles: true }));
-    };
-
 
     const fillSelect = (sel, items, mapValue = (x)=>x.id, mapText = (x)=>x.nombre) => {
       if (!sel) return sel;
@@ -493,6 +481,18 @@
       });
     };
 
+    // ✅ Opción B: cargar framework.js **después** de poblar (o no cargarlo)
+    const loadFrameworkJS = () => new Promise((resolve, reject) => {
+      const src = 'https://www.fernandosalguero.com/cdn/assets/javascript/framework.js';
+      const existing = document.querySelector(`script[src="${src}"]`);
+      if (existing) { resolve(); return; }
+      const s = document.createElement('script');
+      s.src = src; s.defer = true;
+      s.onload = () => { console.debug('framework.js cargado tardíamente'); resolve(); };
+      s.onerror = (e) => { console.warn('framework.js no cargó (continuamos nativo)', e); resolve(); };
+      document.head.appendChild(s);
+    });
+
     /* ========= Carga y bindings ========= */
     const init = async () => {
       // Referencias
@@ -501,23 +501,19 @@
       const selCoop      = byId('coop_descuento_id_real');
       const selPat       = byId('patologia_id');
 
-      // Cargar data en paralelo
+      // 1) Data en paralelo
       const [fpRes, patRes, coopRes] = await Promise.all([
         apiGet('formas_pago'),
         apiGet('patologias'),
         apiGet('cooperativas')
       ]);
 
-      // Poblar selects (sin clonar nodos)
-      if (fpRes.ok) {
-        fillSelect(selFormaPago, fpRes.data, x => x.id, x => x.nombre);
-        // 👇 fuerza que el wrapper deje de mostrar "Cargando..." y muestre el placeholder/valor actual
-        forceLabelRefresh(selFormaPago);
-      }
-      if (coopRes.ok) fillSelect(selCoop, coopRes.data, x => x.id_real, x => x.usuario);
-      if (patRes.ok)  fillSelect(selPat,  patRes.data,  x => x.id,      x => x.nombre);
+      // 2) Poblar selects (nativos)
+      if (fpRes.ok) fillSelect(selFormaPago, fpRes.data, x => x.id,      x => x.nombre);
+      if (coopRes.ok) fillSelect(selCoop,     coopRes.data, x => x.id_real, x => x.usuario);
+      if (patRes.ok)  fillSelect(selPat,      patRes.data,  x => x.id,      x => x.nombre);
 
-      // Mostrar/ocultar cooperativas según forma de pago
+      // 3) Visibilidad cooperativas
       const updateCoopVisibility = () => {
         const isCoop = String(selFormaPago.value) === '6';
         wrapCoop.style.display = isCoop ? '' : 'none';
@@ -528,14 +524,13 @@
       selFormaPago.addEventListener('change', updateCoopVisibility, { passive: true });
       updateCoopVisibility();
 
-      // Matriz por patología
+      // 4) Matriz por patología
       const loadProductos = async (patologiaId) => {
         if (!patologiaId) { renderProductos([]); return; }
         const res = await apiGet('productos_por_patologia', { patologia_id: patologiaId });
         renderProductos(res.ok ? res.data : []);
       };
 
-      // Primera carga
       let pid = parseInt(selPat.value || '0', 10);
       if (!pid && patRes.ok && Array.isArray(patRes.data) && patRes.data.length) {
         pid = parseInt(patRes.data[0].id, 10) || 0;
@@ -543,14 +538,17 @@
       }
       await loadProductos(pid);
 
-      // Cambio de patología
+      // 5) Cambio de patología
       selPat.addEventListener('change', async () => {
         const nuevo = parseInt(selPat.value || '0', 10);
         await loadProductos(nuevo);
       }, { passive: true });
+
+      // 6) (Opcional) cargar framework **después** de que todo está poblado
+      //    Si preferís NO usarlo en esta vista, comentá la línea siguiente.
+      await loadFrameworkJS();
     };
 
     onReady(init);
   })();
 </script>
-
