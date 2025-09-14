@@ -280,7 +280,6 @@ declare(strict_types=1);
   }
   #productos-grid table.data-table {
     width: 100%;
-    min-width: 520px; /* evita que colapse en pantallas angostas */
   }
 
   /* modal adaptativo */
@@ -331,6 +330,32 @@ declare(strict_types=1);
     min-width: 0;            /* quita el mínimo de 520px */
     table-layout: fixed;     /* reparte columnas por ancho fijo */
     width: 100%;
+
+    /* Tabla completa en móvil (sin scroll) */
+@media (max-width: 640px){
+  #productos-grid .tabla-wrapper { overflow-x: visible; } /* sin scroll horizontal */
+  #productos-grid table.data-table { table-layout: fixed; } /* reparte ancho fijo */
+  #productos-grid .data-table th,
+  #productos-grid .data-table td{
+    padding: .5rem;
+    font-size: .9rem;
+    word-break: break-word;
+    white-space: normal;
+  }
+  /* Columna del check angosta */
+  #productos-grid .data-table th:first-child,
+  #productos-grid .data-table td:first-child { width: 40px; }
+
+  /* Columnas SVE / Productor fijas y centradas */
+  #productos-grid .data-table th:nth-child(3),
+  #productos-grid .data-table td:nth-child(3),
+  #productos-grid .data-table th:nth-child(4),
+  #productos-grid .data-table td:nth-child(4){
+    width: 64px;
+    text-align: center;
+  }
+}
+
   }
   #productos-grid .data-table th,
   #productos-grid .data-table td{
@@ -357,7 +382,7 @@ declare(strict_types=1);
 <script>
   (function() {
     'use strict';
-    const API = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
+    const API = '/views/partials/drones/controller/drone_formulario_N_Servicio_controller.php';
 
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -405,55 +430,60 @@ declare(strict_types=1);
     });
 
     // Wrapper fetch con logs
-    async function fetchJSON(url, options = {}) {
-      debugLog('Fetch ->', url, options);
-      const res = await fetch(url, options);
-      const ct = res.headers.get('content-type');
-      let json;
-      try {
-        json = ct && ct.includes('application/json') ? await res.json() : null;
-      } catch (err) {
-        debugLog('Error parseando JSON de', url, err);
-      }
-      debugLog('Fetch <- status:', res.status, 'ok:', res.ok, 'json:', json);
-      if (!res.ok) {
-        throw new Error('HTTP ' + res.status + ' al solicitar ' + url);
-      }
-      return json;
-    }
+async function fetchJSON(url, options = {}) {
+  debugLog('Fetch ->', url, options);
+  const res = await fetch(url, { cache: 'no-store', ...options }); // evita cache
+  const text = await res.text(); // siempre leo como texto
+  debugLog('Fetch <- status:', res.status, 'ok:', res.ok, 'raw:', text);
+  if (!res.ok) throw new Error('HTTP ' + res.status + ' al solicitar ' + url);
+  let json;
+  try { json = JSON.parse(text); }
+  catch (e) {
+    debugLog('JSON.parse error en', url, e);
+    throw new Error('Respuesta no JSON');
+  }
+  return json;
+}
 
     // ===== Cargar combos iniciales =====
-    init();
-    async function init() {
-      try {
-        const [fp, pats] = await Promise.all([
-          fetchJSON(API + '?action=formas_pago'),
-          fetchJSON(API + '?action=patologias'),
-        ]);
-
-        debugLog('Formas de pago recibidas:', fp);
-        if (fp && fp.ok && Array.isArray(fp.data)) {
-          const opts = fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
-          formaPago.innerHTML = '<option value="">Seleccionar</option>' + opts;
-        } else {
-          formaPago.innerHTML = '<option value="">(sin datos)</option>';
-        }
-
-        debugLog('Patologías recibidas:', pats);
-        if (pats && pats.ok && Array.isArray(pats.data)) {
-          patologia.innerHTML = '<option value="">Seleccionar</option>' + pats.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
-        } else {
-          patologia.innerHTML = '<option value="">(sin datos)</option>';
-        }
-
-      } catch (e) {
-        debugLog('Error en init():', e);
-        showAlert('error', 'No se pudieron cargar opciones iniciales.');
-        // fallback visible
-        formaPago.innerHTML = '<option value="">(sin datos)</option>';
-        patologia.innerHTML = '<option value="">(sin datos)</option>';
-      }
+async function loadFormasPago() {
+  try {
+    const fp = await fetchJSON(API + '?action=formas_pago');
+    debugLog('Formas de pago:', fp);
+    if (fp.ok && Array.isArray(fp.data) && fp.data.length) {
+      const opts = fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+      formaPago.innerHTML = '<option value="">Seleccionar</option>' + opts;
+    } else {
+      formaPago.innerHTML = '<option value="">(sin datos)</option>';
     }
+  } catch (e) {
+    debugLog('Error formas_pago:', e);
+    formaPago.innerHTML = '<option value="">(sin datos)</option>';
+  }
+}
+
+async function loadPatologias() {
+  try {
+    const pats = await fetchJSON(API + '?action=patologias');
+    debugLog('Patologías:', pats);
+    if (pats.ok && Array.isArray(pats.data) && pats.data.length) {
+      patologia.innerHTML = '<option value="">Seleccionar</option>' +
+        pats.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+    } else {
+      patologia.innerHTML = '<option value="">(sin datos)</option>';
+    }
+  } catch (e) {
+    debugLog('Error patologias:', e);
+    patologia.innerHTML = '<option value="">(sin datos)</option>';
+  }
+}
+
+// Llamá así (sin Promise.all y SIN showAlert aquí)
+(async function init() {
+  await loadFormasPago();
+  await loadPatologias();
+})();
+
 
     // ===== Autocomplete de productor =====
     let acTimer;
