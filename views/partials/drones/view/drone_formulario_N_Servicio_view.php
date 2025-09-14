@@ -1,7 +1,56 @@
 <?php
 
+declare(strict_types=1);
+
+// Carga inicial desde servidor para evitar problemas de timing/JS
+$formasPago   = [];
+$patologias   = [];
+$cooperativas = [];
+$productosIni = [];
+$primeraPatId = null;
+
+try {
+  require_once __DIR__ . '/../../../../config.php'; // ajustá si tu ruta difiere
+  // Formas de pago
+  $st = $pdo->query("SELECT id, nombre FROM dron_formas_pago WHERE activo='si' ORDER BY nombre");
+  if ($st) {
+    $formasPago = $st->fetchAll(PDO::FETCH_ASSOC);
+  }
+
+  // Patologías
+  $st = $pdo->query("SELECT id, nombre FROM dron_patologias WHERE activo='si' ORDER BY nombre");
+  if ($st) {
+    $patologias = $st->fetchAll(PDO::FETCH_ASSOC);
+  }
+
+  // Cooperativas
+  $st = $pdo->query("SELECT usuario, id_real FROM usuarios WHERE rol='cooperativa' ORDER BY usuario");
+  if ($st) {
+    $cooperativas = $st->fetchAll(PDO::FETCH_ASSOC);
+  }
+
+  // Productos sugeridos de la primera patología (si existe)
+  $primeraPatId = $patologias[0]['id'] ?? null;
+  if ($primeraPatId) {
+    $sql = "SELECT s.id, s.nombre
+                FROM dron_productos_stock s
+                INNER JOIN dron_productos_stock_patologias sp ON sp.producto_id = s.id
+                WHERE sp.patologia_id = ? AND s.activo='si'
+                ORDER BY s.nombre";
+    $ps = $pdo->prepare($sql);
+    $ps->execute([$primeraPatId]);
+    $productosIni = $ps->fetchAll(PDO::FETCH_ASSOC);
+  }
+} catch (Throwable $e) {
+  // Silencioso en UI; si querés ver el error, loguealo en server
+  $formasPago = $formasPago ?? [];
+  $patologias = $patologias ?? [];
+  $cooperativas = $cooperativas ?? [];
+  $productosIni = $productosIni ?? [];
+}
 ?>
 <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
+
 
 
 <div class="content">
@@ -124,6 +173,9 @@
           <div class="input-icon">
             <select id="forma_pago_id" name="forma_pago_id" required>
               <option value="">Seleccionar</option>
+              <?php foreach ($formasPago as $fp): ?>
+                <option value="<?= (int)$fp['id'] ?>"><?= htmlspecialchars($fp['nombre'], ENT_QUOTES, 'UTF-8') ?></option>
+              <?php endforeach; ?>
             </select>
           </div>
         </div>
@@ -134,6 +186,11 @@
           <div class="input-icon">
             <select id="coop_descuento_id_real" name="coop_descuento_id_real" aria-hidden="true">
               <option value="">Seleccionar</option>
+              <?php foreach ($cooperativas as $c): ?>
+                <option value="<?= htmlspecialchars($c['id_real'], ENT_QUOTES, 'UTF-8') ?>">
+                  <?= htmlspecialchars($c['usuario'], ENT_QUOTES, 'UTF-8') ?>
+                </option>
+              <?php endforeach; ?>
             </select>
           </div>
         </div>
@@ -145,6 +202,11 @@
           <div class="input-icon">
             <select id="patologia_id" name="patologia_id" required>
               <option value="">Seleccionar</option>
+              <?php foreach ($patologias as $p): ?>
+                <option value="<?= (int)$p['id'] ?>" <?= ($primeraPatId && (int)$p['id'] === (int)$primeraPatId) ? 'selected' : ''; ?>>
+                  <?= htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8') ?>
+                </option>
+              <?php endforeach; ?>
             </select>
           </div>
         </div>
@@ -185,7 +247,21 @@
                     </tr>
                   </thead>
                   <tbody id="productos-body">
-                    <!-- filas dinámicas -->
+                    <?php if (!empty($productosIni)): ?>
+                      <?php foreach ($productosIni as $p): $pid = (int)$p['id'];
+                        $chkId = "prod_$pid"; ?>
+                        <tr data-producto-id="<?= $pid ?>">
+                          <td><input type="checkbox" class="chk-prod" id="<?= $chkId ?>" aria-label="Seleccionar <?= htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8') ?>"></td>
+                          <td style="text-align:left;"><label for="<?= $chkId ?>"><?= htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8') ?></label></td>
+                          <td><input type="radio" name="fuente_<?= $pid ?>" value="sve" disabled aria-label="Aporta SVE"></td>
+                          <td><input type="radio" name="fuente_<?= $pid ?>" value="productor" disabled aria-label="Aporta productor"></td>
+                        </tr>
+                      <?php endforeach; ?>
+                    <?php else: ?>
+                      <tr>
+                        <td colspan="4" style="text-align:center;">No hay productos sugeridos para la patología seleccionada.</td>
+                      </tr>
+                    <?php endif; ?>
                   </tbody>
                 </table>
               </div>
@@ -428,24 +504,7 @@
       opt.textContent = placeholder;
       sel.appendChild(opt);
     };
-
-    const refreshSelectUI = (sel) => {
-      // Disparamos eventos reales para wrappers no reactivos (sin clonar nodos)
-      sel.dispatchEvent(new Event('input', {
-        bubbles: true
-      }));
-      sel.dispatchEvent(new Event('change', {
-        bubbles: true
-      }));
-      // micro reflow
-      sel.style.outline = '0';
-      void sel.offsetHeight;
-      sel.style.outline = '';
-      return sel;
-    };
-
     const fillSelect = (sel, items, mapValue = (x) => x.id, mapText = (x) => x.nombre) => {
-      if (!sel) return sel;
       clearSelect(sel);
       if (Array.isArray(items)) {
         for (const it of items) {
@@ -455,46 +514,31 @@
           sel.appendChild(o);
         }
       }
-      console.debug(`Select#${sel.id} opciones:`, sel.options.length);
-      return refreshSelectUI(sel);
     };
+    const hasOptions = (sel) => sel && sel.options && sel.options.length > 1;
 
-    /* ========= Matriz de productos ========= */
+    /* ========= Matriz ========= */
     const renderProductos = (productos = []) => {
       const tbody = byId('productos-body');
       tbody.innerHTML = '';
 
       if (!Array.isArray(productos) || productos.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td colspan="4" style="text-align:center;">No hay productos sugeridos para la patología seleccionada.</td>`;
-        tbody.appendChild(tr);
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No hay productos sugeridos para la patología seleccionada.</td></tr>`;
         return;
       }
-
-      for (const p of productos) {
+      const rows = productos.map(p => {
         const pid = parseInt(p.id, 10);
-        const row = document.createElement('tr');
-        row.setAttribute('data-producto-id', String(pid));
         const chkId = `prod_${pid}`;
+        return `
+          <tr data-producto-id="${pid}">
+            <td><input type="checkbox" class="chk-prod" id="${chkId}" aria-label="Seleccionar ${p.nombre}"></td>
+            <td style="text-align:left;"><label for="${chkId}">${p.nombre}</label></td>
+            <td><input type="radio" name="fuente_${pid}" value="sve" disabled aria-label="Aporta SVE"></td>
+            <td><input type="radio" name="fuente_${pid}" value="productor" disabled aria-label="Aporta productor"></td>
+          </tr>`;
+      }).join('');
+      tbody.innerHTML = rows;
 
-        row.innerHTML = `
-          <td>
-            <input type="checkbox" class="chk-prod" id="${chkId}" aria-label="Seleccionar ${p.nombre}">
-          </td>
-          <td style="text-align:left;">
-            <label for="${chkId}">${p.nombre}</label>
-          </td>
-          <td>
-            <input type="radio" name="fuente_${pid}" value="sve" disabled aria-label="Aporta SVE">
-          </td>
-          <td>
-            <input type="radio" name="fuente_${pid}" value="productor" disabled aria-label="Aporta productor">
-          </td>
-        `;
-        tbody.appendChild(row);
-      }
-
-      // Habilitar radios solo si está chequeado el producto
       tbody.querySelectorAll('.chk-prod').forEach(chk => {
         chk.addEventListener('change', (e) => {
           const tr = e.target.closest('tr');
@@ -510,27 +554,55 @@
       });
     };
 
-    /* ========= Carga y bindings ========= */
+    /* ========= Init ========= */
     const init = async () => {
-      // Referencias
       const selFormaPago = byId('forma_pago_id');
+      const selPat = byId('patologia_id');
       const wrapCoop = byId('wrap-cooperativa');
       const selCoop = byId('coop_descuento_id_real');
-      const selPat = byId('patologia_id');
 
-      // 1) Data en paralelo
-      const [fpRes, patRes, coopRes] = await Promise.all([
-        apiGet('formas_pago'),
-        apiGet('patologias'),
-        apiGet('cooperativas')
-      ]);
+      // Si el servidor ya trajo opciones, no sobreescribimos; sólo completamos si falta
+      const needFP = !hasOptions(selFormaPago);
+      const needPat = !hasOptions(selPat);
+      const needCoop = !hasOptions(selCoop);
 
-      // 2) Poblar selects (nativos)
-      if (fpRes.ok) fillSelect(selFormaPago, fpRes.data, x => x.id, x => x.nombre);
-      if (coopRes.ok) fillSelect(selCoop, coopRes.data, x => x.id_real, x => x.usuario);
-      if (patRes.ok) fillSelect(selPat, patRes.data, x => x.id, x => x.nombre);
+      const promises = [];
+      if (needFP) promises.push(apiGet('formas_pago').then(r => ({
+        k: 'fp',
+        r
+      })));
+      if (needPat) promises.push(apiGet('patologias').then(r => ({
+        k: 'pat',
+        r
+      })));
+      if (needCoop) promises.push(apiGet('cooperativas').then(r => ({
+        k: 'coop',
+        r
+      })));
 
-      // 3) Visibilidad cooperativas
+      const results = await Promise.all(promises);
+
+      for (const it of results) {
+        if (it.k === 'fp') {
+          if (it.r.ok && Array.isArray(it.r.data) && it.r.data.length) {
+            fillSelect(selFormaPago, it.r.data, x => x.id, x => x.nombre);
+          } else {
+            console.warn('formas_pago vacío desde API; se mantiene lo que vino del servidor.');
+          }
+        }
+        if (it.k === 'pat') {
+          if (it.r.ok && Array.isArray(it.r.data) && it.r.data.length) {
+            fillSelect(selPat, it.r.data, x => x.id, x => x.nombre);
+          }
+        }
+        if (it.k === 'coop') {
+          if (it.r.ok && Array.isArray(it.r.data) && it.r.data.length) {
+            fillSelect(selCoop, it.r.data, x => x.id_real, x => x.usuario);
+          }
+        }
+      }
+
+      // Visibilidad de cooperativas
       const updateCoopVisibility = () => {
         const isCoop = String(selFormaPago.value) === '6';
         wrapCoop.style.display = isCoop ? '' : 'none';
@@ -543,33 +615,32 @@
       });
       updateCoopVisibility();
 
-      // 4) Matriz por patología
-      const loadProductos = async (patologiaId) => {
-        if (!patologiaId) {
+      // Matriz dinámica al cambiar patología
+      const loadProductos = async (pid) => {
+        if (!pid) {
           renderProductos([]);
           return;
         }
-        const res = await apiGet('productos_por_patologia', {
-          patologia_id: patologiaId
+        const r = await apiGet('productos_por_patologia', {
+          patologia_id: pid
         });
-        renderProductos(res.ok ? res.data : []);
+        renderProductos(r.ok ? r.data : []);
       };
 
+      // Si el servidor seleccionó una patología, usamos esa
       let pid = parseInt(selPat.value || '0', 10);
-      if (!pid && patRes.ok && Array.isArray(patRes.data) && patRes.data.length) {
-        pid = parseInt(patRes.data[0].id, 10) || 0;
+      if (!pid && hasOptions(selPat)) {
+        pid = parseInt(selPat.options[1].value, 10) || 0;
         if (pid) selPat.value = String(pid);
       }
       await loadProductos(pid);
 
-      // 5) Cambio de patología
       selPat.addEventListener('change', async () => {
         const nuevo = parseInt(selPat.value || '0', 10);
         await loadProductos(nuevo);
       }, {
         passive: true
       });
-
     };
 
     onReady(init);
