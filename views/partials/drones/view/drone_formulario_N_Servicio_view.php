@@ -129,6 +129,16 @@
           </div>
         </div>
 
+        <!-- coop_descuento_id_real (se muestra solo si forma_pago_id = 6) -->
+        <div class="input-group" id="wrap-cooperativa" style="display:none;">
+          <label for="coop_descuento_id_real">Seleccionar cooperativa</label>
+          <div class="input-icon">
+            <select id="coop_descuento_id_real" name="coop_descuento_id_real" aria-hidden="true">
+              <option value="">Seleccionar</option>
+            </select>
+          </div>
+        </div>
+
 
         <!-- patologia_id -->
         <div class="input-group">
@@ -362,91 +372,165 @@
 </style>
 
 <script>
-(function () {
-  'use strict';
+  (function () {
+    'use strict';
 
-  const API_URL = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
-  const logGroup = (title, payload) => {
-    try {
-      console.group(`API ▶ ${title}`);
-      console.log(payload);
-      console.groupEnd();
-    } catch (e) {
-      console.log(`API ▶ ${title}`, payload);
-    }
-  };
+    const API_URL = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
 
-  const apiGet = async (action, params = {}) => {
-    const qs = new URLSearchParams({ action, ...params });
-    const res = await fetch(`${API_URL}?${qs.toString()}`, {
-      headers: { 'Accept': 'application/json' },
-      credentials: 'same-origin',
-      cache: 'no-store'
-    });
-    let json;
-    try {
-      json = await res.json();
-    } catch (e) {
-      json = { ok: false, error: 'Respuesta no JSON', status: res.status };
-    }
-    logGroup(action, json);
-    return json;
-  };
+    /* ========= Helpers ========= */
+    const $ = (sel) => document.querySelector(sel);
+    const byId = (id) => document.getElementById(id);
 
-  const initConsoleDiagnostics = async () => {
-    // 1) formas_pago
-    const fp = apiGet('formas_pago');
+    const logGroup = (title, payload) => {
+      try { console.group(`API ▶ ${title}`); console.log(payload); console.groupEnd(); }
+      catch { console.log(`API ▶ ${title}`, payload); }
+    };
 
-    // 2) patologias (usaremos el primer id disponible para disparar productos_por_patologia)
-    const patologiasPromise = apiGet('patologias');
+    const apiGet = async (action, params = {}) => {
+      const qs = new URLSearchParams({ action, ...params });
+      const res = await fetch(`${API_URL}?${qs.toString()}`, {
+        headers: { 'Accept': 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      let json;
+      try { json = await res.json(); }
+      catch { json = { ok: false, error: 'Respuesta no JSON', status: res.status }; }
+      logGroup(action, json);
+      return json;
+    };
 
-    // 3) cooperativas
-    const coop = apiGet('cooperativas');
+    const clearSelect = (sel, placeholder = 'Seleccionar') => {
+      sel.innerHTML = '';
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = placeholder;
+      sel.appendChild(opt);
+    };
 
-    // 4) productos_por_patologia: al cargar patologías, usamos la primera; si no hay, probamos con el valor del select (si existe)
-    try {
-      const patologias = await patologiasPromise;
-      let patologiaId = 0;
+    const fillSelect = (sel, items, mapValue = (x)=>x.id, mapText = (x)=>x.nombre) => {
+      clearSelect(sel);
+      if (!Array.isArray(items)) return;
+      for (const it of items) {
+        const o = document.createElement('option');
+        o.value = String(mapValue(it) ?? '');
+        o.textContent = String(mapText(it) ?? '');
+        sel.appendChild(o);
+      }
+    };
 
-      // Intentamos con el select si ya existe un valor válido
-      const sel = document.getElementById('patologia_id');
-      if (sel && sel.value && !isNaN(parseInt(sel.value, 10))) {
-        patologiaId = parseInt(sel.value, 10);
+    /* ========= Render matriz de productos ========= */
+    const renderProductos = (productos = []) => {
+      const tbody = byId('productos-body');
+      tbody.innerHTML = '';
+
+      if (!Array.isArray(productos) || productos.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="4" style="text-align:center;">No hay productos sugeridos para la patología seleccionada.</td>`;
+        tbody.appendChild(tr);
+        return;
       }
 
-      // Si no había selección previa, tomamos el primer id de la API
-      if ((!patologiaId || patologiaId <= 0) && patologias && patologias.ok && Array.isArray(patologias.data) && patologias.data.length) {
-        patologiaId = parseInt(patologias.data[0].id, 10) || 0;
+      for (const p of productos) {
+        const pid = parseInt(p.id, 10);
+        const row = document.createElement('tr');
+        row.setAttribute('data-producto-id', String(pid));
+
+        const chkId = `prod_${pid}`;
+        row.innerHTML = `
+          <td>
+            <input type="checkbox" class="chk-prod" id="${chkId}" aria-label="Seleccionar ${p.nombre}">
+          </td>
+          <td style="text-align:left;">
+            <label for="${chkId}">${p.nombre}</label>
+          </td>
+          <td>
+            <input type="radio" name="fuente_${pid}" value="sve" disabled aria-label="Aporta SVE">
+          </td>
+          <td>
+            <input type="radio" name="fuente_${pid}" value="productor" disabled aria-label="Aporta productor">
+          </td>
+        `;
+        tbody.appendChild(row);
       }
 
-      // Si conseguimos un id válido, disparamos productos_por_patologia
-      if (patologiaId > 0) {
-        await apiGet('productos_por_patologia', { patologia_id: patologiaId });
-      } else {
-        // Último recurso: log de advertencia y consulta con id=1 (puede no existir)
-        console.warn('No se pudo determinar patologia_id a partir del select ni de la API. Se probará con patologia_id=1');
-        await apiGet('productos_por_patologia', { patologia_id: 1 });
-      }
-    } catch (e) {
-      console.error('Error en diagnóstico de productos_por_patologia:', e);
-    }
+      // Habilitar radios solo si está chequeado el producto
+      tbody.querySelectorAll('.chk-prod').forEach(chk => {
+        chk.addEventListener('change', (e) => {
+          const tr = e.target.closest('tr');
+          const pid = tr.getAttribute('data-producto-id');
+          const radios = tr.querySelectorAll(`input[name="fuente_${pid}"]`);
+          radios.forEach(r => { r.disabled = !chk.checked; if (!chk.checked) r.checked = false; });
+        }, { passive: true });
+      });
+    };
 
-    // Listener: cuando el usuario cambie la patología, volver a loggear productos_por_patologia
-    const patSel = document.getElementById('patologia_id');
-    if (patSel) {
-      patSel.addEventListener('change', async () => {
-        const id = parseInt(patSel.value || '0', 10);
-        if (id > 0) {
-          await apiGet('productos_por_patologia', { patologia_id: id });
-        }
+    /* ========= Carga y binding ========= */
+    const init = async () => {
+      const selFormaPago = byId('forma_pago_id');
+      const wrapCoop = byId('wrap-cooperativa');
+      const selCoop = byId('coop_descuento_id_real');
+      const selPat = byId('patologia_id');
+
+      // Cargar combos en paralelo
+      const [fpRes, patRes, coopRes] = await Promise.all([
+        apiGet('formas_pago'),
+        apiGet('patologias'),
+        apiGet('cooperativas')
+      ]);
+
+      // Formas de pago
+      if (fpRes.ok) fillSelect(selFormaPago, fpRes.data, x => x.id, x => x.nombre);
+
+      // Cooperativas (value = id_real, text = usuario). Se mantiene oculto hasta que forma_pago_id == 6
+      if (coopRes.ok) fillSelect(selCoop, coopRes.data, x => x.id_real, x => x.usuario);
+
+      // Patologías
+      if (patRes.ok) {
+        fillSelect(selPat, patRes.data, x => x.id, x => x.nombre);
+      }
+
+      // Mostrar/ocultar cooperativas según forma de pago
+      const updateCoopVisibility = () => {
+        const isCoop = String(selFormaPago.value) === '6';
+        wrapCoop.style.display = isCoop ? '' : 'none';
+        selCoop.toggleAttribute('required', isCoop);
+        selCoop.setAttribute('aria-hidden', String(!isCoop));
+        if (!isCoop) selCoop.value = '';
+      };
+      selFormaPago.addEventListener('change', updateCoopVisibility, { passive: true });
+      updateCoopVisibility();
+
+      // Cargar matriz de productos según patología
+      const loadProductos = async (patologiaId) => {
+        if (!patologiaId) { renderProductos([]); return; }
+        const res = await apiGet('productos_por_patologia', { patologia_id: patologiaId });
+        renderProductos(res.ok ? res.data : []);
+      };
+
+      // Primera carga de productos: seleccionado o primer elemento
+      let pid = parseInt(selPat.value || '0', 10);
+      if (!pid && patRes.ok && Array.isArray(patRes.data) && patRes.data.length) {
+        pid = parseInt(patRes.data[0].id, 10) || 0;
+        if (pid) selPat.value = String(pid);
+      }
+      await loadProductos(pid);
+
+      // Al cambiar patología, refrescar matriz
+      selPat.addEventListener('change', async () => {
+        const nuevo = parseInt(selPat.value || '0', 10);
+        await loadProductos(nuevo);
       }, { passive: true });
-    }
-  };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initConsoleDiagnostics, { once: true });
-  } else {
-    initConsoleDiagnostics();
-  }
-})();
+      /* === Diagnóstico en consola pedido inicialmente === */
+      // (Se mantienen los logs agrupados)
+      // Ya se loguearon en apiGet: formas_pago, patologias, cooperativas y productos_por_patologia (en loadProductos).
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init, { once: true });
+    } else {
+      init();
+    }
+  })();
 </script>
