@@ -419,6 +419,19 @@
       return sel;
     };
 
+    // Fuerza que el wrapper del framework re-lea la etiqueta visible:
+    // alterna a la opción 1 y vuelve a la 0, disparando 'change' reales
+    const forceLabelRefresh = (sel) => {
+      const prev = sel.selectedIndex; // normalmente 0
+      if (sel.options.length > 1) {
+        sel.selectedIndex = 1;
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      sel.selectedIndex = prev >= 0 ? prev : 0;
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
+
     const fillSelect = (sel, items, mapValue = (x)=>x.id, mapText = (x)=>x.nombre) => {
       if (!sel) return sel;
       clearSelect(sel);
@@ -496,9 +509,13 @@
       ]);
 
       // Poblar selects (sin clonar nodos)
-      if (fpRes.ok) fillSelect(selFormaPago, fpRes.data, x => x.id,      x => x.nombre);
-      if (coopRes.ok) fillSelect(selCoop,     coopRes.data, x => x.id_real, x => x.usuario);
-      if (patRes.ok)  fillSelect(selPat,      patRes.data,  x => x.id,      x => x.nombre);
+      if (fpRes.ok) {
+        fillSelect(selFormaPago, fpRes.data, x => x.id, x => x.nombre);
+        // 👇 fuerza que el wrapper deje de mostrar "Cargando..." y muestre el placeholder/valor actual
+        forceLabelRefresh(selFormaPago);
+      }
+      if (coopRes.ok) fillSelect(selCoop, coopRes.data, x => x.id_real, x => x.usuario);
+      if (patRes.ok)  fillSelect(selPat,  patRes.data,  x => x.id,      x => x.nombre);
 
       // Mostrar/ocultar cooperativas según forma de pago
       const updateCoopVisibility = () => {
