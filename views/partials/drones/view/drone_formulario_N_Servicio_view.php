@@ -376,8 +376,8 @@
     const listaNombres = $('#lista-nombres');
     const productorIdReal = $('#productor_id_real');
     const formaPago = document.getElementById('forma_pago_id');
-    const coopSelect = $('#coop_descuento_id_real');
-    const coopGroup = $('#coop-group');
+    const coopSelect = document.getElementById('coop_descuento_id_real'); // puede ser null
+    const coopGroup = document.getElementById('coop-group'); // puede ser null
     const patologia = $('#patologia_id');
     const productosBody = $('#productos-body');
 
@@ -418,13 +418,15 @@
 
     btnReset.addEventListener('click', () => {
       debugLog('Formulario reseteado manualmente');
-      // reset cooperativa
-      coopGroup.style.display = 'none';
-      coopSelect.required = false;
-      coopSelect.disabled = true;
-      coopSelect.setAttribute('aria-disabled', 'true');
-      coopSelect.value = '';
+      if (coopGroup && coopSelect) {
+        coopGroup.style.display = 'none';
+        coopSelect.required = false;
+        coopSelect.disabled = true;
+        coopSelect.setAttribute('aria-disabled', 'true');
+        coopSelect.value = '';
+      }
     });
+
 
     // Wrapper fetch con logs y parse robusto
     async function fetchJSON(url, options = {}) {
@@ -445,6 +447,17 @@
       }
       return json;
     }
+
+
+    function setCoopVisibility(visible) {
+      if (!coopGroup || !coopSelect) return;
+      coopGroup.style.display = visible ? 'block' : 'none';
+      coopSelect.required = !!visible;
+      coopSelect.disabled = !visible;
+      coopSelect.setAttribute('aria-disabled', visible ? 'false' : 'true');
+      if (!visible) coopSelect.value = '';
+    }
+
 
     // caché para reinyectar si el framework reemplaza el <select>
     let formasPagoCache = null;
@@ -572,13 +585,10 @@
       if (target.id === 'forma_pago_id') {
         const id = Number(target.value || 0);
         debugLog('Cambio forma_pago_id=', id);
-        if (id === 6) {
-          coopGroup.style.display = 'block';
-          coopSelect.required = true;
-          coopSelect.disabled = false;
-          coopSelect.setAttribute('aria-disabled', 'false');
 
-          if (coopSelect.options.length <= 1) {
+        if (id === 6) {
+          setCoopVisibility(true);
+          if (coopSelect && coopSelect.options.length <= 1) {
             try {
               const j = await fetchJSON(API + '?action=cooperativas');
               debugLog('Cooperativas recibidas:', j);
@@ -594,11 +604,7 @@
             }
           }
         } else {
-          coopGroup.style.display = 'none';
-          coopSelect.required = false;
-          coopSelect.value = '';
-          coopSelect.disabled = true;
-          coopSelect.setAttribute('aria-disabled', 'true');
+          setCoopVisibility(false);
         }
       }
 
@@ -607,6 +613,7 @@
         await cargarProductosPorPatologia(target.value);
       }
     });
+
 
     // por compatibilidad si tu select de patología no es reemplazado
     patologia.addEventListener('change', async () => {
@@ -705,10 +712,7 @@
           closeModal();
           form.reset();
           // reset cooperativa
-          coopGroup.style.display = 'none';
-          coopSelect.required = false;
-          coopSelect.disabled = true;
-          coopSelect.setAttribute('aria-disabled', 'true');
+          setCoopVisibility(false);
           showAlert('success', '¡Solicitud guardada! ID ' + json.data.id);
         } else {
           showAlert('error', (json && json.error) ? json.error : 'No se pudo guardar.');
@@ -745,7 +749,9 @@
         area_despegue: $('#area_despegue').value,
         superficie_ha: parseFloat($('#superficie_ha').value),
         forma_pago_id: Number(formaPagoSel.value),
-        coop_descuento_id_real: (coopGroup.style.display === 'block') ? ($('#coop_descuento_id_real').value || null) : null,
+        coop_descuento_id_real: (coopGroup && coopSelect && coopGroup.style.display === 'block' && !coopSelect.disabled) ?
+          (coopSelect.value || null) :
+          null,
         patologia_id: Number($('#patologia_id').value),
         rango: $('#rango').value,
         items, // << matriz de productos con fuente
@@ -770,8 +776,9 @@
         '—';
 
       const formaPagoText = (document.getElementById('forma_pago_id')?.selectedOptions[0]?.textContent) || '';
-      const coopEstaVisible = coopGroup.style.display === 'block' && !coopSelect.disabled;
-      const coopText = coopEstaVisible ? (coopSelect.selectedOptions[0]?.textContent || '—') : '—';
+      const coopEstaVisible = !!(coopGroup && coopSelect && coopGroup.style.display === 'block' && !coopSelect.disabled);
+      const coopText = coopEstaVisible ? (coopSelect?.selectedOptions[0]?.textContent || '—') : '—';
+
 
       return `
       <div class="tabla-wrapper">
