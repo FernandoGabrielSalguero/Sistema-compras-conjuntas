@@ -362,20 +362,10 @@
 </style>
 
 <script>
-/**
- * Consola de diagnóstico inicial solicitada:
- * - formas_pago
- * - patologias
- * - cooperativas
- * - productos_por_patologia (usa la patología seleccionada o la primera disponible)
- *
- * Supuesto: el controlador está accesible en "controller/drone_formulario_N_Servicio_controller.php"
- * Ajustá API_URL si tu ruta es otra.
- */
 (function () {
   'use strict';
 
-  const API_URL = 'controller/drone_formulario_N_Servicio_controller.php';
+  const API_URL = '../controller/drone_formulario_N_Servicio_controller.php';
 
   const logGroup = (title, payload) => {
     try {
@@ -383,7 +373,6 @@
       console.log(payload);
       console.groupEnd();
     } catch (e) {
-      // Si la consola no soporta group en algún navegador legacy
       console.log(`API ▶ ${title}`, payload);
     }
   };
