@@ -357,7 +357,7 @@ declare(strict_types=1);
 <script>
   (function() {
     'use strict';
-    const API = '/partials/drones/controller/drone_formulario_N_Servicio_controller.php';
+    const API = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
 
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
