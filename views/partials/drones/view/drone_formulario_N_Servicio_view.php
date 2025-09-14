@@ -122,7 +122,7 @@ declare(strict_types=1);
         <!-- forma_pago_id -->
         <div class="input-group">
           <label for="forma_pago_id">Método de pago *</label>
-          <div class="input-icon input-icon-globe">
+          <div class="input-icon">
             <select id="forma_pago_id" name="forma_pago_id" required>
               <option value="">Cargando...</option>
             </select>
@@ -132,7 +132,7 @@ declare(strict_types=1);
         <!-- coop_descuento_id_real (solo si forma_pago_id = 6) -->
         <div class="input-group" id="coop-group" style="display:none;">
           <label for="coop_descuento_id_real">Cooperativa (solo si aplica)</label>
-          <div class="input-icon input-icon-globe">
+          <div class="input-icon">
             <select id="coop_descuento_id_real" name="coop_descuento_id_real" disabled aria-disabled="true">
               <option value="">Seleccionar</option>
             </select>
