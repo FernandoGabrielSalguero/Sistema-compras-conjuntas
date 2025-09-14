@@ -1,7 +1,7 @@
 <?php
 
 ?>
-<script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
+<!-- <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script> -->
 <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
 
 
