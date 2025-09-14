@@ -408,15 +408,30 @@
       sel.appendChild(opt);
     };
 
+    // ⚠️ Algunos wrappers de <select> cachean la primera opción. Forzamos refresco visual.
+    const refreshSelectVisual = (sel) => {
+      sel.selectedIndex = 0;                                // vuelve al placeholder
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      // Fallback: si el framework no re-renderiza, reemplazamos el nodo
+      const clone = sel.cloneNode(true);
+      sel.replaceWith(clone);
+      return clone;
+    };
+
     const fillSelect = (sel, items, mapValue = (x)=>x.id, mapText = (x)=>x.nombre) => {
+      if (!sel) return;
       clearSelect(sel);
-      if (!Array.isArray(items)) return;
-      for (const it of items) {
-        const o = document.createElement('option');
-        o.value = String(mapValue(it) ?? '');
-        o.textContent = String(mapText(it) ?? '');
-        sel.appendChild(o);
+      if (Array.isArray(items)) {
+        for (const it of items) {
+          const o = document.createElement('option');
+          o.value = String(mapValue(it) ?? '');
+          o.textContent = String(mapText(it) ?? '');
+          sel.appendChild(o);
+        }
       }
+      // Diagnóstico: cuántas opciones quedaron
+      console.debug(`Select#${sel.id} cargado con`, sel.options.length, 'opciones');
+      return refreshSelectVisual(sel);
     };
 
     /* ========= Render matriz de productos ========= */
@@ -467,9 +482,9 @@
 
     /* ========= Carga y binding ========= */
     const init = async () => {
-      const selFormaPago = byId('forma_pago_id');
+      let selFormaPago = byId('forma_pago_id');
       const wrapCoop = byId('wrap-cooperativa');
-      const selCoop = byId('coop_descuento_id_real');
+      let selCoop = byId('coop_descuento_id_real');
       const selPat = byId('patologia_id');
 
       // Cargar combos en paralelo
@@ -480,10 +495,14 @@
       ]);
 
       // Formas de pago
-      if (fpRes.ok) fillSelect(selFormaPago, fpRes.data, x => x.id, x => x.nombre);
+      if (fpRes.ok) {
+        selFormaPago = fillSelect(selFormaPago, fpRes.data, x => x.id, x => x.nombre);
+      }
 
       // Cooperativas (value = id_real, text = usuario). Se mantiene oculto hasta que forma_pago_id == 6
-      if (coopRes.ok) fillSelect(selCoop, coopRes.data, x => x.id_real, x => x.usuario);
+      if (coopRes.ok) {
+        selCoop = fillSelect(selCoop, coopRes.data, x => x.id_real, x => x.usuario);
+      }
 
       // Patologías
       if (patRes.ok) {
@@ -521,10 +540,6 @@
         const nuevo = parseInt(selPat.value || '0', 10);
         await loadProductos(nuevo);
       }, { passive: true });
-
-      /* === Diagnóstico en consola pedido inicialmente === */
-      // (Se mantienen los logs agrupados)
-      // Ya se loguearon en apiGet: formas_pago, patologias, cooperativas y productos_por_patologia (en loadProductos).
     };
 
     if (document.readyState === 'loading') {
@@ -534,3 +549,4 @@
     }
   })();
 </script>
+
