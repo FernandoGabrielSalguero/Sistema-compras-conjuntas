@@ -180,20 +180,20 @@ try {
           </div>
         </div>
 
-        <!-- coop_descuento_id_real (se muestra solo si forma_pago_id = 6) -->
-        <div class="input-group" id="wrap-cooperativa" style="display:none;">
-          <label for="coop_descuento_id_real">Seleccionar cooperativa</label>
-          <div class="input-icon">
-            <select id="coop_descuento_id_real" name="coop_descuento_id_real" aria-hidden="true">
-              <option value="">Seleccionar</option>
-              <?php foreach ($cooperativas as $c): ?>
-                <option value="<?= htmlspecialchars($c['id_real'], ENT_QUOTES, 'UTF-8') ?>">
-                  <?= htmlspecialchars($c['usuario'], ENT_QUOTES, 'UTF-8') ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-        </div>
+<!-- coop_descuento_id_real (se muestra solo si forma_pago_id = 6) -->
+<div class="input-group hidden" id="wrap-cooperativa">
+  <label for="coop_descuento_id_real">Seleccionar cooperativa</label>
+  <div class="input-icon">
+    <select id="coop_descuento_id_real" name="coop_descuento_id_real" aria-hidden="true">
+      <option value="">Seleccionar</option>
+      <?php foreach ($cooperativas as $c): ?>
+        <option value="<?= htmlspecialchars($c['id_real'], ENT_QUOTES, 'UTF-8') ?>">
+          <?= htmlspecialchars($c['usuario'], ENT_QUOTES, 'UTF-8') ?>
+        </option>
+      <?php endforeach; ?>
+    </select>
+  </div>
+</div>
 
 
         <!-- patologia_id -->
@@ -379,6 +379,11 @@ try {
 
   .modal.hidden {
     display: none;
+  }
+
+  /* Utilidad de visibilidad robusta */
+  .hidden { 
+    display: none !important; 
   }
 
   /* ===== Matriz de productos tipo Google Forms ===== */
