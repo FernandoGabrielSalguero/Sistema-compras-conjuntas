@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 ?>
+<script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
 <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
 
 
@@ -467,51 +468,67 @@ declare(strict_types=1);
 
     // ===== Cargar combos iniciales =====
     async function loadFormasPago() {
-      const formaPago = getFormaPago(); // obtener cada vez
-      try {
-        const fp = await fetchJSON(API + '?action=formas_pago');
-        debugLog('Formas de pago (raw):', fp);
-
-        if (fp.ok && Array.isArray(fp.data) && fp.data.length) {
-          formasPagoCache = fp.data.slice(); // cache para reinyección
-          const opts = fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
-          formaPago.innerHTML = '<option value="">Seleccionar</option>' + opts;
-          formaPago.selectedIndex = 0;
-
-          // ⚠️ Algunos enhancers de select renderizan asíncrono; disparamos varias rondas
-          const fireRefresh = (el) => {
-            if (!el) return;
-            el.dispatchEvent(new Event('input',  { bubbles: true }));
-            el.dispatchEvent(new Event('change', { bubbles: true }));
-            debugLog('Refresh select fired (options:', el.options.length, ')');
-          };
-
-          // Inmediato
-          fireRefresh(formaPago);
-
-          // Microtarea
-          setTimeout(() => {
-            const el = getFormaPago();
-            fireRefresh(el);
-          }, 0);
-
-          // Próximo frame + reobtención (por si el framework recrea el nodo)
-          requestAnimationFrame(() => {
-            const el = getFormaPago();
-            fireRefresh(el);
-          });
-
-        } else {
-          formaPago.innerHTML = '<option value="">(sin datos)</option>';
-          formaPago.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-      } catch (e) {
-        debugLog('Error formas_pago:', e);
-        const formaPago2 = getFormaPago();
-        formaPago2.innerHTML = '<option value="">(sin datos)</option>';
-        formaPago2.dispatchEvent(new Event('change', { bubbles: true }));
-      }
+  let formaPago = getFormaPago(); // obtener cada vez
+  if (!formaPago) {
+    debugLog('forma_pago_id no está en el DOM todavía. Reintentando...');
+    // pequeño backoff por si el framework está montando el nodo
+    await new Promise(r => setTimeout(r, 60));
+    formaPago = getFormaPago();
+    if (!formaPago) {
+      debugLog('forma_pago_id sigue ausente. Abort loadFormasPago.');
+      return;
     }
+  }
+
+  try {
+    const fp = await fetchJSON(API + '?action=formas_pago');
+    debugLog('Formas de pago (raw):', fp);
+
+    if (fp.ok && Array.isArray(fp.data) && fp.data.length) {
+      formasPagoCache = fp.data.slice(); // cache para reinyección
+      const opts = fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+      formaPago.innerHTML = '<option value="">Seleccionar</option>' + opts;
+      formaPago.selectedIndex = 0;
+
+      const fireRefresh = (el) => {
+        if (!el) return;
+        el.dispatchEvent(new Event('input',  { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        debugLog('Refresh select fired (options:', el.options.length, ')');
+      };
+
+      // Inmediato
+      fireRefresh(formaPago);
+
+      // Reintentos por si el framework reemplaza el nodo luego de nuestra inyección
+      setTimeout(() => fireRefresh(getFormaPago()), 0);
+      requestAnimationFrame(() => fireRefresh(getFormaPago()));
+      setTimeout(() => {
+        const el = getFormaPago();
+        if (el && el.options && el.options.length <= 1 && Array.isArray(formasPagoCache) && formasPagoCache.length) {
+          // El framework “limpió” el select; reinyectamos
+          el.innerHTML = '<option value="">Seleccionar</option>' +
+            formasPagoCache.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+          el.selectedIndex = 0;
+          fireRefresh(el);
+          debugLog('Reinyección tardía de opciones para forma_pago_id');
+        }
+      }, 120);
+
+    } else {
+      formaPago.innerHTML = '<option value="">(sin datos)</option>';
+      formaPago.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  } catch (e) {
+    debugLog('Error formas_pago:', e);
+    const el = getFormaPago();
+    if (el) {
+      el.innerHTML = '<option value="">(sin datos)</option>';
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+}
+
 
 
     async function loadPatologias() {
@@ -861,14 +878,9 @@ declare(strict_types=1);
       </div>`;
     }
 
-    // Fallback: si el partial se inyecta tras window.load, correr init igualmente
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => { if (!_inited) init(); });
-    } else {
-      if (!_inited) init();
-    }
+// Iniciar DESPUÉS del load para evitar que el framework borre opciones ya cargadas
+window.addEventListener('load', () => { if (!_inited) init(); });
 
   })();
 </script>
 
-<script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
