@@ -123,7 +123,7 @@ declare(strict_types=1);
         <div class="input-group">
           <label for="forma_pago_id">Metodo de pago*</label>
           <div class="input-icon">
-            <select id="patologia_id" name="patologia_id" required>
+            <select id="forma_pago_id" name="forma_pago_id" required>
               <option value="">Cargando...</option>
             </select>
           </div>
