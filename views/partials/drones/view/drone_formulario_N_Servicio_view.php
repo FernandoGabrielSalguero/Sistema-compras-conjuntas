@@ -123,10 +123,13 @@ declare(strict_types=1);
         <!-- forma_pago_id (campo sencillo) -->
         <div class="input-group">
           <label for="forma_pago_id">Método de pago *</label>
-          <select id="forma_pago_id" name="forma_pago_id" required>
-            <option value="">Seleccionar</option>
-          </select>
+          <div class="input-icon">
+            <select id="forma_pago_id" name="forma_pago_id" required>
+              <option value="">Cargando...</option>
+            </select>
+          </div>
         </div>
+
 
         <!-- patologia_id -->
         <div class="input-group">
