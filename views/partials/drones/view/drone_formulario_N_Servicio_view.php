@@ -260,124 +260,86 @@ declare(strict_types=1);
   /* ====== Responsive & UX mínimos (mobile-first) ====== */
 
   /* grilla fluida para inputs */
-  .form-grid.grid-4 {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
+  .form-grid.grid-4{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:1rem;
   }
 
-  /* inputs cómodos para táctil */
+  /* inputs cómodos para táctil (base) */
   .form-modern input,
   .form-modern select,
-  .form-modern textarea {
-    min-height: 42px;
-  }
+  .form-modern textarea{ min-height:42px; }
 
-  /* tabla con scroll horizontal en móviles */
-  #productos-grid .tabla-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  #productos-grid table.data-table {
-    width: 100%;
-  }
+  /* tabla (desktop base) */
+  #productos-grid .tabla-wrapper{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  #productos-grid table.data-table{ width:100%; } /* sin min-width para permitir ajuste */
 
   /* modal adaptativo */
-  #modal-resumen .modal-content {
-    max-width: 960px;
-    width: 90vw;
-  }
+  #modal-resumen .modal-content{ max-width:960px; width:90vw; }
 
   /* Lista autocomplete */
-  #lista-nombres li {
-    padding: .25rem .5rem;
-    cursor: pointer;
-  }
+  #lista-nombres li{ padding:.25rem .5rem; cursor:pointer; }
   #lista-nombres li[aria-selected="true"],
-  #lista-nombres li:hover {
-    background: #eef2ff;
-  }
+  #lista-nombres li:hover{ background:#eef2ff; }
 
-  .modal.hidden { display: none; }
+  .modal.hidden{ display:none; }
 
   /* Mejora visual de la matriz de productos */
   #productos-grid .data-table th,
-  #productos-grid .data-table td { vertical-align: middle; }
+  #productos-grid .data-table td{ vertical-align:middle; }
+  #productos-help{ font-size:.9rem; color:#555; }
 
-  #productos-help { font-size: .9rem; color: #555; }
-
-  /* breakpoints suaves (si tu framework ya define, estos no rompen nada) */
-  @media (min-width: 768px) {
-    .form-grid.grid-4 { grid-template-columns: repeat(3, 1fr); }
+  /* breakpoints suaves (desktop) */
+  @media (min-width:768px){
+    .form-grid.grid-4{ grid-template-columns:repeat(3,1fr); }
   }
-  @media (min-width: 1024px) {
-    .form-grid.grid-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (min-width:1024px){
+    .form-grid.grid-4{ grid-template-columns:repeat(4,1fr); }
   }
 
-  /* Inputs un toque más bajos SOLO en pantallas chicas */
-@media (max-width: 480px){
-  .form-modern input,
-  .form-modern select,
-  .form-modern textarea {
-    min-height: 38px;
-  }
-}
+  /* ====== Mobile tweaks (SIN overflow horizontal) ====== */
 
-/* La matriz entra completa en móvil (sin scroll horizontal) */
-@media (max-width: 480px){
-  #productos-grid .tabla-wrapper { overflow-x: visible; }
-  #productos-grid table.data-table {
-    min-width: 0;            /* quita el mínimo de 520px */
-    table-layout: fixed;     /* reparte columnas por ancho fijo */
-    width: 100%;
-
-    /* Tabla completa en móvil (sin scroll) */
-@media (max-width: 640px){
-  #productos-grid .tabla-wrapper { overflow-x: visible; } /* sin scroll horizontal */
-  #productos-grid table.data-table { table-layout: fixed; } /* reparte ancho fijo */
-  #productos-grid .data-table th,
-  #productos-grid .data-table td{
-    padding: .5rem;
-    font-size: .9rem;
-    word-break: break-word;
-    white-space: normal;
+  /* Achica un poco la altura en teléfonos */
+  @media (max-width:480px){
+    .form-modern input,
+    .form-modern select,
+    .form-modern textarea{ min-height:38px; }
   }
-  /* Columna del check angosta */
-  #productos-grid .data-table th:first-child,
-  #productos-grid .data-table td:first-child { width: 40px; }
 
-  /* Columnas SVE / Productor fijas y centradas */
-  #productos-grid .data-table th:nth-child(3),
-  #productos-grid .data-table td:nth-child(3),
-  #productos-grid .data-table th:nth-child(4),
-  #productos-grid .data-table td:nth-child(4){
-    width: 64px;
-    text-align: center;
-  }
-}
+  /* Que nada empuje el ancho en mobile */
+  @media (max-width:640px){
+    html, body{ overflow-x:hidden; }
+    .content, .card, .input-group, .input-icon{ max-width:100%; }
+    .form-grid.grid-4 > *{ min-width:0; } /* evita que hijos de grid desborden */
 
+    /* Matriz completa sin scroll horizontal */
+    #productos-grid .tabla-wrapper{ overflow-x:visible; }
+    #productos-grid table.data-table{
+      width:100%;
+      min-width:0;          /* permite encoger por debajo de cualquier mínimo */
+      table-layout:fixed;   /* reparte el ancho de columnas */
+    }
+    #productos-grid .data-table th,
+    #productos-grid .data-table td{
+      padding:.5rem;
+      font-size:.9rem;
+      word-break:break-word;
+      white-space:normal;
+    }
+    /* Columna del check angosta */
+    #productos-grid .data-table th:first-child,
+    #productos-grid .data-table td:first-child{ width:40px; }
+    /* Columnas SVE / Productor fijas y centradas */
+    #productos-grid .data-table th:nth-child(3),
+    #productos-grid .data-table td:nth-child(3),
+    #productos-grid .data-table th:nth-child(4),
+    #productos-grid .data-table td:nth-child(4){
+      width:64px; text-align:center;
+    }
   }
-  #productos-grid .data-table th,
-  #productos-grid .data-table td{
-    padding: .5rem .5rem;
-    font-size: .9rem;        /* texto un poco más chico */
-    white-space: normal;     /* permite salto de línea en nombre de producto */
-  }
-  /* Columna del check más estrecha */
-  #productos-grid .data-table th:first-child,
-  #productos-grid .data-table td:first-child{ width: 44px; }
-
-  /* Columnas SVE / Productor con ancho fijo y centradas */
-  #productos-grid .data-table th:nth-child(3),
-  #productos-grid .data-table td:nth-child(3),
-  #productos-grid .data-table th:nth-child(4),
-  #productos-grid .data-table td:nth-child(4){
-    width: 64px;
-    text-align: center;
-  }
-}
-
 </style>
+
 
 <script>
   (function() {
@@ -453,12 +415,20 @@ async function loadFormasPago() {
     if (fp.ok && Array.isArray(fp.data) && fp.data.length) {
       const opts = fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
       formaPago.innerHTML = '<option value="">Seleccionar</option>' + opts;
+
+      // 👇 Forzar al framework a refrescar la etiqueta visible del select
+      formaPago.selectedIndex = 0;                      // aseguramos que quede en "Seleccionar"
+      formaPago.dispatchEvent(new Event('change', {     // dispara actualización del widget
+        bubbles: true
+      }));
     } else {
       formaPago.innerHTML = '<option value="">(sin datos)</option>';
+      formaPago.dispatchEvent(new Event('change', { bubbles: true }));
     }
   } catch (e) {
     debugLog('Error formas_pago:', e);
     formaPago.innerHTML = '<option value="">(sin datos)</option>';
+    formaPago.dispatchEvent(new Event('change', { bubbles: true }));
   }
 }
 
@@ -469,12 +439,16 @@ async function loadPatologias() {
     if (pats.ok && Array.isArray(pats.data) && pats.data.length) {
       patologia.innerHTML = '<option value="">Seleccionar</option>' +
         pats.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+      patologia.selectedIndex = 0;
+      patologia.dispatchEvent(new Event('change', { bubbles: true }));
     } else {
       patologia.innerHTML = '<option value="">(sin datos)</option>';
+      patologia.dispatchEvent(new Event('change', { bubbles: true }));
     }
   } catch (e) {
     debugLog('Error patologias:', e);
     patologia.innerHTML = '<option value="">(sin datos)</option>';
+    patologia.dispatchEvent(new Event('change', { bubbles: true }));
   }
 }
 
