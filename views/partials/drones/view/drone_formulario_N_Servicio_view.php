@@ -1,4 +1,6 @@
-<?php declare(strict_types=1); ?>
+<?php
+
+declare(strict_types=1); ?>
 <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
 <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
 
@@ -252,193 +254,219 @@
 
 <style>
   /* Ajustes mínimos sin romper el CDN */
-  #lista-nombres li { padding: .25rem .5rem; cursor: pointer; }
-  #lista-nombres li[aria-selected="true"], #lista-nombres li:hover { background: #eef2ff; }
-  .modal.hidden { display: none; }
+  #lista-nombres li {
+    padding: .25rem .5rem;
+    cursor: pointer;
+  }
+
+  #lista-nombres li[aria-selected="true"],
+  #lista-nombres li:hover {
+    background: #eef2ff;
+  }
+
+  .modal.hidden {
+    display: none;
+  }
 </style>
 
 <script>
-(function () {
-  'use strict';
-  const API = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
+  (function() {
+    'use strict';
+    const API = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
 
-  const $ = (sel) => document.querySelector(sel);
-  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-  const nombreInput = $('#nombre');
-  const listaNombres = $('#lista-nombres');
-  const productorIdReal = $('#productor_id_real');
-  const formaPago = $('#forma_pago_id');
-  const coopSelect = $('#coop_descuento_id_real');
-  const patologia = $('#patologia_id');
-  const productos = $('#nombre_producto');
-  const btnPrev = $('#btn-previsualizar');
-  const modal = $('#modal-resumen');
-  const btnConfirmar = $('#btn-confirmar');
-  const btnCerrarModal = $('#btn-cerrar-modal');
-  const resumen = $('#resumen-detalle');
-  const form = $('#form-solicitud');
+    const nombreInput = $('#nombre');
+    const listaNombres = $('#lista-nombres');
+    const productorIdReal = $('#productor_id_real');
+    const formaPago = $('#forma_pago_id');
+    const coopSelect = $('#coop_descuento_id_real');
+    const patologia = $('#patologia_id');
+    const productos = $('#nombre_producto');
+    const btnPrev = $('#btn-previsualizar');
+    const modal = $('#modal-resumen');
+    const btnConfirmar = $('#btn-confirmar');
+    const btnCerrarModal = $('#btn-cerrar-modal');
+    const resumen = $('#resumen-detalle');
+    const form = $('#form-solicitud');
 
-  // Helpers UI
-  function openModal(){ modal.classList.remove('hidden'); modal.setAttribute('aria-hidden', 'false'); }
-  function closeModal(){ modal.classList.add('hidden'); modal.setAttribute('aria-hidden', 'true'); }
-  btnCerrarModal.addEventListener('click', closeModal);
-
-  // Cargar combos iniciales
-  init();
-  async function init() {
-    try {
-      const [fp, pats] = await Promise.all([
-        fetch(API + '?action=formas_pago').then(r => r.json()),
-        fetch(API + '?action=patologias').then(r => r.json()),
-      ]);
-      if (fp.ok) {
-        formaPago.innerHTML = '<option value="">Seleccionar</option>' + fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
-      }
-      if (pats.ok) {
-        patologia.innerHTML = '<option value="">Seleccionar</option>' + pats.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
-      }
-    } catch (e) {
-      showAlert('error', 'No se pudieron cargar opciones iniciales.');
+    // Helpers UI
+    function openModal() {
+      modal.classList.remove('hidden');
+      modal.setAttribute('aria-hidden', 'false');
     }
-  }
 
-  // Autocomplete de productor
-  let acTimer;
-  nombreInput.addEventListener('input', () => {
-    productorIdReal.value = '';
-    const q = nombreInput.value.trim();
-    if (acTimer) clearTimeout(acTimer);
-    if (q.length < 2) { listaNombres.style.display = 'none'; listaNombres.innerHTML=''; return; }
-    acTimer = setTimeout(async () => {
+    function closeModal() {
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+    btnCerrarModal.addEventListener('click', closeModal);
+
+    // Cargar combos iniciales
+    init();
+    async function init() {
       try {
-        const res = await fetch(API + '?action=buscar_usuarios&q=' + encodeURIComponent(q));
-        const json = await res.json();
-        if (!json.ok) throw new Error();
-        listaNombres.innerHTML = json.data.map((u, idx) => `<li role="option" data-id="${u.id_real}" aria-selected="${idx===0?'true':'false'}">${u.usuario}</li>`).join('');
-        listaNombres.style.display = json.data.length ? 'block' : 'none';
-      } catch (e) {
-        listaNombres.style.display = 'none';
-      }
-    }, 220);
-  });
-
-  listaNombres.addEventListener('click', (ev) => {
-    const li = ev.target.closest('li[data-id]');
-    if (!li) return;
-    nombreInput.value = li.textContent;
-    productorIdReal.value = li.dataset.id;
-    listaNombres.style.display = 'none';
-    listaNombres.innerHTML = '';
-  });
-
-  // Forma de pago -> habilitar coop si id=6
-  formaPago.addEventListener('change', async () => {
-    const id = Number(formaPago.value || 0);
-    if (id === 6) {
-      coopSelect.disabled = false; coopSelect.setAttribute('aria-disabled', 'false');
-      // cargar cooperativas si aún no
-      if (coopSelect.options.length <= 1) {
-        const r = await fetch(API + '?action=cooperativas');
-        const j = await r.json();
-        if (j.ok) {
-          coopSelect.innerHTML = '<option value="">Seleccionar</option>' + j.data.map(c => `<option value="${c.id_real}">${c.usuario}</option>`).join('');
+        const [fp, pats] = await Promise.all([
+          fetch(API + '?action=formas_pago').then(r => r.json()),
+          fetch(API + '?action=patologias').then(r => r.json()),
+        ]);
+        if (fp.ok) {
+          formaPago.innerHTML = '<option value="">Seleccionar</option>' + fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
         }
+        if (pats.ok) {
+          patologia.innerHTML = '<option value="">Seleccionar</option>' + pats.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+        }
+      } catch (e) {
+        showAlert('error', 'No se pudieron cargar opciones iniciales.');
       }
-    } else {
-      coopSelect.value = '';
-      coopSelect.disabled = true; coopSelect.setAttribute('aria-disabled', 'true');
     }
-  });
 
-  // Patología -> cargar productos relacionados
-  patologia.addEventListener('change', async () => {
-    productos.innerHTML = '';
-    const val = patologia.value;
-    if (!val) return;
-    const r = await fetch(API + '?action=productos_por_patologia&patologia_id=' + encodeURIComponent(val));
-    const j = await r.json();
-    if (j.ok) {
-      if (!j.data.length) {
-        productos.innerHTML = '<option value="">No hay productos sugeridos</option>';
+    // Autocomplete de productor
+    let acTimer;
+    nombreInput.addEventListener('input', () => {
+      productorIdReal.value = '';
+      const q = nombreInput.value.trim();
+      if (acTimer) clearTimeout(acTimer);
+      if (q.length < 2) {
+        listaNombres.style.display = 'none';
+        listaNombres.innerHTML = '';
         return;
       }
-      productos.innerHTML = j.data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
-    } else {
-      showAlert('error', 'Error al cargar productos.');
-    }
-  });
+      acTimer = setTimeout(async () => {
+        try {
+          const res = await fetch(API + '?action=buscar_usuarios&q=' + encodeURIComponent(q));
+          const json = await res.json();
+          if (!json.ok) throw new Error();
+          listaNombres.innerHTML = json.data.map((u, idx) => `<li role="option" data-id="${u.id_real}" aria-selected="${idx===0?'true':'false'}">${u.usuario}</li>`).join('');
+          listaNombres.style.display = json.data.length ? 'block' : 'none';
+        } catch (e) {
+          listaNombres.style.display = 'none';
+        }
+      }, 220);
+    });
 
-  // Previsualizar -> abrir modal con resumen
-  btnPrev.addEventListener('click', (e) => {
-    e.preventDefault();
-    // Validación mínima
-    if (!form.reportValidity()) {
-      showAlert('error', 'Completá los campos requeridos.');
-      return;
-    }
-    const data = getFormData();
-    resumen.innerHTML = renderResumen(data);
-    openModal();
-  });
+    listaNombres.addEventListener('click', (ev) => {
+      const li = ev.target.closest('li[data-id]');
+      if (!li) return;
+      nombreInput.value = li.textContent;
+      productorIdReal.value = li.dataset.id;
+      listaNombres.style.display = 'none';
+      listaNombres.innerHTML = '';
+    });
 
-  // Confirmar -> guardar
-  btnConfirmar.addEventListener('click', async () => {
-    const payload = getFormData();
-    try {
-      const res = await fetch(API, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
-      });
-      const json = await res.json();
-      if (json.ok) {
-        closeModal();
-        form.reset();
-        coopSelect.disabled = true; coopSelect.setAttribute('aria-disabled','true');
-        showAlert('success', '¡Solicitud guardada! ID ' + json.data.id);
+    // Forma de pago -> habilitar coop si id=6
+    formaPago.addEventListener('change', async () => {
+      const id = Number(formaPago.value || 0);
+      if (id === 6) {
+        coopSelect.disabled = false;
+        coopSelect.setAttribute('aria-disabled', 'false');
+        // cargar cooperativas si aún no
+        if (coopSelect.options.length <= 1) {
+          const r = await fetch(API + '?action=cooperativas');
+          const j = await r.json();
+          if (j.ok) {
+            coopSelect.innerHTML = '<option value="">Seleccionar</option>' + j.data.map(c => `<option value="${c.id_real}">${c.usuario}</option>`).join('');
+          }
+        }
       } else {
-        showAlert('error', json.error || 'No se pudo guardar.');
+        coopSelect.value = '';
+        coopSelect.disabled = true;
+        coopSelect.setAttribute('aria-disabled', 'true');
       }
-    } catch (e) {
-      showAlert('error', 'Error de red al guardar.');
+    });
+
+    // Patología -> cargar productos relacionados
+    patologia.addEventListener('change', async () => {
+      productos.innerHTML = '';
+      const val = patologia.value;
+      if (!val) return;
+      const r = await fetch(API + '?action=productos_por_patologia&patologia_id=' + encodeURIComponent(val));
+      const j = await r.json();
+      if (j.ok) {
+        if (!j.data.length) {
+          productos.innerHTML = '<option value="">No hay productos sugeridos</option>';
+          return;
+        }
+        productos.innerHTML = j.data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+      } else {
+        showAlert('error', 'Error al cargar productos.');
+      }
+    });
+
+    // Previsualizar -> abrir modal con resumen
+    btnPrev.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Validación mínima
+      if (!form.reportValidity()) {
+        showAlert('error', 'Completá los campos requeridos.');
+        return;
+      }
+      const data = getFormData();
+      resumen.innerHTML = renderResumen(data);
+      openModal();
+    });
+
+    // Confirmar -> guardar
+    btnConfirmar.addEventListener('click', async () => {
+      const payload = getFormData();
+      try {
+        const res = await fetch(API, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (json.ok) {
+          closeModal();
+          form.reset();
+          coopSelect.disabled = true;
+          coopSelect.setAttribute('aria-disabled', 'true');
+          showAlert('success', '¡Solicitud guardada! ID ' + json.data.id);
+        } else {
+          showAlert('error', json.error || 'No se pudo guardar.');
+        }
+      } catch (e) {
+        showAlert('error', 'Error de red al guardar.');
+      }
+    });
+
+    function getFormData() {
+      const selProductos = $$('#nombre_producto option:checked').map(o => Number(o.value));
+      const fuente = (new FormData(form)).get('fuente') || '';
+      return {
+        productor_id_real: productorIdReal.value || null,
+        nombre: nombreInput.value.trim(),
+        representante: $('#representante').value,
+        linea_tension: $('#linea_tension').value,
+        zona_restringida: $('#zona_restringida').value,
+        corriente_electrica: $('#corriente_electrica').value,
+        agua_potable: $('#agua_potable').value,
+        libre_obstaculos: $('#libre_obstaculos').value,
+        area_despegue: $('#area_despegue').value,
+        superficie_ha: parseFloat($('#superficie_ha').value),
+        forma_pago_id: Number($('#forma_pago_id').value),
+        coop_descuento_id_real: $('#coop_descuento_id_real').disabled ? null : ($('#coop_descuento_id_real').value || null),
+        patologia_id: Number($('#patologia_id').value),
+        rango: $('#rango').value,
+        productos: selProductos, // ids
+        productos_fuente: fuente, // 'sve'|'productor'
+        dir_provincia: $('#dir_provincia').value.trim(),
+        dir_localidad: $('#dir_localidad').value.trim(),
+        dir_calle: $('#dir_calle').value.trim(),
+        dir_numero: $('#dir_numero').value.trim(),
+        observaciones: $('#observaciones').value.trim()
+      };
     }
-  });
 
-  function getFormData() {
-    const selProductos = $$('#nombre_producto option:checked').map(o => Number(o.value));
-    const fuente = (new FormData(form)).get('fuente') || '';
-    return {
-      productor_id_real: productorIdReal.value || null,
-      nombre: nombreInput.value.trim(),
-      representante: $('#representante').value,
-      linea_tension: $('#linea_tension').value,
-      zona_restringida: $('#zona_restringida').value,
-      corriente_electrica: $('#corriente_electrica').value,
-      agua_potable: $('#agua_potable').value,
-      libre_obstaculos: $('#libre_obstaculos').value,
-      area_despegue: $('#area_despegue').value,
-      superficie_ha: parseFloat($('#superficie_ha').value),
-      forma_pago_id: Number($('#forma_pago_id').value),
-      coop_descuento_id_real: $('#coop_descuento_id_real').disabled ? null : ($('#coop_descuento_id_real').value || null),
-      patologia_id: Number($('#patologia_id').value),
-      rango: $('#rango').value,
-      productos: selProductos, // ids
-      productos_fuente: fuente, // 'sve'|'productor'
-      dir_provincia: $('#dir_provincia').value.trim(),
-      dir_localidad: $('#dir_localidad').value.trim(),
-      dir_calle: $('#dir_calle').value.trim(),
-      dir_numero: $('#dir_numero').value.trim(),
-      observaciones: $('#observaciones').value.trim()
-    };
-  }
-
-  function renderResumen(d) {
-    const prods = d.productos.length ? d.productos.map(id => {
-      const opt = $('#nombre_producto').querySelector(`option[value="${id}"]`);
-      return opt ? opt.textContent : ('ID ' + id);
-    }).join(', ') : '—';
-    return `
+    function renderResumen(d) {
+      const prods = d.productos.length ? d.productos.map(id => {
+        const opt = $('#nombre_producto').querySelector(`option[value="${id}"]`);
+        return opt ? opt.textContent : ('ID ' + id);
+      }).join(', ') : '—';
+      return `
       <div class="tabla-wrapper">
         <table class="data-table">
           <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
@@ -465,6 +493,6 @@
           </tbody>
         </table>
       </div>`;
-  }
-})();
+    }
+  })();
 </script>
