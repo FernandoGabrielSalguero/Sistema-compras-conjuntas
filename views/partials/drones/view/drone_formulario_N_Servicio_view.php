@@ -362,5 +362,103 @@
 </style>
 
 <script>
+/**
+ * Consola de diagnóstico inicial solicitada:
+ * - formas_pago
+ * - patologias
+ * - cooperativas
+ * - productos_por_patologia (usa la patología seleccionada o la primera disponible)
+ *
+ * Supuesto: el controlador está accesible en "controller/drone_formulario_N_Servicio_controller.php"
+ * Ajustá API_URL si tu ruta es otra.
+ */
+(function () {
+  'use strict';
 
+  const API_URL = 'controller/drone_formulario_N_Servicio_controller.php';
+
+  const logGroup = (title, payload) => {
+    try {
+      console.group(`API ▶ ${title}`);
+      console.log(payload);
+      console.groupEnd();
+    } catch (e) {
+      // Si la consola no soporta group en algún navegador legacy
+      console.log(`API ▶ ${title}`, payload);
+    }
+  };
+
+  const apiGet = async (action, params = {}) => {
+    const qs = new URLSearchParams({ action, ...params });
+    const res = await fetch(`${API_URL}?${qs.toString()}`, {
+      headers: { 'Accept': 'application/json' },
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    let json;
+    try {
+      json = await res.json();
+    } catch (e) {
+      json = { ok: false, error: 'Respuesta no JSON', status: res.status };
+    }
+    logGroup(action, json);
+    return json;
+  };
+
+  const initConsoleDiagnostics = async () => {
+    // 1) formas_pago
+    const fp = apiGet('formas_pago');
+
+    // 2) patologias (usaremos el primer id disponible para disparar productos_por_patologia)
+    const patologiasPromise = apiGet('patologias');
+
+    // 3) cooperativas
+    const coop = apiGet('cooperativas');
+
+    // 4) productos_por_patologia: al cargar patologías, usamos la primera; si no hay, probamos con el valor del select (si existe)
+    try {
+      const patologias = await patologiasPromise;
+      let patologiaId = 0;
+
+      // Intentamos con el select si ya existe un valor válido
+      const sel = document.getElementById('patologia_id');
+      if (sel && sel.value && !isNaN(parseInt(sel.value, 10))) {
+        patologiaId = parseInt(sel.value, 10);
+      }
+
+      // Si no había selección previa, tomamos el primer id de la API
+      if ((!patologiaId || patologiaId <= 0) && patologias && patologias.ok && Array.isArray(patologias.data) && patologias.data.length) {
+        patologiaId = parseInt(patologias.data[0].id, 10) || 0;
+      }
+
+      // Si conseguimos un id válido, disparamos productos_por_patologia
+      if (patologiaId > 0) {
+        await apiGet('productos_por_patologia', { patologia_id: patologiaId });
+      } else {
+        // Último recurso: log de advertencia y consulta con id=1 (puede no existir)
+        console.warn('No se pudo determinar patologia_id a partir del select ni de la API. Se probará con patologia_id=1');
+        await apiGet('productos_por_patologia', { patologia_id: 1 });
+      }
+    } catch (e) {
+      console.error('Error en diagnóstico de productos_por_patologia:', e);
+    }
+
+    // Listener: cuando el usuario cambie la patología, volver a loggear productos_por_patologia
+    const patSel = document.getElementById('patologia_id');
+    if (patSel) {
+      patSel.addEventListener('change', async () => {
+        const id = parseInt(patSel.value || '0', 10);
+        if (id > 0) {
+          await apiGet('productos_por_patologia', { patologia_id: id });
+        }
+      }, { passive: true });
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initConsoleDiagnostics, { once: true });
+  } else {
+    initConsoleDiagnostics();
+  }
+})();
 </script>
