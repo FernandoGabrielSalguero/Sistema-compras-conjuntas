@@ -133,7 +133,7 @@
               <option>No</option>
             </select>
           </div>
-        </div>div>
+        </div>
 
         <!-- patologia_id -->
         <div class="input-group">
@@ -220,6 +220,7 @@
     <button class="btn btn-cancelar" type="reset">Cancelar</button>
   </div>
   </form>
+</div>
 </div>
 </div>
 
