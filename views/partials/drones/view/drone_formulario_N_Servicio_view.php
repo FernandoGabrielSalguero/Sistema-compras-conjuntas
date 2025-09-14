@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 ?>
 <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
@@ -260,112 +261,157 @@ declare(strict_types=1);
   /* ====== Responsive & UX mínimos (mobile-first) ====== */
 
   /* grilla fluida para inputs */
-  .form-grid.grid-4{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-    gap:1rem;
+  .form-grid.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
   }
 
   /* inputs cómodos para táctil (base) */
   .form-modern input,
   .form-modern select,
-  .form-modern textarea{ min-height:42px; }
+  .form-modern textarea {
+    min-height: 42px;
+  }
 
   /* tabla (desktop base) */
-  #productos-grid .tabla-wrapper{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  #productos-grid table.data-table{ width:100%; } /* sin min-width para permitir ajuste */
+  #productos-grid .tabla-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 
-  /* modal adaptativo */
-  #modal-resumen .modal-content{ max-width:960px; width:90vw; }
-
-  /* Lista autocomplete */
-  #lista-nombres li{ padding:.25rem .5rem; cursor:pointer; }
-  #lista-nombres li[aria-selected="true"],
-  #lista-nombres li:hover{ background:#eef2ff; }
-
-  .modal.hidden{ display:none; }
-
-  /* ===== Matriz de productos tipo Google Forms ===== */
-#productos-grid table.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: auto; /* deja fluir las columnas */
-}
-
-#productos-grid thead th {
-  text-align: center;
-  font-weight: 600;
-  padding: .5rem;
-}
-
-#productos-grid tbody td {
-  padding: .5rem;
-  text-align: center;
-  vertical-align: middle;
-}
-
-#productos-grid tbody td:nth-child(2) {
-  text-align: center;       /* la columna de Producto va alineada a la izquierda */
-  font-weight: 500;
-}
-
-/* Columnas fijas para radios */
-#productos-grid th:nth-child(1),
-#productos-grid td:nth-child(1) { width: 40px; }   /* check */
-#productos-grid th:nth-child(3),
-#productos-grid td:nth-child(3) { width: 80px; }   /* SVE */
-#productos-grid th:nth-child(4),
-#productos-grid td:nth-child(4) { width: 100px; }  /* Productor */
-
-/* Responsive: que nunca genere scroll horizontal */
-@media (max-width: 640px) {
-  html, body { overflow-x: hidden; }
   #productos-grid table.data-table {
     width: 100%;
-    min-width: 0;
   }
-  #productos-grid tbody td {
-    font-size: .9rem;
-    padding: .4rem;
-    word-break: break-word;
-    white-space: normal;
-  }
-}
 
+  /* sin min-width para permitir ajuste */
+
+  /* modal adaptativo */
+  #modal-resumen .modal-content {
+    max-width: 960px;
+    width: 90vw;
+  }
+
+  /* Lista autocomplete */
+  #lista-nombres li {
+    padding: .25rem .5rem;
+    cursor: pointer;
+  }
+
+  #lista-nombres li[aria-selected="true"],
+  #lista-nombres li:hover {
+    background: #eef2ff;
+  }
+
+  .modal.hidden {
+    display: none;
+  }
+
+  /* ===== Matriz de productos tipo Google Forms ===== */
+  #productos-grid table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    /* deja fluir las columnas */
+  }
+
+  #productos-grid thead th {
+    text-align: center;
+    font-weight: 600;
+    padding: .5rem;
+  }
+
+  #productos-grid tbody td {
+    padding: .5rem;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  #productos-grid tbody td:nth-child(2) {
+    text-align: center;
+    /* la columna de Producto va alineada a la izquierda */
+    font-weight: 500;
+  }
+
+  /* Columnas fijas para radios */
+  #productos-grid th:nth-child(1),
+  #productos-grid td:nth-child(1) {
+    width: 40px;
+  }
+
+  /* check */
+  #productos-grid th:nth-child(3),
+  #productos-grid td:nth-child(3) {
+    width: 80px;
+  }
+
+  /* SVE */
+  #productos-grid th:nth-child(4),
+  #productos-grid td:nth-child(4) {
+    width: 100px;
+  }
+
+  /* Productor */
+
+  /* Responsive: que nunca genere scroll horizontal */
+  @media (max-width: 640px) {
+
+    html,
+    body {
+      overflow-x: hidden;
+    }
+
+    #productos-grid table.data-table {
+      width: 100%;
+      min-width: 0;
+    }
+
+    #productos-grid tbody td {
+      font-size: .9rem;
+      padding: .4rem;
+      word-break: break-word;
+      white-space: normal;
+    }
+  }
 </style>
 
-
 <script>
-  (function () {
+  (function() {
     'use strict';
 
     const API = '/views/partials/drones/controller/drone_formulario_N_Servicio_controller.php';
 
     // helpers cortos
-    const $  = (sel) => document.querySelector(sel);
+    const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
     // elementos (los que pueden ser reemplazados por el framework se obtienen con getter)
-    const nombreInput   = $('#nombre');
-    const listaNombres  = $('#lista-nombres');
+    const nombreInput = $('#nombre');
+    const listaNombres = $('#lista-nombres');
     const productorIdReal = $('#productor_id_real');
-    const getFormaPago  = () => document.getElementById('forma_pago_id'); // <- NO cachear
-    const coopSelect    = $('#coop_descuento_id_real');
-    const coopGroup     = $('#coop-group');
-    const patologia     = $('#patologia_id');
+    const getFormaPago = () => document.getElementById('forma_pago_id'); // <- NO cachear
+    const coopSelect = $('#coop_descuento_id_real');
+    const coopGroup = $('#coop-group');
+    const patologia = $('#patologia_id');
     const productosBody = $('#productos-body');
 
-    const btnPrev       = $('#btn-previsualizar');
-    const btnReset      = $('#btn-reset');
-    const modal         = $('#modal-resumen');
-    const btnConfirmar  = $('#btn-confirmar');
-    const btnCerrarModal= $('#btn-cerrar-modal');
-    const resumen       = $('#resumen-detalle');
-    const form          = $('#form-solicitud');
+    const btnPrev = $('#btn-previsualizar');
+    const btnReset = $('#btn-reset');
+    const modal = $('#modal-resumen');
+    const btnConfirmar = $('#btn-confirmar');
+    const btnCerrarModal = $('#btn-cerrar-modal');
+    const resumen = $('#resumen-detalle');
+    const form = $('#form-solicitud');
 
-    // utilidades
-    function debugLog(...args){ console.log('[DEBUG]', ...args); }
-    function showAlert(type, msg){
+    // ===== utilidades =====
+    const DEBUG = false;
+
+    function debugLog(...args) {
+      if (!DEBUG) return;
+      console.log('[DEBUG]', ...args);
+    }
+
+    function showAlert(type, msg) {
       // intenta usar tu framework; si no existe, fallback a alert
       if (typeof window.fsAlert === 'function') return fsAlert(type, msg);
       alert(msg);
@@ -376,6 +422,7 @@ declare(strict_types=1);
       modal.setAttribute('aria-hidden', 'false');
       debugLog('Modal abierto');
     }
+
     function closeModal() {
       modal.classList.add('hidden');
       modal.setAttribute('aria-hidden', 'true');
@@ -396,15 +443,25 @@ declare(strict_types=1);
     // Wrapper fetch con logs y parse robusto
     async function fetchJSON(url, options = {}) {
       debugLog('Fetch ->', url, options);
-      const res  = await fetch(url, { cache: 'no-store', ...options });
+      const res = await fetch(url, {
+        cache: 'no-store',
+        ...options
+      });
       const text = await res.text();
       debugLog('Fetch <- status:', res.status, 'ok:', res.ok, 'raw:', text);
       if (!res.ok) throw new Error('HTTP ' + res.status + ' al solicitar ' + url);
       let json;
-      try { json = JSON.parse(text); }
-      catch (e) { debugLog('JSON.parse error en', url, e); throw new Error('Respuesta no JSON'); }
+      try {
+        json = JSON.parse(text);
+      } catch (e) {
+        debugLog('JSON.parse error en', url, e);
+        throw new Error('Respuesta no JSON');
+      }
       return json;
     }
+
+    // caché para reinyectar si el framework reemplaza el <select>
+    let formasPagoCache = null;
 
     // ===== Cargar combos iniciales =====
     async function loadFormasPago() {
@@ -413,27 +470,31 @@ declare(strict_types=1);
         const fp = await fetchJSON(API + '?action=formas_pago');
         debugLog('Formas de pago:', fp);
         if (fp.ok && Array.isArray(fp.data) && fp.data.length) {
+          formasPagoCache = fp.data.slice(); // guardar para reinyectar si hace falta
           const opts = fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
           formaPago.innerHTML = '<option value="">Seleccionar</option>' + opts;
 
           // Forzar refresh del widget del framework (si reemplaza el <select>)
           formaPago.selectedIndex = 0;
-          formaPago.dispatchEvent(new Event('input',  { bubbles: true }));
-          formaPago.dispatchEvent(new Event('change', { bubbles: true }));
-          requestAnimationFrame(() => {
-            const fp2 = getFormaPago(); // por si el framework lo recreó
-            fp2.dispatchEvent(new Event('input',  { bubbles: true }));
-            fp2.dispatchEvent(new Event('change', { bubbles: true }));
-          });
+          formaPago.dispatchEvent(new Event('input', {
+            bubbles: true
+          }));
+          formaPago.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
         } else {
           formaPago.innerHTML = '<option value="">(sin datos)</option>';
-          formaPago.dispatchEvent(new Event('change', { bubbles: true }));
+          formaPago.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
         }
       } catch (e) {
         debugLog('Error formas_pago:', e);
         const formaPago2 = getFormaPago();
         formaPago2.innerHTML = '<option value="">(sin datos)</option>';
-        formaPago2.dispatchEvent(new Event('change', { bubbles: true }));
+        formaPago2.dispatchEvent(new Event('change', {
+          bubbles: true
+        }));
       }
     }
 
@@ -445,24 +506,79 @@ declare(strict_types=1);
           patologia.innerHTML = '<option value="">Seleccionar</option>' +
             pats.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
           patologia.selectedIndex = 0;
-          patologia.dispatchEvent(new Event('change', { bubbles: true }));
+          patologia.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
         } else {
           patologia.innerHTML = '<option value="">(sin datos)</option>';
-          patologia.dispatchEvent(new Event('change', { bubbles: true }));
+          patologia.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
         }
       } catch (e) {
         debugLog('Error patologias:', e);
         patologia.innerHTML = '<option value="">(sin datos)</option>';
-        patologia.dispatchEvent(new Event('change', { bubbles: true }));
+        patologia.dispatchEvent(new Event('change', {
+          bubbles: true
+        }));
       }
     }
 
-    // Init (secuencial)
-    (async function init() {
-      await loadFormasPago();
-      await loadPatologias();
+    // Init (sincronizado con el framework defer)
+    async function init() {
+      await Promise.all([loadFormasPago(), loadPatologias()]);
       debugLog('View inicializada. API=', API);
-    })();
+    }
+
+    window.addEventListener('load', () => {
+      init();
+      const observer = new MutationObserver(() => {
+        const el = getFormaPago();
+        if (!el) return;
+        const tieneSoloPlaceholder = el.options && el.options.length <= 1;
+        if (tieneSoloPlaceholder && Array.isArray(formasPagoCache) && formasPagoCache.length) {
+          const opts = formasPagoCache.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+          el.innerHTML = '<option value="">Seleccionar</option>' + opts;
+          el.selectedIndex = 0;
+          el.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
+          debugLog('Reinyecté opciones forma de pago tras reemplazo del framework');
+        }
+      });
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    });
+
+
+    // Esperar a que el framework (defer) termine de inicializar y pueda reemplazar nodos
+    window.addEventListener('load', () => {
+      init();
+
+      // Observa si el framework reemplaza el <select id="forma_pago_id"> y reinyecta opciones en ese caso
+      const observer = new MutationObserver(() => {
+        const el = getFormaPago();
+        if (!el) return;
+        const tieneSoloPlaceholder = el.options && el.options.length <= 1;
+        if (tieneSoloPlaceholder && Array.isArray(formasPagoCache) && formasPagoCache.length) {
+          const opts = formasPagoCache.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+          el.innerHTML = '<option value="">Seleccionar</option>' + opts;
+          el.selectedIndex = 0;
+          el.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
+          debugLog('Reinyecté opciones forma de pago tras reemplazo del framework');
+        }
+      });
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    });
+
+
 
     // ===== Autocomplete de productor =====
     let acTimer;
@@ -500,7 +616,10 @@ declare(strict_types=1);
       productorIdReal.value = li.dataset.id;
       listaNombres.style.display = 'none';
       listaNombres.innerHTML = '';
-      debugLog('Productor seleccionado:', { nombre: nombreInput.value, id_real: productorIdReal.value });
+      debugLog('Productor seleccionado:', {
+        nombre: nombreInput.value,
+        id_real: productorIdReal.value
+      });
     });
 
     // ===== Delegación de eventos para selects (por si el framework reemplaza nodos) =====
@@ -553,7 +672,7 @@ declare(strict_types=1);
       await cargarProductosPorPatologia(patologia.value);
     });
 
-    async function cargarProductosPorPatologia(val){
+    async function cargarProductosPorPatologia(val) {
       productosBody.innerHTML = '';
       debugLog('Cambio patologia_id=', val);
       if (!val) return;
@@ -590,7 +709,10 @@ declare(strict_types=1);
               r.disabled = !e.target.checked;
               if (!e.target.checked) r.checked = false;
             });
-            debugLog('Producto toggled:', { producto_id: Number(pid), checked: e.target.checked });
+            debugLog('Producto toggled:', {
+              producto_id: Number(pid),
+              checked: e.target.checked
+            });
           });
         });
       } catch (e) {
@@ -625,12 +747,17 @@ declare(strict_types=1);
       try {
         const res = await fetch(API, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify(payload)
         });
         let json;
-        try { json = await res.json(); }
-        catch (err) { debugLog('Error parseando JSON al guardar:', err); }
+        try {
+          json = await res.json();
+        } catch (err) {
+          debugLog('Error parseando JSON al guardar:', err);
+        }
         debugLog('POST <- status:', res.status, 'ok:', res.ok, 'json:', json);
 
         if (res.ok && json && json.ok) {
@@ -657,7 +784,10 @@ declare(strict_types=1);
       productosBody.querySelectorAll('.prod-check:checked').forEach(chk => {
         const pid = Number(chk.dataset.pid);
         const fuenteSel = productosBody.querySelector(`input[name="fuente_${pid}"]:checked`);
-        items.push({ producto_id: pid, fuente: fuenteSel ? fuenteSel.value : '' });
+        items.push({
+          producto_id: pid,
+          fuente: fuenteSel ? fuenteSel.value : ''
+        });
       });
 
       const formaPagoSel = getFormaPago();
@@ -732,4 +862,3 @@ declare(strict_types=1);
 
   })();
 </script>
-
