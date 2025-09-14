@@ -462,6 +462,7 @@ declare(strict_types=1);
 
     // caché para reinyectar si el framework reemplaza el <select>
     let formasPagoCache = null;
+    let _inited = false;
 
     // ===== Cargar combos iniciales =====
     async function loadFormasPago() {
@@ -540,13 +541,15 @@ declare(strict_types=1);
 
     // Init (sincronizado con el framework defer)
     async function init() {
+      if (_inited) return;
+      _inited = true;
       await Promise.all([loadFormasPago(), loadPatologias()]);
       debugLog('View inicializada. API=', API);
     }
 
     // Consolidado: un solo listener load + observer
     window.addEventListener('load', () => {
-      init();
+      if (!_inited) init();
 
       const observer = new MutationObserver(() => {
         const el = getFormaPago();
@@ -855,6 +858,13 @@ declare(strict_types=1);
           </tbody>
         </table>
       </div>`;
+    }
+
+    // Fallback: si el partial se inyecta tras window.load, correr init igualmente
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => { if (!_inited) init(); });
+    } else {
+      if (!_inited) init();
     }
 
   })();
