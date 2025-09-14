@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 ?>
 <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
@@ -260,93 +261,135 @@ declare(strict_types=1);
   /* ====== Responsive & UX mínimos (mobile-first) ====== */
 
   /* grilla fluida para inputs */
-  .form-grid.grid-4{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-    gap:1rem;
+  .form-grid.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
   }
 
   /* inputs cómodos para táctil (base) */
   .form-modern input,
   .form-modern select,
-  .form-modern textarea{ min-height:42px; }
+  .form-modern textarea {
+    min-height: 42px;
+  }
 
   /* tabla (desktop base) */
-  #productos-grid .tabla-wrapper{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  #productos-grid table.data-table{ width:100%; } /* sin min-width para permitir ajuste */
+  #productos-grid .tabla-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 
-  /* modal adaptativo */
-  #modal-resumen .modal-content{ max-width:960px; width:90vw; }
-
-  /* Lista autocomplete */
-  #lista-nombres li{ padding:.25rem .5rem; cursor:pointer; }
-  #lista-nombres li[aria-selected="true"],
-  #lista-nombres li:hover{ background:#eef2ff; }
-
-  .modal.hidden{ display:none; }
-
-  /* ===== Matriz de productos tipo Google Forms ===== */
-#productos-grid table.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: auto; /* deja fluir las columnas */
-}
-
-#productos-grid thead th {
-  text-align: center;
-  font-weight: 600;
-  padding: .5rem;
-}
-
-#productos-grid tbody td {
-  padding: .5rem;
-  text-align: center;
-  vertical-align: middle;
-}
-
-#productos-grid tbody td:nth-child(2) {
-  text-align: center;       /* la columna de Producto va alineada a la izquierda */
-  font-weight: 500;
-}
-
-/* Columnas fijas para radios */
-#productos-grid th:nth-child(1),
-#productos-grid td:nth-child(1) { width: 40px; }   /* check */
-#productos-grid th:nth-child(3),
-#productos-grid td:nth-child(3) { width: 80px; }   /* SVE */
-#productos-grid th:nth-child(4),
-#productos-grid td:nth-child(4) { width: 100px; }  /* Productor */
-
-/* Responsive: que nunca genere scroll horizontal */
-@media (max-width: 640px) {
-  html, body { overflow-x: hidden; }
   #productos-grid table.data-table {
     width: 100%;
-    min-width: 0;
   }
+
+  /* sin min-width para permitir ajuste */
+
+  /* modal adaptativo */
+  #modal-resumen .modal-content {
+    max-width: 960px;
+    width: 90vw;
+  }
+
+  /* Lista autocomplete */
+  #lista-nombres li {
+    padding: .25rem .5rem;
+    cursor: pointer;
+  }
+
+  #lista-nombres li[aria-selected="true"],
+  #lista-nombres li:hover {
+    background: #eef2ff;
+  }
+
+  .modal.hidden {
+    display: none;
+  }
+
+  /* ===== Matriz de productos tipo Google Forms ===== */
+  #productos-grid table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    /* deja fluir las columnas */
+  }
+
+  #productos-grid thead th {
+    text-align: center;
+    font-weight: 600;
+    padding: .5rem;
+  }
+
   #productos-grid tbody td {
-    font-size: .9rem;
-    padding: .4rem;
-    word-break: break-word;
-    white-space: normal;
+    padding: .5rem;
+    text-align: center;
+    vertical-align: middle;
   }
-}
 
+  #productos-grid tbody td:nth-child(2) {
+    text-align: center;
+    /* la columna de Producto va alineada a la izquierda */
+    font-weight: 500;
+  }
+
+  /* Columnas fijas para radios */
+  #productos-grid th:nth-child(1),
+  #productos-grid td:nth-child(1) {
+    width: 40px;
+  }
+
+  /* check */
+  #productos-grid th:nth-child(3),
+  #productos-grid td:nth-child(3) {
+    width: 80px;
+  }
+
+  /* SVE */
+  #productos-grid th:nth-child(4),
+  #productos-grid td:nth-child(4) {
+    width: 100px;
+  }
+
+  /* Productor */
+
+  /* Responsive: que nunca genere scroll horizontal */
+  @media (max-width: 640px) {
+
+    html,
+    body {
+      overflow-x: hidden;
+    }
+
+    #productos-grid table.data-table {
+      width: 100%;
+      min-width: 0;
+    }
+
+    #productos-grid tbody td {
+      font-size: .9rem;
+      padding: .4rem;
+      word-break: break-word;
+      white-space: normal;
+    }
+  }
 </style>
-
 
 <script>
   (function() {
     'use strict';
+
     const API = '/views/partials/drones/controller/drone_formulario_N_Servicio_controller.php';
 
+    // helpers cortos
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
+    // elementos (los que pueden ser reemplazados por el framework se obtienen con getter)
     const nombreInput = $('#nombre');
     const listaNombres = $('#lista-nombres');
     const productorIdReal = $('#productor_id_real');
-    const formaPago = $('#forma_pago_id');
+    const getFormaPago = () => document.getElementById('forma_pago_id'); // <- NO cachear
     const coopSelect = $('#coop_descuento_id_real');
     const coopGroup = $('#coop-group');
     const patologia = $('#patologia_id');
@@ -360,14 +403,23 @@ declare(strict_types=1);
     const resumen = $('#resumen-detalle');
     const form = $('#form-solicitud');
 
-    // ===== Helpers generales =====
-    function debugLog(...args){ console.log('[DEBUG]', ...args); }
+    // utilidades
+    function debugLog(...args) {
+      console.log('[DEBUG]', ...args);
+    }
+
+    function showAlert(type, msg) {
+      // intenta usar tu framework; si no existe, fallback a alert
+      if (typeof window.fsAlert === 'function') return fsAlert(type, msg);
+      alert(msg);
+    }
 
     function openModal() {
       modal.classList.remove('hidden');
       modal.setAttribute('aria-hidden', 'false');
       debugLog('Modal abierto');
     }
+
     function closeModal() {
       modal.classList.add('hidden');
       modal.setAttribute('aria-hidden', 'true');
@@ -385,73 +437,101 @@ declare(strict_types=1);
       coopSelect.value = '';
     });
 
-    // Wrapper fetch con logs
-async function fetchJSON(url, options = {}) {
-  debugLog('Fetch ->', url, options);
-  const res = await fetch(url, { cache: 'no-store', ...options }); // evita cache
-  const text = await res.text(); // siempre leo como texto
-  debugLog('Fetch <- status:', res.status, 'ok:', res.ok, 'raw:', text);
-  if (!res.ok) throw new Error('HTTP ' + res.status + ' al solicitar ' + url);
-  let json;
-  try { json = JSON.parse(text); }
-  catch (e) {
-    debugLog('JSON.parse error en', url, e);
-    throw new Error('Respuesta no JSON');
-  }
-  return json;
-}
+    // Wrapper fetch con logs y parse robusto
+    async function fetchJSON(url, options = {}) {
+      debugLog('Fetch ->', url, options);
+      const res = await fetch(url, {
+        cache: 'no-store',
+        ...options
+      });
+      const text = await res.text();
+      debugLog('Fetch <- status:', res.status, 'ok:', res.ok, 'raw:', text);
+      if (!res.ok) throw new Error('HTTP ' + res.status + ' al solicitar ' + url);
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch (e) {
+        debugLog('JSON.parse error en', url, e);
+        throw new Error('Respuesta no JSON');
+      }
+      return json;
+    }
 
     // ===== Cargar combos iniciales =====
-async function loadFormasPago() {
-  try {
-    const fp = await fetchJSON(API + '?action=formas_pago');
-    debugLog('Formas de pago:', fp);
-    if (fp.ok && Array.isArray(fp.data) && fp.data.length) {
-      const opts = fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
-      formaPago.innerHTML = '<option value="">Seleccionar</option>' + opts;
+    async function loadFormasPago() {
+      const formaPago = getFormaPago(); // obtener cada vez
+      try {
+        const fp = await fetchJSON(API + '?action=formas_pago');
+        debugLog('Formas de pago:', fp);
+        if (fp.ok && Array.isArray(fp.data) && fp.data.length) {
+          const opts = fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+          formaPago.innerHTML = '<option value="">Seleccionar</option>' + opts;
 
-      // 👇 Forzar al framework a refrescar la etiqueta visible del select
-      formaPago.selectedIndex = 0;                      // aseguramos que quede en "Seleccionar"
-      formaPago.dispatchEvent(new Event('change', {     // dispara actualización del widget
-        bubbles: true
-      }));
-    } else {
-      formaPago.innerHTML = '<option value="">(sin datos)</option>';
-      formaPago.dispatchEvent(new Event('change', { bubbles: true }));
+          // Forzar refresh del widget del framework (si reemplaza el <select>)
+          formaPago.selectedIndex = 0;
+          formaPago.dispatchEvent(new Event('input', {
+            bubbles: true
+          }));
+          formaPago.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
+          requestAnimationFrame(() => {
+            const fp2 = getFormaPago(); // por si el framework lo recreó
+            fp2.dispatchEvent(new Event('input', {
+              bubbles: true
+            }));
+            fp2.dispatchEvent(new Event('change', {
+              bubbles: true
+            }));
+          });
+        } else {
+          formaPago.innerHTML = '<option value="">(sin datos)</option>';
+          formaPago.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
+        }
+      } catch (e) {
+        debugLog('Error formas_pago:', e);
+        const formaPago2 = getFormaPago();
+        formaPago2.innerHTML = '<option value="">(sin datos)</option>';
+        formaPago2.dispatchEvent(new Event('change', {
+          bubbles: true
+        }));
+      }
     }
-  } catch (e) {
-    debugLog('Error formas_pago:', e);
-    formaPago.innerHTML = '<option value="">(sin datos)</option>';
-    formaPago.dispatchEvent(new Event('change', { bubbles: true }));
-  }
-}
 
-async function loadPatologias() {
-  try {
-    const pats = await fetchJSON(API + '?action=patologias');
-    debugLog('Patologías:', pats);
-    if (pats.ok && Array.isArray(pats.data) && pats.data.length) {
-      patologia.innerHTML = '<option value="">Seleccionar</option>' +
-        pats.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
-      patologia.selectedIndex = 0;
-      patologia.dispatchEvent(new Event('change', { bubbles: true }));
-    } else {
-      patologia.innerHTML = '<option value="">(sin datos)</option>';
-      patologia.dispatchEvent(new Event('change', { bubbles: true }));
+    async function loadPatologias() {
+      try {
+        const pats = await fetchJSON(API + '?action=patologias');
+        debugLog('Patologías:', pats);
+        if (pats.ok && Array.isArray(pats.data) && pats.data.length) {
+          patologia.innerHTML = '<option value="">Seleccionar</option>' +
+            pats.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+          patologia.selectedIndex = 0;
+          patologia.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
+        } else {
+          patologia.innerHTML = '<option value="">(sin datos)</option>';
+          patologia.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
+        }
+      } catch (e) {
+        debugLog('Error patologias:', e);
+        patologia.innerHTML = '<option value="">(sin datos)</option>';
+        patologia.dispatchEvent(new Event('change', {
+          bubbles: true
+        }));
+      }
     }
-  } catch (e) {
-    debugLog('Error patologias:', e);
-    patologia.innerHTML = '<option value="">(sin datos)</option>';
-    patologia.dispatchEvent(new Event('change', { bubbles: true }));
-  }
-}
 
-// Llamá así (sin Promise.all y SIN showAlert aquí)
-(async function init() {
-  await loadFormasPago();
-  await loadPatologias();
-})();
-
+    // Init (secuencial)
+    (async function init() {
+      await loadFormasPago();
+      await loadPatologias();
+      debugLog('View inicializada. API=', API);
+    })();
 
     // ===== Autocomplete de productor =====
     let acTimer;
@@ -469,7 +549,9 @@ async function loadPatologias() {
         try {
           const json = await fetchJSON(url);
           if (!json || !json.ok) throw new Error('Respuesta inválida');
-          listaNombres.innerHTML = json.data.map((u, idx) => `<li role="option" data-id="${u.id_real}" aria-selected="${idx===0?'true':'false'}">${u.usuario}</li>`).join('');
+          listaNombres.innerHTML = json.data.map((u, idx) =>
+            `<li role="option" data-id="${u.id_real}" aria-selected="${idx===0?'true':'false'}">${u.usuario}</li>`
+          ).join('');
           listaNombres.style.display = json.data.length ? 'block' : 'none';
           debugLog('Autocomplete nombres q=', q, 'data=', json.data);
         } catch (e) {
@@ -487,47 +569,64 @@ async function loadPatologias() {
       productorIdReal.value = li.dataset.id;
       listaNombres.style.display = 'none';
       listaNombres.innerHTML = '';
-      debugLog('Productor seleccionado:', { nombre: nombreInput.value, id_real: productorIdReal.value });
+      debugLog('Productor seleccionado:', {
+        nombre: nombreInput.value,
+        id_real: productorIdReal.value
+      });
     });
 
-    // ===== Forma de pago -> cooperativas (id=6) =====
-    formaPago.addEventListener('change', async () => {
-      const id = Number(formaPago.value || 0);
-      debugLog('Cambio forma_pago_id=', id);
-      if (id === 6) {
-        coopGroup.style.display = 'block';
-        coopSelect.required = true;
-        coopSelect.disabled = false;
-        coopSelect.setAttribute('aria-disabled', 'false');
+    // ===== Delegación de eventos para selects (por si el framework reemplaza nodos) =====
+    document.addEventListener('change', async (ev) => {
+      const target = ev.target;
+      if (!(target instanceof HTMLSelectElement)) return;
 
-        // cargar cooperativas si aún no
-        if (coopSelect.options.length <= 1) {
-          try {
-            const j = await fetchJSON(API + '?action=cooperativas');
-            debugLog('Cooperativas recibidas:', j);
-            if (j && j.ok && Array.isArray(j.data)) {
-              coopSelect.innerHTML = '<option value="">Seleccionar</option>' + j.data.map(c => `<option value="${c.id_real}">${c.usuario}</option>`).join('');
-            } else {
+      // Forma de pago (id=6 habilita cooperativa)
+      if (target.id === 'forma_pago_id') {
+        const id = Number(target.value || 0);
+        debugLog('Cambio forma_pago_id=', id);
+        if (id === 6) {
+          coopGroup.style.display = 'block';
+          coopSelect.required = true;
+          coopSelect.disabled = false;
+          coopSelect.setAttribute('aria-disabled', 'false');
+
+          if (coopSelect.options.length <= 1) {
+            try {
+              const j = await fetchJSON(API + '?action=cooperativas');
+              debugLog('Cooperativas recibidas:', j);
+              if (j && j.ok && Array.isArray(j.data)) {
+                coopSelect.innerHTML = '<option value="">Seleccionar</option>' +
+                  j.data.map(c => `<option value="${c.id_real}">${c.usuario}</option>`).join('');
+              } else {
+                showAlert('error', 'No se pudieron cargar cooperativas.');
+              }
+            } catch (e) {
+              debugLog('Error cargando cooperativas:', e);
               showAlert('error', 'No se pudieron cargar cooperativas.');
             }
-          } catch (e) {
-            debugLog('Error cargando cooperativas:', e);
-            showAlert('error', 'No se pudieron cargar cooperativas.');
           }
+        } else {
+          coopGroup.style.display = 'none';
+          coopSelect.required = false;
+          coopSelect.value = '';
+          coopSelect.disabled = true;
+          coopSelect.setAttribute('aria-disabled', 'true');
         }
-      } else {
-        coopGroup.style.display = 'none';
-        coopSelect.required = false;
-        coopSelect.value = '';
-        coopSelect.disabled = true;
-        coopSelect.setAttribute('aria-disabled', 'true');
+      }
+
+      // Patología -> productos relacionados (matriz)
+      if (target.id === 'patologia_id') {
+        await cargarProductosPorPatologia(target.value);
       }
     });
 
-    // ===== Patología -> productos relacionados (matriz) =====
+    // por compatibilidad si tu select de patología no es reemplazado
     patologia.addEventListener('change', async () => {
+      await cargarProductosPorPatologia(patologia.value);
+    });
+
+    async function cargarProductosPorPatologia(val) {
       productosBody.innerHTML = '';
-      const val = patologia.value;
       debugLog('Cambio patologia_id=', val);
       if (!val) return;
       try {
@@ -563,14 +662,17 @@ async function loadPatologias() {
               r.disabled = !e.target.checked;
               if (!e.target.checked) r.checked = false;
             });
-            debugLog('Producto toggled:', { producto_id: Number(pid), checked: e.target.checked });
+            debugLog('Producto toggled:', {
+              producto_id: Number(pid),
+              checked: e.target.checked
+            });
           });
         });
       } catch (e) {
         debugLog('Error cargando productos por patología:', e);
         showAlert('error', 'Error al cargar productos.');
       }
-    });
+    }
 
     // ===== Previsualizar -> abrir modal con resumen =====
     btnPrev.addEventListener('click', (e) => {
@@ -578,7 +680,6 @@ async function loadPatologias() {
 
       // Validación mínima
       if (!form.reportValidity()) {
-        // focos al primer inválido
         const firstInvalid = form.querySelector(':invalid');
         if (firstInvalid) firstInvalid.focus();
         showAlert('error', 'Completá los campos requeridos.');
@@ -599,7 +700,9 @@ async function loadPatologias() {
       try {
         const res = await fetch(API, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify(payload)
         });
         let json;
@@ -634,8 +737,13 @@ async function loadPatologias() {
       productosBody.querySelectorAll('.prod-check:checked').forEach(chk => {
         const pid = Number(chk.dataset.pid);
         const fuenteSel = productosBody.querySelector(`input[name="fuente_${pid}"]:checked`);
-        items.push({ producto_id: pid, fuente: fuenteSel ? fuenteSel.value : '' });
+        items.push({
+          producto_id: pid,
+          fuente: fuenteSel ? fuenteSel.value : ''
+        });
       });
+
+      const formaPagoSel = getFormaPago();
 
       const data = {
         productor_id_real: productorIdReal.value || null,
@@ -648,7 +756,7 @@ async function loadPatologias() {
         libre_obstaculos: $('#libre_obstaculos').value,
         area_despegue: $('#area_despegue').value,
         superficie_ha: parseFloat($('#superficie_ha').value),
-        forma_pago_id: Number($('#forma_pago_id').value),
+        forma_pago_id: Number(formaPagoSel.value),
         coop_descuento_id_real: (coopGroup.style.display === 'block') ? ($('#coop_descuento_id_real').value || null) : null,
         patologia_id: Number($('#patologia_id').value),
         rango: $('#rango').value,
@@ -673,7 +781,7 @@ async function loadPatologias() {
         }).join('<br>') :
         '—';
 
-      const formaPagoText = $('#forma_pago_id').selectedOptions[0]?.textContent || '';
+      const formaPagoText = getFormaPago().selectedOptions[0]?.textContent || '';
       const coopEstaVisible = coopGroup.style.display === 'block' && !coopSelect.disabled;
       const coopText = coopEstaVisible ? (coopSelect.selectedOptions[0]?.textContent || '—') : '—';
 
@@ -705,7 +813,5 @@ async function loadPatologias() {
       </div>`;
     }
 
-    // Log inicial de estado del DOM y ruta API
-    debugLog('View inicializada. API=', API);
   })();
 </script>
