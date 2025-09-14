@@ -1,6 +1,6 @@
 <?php
-
-declare(strict_types=1); ?>
+declare(strict_types=1);
+?>
 <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
 <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
 
@@ -132,7 +132,7 @@ declare(strict_types=1); ?>
         <div class="input-group" id="coop-group" style="display:none;">
           <label for="coop_descuento_id_real">Cooperativa (solo si aplica)</label>
           <div class="input-icon input-icon-globe">
-            <select id="coop_descuento_id_real" name="coop_descuento_id_real" aria-disabled="true">
+            <select id="coop_descuento_id_real" name="coop_descuento_id_real" disabled aria-disabled="true">
               <option value="">Seleccionar</option>
             </select>
           </div>
@@ -155,7 +155,7 @@ declare(strict_types=1); ?>
             <select id="rango" name="rango" required>
               <option value="">Seleccionar</option>
               <option value="octubre_q1">Primer quincena de octubre</option>
-              <option value="octubre_q2">Segunda quincena de octure</option>
+              <option value="octubre_q2">Segunda quincena de octubre</option>
               <option value="noviembre_q1">Primer quincena de noviembre</option>
               <option value="noviembre_q2">Segunda quincena de noviembre</option>
               <option value="diciembre_q1">Primer quincena de diciembre</option>
@@ -238,7 +238,7 @@ declare(strict_types=1); ?>
       <!-- Botones -->
       <div class="form-buttons">
         <button class="btn btn-aceptar" type="button" id="btn-previsualizar">Previsualizar</button>
-        <button class="btn btn-cancelar" type="reset">Cancelar</button>
+        <button class="btn btn-cancelar" type="reset" id="btn-reset">Cancelar</button>
       </div>
     </form>
   </div>
@@ -257,30 +257,62 @@ declare(strict_types=1); ?>
 </div>
 
 <style>
-  /* Ajustes mínimos sin romper el CDN */
+  /* ====== Responsive & UX mínimos (mobile-first) ====== */
+
+  /* grilla fluida para inputs */
+  .form-grid.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  /* inputs cómodos para táctil */
+  .form-modern input,
+  .form-modern select,
+  .form-modern textarea {
+    min-height: 42px;
+  }
+
+  /* tabla con scroll horizontal en móviles */
+  #productos-grid .tabla-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #productos-grid table.data-table {
+    width: 100%;
+    min-width: 520px; /* evita que colapse en pantallas angostas */
+  }
+
+  /* modal adaptativo */
+  #modal-resumen .modal-content {
+    max-width: 960px;
+    width: 90vw;
+  }
+
+  /* Lista autocomplete */
   #lista-nombres li {
     padding: .25rem .5rem;
     cursor: pointer;
   }
-
   #lista-nombres li[aria-selected="true"],
   #lista-nombres li:hover {
     background: #eef2ff;
   }
 
-  .modal.hidden {
-    display: none;
-  }
+  .modal.hidden { display: none; }
 
   /* Mejora visual de la matriz de productos */
   #productos-grid .data-table th,
-  #productos-grid .data-table td {
-    vertical-align: middle;
-  }
+  #productos-grid .data-table td { vertical-align: middle; }
 
-  #productos-help {
-    font-size: .9rem;
-    color: #555;
+  #productos-help { font-size: .9rem; color: #555; }
+
+  /* breakpoints suaves (si tu framework ya define, estos no rompen nada) */
+  @media (min-width: 768px) {
+    .form-grid.grid-4 { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    .form-grid.grid-4 { grid-template-columns: repeat(4, 1fr); }
   }
 </style>
 
@@ -302,47 +334,90 @@ declare(strict_types=1); ?>
     const productosBody = $('#productos-body');
 
     const btnPrev = $('#btn-previsualizar');
+    const btnReset = $('#btn-reset');
     const modal = $('#modal-resumen');
     const btnConfirmar = $('#btn-confirmar');
     const btnCerrarModal = $('#btn-cerrar-modal');
     const resumen = $('#resumen-detalle');
     const form = $('#form-solicitud');
 
-    // Helpers UI
+    // ===== Helpers generales =====
+    function debugLog(...args){ console.log('[DEBUG]', ...args); }
+
     function openModal() {
       modal.classList.remove('hidden');
       modal.setAttribute('aria-hidden', 'false');
+      debugLog('Modal abierto');
     }
-
     function closeModal() {
       modal.classList.add('hidden');
       modal.setAttribute('aria-hidden', 'true');
+      debugLog('Modal cerrado');
     }
     btnCerrarModal.addEventListener('click', closeModal);
 
-    // Cargar combos iniciales
+    btnReset.addEventListener('click', () => {
+      debugLog('Formulario reseteado manualmente');
+      // reset cooperativa
+      coopGroup.style.display = 'none';
+      coopSelect.required = false;
+      coopSelect.disabled = true;
+      coopSelect.setAttribute('aria-disabled', 'true');
+      coopSelect.value = '';
+    });
+
+    // Wrapper fetch con logs
+    async function fetchJSON(url, options = {}) {
+      debugLog('Fetch ->', url, options);
+      const res = await fetch(url, options);
+      const ct = res.headers.get('content-type');
+      let json;
+      try {
+        json = ct && ct.includes('application/json') ? await res.json() : null;
+      } catch (err) {
+        debugLog('Error parseando JSON de', url, err);
+      }
+      debugLog('Fetch <- status:', res.status, 'ok:', res.ok, 'json:', json);
+      if (!res.ok) {
+        throw new Error('HTTP ' + res.status + ' al solicitar ' + url);
+      }
+      return json;
+    }
+
+    // ===== Cargar combos iniciales =====
     init();
     async function init() {
       try {
         const [fp, pats] = await Promise.all([
-          fetch(API + '?action=formas_pago').then(r => r.json()),
-          fetch(API + '?action=patologias').then(r => r.json()),
+          fetchJSON(API + '?action=formas_pago'),
+          fetchJSON(API + '?action=patologias'),
         ]);
-        if (fp.ok && Array.isArray(fp.data)) {
+
+        debugLog('Formas de pago recibidas:', fp);
+        if (fp && fp.ok && Array.isArray(fp.data)) {
           const opts = fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
           formaPago.innerHTML = '<option value="">Seleccionar</option>' + opts;
         } else {
           formaPago.innerHTML = '<option value="">(sin datos)</option>';
         }
-        if (pats.ok) {
+
+        debugLog('Patologías recibidas:', pats);
+        if (pats && pats.ok && Array.isArray(pats.data)) {
           patologia.innerHTML = '<option value="">Seleccionar</option>' + pats.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+        } else {
+          patologia.innerHTML = '<option value="">(sin datos)</option>';
         }
+
       } catch (e) {
+        debugLog('Error en init():', e);
         showAlert('error', 'No se pudieron cargar opciones iniciales.');
+        // fallback visible
+        formaPago.innerHTML = '<option value="">(sin datos)</option>';
+        patologia.innerHTML = '<option value="">(sin datos)</option>';
       }
     }
 
-    // Autocomplete de productor
+    // ===== Autocomplete de productor =====
     let acTimer;
     nombreInput.addEventListener('input', () => {
       productorIdReal.value = '';
@@ -354,14 +429,17 @@ declare(strict_types=1); ?>
         return;
       }
       acTimer = setTimeout(async () => {
+        const url = API + '?action=buscar_usuarios&q=' + encodeURIComponent(q);
         try {
-          const res = await fetch(API + '?action=buscar_usuarios&q=' + encodeURIComponent(q));
-          const json = await res.json();
-          if (!json.ok) throw new Error();
+          const json = await fetchJSON(url);
+          if (!json || !json.ok) throw new Error('Respuesta inválida');
           listaNombres.innerHTML = json.data.map((u, idx) => `<li role="option" data-id="${u.id_real}" aria-selected="${idx===0?'true':'false'}">${u.usuario}</li>`).join('');
           listaNombres.style.display = json.data.length ? 'block' : 'none';
+          debugLog('Autocomplete nombres q=', q, 'data=', json.data);
         } catch (e) {
+          debugLog('Autocomplete error:', e);
           listaNombres.style.display = 'none';
+          listaNombres.innerHTML = '';
         }
       }, 220);
     });
@@ -373,112 +451,143 @@ declare(strict_types=1); ?>
       productorIdReal.value = li.dataset.id;
       listaNombres.style.display = 'none';
       listaNombres.innerHTML = '';
+      debugLog('Productor seleccionado:', { nombre: nombreInput.value, id_real: productorIdReal.value });
     });
 
-    // Forma de pago -> mostrar/ocultar cooperativa si id=6
+    // ===== Forma de pago -> cooperativas (id=6) =====
     formaPago.addEventListener('change', async () => {
       const id = Number(formaPago.value || 0);
+      debugLog('Cambio forma_pago_id=', id);
       if (id === 6) {
         coopGroup.style.display = 'block';
-        coopSelect.setAttribute('required', 'required');
+        coopSelect.required = true;
+        coopSelect.disabled = false;
         coopSelect.setAttribute('aria-disabled', 'false');
+
         // cargar cooperativas si aún no
         if (coopSelect.options.length <= 1) {
-          const r = await fetch(API + '?action=cooperativas');
-          const j = await r.json();
-          if (j.ok) {
-            coopSelect.innerHTML = '<option value="">Seleccionar</option>' + j.data.map(c => `<option value="${c.id_real}">${c.usuario}</option>`).join('');
-          } else {
+          try {
+            const j = await fetchJSON(API + '?action=cooperativas');
+            debugLog('Cooperativas recibidas:', j);
+            if (j && j.ok && Array.isArray(j.data)) {
+              coopSelect.innerHTML = '<option value="">Seleccionar</option>' + j.data.map(c => `<option value="${c.id_real}">${c.usuario}</option>`).join('');
+            } else {
+              showAlert('error', 'No se pudieron cargar cooperativas.');
+            }
+          } catch (e) {
+            debugLog('Error cargando cooperativas:', e);
             showAlert('error', 'No se pudieron cargar cooperativas.');
           }
         }
       } else {
         coopGroup.style.display = 'none';
-        coopSelect.removeAttribute('required');
+        coopSelect.required = false;
         coopSelect.value = '';
+        coopSelect.disabled = true;
         coopSelect.setAttribute('aria-disabled', 'true');
       }
     });
 
-
-    // Patología -> cargar productos relacionados (matriz)
+    // ===== Patología -> productos relacionados (matriz) =====
     patologia.addEventListener('change', async () => {
       productosBody.innerHTML = '';
       const val = patologia.value;
+      debugLog('Cambio patologia_id=', val);
       if (!val) return;
-      const r = await fetch(API + '?action=productos_por_patologia&patologia_id=' + encodeURIComponent(val));
-      const j = await r.json();
-      if (j.ok) {
+      try {
+        const j = await fetchJSON(API + '?action=productos_por_patologia&patologia_id=' + encodeURIComponent(val));
+        debugLog('Productos por patología:', j);
+
+        if (!j || !j.ok) throw new Error('Respuesta inválida');
         if (!j.data.length) {
           productosBody.innerHTML = `<tr><td colspan="4">No hay productos sugeridos para esta patología.</td></tr>`;
           return;
         }
         productosBody.innerHTML = j.data.map(p => `
-      <tr>
-        <td style="text-align:center;">
-          <input type="checkbox" class="prod-check" id="prod_${p.id}" data-pid="${p.id}" aria-label="Seleccionar ${p.nombre}">
-        </td>
-        <td><label for="prod_${p.id}">${p.nombre}</label></td>
-        <td style="text-align:center;">
-          <input type="radio" name="fuente_${p.id}" value="sve" disabled aria-label="SVE provee ${p.nombre}">
-        </td>
-        <td style="text-align:center;">
-          <input type="radio" name="fuente_${p.id}" value="productor" disabled aria-label="Productor provee ${p.nombre}">
-        </td>
-      </tr>
-    `).join('');
+          <tr>
+            <td style="text-align:center;">
+              <input type="checkbox" class="prod-check" id="prod_${p.id}" data-pid="${p.id}" aria-label="Seleccionar ${p.nombre}">
+            </td>
+            <td><label for="prod_${p.id}">${p.nombre}</label></td>
+            <td style="text-align:center;">
+              <input type="radio" name="fuente_${p.id}" value="sve" disabled aria-label="SVE provee ${p.nombre}">
+            </td>
+            <td style="text-align:center;">
+              <input type="radio" name="fuente_${p.id}" value="productor" disabled aria-label="Productor provee ${p.nombre}">
+            </td>
+          </tr>
+        `).join('');
 
         // Habilitar radios solo cuando se marque el producto
         productosBody.querySelectorAll('.prod-check').forEach(chk => {
           chk.addEventListener('change', (e) => {
             const pid = e.target.dataset.pid;
-            productosBody.querySelectorAll(`input[name="fuente_${pid}"]`).forEach(r => {
+            const radios = productosBody.querySelectorAll(`input[name="fuente_${pid}"]`);
+            radios.forEach(r => {
               r.disabled = !e.target.checked;
               if (!e.target.checked) r.checked = false;
             });
+            debugLog('Producto toggled:', { producto_id: Number(pid), checked: e.target.checked });
           });
         });
-      } else {
+      } catch (e) {
+        debugLog('Error cargando productos por patología:', e);
         showAlert('error', 'Error al cargar productos.');
       }
     });
 
-
-    // Previsualizar -> abrir modal con resumen
+    // ===== Previsualizar -> abrir modal con resumen =====
     btnPrev.addEventListener('click', (e) => {
       e.preventDefault();
+
       // Validación mínima
       if (!form.reportValidity()) {
+        // focos al primer inválido
+        const firstInvalid = form.querySelector(':invalid');
+        if (firstInvalid) firstInvalid.focus();
         showAlert('error', 'Completá los campos requeridos.');
+        debugLog('Validación fallida: campos requeridos faltantes.');
         return;
       }
+
       const data = getFormData();
+      debugLog('Datos para previsualización:', data);
       resumen.innerHTML = renderResumen(data);
       openModal();
     });
 
-    // Confirmar -> guardar
+    // ===== Confirmar -> guardar =====
     btnConfirmar.addEventListener('click', async () => {
       const payload = getFormData();
+      debugLog('POST payload ->', payload);
       try {
         const res = await fetch(API, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        const json = await res.json();
-        if (json.ok) {
+        let json;
+        try {
+          json = await res.json();
+        } catch (err) {
+          debugLog('Error parseando JSON al guardar:', err);
+        }
+        debugLog('POST <- status:', res.status, 'ok:', res.ok, 'json:', json);
+
+        if (res.ok && json && json.ok) {
           closeModal();
           form.reset();
+          // reset cooperativa
+          coopGroup.style.display = 'none';
+          coopSelect.required = false;
           coopSelect.disabled = true;
           coopSelect.setAttribute('aria-disabled', 'true');
           showAlert('success', '¡Solicitud guardada! ID ' + json.data.id);
         } else {
-          showAlert('error', json.error || 'No se pudo guardar.');
+          showAlert('error', (json && json.error) ? json.error : 'No se pudo guardar.');
         }
       } catch (e) {
+        debugLog('Error de red al guardar:', e);
         showAlert('error', 'Error de red al guardar.');
       }
     });
@@ -489,13 +598,10 @@ declare(strict_types=1); ?>
       productosBody.querySelectorAll('.prod-check:checked').forEach(chk => {
         const pid = Number(chk.dataset.pid);
         const fuenteSel = productosBody.querySelector(`input[name="fuente_${pid}"]:checked`);
-        items.push({
-          producto_id: pid,
-          fuente: fuenteSel ? fuenteSel.value : ''
-        });
+        items.push({ producto_id: pid, fuente: fuenteSel ? fuenteSel.value : '' });
       });
 
-      return {
+      const data = {
         productor_id_real: productorIdReal.value || null,
         nombre: nombreInput.value.trim(),
         representante: $('#representante').value,
@@ -517,9 +623,12 @@ declare(strict_types=1); ?>
         dir_numero: $('#dir_numero').value.trim(),
         observaciones: $('#observaciones').value.trim()
       };
+      debugLog('getFormData():', data);
+      return data;
     }
 
     function renderResumen(d) {
+      debugLog('renderResumen data:', d);
       const prods = (d.items && d.items.length) ?
         d.items.map(it => {
           const row = productosBody.querySelector(`#prod_${it.producto_id}`)?.closest('tr');
@@ -527,6 +636,11 @@ declare(strict_types=1); ?>
           return `${nombre} (${it.fuente || 'sin fuente'})`;
         }).join('<br>') :
         '—';
+
+      const formaPagoText = $('#forma_pago_id').selectedOptions[0]?.textContent || '';
+      const coopEstaVisible = coopGroup.style.display === 'block' && !coopSelect.disabled;
+      const coopText = coopEstaVisible ? (coopSelect.selectedOptions[0]?.textContent || '—') : '—';
+
       return `
       <div class="tabla-wrapper">
         <table class="data-table">
@@ -541,12 +655,11 @@ declare(strict_types=1); ?>
             <tr><td>Libre obstáculos</td><td>${d.libre_obstaculos}</td></tr>
             <tr><td>Área despegue</td><td>${d.area_despegue}</td></tr>
             <tr><td>Superficie (ha)</td><td>${d.superficie_ha}</td></tr>
-            <tr><td>Forma pago</td><td>${$('#forma_pago_id').selectedOptions[0]?.textContent || ''}</td></tr>
-            <tr><td>Cooperativa</td><td>${$('#coop_descuento_id_real').disabled ? '—' : ($('#coop_descuento_id_real').selectedOptions[0]?.textContent || '')}</td></tr>
+            <tr><td>Forma pago</td><td>${formaPagoText}</td></tr>
+            <tr><td>Cooperativa</td><td>${coopText}</td></tr>
             <tr><td>Patología</td><td>${$('#patologia_id').selectedOptions[0]?.textContent || ''}</td></tr>
             <tr><td>Rango</td><td>${d.rango}</td></tr>
             <tr><td>Productos</td><td>${prods}</td></tr>
-            <tr><td>Fuente productos</td><td>${d.productos_fuente || '—'}</td></tr>
             <tr><td>Provincia</td><td>${d.dir_provincia}</td></tr>
             <tr><td>Localidad</td><td>${d.dir_localidad}</td></tr>
             <tr><td>Calle</td><td>${d.dir_calle} ${d.dir_numero}</td></tr>
@@ -555,5 +668,8 @@ declare(strict_types=1); ?>
         </table>
       </div>`;
     }
+
+    // Log inicial de estado del DOM y ruta API
+    debugLog('View inicializada. API=', API);
   })();
 </script>
