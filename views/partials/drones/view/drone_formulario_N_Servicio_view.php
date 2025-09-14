@@ -11,61 +11,160 @@
     <form class="form-modern">
       <div class="form-grid grid-4">
 
-        <!-- Nombre completo -->
+        <!-- Nombre del productor -->
         <div class="input-group">
-          <label for="nombre">Nombre completo</label>
+          <label for="nombre">Nombre del productor</label>
           <div class="input-icon input-icon-name">
             <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
           </div>
         </div>
 
-        <!-- Correo electrónico -->
+        <!-- Provincia -->
         <div class="input-group">
-          <label for="email">Correo electrónico</label>
-          <div class="input-icon input-icon-email">
-            <input id="email" name="email" placeholder="usuario@correo.com" />
+          <label for="provincia">¿A LA HORA DE TOMAR EL SERVICIO PODREMOS CONTAR CON UN REPRESENTATE DE LA PROPIEDAD EN LA FINCA? *</label>
+          <div class="input-icon input-icon-globe">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
           </div>
         </div>
 
-        <!-- Fecha de nacimiento -->
+        <!-- Provincia -->
         <div class="input-group">
-          <label for="fecha">Fecha de nacimiento</label>
-          <div class="input-icon input-icon-date">
-            <input id="fecha" name="fecha" />
+          <label for="provincia">¿EL/ LOS CUARTELES A PULVERIZAR CUENTAN CON ALGUNA LINEA DE MEDIA O ALTA TENSION A MENOS DE 30 METROS? *</label>
+          <div class="input-icon input-icon-globe">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
           </div>
         </div>
 
-        <!-- Teléfono -->
+        <!-- Provincia -->
         <div class="input-group">
-          <label for="telefono">Teléfono</label>
-          <div class="input-icon input-icon-phone">
-            <input id="telefono" name="telefono" />
+          <label for="provincia">¿EL/LOS CUARTELES A PULVERIZAR SE ENCUENTRA A MENOS DE 3 KM DE UN AEROPUERTO O ZONA DE VUELO RESTRINGIDA? *</label>
+          <div class="input-icon input-icon-globe">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
+        <!-- Provincia -->
+        <div class="input-group">
+          <label for="provincia">¿CUENTA CON DISPONIBILIDAD DE CORRIENTE ELÉCTRICA?*</label>
+          <div class="input-icon input-icon-globe">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
           </div>
         </div>
 
-        <!-- DNI -->
+        <!-- Provincia -->
         <div class="input-group">
-          <label for="dni">DNI</label>
-          <div class="input-icon input-icon-dni">
-            <input id="dni" name="dni" />
+          <label for="provincia">¿EN LA PROPIEDAD HAY DISPONIBILIDAD DE AGUA POTABLE? *</label>
+          <div class="input-icon input-icon-globe">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
           </div>
         </div>
 
-        <!-- Edad -->
+        <!-- Provincia -->
         <div class="input-group">
-          <label for="edad">Edad</label>
-          <div class="input-icon input-icon-age">
-            <input id="edad" name="edad" />
+          <label for="provincia">¿ EL/LOS CUARTELES A PULVERIZAR ESTAN LIBRES DE OBSTÁCULOS? *</label>
+          <div class="input-icon input-icon-globe">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
           </div>
         </div>
 
-        <!-- CUIT -->
+        <!-- Provincia -->
         <div class="input-group">
-          <label for="cuit">CUIT</label>
-          <div class="input-icon input-icon-cuit">
-            <input id="cuit" name="cuit" />
+          <label for="provincia">¿EL/ LOS CUARTELES A PULVERIZAR CUENTAN CON UN ÁREA DE DESPEGUE APROPIADA? *</label>
+          <div class="input-icon input-icon-globe">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
           </div>
         </div>
+
+        <!-- Provincia -->
+        <div class="input-group">
+          <label for="provincia">SUPERFICIE (en hectáreas) PARA LAS QUE DESEA CONTRATAR EL SERVICIO*</label>
+          <div class="input-icon input-icon-globe">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Provincia -->
+        <div class="input-group">
+          <label for="provincia">MÉTODO DE PAGO *</label>
+          <div class="input-icon input-icon-globe">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Provincia -->
+        <div class="input-group">
+          <label for="provincia">INDICAR EL MOTIVO POR EL QUE DESEA CONTRATAR EL SERVICIO*</label>
+          <div class="input-icon input-icon-globe">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Provincia -->
+        <div class="input-group">
+          <label for="provincia">INDICAR EN QUE MOMENTO DESEA CONTRATAR EL SERVICIO*</label>
+          <div class="input-icon input-icon-globe">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Provincia -->
+        <div class="input-group">
+          <label for="provincia">En el caso de necesitar productos fitosanitarios para realizar la pulverización indicar los que sean necesarios. *</label>
+          <div class="input-icon input-icon-globe">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
+
+
+
+
 
         <!-- Provincia -->
         <div class="input-group">
@@ -88,22 +187,16 @@
           </div>
         </div>
 
-        <!-- Código Postal -->
-        <div class="input-group">
-          <label for="cp">Código Postal</label>
-          <div class="input-icon input-icon-cp">
-            <input type="text" id="cp" name="cp" />
-          </div>
-        </div>
 
         <!-- Dirección -->
         <div class="input-group">
-          <label for="direccion">Dirección</label>
+          <label for="direccion">Altura</label>
           <div class="input-icon input-icon-address">
             <input type="text" id="direccion" name="direccion" required />
           </div>
         </div>
       </div>
+
       <!-- Observaciones -->
       <div class="input-group">
         <label for="observaciones">Observaciones</label>
