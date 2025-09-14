@@ -285,59 +285,53 @@ declare(strict_types=1);
 
   .modal.hidden{ display:none; }
 
-  /* Mejora visual de la matriz de productos */
-  #productos-grid .data-table th,
-  #productos-grid .data-table td{ vertical-align:middle; }
-  #productos-help{ font-size:.9rem; color:#555; }
+  /* ===== Matriz de productos tipo Google Forms ===== */
+#productos-grid table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto; /* deja fluir las columnas */
+}
 
-  /* breakpoints suaves (desktop) */
-  @media (min-width:768px){
-    .form-grid.grid-4{ grid-template-columns:repeat(3,1fr); }
+#productos-grid thead th {
+  text-align: center;
+  font-weight: 600;
+  padding: .5rem;
+}
+
+#productos-grid tbody td {
+  padding: .5rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+#productos-grid tbody td:nth-child(2) {
+  text-align: left;       /* la columna de Producto va alineada a la izquierda */
+  font-weight: 500;
+}
+
+/* Columnas fijas para radios */
+#productos-grid th:nth-child(1),
+#productos-grid td:nth-child(1) { width: 40px; }   /* check */
+#productos-grid th:nth-child(3),
+#productos-grid td:nth-child(3) { width: 80px; }   /* SVE */
+#productos-grid th:nth-child(4),
+#productos-grid td:nth-child(4) { width: 100px; }  /* Productor */
+
+/* Responsive: que nunca genere scroll horizontal */
+@media (max-width: 640px) {
+  html, body { overflow-x: hidden; }
+  #productos-grid table.data-table {
+    width: 100%;
+    min-width: 0;
   }
-  @media (min-width:1024px){
-    .form-grid.grid-4{ grid-template-columns:repeat(4,1fr); }
+  #productos-grid tbody td {
+    font-size: .9rem;
+    padding: .4rem;
+    word-break: break-word;
+    white-space: normal;
   }
+}
 
-  /* ====== Mobile tweaks (SIN overflow horizontal) ====== */
-
-  /* Achica un poco la altura en teléfonos */
-  @media (max-width:480px){
-    .form-modern input,
-    .form-modern select,
-    .form-modern textarea{ min-height:38px; }
-  }
-
-  /* Que nada empuje el ancho en mobile */
-  @media (max-width:640px){
-    html, body{ overflow-x:hidden; }
-    .content, .card, .input-group, .input-icon{ max-width:100%; }
-    .form-grid.grid-4 > *{ min-width:0; } /* evita que hijos de grid desborden */
-
-    /* Matriz completa sin scroll horizontal */
-    #productos-grid .tabla-wrapper{ overflow-x:visible; }
-    #productos-grid table.data-table{
-      width:100%;
-      min-width:0;          /* permite encoger por debajo de cualquier mínimo */
-      table-layout:fixed;   /* reparte el ancho de columnas */
-    }
-    #productos-grid .data-table th,
-    #productos-grid .data-table td{
-      padding:.5rem;
-      font-size:.9rem;
-      word-break:break-word;
-      white-space:normal;
-    }
-    /* Columna del check angosta */
-    #productos-grid .data-table th:first-child,
-    #productos-grid .data-table td:first-child{ width:40px; }
-    /* Columnas SVE / Productor fijas y centradas */
-    #productos-grid .data-table th:nth-child(3),
-    #productos-grid .data-table td:nth-child(3),
-    #productos-grid .data-table th:nth-child(4),
-    #productos-grid .data-table td:nth-child(4){
-      width:64px; text-align:center;
-    }
-  }
 </style>
 
 
