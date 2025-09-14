@@ -365,8 +365,7 @@
 (function () {
   'use strict';
 
-  const API_URL = '../controller/drone_formulario_N_Servicio_controller.php';
-
+  const API_URL = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
   const logGroup = (title, payload) => {
     try {
       console.group(`API ▶ ${title}`);
