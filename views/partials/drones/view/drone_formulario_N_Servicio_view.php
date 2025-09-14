@@ -386,12 +386,10 @@ declare(strict_types=1);
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-    // elementos (los que pueden ser reemplazados por el framework se obtienen con getter)
     const nombreInput = $('#nombre');
     const listaNombres = $('#lista-nombres');
     const productorIdReal = $('#productor_id_real');
-// Obtener SIEMPRE por ID desde document: el framework puede mover el nodo fuera del <form>
-const getFormaPago = () => document.getElementById('forma_pago_id'); // <- NO cachear
+    const formaPago = document.getElementById('forma_pago_id');
     const coopSelect = $('#coop_descuento_id_real');
     const coopGroup = $('#coop-group');
     const patologia = $('#patologia_id');
@@ -468,66 +466,32 @@ const getFormaPago = () => document.getElementById('forma_pago_id'); // <- NO ca
 
     // ===== Cargar combos iniciales =====
     async function loadFormasPago() {
-  let formaPago = getFormaPago(); // obtener cada vez
-  if (!formaPago) {
-    debugLog('forma_pago_id no está en el DOM todavía. Reintentando...');
-    // pequeño backoff por si el framework está montando el nodo
-    await new Promise(r => setTimeout(r, 60));
-    formaPago = getFormaPago();
-    if (!formaPago) {
-      debugLog('forma_pago_id sigue ausente. Abort loadFormasPago.');
-      return;
-    }
-  }
-
-  try {
-    const fp = await fetchJSON(API + '?action=formas_pago');
-    debugLog('Formas de pago (raw):', fp);
-
-    if (fp.ok && Array.isArray(fp.data) && fp.data.length) {
-      formasPagoCache = fp.data.slice(); // cache para reinyección
-      const opts = fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
-      formaPago.innerHTML = '<option value="">Seleccionar</option>' + opts;
-      formaPago.selectedIndex = 0;
-
-      const fireRefresh = (el) => {
-        if (!el) return;
-        el.dispatchEvent(new Event('input',  { bubbles: true }));
-        el.dispatchEvent(new Event('change', { bubbles: true }));
-        debugLog('Refresh select fired (options:', el.options.length, ')');
-      };
-
-      // Inmediato
-      fireRefresh(formaPago);
-
-      // Reintentos por si el framework reemplaza el nodo luego de nuestra inyección
-      setTimeout(() => fireRefresh(getFormaPago()), 0);
-      requestAnimationFrame(() => fireRefresh(getFormaPago()));
-      setTimeout(() => {
-        const el = getFormaPago();
-        if (el && el.options && el.options.length <= 1 && Array.isArray(formasPagoCache) && formasPagoCache.length) {
-          // El framework “limpió” el select; reinyectamos
-          el.innerHTML = '<option value="">Seleccionar</option>' +
-            formasPagoCache.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
-          el.selectedIndex = 0;
-          fireRefresh(el);
-          debugLog('Reinyección tardía de opciones para forma_pago_id');
+      try {
+        const fp = await fetchJSON(API + '?action=formas_pago');
+        debugLog('Formas de pago:', fp);
+        if (fp.ok && Array.isArray(fp.data) && fp.data.length) {
+          formasPagoCache = fp.data.slice();
+          formaPago.innerHTML = '<option value="">Seleccionar</option>' +
+            fp.data.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
+          formaPago.selectedIndex = 0;
+          formaPago.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
+        } else {
+          formaPago.innerHTML = '<option value="">(sin datos)</option>';
+          formaPago.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
         }
-      }, 120);
+      } catch (e) {
+        debugLog('Error formas_pago:', e);
+        formaPago.innerHTML = '<option value="">(sin datos)</option>';
+        formaPago.dispatchEvent(new Event('change', {
+          bubbles: true
+        }));
+      }
+    }
 
-    } else {
-      formaPago.innerHTML = '<option value="">(sin datos)</option>';
-      formaPago.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-  } catch (e) {
-    debugLog('Error formas_pago:', e);
-    const el = getFormaPago();
-    if (el) {
-      el.innerHTML = '<option value="">(sin datos)</option>';
-      el.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-  }
-}
 
 
 
@@ -564,53 +528,6 @@ const getFormaPago = () => document.getElementById('forma_pago_id'); // <- NO ca
       await Promise.all([loadFormasPago(), loadPatologias()]);
       debugLog('View inicializada. API=', API);
     }
-
-    // Consolidado: un solo listener load + observer
-    window.addEventListener('load', () => {
-      if (!_inited) init();
-
-      const observer = new MutationObserver(() => {
-        const el = getFormaPago();
-        if (!el) return;
-
-        // Si el framework re-monta y te deja el placeholder, reinyectamos desde cache
-        const tieneSoloPlaceholder = el.options && el.options.length <= 1;
-        if (tieneSoloPlaceholder && Array.isArray(formasPagoCache) && formasPagoCache.length) {
-          const opts = formasPagoCache.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
-          el.innerHTML = '<option value="">Seleccionar</option>' + opts;
-          el.selectedIndex = 0;
-
-          // refrescos para el enhancer
-          el.dispatchEvent(new Event('input',  { bubbles: true }));
-          el.dispatchEvent(new Event('change', { bubbles: true }));
-          requestAnimationFrame(() => {
-            const el2 = getFormaPago();
-            if (el2) {
-              el2.dispatchEvent(new Event('input',  { bubbles: true }));
-              el2.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-          });
-
-          debugLog('Reinyecté opciones forma de pago tras reemplazo del framework');
-        }
-      });
-
-      observer.observe(document.body, { childList: true, subtree: true });
-
-// Chequeo inicial por si el enhancer ya dejó el select sin opciones
-setTimeout(() => {
-  const el = getFormaPago();
-  if (el && el.options && el.options.length <= 1 && Array.isArray(formasPagoCache) && formasPagoCache.length) {
-    el.innerHTML = '<option value="">Seleccionar</option>' +
-      formasPagoCache.map(o => `<option value="${o.id}">${o.nombre}</option>`).join('');
-    el.selectedIndex = 0;
-    el.dispatchEvent(new Event('input',  { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-    debugLog('Chequeo inicial post-load: reinyecté opciones forma de pago');
-  }
-}, 50);
-
-    });
 
     // ===== Autocomplete de productor =====
     let acTimer;
@@ -822,7 +739,7 @@ setTimeout(() => {
         });
       });
 
-      const formaPagoSel = getFormaPago();
+      const formaPagoSel = formaPago;
 
       const data = {
         productor_id_real: productorIdReal.value || null,
@@ -860,7 +777,7 @@ setTimeout(() => {
         }).join('<br>') :
         '—';
 
-      const formaPagoText = getFormaPago().selectedOptions[0]?.textContent || '';
+      const formaPagoText = formaPago.selectedOptions[0]?.textContent || '';
       const coopEstaVisible = coopGroup.style.display === 'block' && !coopSelect.disabled;
       const coopText = coopEstaVisible ? (coopSelect.selectedOptions[0]?.textContent || '—') : '—';
 
@@ -892,9 +809,10 @@ setTimeout(() => {
       </div>`;
     }
 
-// Iniciar DESPUÉS del load para evitar que el framework borre opciones ya cargadas
-window.addEventListener('load', () => { if (!_inited) init(); });
+    // Iniciar DESPUÉS del load para evitar que el framework borre opciones ya cargadas
+    window.addEventListener('load', () => {
+      if (!_inited) init();
+    });
 
   })();
 </script>
-
