@@ -1,7 +1,6 @@
 <?php
 
 ?>
-<!-- <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script> -->
 <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
 
 
@@ -123,9 +122,9 @@
         <div class="input-group">
           <label for="forma_pago_id">Método de pago *</label>
           <div class="input-icon">
-<select id="forma_pago_id" name="forma_pago_id" required>
-  <option value="">Seleccionar</option>
-</select>
+            <select id="forma_pago_id" name="forma_pago_id" required>
+              <option value="">Seleccionar</option>
+            </select>
           </div>
         </div>
 
@@ -144,9 +143,9 @@
         <div class="input-group">
           <label for="patologia_id">Motivo del servicio *</label>
           <div class="input-icon">
-<select id="patologia_id" name="patologia_id" required>
-  <option value="">Seleccionar</option>
-</select>
+            <select id="patologia_id" name="patologia_id" required>
+              <option value="">Seleccionar</option>
+            </select>
           </div>
         </div>
 
@@ -374,7 +373,7 @@
 
 
 <script>
-  (function () {
+  (function() {
     'use strict';
 
     const API_URL = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
@@ -382,23 +381,42 @@
     /* ========= Helpers ========= */
     const byId = (id) => document.getElementById(id);
     const logGroup = (title, payload) => {
-      try { console.group(`API ▶ ${title}`); console.log(payload); console.groupEnd(); }
-      catch { console.log(`API ▶ ${title}`, payload); }
+      try {
+        console.group(`API ▶ ${title}`);
+        console.log(payload);
+        console.groupEnd();
+      } catch {
+        console.log(`API ▶ ${title}`, payload);
+      }
     };
-    const onReady = (fn) => (document.readyState === 'loading'
-      ? document.addEventListener('DOMContentLoaded', fn, { once: true })
-      : fn());
+    const onReady = (fn) => (document.readyState === 'loading' ?
+      document.addEventListener('DOMContentLoaded', fn, {
+        once: true
+      }) :
+      fn());
 
     const apiGet = async (action, params = {}) => {
-      const qs = new URLSearchParams({ action, ...params });
+      const qs = new URLSearchParams({
+        action,
+        ...params
+      });
       const res = await fetch(`${API_URL}?${qs.toString()}`, {
-        headers: { 'Accept': 'application/json' },
+        headers: {
+          'Accept': 'application/json'
+        },
         credentials: 'same-origin',
         cache: 'no-store'
       });
       let json;
-      try { json = await res.json(); }
-      catch { json = { ok: false, error: 'Respuesta no JSON', status: res.status }; }
+      try {
+        json = await res.json();
+      } catch {
+        json = {
+          ok: false,
+          error: 'Respuesta no JSON',
+          status: res.status
+        };
+      }
       logGroup(action, json);
       return json;
     };
@@ -413,14 +431,20 @@
 
     const refreshSelectUI = (sel) => {
       // Disparamos eventos reales para wrappers no reactivos (sin clonar nodos)
-      sel.dispatchEvent(new Event('input',  { bubbles: true }));
-      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      sel.dispatchEvent(new Event('input', {
+        bubbles: true
+      }));
+      sel.dispatchEvent(new Event('change', {
+        bubbles: true
+      }));
       // micro reflow
-      sel.style.outline = '0'; void sel.offsetHeight; sel.style.outline = '';
+      sel.style.outline = '0';
+      void sel.offsetHeight;
+      sel.style.outline = '';
       return sel;
     };
 
-    const fillSelect = (sel, items, mapValue = (x)=>x.id, mapText = (x)=>x.nombre) => {
+    const fillSelect = (sel, items, mapValue = (x) => x.id, mapText = (x) => x.nombre) => {
       if (!sel) return sel;
       clearSelect(sel);
       if (Array.isArray(items)) {
@@ -476,30 +500,23 @@
           const tr = e.target.closest('tr');
           const pid = tr.getAttribute('data-producto-id');
           const radios = tr.querySelectorAll(`input[name="fuente_${pid}"]`);
-          radios.forEach(r => { r.disabled = !chk.checked; if (!chk.checked) r.checked = false; });
-        }, { passive: true });
+          radios.forEach(r => {
+            r.disabled = !chk.checked;
+            if (!chk.checked) r.checked = false;
+          });
+        }, {
+          passive: true
+        });
       });
     };
-
-    // ✅ Opción B: cargar framework.js **después** de poblar (o no cargarlo)
-    const loadFrameworkJS = () => new Promise((resolve, reject) => {
-      const src = 'https://www.fernandosalguero.com/cdn/assets/javascript/framework.js';
-      const existing = document.querySelector(`script[src="${src}"]`);
-      if (existing) { resolve(); return; }
-      const s = document.createElement('script');
-      s.src = src; s.defer = true;
-      s.onload = () => { console.debug('framework.js cargado tardíamente'); resolve(); };
-      s.onerror = (e) => { console.warn('framework.js no cargó (continuamos nativo)', e); resolve(); };
-      document.head.appendChild(s);
-    });
 
     /* ========= Carga y bindings ========= */
     const init = async () => {
       // Referencias
       const selFormaPago = byId('forma_pago_id');
-      const wrapCoop     = byId('wrap-cooperativa');
-      const selCoop      = byId('coop_descuento_id_real');
-      const selPat       = byId('patologia_id');
+      const wrapCoop = byId('wrap-cooperativa');
+      const selCoop = byId('coop_descuento_id_real');
+      const selPat = byId('patologia_id');
 
       // 1) Data en paralelo
       const [fpRes, patRes, coopRes] = await Promise.all([
@@ -509,9 +526,9 @@
       ]);
 
       // 2) Poblar selects (nativos)
-      if (fpRes.ok) fillSelect(selFormaPago, fpRes.data, x => x.id,      x => x.nombre);
-      if (coopRes.ok) fillSelect(selCoop,     coopRes.data, x => x.id_real, x => x.usuario);
-      if (patRes.ok)  fillSelect(selPat,      patRes.data,  x => x.id,      x => x.nombre);
+      if (fpRes.ok) fillSelect(selFormaPago, fpRes.data, x => x.id, x => x.nombre);
+      if (coopRes.ok) fillSelect(selCoop, coopRes.data, x => x.id_real, x => x.usuario);
+      if (patRes.ok) fillSelect(selPat, patRes.data, x => x.id, x => x.nombre);
 
       // 3) Visibilidad cooperativas
       const updateCoopVisibility = () => {
@@ -521,13 +538,20 @@
         selCoop.setAttribute('aria-hidden', String(!isCoop));
         if (!isCoop) selCoop.value = '';
       };
-      selFormaPago.addEventListener('change', updateCoopVisibility, { passive: true });
+      selFormaPago.addEventListener('change', updateCoopVisibility, {
+        passive: true
+      });
       updateCoopVisibility();
 
       // 4) Matriz por patología
       const loadProductos = async (patologiaId) => {
-        if (!patologiaId) { renderProductos([]); return; }
-        const res = await apiGet('productos_por_patologia', { patologia_id: patologiaId });
+        if (!patologiaId) {
+          renderProductos([]);
+          return;
+        }
+        const res = await apiGet('productos_por_patologia', {
+          patologia_id: patologiaId
+        });
         renderProductos(res.ok ? res.data : []);
       };
 
@@ -542,11 +566,10 @@
       selPat.addEventListener('change', async () => {
         const nuevo = parseInt(selPat.value || '0', 10);
         await loadProductos(nuevo);
-      }, { passive: true });
+      }, {
+        passive: true
+      });
 
-      // 6) (Opcional) cargar framework **después** de que todo está poblado
-      //    Si preferís NO usarlo en esta vista, comentá la línea siguiente.
-      await loadFrameworkJS();
     };
 
     onReady(init);
