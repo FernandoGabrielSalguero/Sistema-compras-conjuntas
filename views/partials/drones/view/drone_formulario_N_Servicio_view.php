@@ -372,110 +372,168 @@
 </style>
 
 <script>
-  (function() {
+  (function () {
     'use strict';
 
     const API_URL = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
+
+    /* ========= Helpers ========= */
+    const byId = (id) => document.getElementById(id);
     const logGroup = (title, payload) => {
-      try {
-        console.group(`API ▶ ${title}`);
-        console.log(payload);
-        console.groupEnd();
-      } catch (e) {
-        console.log(`API ▶ ${title}`, payload);
-      }
+      try { console.group(`API ▶ ${title}`); console.log(payload); console.groupEnd(); }
+      catch { console.log(`API ▶ ${title}`, payload); }
     };
 
     const apiGet = async (action, params = {}) => {
-      const qs = new URLSearchParams({
-        action,
-        ...params
-      });
+      const qs = new URLSearchParams({ action, ...params });
       const res = await fetch(`${API_URL}?${qs.toString()}`, {
-        headers: {
-          'Accept': 'application/json'
-        },
+        headers: { 'Accept': 'application/json' },
         credentials: 'same-origin',
         cache: 'no-store'
       });
       let json;
-      try {
-        json = await res.json();
-      } catch (e) {
-        json = {
-          ok: false,
-          error: 'Respuesta no JSON',
-          status: res.status
-        };
-      }
+      try { json = await res.json(); }
+      catch { json = { ok: false, error: 'Respuesta no JSON', status: res.status }; }
       logGroup(action, json);
       return json;
     };
 
-    const initConsoleDiagnostics = async () => {
-      // 1) formas_pago
-      const fp = apiGet('formas_pago');
+    const clearSelect = (sel, placeholder = 'Seleccionar') => {
+      sel.innerHTML = '';
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = placeholder;
+      sel.appendChild(opt);
+    };
 
-      // 2) patologias (usaremos el primer id disponible para disparar productos_por_patologia)
-      const patologiasPromise = apiGet('patologias');
+    // Forzamos refresco visual si el framework envuelve el select
+    const refreshSelectVisual = (sel) => {
+      sel.selectedIndex = 0;
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      const clone = sel.cloneNode(true); // fallback duro
+      sel.replaceWith(clone);
+      return clone;
+    };
 
-      // 3) cooperativas
-      const coop = apiGet('cooperativas');
-
-      // 4) productos_por_patologia: al cargar patologías, usamos la primera; si no hay, probamos con el valor del select (si existe)
-      try {
-        const patologias = await patologiasPromise;
-        let patologiaId = 0;
-
-        // Intentamos con el select si ya existe un valor válido
-        const sel = document.getElementById('patologia_id');
-        if (sel && sel.value && !isNaN(parseInt(sel.value, 10))) {
-          patologiaId = parseInt(sel.value, 10);
+    const fillSelect = (sel, items, mapValue = (x)=>x.id, mapText = (x)=>x.nombre) => {
+      if (!sel) return sel;
+      clearSelect(sel);
+      if (Array.isArray(items)) {
+        for (const it of items) {
+          const o = document.createElement('option');
+          o.value = String(mapValue(it) ?? '');
+          o.textContent = String(mapText(it) ?? '');
+          sel.appendChild(o);
         }
+      }
+      console.debug(`Select#${sel.id} cargado con`, sel.options.length, 'opciones');
+      return refreshSelectVisual(sel);
+    };
 
-        // Si no había selección previa, tomamos el primer id de la API
-        if ((!patologiaId || patologiaId <= 0) && patologias && patologias.ok && Array.isArray(patologias.data) && patologias.data.length) {
-          patologiaId = parseInt(patologias.data[0].id, 10) || 0;
-        }
+    /* ========= Matriz de productos ========= */
+    const renderProductos = (productos = []) => {
+      const tbody = byId('productos-body');
+      tbody.innerHTML = '';
 
-        // Si conseguimos un id válido, disparamos productos_por_patologia
-        if (patologiaId > 0) {
-          await apiGet('productos_por_patologia', {
-            patologia_id: patologiaId
-          });
-        } else {
-          // Último recurso: log de advertencia y consulta con id=1 (puede no existir)
-          console.warn('No se pudo determinar patologia_id a partir del select ni de la API. Se probará con patologia_id=1');
-          await apiGet('productos_por_patologia', {
-            patologia_id: 1
-          });
-        }
-      } catch (e) {
-        console.error('Error en diagnóstico de productos_por_patologia:', e);
+      if (!Array.isArray(productos) || productos.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="4" style="text-align:center;">No hay productos sugeridos para la patología seleccionada.</td>`;
+        tbody.appendChild(tr);
+        return;
       }
 
-      // Listener: cuando el usuario cambie la patología, volver a loggear productos_por_patologia
-      const patSel = document.getElementById('patologia_id');
-      if (patSel) {
-        patSel.addEventListener('change', async () => {
-          const id = parseInt(patSel.value || '0', 10);
-          if (id > 0) {
-            await apiGet('productos_por_patologia', {
-              patologia_id: id
-            });
-          }
-        }, {
-          passive: true
-        });
+      for (const p of productos) {
+        const pid = parseInt(p.id, 10);
+        const row = document.createElement('tr');
+        row.setAttribute('data-producto-id', String(pid));
+        const chkId = `prod_${pid}`;
+
+        row.innerHTML = `
+          <td>
+            <input type="checkbox" class="chk-prod" id="${chkId}" aria-label="Seleccionar ${p.nombre}">
+          </td>
+          <td style="text-align:left;">
+            <label for="${chkId}">${p.nombre}</label>
+          </td>
+          <td>
+            <input type="radio" name="fuente_${pid}" value="sve" disabled aria-label="Aporta SVE">
+          </td>
+          <td>
+            <input type="radio" name="fuente_${pid}" value="productor" disabled aria-label="Aporta productor">
+          </td>
+        `;
+        tbody.appendChild(row);
       }
+
+      // Habilitar radios solo si está chequeado el producto
+      tbody.querySelectorAll('.chk-prod').forEach(chk => {
+        chk.addEventListener('change', (e) => {
+          const tr = e.target.closest('tr');
+          const pid = tr.getAttribute('data-producto-id');
+          const radios = tr.querySelectorAll(`input[name="fuente_${pid}"]`);
+          radios.forEach(r => { r.disabled = !chk.checked; if (!chk.checked) r.checked = false; });
+        }, { passive: true });
+      });
+    };
+
+    /* ========= Carga y bindings ========= */
+    const init = async () => {
+      // Referencias
+      let selFormaPago = byId('forma_pago_id');
+      const wrapCoop = byId('wrap-cooperativa');
+      let selCoop = byId('coop_descuento_id_real');
+      const selPat = byId('patologia_id');
+
+      // Cargar data en paralelo
+      const [fpRes, patRes, coopRes] = await Promise.all([
+        apiGet('formas_pago'),
+        apiGet('patologias'),
+        apiGet('cooperativas')
+      ]);
+
+      // Poblar selects
+      if (fpRes.ok) selFormaPago = fillSelect(selFormaPago, fpRes.data, x => x.id, x => x.nombre);
+      if (coopRes.ok) selCoop     = fillSelect(selCoop,     coopRes.data, x => x.id_real, x => x.usuario);
+      if (patRes.ok)  fillSelect(selPat,  patRes.data,  x => x.id,      x => x.nombre);
+
+      // Mostrar/ocultar cooperativas según forma de pago
+      const updateCoopVisibility = () => {
+        const isCoop = String(selFormaPago.value) === '6';
+        wrapCoop.style.display = isCoop ? '' : 'none';
+        selCoop.toggleAttribute('required', isCoop);
+        selCoop.setAttribute('aria-hidden', String(!isCoop));
+        if (!isCoop) selCoop.value = '';
+      };
+      selFormaPago.addEventListener('change', updateCoopVisibility, { passive: true });
+      updateCoopVisibility();
+
+      // Matriz por patología
+      const loadProductos = async (patologiaId) => {
+        if (!patologiaId) { renderProductos([]); return; }
+        const res = await apiGet('productos_por_patologia', { patologia_id: patologiaId });
+        renderProductos(res.ok ? res.data : []);
+      };
+
+      // Primera carga
+      let pid = parseInt(selPat.value || '0', 10);
+      if (!pid && patRes.ok && Array.isArray(patRes.data) && patRes.data.length) {
+        pid = parseInt(patRes.data[0].id, 10) || 0;
+        if (pid) selPat.value = String(pid);
+      }
+      await loadProductos(pid);
+
+      // Cambio de patología
+      selPat.addEventListener('change', async () => {
+        const nuevo = parseInt(selPat.value || '0', 10);
+        await loadProductos(nuevo);
+      }, { passive: true });
     };
 
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initConsoleDiagnostics, {
-        once: true
-      });
+      // Ejecutamos tras DOM listo (y después de que el framework haya tocado el DOM)
+      window.addEventListener('load', init, { once: true });
     } else {
-      initConsoleDiagnostics();
+      window.addEventListener('load', init, { once: true });
     }
   })();
 </script>
