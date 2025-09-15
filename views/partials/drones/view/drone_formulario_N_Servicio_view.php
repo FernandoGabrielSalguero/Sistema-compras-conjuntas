@@ -453,6 +453,106 @@ try {
       white-space: normal;
     }
   }
+
+  /* =========================
+   1) VISIBILIDAD COOPERATIVA POR CSS
+   ========================= */
+
+/* Oculto por defecto (ya tenés .hidden, lo refuerzo) */
+#wrap-cooperativa { display: none !important; }
+
+/* Si el select de formas de pago tiene seleccionado el option value="6",
+   se muestra el bloque de cooperativa.
+   Usamos :has() a nivel del contenedor del grid para evitar problemas
+   de hermanos/specificity del framework. */
+.form-grid:has(#forma_pago_id option[value="6"]:checked) #wrap-cooperativa {
+  display: block !important;
+}
+
+/* Accesibilidad visual: cuando aparece, que ocupe el ancho completo en móviles */
+#wrap-cooperativa .input-icon,
+#wrap-cooperativa select { width: 100%; }
+
+/* =========================
+   2) LAYOUT MOBILE-FIRST
+   ========================= */
+
+/* Que nada se “desborde” lateralmente */
+* { box-sizing: border-box; }
+.content, .card, #calendar-root { max-width: 100%; overflow: visible; }
+.form-modern .input-icon { width: 100%; }
+
+/* Inputs que realmente ocupen 100% del ancho disponible */
+.form-modern input,
+.form-modern select,
+.form-modern textarea { width: 100%; }
+
+/* Grilla: una columna en pantallas chicas */
+@media (max-width: 900px) {
+  .form-grid.grid-4 { grid-template-columns: 1fr; }
+}
+
+/* Pequeño respiro en tarjetas en móviles */
+@media (max-width: 600px) {
+  .card { padding: 1rem; }
+}
+
+/* =========================
+   3) MATRIZ DE PRODUCTOS — 2 modos
+   ========================= */
+
+/* 3.a) Modo scroll horizontal (por defecto) */
+#productos-grid .tabla-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+#productos-grid table.data-table { min-width: 420px; } /* evita que se rompa la tabla */
+
+/* 3.b) Modo "cards" en móviles muy chicos: apilamos filas */
+@media (max-width: 480px) {
+  #productos-grid table.data-table,
+  #productos-grid thead,
+  #productos-grid tbody,
+  #productos-grid th,
+  #productos-grid td,
+  #productos-grid tr { display: block; }
+
+  #productos-grid thead { position: absolute; left: -9999px; top: -9999px; }
+
+  #productos-grid tbody tr {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: .75rem;
+    margin-bottom: .75rem;
+    background: #fff;
+  }
+
+  #productos-grid tbody td {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: .5rem;
+    text-align: left;
+    padding: .25rem 0;
+  }
+
+  /* Orden lógico: check -> nombre -> radios */
+  #productos-grid tbody td:nth-child(1) { order: 0; }
+  #productos-grid tbody td:nth-child(2) { order: 1; font-weight: 600; }
+  #productos-grid tbody td:nth-child(3),
+  #productos-grid tbody td:nth-child(4) {
+    order: 2;
+    grid-template-columns: auto auto;
+    justify-content: flex-start;
+  }
+}
+
+/* =========================
+   4) MICRO-FIX: evita barras raras laterales en móviles
+   ========================= */
+html, body { max-width: 100%; overflow-x: hidden; }
+
 </style>
 
 
