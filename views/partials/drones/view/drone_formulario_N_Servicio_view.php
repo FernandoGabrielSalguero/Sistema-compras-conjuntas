@@ -385,6 +385,10 @@ try {
   .hidden { 
     display: none !important; 
   }
+  /* Asegurar compatibilidad total con el atributo nativo */
+  [hidden] {
+    display: none !important;
+  }
 
   /* ===== Matriz de productos tipo Google Forms ===== */
   #productos-grid table.data-table {
@@ -607,18 +611,46 @@ try {
         }
       }
 
-      // Visibilidad de cooperativas
+      // Visibilidad de cooperativas: 3 capas (clase, atributo hidden y style inline)
       const updateCoopVisibility = () => {
-        const isCoop = String(selFormaPago.value).trim() === '6';
+        const val = (selFormaPago.value || '').trim();
+        const isCoop = Number(val) === 6;
+
+        // 1) Clase .hidden
         wrapCoop.classList.toggle('hidden', !isCoop);
-        selCoop.toggleAttribute('required', isCoop);
-        selCoop.setAttribute('aria-hidden', String(!isCoop));
-        if (!isCoop) selCoop.value = '';
+
+        // 2) Atributo [hidden]
+        wrapCoop.hidden = !isCoop;
+
+        // 3) Inline style como último recurso ante CSS del framework
+        if (isCoop) {
+          wrapCoop.style.removeProperty('display');
+        } else {
+          wrapCoop.style.setProperty('display', 'none', 'important');
+        }
+
+        // Accesibilidad y required
+        if (isCoop) {
+          selCoop.required = true;
+          selCoop.removeAttribute('aria-hidden');
+          // Si no hay selección y hay opciones, autoseleccionar la primera útil
+          if (!selCoop.value && selCoop.options.length > 1) {
+            selCoop.selectedIndex = 1;
+          }
+        } else {
+          selCoop.required = false;
+          selCoop.setAttribute('aria-hidden', 'true');
+          selCoop.selectedIndex = 0;
+        }
       };
-      selFormaPago.addEventListener('change', updateCoopVisibility, {
-        passive: true
-      });
+
+      // Escuchar tanto change como input (algunos navegadores o wrappers usan uno u otro)
+      selFormaPago.addEventListener('change', updateCoopVisibility, { passive: true });
+      selFormaPago.addEventListener('input',  updateCoopVisibility, { passive: true });
+
+      // Estado inicial
       updateCoopVisibility();
+
 
       // Matriz dinámica al cambiar patología
       const loadProductos = async (pid) => {
