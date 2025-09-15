@@ -50,7 +50,7 @@ try {
 }
 ?>
 <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
-
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 
 <div class="content">
