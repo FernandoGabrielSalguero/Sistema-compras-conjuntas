@@ -49,8 +49,6 @@ try {
   $productosIni = $productosIni ?? [];
 }
 ?>
-<link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 
 <div class="content">
@@ -334,81 +332,84 @@ try {
 </div>
 
 <style>
-  /* ====== Base del formulario ====== */
-* { box-sizing: border-box; }
-html, body { max-width: 100%; overflow-x: hidden; }
+ /* ===== RESET Y BASE MOBILE-FIRST ===== */
+*,
+*::before,
+*::after { box-sizing: border-box; }
 
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;   /* mata la barra lateral */
+}
+
+img, video, canvas, svg { max-width: 100%; height: auto; }
+
+.content, .card, #calendar-root {
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+/* Inputs cómodos y 100% de ancho */
 .form-modern input,
 .form-modern select,
-.form-modern textarea { min-height: 42px; width: 100%; }
+.form-modern textarea { width: 100%; min-height: 42px; }
 
-.content, .card, #calendar-root { max-width: 100%; overflow: visible; }
-
-/* Grilla: desktop flexible; tablet 2 cols; móvil 1 col */
+/* Grilla del formulario */
 .form-grid.grid-4 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1rem;
+  grid-template-columns: 1fr;        /* 1 columna por defecto (móvil) */
 }
-@media (max-width: 900px) {
-  .form-grid.grid-4 { grid-template-columns: 1fr; }
+@media (min-width: 720px) {
+  .form-grid.grid-4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
-@media (min-width: 900px) and (max-width: 1200px) {
-  .form-grid.grid-4 { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 600px) {
-  .card { padding: 1rem; }
+@media (min-width: 1100px) {
+  .form-grid.grid-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
 }
 
-/* ====== Autocomplete ====== */
-#lista-nombres li { padding: .25rem .5rem; cursor: pointer; }
-#lista-nombres li[aria-selected="true"], #lista-nombres li:hover { background: #eef2ff; }
+/* Evita que wrappers del framework recorten */
+.input-group, .form-modern .input-icon { width: 100%; min-width: 0; }
 
-/* ====== Modal ====== */
-.modal.hidden { display: none; }
-#modal-resumen .modal-content { max-width: 960px; width: 90vw; }
-
-/* ====== Utilidades de visibilidad (compat) ====== */
+/* ===== UTILIDADES DE VISIBILIDAD ===== */
 .hidden { display: none !important; }
 [hidden] { display: none !important; }
 
 /* =========================================================
-   1) VISIBILIDAD DE COOPERATIVA SOLO CON CSS (con :has)
+   VISIBILIDAD DE COOPERATIVA SOLO CON CSS (usa :has)
    ========================================================= */
-/* Oculto por defecto */
-#wrap-cooperativa { display: none !important; }
+#wrap-cooperativa { display: none !important; } /* oculto por defecto */
 
-/* Sólo si el navegador soporta :has() aplicamos la regla */
 @supports selector(.form-grid:has(select)) {
-  /* Mostrar cuando el <select id="forma_pago_id"> tenga seleccionado value="6".
-     Cubrimos tanto :checked como :selected por compatibilidad. */
+  /* muestra el bloque si el option seleccionado del select es "6" */
   .form-grid:has(#forma_pago_id option[value="6"]:checked) #wrap-cooperativa,
   .form-grid:has(#forma_pago_id option[value="6"]:selected) #wrap-cooperativa {
     display: block !important;
   }
 }
-
-/* Asegurar buen ancho cuando aparece */
 #wrap-cooperativa, #wrap-cooperativa .input-icon, #wrap-cooperativa select { width: 100%; }
 
 /* =========================================================
-   2) MATRIZ DE PRODUCTOS — modo tabla y modo tarjetas
+   MATRIZ DE PRODUCTOS — modo tabla (desktop) + tarjetas (móvil)
    ========================================================= */
 
-/* Contenedor con scroll horizontal suave por defecto */
+/* Contenedor con scroll horizontal suave si hace falta */
 #productos-grid .tabla-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  overscroll-behavior-x: contain;
+  margin-inline: -12px;              /* “sangría” para que el scroll no corte bordes */
+  padding-inline: 12px;
 }
 
-/* Tabla desktop limpia */
+/* Tabla base */
 #productos-grid table.data-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;              /* evita saltos de ancho */
-  min-width: 520px;                 /* asegura columnas visibles si hay poco ancho */
+  table-layout: fixed;                /* celdas estables */
+  min-width: 520px;                   /* asegura columnas visibles en anchos medios */
+  background: #fff;
+  border-radius: 12px;
 }
 #productos-grid thead th {
   text-align: center;
@@ -417,24 +418,28 @@ html, body { max-width: 100%; overflow-x: hidden; }
   white-space: nowrap;
 }
 #productos-grid tbody td {
-  padding: .5rem;
+  padding: .6rem .5rem;
   text-align: center;
   vertical-align: middle;
   word-break: break-word;
 }
-#productos-grid tbody td:nth-child(2) {
-  text-align: left;                 /* nombre a la izquierda */
-  font-weight: 500;
+#productos-grid tbody td:nth-child(2) { text-align: left; font-weight: 600; }
+
+/* Anchos sugeridos */
+#productos-grid th:nth-child(1), #productos-grid td:nth-child(1) { width: 44px; }
+#productos-grid th:nth-child(3), #productos-grid td:nth-child(3) { width: 92px; }   /* SVE */
+#productos-grid th:nth-child(4), #productos-grid td:nth-child(4) { width: 120px; }  /* Productor */
+
+/* Inputs de la matriz un touch más grandes */
+#productos-grid input[type="checkbox"],
+#productos-grid input[type="radio"] {
+  inline-size: 18px;
+  block-size: 18px;
 }
 
-/* Anchos de columnas */
-#productos-grid th:nth-child(1), #productos-grid td:nth-child(1) { width: 44px; }
-#productos-grid th:nth-child(3), #productos-grid td:nth-child(3) { width: 90px; }   /* SVE */
-#productos-grid th:nth-child(4), #productos-grid td:nth-child(4) { width: 110px; }  /* Productor */
-
-/* ---- Modo tarjetas (muy móvil) ---- */
-@media (max-width: 480px) {
-  /* convertimos la tabla en bloques */
+/* ---------- MODO TARJETAS (teléfonos) ---------- */
+@media (max-width: 520px) {
+  /* Convertimos la tabla en bloques accesibles */
   #productos-grid table.data-table,
   #productos-grid thead,
   #productos-grid tbody,
@@ -453,7 +458,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
     box-shadow: 0 1px 2px rgba(0,0,0,.03);
   }
 
-  /* fila -> mini grid */
+  /* cada celda se vuelve una mini-fila */
   #productos-grid tbody td {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -463,16 +468,13 @@ html, body { max-width: 100%; overflow-x: hidden; }
     padding: .25rem 0;
   }
 
-  /* Orden: check, nombre (fuerte), luego radios con rótulo */
+  /* orden lógico: check, nombre, radios */
   #productos-grid tbody td:nth-child(1) { order: 0; }
-  #productos-grid tbody td:nth-child(2) { order: 1; font-weight: 700; }
+  #productos-grid tbody td:nth-child(2) { order: 1; }
   #productos-grid tbody td:nth-child(3),
-  #productos-grid tbody td:nth-child(4) {
-    order: 2;
-    grid-template-columns: auto 1fr;
-  }
+  #productos-grid tbody td:nth-child(4) { order: 2; }
 
-  /* rótulos "SVE" / "Productor" antes de cada radio */
+  /* etiquetas antes de cada radio para que se entienda como en Google Forms */
   #productos-grid tbody td:nth-child(3)::before {
     content: "SVE";
     font-size: .85rem;
@@ -487,17 +489,17 @@ html, body { max-width: 100%; overflow-x: hidden; }
   }
 }
 
-/* Ajustes típicos de móvil */
+/* Ajustes de tipografía/espaciado en móvil */
 @media (max-width: 640px) {
-  #productos-grid tbody td { font-size: .95rem; padding: .4rem 0; }
+  #productos-grid tbody td { font-size: .95rem; }
 }
 
-/* Pequeña mejora visual de inputs dentro de la matriz */
-#productos-grid input[type="checkbox"],
-#productos-grid input[type="radio"] {
-  inline-size: 18px;
-  block-size: 18px;
-}
+/* ===== Modal responsivo ===== */
+#modal-resumen .modal-content { max-width: 960px; width: 90vw; }
+
+/* ===== Autocomplete visual ===== */
+#lista-nombres li { padding: .25rem .5rem; cursor: pointer; }
+#lista-nombres li[aria-selected="true"], #lista-nombres li:hover { background: #eef2ff; }
 
 </style>
 
