@@ -334,183 +334,107 @@ try {
 </div>
 
 <style>
-  /* grilla fluida para inputs */
-  .form-grid.grid-4 {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
-  }
-
-  /* inputs cómodos para táctil (base) */
-  .form-modern input,
-  .form-modern select,
-  .form-modern textarea {
-    min-height: 42px;
-  }
-
-  /* tabla (desktop base) */
-  #productos-grid .tabla-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  #productos-grid table.data-table {
-    width: 100%;
-  }
-
-  /* sin min-width para permitir ajuste */
-
-  /* modal adaptativo */
-  #modal-resumen .modal-content {
-    max-width: 960px;
-    width: 90vw;
-  }
-
-  /* Lista autocomplete */
-  #lista-nombres li {
-    padding: .25rem .5rem;
-    cursor: pointer;
-  }
-
-  #lista-nombres li[aria-selected="true"],
-  #lista-nombres li:hover {
-    background: #eef2ff;
-  }
-
-  .modal.hidden {
-    display: none;
-  }
-
-  /* Utilidad de visibilidad robusta */
-  .hidden { 
-    display: none !important; 
-  }
-  /* Asegurar compatibilidad total con el atributo nativo */
-  [hidden] {
-    display: none !important;
-  }
-
-  /* ===== Matriz de productos tipo Google Forms ===== */
-  #productos-grid table.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: auto;
-    /* deja fluir las columnas */
-  }
-
-  #productos-grid thead th {
-    text-align: center;
-    font-weight: 600;
-    padding: .5rem;
-  }
-
-  #productos-grid tbody td {
-    padding: .5rem;
-    text-align: center;
-    vertical-align: middle;
-  }
-
-  #productos-grid tbody td:nth-child(2) {
-    text-align: center;
-    /* la columna de Producto va alineada a la izquierda */
-    font-weight: 500;
-  }
-
-  /* Columnas fijas para radios */
-  #productos-grid th:nth-child(1),
-  #productos-grid td:nth-child(1) {
-    width: 40px;
-  }
-
-  /* check */
-  #productos-grid th:nth-child(3),
-  #productos-grid td:nth-child(3) {
-    width: 80px;
-  }
-
-  /* SVE */
-  #productos-grid th:nth-child(4),
-  #productos-grid td:nth-child(4) {
-    width: 100px;
-  }
-
-  @media (max-width: 640px) {
-
-    html,
-    body {
-      overflow-x: hidden;
-    }
-
-    #productos-grid table.data-table {
-      width: 100%;
-      min-width: 0;
-    }
-
-    #productos-grid tbody td {
-      font-size: .9rem;
-      padding: .4rem;
-      word-break: break-word;
-      white-space: normal;
-    }
-  }
-
-  /* =========================
-   1) VISIBILIDAD COOPERATIVA POR CSS
-   ========================= */
-
-/* Oculto por defecto (ya tenés .hidden, lo refuerzo) */
-#wrap-cooperativa { display: none !important; }
-
-/* Si el select de formas de pago tiene seleccionado el option value="6",
-   se muestra el bloque de cooperativa.
-   Usamos :has() a nivel del contenedor del grid para evitar problemas
-   de hermanos/specificity del framework. */
-.form-grid:has(#forma_pago_id option[value="6"]:checked) #wrap-cooperativa {
-  display: block !important;
-}
-
-/* Accesibilidad visual: cuando aparece, que ocupe el ancho completo en móviles */
-#wrap-cooperativa .input-icon,
-#wrap-cooperativa select { width: 100%; }
-
-/* =========================
-   2) LAYOUT MOBILE-FIRST
-   ========================= */
-
-/* Que nada se “desborde” lateralmente */
+  /* ====== Base del formulario ====== */
 * { box-sizing: border-box; }
-.content, .card, #calendar-root { max-width: 100%; overflow: visible; }
-.form-modern .input-icon { width: 100%; }
+html, body { max-width: 100%; overflow-x: hidden; }
 
-/* Inputs que realmente ocupen 100% del ancho disponible */
 .form-modern input,
 .form-modern select,
-.form-modern textarea { width: 100%; }
+.form-modern textarea { min-height: 42px; width: 100%; }
 
-/* Grilla: una columna en pantallas chicas */
+.content, .card, #calendar-root { max-width: 100%; overflow: visible; }
+
+/* Grilla: desktop flexible; tablet 2 cols; móvil 1 col */
+.form-grid.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
 @media (max-width: 900px) {
   .form-grid.grid-4 { grid-template-columns: 1fr; }
 }
+@media (min-width: 900px) and (max-width: 1200px) {
+  .form-grid.grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
 
-/* Pequeño respiro en tarjetas en móviles */
 @media (max-width: 600px) {
   .card { padding: 1rem; }
 }
 
-/* =========================
-   3) MATRIZ DE PRODUCTOS — 2 modos
-   ========================= */
+/* ====== Autocomplete ====== */
+#lista-nombres li { padding: .25rem .5rem; cursor: pointer; }
+#lista-nombres li[aria-selected="true"], #lista-nombres li:hover { background: #eef2ff; }
 
-/* 3.a) Modo scroll horizontal (por defecto) */
+/* ====== Modal ====== */
+.modal.hidden { display: none; }
+#modal-resumen .modal-content { max-width: 960px; width: 90vw; }
+
+/* ====== Utilidades de visibilidad (compat) ====== */
+.hidden { display: none !important; }
+[hidden] { display: none !important; }
+
+/* =========================================================
+   1) VISIBILIDAD DE COOPERATIVA SOLO CON CSS (con :has)
+   ========================================================= */
+/* Oculto por defecto */
+#wrap-cooperativa { display: none !important; }
+
+/* Sólo si el navegador soporta :has() aplicamos la regla */
+@supports selector(.form-grid:has(select)) {
+  /* Mostrar cuando el <select id="forma_pago_id"> tenga seleccionado value="6".
+     Cubrimos tanto :checked como :selected por compatibilidad. */
+  .form-grid:has(#forma_pago_id option[value="6"]:checked) #wrap-cooperativa,
+  .form-grid:has(#forma_pago_id option[value="6"]:selected) #wrap-cooperativa {
+    display: block !important;
+  }
+}
+
+/* Asegurar buen ancho cuando aparece */
+#wrap-cooperativa, #wrap-cooperativa .input-icon, #wrap-cooperativa select { width: 100%; }
+
+/* =========================================================
+   2) MATRIZ DE PRODUCTOS — modo tabla y modo tarjetas
+   ========================================================= */
+
+/* Contenedor con scroll horizontal suave por defecto */
 #productos-grid .tabla-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
-#productos-grid table.data-table { min-width: 420px; } /* evita que se rompa la tabla */
 
-/* 3.b) Modo "cards" en móviles muy chicos: apilamos filas */
+/* Tabla desktop limpia */
+#productos-grid table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;              /* evita saltos de ancho */
+  min-width: 520px;                 /* asegura columnas visibles si hay poco ancho */
+}
+#productos-grid thead th {
+  text-align: center;
+  font-weight: 600;
+  padding: .6rem .5rem;
+  white-space: nowrap;
+}
+#productos-grid tbody td {
+  padding: .5rem;
+  text-align: center;
+  vertical-align: middle;
+  word-break: break-word;
+}
+#productos-grid tbody td:nth-child(2) {
+  text-align: left;                 /* nombre a la izquierda */
+  font-weight: 500;
+}
+
+/* Anchos de columnas */
+#productos-grid th:nth-child(1), #productos-grid td:nth-child(1) { width: 44px; }
+#productos-grid th:nth-child(3), #productos-grid td:nth-child(3) { width: 90px; }   /* SVE */
+#productos-grid th:nth-child(4), #productos-grid td:nth-child(4) { width: 110px; }  /* Productor */
+
+/* ---- Modo tarjetas (muy móvil) ---- */
 @media (max-width: 480px) {
+  /* convertimos la tabla en bloques */
   #productos-grid table.data-table,
   #productos-grid thead,
   #productos-grid tbody,
@@ -523,39 +447,59 @@ try {
   #productos-grid tbody tr {
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-    padding: .75rem;
+    padding: .75rem .75rem .5rem;
     margin-bottom: .75rem;
     background: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,.03);
   }
 
+  /* fila -> mini grid */
   #productos-grid tbody td {
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: center;
-    gap: .5rem;
+    gap: .55rem;
     text-align: left;
     padding: .25rem 0;
   }
 
-  /* Orden lógico: check -> nombre -> radios */
+  /* Orden: check, nombre (fuerte), luego radios con rótulo */
   #productos-grid tbody td:nth-child(1) { order: 0; }
-  #productos-grid tbody td:nth-child(2) { order: 1; font-weight: 600; }
+  #productos-grid tbody td:nth-child(2) { order: 1; font-weight: 700; }
   #productos-grid tbody td:nth-child(3),
   #productos-grid tbody td:nth-child(4) {
     order: 2;
-    grid-template-columns: auto auto;
-    justify-content: flex-start;
+    grid-template-columns: auto 1fr;
+  }
+
+  /* rótulos "SVE" / "Productor" antes de cada radio */
+  #productos-grid tbody td:nth-child(3)::before {
+    content: "SVE";
+    font-size: .85rem;
+    color: #6b7280;
+    margin-right: .35rem;
+  }
+  #productos-grid tbody td:nth-child(4)::before {
+    content: "Productor";
+    font-size: .85rem;
+    color: #6b7280;
+    margin-right: .35rem;
   }
 }
 
-/* =========================
-   4) MICRO-FIX: evita barras raras laterales en móviles
-   ========================= */
-html, body { max-width: 100%; overflow-x: hidden; }
+/* Ajustes típicos de móvil */
+@media (max-width: 640px) {
+  #productos-grid tbody td { font-size: .95rem; padding: .4rem 0; }
+}
+
+/* Pequeña mejora visual de inputs dentro de la matriz */
+#productos-grid input[type="checkbox"],
+#productos-grid input[type="radio"] {
+  inline-size: 18px;
+  block-size: 18px;
+}
 
 </style>
-
-
 
 <script>
   (function() {
