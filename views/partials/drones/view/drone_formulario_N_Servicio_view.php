@@ -186,24 +186,73 @@
 
                 <!-- Quincena de visita -->
         <div class="input-group">
-          <label for="nombre-buscador">Quincena de visita</label>
-          <div class="input-icon input-icon-name typeahead-wrapper">
-            <input
-              type="text"
-              id="nombre-buscador"
-              name="nombre_buscador"
-              placeholder="Empezá a escribir un nombre…"
-              autocomplete="off"
-              aria-autocomplete="list"
-              aria-expanded="false"
-              aria-controls="ta-list-nombres"
-              aria-activedescendant=""
-              required />
-            <!-- Sugerencias -->
-            <ul id="ta-list-nombres" class="typeahead-list" role="listbox" hidden></ul>
+          <label for="nombre">¿Quincena de visita?</label>
+          <div class="input-icon input-icon-name">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
           </div>
-          <!-- <small class="gform-helper">Escribí y elegí una opción con Enter o clic.</small> -->
         </div>
+
+
+
+
+                            <!-- Provincia -->
+                            <div class="input-group">
+                                <label for="nombre">¿Cuantas hectareas?</label>
+                                <div class="input-icon input-icon-name">
+                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+                                </div>
+                            </div>
+
+
+
+                            <!-- Localidad -->
+                            <div class="input-group">
+                                <label for="nombre">¿Cuantas hectareas?</label>
+                                <div class="input-icon input-icon-name">
+                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+                                </div>
+                            </div>
+
+
+
+                            <!-- Calle -->
+                            <div class="input-group">
+                                <label for="nombre">¿Cuantas hectareas?</label>
+                                <div class="input-icon input-icon-name">
+                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+                                </div>
+                            </div>
+
+
+
+                            <!-- numero -->
+                            <div class="input-group">
+                                <label for="nombre">¿Cuantas hectareas?</label>
+                                <div class="input-icon input-icon-name">
+                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+                                </div>
+                            </div>
+
+
+                                                    <!-- Observaciones -->
+                        <div class="input-group">
+                            <label for="observaciones">Observaciones</label>
+                            <div class="input-icon input-icon-comment">
+                                <textarea id="observaciones" name="observaciones" maxlength="233" rows="3"
+                                    placeholder="Escribí un comentario..."></textarea>
+                            </div>
+                            <small class="char-count" data-for="observaciones">Quedan 233 caracteres.</small>
+                        </div>
+
+
+
+
+
+
 
 
 
