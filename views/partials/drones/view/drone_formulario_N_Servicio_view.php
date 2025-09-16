@@ -328,88 +328,121 @@
 </div>
 
 <style>
-  /* Matriz: columnas proporcionadas y sin overflow */
-.gform-matrix {
-  width: 100%;
-  border: 1px solid #e9d7f7;
-  border-radius: 12px;
-  overflow: hidden;
-  border-collapse: separate;
-  border-spacing: 0;
-  background: #fff;
-  table-layout: fixed;             /* reparte el ancho y evita saltos */
-}
+  /* ===== Matriz (Google Forms-like) ===== */
 
-/* cabeceras */
-.gform-matrix thead th {
-  background: #faf5ff;
-  color: #111827;
-  font-weight: 700;
-  text-align: center;
-  padding: 12px 16px;
-  font-size: .95rem;
-  border-bottom: 1px solid #efe7fb;
-}
-.gform-matrix thead th.gfm-empty { background:#fff; border-bottom-color:transparent; }
+  /* ocupar las 4 columnas del .form-grid */
+.full-span { grid-column: 1 / -1; }
 
-/* proporciones: 50% nombre + 25% + 25% */
-.gform-matrix tbody th[scope="row"] { width: 50%; }
-.gform-matrix thead th:not(.gfm-empty) { width: 25%; }
-
-/* nombre de producto puede saltar de línea (¡reemplaza tu nowrap!) */
-.gform-matrix tbody th[scope="row"] {
-  text-align: left;
-  font-weight: 600;
-  color: #374151;
-  padding: 14px 16px;
-  white-space: normal;             /* <— importante: antes tenías nowrap */
-  word-break: break-word;
-}
-.gform-matrix th, .gform-matrix td { overflow-wrap: anywhere; }
-
-.gform-matrix td {
-  text-align: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid #f3f4f6;
-}
-.gform-matrix tbody tr:nth-child(even) { background: #fafafa; }
-.gform-matrix tbody tr:last-child td,
-.gform-matrix tbody tr:last-child th { border-bottom: 0; }
-
-/* Responsive sin scroll horizontal */
-@media (max-width: 560px) {
-  .gform-matrix thead { display: none; }
-  .gform-matrix, .gform-matrix tbody, .gform-matrix tr { display: block; width: 100%; }
-  .gform-matrix tr {
-    border: 1px solid #efe7fb;
+  .gform-matrix {
+    width: 100%;
+    border: 1px solid #e9d7f7;
     border-radius: 12px;
-    margin: 10px 0;
+    overflow: hidden;
+    border-collapse: separate;
+    border-spacing: 0;
     background: #fff;
   }
-  .gform-matrix tbody th[scope="row"] {
-    display: block;
-    width: 100%;
+
+  .gform-matrix thead th {
     background: #faf5ff;
+    color: #111827;
+    font-weight: 700;
+    text-align: center;
+    padding: 12px 16px;
+    font-size: .95rem;
     border-bottom: 1px solid #efe7fb;
-    border-radius: 12px 12px 0 0;
   }
+
+  .gform-matrix thead .gfm-empty {
+    background: #fff;
+    border-bottom-color: transparent;
+  }
+
+  .gform-matrix tbody th[scope="row"] {
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    padding: 14px 16px;
+    white-space: nowrap;
+  }
+
   .gform-matrix td {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    text-align: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .gform-matrix tbody tr:nth-child(even) {
+    background: #fafafa;
+  }
+
+  .gform-matrix tbody tr:last-child td,
+  .gform-matrix tbody tr:last-child th {
     border-bottom: 0;
   }
-  .gform-matrix td::before {
-    content: attr(data-col);        /* “SVE” / “Productor” */
-    font-weight: 600;
-    color: #6b21a8;
-    margin-right: 12px;
-  }
-  .gfm-radio { justify-content: flex-end; }
-}
 
-/* aseguramos que ocupe 4 columnas del grid */
-.full-span { grid-column: 1 / -1; }
+  /* Producto (checkbox al lado del nombre) */
+  .gfm-prod {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    cursor: pointer;
+  }
+
+  .gfm-prod input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+  }
+
+  /* Radio centrado y “material-like” */
+  .gfm-radio {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 32px;
+    cursor: pointer;
+  }
+
+  .gfm-radio input {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #9ca3af;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+    outline: none;
+    background: #fff;
+    transition: border-color .15s ease, box-shadow .15s ease, opacity .15s ease;
+  }
+
+  .gfm-radio input[disabled] {
+    opacity: .45;
+    cursor: not-allowed;
+  }
+
+  .gfm-radio input:hover:not([disabled]) {
+    box-shadow: 0 0 0 4px rgba(91, 33, 182, .08);
+  }
+
+  .gfm-radio input:checked {
+    border-color: var(--primary-color);
+  }
+
+  .gfm-radio input:checked::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
 </style>
 
 <script>
