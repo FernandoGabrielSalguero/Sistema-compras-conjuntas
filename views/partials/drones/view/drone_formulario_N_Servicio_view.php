@@ -211,7 +211,7 @@
 
         
         <div class="gform-question" data-required="true">
-          <div class="gform-legend gform-grid cols-1">
+          <div class="gform-legend">
             Matriz de prueba <span class="gform-required">*</span>
           </div>
           <div class="gform-helper">
