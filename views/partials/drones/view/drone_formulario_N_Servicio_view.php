@@ -15,6 +15,28 @@
     <form id="form-solicitud" class="form-modern" novalidate>
       <div class="form-grid grid-4">
 
+      <!-- Nombre del productor -->
+<div class="input-group">
+  <label for="nombre-buscador">Buscar persona</label>
+  <div class="input-icon input-icon-name typeahead-wrapper">
+    <input
+      type="text"
+      id="nombre-buscador"
+      name="nombre_buscador"
+      placeholder="Empezá a escribir un nombre…"
+      autocomplete="off"
+      aria-autocomplete="list"
+      aria-expanded="false"
+      aria-controls="ta-list-nombres"
+      aria-activedescendant=""
+      required
+    />
+    <!-- Sugerencias -->
+    <ul id="ta-list-nombres" class="typeahead-list" role="listbox" hidden></ul>
+  </div>
+  <small class="gform-helper">Escribí y elegí una opción con Enter o clic.</small>
+</div>
+
 
 
       </div>
