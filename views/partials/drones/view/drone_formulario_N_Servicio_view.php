@@ -121,13 +121,13 @@
           </div>
         </div>
 
-                            <!-- Cuantas hectareas -->
-                            <div class="input-group">
-                                <label for="nombre">¿Cuantas hectareas?</label>
-                                <div class="input-icon input-icon-name">
-                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
-                                </div>
-                            </div>
+        <!-- Cuantas hectareas -->
+        <div class="input-group">
+          <label for="nombre">¿Cuantas hectareas?</label>
+          <div class="input-icon input-icon-name">
+            <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+          </div>
+        </div>
 
 
         <!-- Metodos de pago  -->
@@ -184,7 +184,7 @@
           <!-- <small class="gform-helper">Escribí y elegí una opción con Enter o clic.</small> -->
         </div>
 
-                <!-- Quincena de visita -->
+        <!-- Quincena de visita -->
         <div class="input-group">
           <label for="nombre">¿Quincena de visita?</label>
           <div class="input-icon input-icon-name">
@@ -199,54 +199,131 @@
 
 
 
-                            <!-- Provincia -->
-                            <div class="input-group">
-                                <label for="nombre">¿Cuantas hectareas?</label>
-                                <div class="input-icon input-icon-name">
-                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
-                                </div>
-                            </div>
+        <!-- Provincia -->
+        <div class="input-group">
+          <label for="nombre">¿Cuantas hectareas?</label>
+          <div class="input-icon input-icon-name">
+            <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+          </div>
+        </div>
 
 
 
-                            <!-- Localidad -->
-                            <div class="input-group">
-                                <label for="nombre">¿Cuantas hectareas?</label>
-                                <div class="input-icon input-icon-name">
-                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
-                                </div>
-                            </div>
+        <!-- Localidad -->
+        <div class="input-group">
+          <label for="nombre">¿Cuantas hectareas?</label>
+          <div class="input-icon input-icon-name">
+            <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+          </div>
+        </div>
 
 
 
-                            <!-- Calle -->
-                            <div class="input-group">
-                                <label for="nombre">¿Cuantas hectareas?</label>
-                                <div class="input-icon input-icon-name">
-                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
-                                </div>
-                            </div>
+        <!-- Calle -->
+        <div class="input-group">
+          <label for="nombre">¿Cuantas hectareas?</label>
+          <div class="input-icon input-icon-name">
+            <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+          </div>
+        </div>
 
 
 
-                            <!-- numero -->
-                            <div class="input-group">
-                                <label for="nombre">¿Cuantas hectareas?</label>
-                                <div class="input-icon input-icon-name">
-                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
-                                </div>
-                            </div>
+        <!-- numero -->
+        <div class="input-group">
+          <label for="nombre">¿Cuantas hectareas?</label>
+          <div class="input-icon input-icon-name">
+            <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+          </div>
+        </div>
 
 
-                                                    <!-- Observaciones -->
-                        <div class="input-group">
-                            <label for="observaciones">Observaciones</label>
-                            <div class="input-icon input-icon-comment">
-                                <textarea id="observaciones" name="observaciones" maxlength="233" rows="3"
-                                    placeholder="Escribí un comentario..."></textarea>
-                            </div>
-                            <small class="char-count" data-for="observaciones">Quedan 233 caracteres.</small>
-                        </div>
+        <!-- Observaciones -->
+        <div class="input-group">
+          <label for="observaciones">Observaciones</label>
+          <div class="input-icon input-icon-comment">
+            <textarea id="observaciones" name="observaciones" maxlength="233" rows="3"
+              placeholder="Escribí un comentario..."></textarea>
+          </div>
+          <small class="char-count" data-for="observaciones">Quedan 233 caracteres.</small>
+        </div>
+
+        <div class="card">
+          <h2>Matriz de prueba</h2>
+
+          <form id="form-matriz" class="gform-grid cols-1" novalidate>
+            <div class="gform-question" data-required="true">
+              <div class="gform-legend">
+                Matriz de prueba <span class="gform-required">*</span>
+              </div>
+              <div class="gform-helper">
+                Primero seleccioná el producto (checkbox). Solo entonces podés elegir una opción en la
+                fila.
+              </div>
+
+              <table class="gform-matrix" role="table" aria-label="Matriz de prueba">
+                <thead>
+                  <tr>
+                    <th scope="col" class="gfm-empty"></th>
+                    <th scope="col">SVE</th>
+                    <th scope="col">Productor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Row 1 -->
+                  <tr>
+                    <th scope="row">
+                      <label class="gfm-prod">
+                        <input type="checkbox" class="gfm-row-toggle" name="m_sel[]"
+                          value="row1" data-row="row1" />
+                        <span>Producto 1</span>
+                      </label>
+                    </th>
+                    <td>
+                      <label class="gfm-radio">
+                        <input type="radio" name="m_row1" value="sve" disabled />
+                      </label>
+                    </td>
+                    <td>
+                      <label class="gfm-radio">
+                        <input type="radio" name="m_row1" value="productor" disabled />
+                      </label>
+                    </td>
+                  </tr>
+
+                  <!-- Row 2 -->
+                  <tr>
+                    <th scope="row">
+                      <label class="gfm-prod">
+                        <input type="checkbox" class="gfm-row-toggle" name="m_sel[]"
+                          value="row2" data-row="row2" />
+                        <span>Producto 2</span>
+                      </label>
+                    </th>
+                    <td>
+                      <label class="gfm-radio">
+                        <input type="radio" name="m_row2" value="sve" disabled />
+                      </label>
+                    </td>
+                    <td>
+                      <label class="gfm-radio">
+                        <input type="radio" name="m_row2" value="productor" disabled />
+                      </label>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="gform-error">Seleccioná al menos un producto y, para cada producto seleccionado,
+                elegí una opción.</div>
+            </div>
+
+            <div class="gform-actions">
+              <button type="button" class="gform-btn">Atrás</button>
+              <button type="submit" class="gform-btn gform-primary">Enviar</button>
+            </div>
+          </form>
+        </div>
 
 
 
