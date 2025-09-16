@@ -243,54 +243,65 @@
     <small class="char-count" data-for="form_nuevo_servicio_observaciones">Quedan 233 caracteres.</small>
   </div>
 
-  <!-- Matriz (full width) -->
+<!-- Matriz (full width, parte del mismo formulario) -->
+<fieldset id="form_nuevo_servicio_matriz"
+          class="gform-grid cols-1 full-span"
+          aria-labelledby="legend-matriz">
+  <div class="gform-question" data-required="true">
+    <div id="legend-matriz" class="gform-legend">
+      Elegí los productos <span class="gform-required">*</span>
+    </div>
+    <div class="gform-helper">
+      Primero seleccioná el producto. Solo entonces podés elegir una opción en la fila.
+    </div>
 
-    <form id="form_nuevo_servicio_matriz" class="gform-grid cols-1" novalidate>
-      <div class="gform-question" data-required="true">
-        <div class="gform-legend">
-          Elegí los productos <span class="gform-required">*</span>
-        </div>
-        <div class="gform-helper">
-          Primero seleccioná el producto. Solo entonces podés elegir una opción en la fila.
-        </div>
+    <table class="gform-matrix" role="table" aria-label="Matriz de productos">
+      <thead>
+        <tr>
+          <th scope="col" class="gfm-empty"></th>
+          <th scope="col">SVE</th>
+          <th scope="col">Productor</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">
+            <label class="gfm-prod">
+              <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="row1" data-row="row1" />
+              <span>Producto 1</span>
+            </label>
+          </th>
+          <td data-col="SVE">
+            <label class="gfm-radio"><input type="radio" name="m_row1" value="sve" disabled /></label>
+          </td>
+          <td data-col="Productor">
+            <label class="gfm-radio"><input type="radio" name="m_row1" value="productor" disabled /></label>
+          </td>
+        </tr>
 
-        <table class="gform-matrix" role="table" aria-label="Matriz de productos">
-          <thead>
-            <tr>
-              <th scope="col" class="gfm-empty"></th>
-              <th scope="col">SVE</th>
-              <th scope="col">Productor</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">
-                <label class="gfm-prod">
-                  <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="row1" data-row="row1" />
-                  <span>Producto 1</span>
-                </label>
-              </th>
-              <td><label class="gfm-radio"><input type="radio" name="m_row1" value="sve" disabled /></label></td>
-              <td><label class="gfm-radio"><input type="radio" name="m_row1" value="productor" disabled /></label></td>
-            </tr>
-            <tr>
-              <th scope="row">
-                <label class="gfm-prod">
-                  <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="row2" data-row="row2" />
-                  <span>Producto 2</span>
-                </label>
-              </th>
-              <td><label class="gfm-radio"><input type="radio" name="m_row2" value="sve" disabled /></label></td>
-              <td><label class="gfm-radio"><input type="radio" name="m_row2" value="productor" disabled /></label></td>
-            </tr>
-          </tbody>
-        </table>
+        <tr>
+          <th scope="row">
+            <label class="gfm-prod">
+              <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="row2" data-row="row2" />
+              <span>Producto 2</span>
+            </label>
+          </th>
+          <td data-col="SVE">
+            <label class="gfm-radio"><input type="radio" name="m_row2" value="sve" disabled /></label>
+          </td>
+          <td data-col="Productor">
+            <label class="gfm-radio"><input type="radio" name="m_row2" value="productor" disabled /></label>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-        <div class="gform-error">
-          Seleccioná al menos un producto y, para cada producto seleccionado, elegí una opción.
-        </div>
-      </div>
-    </form>
+    <div class="gform-error">
+      Seleccioná al menos un producto y, para cada producto seleccionado, elegí una opción.
+    </div>
+  </div>
+</fieldset>
+
 
 
 </div>
