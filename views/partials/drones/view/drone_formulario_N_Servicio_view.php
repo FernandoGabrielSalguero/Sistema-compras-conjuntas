@@ -22,7 +22,7 @@
       <!-- Botones -->
       <div class="form-buttons">
         <button class="btn btn-aceptar" type="button" id="btn-solicitar">Solicitar</button>
-      </div>
+      </div> 
     </form>
   </div>
 </div>
