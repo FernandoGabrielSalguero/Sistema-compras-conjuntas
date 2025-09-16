@@ -249,15 +249,13 @@
         </div>
 
         <div class="card">
-          <h2>Matriz de prueba</h2>
-
           <form id="form-matriz" class="gform-grid cols-1" novalidate>
             <div class="gform-question" data-required="true">
               <div class="gform-legend">
-                Matriz de prueba <span class="gform-required">*</span>
+                Elegi los productos <span class="gform-required">*</span>
               </div>
               <div class="gform-helper">
-                Primero seleccioná el producto (checkbox). Solo entonces podés elegir una opción en la
+                Primero seleccioná el producto. Solo entonces podés elegir una opción en la
                 fila.
               </div>
 
@@ -472,49 +470,5 @@
 </style>
 
 <script>
-// ==== Matriz: toggle por producto + validación ====
-document.addEventListener('DOMContentLoaded', () => {
-  const formMatriz = document.getElementById('form-matriz');
-  if (!formMatriz) return;
 
-  const toggles = formMatriz.querySelectorAll('.gfm-row-toggle');
-
-  function setRowState(rowId, checked) {
-    const radios = formMatriz.querySelectorAll(`input[name="m_${rowId}"]`);
-    radios.forEach(r => {
-      r.disabled = !checked;
-      if (!checked) r.checked = false;
-    });
-  }
-
-  // Estado inicial + listeners
-  toggles.forEach(t => {
-    const rowId = t.dataset.row;
-    setRowState(rowId, t.checked);
-    t.addEventListener('change', (e) => setRowState(rowId, e.target.checked));
-  });
-
-  // Validación al enviar
-  formMatriz.addEventListener('submit', (e) => {
-    const q = formMatriz.querySelector('.gform-question');
-    let ok = true;
-
-    const anyProduct = [...toggles].some(t => t.checked);
-    if (!anyProduct) ok = false;
-
-    toggles.forEach(t => {
-      if (t.checked) {
-        const rowId = t.dataset.row;
-        const selected = formMatriz.querySelector(`input[name="m_${rowId}"]:checked`);
-        if (!selected) ok = false;
-      }
-    });
-
-    q.classList.toggle('is-error', !ok);
-    if (!ok) {
-      e.preventDefault();
-      q.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  });
-});
 </script>
