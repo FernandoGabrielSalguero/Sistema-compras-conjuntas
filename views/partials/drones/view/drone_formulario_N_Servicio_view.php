@@ -207,6 +207,9 @@
 
         <!-- matris de productos  -->
 
+        <div class="card">
+
+        
         <div class="gform-question" data-required="true">
           <div class="gform-legend gform-grid cols-1">
             Matriz de prueba <span class="gform-required">*</span>
@@ -272,7 +275,7 @@
           <div class="gform-error">Seleccioná al menos un producto y, para cada producto seleccionado,
             elegí una opción.</div>
         </div>
-
+</div>
 
 
       </div>
