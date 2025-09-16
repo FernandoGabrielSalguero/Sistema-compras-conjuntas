@@ -121,13 +121,13 @@
           </div>
         </div>
 
-        <!-- Cuantas hectareas -->
-        <div class="input-group">
-          <label for="nombre">¿Cuantas hectareas?</label>
-          <div class="input-icon input-icon-name">
-            <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
-          </div>
-        </div>
+                            <!-- Cuantas hectareas -->
+                            <div class="input-group">
+                                <label for="nombre">¿Cuantas hectareas?</label>
+                                <div class="input-icon input-icon-name">
+                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+                                </div>
+                            </div>
 
 
         <!-- Metodos de pago  -->
@@ -184,7 +184,7 @@
           <!-- <small class="gform-helper">Escribí y elegí una opción con Enter o clic.</small> -->
         </div>
 
-        <!-- Quincena de visita -->
+                <!-- Quincena de visita -->
         <div class="input-group">
           <label for="nombre-buscador">Quincena de visita</label>
           <div class="input-icon input-icon-name typeahead-wrapper">
@@ -207,13 +207,6 @@
 
 
 
-        
-
-
-
-
-
-</div>
 
 
       </div>
