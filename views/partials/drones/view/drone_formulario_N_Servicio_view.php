@@ -85,21 +85,193 @@
           </div>
         </div>
 
+        <!-- Hay agua potable?  -->
+        <div class="input-group">
+          <label for="nombre">¿Hay agua potable?</label>
+          <div class="input-icon input-icon-name">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Cuarteles libre de obstaculos  -->
+        <div class="input-group">
+          <label for="nombre">¿Los cuartiles están libres de obstaculos?</label>
+          <div class="input-icon input-icon-name">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Area de despegue apropiada  -->
+        <div class="input-group">
+          <label for="nombre">¿Hay un área de despegue apropiada?</label>
+          <div class="input-icon input-icon-name">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Cuantas hectareas -->
+        <div class="input-group">
+          <label for="nombre">¿Cuantas hectareas?</label>
+          <div class="input-icon input-icon-name">
+            <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+          </div>
+        </div>
 
 
+        <!-- Metodos de pago  -->
+        <div class="input-group">
+          <label for="nombre">¿Como va a pagar?</label>
+          <div class="input-icon input-icon-name">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
 
+        <!-- Cooperativas -->
+        <div class="input-group">
+          <label for="nombre-buscador">Selecciona una cooperativa responsable del pago</label>
+          <div class="input-icon input-icon-name typeahead-wrapper">
+            <input
+              type="text"
+              id="nombre-buscador"
+              name="nombre_buscador"
+              placeholder="Empezá a escribir un nombre…"
+              autocomplete="off"
+              aria-autocomplete="list"
+              aria-expanded="false"
+              aria-controls="ta-list-nombres"
+              aria-activedescendant=""
+              required />
+            <!-- Sugerencias -->
+            <ul id="ta-list-nombres" class="typeahead-list" role="listbox" hidden></ul>
+          </div>
+          <!-- <small class="gform-helper">Escribí y elegí una opción con Enter o clic.</small> -->
+        </div>
 
+        <!-- Patologias -->
+        <div class="input-group">
+          <label for="nombre-buscador">Motivo del servicio</label>
+          <div class="input-icon input-icon-name typeahead-wrapper">
+            <input
+              type="text"
+              id="nombre-buscador"
+              name="nombre_buscador"
+              placeholder="Empezá a escribir un nombre…"
+              autocomplete="off"
+              aria-autocomplete="list"
+              aria-expanded="false"
+              aria-controls="ta-list-nombres"
+              aria-activedescendant=""
+              required />
+            <!-- Sugerencias -->
+            <ul id="ta-list-nombres" class="typeahead-list" role="listbox" hidden></ul>
+          </div>
+          <!-- <small class="gform-helper">Escribí y elegí una opción con Enter o clic.</small> -->
+        </div>
 
+        <!-- Quincena de visita -->
+        <div class="input-group">
+          <label for="nombre-buscador">Quincena de visita</label>
+          <div class="input-icon input-icon-name typeahead-wrapper">
+            <input
+              type="text"
+              id="nombre-buscador"
+              name="nombre_buscador"
+              placeholder="Empezá a escribir un nombre…"
+              autocomplete="off"
+              aria-autocomplete="list"
+              aria-expanded="false"
+              aria-controls="ta-list-nombres"
+              aria-activedescendant=""
+              required />
+            <!-- Sugerencias -->
+            <ul id="ta-list-nombres" class="typeahead-list" role="listbox" hidden></ul>
+          </div>
+          <!-- <small class="gform-helper">Escribí y elegí una opción con Enter o clic.</small> -->
+        </div>
 
+        <!-- matris de productos  -->
 
+        <div class="gform-question" data-required="true">
+          <div class="gform-legend">
+            Matriz de prueba <span class="gform-required">*</span>
+          </div>
+          <div class="gform-helper">
+            Primero seleccioná el producto (checkbox). Solo entonces podés elegir una opción en la
+            fila.
+          </div>
 
+          <table class="gform-matrix" role="table" aria-label="Matriz de prueba">
+            <thead>
+              <tr>
+                <th scope="col" class="gfm-empty"></th>
+                <th scope="col">SVE</th>
+                <th scope="col">Productor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Row 1 -->
+              <tr>
+                <th scope="row">
+                  <label class="gfm-prod">
+                    <input type="checkbox" class="gfm-row-toggle" name="m_sel[]"
+                      value="row1" data-row="row1" />
+                    <span>Producto 1</span>
+                  </label>
+                </th>
+                <td>
+                  <label class="gfm-radio">
+                    <input type="radio" name="m_row1" value="sve" disabled />
+                  </label>
+                </td>
+                <td>
+                  <label class="gfm-radio">
+                    <input type="radio" name="m_row1" value="productor" disabled />
+                  </label>
+                </td>
+              </tr>
 
+              <!-- Row 2 -->
+              <tr>
+                <th scope="row">
+                  <label class="gfm-prod">
+                    <input type="checkbox" class="gfm-row-toggle" name="m_sel[]"
+                      value="row2" data-row="row2" />
+                    <span>Producto 2</span>
+                  </label>
+                </th>
+                <td>
+                  <label class="gfm-radio">
+                    <input type="radio" name="m_row2" value="sve" disabled />
+                  </label>
+                </td>
+                <td>
+                  <label class="gfm-radio">
+                    <input type="radio" name="m_row2" value="productor" disabled />
+                  </label>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-
-
-
-
-
+          <div class="gform-error">Seleccioná al menos un producto y, para cada producto seleccionado,
+            elegí una opción.</div>
+        </div>
 
 
 
