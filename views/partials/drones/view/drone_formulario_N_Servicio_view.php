@@ -15,27 +15,75 @@
     <form id="form-solicitud" class="form-modern" novalidate>
       <div class="form-grid grid-4">
 
-      <!-- Nombre del productor -->
-<div class="input-group">
-  <label for="nombre-buscador">Buscar persona</label>
-  <div class="input-icon input-icon-name typeahead-wrapper">
-    <input
-      type="text"
-      id="nombre-buscador"
-      name="nombre_buscador"
-      placeholder="Empezá a escribir un nombre…"
-      autocomplete="off"
-      aria-autocomplete="list"
-      aria-expanded="false"
-      aria-controls="ta-list-nombres"
-      aria-activedescendant=""
-      required
-    />
-    <!-- Sugerencias -->
-    <ul id="ta-list-nombres" class="typeahead-list" role="listbox" hidden></ul>
-  </div>
-  <small class="gform-helper">Escribí y elegí una opción con Enter o clic.</small>
-</div>
+        <!-- Nombre del productor -->
+        <div class="input-group">
+          <label for="nombre-buscador">Buscar persona</label>
+          <div class="input-icon input-icon-name typeahead-wrapper">
+            <input
+              type="text"
+              id="nombre-buscador"
+              name="nombre_buscador"
+              placeholder="Empezá a escribir un nombre…"
+              autocomplete="off"
+              aria-autocomplete="list"
+              aria-expanded="false"
+              aria-controls="ta-list-nombres"
+              aria-activedescendant=""
+              required />
+            <!-- Sugerencias -->
+            <ul id="ta-list-nombres" class="typeahead-list" role="listbox" hidden></ul>
+          </div>
+          <!-- <small class="gform-helper">Escribí y elegí una opción con Enter o clic.</small> -->
+        </div>
+
+                            <!-- Representante  -->
+                            <div class="input-group">
+                                <label for="nombre">¿Contamos con un representante en la finca?</label>
+                                <div class="input-icon input-icon-name">
+                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+                                </div>
+                            </div>
+
+                                                        <!-- Tension  -->
+                            <div class="input-group">
+                                <label for="nombre">¿Hay líneas de media y alta tensión a menos de 30km?</label>
+                                <div class="input-icon input-icon-name">
+                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+                                </div>
+                            </div>
+
+                                                                                    <!-- Aeropuerto  -->
+                            <div class="input-group">
+                                <label for="nombre">¿Hay algún aeropuerto a menos de 3 km?</label>
+                                <div class="input-icon input-icon-name">
+                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+                                </div>
+                            </div>
+
+                            
+                                                                                    <!-- Hay corriente electrica  -->
+                            <div class="input-group">
+                                <label for="nombre">¿Disponibilidad de corriente electrica?</label>
+                                <div class="input-icon input-icon-name">
+                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
+                                </div>
+                            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -44,7 +92,7 @@
       <!-- Botones -->
       <div class="form-buttons">
         <button class="btn btn-aceptar" type="button" id="btn-solicitar">Solicitar</button>
-      </div> 
+      </div>
     </form>
   </div>
 </div>
