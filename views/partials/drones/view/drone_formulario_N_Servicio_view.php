@@ -318,6 +318,10 @@
 
 <style>
   /* ===== Matriz (Google Forms-like) ===== */
+
+  /* ocupar las 4 columnas del .form-grid */
+.full-span { grid-column: 1 / -1; }
+
   .gform-matrix {
     width: 100%;
     border: 1px solid #e9d7f7;
