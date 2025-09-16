@@ -244,7 +244,7 @@
   </div>
 
   <!-- Matriz (full width) -->
-  <div class="card full-span">
+
     <form id="form_nuevo_servicio_matriz" class="gform-grid cols-1" novalidate>
       <div class="gform-question" data-required="true">
         <div class="gform-legend">
@@ -291,7 +291,7 @@
         </div>
       </div>
     </form>
-  </div>
+
 
 </div>
 
