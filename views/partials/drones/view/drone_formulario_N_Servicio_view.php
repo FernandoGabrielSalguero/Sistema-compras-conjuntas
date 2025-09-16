@@ -36,38 +36,54 @@
           <!-- <small class="gform-helper">Escribí y elegí una opción con Enter o clic.</small> -->
         </div>
 
-                            <!-- Representante  -->
-                            <div class="input-group">
-                                <label for="nombre">¿Contamos con un representante en la finca?</label>
-                                <div class="input-icon input-icon-name">
-                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
-                                </div>
-                            </div>
+        <!-- Representante  -->
+        <div class="input-group">
+          <label for="nombre">¿Contamos con un representante en la finca?</label>
+          <div class="input-icon input-icon-name">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
 
-                                                        <!-- Tension  -->
-                            <div class="input-group">
-                                <label for="nombre">¿Hay líneas de media y alta tensión a menos de 30km?</label>
-                                <div class="input-icon input-icon-name">
-                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
-                                </div>
-                            </div>
+        <!-- Tension  -->
+        <div class="input-group">
+          <label for="nombre">¿Hay líneas de media y alta tensión a menos de 30km?</label>
+          <div class="input-icon input-icon-name">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
 
-                                                                                    <!-- Aeropuerto  -->
-                            <div class="input-group">
-                                <label for="nombre">¿Hay algún aeropuerto a menos de 3 km?</label>
-                                <div class="input-icon input-icon-name">
-                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
-                                </div>
-                            </div>
+        <!-- Aeropuerto  -->
+        <div class="input-group">
+          <label for="nombre">¿Hay algún aeropuerto a menos de 3 km?</label>
+          <div class="input-icon input-icon-name">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
 
-                            
-                                                                                    <!-- Hay corriente electrica  -->
-                            <div class="input-group">
-                                <label for="nombre">¿Disponibilidad de corriente electrica?</label>
-                                <div class="input-icon input-icon-name">
-                                    <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required />
-                                </div>
-                            </div>
+
+        <!-- Hay corriente electrica  -->
+        <div class="input-group">
+          <label for="nombre">¿Disponibilidad de corriente electrica?</label>
+          <div class="input-icon input-icon-name">
+            <select id="provincia" name="provincia" required>
+              <option value="">Seleccionar</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
 
 
 
