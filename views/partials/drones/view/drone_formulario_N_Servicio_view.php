@@ -255,46 +255,50 @@
       Primero seleccioná el producto. Solo entonces podés elegir una opción en la fila.
     </div>
 
-    <table class="gform-matrix" role="table" aria-label="Matriz de productos">
-      <thead>
-        <tr>
-          <th scope="col" class="gfm-empty"></th>
-          <th scope="col">SVE</th>
-          <th scope="col">Productor</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th scope="row">
-            <label class="gfm-prod">
-              <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="row1" data-row="row1" />
-              <span>Producto 1</span>
-            </label>
-          </th>
-          <td data-col="SVE">
-            <label class="gfm-radio"><input type="radio" name="m_row1" value="sve" disabled /></label>
-          </td>
-          <td data-col="Productor">
-            <label class="gfm-radio"><input type="radio" name="m_row1" value="productor" disabled /></label>
-          </td>
-        </tr>
+<div class="gform-matrix-scroll" role="region"
+     aria-label="Desplazate horizontalmente para ver todas las columnas">
+  <table class="gform-matrix" role="table" aria-label="Matriz de productos">
+    <thead>
+      <tr>
+        <th scope="col" class="gfm-empty"></th>
+        <th scope="col">SVE</th>
+        <th scope="col">Productor</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">
+          <label class="gfm-prod">
+            <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="row1" data-row="row1" />
+            <span>Producto 1</span>
+          </label>
+        </th>
+        <td data-col="SVE">
+          <label class="gfm-radio"><input type="radio" name="m_row1" value="sve" disabled /></label>
+        </td>
+        <td data-col="Productor">
+          <label class="gfm-radio"><input type="radio" name="m_row1" value="productor" disabled /></label>
+        </td>
+      </tr>
 
-        <tr>
-          <th scope="row">
-            <label class="gfm-prod">
-              <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="row2" data-row="row2" />
-              <span>Producto 2</span>
-            </label>
-          </th>
-          <td data-col="SVE">
-            <label class="gfm-radio"><input type="radio" name="m_row2" value="sve" disabled /></label>
-          </td>
-          <td data-col="Productor">
-            <label class="gfm-radio"><input type="radio" name="m_row2" value="productor" disabled /></label>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+      <tr>
+        <th scope="row">
+          <label class="gfm-prod">
+            <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="row2" data-row="row2" />
+            <span>Producto 2</span>
+          </label>
+        </th>
+        <td data-col="SVE">
+          <label class="gfm-radio"><input type="radio" name="m_row2" value="sve" disabled /></label>
+        </td>
+        <td data-col="Productor">
+          <label class="gfm-radio"><input type="radio" name="m_row2" value="productor" disabled /></label>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
 
     <div class="gform-error">
       Seleccioná al menos un producto y, para cada producto seleccionado, elegí una opción.
@@ -329,7 +333,29 @@
 
 <style>
   /* ===== Matriz (Google Forms-like) ===== */
+/* Wrapper con scroll horizontal para la matriz */
+.gform-matrix-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* scroll suave en iOS */
+  margin: .5rem 0;
+  padding-bottom: .25rem;            /* evita que el scroll tape el borde */
+}
 
+/* Forzamos un ancho mínimo para que aparezca el scroll cuando no entra */
+.gform-matrix {
+  min-width: 640px;   /* ajustá si agregás más columnas */
+}
+
+/* (Opcional) Fijar 1ª columna y cabecera al hacer scroll */
+@supports (position: sticky) {
+  .gform-matrix thead th { position: sticky; top: 0; z-index: 1; }
+  .gform-matrix thead th.gfm-empty,
+  .gform-matrix tbody th[scope="row"] {
+    position: sticky; left: 0; z-index: 2; background: #fff;
+  }
+  .gform-matrix tbody tr:nth-child(even) th[scope="row"] { background: #fafafa; }
+}
   /* ocupar las 4 columnas del .form-grid */
 .full-span { grid-column: 1 / -1; }
 
