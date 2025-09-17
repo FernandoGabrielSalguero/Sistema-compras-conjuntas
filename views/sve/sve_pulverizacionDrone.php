@@ -38,7 +38,18 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
   <!-- Framework Success desde CDN -->
   <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
-  <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+  <!-- Loader con guard para evitar dobles inclusiones de framework.js -->
+  <script>
+    (function() {
+      if (!window.__FS_FRAMEWORK_LOADED__) {
+        window.__FS_FRAMEWORK_LOADED__ = true;
+        var s = document.createElement('script');
+        s.src = 'https://www.fernandosalguero.com/cdn/assets/javascript/framework.js';
+        s.defer = true;
+        document.head.appendChild(s);
+      }
+    }());
+  </script>
 
   <style>
     .tab-panel {
@@ -142,13 +153,15 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
           <!-- 🔘 Tarjeta con los botones del tab -->
           <div class="tabs">
             <div class="tab-buttons">
-              <button class="tab-button active" data-target="#panel-solicitudes">Solicitudes</button>
-              <button class="tab-button active" data-target="#panel-formulario">Nuevo servicio</button>
-              <button class="tab-button active" data-target="#panel-protocolo">Protocolo</button>
+              <button class="tab-button" data-target="#panel-solicitudes">Solicitudes</button>
+              <button class="tab-button" data-target="#panel-formulario">Nuevo servicio</button>
+              <button class="tab-button" data-target="#panel-protocolo">Protocolo</button>
               <button class="tab-button" data-target="#panel-calendario">Calendario</button>
               <button class="tab-button" data-target="#panel-registro">Registro fito sanitario</button>
               <button class="tab-button" data-target="#panel-stock">Stock</button>
               <button class="tab-button" data-target="#panel-variables">Variables</button>
+              <!-- Botón de actualización on-demand -->
+              <button id="btn-refresh" class="btn btn-success" style="margin-left:auto">Actualizar</button>
             </div>
           </div>
         </div>
@@ -169,7 +182,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
           </div>
 
           <!-- Panel: Formulario -->
-          <div class="tab-panel active" id="panel-formulario">
+          <div class="tab-panel" id="panel-formulario">
             <?php
             $viewFile = __DIR__ . '/../partials/drones/view/drone_formulario_N_Servicio_view.php';
             if (is_file($viewFile)) {
@@ -181,7 +194,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
           </div>
 
           <!-- Panel: Protocolo -->
-          <div class="tab-panel active" id="panel-protocolo">
+          <div class="tab-panel" id="panel-protocolo">
             <?php
             $viewFile = __DIR__ . '/../partials/drones/view/drone_protocol_view.php';
             if (is_file($viewFile)) {
@@ -258,46 +271,62 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
   <!-- JS simple para alternar contenido entre tarjetas -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const buttons = document.querySelectorAll('.tab-buttons .tab-button');
+      const buttons = document.querySelectorAll('.tab-buttons .tab-button[data-target]');
       const panels = document.querySelectorAll('#tab-content-card .tab-panel');
       const STORAGE_KEY = 'sve_drone_tab';
 
+      function isTabButton(el) {
+        return el && el.dataset && el.dataset.target;
+      }
+
       function activate(targetSel) {
+        // Limpia estados
         buttons.forEach(b => b.classList.remove('active'));
         panels.forEach(p => p.classList.remove('active'));
 
+        // Activa botón/panel destino
         const btn = Array.from(buttons).find(b => b.dataset.target === targetSel);
         const panel = document.querySelector(targetSel);
+
         if (btn) btn.classList.add('active');
         if (panel) panel.classList.add('active');
 
-        // Quitar fondo/sombra del contenedor solo en Variables o Stock
+        // Quitar fondo/sombra del contenedor en vistas "planas"
         const wrapper = document.getElementById('tab-content-card');
         if (wrapper) {
-          const sinChrome = (
-            targetSel === '#panel-variables' ||
-            targetSel === '#panel-stock' ||
-            targetSel === '#panel-protocolo'
-          );
+          const sinChrome = ['#panel-variables', '#panel-stock', '#panel-protocolo'].includes(targetSel);
           wrapper.classList.toggle('no-chrome', sinChrome);
         }
       }
 
+      // Cambiar de pestaña SIN recargar
       buttons.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+          if (!isTabButton(btn)) return;
           const target = btn.dataset.target;
-          // Guardamos la pestaña seleccionada y recargamos
+          if (!target) return;
           sessionStorage.setItem(STORAGE_KEY, target);
-          window.location.reload();
+          activate(target);
         });
       });
 
-      // Al cargar, activamos la pestaña que quedó guardada (o 'Solicitudes' por defecto)
+      // Botón "Actualizar" (recarga manual)
+      const refreshBtn = document.getElementById('btn-refresh');
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+          // Conserva la pestaña actual al recargar
+          const activeBtn = document.querySelector('.tab-buttons .tab-button.active[data-target]');
+          const current = activeBtn ? activeBtn.dataset.target : '#panel-solicitudes';
+          sessionStorage.setItem(STORAGE_KEY, current);
+          location.reload();
+        });
+      }
+
+      // Activar la pestaña persistida (o default)
       const initial = sessionStorage.getItem(STORAGE_KEY) || '#panel-solicitudes';
       activate(initial);
     });
   </script>
-
 
   <!-- Contenedor exclusivo para impresión -->
   <div id="printArea" class="only-print"></div>
