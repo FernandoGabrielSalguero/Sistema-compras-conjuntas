@@ -622,14 +622,14 @@
     try{
       const payload = buildPayload();
       const data = await postJson(CTRL_URL, payload);
-      alert(`Solicitud creada. ID: ${data.id}`);
+      showAlert('success', 'Solicitud creada. ID: ${data.id}');
       closeModal();
       form.reset();
       matrizBody.innerHTML='';
       grupoCooperativaShow(false);
       selQuincena.value='';
     }catch(err){
-      alert(`Error: ${err.message}`);
+      showAlert('error', `Error: ${err.message}`);
     }
   });
 

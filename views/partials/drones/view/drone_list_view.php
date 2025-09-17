@@ -511,14 +511,6 @@
                         <div id="costos-resumen" class="costos-resumen card" style="margin-top:8px;padding:12px;"></div>
                     </div>
 
-
-
-
-
-
-
-
-
                     <!-- Acciones -->
                     <div class="form-buttons">
                         <button type="button" class="btn btn-aceptar" id="btn-guardar">Guardar cambios</button>
