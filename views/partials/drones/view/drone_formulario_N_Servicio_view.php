@@ -510,7 +510,8 @@
 
 <script>
   (function() {
-    const CTRL_URL = '../controladores/drone_formulario_N_Servicio_controller.php';
+    const CTRL_URL = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
+    
 
     // Helpers
     const $ = (sel, ctx = document) => ctx.querySelector(sel);
