@@ -161,7 +161,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
               <button class="tab-button" data-target="#panel-stock">Stock</button>
               <button class="tab-button" data-target="#panel-variables">Variables</button>
               <!-- Botón de actualización on-demand -->
-              <button id="btn-refresh" class="btn btn-success" style="margin-left:auto">Actualizar</button>
+              <button id="btn-refresh" class="btn btn-aceptar" style="margin-left:auto">Actualizar</button>
             </div>
           </div>
         </div>
