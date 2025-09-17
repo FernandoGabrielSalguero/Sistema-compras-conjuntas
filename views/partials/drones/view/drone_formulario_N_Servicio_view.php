@@ -322,7 +322,9 @@
 <div id="modal-resumen" class="modal hidden" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="modal-content">
     <h3>Confirmar solicitud</h3>
-    <div id="resumen-detalle" class="card" style="max-height:40vh; overflow:auto;"></div>
+    <div id="resumen-detalle" class="card" style="max-height:40vh; overflow:auto;">
+      <p>Estás por solicitar el servicio de pulverización con drones. Esta acción solo puede cancelarse por el administrador.</p>
+    </div>
     <div class="form-buttons">
       <button class="btn btn-aceptar" id="btn-confirmar">Confirmar y guardar</button>
       <button class="btn btn-cancelar" id="btn-cerrar-modal">Cancelar</button>
