@@ -7,14 +7,40 @@ class DroneFormularioNservicioModel
     /** @var PDO */
     public PDO $pdo;
 
-    /** Búsqueda de usuarios por nombre (solo activos en cualquier rol) */
+    /** Búsqueda de PRODUCTORES por nombre (solo habilitados) */
     public function buscarUsuarios(string $q): array
     {
-        $sql = "SELECT usuario, id_real FROM usuarios WHERE usuario LIKE ? ORDER BY usuario LIMIT 10";
+        $sql = "SELECT usuario, id_real
+                  FROM usuarios
+                 WHERE rol = 'productor'
+                   AND permiso_ingreso = 'Habilitado'
+                   AND usuario LIKE ?
+              ORDER BY usuario
+                 LIMIT 10";
         $st = $this->pdo->prepare($sql);
         $st->execute(['%' . $q . '%']);
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
+
+        /** Rangos disponibles (orden comenzando por octubre) */
+    public function rangos(): array
+    {
+        // Mantener sincronizado con enum de drones_solicitud_rango.rango
+        // Orden requerido: octubre → noviembre → diciembre → enero → febrero
+        return [
+            ['rango' => 'octubre_q1',   'label' => 'Primera quincena de Octubre'],
+            ['rango' => 'octubre_q2',   'label' => 'Segunda quincena de Octubre'],
+            ['rango' => 'noviembre_q1', 'label' => 'Primera quincena de Noviembre'],
+            ['rango' => 'noviembre_q2', 'label' => 'Segunda quincena de Noviembre'],
+            ['rango' => 'diciembre_q1', 'label' => 'Primera quincena de Diciembre'],
+            ['rango' => 'diciembre_q2', 'label' => 'Segunda quincena de Diciembre'],
+            ['rango' => 'enero_q1',     'label' => 'Primera quincena de Enero'],
+            ['rango' => 'enero_q2',     'label' => 'Segunda quincena de Enero'],
+            ['rango' => 'febrero_q1',   'label' => 'Primera quincena de Febrero'],
+            ['rango' => 'febrero_q2',   'label' => 'Segunda quincena de Febrero'],
+        ];
+    }
+
 
     /** Cooperativas para forma de pago id=6 */
     public function cooperativas(): array

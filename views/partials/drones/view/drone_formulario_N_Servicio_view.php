@@ -17,7 +17,7 @@
 
         <!-- Persona (typeahead) -->
         <div class="input-group">
-          <label for="form_nuevo_servicio_persona">Persona / Productor</label>
+          <label for="form_nuevo_servicio_persona">Productor</label>
           <div class="input-icon input-icon-persona typeahead-wrapper">
             <input
               type="text"
@@ -33,6 +33,7 @@
               aria-activedescendant=""
               required />
             <ul id="ta-list-personas" class="typeahead-list" role="listbox" hidden></ul>
+            <input type="hidden" id="productor_id_real" name="productor_id_real" />
           </div>
         </div>
 
@@ -60,11 +61,11 @@
           </div>
         </div>
 
-        <!-- Aeropuerto cercano -->
+        <!-- Zona restringida (antes Aeropuerto) -->
         <div class="input-group">
-          <label for="form_nuevo_servicio_aeropuerto">¿Hay algún aeropuerto a menos de 3 km?</label>
+          <label for="form_nuevo_servicio_zona_restringida">¿Existen zonas restringidas cercanas (ej: aeropuerto)?</label>
           <div class="input-icon input-icon-airport">
-            <select id="form_nuevo_servicio_aeropuerto" name="form_nuevo_servicio_aeropuerto" required>
+            <select id="form_nuevo_servicio_zona_restringida" name="form_nuevo_servicio_zona_restringida" required>
               <option value="">Seleccionar</option>
               <option>Si</option>
               <option>No</option>
@@ -125,7 +126,8 @@
           <label for="form_nuevo_servicio_hectareas">¿Cuántas hectáreas?</label>
           <div class="input-icon input-icon-hectareas">
             <input type="number" id="form_nuevo_servicio_hectareas" name="form_nuevo_servicio_hectareas"
-              placeholder="Ej: 12.5" step="0.01" min="0" required />
+              placeholder="Ej: 12" step="1" min="0" required />
+
           </div>
         </div>
 
@@ -144,7 +146,7 @@
         </div>
 
         <!-- Cooperativa (typeahead) -->
-        <div class="input-group">
+        <div class="input-group" id="grupo-cooperativa" hidden>
           <label for="form_nuevo_servicio_cooperativa">Cooperativa responsable del pago</label>
           <div class="input-icon input-icon-coop typeahead-wrapper">
             <input
@@ -158,11 +160,12 @@
               aria-autocomplete="list"
               aria-expanded="false"
               aria-controls="ta-list-coops"
-              aria-activedescendant=""
-              required />
+              aria-activedescendant="" />
             <ul id="ta-list-coops" class="typeahead-list" role="listbox" hidden></ul>
+            <input type="hidden" id="coop_descuento_id_real" name="coop_descuento_id_real" />
           </div>
         </div>
+
 
         <!-- Motivo (typeahead) -->
         <div class="input-group">
@@ -182,6 +185,7 @@
               aria-activedescendant=""
               required />
             <ul id="ta-list-motivos" class="typeahead-list" role="listbox" hidden></ul>
+            <input type="hidden" id="patologia_id" name="patologia_id" />
           </div>
         </div>
 
@@ -191,10 +195,6 @@
           <div class="input-icon input-icon-date">
             <select id="form_nuevo_servicio_quincena" name="form_nuevo_servicio_quincena" required>
               <option value="">Seleccionar</option>
-              <option>Primera quincena de Octubre</option>
-              <option>Segunda quincena de Octubre</option>
-              <option>Primera quincena de Noviembre</option>
-              <option>Segunda quincena de Noviembre</option>
             </select>
           </div>
         </div>
@@ -206,8 +206,29 @@
             <select id="form_nuevo_servicio_provincia" name="form_nuevo_servicio_provincia" required>
               <option value="">Seleccionar</option>
               <option>Buenos Aires</option>
+              <option>Ciudad Autónoma de Buenos Aires</option>
+              <option>Catamarca</option>
+              <option>Chaco</option>
+              <option>Chubut</option>
               <option>Córdoba</option>
+              <option>Corrientes</option>
+              <option>Entre Ríos</option>
+              <option>Formosa</option>
+              <option>Jujuy</option>
+              <option>La Pampa</option>
+              <option>La Rioja</option>
+              <option>Mendoza</option>
+              <option>Misiones</option>
+              <option>Neuquén</option>
+              <option>Río Negro</option>
+              <option>Salta</option>
+              <option>San Juan</option>
+              <option>San Luis</option>
+              <option>Santa Cruz</option>
               <option>Santa Fe</option>
+              <option>Santiago del Estero</option>
+              <option>Tierra del Fuego</option>
+              <option>Tucumán</option>
             </select>
           </div>
         </div>
@@ -488,5 +509,413 @@
 </style>
 
 <script>
+  (function() {
+    const CTRL_URL = '../controladores/drone_formulario_N_Servicio_controller.php';
 
+    // Helpers
+    const $ = (sel, ctx = document) => ctx.querySelector(sel);
+    const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+    const on = (el, ev, fn) => el.addEventListener(ev, fn);
+    const debounce = (fn, ms = 250) => {
+      let t;
+      return (...a) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...a), ms);
+      }
+    }
+
+    const fetchJson = async (url) => {
+      const r = await fetch(url, {
+        credentials: 'same-origin'
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || 'Error');
+      return j.data;
+    };
+    const postJson = async (url, data) => {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(data)
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || 'Error');
+      return j.data;
+    };
+    const normalizaSiNo = (v) => {
+      if (typeof v !== 'string') return null;
+      const s = v.trim().toLowerCase();
+      if (s === 'si' || s === 'sí') return 'si';
+      if (s === 'no') return 'no';
+      return null;
+    };
+
+    // Referencias UI
+    const form = $('#form-solicitud');
+    const btnSolicitar = $('#btn-solicitar');
+    const modal = $('#modal-resumen');
+    const btnConfirmar = $('#btn-confirmar');
+    const btnCerrarModal = $('#btn-cerrar-modal');
+
+    // Campos
+    const inpPersona = $('#form_nuevo_servicio_persona');
+    const hidPersona = $('#productor_id_real');
+    const listPersona = $('#ta-list-personas');
+
+    const selRep = $('#form_nuevo_servicio_representante');
+    const selLinea = $('#form_nuevo_servicio_lineas_tension');
+    const selZonaRes = $('#form_nuevo_servicio_zona_restringida');
+    const selCorr = $('#form_nuevo_servicio_corriente');
+    const selAgua = $('#form_nuevo_servicio_agua');
+    const selCuart = $('#form_nuevo_servicio_cuarteles');
+    const selDespegue = $('#form_nuevo_servicio_despegue');
+
+    const inpHect = $('#form_nuevo_servicio_hectareas');
+
+    const selPago = $('#form_nuevo_servicio_pago');
+    const grupoCoop = $('#grupo-cooperativa');
+    const inpCoop = $('#form_nuevo_servicio_cooperativa');
+    const hidCoop = $('#coop_descuento_id_real');
+    const listCoop = $('#ta-list-coops');
+
+    const inpMotivo = $('#form_nuevo_servicio_motivo');
+    const hidPatol = $('#patologia_id');
+    const listMotivo = $('#ta-list-motivos');
+
+    const selQuincena = $('#form_nuevo_servicio_quincena');
+
+    const selProv = $('#form_nuevo_servicio_provincia');
+    const inpLoc = $('#form_nuevo_servicio_localidad');
+    const inpCalle = $('#form_nuevo_servicio_calle');
+    const inpNum = $('#form_nuevo_servicio_numero');
+    const inpObs = $('#form_nuevo_servicio_observaciones');
+
+    // Matriz
+    const matrizFS = $('#form_nuevo_servicio_matriz');
+    const matrizTable = matrizFS.querySelector('table.gform-matrix');
+    const matrizBody = matrizTable.querySelector('tbody');
+
+    // ---- Typeahead genérico ----
+    const initTypeahead = (input, ulList, opts) => {
+      let selectedIndex = -1;
+      const render = (items) => {
+        ulList.innerHTML = '';
+        items.forEach((it, i) => {
+          const li = document.createElement('li');
+          li.role = 'option';
+          li.tabIndex = -1;
+          li.textContent = it.label;
+          li.dataset.value = it.value;
+          li.className = 'ta-item';
+          on(li, 'mousedown', (e) => {
+            e.preventDefault();
+            choose(i);
+          });
+          ulList.appendChild(li);
+        });
+        ulList.hidden = items.length === 0;
+        input.setAttribute('aria-expanded', String(!ulList.hidden));
+      };
+      const choose = (idx) => {
+        const it = current[idx];
+        if (!it) return;
+        input.value = it.label;
+        if (opts.onChoose) opts.onChoose(it);
+        ulList.hidden = true;
+        input.setAttribute('aria-expanded', 'false');
+      };
+      let current = [];
+      const search = debounce(async () => {
+        const q = input.value.trim();
+        if (q.length < 2) {
+          ulList.hidden = true;
+          current = [];
+          if (opts.onClear) opts.onClear();
+          return;
+        }
+        try {
+          const items = await opts.source(q);
+          current = items.map(x => ({
+            label: x.label,
+            value: x.value
+          }));
+          render(current);
+          selectedIndex = -1;
+        } catch (e) {
+          console.error(e);
+        }
+      }, 200);
+
+      on(input, 'input', search);
+      on(input, 'keydown', (e) => {
+        if (ulList.hidden) return;
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          selectedIndex = Math.min(selectedIndex + 1, ulList.children.length - 1);
+          ulList.children[selectedIndex]?.focus();
+        }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          selectedIndex = Math.max(selectedIndex - 1, 0);
+          ulList.children[selectedIndex]?.focus();
+        }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (selectedIndex >= 0) choose(selectedIndex);
+        }
+        if (e.key === 'Escape') {
+          ulList.hidden = true;
+          input.setAttribute('aria-expanded', 'false');
+        }
+      });
+      document.addEventListener('click', (e) => {
+        if (!ulList.contains(e.target) && e.target !== input) {
+          ulList.hidden = true;
+          input.setAttribute('aria-expanded', 'false');
+        }
+      });
+    };
+
+    // ---- Cargas dinámicas ----
+    async function loadFormasPago() {
+      const data = await fetchJson(`${CTRL_URL}?action=formas_pago`);
+      selPago.innerHTML = `<option value="">Seleccionar</option>` + data.map(fp => `<option value="${fp.id}">${fp.nombre}</option>`).join('');
+    }
+    async function loadRangos() {
+      const data = await fetchJson(`${CTRL_URL}?action=rangos`);
+      selQuincena.innerHTML = `<option value="">Seleccionar</option>` + data.map(r => `<option value="${r.rango}">${r.label}</option>`).join('');
+    }
+
+    // Personas (productores)
+    initTypeahead(inpPersona, listPersona, {
+      source: async (q) => {
+        const data = await fetchJson(`${CTRL_URL}?action=buscar_usuarios&q=${encodeURIComponent(q)}`);
+        return data.map(u => ({
+          label: u.usuario,
+          value: u.id_real
+        }));
+      },
+      onChoose: (it) => {
+        hidPersona.value = it.value;
+      },
+      onClear: () => {
+        hidPersona.value = '';
+      }
+    });
+
+    // Cooperativas
+    initTypeahead(inpCoop, listCoop, {
+      source: async (q) => {
+        const data = await fetchJson(`${CTRL_URL}?action=cooperativas&q=${encodeURIComponent(q)}`);
+        return data.map(u => ({
+          label: u.usuario,
+          value: u.id_real
+        }));
+      },
+      onChoose: (it) => {
+        hidCoop.value = it.value;
+      },
+      onClear: () => {
+        hidCoop.value = '';
+      }
+    });
+
+    // Patologías
+    initTypeahead(inpMotivo, listMotivo, {
+      source: async (q) => {
+        const data = await fetchJson(`${CTRL_URL}?action=patologias&q=${encodeURIComponent(q)}`);
+        return data.map(p => ({
+          label: p.nombre,
+          value: p.id
+        }));
+      },
+      onChoose: async (it) => {
+        hidPatol.value = it.value;
+        await loadProductosPorPatologia(parseInt(it.value, 10));
+      },
+      onClear: () => {
+        hidPatol.value = '';
+        matrizBody.innerHTML = '';
+      }
+    });
+
+    // Mostrar/Ocultar Cooperativa según forma de pago
+    on(selPago, 'change', () => {
+      const val = parseInt(selPago.value || '0', 10);
+      if (val === 6) { // id 6 habilita cooperativa
+        grupoCooperativaShow(true);
+      } else {
+        grupoCooperativaShow(false);
+      }
+    });
+
+    function grupoCooperativaShow(show) {
+      if (show) {
+        grupoCoop.hidden = false;
+        inpCoop.setAttribute('required', 'required');
+      } else {
+        grupoCoop.hidden = true;
+        inpCoop.removeAttribute('required');
+        inpCoop.value = '';
+        hidCoop.value = '';
+        $('#ta-list-coops').hidden = true;
+      }
+    }
+
+    // Matriz dinámica
+    async function loadProductosPorPatologia(patologiaId) {
+      try {
+        const data = await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${patologiaId}`);
+        matrizBody.innerHTML = data.map((p, i) => {
+          const rowId = `row_${p.id}`;
+          return `
+          <tr>
+            <th scope="row">
+              <label class="gfm-prod">
+                <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="${rowId}" data-row="${rowId}" data-producto-id="${p.id}" />
+                <span>${p.nombre}</span>
+              </label>
+            </th>
+            <td data-col="SVE">
+              <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="sve" disabled /></label>
+            </td>
+            <td data-col="Productor">
+              <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="productor" disabled /></label>
+            </td>
+          </tr>`;
+        }).join('');
+        // Enlazar toggles
+        $$('.gfm-row-toggle', matrizBody).forEach(cb => {
+          on(cb, 'change', () => {
+            const name = `m_${cb.dataset.row}`;
+            const radios = $$(`input[type="radio"][name="${name}"]`, matrizBody);
+            if (cb.checked) {
+              radios.forEach(r => {
+                r.disabled = false;
+              });
+            } else {
+              radios.forEach(r => {
+                r.checked = false;
+                r.disabled = true;
+              });
+            }
+          });
+        });
+      } catch (e) {
+        console.error(e);
+        matrizBody.innerHTML = '';
+      }
+    }
+
+    // Abrir/Cerrar modal
+    on(btnSolicitar, 'click', (e) => {
+      e.preventDefault();
+      modal.classList.remove('hidden');
+      modal.setAttribute('aria-hidden', 'false');
+    });
+    const closeModal = () => {
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+    };
+    on(btnCerrarModal, 'click', (e) => {
+      e.preventDefault();
+      closeModal();
+    });
+
+    // Confirmar y guardar
+    on(btnConfirmar, 'click', async (e) => {
+      e.preventDefault();
+      try {
+        const payload = buildPayload();
+        const data = await postJson(CTRL_URL, payload);
+        alert(`Solicitud creada. ID: ${data.id}`);
+        closeModal();
+        form.reset();
+        hidPersona.value = '';
+        hidCoop.value = '';
+        hidPatol.value = '';
+        matrizBody.innerHTML = '';
+        grupoCooperativaShow(false);
+        selQuincena.value = '';
+      } catch (err) {
+        alert(`Error: ${err.message}`);
+      }
+    });
+
+    function buildPayload() {
+      // Validaciones básicas
+      if (!hidPersona.value) throw new Error('Seleccioná un productor.');
+      if (!hidPatol.value) throw new Error('Seleccioná un motivo/patología.');
+
+      const rep = normalizaSiNo(selRep.value);
+      const linea = normalizaSiNo(selLinea.value);
+      const zRestr = normalizaSiNo(selZonaRes.value);
+      const corr = normalizaSiNo(selCorr.value);
+      const agua = normalizaSiNo(selAgua.value);
+      const cuart = normalizaSiNo(selCuart.value);
+      const despegue = normalizaSiNo(selDespegue.value);
+      const fpago = parseInt(selPago.value || '0', 10);
+      const hectInt = parseInt(inpHect.value || '0', 10);
+      const provincia = selProv.value.trim();
+      const localidad = inpLoc.value.trim();
+      const calle = inpCalle.value.trim();
+      const numero = String(inpNum.value || '').trim();
+      const rango = selQuincena.value;
+
+      if ([rep, linea, zRestr, corr, agua, cuart, despegue].some(v => !v)) throw new Error('Completá los campos de Sí/No.');
+      if (!hectInt || hectInt < 0) throw new Error('Ingresá la cantidad de hectáreas (entero).');
+      if (!fpago) throw new Error('Seleccioná la forma de pago.');
+      if (!rango) throw new Error('Seleccioná la quincena.');
+      if (!provincia || !localidad || !calle || !numero) throw new Error('Completá la dirección.');
+      if (fpago === 6 && !hidCoop.value) throw new Error('Seleccioná la cooperativa para la forma de pago 6.');
+
+      // Items de matriz
+      const items = [];
+      $$('.gfm-row-toggle:checked', matrizBody).forEach(cb => {
+        const name = `m_${cb.dataset.row}`;
+        const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
+        if (!choice) throw new Error('Indicá quién aporta cada producto seleccionado.');
+        items.push({
+          producto_id: parseInt(cb.dataset.productoId, 10),
+          fuente: choice.value // 'sve' | 'productor'
+        });
+      });
+
+      return {
+        productor_id_real: hidPersona.value,
+        representante: rep,
+        linea_tension: linea,
+        zona_restringida: zRestr,
+        corriente_electrica: corr,
+        agua_potable: agua,
+        libre_obstaculos: cuart,
+        area_despegue: despegue,
+        superficie_ha: Number(hectInt.toFixed(2)),
+        forma_pago_id: fpago,
+        coop_descuento_id_real: hidCoop.value || null,
+        patologia_id: parseInt(hidPatol.value, 10),
+        rango: rango,
+        items: items,
+        dir_provincia: provincia,
+        dir_localidad: localidad,
+        dir_calle: calle,
+        dir_numero: numero,
+        observaciones: inpObs.value || null
+      };
+    }
+
+    // Inicialización
+    (async function init() {
+      try {
+        await Promise.all([loadFormasPago(), loadRangos()]);
+        grupoCooperativaShow(false);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  })();
 </script>

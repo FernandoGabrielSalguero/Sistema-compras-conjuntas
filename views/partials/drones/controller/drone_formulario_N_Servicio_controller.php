@@ -47,6 +47,9 @@ try {
                 }
                 $resp($model->productosPorPatologia($pid));
                 break;
+            case 'rangos':
+                $resp($model->rangos());
+                break;
             default:
                 $resp(['message' => 'pong']);
                 break;
