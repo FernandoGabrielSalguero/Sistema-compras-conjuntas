@@ -269,6 +269,13 @@
                                 </div>
                                 <!-- <small id="coopHelp" class="helper-text">Se guardará el código interno (id_real).</small> -->
                             </div>
+                            <!-- inmediatamente debajo del select de forma de pago, dentro de la misma card -->
+                            <div class="input-group" id="coop_etiqueta_wrap" style="display:none;">
+                                <label>Representado por</label>
+                                <div class="input-icon input-icon-info">
+                                    <input type="text" id="coop_etiqueta" readonly aria-readonly="true">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -520,7 +527,7 @@
                 </form>
             </div>
 
-            <div class="sv-drawer__footer" aria-hidden="true">
+            <div class="sv-drawer__footer">
                 <button type="button" id="btn-debug-pedido" class="btn btn-info" title="Debug pedido">
                     <span class="material-icons">bug_report</span>
                 </button>
@@ -1000,7 +1007,7 @@
                 card.className = 'product-card';
                 card.innerHTML = `
   <div class="product-header">
-    <h4>${esc(it.ses_usuario||'—')}</h4>
+    <h4>${esc(it.productor_nombre || it.ses_usuario || 'Sin dato')}</h4>
     <p>Pedido número: ${esc(it.id??'')}</p>
   </div>
   <div class="product-body">
@@ -1119,7 +1126,7 @@
                 wrapper.innerHTML = `
       <div>
         <strong>${esc(nombre)}</strong>
-        <div class="meta">Fuente: sve${pat ? ` · Patología: ${esc(pat.nombre)}` : ''}</div>
+        <div class="meta">Fuente: ${esc(it.fuente || 'sve')}${pat ? ` · Patología: ${esc(pat.nombre)}` : ''}</div>
         <div class="meta">Costo/ha: $${fmtNum(costo)}</div>
       </div>
       <div class="acciones">
@@ -1251,10 +1258,40 @@
             const coSel = document.getElementById('coop_descuento_nombre');
             if (!sel || !grp) return;
             const fp = catalog.formasPago.find(f => String(f.id) === String(sel.value));
-            const isCoop = fp && String(fp.nombre || '').toLowerCase() === 'cooperativa';
+            const isCoop = !!(fp && String(fp.nombre || '').toLowerCase().includes('cooperativa'));
             grp.style.display = isCoop ? '' : 'none';
             if (!isCoop && coSel) coSel.value = '';
         }
+
+        // después de setear forma de pago y coop_descuento_nombre:
+const fpSel = $('#forma_pago_id');
+const coopSel = $('#coop_descuento_nombre');
+toggleCoopField();
+
+(function pintarCoopEtiqueta(){
+  const wrap = $('#coop_etiqueta_wrap');
+  const out  = $('#coop_etiqueta');
+  if (!wrap || !out) return;
+  const fp = catalog.formasPago.find(f => String(f.id) === String(fpSel.value));
+  const isCoop = !!(fp && String(fp.nombre || '').toLowerCase().includes('cooperativa'));
+  if (!isCoop) { wrap.style.display = 'none'; out.value=''; return; }
+
+  const codigo = getV('coop_descuento_nombre'); // id_real (ej: C2)
+  let etiqueta = codigo || '';
+  // Buscar nombre “humano” por relación del productor (preferente) o catálogo general
+  const rel = (d.productor?.cooperativas || []).find(c => String(c.cooperativa_id_real) === String(codigo));
+  if (rel?.cooperativa_usuario) etiqueta = `${rel.cooperativa_usuario} (${codigo})`;
+  else {
+    const cata = (catalog.cooperativas || []).find(c => String(c.id_real||c.id) === String(codigo) || String(c.nombre) === String(codigo));
+    if (cata?.usuario || cata?.nombre) etiqueta = `${(cata.usuario || cata.nombre)} (${codigo})`;
+  }
+  out.value = etiqueta || '';
+  wrap.style.display = etiqueta ? '' : 'none';
+})();
+
+$('#forma_pago_id')?.addEventListener('change', () => { toggleCoopField(); /* repintar */ fillForm({ solicitud: { ...(__ULTIMO_PEDIDO__?.solicitud||{}), forma_pago_id: getV('forma_pago_id'), coop_descuento_nombre: getV('coop_descuento_nombre') }, productor: __ULTIMO_PEDIDO__?.productor }); });
+$('#coop_descuento_nombre')?.addEventListener('change', () => { const d=__ULTIMO_PEDIDO__||{}; fillForm({ solicitud: { ...(d.solicitud||{}), forma_pago_id:getV('forma_pago_id'), coop_descuento_nombre:getV('coop_descuento_nombre') }, productor:d.productor }); });
+
 
         // rellenar formulario
         function fillForm(d) {
@@ -1487,15 +1524,19 @@
                     coop_descuento_nombre: getV('coop_descuento_nombre')
 
                 },
-                costos: {
-                    moneda: getV('costo_moneda'),
-                    costo_base_por_ha: parseNum(getV('costo_base_por_ha')),
-                    base_ha: parseNum(getV('base_ha')),
-                    base_total: parseNum(getV('base_total')),
-                    productos_total: parseNum(getV('productos_total')),
-                    total: parseNum(getV('total')),
-                    desglose_json: null
-                },
+  costos: (function(){
+    const obj = {
+      moneda: getV('costo_moneda'),
+      costo_base_por_ha: parseNum(getV('costo_base_por_ha')),
+      base_ha: parseNum(getV('base_ha')),
+      base_total: parseNum(getV('base_total')),
+      productos_total: parseNum(getV('productos_total')),
+      total: parseNum(getV('total')),
+      desglose_json: null
+    };
+    const vacio = !obj.moneda && [obj.costo_base_por_ha,obj.base_ha,obj.base_total,obj.productos_total,obj.total].every(v => v === null);
+    return vacio ? undefined : obj; // <- no enviar el bloque si está vacío
+  })(),
                 motivos: state.motivos.map(m => ({
                     patologia_id: m.patologia_id ? Number(m.patologia_id) : null,
                     es_otros: m.es_otros ? 1 : 0,

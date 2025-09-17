@@ -41,13 +41,14 @@ final class DroneListModel
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-        $sql = "
+$sql = "
     SELECT
         s.id,
         s.ses_usuario,
+        s.productor_id_real,
+        COALESCE(ui.nombre, u.usuario) AS productor_nombre,
         p.nombre AS piloto,
         s.piloto_id,
-        s.productor_id_real,
         s.fecha_visita,
         CASE
           WHEN s.hora_visita_desde IS NOT NULL AND s.hora_visita_hasta IS NOT NULL THEN
@@ -59,13 +60,17 @@ final class DroneListModel
         s.observaciones,
         s.estado,
         s.motivo_cancelacion,
-        c.total AS costo_total             -- 👈 NUEVO
+        s.coop_descuento_nombre,
+        c.total AS costo_total
     FROM drones_solicitud s
-    LEFT JOIN dron_pilotos p ON p.id = s.piloto_id
-    LEFT JOIN drones_solicitud_costos c ON c.solicitud_id = s.id   -- 👈 NUEVO
+    LEFT JOIN dron_pilotos p           ON p.id = s.piloto_id
+    LEFT JOIN drones_solicitud_costos c ON c.solicitud_id = s.id
+    LEFT JOIN usuarios u               ON u.id_real = s.productor_id_real
+    LEFT JOIN usuarios_info ui         ON ui.usuario_id = u.id
     $whereSql
     ORDER BY s.created_at DESC, s.id DESC
 ";
+
 
 
         $st = $this->pdo->prepare($sql);
