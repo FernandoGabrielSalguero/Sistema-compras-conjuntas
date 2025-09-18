@@ -1323,7 +1323,7 @@
                     throw new Error(msg);
                 }
 
-                showAlert('success', '¡Operación completada con éxito!');
+                showAlert('success', '¡Servicio actualizado con éxito!');
                 await loadDetalle(payload.id);
 
             } catch (err) {
