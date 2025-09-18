@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 // Mostrar errores en desarrollo
 ini_set('display_errors', '1');
@@ -22,6 +23,7 @@ unset($_SESSION['cierre_info']);
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -37,14 +39,47 @@ unset($_SESSION['cierre_info']);
 
     <!-- CSS puntual (no rompe CDN) -->
     <style>
-      .filters-card .form-grid{ gap: 1rem; }
-      .tabla-wrapper{ max-height: 60vh; overflow:auto; }
-      .ua-td{ max-width: 420px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-      .table-actions{ display:flex; align-items:center; gap:.5rem; justify-content:flex-end; }
-      .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
-      .w-100{ width:100%; }
+        .filters-card .form-grid {
+            gap: 1rem;
+        }
+
+        .tabla-wrapper {
+            max-height: 60vh;
+            overflow: auto;
+        }
+
+        .ua-td {
+            max-width: 420px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .table-actions {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            justify-content: flex-end;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        .w-100 {
+            width: 100%;
+        }
     </style>
 </head>
+
 <body>
     <div class="layout">
         <!-- 🧭 SIDEBAR -->
@@ -104,7 +139,7 @@ unset($_SESSION['cierre_info']);
                         <div class="input-group">
                             <label for="filtro-usuario">Usuario (input)</label>
                             <div class="input-icon input-icon-name">
-                                <input type="text" id="filtro-usuario" name="usuario_input" placeholder="usuario, email o id_real" aria-describedby="ayuda-usuario"/>
+                                <input type="text" id="filtro-usuario" name="usuario_input" placeholder="usuario, email o id_real" aria-describedby="ayuda-usuario" />
                             </div>
                             <small id="ayuda-usuario" class="sr-only">Escriba parte del usuario para buscar coincidencias</small>
                         </div>
@@ -165,118 +200,157 @@ unset($_SESSION['cierre_info']);
 
     <!-- JS de página -->
     <script>
-    (function(){
-        'use strict';
+        (function() {
+            'use strict';
 
-        const qs = (s) => document.querySelector(s);
-        const $rol = qs('#filtro-rol');
-        const $usuario = qs('#filtro-usuario');
-        const $fecha = qs('#filtro-fecha');
-        const $btnBuscar = qs('#btn-buscar');
-        const $btnLimpiar = qs('#btn-limpiar');
-        const $btnHoy = qs('#btn-hoy');
-        const $tbody = qs('#tabla-body');
-        const $prev = qs('#btn-prev');
-        const $next = qs('#btn-next');
-        const $pinfo = qs('#paginador-info');
+            const qs = (s) => document.querySelector(s);
+            const $rol = qs('#filtro-rol');
+            const $usuario = qs('#filtro-usuario');
+            const $fecha = qs('#filtro-fecha');
+            const $btnBuscar = qs('#btn-buscar');
+            const $btnLimpiar = qs('#btn-limpiar');
+            const $btnHoy = qs('#btn-hoy');
+            const $tbody = qs('#tabla-body');
+            const $prev = qs('#btn-prev');
+            const $next = qs('#btn-next');
+            const $pinfo = qs('#paginador-info');
 
-        let page = 1;
-        const perPage = 20; // estética: máximo 20 en vista
+            // IMPORTANTE: esta vista está en /views/sve/, el controller en /controllers/
+            // Por eso subimos dos niveles.
+            const API_URL = '../../controllers/sve_registro_login_controller.php';
 
-        function hoyISO(){
-            const now = new Date();
-            // Ajuste rápido a zona AR sólo para setear input date si el servidor está en UTC
-            const y = now.getFullYear();
-            const m = String(now.getMonth()+1).padStart(2,'0');
-            const d = String(now.getDate()).padStart(2,'0');
-            return `${y}-${m}-${d}`;
-        }
+            let page = 1;
+            const perPage = 20; // estética: máximo 20 en vista
 
-        function buildParams(){
-            const params = new URLSearchParams();
-            params.set('action','list');
-            params.set('page', String(page));
-            params.set('per_page', String(perPage));
-
-            if($rol.value) params.set('rol', $rol.value);
-            if($usuario.value.trim()) params.set('usuario_input', $usuario.value.trim());
-            if($fecha.value) params.set('created_at', $fecha.value);
-            return params.toString();
-        }
-
-        function renderRows(rows){
-            $tbody.innerHTML = '';
-            if(!rows || rows.length === 0){
-                const tr = document.createElement('tr');
-                const td = document.createElement('td');
-                td.colSpan = 9;
-                td.textContent = 'Sin resultados';
-                tr.appendChild(td);
-                $tbody.appendChild(tr);
-                return;
+            function hoyISO() {
+                const now = new Date();
+                // Ajuste rápido a zona AR sólo para setear input date si el servidor está en UTC
+                const y = now.getFullYear();
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                const d = String(now.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
             }
-            const frag = document.createDocumentFragment();
-            rows.forEach(r => {
-                const tr = document.createElement('tr');
 
-                const tdId = document.createElement('td'); tdId.textContent = r.id;
-                const tdUin = document.createElement('td'); tdUin.textContent = r.usuario_input || '';
-                const tdUreal = document.createElement('td'); tdUreal.textContent = r.usuario_id_real || '';
-                const tdRol = document.createElement('td'); tdRol.textContent = r.rol || '';
-                const tdRes = document.createElement('td'); tdRes.innerHTML = r.resultado === 'ok' ? '<span class="badge success">ok</span>' : '<span class="badge error">error</span>';
-                const tdMot = document.createElement('td'); tdMot.textContent = r.motivo || '';
-                const tdIp = document.createElement('td'); tdIp.textContent = r.ip || '';
-                const tdUa = document.createElement('td'); tdUa.className = 'ua-td'; tdUa.title = r.user_agent || ''; tdUa.textContent = r.user_agent || '';
-                const tdTs = document.createElement('td'); tdTs.textContent = r.created_at_ar || '';
+            function buildParams() {
+                const params = new URLSearchParams();
+                params.set('action', 'list');
+                params.set('page', String(page));
+                params.set('per_page', String(perPage));
 
-                tr.append(tdId, tdUin, tdUreal, tdRol, tdRes, tdMot, tdIp, tdUa, tdTs);
-                frag.appendChild(tr);
-            });
-            $tbody.appendChild(frag);
-        }
+                if ($rol.value) params.set('rol', $rol.value);
+                if ($usuario.value.trim()) params.set('usuario_input', $usuario.value.trim());
+                if ($fecha.value) params.set('created_at', $fecha.value);
+                return params.toString();
+            }
 
-        async function fetchData(){
-            try{
-                showGlobalSpinner && showGlobalSpinner(true);
-            }catch(e){}
-            try{
-                const params = buildParams();
-                const res = await fetch('../controllers/sve_registro_login_controller.php?' + params, {
-                    headers: { 'Accept': 'application/json' }
-                });
-                const json = await res.json();
-                if(!json.ok){
-                    showAlert('error', json.error || 'Error al cargar datos');
+            function renderRows(rows) {
+                $tbody.innerHTML = '';
+                if (!rows || rows.length === 0) {
+                    const tr = document.createElement('tr');
+                    const td = document.createElement('td');
+                    td.colSpan = 9;
+                    td.textContent = 'Sin resultados';
+                    tr.appendChild(td);
+                    $tbody.appendChild(tr);
                     return;
                 }
-                renderRows(json.data);
-                const p = json.pagination || {};
-                $pinfo.textContent = `Página ${p.page} de ${p.total_pages} — ${p.total} registros`;
-                $prev.disabled = p.page <= 1;
-                $next.disabled = p.page >= p.total_pages;
-            }catch(err){
-                showAlert('error', 'No se pudo obtener el listado');
-            }finally{
-                try{ showGlobalSpinner && showGlobalSpinner(false); }catch(e){}
+                const frag = document.createDocumentFragment();
+                rows.forEach(r => {
+                    const tr = document.createElement('tr');
+
+                    const tdId = document.createElement('td');
+                    tdId.textContent = r.id;
+                    const tdUin = document.createElement('td');
+                    tdUin.textContent = r.usuario_input || '';
+                    const tdUreal = document.createElement('td');
+                    tdUreal.textContent = r.usuario_id_real || '';
+                    const tdRol = document.createElement('td');
+                    tdRol.textContent = r.rol || '';
+                    const tdRes = document.createElement('td');
+                    tdRes.innerHTML = r.resultado === 'ok' ? '<span class="badge success">ok</span>' : '<span class="badge error">error</span>';
+                    const tdMot = document.createElement('td');
+                    tdMot.textContent = r.motivo || '';
+                    const tdIp = document.createElement('td');
+                    tdIp.textContent = r.ip || '';
+                    const tdUa = document.createElement('td');
+                    tdUa.className = 'ua-td';
+                    tdUa.title = r.user_agent || '';
+                    tdUa.textContent = r.user_agent || '';
+                    const tdTs = document.createElement('td');
+                    tdTs.textContent = r.created_at_ar || '';
+
+                    tr.append(tdId, tdUin, tdUreal, tdRol, tdRes, tdMot, tdIp, tdUa, tdTs);
+                    frag.appendChild(tr);
+                });
+                $tbody.appendChild(frag);
             }
-        }
 
-        $btnBuscar.addEventListener('click', (e)=>{ e.preventDefault(); page = 1; fetchData(); });
-        $btnLimpiar.addEventListener('click', (e)=>{
-            e.preventDefault();
-            $rol.value = '';
-            $usuario.value = '';
-            $fecha.value = '';
-            page = 1;
-            fetchData();
-        });
-        $btnHoy.addEventListener('click', (e)=>{ e.preventDefault(); $fecha.value = hoyISO(); page = 1; fetchData(); });
-        $prev.addEventListener('click', (e)=>{ e.preventDefault(); if(page>1){ page--; fetchData(); }});
-        $next.addEventListener('click', (e)=>{ e.preventDefault(); page++; fetchData(); });
+            async function fetchData() {
+                try {
+                    showGlobalSpinner && showGlobalSpinner(true);
+                } catch (e) {}
+                try {
+                    const params = buildParams();
+                    const res = await fetch(API_URL + '?' + params, {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const json = await res.json();
+                    if (!json.ok) {
+                        showAlert('error', json.error || 'Error al cargar datos');
+                        return;
+                    }
+                    renderRows(json.data);
+                    const p = json.pagination || {};
+                    $pinfo.textContent = `Página ${p.page} de ${p.total_pages} — ${p.total} registros`;
+                    $prev.disabled = p.page <= 1;
+                    $next.disabled = p.page >= p.total_pages;
+                } catch (err) {
+                    showAlert('error', 'No se pudo obtener el listado');
+                } finally {
+                    try {
+                        showGlobalSpinner && showGlobalSpinner(false);
+                    } catch (e) {}
+                }
+            }
 
-        // Evitar FOUC: primera carga
-        document.addEventListener('DOMContentLoaded', fetchData);
-    })();
+            $btnBuscar.addEventListener('click', (e) => {
+                e.preventDefault();
+                page = 1;
+                fetchData();
+            });
+            $btnLimpiar.addEventListener('click', (e) => {
+                e.preventDefault();
+                $rol.value = '';
+                $usuario.value = '';
+                $fecha.value = '';
+                page = 1;
+                fetchData();
+            });
+            $btnHoy.addEventListener('click', (e) => {
+                e.preventDefault();
+                $fecha.value = hoyISO();
+                page = 1;
+                fetchData();
+            });
+            $prev.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (page > 1) {
+                    page--;
+                    fetchData();
+                }
+            });
+            $next.addEventListener('click', (e) => {
+                e.preventDefault();
+                page++;
+                fetchData();
+            });
+
+            // Evitar FOUC: primera carga
+            document.addEventListener('DOMContentLoaded', fetchData);
+        })();
     </script>
 </body>
+
 </html>
