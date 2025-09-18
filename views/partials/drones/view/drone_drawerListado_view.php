@@ -945,26 +945,46 @@
         }
 
         function recalcCostos() {
-            const base_ha = parseNum($('#base_ha')?.value);
+            // si base_ha está vacío, tomar la superficie de la solicitud
+            let base_ha = parseNum($('#base_ha')?.value);
+            if (base_ha === null) {
+                const sup = parseNum($('#superficie_ha')?.value);
+                if (sup !== null) {
+                    base_ha = sup;
+                    if ($('#base_ha')) $('#base_ha').value = fmtNum(base_ha); // reflejar en UI
+                }
+            }
+
             const costo_base = parseNum($('#costo_base_por_ha')?.value);
             const base_total = (base_ha || 0) * (costo_base || 0);
             if ($('#base_total')) $('#base_total').value = fmtNum(base_total);
+
             let productos_total = 0;
             state.items.forEach(it => {
-                const ch = Number(it.costo_hectarea_snapshot || 0);
+                // usar snapshot si lo hubiera; sino, del catálogo
+                const pInfo = catalog.productos.find(p => String(p.id) === String(it.producto_id));
+                const ch = Number(
+                    (it.costo_hectarea_snapshot ?? null) !== null ?
+                    it.costo_hectarea_snapshot :
+                    (pInfo?.costo_hectarea ?? 0)
+                );
                 productos_total += ch * (base_ha || 0);
                 it.total_producto_snapshot = ch * (base_ha || 0);
             });
             if ($('#productos_total')) $('#productos_total').value = fmtNum(productos_total);
+
             const total = base_total + productos_total;
             if ($('#total')) $('#total').value = fmtNum(total);
+
             const resumen = $('#costos-resumen');
             if (resumen) {
-                resumen.innerHTML = `<p>Base: ${fmtNum(base_ha||0)} ha × $${fmtNum(costo_base||0)} = $${fmtNum(base_total)}</p>
-                           <p>Productos: $${fmtNum(productos_total)}</p>
-                           <p><strong>Total: $${fmtNum(total)}</strong></p>`;
+                resumen.innerHTML =
+                    `<p>Base: ${fmtNum(base_ha||0)} ha × $${fmtNum(costo_base||0)} = $${fmtNum(base_total)}</p>
+           <p>Productos: $${fmtNum(productos_total)}</p>
+           <p><strong>Total: $${fmtNum(total)}</strong></p>`;
             }
         }
+
 
         // Llenar formulario
         function fillForm(d) {
@@ -1019,7 +1039,7 @@
                 placeholder: 'Seleccionar producto'
             });
 
-            // costos
+            // costos (si vienen guardados, llegan completos; si no, vienen calculados del backend)
             const c = d.costos || {};
             setV('costo_moneda', c.moneda);
             setV('costo_base_por_ha', fmtNum(c.costo_base_por_ha));
@@ -1027,6 +1047,14 @@
             setV('base_total', fmtNum(c.base_total));
             setV('productos_total', fmtNum(c.productos_total));
             setV('total', fmtNum(c.total));
+
+            // Asegurar que Base ha copie la Superficie si no vino seteada
+            const sup = parseNum(s.superficie_ha);
+            if ((getV('base_ha') === null || getV('base_ha') === '') && sup !== null) {
+                setV('base_ha', fmtNum(sup));
+            }
+
+            // Recalcular y refrescar resumen
             recalcCostos();
 
             // motivos
