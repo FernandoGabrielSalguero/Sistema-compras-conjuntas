@@ -1207,7 +1207,7 @@
             }
 
             try {
-                const res = await fetch(`${API}?action=update_solicitud`, {
+                await fetch('../partials/drones/controller/drone_drawerListado_controller.php?action=update_solicitud', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
