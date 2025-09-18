@@ -713,16 +713,17 @@
             id
         }) {
             lastFocus = document.activeElement;
-            __ID__ = id;
-            lblId.textContent = `#${id}`;
+            __ID__ = Number(id); // <— coerción aquí
+            lblId.textContent = `#${__ID__}`;
             drawer.classList.remove('hidden');
             drawer.setAttribute('aria-hidden', 'false');
             panel.setAttribute('tabindex', '-1');
             setTimeout(() => panel.focus(), 0);
 
             await loadCatalogs();
-            await loadDetalle(id);
+            await loadDetalle(__ID__);
         }
+
 
         function close() {
             const active = document.activeElement;
@@ -1135,7 +1136,7 @@
         // Guardar
         btnGuardar.addEventListener('click', async () => {
             const payload = {
-                id: __ID__,
+                id: Number(__ID__),
                 solicitud: {
                     productor_id_real: getV('productor_id_real'),
                     ses_usuario: getV('ses_usuario_edit'),
@@ -1218,18 +1219,44 @@
             }
 
             try {
-                const res = await fetch('../partials/drones/controller/drone_drawerListado_controller.php?action=update_solicitud', {
+                // Usa SIEMPRE la misma base (API) que los GET y muestra el 'detail' si viene:
+                const postUrl = `${API}?action=update_solicitud`;
+
+                const res = await fetch(postUrl, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify(payload),
                     cache: 'no-store'
                 });
-                const json = await res.json();
-                if (!json.ok) throw new Error(json.error || 'Error');
+
+                // si el backend devolvió HTML/empty por un 500, evitamos romper el .json()
+                let json;
+                try {
+                    json = await res.json();
+                } catch {
+                    json = {
+                        ok: false,
+                        error: `HTTP ${res.status} ${res.statusText}`,
+                        detail: 'Respuesta no JSON'
+                    };
+                }
+
+                if (!res.ok || !json.ok) {
+                    // log completo para depurar rápido desde consola de red
+                    console.error('Update error', {
+                        status: res.status,
+                        resp: json
+                    });
+                    const msg = json.detail || json.error || `HTTP ${res.status}`;
+                    throw new Error(msg);
+                }
+
                 showAlert('success', '¡Operación completada con éxito!');
-                await loadDetalle(payload.id); // refrescar JSON y formulario
+                await loadDetalle(payload.id);
+
             } catch (err) {
                 showAlert('error', `No se pudo guardar: ${err.message}`);
             }

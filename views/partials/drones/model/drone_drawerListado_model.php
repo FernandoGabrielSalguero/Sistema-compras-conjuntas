@@ -152,9 +152,10 @@ final class DroneDrawerListadoModel
     /** Actualiza solicitud + tablas relacionadas */
     public function actualizarSolicitud(array $p): int
     {
-        if (empty($p['id']) || !is_int($p['id'])) {
+        if (empty($p['id']) || !is_numeric($p['id'])) {
             throw new InvalidArgumentException('ID inválido');
         }
+        $p['id'] = (int)$p['id'];
         $id         = $p['id'];
         $s          = $p['solicitud']  ?? [];
         $c          = $p['costos']     ?? null;

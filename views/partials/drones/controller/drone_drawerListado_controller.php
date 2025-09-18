@@ -44,18 +44,22 @@ try {
         case 'update_solicitud': {
                 $body = read_json_body();
                 try {
-                    if (!isset($body['id']) || !is_int($body['id'])) {
+                    // aceptar numérico y castear a int
+                    if (!isset($body['id']) || !is_numeric($body['id'])) {
                         http_response_code(400);
-                        echo json_encode(['ok' => false, 'error' => 'Falta id (int)'], JSON_UNESCAPED_UNICODE);
+                        echo json_encode(['ok' => false, 'error' => 'Falta id (num)'], JSON_UNESCAPED_UNICODE);
                         break;
                     }
+                    $body['id'] = (int)$body['id'];
+
                     $updatedId = $model->actualizarSolicitud($body);
                     echo json_encode(['ok' => true, 'data' => ['id' => $updatedId]], JSON_UNESCAPED_UNICODE);
                 } catch (InvalidArgumentException $e) {
                     http_response_code(400);
-                    echo json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+                    echo json_encode(['ok' => false, 'error' => $e->getMessage(), 'detail' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
                 } catch (Throwable $e) {
                     http_response_code(500);
+                    // exponemos detail SIEMPRE para que el front lo muestre
                     echo json_encode(['ok' => false, 'error' => 'Error al actualizar', 'detail' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
                 }
                 break;
