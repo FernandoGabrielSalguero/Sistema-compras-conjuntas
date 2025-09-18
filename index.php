@@ -63,15 +63,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             switch ($user['rol']) {
                 case 'cooperativa':
-                    header('Location: /views/cooperativa/coop_dashboard.php'); break;
+                    header('Location: /views/cooperativa/coop_dashboard.php');
+                    break;
                 case 'productor':
-                    header('Location: /views/productor/prod_dashboard.php'); break;
+                    header('Location: /views/productor/prod_dashboard.php');
+                    break;
                 case 'sve':
-                    header('Location: /views/sve/sve_dashboard.php'); break;
+                    header('Location: /views/sve/sve_dashboard.php');
+                    break;
                 case 'ingeniero':
-                    header('Location: /views/ingeniero/dashboard.php'); break;
+                    header('Location: /views/ingeniero/dashboard.php');
+                    break;
                 default:
-                    header('Location: /'); break;
+                    header('Location: /');
+                    break;
             }
             exit;
         } else {
@@ -101,8 +106,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Ocurrió un error inesperado. Intente nuevamente.";
     }
 }
-
-
 ?>
 
 <!DOCTYPE html>
