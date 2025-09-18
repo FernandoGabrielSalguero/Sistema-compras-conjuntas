@@ -83,6 +83,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <li onclick="location.href='sve_cargaMasiva.php'">
                         <span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Carga masiva</span>
                     </li>
+                    <li onclick="location.href='sve_registro_login.php'">
+                        <span class="material-icons" style="color: #5b21b6;">login</span><span class="link-text">Ingresos</span>
+                    </li>
                     <li onclick="location.href='sve_operativos.php'">
                         <span class="material-icons" style="color: #5b21b6;">assignment</span><span class="link-text">Operativos</span>
                     </li>
@@ -96,8 +99,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
                     </li>
                     <li onclick="location.href='sve_pulverizacionDrone.php'">
-                        <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                        <span class="link-text">Drones</span>
+                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
+                    <span class="link-text">Drones</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
