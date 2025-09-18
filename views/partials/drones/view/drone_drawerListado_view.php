@@ -755,12 +755,23 @@
             const [pi, fp, pa, pr, co] = await Promise.all([
                 qs('list_pilotos'), qs('list_formas_pago'), qs('list_patologias'), qs('list_productos'), qs('list_cooperativas')
             ]);
-            catalog.pilotos = pi.ok ? pi.data : [];
-            catalog.formasPago = fp.ok ? fp.data : [];
-            catalog.patologias = pa.ok ? pa.data : [];
-            catalog.productos = pr.ok ? pr.data : [];
-            catalog.cooperativas = co.ok ? co.data : [];
+            if (!pi.ok || !fp.ok || !pa.ok || !pr.ok || !co.ok) {
+                console.error('Error cargando catálogos', {
+                    pi,
+                    fp,
+                    pa,
+                    pr,
+                    co
+                });
+                throw new Error('No se pudieron cargar los catálogos');
+            }
+            catalog.pilotos = pi.data || [];
+            catalog.formasPago = fp.data || [];
+            catalog.patologias = pa.data || [];
+            catalog.productos = pr.data || [];
+            catalog.cooperativas = co.data || [];
         }
+
 
         function fillSelect(sel, data, {
             valueKey = 'id',
@@ -1207,7 +1218,7 @@
             }
 
             try {
-                await fetch('../partials/drones/controller/drone_drawerListado_controller.php?action=update_solicitud', {
+                const res = await fetch('../partials/drones/controller/drone_drawerListado_controller.php?action=update_solicitud', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1218,11 +1229,11 @@
                 const json = await res.json();
                 if (!json.ok) throw new Error(json.error || 'Error');
                 showAlert('success', '¡Operación completada con éxito!');
-                // refrescar JSON
-                await loadDetalle(payload.id);
+                await loadDetalle(payload.id); // refrescar JSON y formulario
             } catch (err) {
                 showAlert('error', `No se pudo guardar: ${err.message}`);
             }
+
         });
 
         // Exponer API global para el listado
