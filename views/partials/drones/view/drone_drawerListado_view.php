@@ -621,6 +621,9 @@
             <button type="button" id="drawerListado-cancel" class="btn btn-cancelar">Cerrar</button>
         </div>
     </aside>
+
+                    <!-- Alert -->
+                <div class="alert-container" id="alertContainer"></div>
 </div>
 
 <script>
@@ -1294,7 +1297,6 @@
                     cache: 'no-store'
                 });
 
-                // si el backend devolvió HTML/empty por un 500, evitamos romper el .json()
                 let json;
                 try {
                     json = await res.json();
@@ -1307,7 +1309,6 @@
                 }
 
                 if (!res.ok || !json.ok) {
-                    // log completo para depurar rápido desde consola de red
                     console.error('Update error', {
                         status: res.status,
                         resp: json
