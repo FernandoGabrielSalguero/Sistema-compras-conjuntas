@@ -806,6 +806,13 @@
             if (!json.ok) throw new Error(json.error || 'Error');
             __DATA__ = json.data;
             fillForm(json.data);
+
+            // Nuevo: forzar un cálculo apenas se carga el detalle
+            try {
+                recalcCostos();
+            } catch (e) {
+                console.debug('recalcCostos init skip', e);
+            }
         }
 
         // Interacciones específicas
@@ -1129,8 +1136,28 @@
                 renderRecetaCombinada();
                 recalcCostos();
             });
+            // listeners dependientes existentes...
             $('#base_ha')?.addEventListener('input', recalcCostos);
             $('#costo_base_por_ha')?.addEventListener('input', recalcCostos);
+
+            // Nuevo: recalcular cuando cambien items/rangos/patologías relevantes
+            const recalcSafe = () => {
+                try {
+                    recalcCostos();
+                } catch {}
+            };
+
+            const _addProd = $('#btn_add_producto');
+            if (_addProd) _addProd.addEventListener('click', () => setTimeout(recalcSafe, 0));
+
+            // ya lo llamamos tras quitar producto dentro de renderProductos()
+            // si querés robustecer, podés colocar:
+            document.addEventListener('change', (e) => {
+                const t = e.target;
+                if (!t) return;
+                // si se tocan inputs de receta, base_ha, costo_base_por_ha
+                if (['base_ha', 'costo_base_por_ha'].includes(t.id)) recalcSafe();
+            });
         }
 
         // Guardar
@@ -1167,26 +1194,26 @@
                     forma_pago_id: getV('forma_pago_id') ? parseInt(getV('forma_pago_id'), 10) : null,
                     coop_descuento_nombre: getV('coop_descuento_nombre')
                 },
-costos: (function() {
-    const obj = {
-        moneda: getV('costo_moneda'),
-        costo_base_por_ha: parseNum(getV('costo_base_por_ha')),
-        base_ha: parseNum(getV('base_ha')),
-        base_total: parseNum(getV('base_total')),
-        productos_total: parseNum(getV('productos_total')),
-        total: parseNum(getV('total')),
-        desglose_json: null
-    };
+                costos: (function() {
+                    const obj = {
+                        moneda: getV('costo_moneda'),
+                        costo_base_por_ha: parseNum(getV('costo_base_por_ha')),
+                        base_ha: parseNum(getV('base_ha')),
+                        base_total: parseNum(getV('base_total')),
+                        productos_total: parseNum(getV('productos_total')),
+                        total: parseNum(getV('total')),
+                        desglose_json: null
+                    };
 
-    // Enviar 'costos' SOLO si al menos un campo numérico viene cargado
-    const hasAnyNumeric = [obj.costo_base_por_ha, obj.base_ha, obj.base_total, obj.productos_total, obj.total]
-        .some(v => v !== null);
+                    // Enviar 'costos' SOLO si al menos un campo numérico viene cargado
+                    const hasAnyNumeric = [obj.costo_base_por_ha, obj.base_ha, obj.base_total, obj.productos_total, obj.total]
+                        .some(v => v !== null);
 
-    // Si el usuario solo cambió la moneda o nada, NO tocamos costos en backend
-    if (!hasAnyNumeric) return undefined;
+                    // Si el usuario solo cambió la moneda o nada, NO tocamos costos en backend
+                    if (!hasAnyNumeric) return undefined;
 
-    return obj;
-})(),
+                    return obj;
+                })(),
                 motivos: state.motivos.map(m => ({
                     patologia_id: m.patologia_id ? Number(m.patologia_id) : null,
                     es_otros: m.es_otros ? 1 : 0,
