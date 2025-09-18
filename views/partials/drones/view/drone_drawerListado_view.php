@@ -1,6 +1,16 @@
 <?php
 // Drawer desacoplado: formulario completo + ver JSON + actualizar pedido
 ?>
+
+<head>
+    <!-- Íconos de Material Design -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <!-- Framework Success desde CDN -->
+    <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
+    <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+</head>
 <style>
     /* Drawer */
     .sv-drawer.hidden {
@@ -206,118 +216,6 @@
 
     button.icon-btn .material-icons {
         font-size: 20px;
-    }
-
-    /* Alerts / Toasts */
-    .alert-container {
-        position: fixed;
-        right: 20px;
-        bottom: 20px;
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        pointer-events: none;
-        /* no bloquea clics del UI */
-    }
-
-    .alert {
-        min-width: 280px;
-        max-width: 420px;
-        background: #fff;
-        border-left: 6px solid #64748b;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
-        border-radius: 12px;
-        padding: 12px 14px;
-        display: grid;
-        grid-template-columns: 24px 1fr auto;
-        gap: 10px;
-        align-items: start;
-        pointer-events: auto;
-        /* botones clickeables */
-    }
-
-    .alert .icon {
-        font-family: 'Material Icons';
-        font-size: 22px;
-        line-height: 1;
-        margin-top: 2px;
-    }
-
-    .alert .title {
-        font-weight: 600;
-        margin-bottom: 2px;
-    }
-
-    .alert .msg {
-        color: #475569;
-        font-size: .95rem
-    }
-
-    .alert button.close {
-        border: 0;
-        background: transparent;
-        cursor: pointer;
-        font-size: 18px;
-        line-height: 1;
-        color: #64748b;
-        padding: 4px;
-        border-radius: 6px;
-    }
-
-    .alert.success {
-        border-left-color: #16a34a;
-    }
-
-    .alert.success .icon {
-        color: #16a34a;
-    }
-
-    .alert.error {
-        border-left-color: #dc2626;
-    }
-
-    .alert.error .icon {
-        color: #dc2626;
-    }
-
-    .alert.info {
-        border-left-color: #2563eb;
-    }
-
-    .alert.info .icon {
-        color: #2563eb;
-    }
-
-    .alert.warning {
-        border-left-color: #d97706;
-    }
-
-    .alert.warning .icon {
-        color: #d97706;
-    }
-
-    /* entrada/salida */
-    .alert.enter {
-        transform: translateY(8px);
-        opacity: 0;
-    }
-
-    .alert.enter.active {
-        transform: translateY(0);
-        opacity: 1;
-        transition: all .18s ease;
-    }
-
-    .alert.exit {
-        transform: translateY(0);
-        opacity: 1;
-    }
-
-    .alert.exit.active {
-        transform: translateY(8px);
-        opacity: 0;
-        transition: all .16s ease;
     }
 </style>
 
@@ -801,76 +699,6 @@
             if (!n) return null;
             return n.value === '' ? null : n.value;
         }
-
-        function showAlert(type = 'info', message = '', opts = {}) {
-            const types = ['success', 'error', 'info', 'warning'];
-            const t = types.includes(type) ? type : 'info';
-            const titleMap = {
-                success: 'Listo',
-                error: 'Error',
-                info: 'Info',
-                warning: 'Atención'
-            };
-            const iconMap = {
-                success: 'check_circle',
-                error: 'error',
-                info: 'info',
-                warning: 'warning'
-            };
-            const timeout = Number.isFinite(opts.timeout) ? opts.timeout : 4000;
-
-            // Consola
-            const dataForConsole = {
-                type: t,
-                message,
-                ...('extra' in opts ? {
-                    extra: opts.extra
-                } : {})
-            };
-            if (t === 'error') {
-                console.error('[ALERT]', dataForConsole);
-            } else {
-                console.log('[ALERT]', dataForConsole);
-            }
-
-            // UI
-            const container = document.getElementById('alertContainer') || (() => {
-                const c = document.createElement('div');
-                c.id = 'alertContainer';
-                c.className = 'alert-container';
-                document.body.appendChild(c);
-                return c;
-            })();
-
-            const el = document.createElement('div');
-            el.className = `alert ${t} enter`;
-            el.setAttribute('role', 'status');
-            el.setAttribute('aria-live', t === 'error' ? 'assertive' : 'polite');
-            el.innerHTML = `
-    <div class="icon material-icons">${iconMap[t]}</div>
-    <div>
-      <div class="title">${titleMap[t]}</div>
-      <div class="msg">${(message||'').toString()}</div>
-    </div>
-    <button class="close" aria-label="Cerrar">&times;</button>
-  `;
-            container.appendChild(el);
-            // animación de entrada
-            requestAnimationFrame(() => el.classList.add('active'));
-            el.classList.remove('enter');
-            el.classList.add('enter', 'active');
-
-            const remove = () => {
-                el.classList.remove('enter', 'active');
-                el.classList.add('exit');
-                requestAnimationFrame(() => el.classList.add('active'));
-                setTimeout(() => el.remove(), 170);
-            };
-
-            el.querySelector('button.close').addEventListener('click', remove);
-            if (timeout > 0) setTimeout(remove, timeout);
-        }
-
 
         function badgeClass(e) {
             switch ((e || '').toLowerCase()) {
