@@ -1167,19 +1167,26 @@
                     forma_pago_id: getV('forma_pago_id') ? parseInt(getV('forma_pago_id'), 10) : null,
                     coop_descuento_nombre: getV('coop_descuento_nombre')
                 },
-                costos: (function() {
-                    const obj = {
-                        moneda: getV('costo_moneda'),
-                        costo_base_por_ha: parseNum(getV('costo_base_por_ha')),
-                        base_ha: parseNum(getV('base_ha')),
-                        base_total: parseNum(getV('base_total')),
-                        productos_total: parseNum(getV('productos_total')),
-                        total: parseNum(getV('total')),
-                        desglose_json: null
-                    };
-                    const vacio = !obj.moneda && [obj.costo_base_por_ha, obj.base_ha, obj.base_total, obj.productos_total, obj.total].every(v => v === null);
-                    return vacio ? undefined : obj;
-                })(),
+costos: (function() {
+    const obj = {
+        moneda: getV('costo_moneda'),
+        costo_base_por_ha: parseNum(getV('costo_base_por_ha')),
+        base_ha: parseNum(getV('base_ha')),
+        base_total: parseNum(getV('base_total')),
+        productos_total: parseNum(getV('productos_total')),
+        total: parseNum(getV('total')),
+        desglose_json: null
+    };
+
+    // Enviar 'costos' SOLO si al menos un campo numérico viene cargado
+    const hasAnyNumeric = [obj.costo_base_por_ha, obj.base_ha, obj.base_total, obj.productos_total, obj.total]
+        .some(v => v !== null);
+
+    // Si el usuario solo cambió la moneda o nada, NO tocamos costos en backend
+    if (!hasAnyNumeric) return undefined;
+
+    return obj;
+})(),
                 motivos: state.motivos.map(m => ({
                     patologia_id: m.patologia_id ? Number(m.patologia_id) : null,
                     es_otros: m.es_otros ? 1 : 0,

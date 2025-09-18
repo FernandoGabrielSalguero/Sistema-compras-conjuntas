@@ -238,23 +238,49 @@ final class DroneDrawerListadoModel
             ]);
 
             // costos
-            $this->pdo->prepare("DELETE FROM drones_solicitud_costos WHERE solicitud_id=:id")->execute([':id' => $id]);
-            if ($c) {
+            if ($c !== null) {
+                // 1) Traemos el registro actual (si existe)
+                $stC = $this->pdo->prepare("SELECT * FROM drones_solicitud_costos WHERE solicitud_id = :id LIMIT 1");
+                $stC->execute([':id' => $id]);
+                $prev = $stC->fetch() ?: null;
+
+                // 2) Mergeamos lo nuevo con lo previo (actualización parcial)
+                $merged = [
+                    'moneda'             => $c['moneda'] ?? ($prev['moneda'] ?? 'Pesos'),
+                    'costo_base_por_ha'  => self::dec($c['costo_base_por_ha'] ?? ($prev['costo_base_por_ha'] ?? null)),
+                    'base_ha'            => self::dec($c['base_ha'] ?? ($prev['base_ha'] ?? null)),
+                    'base_total'         => self::dec($c['base_total'] ?? ($prev['base_total'] ?? null)),
+                    'productos_total'    => self::dec($c['productos_total'] ?? ($prev['productos_total'] ?? null)),
+                    'total'              => self::dec($c['total'] ?? ($prev['total'] ?? null)),
+                    'desglose_json'      => $c['desglose_json'] ?? ($prev['desglose_json'] ?? null),
+                ];
+
+                // 3) Validamos requeridos según tu esquema (al menos costo_base_por_ha no puede ser null)
+                if ($merged['costo_base_por_ha'] === null) {
+                    // lanzamos 400 (controller ya captura InvalidArgumentException y responde 400 con detail)
+                    throw new InvalidArgumentException('costo_base_por_ha es requerido para actualizar costos');
+                }
+
+                // 4) Recién aquí borramos e insertamos el nuevo snapshot de costos
+                $this->pdo->prepare("DELETE FROM drones_solicitud_costos WHERE solicitud_id=:id")->execute([':id' => $id]);
+
                 $this->pdo->prepare("
-                    INSERT INTO drones_solicitud_costos
-                    (solicitud_id, moneda, costo_base_por_ha, base_ha, base_total, productos_total, total, desglose_json, created_at)
-                    VALUES (:sid, :moneda, :costo_base_por_ha, :base_ha, :base_total, :productos_total, :total, :desglose_json, NOW())
-                ")->execute([
-                    ':sid' => $id,
-                    ':moneda' => self::n($c['moneda'] ?? 'Pesos'),
-                    ':costo_base_por_ha' => self::dec($c['costo_base_por_ha'] ?? null),
-                    ':base_ha' => self::dec($c['base_ha'] ?? null),
-                    ':base_total' => self::dec($c['base_total'] ?? null),
-                    ':productos_total' => self::dec($c['productos_total'] ?? null),
-                    ':total' => self::dec($c['total'] ?? null),
-                    ':desglose_json' => self::n($c['desglose_json'] ?? null),
+        INSERT INTO drones_solicitud_costos
+        (solicitud_id, moneda, costo_base_por_ha, base_ha, base_total, productos_total, total, desglose_json, created_at)
+        VALUES (:sid, :moneda, :costo_base_por_ha, :base_ha, :base_total, :productos_total, :total, :desglose_json, NOW())
+    ")->execute([
+                    ':sid'               => $id,
+                    ':moneda'            => self::n($merged['moneda']),
+                    ':costo_base_por_ha' => $merged['costo_base_por_ha'],
+                    ':base_ha'           => $merged['base_ha'],
+                    ':base_total'        => $merged['base_total'],
+                    ':productos_total'   => $merged['productos_total'],
+                    ':total'             => $merged['total'],
+                    ':desglose_json'     => self::n($merged['desglose_json']),
                 ]);
             }
+            // Si $c === null, NO tocamos costos (se mantiene el valor previo).
+
 
             // motivos
             $this->pdo->prepare("DELETE FROM drones_solicitud_motivo WHERE solicitud_id=:id")->execute([':id' => $id]);
