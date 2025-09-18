@@ -1,5 +1,5 @@
 <?php
-// MODEL: sólo lectura de listado con filtros básicos (sin drawer / sin full / sin update)
+
 declare(strict_types=1);
 
 final class DroneListModel

@@ -12,7 +12,8 @@ require_once __DIR__ . '/../../../../config.php';
 require_once __DIR__ . '/../model/drone_list_model.php';
 
 /** Lectura segura del body (por compatibilidad futura) */
-function read_json_body(): array {
+function read_json_body(): array
+{
     $raw = file_get_contents('php://input');
     if ($raw === false || $raw === '') return [];
     $data = json_decode($raw, true);
@@ -40,7 +41,6 @@ try {
     ];
     $data = $model->listarSolicitudes($filters);
     echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE);
-
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['ok' => false, 'error' => 'Error del servidor', 'detail' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
