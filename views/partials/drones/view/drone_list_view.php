@@ -53,6 +53,18 @@ include __DIR__ . '/drone_drawerListado_view.php';
 
     <!-- Contenedor tarjetas -->
     <div id="cards" class="triple-tarjetas card-grid grid-4" role="region" aria-live="polite" aria-busy="false"></div>
+
+    <!-- Modal confirmar eliminación -->
+    <div id="modal-delete" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-delete-title" aria-describedby="modal-delete-desc">
+        <div class="modal-content">
+            <h3 id="modal-delete-title">Eliminar solicitud</h3>
+            <p id="modal-delete-desc">¿Confirmás que querés eliminar esta solicitud? Esta acción no se puede deshacer.</p>
+            <div class="form-buttons">
+                <button type="button" class="btn btn-cancelar" id="btn-cancel-delete">Cancelar</button>
+                <button type="button" class="btn btn-aceptar" id="btn-confirm-delete">Eliminar</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -65,12 +77,53 @@ include __DIR__ . '/drone_drawerListado_view.php';
         color: #6b7280;
     }
 
+    /* Botón icono en el header */
+    .product-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        border: none;
+        background: #fff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
+        cursor: pointer;
+        transition: transform .12s ease, box-shadow .12s ease;
+    }
+
+    .btn-icon:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, .12);
+    }
+
+    .btn-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .btn-icon.btn-delete {
+        background: #FEE2E2;
+    }
+
+    .btn-icon.btn-delete svg {
+        fill: #B91C1C;
+    }
+
     .product-card .badge {
         display: inline-block;
         padding: 2px 8px;
         border-radius: 999px;
         font-size: .8rem
     }
+
 
     .badge.warning {
         background: #FEF3C7;
@@ -228,6 +281,12 @@ include __DIR__ . '/drone_drawerListado_view.php';
             <div class="product-header">
                 <h4>${esc(it.productor_nombre || it.ses_usuario || 'Sin dato')}</h4>
                 <p>Pedido número: ${esc(it.id ?? '')}</p>
+                                <button type="button" class="btn-icon btn-delete" title="Eliminar solicitud" aria-label="Eliminar solicitud ${esc(it.id ?? '')}" data-id="${esc(it.id ?? '')}">
+                    <!-- Trash SVG, sin dependencias -->
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M9 3h6a1 1 0 0 1 1 1v1h4v2h-1v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7H3V5h4V4a1 1 0 0 1 1-1Zm1 2v0h4V5h-4Zm-3 4v11h10V9H7Zm3 2h2v7H10v-7Zm4 0h2v7h-2v-7Z"/>
+                    </svg>
+                </button>
             </div>
             <div class="product-body">
                 <div class="user-info">
@@ -267,6 +326,7 @@ include __DIR__ . '/drone_drawerListado_view.php';
             });
 
             // bind botones Detalle
+            // bind botones Detalle
             els.cards.querySelectorAll('.btn-detalle').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const id = btn.getAttribute('data-id');
@@ -280,7 +340,77 @@ include __DIR__ . '/drone_drawerListado_view.php';
                     }
                 });
             });
+
+            // bind botón eliminar (abre modal)
+            els.cards.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.getAttribute('data-id');
+                    if (!id) return;
+                    openDeleteModal(Number(id), btn.closest('.product-card'));
+                });
+            });
         }
+
+
+        // ----- Modal eliminar -----
+        const modal = document.getElementById('modal-delete');
+        const btnCancelDelete = document.getElementById('btn-cancel-delete');
+        const btnConfirmDelete = document.getElementById('btn-confirm-delete');
+        let deleteCtx = {
+            id: null,
+            cardEl: null
+        };
+
+        function openDeleteModal(id, cardEl) {
+            deleteCtx.id = id;
+            deleteCtx.cardEl = cardEl;
+            modal.classList.remove('hidden');
+            btnConfirmDelete.focus();
+        }
+
+        function closeDeleteModal() {
+            modal.classList.add('hidden');
+            deleteCtx = {
+                id: null,
+                cardEl: null
+            };
+        }
+
+        btnCancelDelete.addEventListener('click', closeDeleteModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeDeleteModal();
+        });
+
+        btnConfirmDelete.addEventListener('click', async () => {
+            const id = deleteCtx.id;
+            if (!id) return;
+            try {
+                const res = await fetch(`${DRONE_API}?action=delete_solicitud`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id
+                    })
+                });
+                const json = await res.json();
+                if (!json.ok) throw new Error(json.error || 'No se pudo eliminar');
+
+                // Remover tarjeta del DOM sin layout shift brusco
+                if (deleteCtx.cardEl && deleteCtx.cardEl.parentNode) {
+                    deleteCtx.cardEl.style.transition = 'opacity .18s ease, transform .18s ease';
+                    deleteCtx.cardEl.style.opacity = '0';
+                    deleteCtx.cardEl.style.transform = 'scale(.98)';
+                    setTimeout(() => deleteCtx.cardEl.remove(), 180);
+                }
+                showAlert('success', '¡Solicitud eliminada!');
+            } catch (e) {
+                showAlert('error', 'No se pudo eliminar la solicitud.');
+            } finally {
+                closeDeleteModal();
+            }
+        });
 
 
         // Filtros en vivo

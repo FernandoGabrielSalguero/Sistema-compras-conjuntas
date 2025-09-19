@@ -13,6 +13,33 @@ final class DroneListModel
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     }
 
+    /** Elimina una solicitud y sus costos asociados (si existen). */
+    public function eliminarSolicitud(int $id): bool
+    {
+        if ($id <= 0) {
+            return false;
+        }
+        $this->pdo->beginTransaction();
+        try {
+            // Borrar costos asociados (si no hay FK ON DELETE CASCADE)
+            $st1 = $this->pdo->prepare('DELETE FROM drones_solicitud_costos WHERE solicitud_id = :id');
+            $st1->bindValue(':id', $id, PDO::PARAM_INT);
+            $st1->execute();
+
+            // Borrar la solicitud
+            $st2 = $this->pdo->prepare('DELETE FROM drones_solicitud WHERE id = :id');
+            $st2->bindValue(':id', $id, PDO::PARAM_INT);
+            $st2->execute();
+
+            $ok = ($st2->rowCount() > 0);
+            $this->pdo->commit();
+            return $ok;
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
     /** Listado para tarjetas con filtros básicos. */
     public function listarSolicitudes(array $f): array
     {
