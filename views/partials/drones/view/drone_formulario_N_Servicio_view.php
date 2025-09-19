@@ -164,7 +164,6 @@
             <div id="checklist-motivo" class="checklist" role="list" aria-describedby="ayuda-motivo">
               <!-- Se cargan checkboxes dinámicamente -->
             </div>
-            <small id="ayuda-motivo" class="help-text">Seleccioná una o más patologías.</small>
           </div>
         </fieldset>
 
