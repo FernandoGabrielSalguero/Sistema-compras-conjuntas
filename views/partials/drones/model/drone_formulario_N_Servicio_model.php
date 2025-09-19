@@ -22,7 +22,7 @@ class DroneFormularioNservicioModel
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
-        /** Rangos disponibles (orden comenzando por octubre) */
+    /** Rangos disponibles (orden comenzando por octubre) */
     public function rangos(): array
     {
         // Mantener sincronizado con enum de drones_solicitud_rango.rango
@@ -63,17 +63,32 @@ class DroneFormularioNservicioModel
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /** Productos por patología usando tabla puente */
+    /** Productos por patología usando tabla puente (incluye costo por hectárea) */
     public function productosPorPatologia(int $patologiaId): array
     {
-        $sql = "SELECT s.id, s.nombre
-                FROM dron_productos_stock s
-                INNER JOIN dron_productos_stock_patologias sp ON sp.producto_id = s.id
-                WHERE sp.patologia_id = ? AND s.activo='si'
-                ORDER BY s.nombre";
+        $sql = "SELECT s.id, s.nombre, s.costo_hectarea
+                  FROM dron_productos_stock s
+                  INNER JOIN dron_productos_stock_patologias sp ON sp.producto_id = s.id
+                 WHERE sp.patologia_id = ? AND s.activo='si'
+              ORDER BY s.nombre";
         $st = $this->pdo->prepare($sql);
         $st->execute([$patologiaId]);
         return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /** Costo base por hectárea del servicio de drones (último vigente) */
+    public function costoBaseHectarea(): array
+    {
+        $sql = "SELECT costo, COALESCE(moneda,'Pesos') AS moneda, updated_at
+                  FROM dron_costo_hectarea
+              ORDER BY updated_at DESC
+                 LIMIT 1";
+        $row = $this->pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
+        if (!$row) {
+            return ['costo' => 0.00, 'moneda' => 'Pesos', 'updated_at' => null];
+        }
+        $row['costo'] = (float)$row['costo'];
+        return $row;
     }
 
     /** Inserta la solicitud + secundarios en transacción */

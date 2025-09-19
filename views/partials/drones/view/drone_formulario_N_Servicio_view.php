@@ -321,7 +321,30 @@
           </div>
         </fieldset>
 
-
+        <!-- ===== Tarjeta: Costo del servicio ===== -->
+        <div class="card full-span" id="card-costos" aria-live="polite">
+          <h2>Costo del servicio</h2>
+          <div class="tabla-wrapper">
+            <table class="data-table" aria-label="Resumen de costos del servicio">
+              <thead>
+                <tr>
+                  <th>Ítem</th>
+                  <th>Detalle</th>
+                  <th>Importe</th>
+                </tr>
+              </thead>
+              <tbody id="costos-body">
+                <!-- Se completa dinámicamente -->
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th colspan="2">Precio final</th>
+                  <th id="costos-precio-final">$ 0.00</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
 
       </div>
 
@@ -554,6 +577,33 @@
     width: 18px;
     height: 18px;
     accent-color: var(--primary-color);
+  }
+
+  /* ===== Resumen de costos ===== */
+  #card-costos h2 {
+    margin-bottom: .5rem;
+  }
+
+  #costos-body td,
+  #costos-body th {
+    vertical-align: middle;
+  }
+
+  .costos-muted {
+    color: #6b7280;
+    font-size: nine5rem;
+  }
+
+  .costos-right {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .badge-prod {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #f3e8ff;
   }
 </style>
 
@@ -848,10 +898,12 @@
           if (!map.has(p.id)) {
             map.set(p.id, {
               id: p.id,
-              nombre: p.nombre
+              nombre: p.nombre,
+              costo_hectarea: Number(p.costo_hectarea ?? 0)
             });
           }
         });
+
         const productos = Array.from(map.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
         // Render tabla
@@ -861,11 +913,17 @@
         }
         matrizBody.innerHTML = productos.map((p) => {
           const rowId = `row_${p.id}`;
+          const costo = Number(p.costo_hectarea ?? 0);
           return `
           <tr>
             <th scope="row">
               <label class="gfm-prod">
-                <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="${rowId}" data-row="${rowId}" data-producto-id="${p.id}" />
+                <input type="checkbox" class="gfm-row-toggle"
+                       name="m_sel[]" value="${rowId}"
+                       data-row="${rowId}"
+                       data-producto-id="${p.id}"
+                       data-producto-nombre="${p.nombre.replace(/"/g, '&quot;')}"
+                       data-costo-ha="${costo}" />
                 <span>${p.nombre}</span>
               </label>
             </th>
@@ -877,6 +935,7 @@
             </td>
           </tr>`;
         }).join('');
+
 
         // Comportamiento de habilitar radios al tildar fila
         $$('.gfm-row-toggle', matrizBody).forEach(cb => {
@@ -893,15 +952,107 @@
                 r.disabled = true;
               });
             }
-            // (Cambio #4) aquí también dispararemos recalcular costos.
+            recalcCostos(); // actualizar en tiempo real
           });
         });
+
       } catch (e) {
         console.error(e);
         matrizBody.innerHTML = '';
         showAlert('error', 'Error cargando la matriz de productos.');
       }
     }
+
+    // ===== Costos ====
+    let costoBaseHa = 0;
+    let monedaBase = 'Pesos';
+
+    async function loadCostoBaseHa() {
+      try {
+        const data = await fetchJson(`${CTRL_URL}?action=costo_base_ha`);
+        costoBaseHa = Number(data.costo || 0);
+        monedaBase = data.moneda || 'Pesos';
+      } catch (e) {
+        costoBaseHa = 0;
+        monedaBase = 'Pesos';
+        console.error(e);
+      }
+      recalcCostos();
+    }
+
+    function num(n) {
+      const v = Number(n);
+      return Number.isFinite(v) ? v : 0;
+    }
+
+    function fmt(n) {
+      try {
+        return new Intl.NumberFormat('es-AR', {
+          style: 'currency',
+          currency: (monedaBase === 'USD' ? 'USD' : 'ARS'),
+          minimumFractionDigits: 2
+        }).format(n);
+      } catch (_) {
+        return '$ ' + (n.toFixed ? n.toFixed(2) : n);
+      }
+    }
+
+    function recalcCostos() {
+      const tbody = $('#costos-body');
+      if (!tbody) return;
+
+      const ha = Math.max(0, parseInt((inpHect.value || '0'), 10));
+      const valorHa = num(costoBaseHa);
+      const totalBase = valorHa * ha;
+
+      // Productos seleccionados
+      const productosSel = $$('.gfm-row-toggle:checked', matrizBody).map(cb => {
+        const nombre = cb.dataset.productoNombre || 'Producto';
+        const costoHaProd = num(cb.dataset.costoHa || 0);
+        const totalProd = costoHaProd * ha;
+        return {
+          nombre,
+          costoHaProd,
+          totalProd
+        };
+      });
+
+      const sumaProductos = productosSel.reduce((acc, it) => acc + it.totalProd, 0);
+      const precioFinal = totalBase + sumaProductos;
+
+      // Render filas
+      const rows = [];
+      rows.push(`<tr><th>Valor de las hectáreas</th><td class="costos-muted">${monedaBase}</td><td class="costos-right">${fmt(valorHa)}</td></tr>`);
+      rows.push(`<tr><th>Cantidad de hectáreas</th><td></td><td class="costos-right">${ha}</td></tr>`);
+      rows.push(`<tr><th>Total base (servicio)</th><td></td><td class="costos-right">${fmt(totalBase)}</td></tr>`);
+
+      if (productosSel.length) {
+        productosSel.forEach(it => {
+          rows.push(`<tr><th>Nombre del producto</th><td><span class="badge-prod">${it.nombre}</span></td><td></td></tr>`);
+          rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(it.costoHaProd)}</td></tr>`);
+          rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(it.totalProd)}</td></tr>`);
+        });
+      }
+
+      tbody.innerHTML = rows.join('');
+      $('#costos-precio-final').textContent = fmt(precioFinal);
+    }
+
+    // Recalcular cuando cambia la cantidad de hectáreas
+    inpHect.addEventListener('input', debounce(recalcCostos, 150));
+
+    // Recalcular también cuando cambia fuente (no afecta el valor pero puede ser útil si luego hay reglas)
+    matrizBody.addEventListener('change', (e) => {
+      if (e.target && (e.target.matches('.gfm-row-toggle') || e.target.matches('.gfm-radio input'))) {
+        recalcCostos();
+      }
+    });
+
+    // Al cambiar motivos, la matriz se recompone y luego recalculamos
+    document.addEventListener('motivos:change', () => {
+      // recalcCostos se llama después de render por loadProductosPorPatologias -> listeners ya lo hacen
+      setTimeout(recalcCostos, 0);
+    });
 
 
     // Modal con validación previa (todos los campos obligatorios)
@@ -934,6 +1085,8 @@
         matrizBody.innerHTML = '';
         grupoCooperativaShow(false);
         selQuincena.value = '';
+        setSelectedMotivos([]);
+        recalcCostos();
       } catch (err) {
         console.log(err);
         showAlert('error', `Error: ${err.message}`);
@@ -1211,8 +1364,9 @@
     // Inicialización
     (async function init() {
       try {
-        await Promise.all([loadFormasPago(), loadRangos(), loadPatologias(), loadCooperativas()]);
+        await Promise.all([loadFormasPago(), loadRangos(), loadPatologias(), loadCooperativas(), loadCostoBaseHa()]);
         grupoCooperativaShow(false);
+        recalcCostos();
       } catch (e) {
         console.error(e);
       }
