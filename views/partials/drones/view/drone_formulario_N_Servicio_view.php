@@ -578,10 +578,14 @@
         credentials: 'same-origin'
       });
       if (!r.ok) throw new Error('HTTP ' + r.status);
-      const j = await r.json();
+      const j = await r.json().catch(() => {
+        throw new Error('Respuesta no es JSON');
+      });
+      if (!j || typeof j.ok === 'undefined') throw new Error('Formato inesperado');
       if (!j.ok) throw new Error(j.error || 'Error');
       return j.data;
     };
+
     const postJson = async (url, data) => {
       const r = await fetch(url, {
         method: 'POST',
@@ -814,18 +818,48 @@
       }
     }
 
-    // Motivos (multi) → por ahora sólo limpiamos la matriz (cambio #3 cargará productos)
-    document.addEventListener('motivos:change', () => {
-      matrizBody.innerHTML = '';
-      // (Cambio #3) aquí llamaremos a loadProductosPorPatologias(getSelectedMotivos());
-      // y recalcularemos costos.
+    // Motivos (multi) → cargar matriz con la unión de productos de todas las patologías seleccionadas
+    document.addEventListener('motivos:change', async () => {
+      const ids = getSelectedMotivos().map(n => parseInt(n, 10)).filter(n => n > 0);
+      if (!ids.length) {
+        matrizBody.innerHTML = '';
+        return;
+      }
+      try {
+        await loadProductosPorPatologias(ids);
+      } catch (e) {
+        showAlert('error', 'No se pudieron cargar los productos de la patología.');
+      }
+      // (Cambio #4) aquí también recalcularemos costos.
     });
 
-    // Matriz dinámica
-    async function loadProductosPorPatologia(patologiaId) {
+    // Matriz dinámica (unión de productos por múltiples patologías)
+    async function loadProductosPorPatologias(patologiaIds = []) {
       try {
-        const data = await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${patologiaId}`);
-        matrizBody.innerHTML = data.map((p) => {
+        // Traer en paralelo cada set de productos por patología
+        const requests = patologiaIds.map(id =>
+          fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${encodeURIComponent(id)}`)
+          .catch(() => [])
+        );
+        const results = await Promise.all(requests);
+        // Unir y deduplicar por id
+        const map = new Map();
+        results.flat().forEach(p => {
+          if (!map.has(p.id)) {
+            map.set(p.id, {
+              id: p.id,
+              nombre: p.nombre
+            });
+          }
+        });
+        const productos = Array.from(map.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+        // Render tabla
+        if (!productos.length) {
+          matrizBody.innerHTML = '';
+          return;
+        }
+        matrizBody.innerHTML = productos.map((p) => {
           const rowId = `row_${p.id}`;
           return `
           <tr>
@@ -843,6 +877,8 @@
             </td>
           </tr>`;
         }).join('');
+
+        // Comportamiento de habilitar radios al tildar fila
         $$('.gfm-row-toggle', matrizBody).forEach(cb => {
           cb.addEventListener('change', () => {
             const name = `m_${cb.dataset.row}`;
@@ -857,13 +893,16 @@
                 r.disabled = true;
               });
             }
+            // (Cambio #4) aquí también dispararemos recalcular costos.
           });
         });
       } catch (e) {
         console.error(e);
         matrizBody.innerHTML = '';
+        showAlert('error', 'Error cargando la matriz de productos.');
       }
     }
+
 
     // Modal con validación previa (todos los campos obligatorios)
     btnSolicitar.addEventListener('click', (e) => {
@@ -984,6 +1023,7 @@
       if (!csv) return [];
       return csv.split(',').map(s => parseInt(s, 10)).filter(n => n > 0);
     }
+
     function setSelectedMotivos(arr) {
       const uniq = Array.from(new Set(arr.filter(n => Number.isInteger(n) && n > 0)));
       selMotivoHiddenIds.value = uniq.join(',');
@@ -994,8 +1034,13 @@
         cb.checked = uniq.includes(parseInt(cb.value, 10));
       });
       updateMotivoButton();
-      document.dispatchEvent(new CustomEvent('motivos:change', { detail: { ids: uniq } }));
+      document.dispatchEvent(new CustomEvent('motivos:change', {
+        detail: {
+          ids: uniq
+        }
+      }));
     }
+
     function updateMotivoButton() {
       const ids = getSelectedMotivos();
       const names = [];
@@ -1031,14 +1076,18 @@
         }
       }
     });
-    // Cambios de selección
-    ulMotivoList.addEventListener('change', () => {
+
+    // Cambios de selección (robusto: change + click directo en el checkbox)
+    function collectAndSetMotivos() {
       const checked = Array.from(ulMotivoList.querySelectorAll('input[type="checkbox"]:checked'))
         .map(cb => parseInt(cb.value, 10))
-        .filter(n => n > 0);
+        .filter(n => Number.isInteger(n) && n > 0);
       setSelectedMotivos(checked);
+    }
+    ulMotivoList.addEventListener('change', collectAndSetMotivos);
+    ulMotivoList.addEventListener('click', (e) => {
+      if (e.target && e.target.matches('input[type="checkbox"]')) collectAndSetMotivos();
     });
-
 
     function validateBeforeModal() {
       // Quitar clases previas
