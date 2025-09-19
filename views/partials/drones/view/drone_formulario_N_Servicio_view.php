@@ -157,28 +157,23 @@
         </div>
 
 
-        <!-- Productos (desplegable multiselección con checkboxes) -->
+        <!-- Productos -->
         <div class="input-group">
-          <label for="dropdown-productos">Productos</label>
+          <label for="productos-details">Productos</label>
           <div class="input-icon input-icon-motivo">
-            <div id="dropdown-productos" class="dropdown-multi" aria-haspopup="listbox" aria-expanded="false">
-              <button type="button" class="dropdown-toggle" aria-label="Abrir lista de productos">
-                <span class="dropdown-label">Elegí uno o más productos</span>
-                <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
-              </button>
-              <div class="dropdown-panel" role="listbox" tabindex="-1" hidden>
-                <div class="dropdown-search">
-                  <input type="text" id="buscar-producto" placeholder="Buscar producto…" aria-label="Buscar producto">
-                </div>
-                <div id="lista-productos" class="dropdown-list">
-                  <!-- Opciones dinámicas -->
-                </div>
-                <div class="dropdown-actions">
-                  <button type="button" class="btn btn-info" id="btn-sel-todos">Seleccionar todos</button>
-                  <button type="button" class="btn btn-cancelar" id="btn-limpiar">Limpiar</button>
-                </div>
+            <details id="productos-details" class="multi-check">
+              <summary id="productos-summary" aria-controls="lista-productos" aria-expanded="false">
+                Elegí uno o más productos
+              </summary>
+              <div class="checklist" id="lista-productos" role="list" aria-describedby="ayuda-productos">
+                <!-- Opciones dinámicas -->
               </div>
-            </div>
+              <div class="dropdown-actions">
+                <button type="button" class="btn btn-info" id="btn-sel-todos">Seleccionar todos</button>
+                <button type="button" class="btn btn-cancelar" id="btn-limpiar">Limpiar</button>
+              </div>
+              <small id="ayuda-productos" class="help-text">Marcá los productos que correspondan.</small>
+            </details>
           </div>
         </div>
 
@@ -642,6 +637,27 @@
     justify-content: flex-end;
     padding-top: .5rem;
   }
+
+  /* <details> simple como desplegable */
+  details.multi-check summary {
+    list-style: none;
+    cursor: pointer;
+    padding: .65rem .85rem;
+    border: 1px solid #e9d7f7;
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  details.multi-check[open] summary {
+    box-shadow: 0 0 0 4px rgba(91, 33, 182, .06);
+  }
+
+  details.multi-check .dropdown-actions {
+    display: flex;
+    gap: .5rem;
+    justify-content: flex-end;
+    padding-top: .5rem;
+  }
 </style>
 
 <script>
@@ -715,12 +731,9 @@
     const grupoCoop = $('#grupo-cooperativa');
     const selCoop = $('#form_nuevo_servicio_cooperativa');
 
-    const ddProductos = $('#dropdown-productos');
-    const ddPanel = ddProductos.querySelector('.dropdown-panel');
-    const ddToggle = ddProductos.querySelector('.dropdown-toggle');
-    const ddLabel = ddProductos.querySelector('.dropdown-label');
-    const ddBuscar = $('#buscar-producto');
-    const ddLista = $('#lista-productos');
+    const detProductos = $('#productos-details');
+    const sumProductos = $('#productos-summary');
+    const listaProductos = $('#lista-productos');
     const selQuincena = $('#form_nuevo_servicio_quincena');
 
     const selProv = $('#form_nuevo_servicio_provincia');
@@ -846,17 +859,15 @@
       selCoop.innerHTML = `<option value="">Seleccionar</option>` + data.map(u => `<option value="${u.id_real}">${u.usuario}</option>`).join('');
     }
 
-    // Carga de productos activos para el dropdown
+    // Carga de productos activos
     async function loadProductos() {
       const data = await fetchJson(`${CTRL_URL}?action=productos`);
-      // Guardamos costo/hectárea en data-*
-      ddLista.innerHTML = data.map(p => `
+      listaProductos.innerHTML = data.map(p => `
         <label class="checklist-item" data-name="${p.nombre.toLowerCase()}">
-          <input type="checkbox" class="js-prod" value="${p.id}" data-costo="${Number(p.costo_hectareas)}" aria-label="${p.nombre}">
+          <input type="checkbox" class="js-prod" value="${p.id}" data-costo="${Number(p.costo_hectarea)}" aria-label="${p.nombre}">
           <span>${p.nombre}</span>
         </label>
       `).join('');
-      attachDropdownHandlers();
     }
     // Mostrar/Ocultar Cooperativa según forma de pago
     selPago.addEventListener('change', () => {
@@ -879,55 +890,32 @@
       }
     }
 
-    // Dropdown multiselección - comportamiento
-    function attachDropdownHandlers() {
-      // abrir/cerrar
-      ddToggle.addEventListener('click', () => {
-        const open = ddPanel.hasAttribute('hidden') ? false : true;
-        if (open) {
-          ddPanel.setAttribute('hidden', '');
-          ddProductos.setAttribute('aria-expanded', 'false');
-        } else {
-          ddPanel.removeAttribute('hidden');
-          ddProductos.setAttribute('aria-expanded', 'true');
-          ddPanel.focus();
-        }
-      });
-      document.addEventListener('click', (e) => {
-        if (!ddProductos.contains(e.target)) {
-          ddPanel.setAttribute('hidden', '');
-          ddProductos.setAttribute('aria-expanded', 'false');
-        }
-      });
-      // buscar
-      ddBuscar.addEventListener('input', () => {
-        const q = ddBuscar.value.trim().toLowerCase();
-        Array.from(ddLista.children).forEach(lbl => {
-          const name = (lbl.getAttribute('data-name') || '');
-          lbl.style.display = name.includes(q) ? '' : 'none';
-        });
-      });
+    // Multiselección simple (details + checkboxes)
+    (function attachProductosHandlers() {
       // seleccionar/limpiar
-      $('#btn-sel-todos').addEventListener('click', () => {
-        ddLista.querySelectorAll('input.js-prod:not(:disabled)').forEach(ch => {
-          ch.checked = true;
-        });
-        onProductosChange();
+      document.addEventListener('click', (e) => {
+        if (e.target && e.target.id === 'btn-sel-todos') {
+          listaProductos.querySelectorAll('input.js-prod:not(:disabled)').forEach(ch => ch.checked = true);
+          onProductosChange();
+        }
+        if (e.target && e.target.id === 'btn-limpiar') {
+          listaProductos.querySelectorAll('input.js-prod').forEach(ch => ch.checked = false);
+          onProductosChange();
+        }
       });
-      $('#btn-limpiar').addEventListener('click', () => {
-        ddLista.querySelectorAll('input.js-prod').forEach(ch => {
-          ch.checked = false;
-        });
-        onProductosChange();
-      });
-      // cambios
-      ddLista.addEventListener('change', (e) => {
+      // cambios de selección
+      listaProductos.addEventListener('change', (e) => {
         if (e.target && e.target.matches('input.js-prod')) onProductosChange();
       });
-    }
+      // reflejar estado aria-expanded del summary
+      detProductos.addEventListener('toggle', () => {
+        detProductos.setAttribute('aria-expanded', detProductos.open ? 'true' : 'false');
+      });
+    })();
+
 
     function getProductosSeleccionados() {
-      return Array.from(ddLista.querySelectorAll('input.js-prod:checked')).map(ch => ({
+      return Array.from(listaProductos.querySelectorAll('input.js-prod:checked')).map(ch => ({
         id: parseInt(ch.value, 10),
         costo: Number(ch.dataset.costo || 0),
         nombre: ch.parentElement.querySelector('span')?.textContent || ''
@@ -938,11 +926,11 @@
       const sel = getProductosSeleccionados();
       // label del botón
       if (!sel.length) {
-        ddLabel.textContent = 'Elegí uno o más productos';
+        sumProductos.textContent = 'Elegí uno o más productos';
       } else if (sel.length === 1) {
-        ddLabel.textContent = sel[0].nombre;
+        sumProductos.textContent = sel[0].nombre;
       } else {
-        ddLabel.textContent = `${sel.length} productos seleccionados`;
+        sumProductos.textContent = `${sel.length} productos seleccionados`;
       }
       // armar matriz según selección
       buildMatrizDesdeProductos(sel);

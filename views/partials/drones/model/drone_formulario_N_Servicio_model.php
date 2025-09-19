@@ -66,7 +66,7 @@ class DroneFormularioNservicioModel
     /** Listado de productos activos con costo por hectárea */
     public function productosActivos(): array
     {
-        $sql = "SELECT id, nombre, costo_hectareas
+        $sql = "SELECT id, nombre, costo_hectarea
                   FROM dron_productos_stock
                  WHERE activo='si'
               ORDER BY nombre";
