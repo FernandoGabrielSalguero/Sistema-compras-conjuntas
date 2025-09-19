@@ -161,10 +161,10 @@
         <div class="input-group">
           <label for="form_nuevo_servicio_motivo">Motivo del servicio</label>
           <div class="input-icon input-icon-motivo">
-            <select id="form_nuevo_servicio_motivo" name="form_nuevo_servicio_motivo" required>
-              <option value="">Seleccionar</option>
+            <select id="form_nuevo_servicio_motivo" name="form_nuevo_servicio_motivo" multiple size="4" required aria-describedby="ayuda-motivo">
               <!-- Opciones dinámicas: value = id, label = nombre -->
             </select>
+            <small id="ayuda-motivo" class="help-text">Podés seleccionar una o más patologías (Ctrl/Cmd + clic).</small>
           </div>
         </div>
 
@@ -211,6 +211,7 @@
             </select>
           </div>
         </div>
+
 
         <div class="input-group">
           <label for="form_nuevo_servicio_localidad">Localidad</label>
@@ -303,6 +304,51 @@
               Seleccioná al menos un producto y, para cada producto seleccionado, elegí una opción.
             </div>
           </div>
+
+
+          <div id="resumen-costos" class="card full-span" aria-live="polite" aria-atomic="true" style="margin-top:12px;">
+            <h4>Resumen de costos</h4>
+            <div class="tabla-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Concepto</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody id="resumen-body">
+                  <tr>
+                    <td>Productos aportados por SVE</td>
+                    <td id="cnt-sve">0</td>
+                    <td id="sub-sve">—</td>
+                  </tr>
+                  <tr>
+                    <td>Productos aportados por Productor</td>
+                    <td id="cnt-productor">0</td>
+                    <td id="sub-productor">—</td>
+                  </tr>
+                  <tr>
+                    <td>Hectáreas (referencia)</td>
+                    <td id="cnt-hect">0</td>
+                    <td id="sub-hect">—</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th>Total estimado</th>
+                    <th></th>
+                    <th id="total-estimado">A confirmar</th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <p class="help-text" style="margin-top:.5rem;">El total es estimativo. Si querés, conecto este resumen a tus reglas de costeo o endpoint.</p>
+          </div>
+
+
+
+
         </fieldset>
 
 
@@ -487,6 +533,16 @@
   .input-error {
     outline: 2px solid #ef4444;
     border-radius: 6px;
+  }
+
+  /* Ocultar provincia SOLO con CSS (campo + label + contenedor) */
+  .input-group:has(#form_nuevo_servicio_provincia) {
+    display: none !important;
+  }
+
+  label[for="form_nuevo_servicio_provincia"],
+  #form_nuevo_servicio_provincia {
+    display: none !important;
   }
 </style>
 
@@ -688,7 +744,7 @@
     }
     async function loadPatologias() {
       const data = await fetchJson(`${CTRL_URL}?action=patologias`);
-      selMotivo.innerHTML = `<option value="">Seleccionar</option>` + data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+      selMotivo.innerHTML = data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
     }
 
     // Mostrar/Ocultar Cooperativa según forma de pago
@@ -712,38 +768,58 @@
       }
     }
 
-    // Patología → cargar productos de matriz
+    // Patologías (multiple) → cargar productos combinados en matriz
     selMotivo.addEventListener('change', async () => {
-      const pid = parseInt(selMotivo.value || '0', 10);
-      if (!pid) {
+      const ids = getSelectedPatologias();
+      if (!ids.length) {
         matrizBody.innerHTML = '';
+        actualizarResumenCostos();
         return;
       }
-      await loadProductosPorPatologia(pid);
+      await loadProductosPorPatologias(ids);
     });
 
+    function getSelectedPatologias() {
+      return Array.from(selMotivo.selectedOptions || [])
+        .map(o => parseInt(o.value || '0', 10))
+        .filter(v => v > 0);
+    }
+
     // Matriz dinámica
-    async function loadProductosPorPatologia(patologiaId) {
+    // Matriz dinámica (multi patología)
+    async function loadProductosPorPatologias(patologiaIds) {
       try {
-        const data = await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${patologiaId}`);
-        matrizBody.innerHTML = data.map((p) => {
+        // Traer y unificar productos (evita duplicados por id)
+        const sets = await Promise.all(patologiaIds.map(async (pid) => {
+          return await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${pid}`);
+        }));
+        const mapa = new Map();
+        sets.flat().forEach(p => {
+          if (!mapa.has(p.id)) mapa.set(p.id, p);
+        });
+
+        const filas = Array.from(mapa.values()).map((p) => {
           const rowId = `row_${p.id}`;
           return `
-          <tr>
-            <th scope="row">
-              <label class="gfm-prod">
-                <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="${rowId}" data-row="${rowId}" data-producto-id="${p.id}" />
-                <span>${p.nombre}</span>
-              </label>
-            </th>
-            <td data-col="SVE">
-              <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="sve" disabled /></label>
-            </td>
-            <td data-col="Productor">
-              <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="productor" disabled /></label>
-            </td>
-          </tr>`;
+      <tr>
+        <th scope="row">
+          <label class="gfm-prod">
+            <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="${rowId}" data-row="${rowId}" data-producto-id="${p.id}" />
+            <span>${p.nombre}</span>
+          </label>
+        </th>
+        <td data-col="SVE">
+          <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="sve" disabled aria-label="SVE para ${p.nombre}" /></label>
+        </td>
+        <td data-col="Productor">
+          <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="productor" disabled aria-label="Productor para ${p.nombre}" /></label>
+        </td>
+      </tr>`;
         }).join('');
+
+        matrizBody.innerHTML = filas;
+
+        // listeners por fila
         $$('.gfm-row-toggle', matrizBody).forEach(cb => {
           cb.addEventListener('change', () => {
             const name = `m_${cb.dataset.row}`;
@@ -758,13 +834,25 @@
                 r.disabled = true;
               });
             }
+            actualizarResumenCostos();
           });
         });
+
+        // radios → resumen
+        matrizBody.addEventListener('change', (e) => {
+          if (e.target && e.target.matches('input[type="radio"]')) {
+            actualizarResumenCostos();
+          }
+        });
+
+        actualizarResumenCostos();
       } catch (e) {
         console.error(e);
         matrizBody.innerHTML = '';
+        actualizarResumenCostos();
       }
     }
+
 
     // Modal con validación previa (todos los campos obligatorios)
     btnSolicitar.addEventListener('click', (e) => {
@@ -802,8 +890,10 @@
       }
     });
 
-    function buildPayload() {
-      if (!hidPersona.value) throw new Error('Seleccioná un productor.');
+    function buildPayload(opts = {}) {
+      if (!opts.soloValidacionesBasicas) {
+        if (!hidPersona.value) throw new Error('Seleccioná un productor.');
+      }
 
       const rep = normalizaSiNo(selRep.value);
       const linea = normalizaSiNo(selLinea.value);
@@ -819,42 +909,47 @@
       const calle = inpCalle.value.trim();
       const numero = String(inpNum.value || '').trim();
       const rango = selQuincena.value;
-      const patologiaId = parseInt(selMotivo.value || '0', 10);
+      const patologiaIds = getSelectedPatologias();
       const coopIdReal = selCoop.value || null;
 
-      if ([rep, linea, zRestr, corr, agua, cuart, despegue].some(v => !v)) throw new Error('Completá los campos de Sí/No.');
-      if (!hectInt || hectInt < 0) throw new Error('Ingresá la cantidad de hectáreas (entero).');
-      if (!fpago) throw new Error('Seleccioná la forma de pago.');
-      if (!rango) throw new Error('Seleccioná la quincena.');
-      if (!patologiaId) throw new Error('Seleccioná un motivo/patología.');
-      if (!provincia || !localidad || !calle || !numero) throw new Error('Completá la dirección.');
-      if (fpago === 6 && !coopIdReal) throw new Error('Seleccioná la cooperativa para la forma de pago 6.');
+      if (!opts.soloValidacionesBasicas) {
+        if ([rep, linea, zRestr, corr, agua, cuart, despegue].some(v => !v)) throw new Error('Completá los campos de Sí/No.');
+        if (!hectInt || hectInt < 0) throw new Error('Ingresá la cantidad de hectáreas (entero).');
+        if (!fpago) throw new Error('Seleccioná la forma de pago.');
+        if (!rango) throw new Error('Seleccioná la quincena.');
+        if (!patologiaIds.length) throw new Error('Seleccioná al menos una patología.');
+        if (!provincia || !localidad || !calle || !numero) throw new Error('Completá la dirección.');
+        if (fpago === 6 && !coopIdReal) throw new Error('Seleccioná la cooperativa para la forma de pago 6.');
+      }
 
       const items = [];
       $$('.gfm-row-toggle:checked', matrizBody).forEach(cb => {
         const name = `m_${cb.dataset.row}`;
         const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
-        if (!choice) throw new Error('Indicá quién aporta cada producto seleccionado.');
-        items.push({
-          producto_id: parseInt(cb.dataset.productoId, 10),
-          fuente: choice.value
-        });
+        if (!opts.soloValidacionesBasicas && !choice) throw new Error('Indicá quién aporta cada producto seleccionado.');
+        if (choice) {
+          items.push({
+            producto_id: parseInt(cb.dataset.productoId, 10),
+            fuente: choice.value
+          });
+        }
       });
 
       return {
-        productor_id_real: hidPersona.value,
-        representante: rep,
-        linea_tension: linea,
-        zona_restringida: zRestr,
-        corriente_electrica: corr,
-        agua_potable: agua,
-        libre_obstaculos: cuart,
-        area_despegue: despegue,
-        superficie_ha: Number(hectInt.toFixed(2)),
-        forma_pago_id: fpago,
+        productor_id_real: hidPersona.value || null,
+        representante: rep || null,
+        linea_tension: linea || null,
+        zona_restringida: zRestr || null,
+        corriente_electrica: corr || null,
+        agua_potable: agua || null,
+        libre_obstaculos: cuart || null,
+        area_despegue: despegue || null,
+        superficie_ha: Number((hectInt || 0).toFixed(2)),
+        forma_pago_id: fpago || null,
         coop_descuento_id_real: coopIdReal,
-        patologia_id: patologiaId,
-        rango: rango,
+        patologia_ids: patologiaIds, // <-- múltiple
+        patologia_id: patologiaIds[0] || null, // <-- principal para items (compat)
+        rango: rango || '',
         items: items,
         dir_provincia: provincia,
         dir_localidad: localidad,
@@ -863,6 +958,60 @@
         observaciones: inpObs.value || null
       };
     }
+
+
+    function calcularCostos(payload) {
+      // Hook: reemplazar por llamadas/algoritmo real de costeo según tus reglas.
+      // Retorna objeto { subSVE, subProductor, subHectareas, total }
+      // Por ahora, devuelvo placeholders.
+      return {
+        subSVE: null, // e.g. número o null
+        subProductor: null,
+        subHectareas: null,
+        total: null
+      };
+    }
+
+    function actualizarResumenCostos() {
+      const cntSVE = $('#cnt-sve');
+      const cntProd = $('#cnt-productor');
+      const cntHect = $('#cnt-hect');
+      const subSVE = $('#sub-sve');
+      const subProd = $('#sub-productor');
+      const subHect = $('#sub-hect');
+      const tot = $('#total-estimado');
+
+      // Conteo por fuente
+      let cSVE = 0,
+        cProd = 0;
+      $$('.gfm-row-toggle:checked', matrizBody).forEach(cb => {
+        const name = `m_${cb.dataset.row}`;
+        const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
+        if (choice) {
+          if (choice.value === 'sve') cSVE++;
+          if (choice.value === 'productor') cProd++;
+        }
+      });
+
+      // Hectáreas
+      const hectInt = parseInt(inpHect.value || '0', 10);
+      cntSVE.textContent = String(cSVE);
+      cntProd.textContent = String(cProd);
+      cntHect.textContent = String(hectInt > 0 ? hectInt : 0);
+
+      // Costeo (placeholder)
+      const payload = buildPayload({
+        soloValidacionesBasicas: true
+      });
+      const c = calcularCostos(payload);
+
+      subSVE.textContent = c.subSVE != null ? c.subSVE : '—';
+      subProd.textContent = c.subProductor != null ? c.subProductor : '—';
+      subHect.textContent = c.subHectareas != null ? c.subHectareas : '—';
+      tot.textContent = c.total != null ? c.total : 'A confirmar';
+    }
+
+
 
     // ---------- Validador previo al modal ----------
     function markInvalid(el) {
@@ -996,12 +1145,18 @@
       return true;
     }
 
-
     // Inicialización
     (async function init() {
       try {
         await Promise.all([loadFormasPago(), loadRangos(), loadPatologias(), loadCooperativas()]);
         grupoCooperativaShow(false);
+
+        // Setear valor por defecto de provincia a "Mendoza" y actualizar UI
+        selProv.value = 'Mendoza';
+
+        // Enganches que afectan el resumen
+        inpHect.addEventListener('input', actualizarResumenCostos);
+        selPago.addEventListener('change', actualizarResumenCostos);
       } catch (e) {
         console.error(e);
       }

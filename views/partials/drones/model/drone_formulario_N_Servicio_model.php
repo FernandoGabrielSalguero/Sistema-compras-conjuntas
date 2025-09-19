@@ -22,7 +22,7 @@ class DroneFormularioNservicioModel
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
-        /** Rangos disponibles (orden comenzando por octubre) */
+    /** Rangos disponibles (orden comenzando por octubre) */
     public function rangos(): array
     {
         // Mantener sincronizado con enum de drones_solicitud_rango.rango
@@ -108,10 +108,14 @@ class DroneFormularioNservicioModel
             ]);
             $solicitudId = (int)$this->pdo->lastInsertId();
 
-            // drones_solicitud_motivo
+            // drones_solicitud_motivo (múltiple)
             $sqlMot = "INSERT INTO drones_solicitud_motivo (solicitud_id, patologia_id, es_otros) VALUES (?,?,0)";
             $stm = $this->pdo->prepare($sqlMot);
-            $stm->execute([$solicitudId, $d['patologia_id']]);
+            $patologias = is_array($d['patologia_ids'] ?? null) ? $d['patologia_ids'] : (isset($d['patologia_id']) ? [$d['patologia_id']] : []);
+            $patologias = array_values(array_unique(array_map('intval', $patologias)));
+            foreach ($patologias as $pidMot) {
+                $stm->execute([$solicitudId, $pidMot]);
+            }
 
             // drones_solicitud_rango (guarda rango seleccionado)
             $sqlR = "INSERT INTO drones_solicitud_rango (solicitud_id, rango) VALUES (?,?)";
@@ -119,17 +123,20 @@ class DroneFormularioNservicioModel
             $str->execute([$solicitudId, $d['rango']]);
 
             // drones_solicitud_item (uno por producto con su fuente)
+            // Decisión: usar patología principal (primera) para relacionar los items (compatibilidad sin cambiar esquema).
             if (!empty($d['items'])) {
                 $sqlI = "INSERT INTO drones_solicitud_item (solicitud_id, patologia_id, fuente, producto_id, nombre_producto)
-                         VALUES (?,?,?,?,?)";
+             VALUES (?,?,?,?,?)";
                 $sti = $this->pdo->prepare($sqlI);
+                $patologiaPrincipal = (int)($patologias[0] ?? 0);
                 foreach ($d['items'] as $it) {
                     $pid = (int)$it['producto_id'];
                     $fuente = (string)$it['fuente'];
                     $nombre = $this->productoNombre($pid);
-                    $sti->execute([$solicitudId, $d['patologia_id'], $fuente, $pid, $nombre]);
+                    $sti->execute([$solicitudId, $patologiaPrincipal, $fuente, $pid, $nombre]);
                 }
             }
+
 
             // Evento
             $sqlE = "INSERT INTO drones_solicitud_evento (solicitud_id, tipo, detalle, actor)
