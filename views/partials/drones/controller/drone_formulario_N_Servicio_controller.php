@@ -25,8 +25,14 @@ try {
             case 'formas_pago':
                 $resp($model->formasPago());
                 break;
-            case 'patologias':
+            case 'patologias': // compat (no usado en UI nueva)
                 $resp($model->patologias());
+                break;
+            case 'productos':
+                $resp($model->productosActivos());
+                break;
+            case 'costo_servicio':
+                $resp($model->costoServicioHectarea());
                 break;
             case 'cooperativas':
                 $resp($model->cooperativas());
@@ -124,32 +130,16 @@ try {
             }
         }
 
-        // Validar patologías (múltiple)
-        if (empty($payload['patologia_id']) && empty($payload['patologia_ids'])) {
-            $resp([], false, "Debe seleccionar al menos una patología.");
-            exit;
-        }
+        // Patologías ahora son opcionales (UI selecciona productos directamente)
         if (!empty($payload['patologia_ids'])) {
-            $payload['patologia_ids'] = array_values(array_unique(array_filter($payload['patologia_ids'], fn($v) => $v > 0)));
-            if (empty($payload['patologia_ids'])) {
-                $resp([], false, "Debe seleccionar al menos una patología válida.");
-                exit;
-            }
-            if (empty($payload['patologia_id'])) {
+            $payload['patologia_ids'] = array_values(array_unique(array_filter($payload['patologia_ids'], fn($v) => (int)$v > 0)));
+            if (!empty($payload['patologia_ids']) && empty($payload['patologia_id'])) {
                 $payload['patologia_id'] = $payload['patologia_ids'][0];
             }
         } else {
-            $payload['patologia_ids'] = [$payload['patologia_id']];
+            $payload['patologia_ids'] = [];
+            $payload['patologia_id'] = null;
         }
-
-
-        $res = $model->crearSolicitud($payload);
-        if ($res['ok'] ?? false) {
-            $resp(['id' => $res['id']]);
-        } else {
-            $resp([], false, $res['error'] ?? 'No se pudo crear la solicitud');
-        }
-        exit;
     }
 
     $resp([], false, 'Método no permitido');

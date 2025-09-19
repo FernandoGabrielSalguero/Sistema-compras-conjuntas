@@ -157,15 +157,30 @@
         </div>
 
 
-        <!-- Motivo (typeahead) -->
-        <fieldset class="input-group" aria-labelledby="legend-motivo" role="group">
+        <!-- Productos (desplegable multiselección con checkboxes) -->
+        <div class="input-group">
+          <label for="dropdown-productos">Productos</label>
           <div class="input-icon input-icon-motivo">
-            <div id="legend-motivo" class="gform-legend">Motivo del servicio <span class="gform-required">*</span></div>
-            <div id="checklist-motivo" class="checklist" role="list" aria-describedby="ayuda-motivo">
-              <!-- Se cargan checkboxes dinámicamente -->
+            <div id="dropdown-productos" class="dropdown-multi" aria-haspopup="listbox" aria-expanded="false">
+              <button type="button" class="dropdown-toggle" aria-label="Abrir lista de productos">
+                <span class="dropdown-label">Elegí uno o más productos</span>
+                <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
+              </button>
+              <div class="dropdown-panel" role="listbox" tabindex="-1" hidden>
+                <div class="dropdown-search">
+                  <input type="text" id="buscar-producto" placeholder="Buscar producto…" aria-label="Buscar producto">
+                </div>
+                <div id="lista-productos" class="dropdown-list">
+                  <!-- Opciones dinámicas -->
+                </div>
+                <div class="dropdown-actions">
+                  <button type="button" class="btn btn-info" id="btn-sel-todos">Seleccionar todos</button>
+                  <button type="button" class="btn btn-cancelar" id="btn-limpiar">Limpiar</button>
+                </div>
+              </div>
             </div>
           </div>
-        </fieldset>
+        </div>
 
         <!-- Quincena -->
         <div class="input-group">
@@ -569,6 +584,64 @@
     height: 18px;
     accent-color: var(--primary-color);
   }
+
+  /* Dropdown multiselección */
+  .dropdown-multi {
+    position: relative;
+    width: 100%;
+  }
+
+  .dropdown-multi .dropdown-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .65rem .85rem;
+    border: 1px solid #e9d7f7;
+    border-radius: 12px;
+    background: #fff;
+    cursor: pointer;
+  }
+
+  .dropdown-multi .dropdown-panel {
+    position: absolute;
+    z-index: 20;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e9d7f7;
+    border-radius: 12px;
+    margin-top: .25rem;
+    padding: .5rem;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .08);
+    max-height: 320px;
+    overflow: auto;
+  }
+
+  .dropdown-multi .dropdown-search {
+    padding: .25rem .25rem .5rem;
+  }
+
+  .dropdown-multi .dropdown-search input {
+    width: 100%;
+    padding: .55rem .75rem;
+    border: 1px solid #e9d7f7;
+    border-radius: 10px;
+  }
+
+  .dropdown-multi .dropdown-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: .4rem .6rem;
+  }
+
+  .dropdown-multi .dropdown-actions {
+    display: flex;
+    gap: .5rem;
+    justify-content: flex-end;
+    padding-top: .5rem;
+  }
 </style>
 
 <script>
@@ -642,7 +715,12 @@
     const grupoCoop = $('#grupo-cooperativa');
     const selCoop = $('#form_nuevo_servicio_cooperativa');
 
-    const checklistMotivo = $('#checklist-motivo');
+    const ddProductos = $('#dropdown-productos');
+    const ddPanel = ddProductos.querySelector('.dropdown-panel');
+    const ddToggle = ddProductos.querySelector('.dropdown-toggle');
+    const ddLabel = ddProductos.querySelector('.dropdown-label');
+    const ddBuscar = $('#buscar-producto');
+    const ddLista = $('#lista-productos');
     const selQuincena = $('#form_nuevo_servicio_quincena');
 
     const selProv = $('#form_nuevo_servicio_provincia');
@@ -767,16 +845,19 @@
       const data = await fetchJson(`${CTRL_URL}?action=cooperativas`);
       selCoop.innerHTML = `<option value="">Seleccionar</option>` + data.map(u => `<option value="${u.id_real}">${u.usuario}</option>`).join('');
     }
-    async function loadPatologias() {
-      const data = await fetchJson(`${CTRL_URL}?action=patologias`);
-      checklistMotivo.innerHTML = data.map(p => `
-    <label class="checklist-item" role="listitem">
-      <input type="checkbox" name="patologia_ids[]" value="${p.id}" aria-label="${p.nombre}">
-      <span>${p.nombre}</span>
-    </label>
-  `).join('');
-    }
 
+    // Carga de productos activos para el dropdown
+    async function loadProductos() {
+      const data = await fetchJson(`${CTRL_URL}?action=productos`);
+      // Guardamos costo/hectárea en data-*
+      ddLista.innerHTML = data.map(p => `
+        <label class="checklist-item" data-name="${p.nombre.toLowerCase()}">
+          <input type="checkbox" class="js-prod" value="${p.id}" data-costo="${Number(p.costo_hectareas)}" aria-label="${p.nombre}">
+          <span>${p.nombre}</span>
+        </label>
+      `).join('');
+      attachDropdownHandlers();
+    }
     // Mostrar/Ocultar Cooperativa según forma de pago
     selPago.addEventListener('change', () => {
       const val = parseInt(selPago.value || '0', 10);
@@ -798,45 +879,89 @@
       }
     }
 
-    // Patologías (checklist) → cargar productos combinados en matriz
-    checklistMotivo.addEventListener('change', async (e) => {
-      if (e.target && e.target.matches('input[type="checkbox"][name="patologia_ids[]"]')) {
-        const ids = getSelectedPatologias();
-        if (!ids.length) {
-          matrizBody.innerHTML = '';
-          actualizarResumenCostos();
-          return;
+    // Dropdown multiselección - comportamiento
+    function attachDropdownHandlers() {
+      // abrir/cerrar
+      ddToggle.addEventListener('click', () => {
+        const open = ddPanel.hasAttribute('hidden') ? false : true;
+        if (open) {
+          ddPanel.setAttribute('hidden', '');
+          ddProductos.setAttribute('aria-expanded', 'false');
+        } else {
+          ddPanel.removeAttribute('hidden');
+          ddProductos.setAttribute('aria-expanded', 'true');
+          ddPanel.focus();
         }
-        await loadProductosPorPatologias(ids);
-      }
-    });
-
-    function getSelectedPatologias() {
-      return Array.from(checklistMotivo.querySelectorAll('input[type="checkbox"][name="patologia_ids[]"]:checked'))
-        .map(ch => parseInt(ch.value || '0', 10))
-        .filter(v => v > 0);
+      });
+      document.addEventListener('click', (e) => {
+        if (!ddProductos.contains(e.target)) {
+          ddPanel.setAttribute('hidden', '');
+          ddProductos.setAttribute('aria-expanded', 'false');
+        }
+      });
+      // buscar
+      ddBuscar.addEventListener('input', () => {
+        const q = ddBuscar.value.trim().toLowerCase();
+        Array.from(ddLista.children).forEach(lbl => {
+          const name = (lbl.getAttribute('data-name') || '');
+          lbl.style.display = name.includes(q) ? '' : 'none';
+        });
+      });
+      // seleccionar/limpiar
+      $('#btn-sel-todos').addEventListener('click', () => {
+        ddLista.querySelectorAll('input.js-prod:not(:disabled)').forEach(ch => {
+          ch.checked = true;
+        });
+        onProductosChange();
+      });
+      $('#btn-limpiar').addEventListener('click', () => {
+        ddLista.querySelectorAll('input.js-prod').forEach(ch => {
+          ch.checked = false;
+        });
+        onProductosChange();
+      });
+      // cambios
+      ddLista.addEventListener('change', (e) => {
+        if (e.target && e.target.matches('input.js-prod')) onProductosChange();
+      });
     }
 
-    // Matriz dinámica
-    // Matriz dinámica (multi patología)
-    async function loadProductosPorPatologias(patologiaIds) {
-      try {
-        // Traer y unificar productos (evita duplicados por id)
-        const sets = await Promise.all(patologiaIds.map(async (pid) => {
-          return await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${pid}`);
-        }));
-        const mapa = new Map();
-        sets.flat().forEach(p => {
-          if (!mapa.has(p.id)) mapa.set(p.id, p);
-        });
+    function getProductosSeleccionados() {
+      return Array.from(ddLista.querySelectorAll('input.js-prod:checked')).map(ch => ({
+        id: parseInt(ch.value, 10),
+        costo: Number(ch.dataset.costo || 0),
+        nombre: ch.parentElement.querySelector('span')?.textContent || ''
+      }));
+    }
 
-        const filas = Array.from(mapa.values()).map((p) => {
-          const rowId = `row_${p.id}`;
-          return `
+    function onProductosChange() {
+      const sel = getProductosSeleccionados();
+      // label del botón
+      if (!sel.length) {
+        ddLabel.textContent = 'Elegí uno o más productos';
+      } else if (sel.length === 1) {
+        ddLabel.textContent = sel[0].nombre;
+      } else {
+        ddLabel.textContent = `${sel.length} productos seleccionados`;
+      }
+      // armar matriz según selección
+      buildMatrizDesdeProductos(sel);
+      actualizarResumenCostos();
+    }
+
+    // Construye la matriz a partir de los productos seleccionados
+    function buildMatrizDesdeProductos(productos) {
+      if (!productos.length) {
+        matrizBody.innerHTML = '';
+        return;
+      }
+      const filas = productos.map((p) => {
+        const rowId = `row_${p.id}`;
+        return `
       <tr>
         <th scope="row">
           <label class="gfm-prod">
-            <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="${rowId}" data-row="${rowId}" data-producto-id="${p.id}" />
+            <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="${rowId}" data-row="${rowId}" data-producto-id="${p.id}" data-costo="${p.costo}" />
             <span>${p.nombre}</span>
           </label>
         </th>
@@ -847,43 +972,33 @@
           <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="productor" disabled aria-label="Productor para ${p.nombre}" /></label>
         </td>
       </tr>`;
-        }).join('');
+      }).join('');
+      matrizBody.innerHTML = filas;
 
-        matrizBody.innerHTML = filas;
-
-        // listeners por fila
-        $$('.gfm-row-toggle', matrizBody).forEach(cb => {
-          cb.addEventListener('change', () => {
-            const name = `m_${cb.dataset.row}`;
-            const radios = $$(`input[type="radio"][name="${name}"]`, matrizBody);
-            if (cb.checked) {
-              radios.forEach(r => {
-                r.disabled = false;
-              });
-            } else {
-              radios.forEach(r => {
-                r.checked = false;
-                r.disabled = true;
-              });
-            }
-            actualizarResumenCostos();
-          });
-        });
-
-        // radios → resumen
-        matrizBody.addEventListener('change', (e) => {
-          if (e.target && e.target.matches('input[type="radio"]')) {
-            actualizarResumenCostos();
+      // listeners por fila (enable/disable radios)
+      $$('.gfm-row-toggle', matrizBody).forEach(cb => {
+        cb.addEventListener('change', () => {
+          const name = `m_${cb.dataset.row}`;
+          const radios = $$(`input[type="radio"][name="${name}"]`, matrizBody);
+          if (cb.checked) {
+            radios.forEach(r => {
+              r.disabled = false;
+            });
+          } else {
+            radios.forEach(r => {
+              r.checked = false;
+              r.disabled = true;
+            });
           }
+          actualizarResumenCostos();
         });
-
-        actualizarResumenCostos();
-      } catch (e) {
-        console.error(e);
-        matrizBody.innerHTML = '';
-        actualizarResumenCostos();
-      }
+      });
+      // radios → resumen
+      matrizBody.addEventListener('change', (e) => {
+        if (e.target && e.target.matches('input[type="radio"]')) actualizarResumenCostos();
+      });
     }
+
 
 
     // Modal con validación previa (todos los campos obligatorios)
@@ -922,6 +1037,7 @@
       }
     });
 
+
     function buildPayload(opts = {}) {
       if (!opts.soloValidacionesBasicas) {
         if (!hidPersona.value) throw new Error('Seleccioná un productor.');
@@ -941,7 +1057,6 @@
       const calle = inpCalle.value.trim();
       const numero = String(inpNum.value || '').trim();
       const rango = selQuincena.value;
-      const patologiaIds = getSelectedPatologias();
       const coopIdReal = selCoop.value || null;
 
       if (!opts.soloValidacionesBasicas) {
@@ -949,7 +1064,6 @@
         if (!hectInt || hectInt < 0) throw new Error('Ingresá la cantidad de hectáreas (entero).');
         if (!fpago) throw new Error('Seleccioná la forma de pago.');
         if (!rango) throw new Error('Seleccioná la quincena.');
-        if (!patologiaIds.length) throw new Error('Seleccioná al menos una patología.');
         if (!provincia || !localidad || !calle || !numero) throw new Error('Completá la dirección.');
         if (fpago === 6 && !coopIdReal) throw new Error('Seleccioná la cooperativa para la forma de pago 6.');
       }
@@ -979,8 +1093,9 @@
         superficie_ha: Number((hectInt || 0).toFixed(2)),
         forma_pago_id: fpago || null,
         coop_descuento_id_real: coopIdReal,
-        patologia_ids: patologiaIds, // <-- múltiple
-        patologia_id: patologiaIds[0] || null, // <-- principal para items (compat)
+        // patologías pasan a ser opcionales → enviamos vacío
+        patologia_ids: [],
+        patologia_id: null,
         rango: rango || '',
         items: items,
         dir_provincia: provincia,
@@ -992,17 +1107,42 @@
     }
 
 
+
     function calcularCostos(payload) {
-      // Hook: reemplazar por llamadas/algoritmo real de costeo según tus reglas.
-      // Retorna objeto { subSVE, subProductor, subHectareas, total }
-      // Por ahora, devuelvo placeholders.
+      // Cálculo en tiempo real:
+      //  - Para cada fila seleccionada: costo_hectárea * superficie * va a SVE o Productor según radio.
+      //  - Servicio: COSTO_SERVICIO_HA * superficie (si > 0)
+      const hect = Number(payload.superficie_ha || 0);
+      let subSVE = 0,
+        subProductor = 0;
+
+      $$('.gfm-row-toggle:checked', matrizBody).forEach(cb => {
+        const name = `m_${cb.dataset.row}`;
+        const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
+        const costoHa = Number(cb.dataset.costo || 0);
+        if (choice && hect > 0 && costoHa > 0) {
+          const subtotal = costoHa * hect;
+          if (choice.value === 'sve') subSVE += subtotal;
+          if (choice.value === 'productor') subProductor += subtotal;
+        }
+      });
+
+      const subHectareas = hect > 0 ? (Number(COSTO_SERVICIO_HA) * hect) : 0;
+      const total = subSVE + subProductor + subHectareas;
+
+      const fmt = (n) => n > 0 ? new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+        maximumFractionDigits: 0
+      }).format(n) : '—';
       return {
-        subSVE: null, // e.g. número o null
-        subProductor: null,
-        subHectareas: null,
-        total: null
+        subSVE: subSVE > 0 ? fmt(subSVE) : '—',
+        subProductor: subProductor > 0 ? fmt(subProductor) : '—',
+        subHectareas: subHectareas > 0 ? fmt(subHectareas) : '—',
+        total: total > 0 ? fmt(total) : 'A confirmar'
       };
     }
+
 
     function actualizarResumenCostos() {
       const cntSVE = $('#cnt-sve');
@@ -1134,14 +1274,6 @@
         }
       }
 
-      // Motivo / Patología (select)
-      const patologiaId = parseInt(selMotivo.value || '0', 10);
-      if (!patologiaId) {
-        showAlert('error', 'Seleccioná un motivo/patología.');
-        markInvalid(selMotivo);
-        return false;
-      }
-
       // Quincena (rango)
       if (!selQuincena.value) {
         showAlert('error', 'Seleccioná la quincena de visita.');
@@ -1177,10 +1309,21 @@
       return true;
     }
 
+    // Costo de servicio por hectárea (desde backend)
+    let COSTO_SERVICIO_HA = 0;
+    async function loadCostoServicio() {
+      try {
+        const d = await fetchJson(`${CTRL_URL}?action=costo_servicio`);
+        COSTO_SERVICIO_HA = Number(d?.costo || 0);
+      } catch (e) {
+        COSTO_SERVICIO_HA = 0;
+      }
+    }
+
     // Inicialización
     (async function init() {
       try {
-        await Promise.all([loadFormasPago(), loadRangos(), loadPatologias(), loadCooperativas()]);
+        await Promise.all([loadFormasPago(), loadRangos(), loadProductos(), loadCooperativas(), loadCostoServicio()]);
         grupoCooperativaShow(false);
 
         // Provincia por defecto
