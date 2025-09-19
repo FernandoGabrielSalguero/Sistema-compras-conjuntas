@@ -158,15 +158,15 @@
 
 
         <!-- Motivo (typeahead) -->
-        <div class="input-group">
-          <label for="form_nuevo_servicio_motivo">Motivo del servicio</label>
+        <fieldset class="input-group" aria-labelledby="legend-motivo" role="group">
           <div class="input-icon input-icon-motivo">
-            <select id="form_nuevo_servicio_motivo" name="form_nuevo_servicio_motivo" multiple size="4" required aria-describedby="ayuda-motivo">
-              <!-- Opciones dinámicas: value = id, label = nombre -->
-            </select>
-            <small id="ayuda-motivo" class="help-text">Podés seleccionar una o más patologías (Ctrl/Cmd + clic).</small>
+            <div id="legend-motivo" class="gform-legend">Motivo del servicio <span class="gform-required">*</span></div>
+            <div id="checklist-motivo" class="checklist" role="list" aria-describedby="ayuda-motivo">
+              <!-- Se cargan checkboxes dinámicamente -->
+            </div>
+            <small id="ayuda-motivo" class="help-text">Seleccioná una o más patologías.</small>
           </div>
-        </div>
+        </fieldset>
 
         <!-- Quincena -->
         <div class="input-group">
@@ -544,6 +544,32 @@
   #form_nuevo_servicio_provincia {
     display: none !important;
   }
+
+  /* Checklist de patologías */
+  .checklist {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: .5rem .75rem;
+    max-height: 220px;
+    overflow: auto;
+    padding: .5rem;
+    border: 1px solid #e9d7f7;
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    line-height: 1.2;
+  }
+
+  .checklist-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+  }
 </style>
 
 <script>
@@ -617,7 +643,7 @@
     const grupoCoop = $('#grupo-cooperativa');
     const selCoop = $('#form_nuevo_servicio_cooperativa');
 
-    const selMotivo = $('#form_nuevo_servicio_motivo');
+    const checklistMotivo = $('#checklist-motivo');
     const selQuincena = $('#form_nuevo_servicio_quincena');
 
     const selProv = $('#form_nuevo_servicio_provincia');
@@ -744,7 +770,12 @@
     }
     async function loadPatologias() {
       const data = await fetchJson(`${CTRL_URL}?action=patologias`);
-      selMotivo.innerHTML = data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+      checklistMotivo.innerHTML = data.map(p => `
+    <label class="checklist-item" role="listitem">
+      <input type="checkbox" name="patologia_ids[]" value="${p.id}" aria-label="${p.nombre}">
+      <span>${p.nombre}</span>
+    </label>
+  `).join('');
     }
 
     // Mostrar/Ocultar Cooperativa según forma de pago
@@ -768,20 +799,22 @@
       }
     }
 
-    // Patologías (multiple) → cargar productos combinados en matriz
-    selMotivo.addEventListener('change', async () => {
-      const ids = getSelectedPatologias();
-      if (!ids.length) {
-        matrizBody.innerHTML = '';
-        actualizarResumenCostos();
-        return;
+    // Patologías (checklist) → cargar productos combinados en matriz
+    checklistMotivo.addEventListener('change', async (e) => {
+      if (e.target && e.target.matches('input[type="checkbox"][name="patologia_ids[]"]')) {
+        const ids = getSelectedPatologias();
+        if (!ids.length) {
+          matrizBody.innerHTML = '';
+          actualizarResumenCostos();
+          return;
+        }
+        await loadProductosPorPatologias(ids);
       }
-      await loadProductosPorPatologias(ids);
     });
 
     function getSelectedPatologias() {
-      return Array.from(selMotivo.selectedOptions || [])
-        .map(o => parseInt(o.value || '0', 10))
+      return Array.from(checklistMotivo.querySelectorAll('input[type="checkbox"][name="patologia_ids[]"]:checked'))
+        .map(ch => parseInt(ch.value || '0', 10))
         .filter(v => v > 0);
     }
 
@@ -1151,7 +1184,7 @@
         await Promise.all([loadFormasPago(), loadRangos(), loadPatologias(), loadCooperativas()]);
         grupoCooperativaShow(false);
 
-        // Setear valor por defecto de provincia a "Mendoza" y actualizar UI
+        // Provincia por defecto
         selProv.value = 'Mendoza';
 
         // Enganches que afectan el resumen
@@ -1161,5 +1194,6 @@
         console.error(e);
       }
     })();
+
   })();
 </script>
