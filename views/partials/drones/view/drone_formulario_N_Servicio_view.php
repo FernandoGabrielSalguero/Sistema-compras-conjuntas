@@ -157,14 +157,31 @@
         </div>
 
 
-        <!-- Motivo (typeahead) -->
+        <!-- Motivo (multi-selección con checkboxes) -->
         <div class="input-group">
-          <label for="form_nuevo_servicio_motivo">Motivo del servicio</label>
+          <label for="form_nuevo_servicio_motivo_toggle">Motivo del servicio</label>
           <div class="input-icon input-icon-motivo">
-            <select id="form_nuevo_servicio_motivo" name="form_nuevo_servicio_motivo" required>
-              <option value="">Seleccionar</option>
-              <!-- Opciones dinámicas: value = id, label = nombre -->
-            </select>
+            <!-- Botón que emula el select -->
+            <button type="button"
+              id="form_nuevo_servicio_motivo_toggle"
+              class="selectlike"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-controls="form_nuevo_servicio_motivo_list">
+              Seleccionar
+            </button>
+            <!-- Lista desplegable con checkboxes -->
+            <ul id="form_nuevo_servicio_motivo_list"
+              class="selectlike-list"
+              role="listbox"
+              aria-multiselectable="true"
+              hidden>
+              <!-- Opciones dinámicas: li > label > input[type=checkbox data-id] + span(nombre) -->
+            </ul>
+            <!-- Hidden para compatibilidad (primer motivo seleccionado) -->
+            <input type="hidden" id="form_nuevo_servicio_motivo" name="form_nuevo_servicio_motivo" />
+            <!-- Hidden con todos los IDs seleccionados (CSV) -->
+            <input type="hidden" id="form_nuevo_servicio_motivo_ids" name="form_nuevo_servicio_motivo_ids" />
           </div>
         </div>
 
@@ -179,7 +196,7 @@
         </div>
 
         <!-- Dirección -->
-        <div class="input-group">
+        <div class="input-group" style="display:none;">
           <label for="form_nuevo_servicio_provincia">Provincia</label>
           <div class="input-icon input-icon-globe">
             <select id="form_nuevo_servicio_provincia" name="form_nuevo_servicio_provincia" required>
@@ -196,7 +213,7 @@
               <option>Jujuy</option>
               <option>La Pampa</option>
               <option>La Rioja</option>
-              <option>Mendoza</option>
+              <option selected="selected">Mendoza</option>
               <option>Misiones</option>
               <option>Neuquén</option>
               <option>Río Negro</option>
@@ -487,6 +504,57 @@
   .input-error {
     outline: 2px solid #ef4444;
     border-radius: 6px;
+  }
+
+  /* ===== Select-like multi (Motivos) ===== */
+  .selectlike {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    border-radius: 8px;
+    padding: 8px 12px;
+    text-align: left;
+    line-height: 1.2;
+    cursor: pointer;
+  }
+
+  .selectlike:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  .selectlike-list {
+    position: absolute;
+    z-index: 20;
+    width: 100%;
+    max-height: 240px;
+    overflow: auto;
+    margin-top: 6px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+    padding: 6px 0;
+  }
+
+  .selectlike-item {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+
+  .selectlike-item:hover,
+  .selectlike-item:focus-within {
+    background: #faf5ff;
+  }
+
+  .selectlike-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
   }
 </style>
 
