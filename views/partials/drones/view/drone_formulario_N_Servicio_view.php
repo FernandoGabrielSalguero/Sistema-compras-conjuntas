@@ -156,35 +156,6 @@
           </div>
         </div>
 
-
-        <!-- Motivo (multi-selección con checkboxes) -->
-        <div class="input-group">
-          <label for="form_nuevo_servicio_motivo_toggle">Motivo del servicio</label>
-          <div class="input-icon input-icon-motivo">
-            <!-- Botón que emula el select -->
-            <button type="button"
-              id="form_nuevo_servicio_motivo_toggle"
-              class="selectlike"
-              aria-haspopup="listbox"
-              aria-expanded="false"
-              aria-controls="form_nuevo_servicio_motivo_list">
-              Seleccionar
-            </button>
-            <!-- Lista desplegable con checkboxes -->
-            <ul id="form_nuevo_servicio_motivo_list"
-              class="selectlike-list"
-              role="listbox"
-              aria-multiselectable="true"
-              hidden>
-              <!-- Opciones dinámicas: li > label > input[type=checkbox data-id] + span(nombre) -->
-            </ul>
-            <!-- Hidden para compatibilidad (primer motivo seleccionado) -->
-            <input type="hidden" id="form_nuevo_servicio_motivo" name="form_nuevo_servicio_motivo" />
-            <!-- Hidden con todos los IDs seleccionados (CSV) -->
-            <input type="hidden" id="form_nuevo_servicio_motivo_ids" name="form_nuevo_servicio_motivo_ids" />
-          </div>
-        </div>
-
         <!-- Quincena -->
         <div class="input-group">
           <label for="form_nuevo_servicio_quincena">¿Quincena de visita?</label>
@@ -247,6 +218,34 @@
           <label for="form_nuevo_servicio_numero">Número</label>
           <div class="input-icon input-icon-numero">
             <input type="number" id="form_nuevo_servicio_numero" name="form_nuevo_servicio_numero" min="0" step="1" required />
+          </div>
+        </div>
+
+        <!-- Motivo (multi-selección con checkboxes) -->
+        <div class="input-group">
+          <label for="form_nuevo_servicio_motivo_toggle">Motivo del servicio</label>
+          <div class="input-icon input-icon-motivo">
+            <!-- Botón que emula el select -->
+            <button type="button"
+              id="form_nuevo_servicio_motivo_toggle"
+              class="selectlike"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-controls="form_nuevo_servicio_motivo_list">
+              Seleccionar
+            </button>
+            <!-- Lista desplegable con checkboxes -->
+            <ul id="form_nuevo_servicio_motivo_list"
+              class="selectlike-list"
+              role="listbox"
+              aria-multiselectable="true"
+              hidden>
+              <!-- Opciones dinámicas: li > label > input[type=checkbox data-id] + span(nombre) -->
+            </ul>
+            <!-- Hidden para compatibilidad (primer motivo seleccionado) -->
+            <input type="hidden" id="form_nuevo_servicio_motivo" name="form_nuevo_servicio_motivo" />
+            <!-- Hidden con todos los IDs seleccionados (CSV) -->
+            <input type="hidden" id="form_nuevo_servicio_motivo_ids" name="form_nuevo_servicio_motivo_ids" />
           </div>
         </div>
 
@@ -629,7 +628,10 @@
     const grupoCoop = $('#grupo-cooperativa');
     const selCoop = $('#form_nuevo_servicio_cooperativa');
 
-    const selMotivo = $('#form_nuevo_servicio_motivo');
+    const selMotivoHidden = $('#form_nuevo_servicio_motivo'); // compatibilidad (primer id)
+    const selMotivoHiddenIds = $('#form_nuevo_servicio_motivo_ids'); // CSV de ids
+    const btnMotivoToggle = $('#form_nuevo_servicio_motivo_toggle');
+    const ulMotivoList = $('#form_nuevo_servicio_motivo_list');
     const selQuincena = $('#form_nuevo_servicio_quincena');
 
     const selProv = $('#form_nuevo_servicio_provincia');
@@ -756,8 +758,40 @@
     }
     async function loadPatologias() {
       const data = await fetchJson(`${CTRL_URL}?action=patologias`);
-      selMotivo.innerHTML = `<option value="">Seleccionar</option>` + data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+      // Render de lista con checkboxes
+      ulMotivoList.innerHTML = '';
+      data.forEach(p => {
+        const li = document.createElement('li');
+        li.className = 'selectlike-item';
+        li.role = 'option';
+        li.dataset.id = String(p.id);
+
+        const label = document.createElement('label');
+        label.className = 'selectlike-label';
+        label.style.display = 'flex';
+        label.style.alignItems = 'center';
+        label.style.gap = '.5rem';
+        label.style.width = '100%';
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.value = String(p.id);
+        cb.setAttribute('aria-label', p.nombre);
+
+        const span = document.createElement('span');
+        span.textContent = p.nombre;
+
+        label.appendChild(cb);
+        label.appendChild(span);
+        li.appendChild(label);
+        ulMotivoList.appendChild(li);
+      });
+
+      // Reset selección
+      setSelectedMotivos([]);
+      updateMotivoButton();
     }
+
 
     // Mostrar/Ocultar Cooperativa según forma de pago
     selPago.addEventListener('change', () => {
@@ -780,14 +814,11 @@
       }
     }
 
-    // Patología → cargar productos de matriz
-    selMotivo.addEventListener('change', async () => {
-      const pid = parseInt(selMotivo.value || '0', 10);
-      if (!pid) {
-        matrizBody.innerHTML = '';
-        return;
-      }
-      await loadProductosPorPatologia(pid);
+    // Motivos (multi) → por ahora sólo limpiamos la matriz (cambio #3 cargará productos)
+    document.addEventListener('motivos:change', () => {
+      matrizBody.innerHTML = '';
+      // (Cambio #3) aquí llamaremos a loadProductosPorPatologias(getSelectedMotivos());
+      // y recalcularemos costos.
     });
 
     // Matriz dinámica
@@ -887,7 +918,8 @@
       const calle = inpCalle.value.trim();
       const numero = String(inpNum.value || '').trim();
       const rango = selQuincena.value;
-      const patologiaId = parseInt(selMotivo.value || '0', 10);
+      const motivosSel = getSelectedMotivos();
+      const patologiaId = motivosSel.length ? motivosSel[0] : 0;
       const coopIdReal = selCoop.value || null;
 
       if ([rep, linea, zRestr, corr, agua, cuart, despegue].some(v => !v)) throw new Error('Completá los campos de Sí/No.');
@@ -945,6 +977,68 @@
       const v = (sel?.value || '').trim().toLowerCase();
       return (v === 'si' || v === 'sí' || v === 'no') ? v : '';
     }
+
+    // ===== Helpers Motivos (multi) =====
+    function getSelectedMotivos() {
+      const csv = (selMotivoHiddenIds.value || '').trim();
+      if (!csv) return [];
+      return csv.split(',').map(s => parseInt(s, 10)).filter(n => n > 0);
+    }
+    function setSelectedMotivos(arr) {
+      const uniq = Array.from(new Set(arr.filter(n => Number.isInteger(n) && n > 0)));
+      selMotivoHiddenIds.value = uniq.join(',');
+      // Compat: el primer seleccionado para validación/payload actual
+      selMotivoHidden.value = uniq.length ? String(uniq[0]) : '';
+      // Marcar checkboxes en UI
+      Array.from(ulMotivoList.querySelectorAll('input[type="checkbox"]')).forEach(cb => {
+        cb.checked = uniq.includes(parseInt(cb.value, 10));
+      });
+      updateMotivoButton();
+      document.dispatchEvent(new CustomEvent('motivos:change', { detail: { ids: uniq } }));
+    }
+    function updateMotivoButton() {
+      const ids = getSelectedMotivos();
+      const names = [];
+      ids.forEach(id => {
+        const li = ulMotivoList.querySelector(`li[data-id="${id}"] span`);
+        if (li) names.push(li.textContent || String(id));
+      });
+      if (!ids.length) {
+        btnMotivoToggle.textContent = 'Seleccionar';
+        btnMotivoToggle.setAttribute('aria-expanded', 'false');
+        return;
+      }
+      const label = names.slice(0, 2).join(', ') + (names.length > 2 ? ` (+${names.length - 2})` : '');
+      btnMotivoToggle.textContent = label;
+    }
+    // Toggle de la lista
+    btnMotivoToggle.addEventListener('click', () => {
+      const isHidden = ulMotivoList.hasAttribute('hidden');
+      if (isHidden) {
+        ulMotivoList.removeAttribute('hidden');
+        btnMotivoToggle.setAttribute('aria-expanded', 'true');
+      } else {
+        ulMotivoList.setAttribute('hidden', '');
+        btnMotivoToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+    // Cerrar al hacer click afuera
+    document.addEventListener('click', (e) => {
+      if (!ulMotivoList.contains(e.target) && e.target !== btnMotivoToggle) {
+        if (!ulMotivoList.hasAttribute('hidden')) {
+          ulMotivoList.setAttribute('hidden', '');
+          btnMotivoToggle.setAttribute('aria-expanded', 'false');
+        }
+      }
+    });
+    // Cambios de selección
+    ulMotivoList.addEventListener('change', () => {
+      const checked = Array.from(ulMotivoList.querySelectorAll('input[type="checkbox"]:checked'))
+        .map(cb => parseInt(cb.value, 10))
+        .filter(n => n > 0);
+      setSelectedMotivos(checked);
+    });
+
 
     function validateBeforeModal() {
       // Quitar clases previas
@@ -1021,11 +1115,11 @@
         }
       }
 
-      // Motivo / Patología (select)
-      const patologiaId = parseInt(selMotivo.value || '0', 10);
-      if (!patologiaId) {
-        showAlert('error', 'Seleccioná un motivo/patología.');
-        markInvalid(selMotivo);
+      // Motivo / Patología (multi)
+      const motivosSel = getSelectedMotivos();
+      if (!motivosSel.length) {
+        showAlert('error', 'Seleccioná al menos un motivo/patología.');
+        markInvalid(btnMotivoToggle);
         return false;
       }
 
