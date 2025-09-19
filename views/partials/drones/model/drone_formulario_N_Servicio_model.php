@@ -22,7 +22,7 @@ class DroneFormularioNservicioModel
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /** Rangos disponibles (orden comenzando por octubre) */
+        /** Rangos disponibles (orden comenzando por octubre) */
     public function rangos(): array
     {
         // Mantener sincronizado con enum de drones_solicitud_rango.rango
@@ -56,31 +56,25 @@ class DroneFormularioNservicioModel
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /** Patologías activas (se mantiene para compat pero ya no se usa en UI) */
+    /** Patologías activas */
     public function patologias(): array
     {
         $sql = "SELECT id, nombre FROM dron_patologias WHERE activo='si' ORDER BY nombre";
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /** Listado de productos activos con costo por hectárea */
-    public function productosActivos(): array
+    /** Productos por patología usando tabla puente */
+    public function productosPorPatologia(int $patologiaId): array
     {
-        $sql = "SELECT id, nombre, costo_hectarea
-                  FROM dron_productos_stock
-                 WHERE activo='si'
-              ORDER BY nombre";
-        return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        $sql = "SELECT s.id, s.nombre
+                FROM dron_productos_stock s
+                INNER JOIN dron_productos_stock_patologias sp ON sp.producto_id = s.id
+                WHERE sp.patologia_id = ? AND s.activo='si'
+                ORDER BY s.nombre";
+        $st = $this->pdo->prepare($sql);
+        $st->execute([$patologiaId]);
+        return $st->fetchAll(PDO::FETCH_ASSOC);
     }
-
-    /** Costo de servicio por hectárea (fila activa) */
-    public function costoServicioHectarea(): array
-    {
-        $sql = "SELECT costo FROM dron_costo_hectarea WHERE activo='si' ORDER BY id DESC LIMIT 1";
-        $r = $this->pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
-        return $r ?: ['costo' => 0];
-    }
-
 
     /** Inserta la solicitud + secundarios en transacción */
     public function crearSolicitud(array $d): array
@@ -114,38 +108,28 @@ class DroneFormularioNservicioModel
             ]);
             $solicitudId = (int)$this->pdo->lastInsertId();
 
-            // drones_solicitud_motivo (múltiple) - ahora opcional
-            $patologias = is_array($d['patologia_ids'] ?? null) ? $d['patologia_ids'] : (isset($d['patologia_id']) ? [$d['patologia_id']] : []);
-            $patologias = array_values(array_unique(array_map('intval', $patologias)));
-            if (!empty($patologias)) {
-                $sqlMot = "INSERT INTO drones_solicitud_motivo (solicitud_id, patologia_id, es_otros) VALUES (?,?,0)";
-                $stm = $this->pdo->prepare($sqlMot);
-                foreach ($patologias as $pidMot) {
-                    $stm->execute([$solicitudId, $pidMot]);
-                }
-            }
+            // drones_solicitud_motivo
+            $sqlMot = "INSERT INTO drones_solicitud_motivo (solicitud_id, patologia_id, es_otros) VALUES (?,?,0)";
+            $stm = $this->pdo->prepare($sqlMot);
+            $stm->execute([$solicitudId, $d['patologia_id']]);
 
             // drones_solicitud_rango (guarda rango seleccionado)
             $sqlR = "INSERT INTO drones_solicitud_rango (solicitud_id, rango) VALUES (?,?)";
             $str = $this->pdo->prepare($sqlR);
             $str->execute([$solicitudId, $d['rango']]);
 
-            // Decisión: usar patología principal (primera) para relacionar los items (compatibilidad sin cambiar esquema).
+            // drones_solicitud_item (uno por producto con su fuente)
             if (!empty($d['items'])) {
                 $sqlI = "INSERT INTO drones_solicitud_item (solicitud_id, patologia_id, fuente, producto_id, nombre_producto)
-                        VALUES (?,?,?,?,?)";
+                         VALUES (?,?,?,?,?)";
                 $sti = $this->pdo->prepare($sqlI);
-                $patologiaPrincipal = isset($patologias[0]) ? (int)$patologias[0] : null; // puede ser null
                 foreach ($d['items'] as $it) {
                     $pid = (int)$it['producto_id'];
                     $fuente = (string)$it['fuente'];
                     $nombre = $this->productoNombre($pid);
-                    $sti->execute([$solicitudId, $patologiaPrincipal, $fuente, $pid, $nombre]);
+                    $sti->execute([$solicitudId, $d['patologia_id'], $fuente, $pid, $nombre]);
                 }
             }
-
-
-
 
             // Evento
             $sqlE = "INSERT INTO drones_solicitud_evento (solicitud_id, tipo, detalle, actor)
@@ -159,19 +143,6 @@ class DroneFormularioNservicioModel
             $this->pdo->rollBack();
             return ['ok' => false, 'error' => $e->getMessage()];
         }
-    }
-
-    /** Productos por patología (se mantiene para compat con endpoints antiguos) */
-    public function productosPorPatologia(int $patologiaId): array
-    {
-        $sql = "SELECT s.id, s.nombre
-                  FROM dron_productos_stock s
-                  INNER JOIN dron_productos_stock_patologias sp ON sp.producto_id = s.id
-                 WHERE sp.patologia_id = ? AND s.activo='si'
-              ORDER BY s.nombre";
-        $st = $this->pdo->prepare($sql);
-        $st->execute([$patologiaId]);
-        return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
     private function productoNombre(int $id): string

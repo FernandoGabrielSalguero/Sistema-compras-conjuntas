@@ -25,14 +25,8 @@ try {
             case 'formas_pago':
                 $resp($model->formasPago());
                 break;
-            case 'patologias': // compat (no usado en UI nueva)
+            case 'patologias':
                 $resp($model->patologias());
-                break;
-            case 'productos':
-                $resp($model->productosActivos());
-                break;
-            case 'costo_servicio':
-                $resp($model->costoServicioHectarea());
                 break;
             case 'cooperativas':
                 $resp($model->cooperativas());
@@ -84,20 +78,14 @@ try {
             'superficie_ha'       => isset($data['superficie_ha']) ? (float)$data['superficie_ha'] : null,
             'forma_pago_id'       => isset($data['forma_pago_id']) ? (int)$data['forma_pago_id'] : null,
             'coop_descuento_nombre' => !empty($data['coop_descuento_id_real']) ? substr((string)$data['coop_descuento_id_real'], 0, 100) : null,
-            'patologia_ids'       => array_values(array_filter(array_map(
-                fn($v) => (int)$v,
-                is_array($data['patologia_ids'] ?? null) ? $data['patologia_ids'] : []
-            ))),
-            'patologia_id'        => isset($data['patologia_id']) ? (int)$data['patologia_id'] : ( // compat: tomar primero si no llega patologia_id
-                (!empty($data['patologia_ids']) ? (int)$data['patologia_ids'][0] : null)
-            ),
+            'patologia_id'        => isset($data['patologia_id']) ? (int)$data['patologia_id'] : null,
             'rango'               => (string)($data['rango'] ?? ''),
-            // items: [{producto_id, fuente}]
-            'items'               => array_values(array_filter(array_map(function ($it) {
+                        // items: [{producto_id, fuente}]
+            'items'               => array_values(array_filter(array_map(function($it){
                 if (!is_array($it)) return null;
                 $pid = isset($it['producto_id']) ? (int)$it['producto_id'] : 0;
-                $fuente = in_array($it['fuente'] ?? '', ['sve', 'productor'], true) ? $it['fuente'] : '';
-                return $pid > 0 ? ['producto_id' => $pid, 'fuente' => $fuente] : null;
+                $fuente = in_array($it['fuente'] ?? '', ['sve','productor'], true) ? $it['fuente'] : '';
+                return $pid > 0 ? ['producto_id'=>$pid, 'fuente'=>$fuente] : null;
             }, $data['items'] ?? []))),
 
             'productos_fuente'    => in_array($data['productos_fuente'] ?? '', ['sve', 'productor'], true) ? $data['productos_fuente'] : null,
@@ -109,7 +97,7 @@ try {
         ];
 
         // Validaciones mínimas
-        $requeridos = ['representante', 'linea_tension', 'zona_restringida', 'corriente_electrica', 'agua_potable', 'libre_obstaculos', 'area_despegue', 'superficie_ha', 'forma_pago_id', 'rango', 'dir_provincia', 'dir_localidad', 'dir_calle', 'dir_numero'];
+        $requeridos = ['representante', 'linea_tension', 'zona_restringida', 'corriente_electrica', 'agua_potable', 'libre_obstaculos', 'area_despegue', 'superficie_ha', 'forma_pago_id', 'patologia_id', 'rango', 'dir_provincia', 'dir_localidad', 'dir_calle', 'dir_numero'];
         foreach ($requeridos as $k) {
             if (empty($payload[$k]) && $payload[$k] !== 0 && $payload[$k] !== '0') {
                 $resp([], false, "Campo requerido faltante: $k");
@@ -130,16 +118,13 @@ try {
             }
         }
 
-        // Patologías ahora son opcionales (UI selecciona productos directamente)
-        if (!empty($payload['patologia_ids'])) {
-            $payload['patologia_ids'] = array_values(array_unique(array_filter($payload['patologia_ids'], fn($v) => (int)$v > 0)));
-            if (!empty($payload['patologia_ids']) && empty($payload['patologia_id'])) {
-                $payload['patologia_id'] = $payload['patologia_ids'][0];
-            }
+        $res = $model->crearSolicitud($payload);
+        if ($res['ok'] ?? false) {
+            $resp(['id' => $res['id']]);
         } else {
-            $payload['patologia_ids'] = [];
-            $payload['patologia_id'] = null;
+            $resp([], false, $res['error'] ?? 'No se pudo crear la solicitud');
         }
+        exit;
     }
 
     $resp([], false, 'Método no permitido');

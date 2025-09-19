@@ -157,23 +157,14 @@
         </div>
 
 
-        <!-- Productos -->
+        <!-- Motivo (typeahead) -->
         <div class="input-group">
-          <label for="productos-details">Productos</label>
+          <label for="form_nuevo_servicio_motivo">Motivo del servicio</label>
           <div class="input-icon input-icon-motivo">
-            <details id="productos-details" class="multi-check">
-              <summary id="productos-summary" aria-controls="lista-productos" aria-expanded="false">
-                Elegí uno o más productos
-              </summary>
-              <div class="checklist" id="lista-productos" role="list" aria-describedby="ayuda-productos">
-                <!-- Opciones dinámicas -->
-              </div>
-              <div class="dropdown-actions">
-                <button type="button" class="btn btn-info" id="btn-sel-todos">Seleccionar todos</button>
-                <button type="button" class="btn btn-cancelar" id="btn-limpiar">Limpiar</button>
-              </div>
-              <small id="ayuda-productos" class="help-text">Marcá los productos que correspondan.</small>
-            </details>
+            <select id="form_nuevo_servicio_motivo" name="form_nuevo_servicio_motivo" required>
+              <option value="">Seleccionar</option>
+              <!-- Opciones dinámicas: value = id, label = nombre -->
+            </select>
           </div>
         </div>
 
@@ -220,7 +211,6 @@
             </select>
           </div>
         </div>
-
 
         <div class="input-group">
           <label for="form_nuevo_servicio_localidad">Localidad</label>
@@ -313,51 +303,6 @@
               Seleccioná al menos un producto y, para cada producto seleccionado, elegí una opción.
             </div>
           </div>
-
-
-          <div id="resumen-costos" class="card full-span" aria-live="polite" aria-atomic="true" style="margin-top:12px;">
-            <h4>Resumen de costos</h4>
-            <div class="tabla-wrapper">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Concepto</th>
-                    <th>Cantidad</th>
-                    <th>Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody id="resumen-body">
-                  <tr>
-                    <td>Productos aportados por SVE</td>
-                    <td id="cnt-sve">0</td>
-                    <td id="sub-sve">—</td>
-                  </tr>
-                  <tr>
-                    <td>Productos aportados por Productor</td>
-                    <td id="cnt-productor">0</td>
-                    <td id="sub-productor">—</td>
-                  </tr>
-                  <tr>
-                    <td>Hectáreas (referencia)</td>
-                    <td id="cnt-hect">0</td>
-                    <td id="sub-hect">—</td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <th>Total estimado</th>
-                    <th></th>
-                    <th id="total-estimado">A confirmar</th>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-            <p class="help-text" style="margin-top:.5rem;">El total es estimativo. Si querés, conecto este resumen a tus reglas de costeo o endpoint.</p>
-          </div>
-
-
-
-
         </fieldset>
 
 
@@ -543,121 +488,6 @@
     outline: 2px solid #ef4444;
     border-radius: 6px;
   }
-
-  /* Ocultar provincia SOLO con CSS (campo + label + contenedor) */
-  .input-group:has(#form_nuevo_servicio_provincia) {
-    display: none !important;
-  }
-
-  label[for="form_nuevo_servicio_provincia"],
-  #form_nuevo_servicio_provincia {
-    display: none !important;
-  }
-
-  /* Checklist de patologías */
-  .checklist {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: .5rem .75rem;
-    max-height: 220px;
-    overflow: auto;
-    padding: .5rem;
-    border: 1px solid #e9d7f7;
-    border-radius: 12px;
-    background: #fff;
-  }
-
-  .checklist-item {
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-    line-height: 1.2;
-  }
-
-  .checklist-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--primary-color);
-  }
-
-  /* Dropdown multiselección */
-  .dropdown-multi {
-    position: relative;
-    width: 100%;
-  }
-
-  .dropdown-multi .dropdown-toggle {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: .65rem .85rem;
-    border: 1px solid #e9d7f7;
-    border-radius: 12px;
-    background: #fff;
-    cursor: pointer;
-  }
-
-  .dropdown-multi .dropdown-panel {
-    position: absolute;
-    z-index: 20;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: #fff;
-    border: 1px solid #e9d7f7;
-    border-radius: 12px;
-    margin-top: .25rem;
-    padding: .5rem;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, .08);
-    max-height: 320px;
-    overflow: auto;
-  }
-
-  .dropdown-multi .dropdown-search {
-    padding: .25rem .25rem .5rem;
-  }
-
-  .dropdown-multi .dropdown-search input {
-    width: 100%;
-    padding: .55rem .75rem;
-    border: 1px solid #e9d7f7;
-    border-radius: 10px;
-  }
-
-  .dropdown-multi .dropdown-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: .4rem .6rem;
-  }
-
-  .dropdown-multi .dropdown-actions {
-    display: flex;
-    gap: .5rem;
-    justify-content: flex-end;
-    padding-top: .5rem;
-  }
-
-  /* <details> simple como desplegable */
-  details.multi-check summary {
-    list-style: none;
-    cursor: pointer;
-    padding: .65rem .85rem;
-    border: 1px solid #e9d7f7;
-    border-radius: 12px;
-    background: #fff;
-  }
-
-  details.multi-check[open] summary {
-    box-shadow: 0 0 0 4px rgba(91, 33, 182, .06);
-  }
-
-  details.multi-check .dropdown-actions {
-    display: flex;
-    gap: .5rem;
-    justify-content: flex-end;
-    padding-top: .5rem;
-  }
 </style>
 
 <script>
@@ -731,9 +561,7 @@
     const grupoCoop = $('#grupo-cooperativa');
     const selCoop = $('#form_nuevo_servicio_cooperativa');
 
-    const detProductos = $('#productos-details');
-    const sumProductos = $('#productos-summary');
-    const listaProductos = $('#lista-productos');
+    const selMotivo = $('#form_nuevo_servicio_motivo');
     const selQuincena = $('#form_nuevo_servicio_quincena');
 
     const selProv = $('#form_nuevo_servicio_provincia');
@@ -858,17 +686,11 @@
       const data = await fetchJson(`${CTRL_URL}?action=cooperativas`);
       selCoop.innerHTML = `<option value="">Seleccionar</option>` + data.map(u => `<option value="${u.id_real}">${u.usuario}</option>`).join('');
     }
-
-    // Carga de productos activos
-    async function loadProductos() {
-      const data = await fetchJson(`${CTRL_URL}?action=productos`);
-      listaProductos.innerHTML = data.map(p => `
-        <label class="checklist-item" data-name="${p.nombre.toLowerCase()}">
-          <input type="checkbox" class="js-prod" value="${p.id}" data-costo="${Number(p.costo_hectarea)}" aria-label="${p.nombre}">
-          <span>${p.nombre}</span>
-        </label>
-      `).join('');
+    async function loadPatologias() {
+      const data = await fetchJson(`${CTRL_URL}?action=patologias`);
+      selMotivo.innerHTML = `<option value="">Seleccionar</option>` + data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
     }
+
     // Mostrar/Ocultar Cooperativa según forma de pago
     selPago.addEventListener('change', () => {
       const val = parseInt(selPago.value || '0', 10);
@@ -890,104 +712,59 @@
       }
     }
 
-    // Multiselección simple (details + checkboxes)
-    (function attachProductosHandlers() {
-      // seleccionar/limpiar
-      document.addEventListener('click', (e) => {
-        if (e.target && e.target.id === 'btn-sel-todos') {
-          listaProductos.querySelectorAll('input.js-prod:not(:disabled)').forEach(ch => ch.checked = true);
-          onProductosChange();
-        }
-        if (e.target && e.target.id === 'btn-limpiar') {
-          listaProductos.querySelectorAll('input.js-prod').forEach(ch => ch.checked = false);
-          onProductosChange();
-        }
-      });
-      // cambios de selección
-      listaProductos.addEventListener('change', (e) => {
-        if (e.target && e.target.matches('input.js-prod')) onProductosChange();
-      });
-      // reflejar estado aria-expanded del summary
-      detProductos.addEventListener('toggle', () => {
-        detProductos.setAttribute('aria-expanded', detProductos.open ? 'true' : 'false');
-      });
-    })();
-
-
-    function getProductosSeleccionados() {
-      return Array.from(listaProductos.querySelectorAll('input.js-prod:checked')).map(ch => ({
-        id: parseInt(ch.value, 10),
-        costo: Number(ch.dataset.costo || 0),
-        nombre: ch.parentElement.querySelector('span')?.textContent || ''
-      }));
-    }
-
-    function onProductosChange() {
-      const sel = getProductosSeleccionados();
-      // label del botón
-      if (!sel.length) {
-        sumProductos.textContent = 'Elegí uno o más productos';
-      } else if (sel.length === 1) {
-        sumProductos.textContent = sel[0].nombre;
-      } else {
-        sumProductos.textContent = `${sel.length} productos seleccionados`;
-      }
-      // armar matriz según selección
-      buildMatrizDesdeProductos(sel);
-      actualizarResumenCostos();
-    }
-
-    // Construye la matriz a partir de los productos seleccionados
-    function buildMatrizDesdeProductos(productos) {
-      if (!productos.length) {
+    // Patología → cargar productos de matriz
+    selMotivo.addEventListener('change', async () => {
+      const pid = parseInt(selMotivo.value || '0', 10);
+      if (!pid) {
         matrizBody.innerHTML = '';
         return;
       }
-      const filas = productos.map((p) => {
-        const rowId = `row_${p.id}`;
-        return `
-      <tr>
-        <th scope="row">
-          <label class="gfm-prod">
-            <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="${rowId}" data-row="${rowId}" data-producto-id="${p.id}" data-costo="${p.costo}" />
-            <span>${p.nombre}</span>
-          </label>
-        </th>
-        <td data-col="SVE">
-          <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="sve" disabled aria-label="SVE para ${p.nombre}" /></label>
-        </td>
-        <td data-col="Productor">
-          <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="productor" disabled aria-label="Productor para ${p.nombre}" /></label>
-        </td>
-      </tr>`;
-      }).join('');
-      matrizBody.innerHTML = filas;
+      await loadProductosPorPatologia(pid);
+    });
 
-      // listeners por fila (enable/disable radios)
-      $$('.gfm-row-toggle', matrizBody).forEach(cb => {
-        cb.addEventListener('change', () => {
-          const name = `m_${cb.dataset.row}`;
-          const radios = $$(`input[type="radio"][name="${name}"]`, matrizBody);
-          if (cb.checked) {
-            radios.forEach(r => {
-              r.disabled = false;
-            });
-          } else {
-            radios.forEach(r => {
-              r.checked = false;
-              r.disabled = true;
-            });
-          }
-          actualizarResumenCostos();
+    // Matriz dinámica
+    async function loadProductosPorPatologia(patologiaId) {
+      try {
+        const data = await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${patologiaId}`);
+        matrizBody.innerHTML = data.map((p) => {
+          const rowId = `row_${p.id}`;
+          return `
+          <tr>
+            <th scope="row">
+              <label class="gfm-prod">
+                <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="${rowId}" data-row="${rowId}" data-producto-id="${p.id}" />
+                <span>${p.nombre}</span>
+              </label>
+            </th>
+            <td data-col="SVE">
+              <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="sve" disabled /></label>
+            </td>
+            <td data-col="Productor">
+              <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="productor" disabled /></label>
+            </td>
+          </tr>`;
+        }).join('');
+        $$('.gfm-row-toggle', matrizBody).forEach(cb => {
+          cb.addEventListener('change', () => {
+            const name = `m_${cb.dataset.row}`;
+            const radios = $$(`input[type="radio"][name="${name}"]`, matrizBody);
+            if (cb.checked) {
+              radios.forEach(r => {
+                r.disabled = false;
+              });
+            } else {
+              radios.forEach(r => {
+                r.checked = false;
+                r.disabled = true;
+              });
+            }
+          });
         });
-      });
-      // radios → resumen
-      matrizBody.addEventListener('change', (e) => {
-        if (e.target && e.target.matches('input[type="radio"]')) actualizarResumenCostos();
-      });
+      } catch (e) {
+        console.error(e);
+        matrizBody.innerHTML = '';
+      }
     }
-
-
 
     // Modal con validación previa (todos los campos obligatorios)
     btnSolicitar.addEventListener('click', (e) => {
@@ -1025,11 +802,8 @@
       }
     });
 
-
-    function buildPayload(opts = {}) {
-      if (!opts.soloValidacionesBasicas) {
-        if (!hidPersona.value) throw new Error('Seleccioná un productor.');
-      }
+    function buildPayload() {
+      if (!hidPersona.value) throw new Error('Seleccioná un productor.');
 
       const rep = normalizaSiNo(selRep.value);
       const linea = normalizaSiNo(selLinea.value);
@@ -1045,46 +819,42 @@
       const calle = inpCalle.value.trim();
       const numero = String(inpNum.value || '').trim();
       const rango = selQuincena.value;
+      const patologiaId = parseInt(selMotivo.value || '0', 10);
       const coopIdReal = selCoop.value || null;
 
-      if (!opts.soloValidacionesBasicas) {
-        if ([rep, linea, zRestr, corr, agua, cuart, despegue].some(v => !v)) throw new Error('Completá los campos de Sí/No.');
-        if (!hectInt || hectInt < 0) throw new Error('Ingresá la cantidad de hectáreas (entero).');
-        if (!fpago) throw new Error('Seleccioná la forma de pago.');
-        if (!rango) throw new Error('Seleccioná la quincena.');
-        if (!provincia || !localidad || !calle || !numero) throw new Error('Completá la dirección.');
-        if (fpago === 6 && !coopIdReal) throw new Error('Seleccioná la cooperativa para la forma de pago 6.');
-      }
+      if ([rep, linea, zRestr, corr, agua, cuart, despegue].some(v => !v)) throw new Error('Completá los campos de Sí/No.');
+      if (!hectInt || hectInt < 0) throw new Error('Ingresá la cantidad de hectáreas (entero).');
+      if (!fpago) throw new Error('Seleccioná la forma de pago.');
+      if (!rango) throw new Error('Seleccioná la quincena.');
+      if (!patologiaId) throw new Error('Seleccioná un motivo/patología.');
+      if (!provincia || !localidad || !calle || !numero) throw new Error('Completá la dirección.');
+      if (fpago === 6 && !coopIdReal) throw new Error('Seleccioná la cooperativa para la forma de pago 6.');
 
       const items = [];
       $$('.gfm-row-toggle:checked', matrizBody).forEach(cb => {
         const name = `m_${cb.dataset.row}`;
         const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
-        if (!opts.soloValidacionesBasicas && !choice) throw new Error('Indicá quién aporta cada producto seleccionado.');
-        if (choice) {
-          items.push({
-            producto_id: parseInt(cb.dataset.productoId, 10),
-            fuente: choice.value
-          });
-        }
+        if (!choice) throw new Error('Indicá quién aporta cada producto seleccionado.');
+        items.push({
+          producto_id: parseInt(cb.dataset.productoId, 10),
+          fuente: choice.value
+        });
       });
 
       return {
-        productor_id_real: hidPersona.value || null,
-        representante: rep || null,
-        linea_tension: linea || null,
-        zona_restringida: zRestr || null,
-        corriente_electrica: corr || null,
-        agua_potable: agua || null,
-        libre_obstaculos: cuart || null,
-        area_despegue: despegue || null,
-        superficie_ha: Number((hectInt || 0).toFixed(2)),
-        forma_pago_id: fpago || null,
+        productor_id_real: hidPersona.value,
+        representante: rep,
+        linea_tension: linea,
+        zona_restringida: zRestr,
+        corriente_electrica: corr,
+        agua_potable: agua,
+        libre_obstaculos: cuart,
+        area_despegue: despegue,
+        superficie_ha: Number(hectInt.toFixed(2)),
+        forma_pago_id: fpago,
         coop_descuento_id_real: coopIdReal,
-        // patologías pasan a ser opcionales → enviamos vacío
-        patologia_ids: [],
-        patologia_id: null,
-        rango: rango || '',
+        patologia_id: patologiaId,
+        rango: rango,
         items: items,
         dir_provincia: provincia,
         dir_localidad: localidad,
@@ -1093,85 +863,6 @@
         observaciones: inpObs.value || null
       };
     }
-
-
-
-    function calcularCostos(payload) {
-      // Cálculo en tiempo real:
-      //  - Para cada fila seleccionada: costo_hectárea * superficie * va a SVE o Productor según radio.
-      //  - Servicio: COSTO_SERVICIO_HA * superficie (si > 0)
-      const hect = Number(payload.superficie_ha || 0);
-      let subSVE = 0,
-        subProductor = 0;
-
-      $$('.gfm-row-toggle:checked', matrizBody).forEach(cb => {
-        const name = `m_${cb.dataset.row}`;
-        const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
-        const costoHa = Number(cb.dataset.costo || 0);
-        if (choice && hect > 0 && costoHa > 0) {
-          const subtotal = costoHa * hect;
-          if (choice.value === 'sve') subSVE += subtotal;
-          if (choice.value === 'productor') subProductor += subtotal;
-        }
-      });
-
-      const subHectareas = hect > 0 ? (Number(COSTO_SERVICIO_HA) * hect) : 0;
-      const total = subSVE + subProductor + subHectareas;
-
-      const fmt = (n) => n > 0 ? new Intl.NumberFormat('es-AR', {
-        style: 'currency',
-        currency: 'ARS',
-        maximumFractionDigits: 0
-      }).format(n) : '—';
-      return {
-        subSVE: subSVE > 0 ? fmt(subSVE) : '—',
-        subProductor: subProductor > 0 ? fmt(subProductor) : '—',
-        subHectareas: subHectareas > 0 ? fmt(subHectareas) : '—',
-        total: total > 0 ? fmt(total) : 'A confirmar'
-      };
-    }
-
-
-    function actualizarResumenCostos() {
-      const cntSVE = $('#cnt-sve');
-      const cntProd = $('#cnt-productor');
-      const cntHect = $('#cnt-hect');
-      const subSVE = $('#sub-sve');
-      const subProd = $('#sub-productor');
-      const subHect = $('#sub-hect');
-      const tot = $('#total-estimado');
-
-      // Conteo por fuente
-      let cSVE = 0,
-        cProd = 0;
-      $$('.gfm-row-toggle:checked', matrizBody).forEach(cb => {
-        const name = `m_${cb.dataset.row}`;
-        const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
-        if (choice) {
-          if (choice.value === 'sve') cSVE++;
-          if (choice.value === 'productor') cProd++;
-        }
-      });
-
-      // Hectáreas
-      const hectInt = parseInt(inpHect.value || '0', 10);
-      cntSVE.textContent = String(cSVE);
-      cntProd.textContent = String(cProd);
-      cntHect.textContent = String(hectInt > 0 ? hectInt : 0);
-
-      // Costeo (placeholder)
-      const payload = buildPayload({
-        soloValidacionesBasicas: true
-      });
-      const c = calcularCostos(payload);
-
-      subSVE.textContent = c.subSVE != null ? c.subSVE : '—';
-      subProd.textContent = c.subProductor != null ? c.subProductor : '—';
-      subHect.textContent = c.subHectareas != null ? c.subHectareas : '—';
-      tot.textContent = c.total != null ? c.total : 'A confirmar';
-    }
-
-
 
     // ---------- Validador previo al modal ----------
     function markInvalid(el) {
@@ -1262,6 +953,14 @@
         }
       }
 
+      // Motivo / Patología (select)
+      const patologiaId = parseInt(selMotivo.value || '0', 10);
+      if (!patologiaId) {
+        showAlert('error', 'Seleccioná un motivo/patología.');
+        markInvalid(selMotivo);
+        return false;
+      }
+
       // Quincena (rango)
       if (!selQuincena.value) {
         showAlert('error', 'Seleccioná la quincena de visita.');
@@ -1297,33 +996,15 @@
       return true;
     }
 
-    // Costo de servicio por hectárea (desde backend)
-    let COSTO_SERVICIO_HA = 0;
-    async function loadCostoServicio() {
-      try {
-        const d = await fetchJson(`${CTRL_URL}?action=costo_servicio`);
-        COSTO_SERVICIO_HA = Number(d?.costo || 0);
-      } catch (e) {
-        COSTO_SERVICIO_HA = 0;
-      }
-    }
 
     // Inicialización
     (async function init() {
       try {
-        await Promise.all([loadFormasPago(), loadRangos(), loadProductos(), loadCooperativas(), loadCostoServicio()]);
+        await Promise.all([loadFormasPago(), loadRangos(), loadPatologias(), loadCooperativas()]);
         grupoCooperativaShow(false);
-
-        // Provincia por defecto
-        selProv.value = 'Mendoza';
-
-        // Enganches que afectan el resumen
-        inpHect.addEventListener('input', actualizarResumenCostos);
-        selPago.addEventListener('change', actualizarResumenCostos);
       } catch (e) {
         console.error(e);
       }
     })();
-
   })();
 </script>
