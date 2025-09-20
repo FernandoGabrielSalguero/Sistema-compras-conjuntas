@@ -12,6 +12,7 @@ checkAccess('cooperativa');
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
+$rol = $_SESSION['rol'] ?? 'Sin ROL';
 $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
@@ -213,6 +214,7 @@ unset($_SESSION['cierre_info']);
                                                     'nombre'         => $nombre,
                                                     'correo'         => $correo,
                                                     'cuit'           => $cuit,
+                                                    'rol'           => $rol,
                                                     'telefono'       => $telefono,
                                                     'observaciones'  => $observaciones,
                                                     'id_cooperativa' => $_SESSION['id_cooperativa'] ?? null,
