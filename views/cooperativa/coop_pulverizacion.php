@@ -160,19 +160,6 @@ unset($_SESSION['cierre_info']);
                         }
                         ?>
                     </div>
-
-                    <!-- Panel: Registro Fito Sanitario -->
-                    <div class="tab-panel" id="panel-registro">
-                        <?php
-                        $viewFile = __DIR__ . '/../partials/drones/view/drone_registro_view.php';
-                        if (is_file($viewFile)) {
-                            require $viewFile;
-                        } else {
-                            echo '<p>No se encontró la vista <code>drone_registro_view.php</code>.</p>';
-                        }
-                        ?>
-                    </div>
-
                 </div>
 
                 <!-- contenedor del toastify -->
