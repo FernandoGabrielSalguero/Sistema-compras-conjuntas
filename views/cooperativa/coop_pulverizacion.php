@@ -156,8 +156,12 @@ unset($_SESSION['cierre_info']);
                         <div class="tab-buttons" role="tablist" aria-label="Secciones de pulverización">
                             <button type="button" id="tab-solicitudes" class="tab-button" role="tab" aria-controls="panel-solicitudes" aria-selected="true" data-target="#panel-solicitudes">Solicitudes</button>
                             <button type="button" id="tab-formulario" class="tab-button" role="tab" aria-controls="panel-formulario" aria-selected="false" data-target="#panel-formulario">Nuevo servicio</button>
+
+                            <!-- Botón Tutorial -->
+                            <button type="button" id="btnIniciarTutorial" class="btn btn-info" aria-label="Iniciar tutorial" style="margin-left:auto">Tutorial</button>
+
                             <!-- Botón de actualización on-demand -->
-                            <button type="button" id="btn-refresh" class="btn btn-aceptar" style="margin-left:auto">Actualizar</button>
+                            <button type="button" id="btn-refresh" class="btn btn-aceptar tutorial-BotonActualizar">Actualizar</button>
                         </div>
                     </div>
                 </div>
@@ -166,28 +170,33 @@ unset($_SESSION['cierre_info']);
                 <div class="card" id="tab-content-card" style="margin-top: 12px;">
 
                     <!-- Panel: Solicitudes -->
-                    <div class="tab-panel active" id="panel-solicitudes" role="tabpanel" aria-labelledby="tab-solicitudes" tabindex="0">
-                        <?php
-                        $viewFile = __DIR__ . '/../partials/drones/view/drone_list_view.php';
-                        if (is_file($viewFile)) {
-                            require $viewFile;
-                        } else {
-                            echo '<p>No se encontró la vista <code>drone_list_view.php</code>.</p>';
-                        }
-                        ?>
+                    <div class="tab-panel active tutorial-PanelSolicitudes" id="panel-solicitudes" role="tabpanel" aria-labelledby="tab-solicitudes" tabindex="0">
+                        <div class="tutorial-TablaSolicitudes">
+                            <?php
+                            $viewFile = __DIR__ . '/../partials/drones/view/drone_list_view.php';
+                            if (is_file($viewFile)) {
+                                require $viewFile;
+                            } else {
+                                echo '<p>No se encontró la vista <code>drone_list_view.php</code>.</p>';
+                            }
+                            ?>
+                        </div>
                     </div>
 
                     <!-- Panel: Formulario -->
-                    <div class="tab-panel" id="panel-formulario" role="tabpanel" aria-labelledby="tab-formulario" tabindex="0" hidden>
-                        <?php
-                        $viewFile = __DIR__ . '/../partials/drones/view/drone_formulario_N_Servicio_view.php';
-                        if (is_file($viewFile)) {
-                            require $viewFile;
-                        } else {
-                            echo '<p>No se encontró la vista <code>drone_formulario_N_Servicio_view.php</code>.</p>';
-                        }
-                        ?>
+                    <div class="tab-panel tutorial-PanelFormulario" id="panel-formulario" role="tabpanel" aria-labelledby="tab-formulario" tabindex="0" hidden>
+                        <div class="tutorial-FormularioNuevoServicio">
+                            <?php
+                            $viewFile = __DIR__ . '/../partials/drones/view/drone_formulario_N_Servicio_view.php';
+                            if (is_file($viewFile)) {
+                                require $viewFile;
+                            } else {
+                                echo '<p>No se encontró la vista <code>drone_formulario_N_Servicio_view.php</code>.</p>';
+                            }
+                            ?>
+                        </div>
                     </div>
+
                 </div>
 
                 <!-- contenedor del toastify -->
@@ -201,72 +210,74 @@ unset($_SESSION['cierre_info']);
         </div>
     </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Señal para CSS: ya puede mostrar solo el activo
-        document.documentElement.classList.add('js-ready');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Señal para CSS: ya puede mostrar solo el activo
+            document.documentElement.classList.add('js-ready');
 
-        const STORAGE_KEY = 'sve_drone_tab';
-        const buttons = document.querySelectorAll('.tab-buttons .tab-button[data-target]');
-        const panels  = document.querySelectorAll('#tab-content-card .tab-panel');
+            const STORAGE_KEY = 'sve_drone_tab';
+            const buttons = document.querySelectorAll('.tab-buttons .tab-button[data-target]');
+            const panels = document.querySelectorAll('#tab-content-card .tab-panel');
 
-        function syncHidden(targetSel) {
-            panels.forEach(p => {
-                const isActive = '#' + p.id === targetSel;
-                p.classList.toggle('active', isActive);
-                // Sincroniza atributo hidden por accesibilidad y estilos del navegador
-                if (isActive) {
-                    p.removeAttribute('hidden');
-                } else {
-                    p.setAttribute('hidden', 'hidden');
-                }
+            function syncHidden(targetSel) {
+                panels.forEach(p => {
+                    const isActive = '#' + p.id === targetSel;
+                    p.classList.toggle('active', isActive);
+                    // Sincroniza atributo hidden por accesibilidad y estilos del navegador
+                    if (isActive) {
+                        p.removeAttribute('hidden');
+                    } else {
+                        p.setAttribute('hidden', 'hidden');
+                    }
+                });
+            }
+
+            function syncButtons(targetSel) {
+                buttons.forEach(b => {
+                    const isActive = b.dataset.target === targetSel;
+                    b.classList.toggle('active', isActive);
+                    b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                    if (isActive) b.focus({
+                        preventScroll: true
+                    });
+                });
+            }
+
+            function activate(targetSel) {
+                syncButtons(targetSel);
+                syncHidden(targetSel);
+                sessionStorage.setItem(STORAGE_KEY, targetSel);
+            }
+
+            // Click en tabs
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const target = btn.dataset.target;
+                    if (!target) return;
+                    activate(target);
+                });
             });
-        }
 
-        function syncButtons(targetSel) {
-            buttons.forEach(b => {
-                const isActive = b.dataset.target === targetSel;
-                b.classList.toggle('active', isActive);
-                b.setAttribute('aria-selected', isActive ? 'true' : 'false');
-                if (isActive) b.focus({preventScroll:true});
-            });
-        }
+            // Botón "Actualizar" (recarga manual)
+            const refreshBtn = document.getElementById('btn-refresh');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => {
+                    const activeBtn = document.querySelector('.tab-buttons .tab-button.active[data-target]');
+                    const current = activeBtn ? activeBtn.dataset.target : '#panel-solicitudes';
+                    sessionStorage.setItem(STORAGE_KEY, current);
+                    location.reload();
+                });
+            }
 
-        function activate(targetSel) {
-            syncButtons(targetSel);
-            syncHidden(targetSel);
-            sessionStorage.setItem(STORAGE_KEY, targetSel);
-        }
-
-        // Click en tabs
-        buttons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const target = btn.dataset.target;
-                if (!target) return;
-                activate(target);
-            });
+            // Estado inicial
+            const initial = sessionStorage.getItem(STORAGE_KEY) || '#panel-solicitudes';
+            activate(initial);
         });
-
-        // Botón "Actualizar" (recarga manual)
-        const refreshBtn = document.getElementById('btn-refresh');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => {
-                const activeBtn = document.querySelector('.tab-buttons .tab-button.active[data-target]');
-                const current = activeBtn ? activeBtn.dataset.target : '#panel-solicitudes';
-                sessionStorage.setItem(STORAGE_KEY, current);
-                location.reload();
-            });
-        }
-
-        // Estado inicial
-        const initial = sessionStorage.getItem(STORAGE_KEY) || '#panel-solicitudes';
-        activate(initial);
-    });
-</script>
+    </script>
 
 
-<!-- Mantener defer; si el tutorial manipula tabs, no debe sobreescribir el estado -->
-<script src="../partials/tutorials/cooperativas/productores.js?v=<?= time() ?>" defer></script>
+    <!-- Mantener defer; si el tutorial manipula tabs, no debe sobreescribir el estado -->
+    <script src="../partials/tutorials/cooperativas/pulverizacion.js?v=<?= time() ?>" defer></script>
 
 </body>
 
