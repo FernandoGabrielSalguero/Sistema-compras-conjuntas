@@ -46,18 +46,47 @@ unset($_SESSION['cierre_info']);
         }
 
         .user-card.completo {
-            border: 2px solid green;
+            border-color: green;
         }
 
         .user-card.incompleto {
-            border: 2px solid red;
+            border-color: red;
         }
 
-        /* ocultar imputs */
+        /* ocultar inputs */
         .oculto {
             display: none !important;
         }
+
+        /* --- Tabs: visibilidad y feedback --- */
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .tabs .tab-buttons {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .tab-button.active {
+            border-bottom: 2px solid #5b21b6;
+        }
+
+        /* Evitar FOUC: ocultar paneles hasta que JS marque el activo */
+        .js-ready .tab-panel {
+            display: none;
+        }
+
+        .js-ready .tab-panel.active {
+            display: block;
+        }
     </style>
+
 </head>
 
 <body>
@@ -89,7 +118,7 @@ unset($_SESSION['cierre_info']);
                         <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span><span class="link-text">Pulverización con Drone</span>
                     </li>
                     <li onclick="location.href='coop_usuarioInformacion.php'">
-                        <ure class="material-icons" style="color: #5b21b6;">agriculture</ure><span class="link-text">Productores</span>
+                        <span class="material-icons" style="color: #5b21b6;">agriculture</span><span class="link-text">Productores</span>
                     </li>
                     <li onclick="location.href='../../../logout.php'">
                         <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
@@ -124,12 +153,11 @@ unset($_SESSION['cierre_info']);
 
                     <!-- 🔘 Tarjeta con los botones del tab -->
                     <div class="tabs">
-                        <div class="tab-buttons">
-                            <button class="tab-button" data-target="#panel-solicitudes">Solicitudes</button>
-                            <button class="tab-button" data-target="#panel-formulario">Nuevo servicio</button>
-                            <button class="tab-button" data-target="#panel-registro">Registro fito sanitario</button>
+                        <div class="tab-buttons" role="tablist" aria-label="Secciones de pulverización">
+                            <button type="button" id="tab-solicitudes" class="tab-button" role="tab" aria-controls="panel-solicitudes" aria-selected="true" data-target="#panel-solicitudes">Solicitudes</button>
+                            <button type="button" id="tab-formulario" class="tab-button" role="tab" aria-controls="panel-formulario" aria-selected="false" data-target="#panel-formulario">Nuevo servicio</button>
                             <!-- Botón de actualización on-demand -->
-                            <button id="btn-refresh" class="btn btn-aceptar" style="margin-left:auto">Actualizar</button>
+                            <button type="button" id="btn-refresh" class="btn btn-aceptar" style="margin-left:auto">Actualizar</button>
                         </div>
                     </div>
                 </div>
@@ -138,7 +166,7 @@ unset($_SESSION['cierre_info']);
                 <div class="card" id="tab-content-card" style="margin-top: 12px;">
 
                     <!-- Panel: Solicitudes -->
-                    <div class="tab-panel active" id="panel-solicitudes">
+                    <div class="tab-panel active" id="panel-solicitudes" role="tabpanel" aria-labelledby="tab-solicitudes" tabindex="0">
                         <?php
                         $viewFile = __DIR__ . '/../partials/drones/view/drone_list_view.php';
                         if (is_file($viewFile)) {
@@ -150,7 +178,7 @@ unset($_SESSION['cierre_info']);
                     </div>
 
                     <!-- Panel: Formulario -->
-                    <div class="tab-panel" id="panel-formulario">
+                    <div class="tab-panel" id="panel-formulario" role="tabpanel" aria-labelledby="tab-formulario" tabindex="0" hidden>
                         <?php
                         $viewFile = __DIR__ . '/../partials/drones/view/drone_formulario_N_Servicio_view.php';
                         if (is_file($viewFile)) {
@@ -173,66 +201,73 @@ unset($_SESSION['cierre_info']);
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const buttons = document.querySelectorAll('.tab-buttons .tab-button[data-target]');
-            const panels = document.querySelectorAll('#tab-content-card .tab-panel');
-            const STORAGE_KEY = 'sve_drone_tab';
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Señal para CSS: ya puede mostrar solo el activo
+        document.documentElement.classList.add('js-ready');
 
-            function isTabButton(el) {
-                return el && el.dataset && el.dataset.target;
-            }
+        const STORAGE_KEY = 'sve_drone_tab';
+        const buttons = document.querySelectorAll('.tab-buttons .tab-button[data-target]');
+        const panels  = document.querySelectorAll('#tab-content-card .tab-panel');
 
-            function activate(targetSel) {
-                // Limpia estados
-                buttons.forEach(b => b.classList.remove('active'));
-                panels.forEach(p => p.classList.remove('active'));
-
-                // Activa botón/panel destino
-                const btn = Array.from(buttons).find(b => b.dataset.target === targetSel);
-                const panel = document.querySelector(targetSel);
-
-                if (btn) btn.classList.add('active');
-                if (panel) panel.classList.add('active');
-
-                // Quitar fondo/sombra del contenedor en vistas "planas"
-                const wrapper = document.getElementById('tab-content-card');
-                if (wrapper) {
-                    const sinChrome = ['#panel-variables', '#panel-stock', '#panel-protocolo'].includes(targetSel);
-                    wrapper.classList.toggle('no-chrome', sinChrome);
+        function syncHidden(targetSel) {
+            panels.forEach(p => {
+                const isActive = '#' + p.id === targetSel;
+                p.classList.toggle('active', isActive);
+                // Sincroniza atributo hidden por accesibilidad y estilos del navegador
+                if (isActive) {
+                    p.removeAttribute('hidden');
+                } else {
+                    p.setAttribute('hidden', 'hidden');
                 }
-            }
-
-            // Cambiar de pestaña SIN recargar
-            buttons.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    if (!isTabButton(btn)) return;
-                    const target = btn.dataset.target;
-                    if (!target) return;
-                    sessionStorage.setItem(STORAGE_KEY, target);
-                    activate(target);
-                });
             });
+        }
 
-            // Botón "Actualizar" (recarga manual)
-            const refreshBtn = document.getElementById('btn-refresh');
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', () => {
-                    // Conserva la pestaña actual al recargar
-                    const activeBtn = document.querySelector('.tab-buttons .tab-button.active[data-target]');
-                    const current = activeBtn ? activeBtn.dataset.target : '#panel-solicitudes';
-                    sessionStorage.setItem(STORAGE_KEY, current);
-                    location.reload();
-                });
-            }
+        function syncButtons(targetSel) {
+            buttons.forEach(b => {
+                const isActive = b.dataset.target === targetSel;
+                b.classList.toggle('active', isActive);
+                b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                if (isActive) b.focus({preventScroll:true});
+            });
+        }
 
-            // Activar la pestaña persistida (o default)
-            const initial = sessionStorage.getItem(STORAGE_KEY) || '#panel-solicitudes';
-            activate(initial);
+        function activate(targetSel) {
+            syncButtons(targetSel);
+            syncHidden(targetSel);
+            sessionStorage.setItem(STORAGE_KEY, targetSel);
+        }
+
+        // Click en tabs
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.dataset.target;
+                if (!target) return;
+                activate(target);
+            });
         });
-    </script>
-    <!-- llamada de tutorial -->
-    <script src="../partials/tutorials/cooperativas/productores.js?v=<?= time() ?>" defer></script>
+
+        // Botón "Actualizar" (recarga manual)
+        const refreshBtn = document.getElementById('btn-refresh');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                const activeBtn = document.querySelector('.tab-buttons .tab-button.active[data-target]');
+                const current = activeBtn ? activeBtn.dataset.target : '#panel-solicitudes';
+                sessionStorage.setItem(STORAGE_KEY, current);
+                location.reload();
+            });
+        }
+
+        // Estado inicial
+        const initial = sessionStorage.getItem(STORAGE_KEY) || '#panel-solicitudes';
+        activate(initial);
+    });
+</script>
+
+
+<!-- Mantener defer; si el tutorial manipula tabs, no debe sobreescribir el estado -->
+<script src="../partials/tutorials/cooperativas/productores.js?v=<?= time() ?>" defer></script>
+
 </body>
 
 </html>
