@@ -29,61 +29,10 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
     <style>
-        /* Ocupa todo el ancho: no hay sidebar en esta página */
-        .main {
-            margin-left: 0;
-        }
 
-        /* Header-card más alto y con botón a la derecha */
-        .header-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 2rem 1.5rem;
-            /* un poco más alto */
-        }
 
-        /* Título con icono */
-        .card-title {
-            display: flex;
-            align-items: center;
-            gap: .5rem;
-        }
 
-        .card-title .material-icons {
-            font-size: 32px;
-            color: #5b21b6;
-            opacity: .9;
-        }
 
-        /* Pie de cada tarjeta: botón alineado a la derecha */
-        .action-footer {
-            margin-top: .75rem;
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        .material-symbols-outlined {
-            font-size: 32px;
-            color: #5b21b6;
-            opacity: .9;
-        }
-
-        /* Mejora accesible del modal: pequeña animación sin layout shift */
-        #modalCompletarDatos .modal-content {
-            transition: transform .2s ease, opacity .2s ease;
-            transform: translateY(-4px);
-            opacity: 0.98;
-        }
-
-        .hidden #modalCompletarDatos .modal-content {
-            transform: translateY(0);
-        }
-
-        /* Inputs pequeños ajustes si hiciera falta */
-        #modalCompletarDatos .input-group {
-            margin-bottom: .75rem;
-        }
     </style>
 </head>
 
