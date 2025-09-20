@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     header('Location: /views/sve/sve_dashboard.php');
                     break;
                 case 'ingeniero':
-                    header('Location: /views/ingeniero/dashboard.php');
+                    header('Location: /views/ingeniero/ing_dashboard.php');
                     break;
                 default:
                     header('Location: /');
