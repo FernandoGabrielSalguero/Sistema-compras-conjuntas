@@ -88,7 +88,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         <span class="material-icons" style="color: #5b21b6;">analytics</span><span class="link-text">Consolidado</span>
                     </li>
                     <li onclick="location.href='coop_pulverizacion.php'">
-                        <span class="material-icons" style="color: #5b21b6;">drone</span><span class="link-text">Pulverización con Drone</span>
+                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span><span class="link-text">Pulverización con Drone</span>
                     </li>
                     <li onclick="location.href='coop_usuarioInformacion.php'">
                         <ure class="material-icons" style="color: #5b21b6;">agriculture</ure><span class="link-text">Productores</span>

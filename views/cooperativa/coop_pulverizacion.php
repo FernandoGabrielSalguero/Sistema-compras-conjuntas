@@ -86,7 +86,7 @@ unset($_SESSION['cierre_info']);
                         <span class="material-icons" style="color: #5b21b6;">analytics</span><span class="link-text">Consolidado</span>
                     </li>
                     <li onclick="location.href='coop_pulverizacion.php'">
-                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span><span class="link-text">Pulverización con Drone</span>
+                        <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span><span class="link-text">Pulverización con Drone</span>
                     </li>
                     <li onclick="location.href='coop_usuarioInformacion.php'">
                         <ure class="material-icons" style="color: #5b21b6;">agriculture</ure><span class="link-text">Productores</span>
@@ -127,11 +127,7 @@ unset($_SESSION['cierre_info']);
                         <div class="tab-buttons">
                             <button class="tab-button" data-target="#panel-solicitudes">Solicitudes</button>
                             <button class="tab-button" data-target="#panel-formulario">Nuevo servicio</button>
-                            <button class="tab-button" data-target="#panel-protocolo">Protocolo</button>
-                            <button class="tab-button" data-target="#panel-calendario">Calendario</button>
                             <button class="tab-button" data-target="#panel-registro">Registro fito sanitario</button>
-                            <button class="tab-button" data-target="#panel-stock">Stock</button>
-                            <button class="tab-button" data-target="#panel-variables">Variables</button>
                             <!-- Botón de actualización on-demand -->
                             <button id="btn-refresh" class="btn btn-aceptar" style="margin-left:auto">Actualizar</button>
                         </div>
@@ -165,31 +161,7 @@ unset($_SESSION['cierre_info']);
                         ?>
                     </div>
 
-                    <!-- Panel: Protocolo -->
-                    <div class="tab-panel" id="panel-protocolo">
-                        <?php
-                        $viewFile = __DIR__ . '/../partials/drones/view/drone_protocol_view.php';
-                        if (is_file($viewFile)) {
-                            require $viewFile;
-                        } else {
-                            echo '<p>No se encontró la vista <code>drone_protocol_view.php</code>.</p>';
-                        }
-                        ?>
-                    </div>
-
-                    <!-- Panel: Calendario -->
-                    <div class="tab-panel" id="panel-calendario">
-                        <?php
-                        $viewFile = __DIR__ . '/../partials/drones/view/drone_calendar_view.php';
-                        if (is_file($viewFile)) {
-                            require $viewFile;
-                        } else {
-                            echo '<p>No se encontró la vista <code>drone_calendar_view.php</code>.</p>';
-                        }
-                        ?>
-                    </div>
-
-                    <!-- Panel: Registro -->
+                    <!-- Panel: Registro Fito Sanitario -->
                     <div class="tab-panel" id="panel-registro">
                         <?php
                         $viewFile = __DIR__ . '/../partials/drones/view/drone_registro_view.php';
@@ -197,30 +169,6 @@ unset($_SESSION['cierre_info']);
                             require $viewFile;
                         } else {
                             echo '<p>No se encontró la vista <code>drone_registro_view.php</code>.</p>';
-                        }
-                        ?>
-                    </div>
-
-                    <!-- Panel: Stock -->
-                    <div class="tab-panel" id="panel-stock">
-                        <?php
-                        $viewFile = __DIR__ . '/../partials/drones/view/drone_stock_view.php';
-                        if (is_file($viewFile)) {
-                            require $viewFile;
-                        } else {
-                            echo '<p>No se encontró la vista <code>drone_stock_view.php</code>.</p>';
-                        }
-                        ?>
-                    </div>
-
-                    <!-- Panel: Variables -->
-                    <div class="tab-panel" id="panel-variables">
-                        <?php
-                        $viewFile = __DIR__ . '/../partials/drones/view/drone_variables_view.php';
-                        if (is_file($viewFile)) {
-                            require $viewFile;
-                        } else {
-                            echo '<p>No se encontró la vista <code>drone_variables_view.php</code>.</p>';
                         }
                         ?>
                     </div>
