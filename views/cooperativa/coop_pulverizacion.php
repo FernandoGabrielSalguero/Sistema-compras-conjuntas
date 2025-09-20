@@ -13,6 +13,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
 $rol = $_SESSION['rol'] ?? 'Sin ROL';
+$id_real = $_SESSION['id_real'] ?? 'Sin ROL';
 $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
@@ -214,11 +215,10 @@ unset($_SESSION['cierre_info']);
                                                     'nombre'         => $nombre,
                                                     'correo'         => $correo,
                                                     'cuit'           => $cuit,
-                                                    'rol'           => $rol,
+                                                    'rol'            => $rol,
                                                     'telefono'       => $telefono,
                                                     'observaciones'  => $observaciones,
-                                                    'id_cooperativa' => $_SESSION['id_cooperativa'] ?? null,
-                                                    'id_usuario'     => $_SESSION['id_usuario'] ?? null,
+                                                    'id_real'        => $_SESSION['id_real'] ?? null,
                                                 ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 
                             // Variable global de solo lectura (convención para depurar)
