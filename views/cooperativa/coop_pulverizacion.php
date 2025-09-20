@@ -204,7 +204,36 @@ unset($_SESSION['cierre_info']);
                 <div id="toast-container-boton"></div>
                 <!-- Spinner Global -->
                 <script src="../../views/partials/spinner-global.js"></script>
+                <!-- Debug de sesión (solo campos no sensibles) -->
+                <script>
+                    (function() {
+                        try {
+                            // Datos de sesión expuestos de forma controlada
+                            const sessionData = <?= json_encode([
+                                                    'nombre'         => $nombre,
+                                                    'correo'         => $correo,
+                                                    'cuit'           => $cuit,
+                                                    'telefono'       => $telefono,
+                                                    'observaciones'  => $observaciones,
+                                                    'id_cooperativa' => $_SESSION['id_cooperativa'] ?? null,
+                                                    'id_usuario'     => $_SESSION['id_usuario'] ?? null,
+                                                ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 
+                            // Variable global de solo lectura (convención para depurar)
+                            Object.defineProperty(window, '__SVE_SESSION__', {
+                                value: Object.freeze(sessionData),
+                                writable: false,
+                                configurable: false,
+                                enumerable: true
+                            });
+
+                            // Log amigable
+                            console.info('[SVE] Sesión cargada:', sessionData);
+                        } catch (err) {
+                            console.error('[SVE] Error al exponer la sesión:', err);
+                        }
+                    })();
+                </script>
             </section>
 
         </div>
