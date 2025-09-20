@@ -8,15 +8,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function iniciarTutorialPulverizacion() {
     const pasos = [
+        // Nos aseguramos que los dos primeros pasos obliguen la tab de Solicitudes
         {
             selector: '#tab-solicitudes',
             mensaje: 'Acá cambiás a la pestaña “Solicitudes”. Mostrará la lista de servicios solicitados.',
-            posicion: 'bottom'
+            posicion: 'bottom',
+            switchTo: '#panel-solicitudes'
         },
         {
             selector: '.tutorial-TablaSolicitudes',
             mensaje: 'Esta sección contiene la tabla con las solicitudes. Podés revisar estados, datos y acciones.',
-            posicion: 'top'
+            posicion: 'top',
+            switchTo: '#panel-solicitudes'
         },
         {
             selector: '#btn-refresh.tutorial-BotonActualizar',
@@ -31,7 +34,8 @@ function iniciarTutorialPulverizacion() {
         {
             selector: '.tutorial-FormularioNuevoServicio',
             mensaje: 'Este es el formulario de alta. Completá los campos requeridos y enviá para crear el servicio.',
-            posicion: 'top'
+            posicion: 'top',
+            switchTo: '#panel-formulario' // <-- cambia automáticamente a la tab de formulario
         }
     ];
 
@@ -78,39 +82,58 @@ function iniciarTutorialPulverizacion() {
 
     mostrarPaso();
 
+    function activarTab(panelSelector) {
+        const mapa = {
+            '#panel-solicitudes': '#tab-solicitudes',
+            '#panel-formulario':  '#tab-formulario'
+        };
+        const btnSel = mapa[panelSelector];
+        const btn = btnSel ? document.querySelector(btnSel) : null;
+        if (btn) btn.click(); // usa la lógica existente de tabs
+    }
+
     function mostrarPaso() {
         limpiarPaso();
 
         const paso = pasos[pasoActual];
-        const target = document.querySelector(paso.selector);
 
-        if (!target) {
-            console.warn(`No se encontró el selector: ${paso.selector}`);
-            avanzar();
-            return;
+        // Si este paso requiere una tab específica, la activamos antes de buscar el selector
+        if (paso.switchTo) {
+            activarTab(paso.switchTo);
         }
 
-        target.classList.add('tutorial-highlight');
+        // Pequeño delay para permitir que el DOM actualice clases/hidden
+        setTimeout(() => {
+            const target = document.querySelector(paso.selector);
 
-        const tooltip = document.createElement('div');
-        tooltip.className = 'tutorial-tooltip';
-        tooltip.innerHTML = `
-            <div>${paso.mensaje}</div>
-            <br>
-            <div style="display:flex; justify-content:flex-end; gap:.5rem;">
-                <button id="btnSiguienteTutorial" class="btn btn-info" type="button">Siguiente</button>
-                <button id="btnCerrarTutorial" class="btn btn-cancelar" type="button">Cerrar</button>
-            </div>
-        `;
-        document.body.appendChild(tooltip);
+            if (!target) {
+                console.warn(`No se encontró el selector: ${paso.selector}`);
+                avanzar();
+                return;
+            }
 
-        const { top, left } = calcularPosicionTooltip(target, tooltip, paso.posicion);
-        tooltip.style.top = `${top}px`;
-        tooltip.style.left = `${left}px`;
+            target.classList.add('tutorial-highlight');
 
-        // Enlaces de los botones
-        document.getElementById('btnSiguienteTutorial').onclick = avanzar;
-        document.getElementById('btnCerrarTutorial').onclick = terminarTutorial;
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tutorial-tooltip';
+            tooltip.innerHTML = `
+                <div>${paso.mensaje}</div>
+                <br>
+                <div style="display:flex; justify-content:flex-end; gap:.5rem;">
+                    <button id="btnSiguienteTutorial" class="btn btn-info" type="button">Siguiente</button>
+                    <button id="btnCerrarTutorial" class="btn btn-cancelar" type="button">Cerrar</button>
+                </div>
+            `;
+            document.body.appendChild(tooltip);
+
+            const { top, left } = calcularPosicionTooltip(target, tooltip, paso.posicion);
+            tooltip.style.top = `${top}px`;
+            tooltip.style.left = `${left}px`;
+
+            // Enlaces de los botones
+            document.getElementById('btnSiguienteTutorial').onclick = avanzar;
+            document.getElementById('btnCerrarTutorial').onclick = terminarTutorial;
+        }, 80);
     }
 
     function calcularPosicionTooltip(target, tooltip, posicion = 'bottom') {
