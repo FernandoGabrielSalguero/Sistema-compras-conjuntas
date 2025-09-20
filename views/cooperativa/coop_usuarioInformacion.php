@@ -85,6 +85,9 @@ unset($_SESSION['cierre_info']);
                     <li onclick="location.href='coop_consolidado.php'">
                         <span class="material-icons" style="color: #5b21b6;">analytics</span><span class="link-text">Consolidado</span>
                     </li>
+                    <li onclick="location.href='coop_pulverizacion.php'">
+                        <span class="material-icons" style="color: #5b21b6;">drone</span><span class="link-text">Pulverización con Drone</span>
+                    </li>
                     <li onclick="location.href='coop_usuarioInformacion.php'">
                         <ure class="material-icons" style="color: #5b21b6;">agriculture</ure><span class="link-text">Productores</span>
                     </li>
