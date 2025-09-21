@@ -55,7 +55,7 @@ unset($_SESSION['cierre_info']);
                         <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
                     </li>
 
-                    <li onclick="location.href='sve_pulverizacionDrone.php'">
+                    <li onclick="location.href='ing_pulverizacion.php'">
                     <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
                     <span class="link-text">Drones</span>
                     </li>
