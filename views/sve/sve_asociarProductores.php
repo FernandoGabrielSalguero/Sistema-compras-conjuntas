@@ -121,23 +121,23 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <!-- Tarjeta de buscador -->
                 <div class="card">
                     <h2>Busca productores</h2>
-                    <form class="form-modern">
+                    <form class="form-modern" id="formFiltros" role="search" aria-label="Filtros de búsqueda de usuarios">
                         <div class="form-grid grid-3">
                             <!-- Buscar por CUIT -->
                             <div class="input-group">
                                 <label for="buscarCuit">Podes buscar por CUIT</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">fingerprint</span>
-                                    <input type="text" id="buscarCuit" name="buscarCuit" placeholder="20123456781">
+                                <div class="input-icon input-icon-name">
+                                    <span class="material-icons" aria-hidden="true">fingerprint</span>
+                                    <input type="text" id="buscarCuit" name="buscarCuit" placeholder="20123456781" autocomplete="off" />
                                 </div>
                             </div>
 
                             <!-- Buscar por Nombre -->
                             <div class="input-group">
                                 <label for="buscarNombre">Podes buscar por nombre</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">person</span>
-                                    <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
+                                <div class="input-icon input-icon-name">
+                                    <span class="material-icons" aria-hidden="true">person</span>
+                                    <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez" autocomplete="off" />
                                 </div>
                             </div>
 
@@ -145,17 +145,29 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-group">
                                 <label for="filtroAsociacion">Filtrar por asociación</label>
                                 <div class="input-icon">
-                                    <span class="material-icons">filter_list</span>
-                                    <select id="filtroAsociacion">
+                                    <span class="material-icons" aria-hidden="true">filter_list</span>
+                                    <select id="filtroAsociacion" name="filtroAsociacion" aria-label="Filtrar por asociación">
                                         <option value="">Todos</option>
                                         <option value="asociado">Solo asociados</option>
                                         <option value="no_asociado">Solo no asociados</option>
                                     </select>
                                 </div>
                             </div>
+
+                            <!-- Filtro por rol (dinámico) -->
+                            <div class="input-group">
+                                <label for="filtroRol">Filtrar por rol</label>
+                                <div class="input-icon">
+                                    <span class="material-icons" aria-hidden="true">manage_accounts</span>
+                                    <select id="filtroRol" name="rol" aria-label="Filtrar por rol">
+                                        <!-- Opciones cargadas dinámicamente vía fetch -->
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
+
 
                 <!-- Tabla -->
                 <div class="card">
@@ -184,96 +196,97 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-    <!-- javascrip -->
+        <!-- javascrip -->
     <script>
-        function asociarProductor(select, id_productor) {
-            const id_cooperativa = select.value;
+    (function () {
+        'use strict';
 
-            if (!id_cooperativa) return;
+        const tablaBody = document.getElementById('tablaAsociaciones');
+        const inpCuit = document.getElementById('buscarCuit');
+        const inpNombre = document.getElementById('buscarNombre');
+        const selAsociacion = document.getElementById('filtroAsociacion');
+        const selRol = document.getElementById('filtroRol');
 
-            fetch('/controllers/sve_asociarProductoresController.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        id_productor,
-                        id_cooperativa
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        showAlert('success', data.message);
-                    } else {
-                        showAlert('error', data.message);
-                    }
-                })
-                .catch(err => {
-                    console.error('❌ Error en la asociaci\u00f3n:', err);
-                    showAlert('error', 'Error inesperado al asociar productor.');
-                });
+        function capitalizar(txt) {
+            if (!txt) return '';
+            return txt.charAt(0).toUpperCase() + txt.slice(1).replace(/_/g, ' ');
         }
 
-        // cargar la tabla
-        document.addEventListener('DOMContentLoaded', () => {
-            fetch('/controllers/sve_asociarProductoresController.php')
-                .then(res => res.text())
-                .then(html => {
-                    document.getElementById('tablaAsociaciones').innerHTML = html;
-                })
-                .catch(err => {
-                    console.error('❌ Error al cargar asociaciones:', err);
-                    document.getElementById('tablaAsociaciones').innerHTML = "<tr><td colspan='4'>Error al cargar datos</td></tr>";
-                });
-
-                // filtro para los productores que tienen una cooperativa asociada
-                document.getElementById('filtroAsociacion').addEventListener('change', cargarProductores);
-
-        });
-
-        async function cargarProductores() {
-            const tabla = document.getElementById('tablaAsociaciones');
+        async function cargarRoles() {
             try {
-                const res = await fetch('/controllers/sve_asociarProductoresController.php');
-                const html = await res.text();
-                tabla.innerHTML = html;
-            } catch (err) {
-                tabla.innerHTML = '<tr><td colspan="4">Error al cargar datos.</td></tr>';
-                console.error('Error al cargar productores:', err);
+                const res = await fetch('/controllers/sve_asociarProductoresController.php?action=roles');
+                const data = await res.json();
+                const roles = (data && data.ok && Array.isArray(data.data)) ? data.data : [];
+                selRol.innerHTML = '<option value="">Todos</option>' + roles.map(r => `<option value="${r}">${capitalizar(r)}</option>`).join('');
+                // Por defecto, dejamos seleccionado "productor" para no romper el flujo de asociación
+                const opt = Array.from(selRol.options).find(o => o.value === 'productor');
+                if (opt) selRol.value = 'productor';
+            } catch (e) {
+                // Fallback mínimo
+                selRol.innerHTML = '<option value="">Todos</option><option value="productor" selected>Productor</option>';
             }
         }
 
-        document.addEventListener('DOMContentLoaded', cargarProductores);
-
-
-        // buscador por cuit o nombre de productor
-        document.addEventListener('DOMContentLoaded', () => {
-            // Cargar tabla al inicio
-            cargarProductores();
-
-            // Escuchar inputs
-            document.getElementById('buscarCuit').addEventListener('input', cargarProductores);
-            document.getElementById('buscarNombre').addEventListener('input', cargarProductores);
-        });
-
-        function cargarProductores() {
-            const cuit = document.getElementById('buscarCuit').value.trim();
-            const nombre = document.getElementById('buscarNombre').value.trim();
-            const filtroAsociacion = document.getElementById('filtroAsociacion').value;
-
-            fetch(`/controllers/sve_asociarProductoresController.php?cuit=${encodeURIComponent(cuit)}&nombre=${encodeURIComponent(nombre)}&filtro=${encodeURIComponent(filtroAsociacion)}`)
-                .then(res => res.text())
-                .then(html => {
-                    document.getElementById('tablaAsociaciones').innerHTML = html;
-                })
-                .catch(err => {
-                    console.error('❌ Error al cargar productores:', err);
-                    document.getElementById('tablaAsociaciones').innerHTML = '<tr><td colspan="6">Error al cargar datos.</td></tr>';
-                });
+        function debounce(fn, wait) {
+            let t;
+            return function (...args) {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), wait);
+            };
         }
-    </script>
 
+        async function cargarProductores() {
+            const params = new URLSearchParams({
+                cuit: (inpCuit.value || '').trim(),
+                nombre: (inpNombre.value || '').trim(),
+                filtro: selAsociacion.value || '',
+                rol: selRol.value || 'productor'
+            });
+
+            try {
+                const res = await fetch('/controllers/sve_asociarProductoresController.php?' + params.toString());
+                const html = await res.text();
+                tablaBody.innerHTML = html;
+            } catch (e) {
+                tablaBody.innerHTML = "<tr><td colspan='4'>Error al cargar datos.</td></tr>";
+            }
+        }
+
+        // Mantengo esta función global para el onchange inline del <select> de cooperativas
+        window.asociarProductor = function (select, id_productor) {
+            const id_cooperativa = select.value;
+            if (!id_cooperativa) return;
+
+            fetch('/controllers/sve_asociarProductoresController.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_productor, id_cooperativa })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.success) {
+                    showAlert('success', data.message || 'Asociación guardada correctamente.');
+                } else {
+                    showAlert('error', (data && data.message) || 'No se pudo guardar la asociación.');
+                }
+            })
+            .catch(() => {
+                showAlert('error', 'Error inesperado al asociar productor.');
+            });
+        };
+
+        function init() {
+            cargarRoles().then(cargarProductores);
+
+            inpCuit.addEventListener('input', debounce(cargarProductores, 250));
+            inpNombre.addEventListener('input', debounce(cargarProductores, 250));
+            selAsociacion.addEventListener('change', cargarProductores);
+            selRol.addEventListener('change', cargarProductores);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    })();
+    </script>
 
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
