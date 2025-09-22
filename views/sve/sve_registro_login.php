@@ -137,14 +137,14 @@ unset($_SESSION['cierre_info']);
                             </div>
                         </div>
                         <div class="input-group">
-                            <label for="filtro-usuario">Usuario (input)</label>
+                            <label for="filtro-usuario">Usuario</label>
                             <div class="input-icon input-icon-name">
                                 <input type="text" id="filtro-usuario" name="usuario_input" placeholder="usuario, email o id_real" aria-describedby="ayuda-usuario" />
                             </div>
                             <small id="ayuda-usuario" class="sr-only">Escriba parte del usuario para buscar coincidencias</small>
                         </div>
                         <div class="input-group">
-                            <label for="filtro-fecha">Fecha (AR)</label>
+                            <label for="filtro-fecha">Fecha</label>
                             <div class="input-icon input-icon-name">
                                 <input type="date" id="filtro-fecha" name="created_at" aria-label="Filtrar por fecha (Argentina)" />
                             </div>
