@@ -78,6 +78,10 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
         .hidden #modalCompletarDatos .modal-content { transform: translateY(0); }
         /* Inputs pequeños ajustes si hiciera falta */
         #modalCompletarDatos .input-group { margin-bottom: .75rem; }
+
+                .oculto {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -164,7 +168,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </div>
 
                 <div class="form-buttons">
-                    <button type="button" class="btn btn-cancelar" onclick="closeModalContacto()">Cancelar</button>
+                    <button type="button" class="btn btn-cancelar oculto" onclick="closeModalContacto()">Cancelar</button>
                     <button type="submit" class="btn btn-aceptar">Guardar</button>
                 </div>
             </form>
