@@ -6,6 +6,32 @@ include __DIR__ . '/drone_drawerListado_view.php';
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
 </noscript>
 <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
+<script>
+    // Contexto de rol para UI progresiva (la seguridad real está en backend)
+    window.APP_CTX = {
+        rol: '<?= htmlspecialchars($_SESSION["user"]["rol"] ?? "", ENT_QUOTES, "UTF-8") ?>',
+        id_real: '<?= htmlspecialchars($_SESSION["user"]["id_real"] ?? "", ENT_QUOTES, "UTF-8") ?>'
+    };
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cooperativa: ocultar botones de eliminar y deshabilitar inputs que no sean "estado"
+        if (window.APP_CTX.rol === 'cooperativa') {
+            document.querySelectorAll('.btn-delete').forEach(function(btn) {
+                btn.remove();
+            });
+            var form = document.querySelector('#form-edit');
+            if (form) {
+                form.querySelectorAll('input, select, textarea, button').forEach(function(el) {
+                    if (el.id !== 'estado') {
+                        el.setAttribute('aria-disabled', 'true');
+                        el.setAttribute('tabindex', '-1');
+                        el.disabled = true;
+                    }
+                });
+            }
+        }
+    });
+</script>
+
 
 <div class="content">
     <!-- Filtros mínimos -->

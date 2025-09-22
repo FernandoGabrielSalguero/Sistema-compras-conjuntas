@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+require_once __DIR__ . '/../lib/Authz.php';
 
 final class DroneListModel
 {
@@ -67,6 +68,13 @@ final class DroneListModel
             $params[':fecha_visita'] = $f['fecha_visita'];
         }
 
+        // Filtro de visibilidad por rol (si viene contexto)
+        if (isset($f['_ctx']) && is_array($f['_ctx'])) {
+            $cond = Authz::sqlVisibleProductores('s.productor_id_real', $f['_ctx'], $params);
+            if ($cond && $cond !== '1=1') {
+                $where[] = $cond;
+            }
+        }
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
         $sql = "
