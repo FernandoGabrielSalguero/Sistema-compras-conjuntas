@@ -33,6 +33,33 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 </head>
 
+<style>
+    .badge-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .25rem;
+        padding: .25rem .5rem;
+        border-radius: 9999px;
+        background: var(--clr-surface-200, #f2f2f2);
+        margin: .125rem .25rem;
+    }
+
+    .badge-chip .remove {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 0.9rem;
+        line-height: 1;
+    }
+
+    .badge-chip .remove:focus {
+        outline: 2px solid #5b21b6;
+        outline-offset: 2px;
+        border-radius: 4px;
+    }
+</style>
+
+
 <body>
 
     <!-- 🔲 CONTENEDOR PRINCIPAL -->
@@ -78,8 +105,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
                     </li>
                     <li onclick="location.href='sve_pulverizacionDrone.php'">
-                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                    <span class="link-text">Drones</span>
+                        <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
+                        <span class="link-text">Drones</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -177,6 +204,59 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </div>
                 </div>
 
+                <!-- ## ingenieros cooperativa ## -->
+
+                <!-- Tarjeta de filtros Coop ⇄ Ing -->
+                <div class="card" id="cardFiltrosCoopIng">
+                    <h2>Filtros Cooperativas / Ingenieros</h2>
+                    <form class="form-modern" aria-labelledby="filtros-coop-ing">
+                        <div class="form-grid grid-3">
+                            <div class="input-group">
+                                <label for="buscarCuitCoop">CUIT Cooperativa</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">badge</span>
+                                    <input type="text" id="buscarCuitCoop" name="buscarCuitCoop" placeholder="3070..." autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="buscarNombreCoop">Nombre Cooperativa</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">group</span>
+                                    <input type="text" id="buscarNombreCoop" name="buscarNombreCoop" placeholder="Ej: Coop. Valle" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="buscarNombreIng">Nombre Ingeniero</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">engineering</span>
+                                    <input type="text" id="buscarNombreIng" name="buscarNombreIng" placeholder="Ej: Ana Gómez" autocomplete="off">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tabla Cooperativas ↔ Ingenieros -->
+                <div class="card" id="cardCoopIng">
+                    <h2>Asociar cooperativas con ingenieros</h2>
+                    <div class="table-container" aria-live="polite">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID Real</th>
+                                    <th>Cooperativa</th>
+                                    <th>Ingenieros vinculados</th>
+                                    <th>Agregar ingeniero</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaCoopIng">
+                                <!-- Contenido dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
                 <!-- Alert -->
                 <div class="alert-container" id="alertContainer"></div>
             </section>
@@ -185,13 +265,26 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <!-- javascrip -->
-    <script>
-        function asociarProductor(select, id_productor) {
-            const id_cooperativa = select.value;
 
+    <!-- javascript -->
+    <script>
+        // Utilidades
+        const debounce = (fn, wait = 300) => {
+            let t;
+            return (...args) => {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(null, args), wait);
+            };
+        };
+
+        // ------- Productor ↔ Cooperativa (existente) -------
+        async function asociarProductor(select, id_productor) {
+            const id_cooperativa = select.value;
             if (!id_cooperativa) return;
 
-            fetch('/controllers/sve_asociarProductoresController.php', {
+            select.disabled = true;
+            try {
+                const res = await fetch('/controllers/sve_asociarProductoresController.php?action=asociar_prod_coop', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -200,80 +293,138 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         id_productor,
                         id_cooperativa
                     })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        showAlert('success', data.message);
-                    } else {
-                        showAlert('error', data.message);
-                    }
-                })
-                .catch(err => {
-                    console.error('❌ Error en la asociaci\u00f3n:', err);
-                    showAlert('error', 'Error inesperado al asociar productor.');
                 });
-        }
-
-        // cargar la tabla
-        document.addEventListener('DOMContentLoaded', () => {
-            fetch('/controllers/sve_asociarProductoresController.php')
-                .then(res => res.text())
-                .then(html => {
-                    document.getElementById('tablaAsociaciones').innerHTML = html;
-                })
-                .catch(err => {
-                    console.error('❌ Error al cargar asociaciones:', err);
-                    document.getElementById('tablaAsociaciones').innerHTML = "<tr><td colspan='4'>Error al cargar datos</td></tr>";
-                });
-
-                // filtro para los productores que tienen una cooperativa asociada
-                document.getElementById('filtroAsociacion').addEventListener('change', cargarProductores);
-
-        });
-
-        async function cargarProductores() {
-            const tabla = document.getElementById('tablaAsociaciones');
-            try {
-                const res = await fetch('/controllers/sve_asociarProductoresController.php');
-                const html = await res.text();
-                tabla.innerHTML = html;
+                const data = await res.json();
+                if (data.ok) {
+                    showAlert('success', 'Asociación guardada correctamente.');
+                } else {
+                    showAlert('error', data.error || 'No se pudo guardar la asociación.');
+                }
             } catch (err) {
-                tabla.innerHTML = '<tr><td colspan="4">Error al cargar datos.</td></tr>';
-                console.error('Error al cargar productores:', err);
+                console.error('❌ Error en la asociación productor-coop:', err);
+                showAlert('error', 'Error inesperado al asociar productor.');
+            } finally {
+                select.disabled = false;
             }
         }
 
-        document.addEventListener('DOMContentLoaded', cargarProductores);
-
-
-        // buscador por cuit o nombre de productor
-        document.addEventListener('DOMContentLoaded', () => {
-            // Cargar tabla al inicio
-            cargarProductores();
-
-            // Escuchar inputs
-            document.getElementById('buscarCuit').addEventListener('input', cargarProductores);
-            document.getElementById('buscarNombre').addEventListener('input', cargarProductores);
-        });
-
-        function cargarProductores() {
+        async function cargarProductores() {
             const cuit = document.getElementById('buscarCuit').value.trim();
             const nombre = document.getElementById('buscarNombre').value.trim();
             const filtroAsociacion = document.getElementById('filtroAsociacion').value;
-
-            fetch(`/controllers/sve_asociarProductoresController.php?cuit=${encodeURIComponent(cuit)}&nombre=${encodeURIComponent(nombre)}&filtro=${encodeURIComponent(filtroAsociacion)}`)
-                .then(res => res.text())
-                .then(html => {
-                    document.getElementById('tablaAsociaciones').innerHTML = html;
-                })
-                .catch(err => {
-                    console.error('❌ Error al cargar productores:', err);
-                    document.getElementById('tablaAsociaciones').innerHTML = '<tr><td colspan="6">Error al cargar datos.</td></tr>';
-                });
+            const tbody = document.getElementById('tablaAsociaciones');
+            tbody.setAttribute('aria-busy', 'true');
+            try {
+                const res = await fetch(`/controllers/sve_asociarProductoresController.php?cuit=${encodeURIComponent(cuit)}&nombre=${encodeURIComponent(nombre)}&filtro=${encodeURIComponent(filtroAsociacion)}`);
+                const html = await res.text();
+                tbody.innerHTML = html;
+            } catch (err) {
+                console.error('❌ Error al cargar productores:', err);
+                tbody.innerHTML = "<tr><td colspan='4'>Error al cargar datos.</td></tr>";
+            } finally {
+                tbody.removeAttribute('aria-busy');
+            }
         }
-    </script>
 
+        // ------- Cooperativa ↔ Ingeniero (nuevo) -------
+        async function cargarCoopIng() {
+            const cuitCoop = document.getElementById('buscarCuitCoop').value.trim();
+            const nombreCoop = document.getElementById('buscarNombreCoop').value.trim();
+            const nombreIng = document.getElementById('buscarNombreIng').value.trim();
+            const tbody = document.getElementById('tablaCoopIng');
+            tbody.setAttribute('aria-busy', 'true');
+            try {
+                const url = `/controllers/sve_asociarProductoresController.php?action=coop_ing&cuit_coop=${encodeURIComponent(cuitCoop)}&nombre_coop=${encodeURIComponent(nombreCoop)}&nombre_ing=${encodeURIComponent(nombreIng)}`;
+                const res = await fetch(url);
+                const html = await res.text();
+                tbody.innerHTML = html;
+            } catch (err) {
+                console.error('❌ Error al cargar coop/ing:', err);
+                tbody.innerHTML = "<tr><td colspan='4'>Error al cargar datos.</td></tr>";
+            } finally {
+                tbody.removeAttribute('aria-busy');
+            }
+        }
+
+        async function addCoopIng(select, coopIdReal) {
+            const ingIdReal = select.value;
+            if (!ingIdReal) return;
+            select.disabled = true;
+            try {
+                const res = await fetch('/controllers/sve_asociarProductoresController.php?action=add_coop_ing', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        cooperativa_id_real: coopIdReal,
+                        ingeniero_id_real: ingIdReal
+                    })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showAlert('success', 'Ingeniero vinculado.');
+                    await cargarCoopIng();
+                } else {
+                    showAlert('error', data.error || 'No se pudo vincular.');
+                }
+            } catch (err) {
+                console.error('❌ Error al vincular coop/ing:', err);
+                showAlert('error', 'Error inesperado al vincular.');
+            } finally {
+                select.disabled = false;
+                select.value = '';
+            }
+        }
+
+        async function delCoopIng(coopIdReal, ingIdReal, btn) {
+            if (!confirm('¿Quitar esta vinculación?')) return;
+            btn.disabled = true;
+            try {
+                const res = await fetch('/controllers/sve_asociarProductoresController.php?action=del_coop_ing', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        cooperativa_id_real: coopIdReal,
+                        ingeniero_id_real: ingIdReal
+                    })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showAlert('success', 'Vinculación eliminada.');
+                    await cargarCoopIng();
+                } else {
+                    showAlert('error', data.error || 'No se pudo eliminar.');
+                }
+            } catch (err) {
+                console.error('❌ Error al eliminar vinculación:', err);
+                showAlert('error', 'Error inesperado al eliminar.');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // ------- Init & Listeners (únicos) -------
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicial
+            cargarProductores();
+            cargarCoopIng();
+
+            // Productores (con debounce)
+            const debouncedProd = debounce(cargarProductores, 300);
+            document.getElementById('buscarCuit').addEventListener('input', debouncedProd);
+            document.getElementById('buscarNombre').addEventListener('input', debouncedProd);
+            document.getElementById('filtroAsociacion').addEventListener('change', cargarProductores);
+
+            // Coop/Ing (con debounce)
+            const debouncedCoopIng = debounce(cargarCoopIng, 300);
+            document.getElementById('buscarCuitCoop').addEventListener('input', debouncedCoopIng);
+            document.getElementById('buscarNombreCoop').addEventListener('input', debouncedCoopIng);
+            document.getElementById('buscarNombreIng').addEventListener('input', debouncedCoopIng);
+        });
+    </script>
 
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
