@@ -13,12 +13,38 @@ final class DroneListModel
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     }
 
-    /** Elimina una solicitud y sus costos asociados (si existen). */
-    public function eliminarSolicitud(int $id): bool
+    /**
+     * Elimina una solicitud y sus costos asociados (si existen),
+     * validando autorización de visibilidad del actor.
+     * @param int   $id
+     * @param array $ctx ['rol'=>string,'id_real'=>string]
+     */
+    public function eliminarSolicitud(int $id, array $ctx = []): bool
     {
         if ($id <= 0) {
             return false;
         }
+
+        // Comprobación de visibilidad: solo permite borrar si el actor "ve" esa solicitud
+        $params = [':id' => $id];
+        $pred   = AuthzVista::sqlVisibleProductores('s.productor_id_real', $ctx, $params);
+
+        $sqlChk = "
+            SELECT s.id
+            FROM drones_solicitud s
+            WHERE s.id = :id AND {$pred}
+            LIMIT 1
+        ";
+        $stChk = $this->pdo->prepare($sqlChk);
+        foreach ($params as $k => $v) {
+            $stChk->bindValue($k, $v, is_int($v) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stChk->execute();
+        if (!$stChk->fetch()) {
+            // No visible → actúa como no encontrado por seguridad
+            return false;
+        }
+
         $this->pdo->beginTransaction();
         try {
             // Borrar costos asociados (si no hay FK ON DELETE CASCADE)
@@ -40,11 +66,19 @@ final class DroneListModel
         }
     }
 
-    /** Listado para tarjetas con filtros básicos. */
-    public function listarSolicitudes(array $f): array
+    /**
+     * Listado para tarjetas con filtros básicos + visibilidad por rol.
+     * @param array $f   Filtros provenientes del controller
+     * @param array $ctx ['rol'=>string,'id_real'=>string]
+     */
+    public function listarSolicitudes(array $f, array $ctx = []): array
     {
         $where  = [];
         $params = [];
+
+        // Predicado de visibilidad
+        $pred = AuthzVista::sqlVisibleProductores('s.productor_id_real', $ctx, $params);
+        $where[] = $pred;
 
         if (!empty($f['q'])) {
             $where[]      = "(s.ses_usuario LIKE :q OR p.nombre LIKE :q OR s.productor_id_real LIKE :q)";
@@ -80,9 +114,11 @@ final class DroneListModel
                 s.fecha_visita,
                 CASE
                   WHEN s.hora_visita_desde IS NOT NULL AND s.hora_visita_hasta IS NOT NULL THEN
-                    CONCAT(LPAD(HOUR(s.hora_visita_desde),2,'0'), ':', LPAD(MINUTE(s.hora_visita_desde),2,'0'),
-                           ' - ',
-                           LPAD(HOUR(s.hora_visita_hasta),2,'0'),  ':', LPAD(MINUTE(s.hora_visita_hasta),2,'0'))
+                    CONCAT(
+                      LPAD(HOUR(s.hora_visita_desde),2,'0'), ':', LPAD(MINUTE(s.hora_visita_desde),2,'0'),
+                      ' - ',
+                      LPAD(HOUR(s.hora_visita_hasta),2,'0'),  ':', LPAD(MINUTE(s.hora_visita_hasta),2,'0')
+                    )
                   ELSE NULL
                 END AS hora_visita,
                 s.observaciones,
@@ -100,7 +136,9 @@ final class DroneListModel
         ";
 
         $st = $this->pdo->prepare($sql);
-        foreach ($params as $k => $v) $st->bindValue($k, $v);
+        foreach ($params as $k => $v) {
+            $st->bindValue($k, $v, is_int($v) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
         $st->execute();
         $rows = $st->fetchAll() ?: [];
 

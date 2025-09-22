@@ -7,11 +7,6 @@ declare(strict_types=1);
  * - 'sve'          => ve todo
  * - 'cooperativa'  => ve productores asociados a SU cooperativa
  * - 'ingeniero'    => ve productores de cooperativas donde esté asociado
- *
- * Uso:
- *   $params = [];
- *   $cond = AuthzVista::sqlVisibleProductores('s.productor_id_real', $ctx, $params);
- *   // Agregar $cond al WHERE y $params al prepare()
  */
 final class AuthzVista
 {
@@ -24,8 +19,8 @@ final class AuthzVista
      */
     public static function sqlVisibleProductores(string $colProductor, array $ctx, array &$params): string
     {
-        $rol = $ctx['rol'] ?? '';
-        $me  = $ctx['id_real'] ?? '';
+        $rol = strtolower((string)($ctx['rol'] ?? ''));
+        $me  = (string)($ctx['id_real'] ?? '');
 
         if ($rol === 'sve') {
             return '1=1';
