@@ -10,7 +10,6 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../../../../config.php';
 require_once __DIR__ . '/../model/drone_list_model.php';
-require_once __DIR__ . '/../lib/Authz.php';
 
 /** Lectura segura del body (por compatibilidad futura) */
 function read_json_body(): array
@@ -23,14 +22,8 @@ function read_json_body(): array
 
 try {
     $model  = new DroneListModel($pdo);
-
-    // contexto de sesión para authz
-    $ctx = [
-        'rol'     => $_SESSION['user']['rol']     ?? '',
-        'id_real' => $_SESSION['user']['id_real'] ?? '',
-    ];
-
     // por defecto traemos el listado
+    // acción por defecto
     $action = $_GET['action'] ?? 'list_solicitudes';
 
     if ($action === 'list_solicitudes') {
@@ -40,8 +33,6 @@ try {
             'piloto'       => isset($_GET['piloto']) ? trim($_GET['piloto']) : '',
             'estado'       => isset($_GET['estado']) ? trim($_GET['estado']) : '',
             'fecha_visita' => isset($_GET['fecha_visita']) ? trim($_GET['fecha_visita']) : '',
-            // contexto para filtro de visibilidad
-            '_ctx'         => $ctx,
         ];
         $data = $model->listarSolicitudes($filters);
         echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE);
@@ -59,14 +50,6 @@ try {
         if ($id <= 0) {
             http_response_code(400);
             echo json_encode(['ok' => false, 'error' => 'ID inválido'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-
-        // Verificación de visibilidad + permisos antes de eliminar
-        Authz::assertPuedeVerSolicitud($pdo, $id, $ctx);
-        if (!Authz::puedeEliminar($ctx)) {
-            http_response_code(403);
-            echo json_encode(['ok' => false, 'error' => 'Permisos insuficientes'], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
