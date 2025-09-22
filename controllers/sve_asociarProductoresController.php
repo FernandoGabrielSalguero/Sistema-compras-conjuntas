@@ -238,7 +238,7 @@ try {
         LEFT JOIN usuarios_info i ON u.id = i.usuario_id
         WHERE $where
         ORDER BY i.nombre ASC
-        LIMIT 50
+        LIMIT 10
     ";
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
