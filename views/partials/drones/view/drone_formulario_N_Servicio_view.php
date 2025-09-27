@@ -603,6 +603,26 @@
     border-radius: 999px;
     background: #f3e8ff;
   }
+
+  /* Ajustes para input-group dentro de celdas de la matriz */
+  .gform-matrix td .input-group {
+    margin: 0;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .gform-matrix td .input-group label {
+    margin-bottom: .25rem;
+    font-weight: 600;
+  }
+
+  .gform-matrix td .input-group .input-icon {
+    width: 100%;
+  }
+
+  .gform-matrix td .input-group input[type="text"] {
+    width: 100%;
+  }
 </style>
 
 <script>
@@ -924,19 +944,28 @@
         <td data-col="SVE">
           <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="sve" disabled /></label>
         </td>
-        <td data-col="Productor">
-          <div style="display:flex; align-items:center; gap:.5rem; justify-content:center;">
-            <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="productor" disabled /></label>
-            <input type="text"
-                   class="gfm-prod-nombre"
-                   data-row="${rowId}"
-                   placeholder="Nombre del producto"
-                   maxlength="150"
-                   hidden
-                   disabled
-                   style="width:220px; max-width:90%;">
-          </div>
-        </td>
+<td data-col="Productor">
+  <div class="prod-editor" style="display:flex; align-items:center; gap:.75rem; justify-content:center;">
+    <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="productor" disabled /></label>
+
+    <div class="input-group gfm-prod-input" data-row="${rowId}" hidden>
+      <label for="gfm_prod_nombre_${rowId}">Nombre del producto</label>
+      <div class="input-icon input-icon-name">
+        <input
+          type="text"
+          id="gfm_prod_nombre_${rowId}"
+          name="gfm_prod_nombre_${rowId}"
+          class="gfm-prod-nombre"
+          data-row="${rowId}"
+          placeholder="Nombre del producto"
+          maxlength="150"
+          disabled
+        />
+      </div>
+    </div>
+  </div>
+</td>
+
       </tr>`;
         }).join('');
 
@@ -955,11 +984,12 @@
                 r.checked = false;
                 r.disabled = true;
               });
-              const nameInput = matrizBody.querySelector(`input.gfm-prod-nombre[data-row="${rowId}"]`);
-              if (nameInput) {
-                nameInput.value = '';
-                nameInput.disabled = true;
-                nameInput.setAttribute('hidden', '');
+              const group = matrizBody.querySelector(`.gfm-prod-input[data-row="${rowId}"]`);
+              const input = group ? group.querySelector('input.gfm-prod-nombre') : null;
+              if (group && input) {
+                input.value = '';
+                input.disabled = true;
+                group.setAttribute('hidden', '');
               }
             }
             syncRowFuenteUI(rowId);
@@ -1404,15 +1434,17 @@
     function syncRowFuenteUI(rowId) {
       const name = `m_${rowId}`;
       const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
-      const nameInput = matrizBody.querySelector(`input.gfm-prod-nombre[data-row="${rowId}"]`);
-      if (!nameInput) return;
+      const group = matrizBody.querySelector(`.gfm-prod-input[data-row="${rowId}"]`);
+      const input = group ? group.querySelector('input.gfm-prod-nombre') : null;
+      if (!group || !input) return;
+
       if (choice && choice.value === 'productor') {
-        nameInput.removeAttribute('hidden');
-        nameInput.disabled = false;
+        group.removeAttribute('hidden');
+        input.disabled = false;
       } else {
-        nameInput.value = '';
-        nameInput.disabled = true;
-        nameInput.setAttribute('hidden', '');
+        input.value = '';
+        input.disabled = true;
+        group.setAttribute('hidden', '');
       }
     }
 
