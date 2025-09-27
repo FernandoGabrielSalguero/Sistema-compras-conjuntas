@@ -41,7 +41,6 @@ class DroneFormularioNservicioModel
         ];
     }
 
-
     /** Cooperativas para forma de pago id=6 */
     public function cooperativas(): array
     {
@@ -133,16 +132,34 @@ class DroneFormularioNservicioModel
             $str = $this->pdo->prepare($sqlR);
             $str->execute([$solicitudId, $d['rango']]);
 
-            // drones_solicitud_item (uno por producto con su fuente)
+            // drones_solicitud_item (uno por producto con su fuente + snapshots)
             if (!empty($d['items'])) {
-                $sqlI = "INSERT INTO drones_solicitud_item (solicitud_id, patologia_id, fuente, producto_id, nombre_producto)
-                         VALUES (?,?,?,?,?)";
+                $sqlI = "INSERT INTO drones_solicitud_item
+             (solicitud_id, patologia_id, fuente, producto_id, costo_hectarea_snapshot, total_producto_snapshot, nombre_producto)
+             VALUES (?,?,?,?,?,?,?)";
                 $sti = $this->pdo->prepare($sqlI);
                 foreach ($d['items'] as $it) {
                     $pid = (int)$it['producto_id'];
                     $fuente = (string)$it['fuente'];
-                    $nombre = $this->productoNombre($pid);
-                    $sti->execute([$solicitudId, $d['patologia_id'], $fuente, $pid, $nombre]);
+                    $custom = isset($it['nombre_producto_custom']) ? trim((string)$it['nombre_producto_custom']) : '';
+                    if ($fuente === 'productor') {
+                        $nombre = $custom !== '' ? mb_substr($custom, 0, 150) : $this->productoNombre($pid);
+                        $costoHa = 0.00;
+                        $totalSnap = 0.00;
+                    } else { // sve
+                        $nombre = $this->productoNombre($pid);
+                        $costoHa = $this->productoCostoHa($pid);
+                        $totalSnap = (float)$d['superficie_ha'] * (float)$costoHa;
+                    }
+                    $sti->execute([
+                        $solicitudId,
+                        $d['patologia_id'],
+                        $fuente,
+                        $pid,
+                        $costoHa,
+                        $totalSnap,
+                        $nombre
+                    ]);
                 }
             }
 
@@ -158,6 +175,14 @@ class DroneFormularioNservicioModel
             $this->pdo->rollBack();
             return ['ok' => false, 'error' => $e->getMessage()];
         }
+    }
+
+    private function productoCostoHa(int $id): float
+    {
+        $st = $this->pdo->prepare("SELECT costo_hectarea FROM dron_productos_stock WHERE id=?");
+        $st->execute([$id]);
+        $v = $st->fetchColumn();
+        return $v !== false ? (float)$v : 0.0;
     }
 
     private function productoNombre(int $id): string

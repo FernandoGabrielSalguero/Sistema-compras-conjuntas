@@ -83,12 +83,18 @@ try {
             'coop_descuento_nombre' => !empty($data['coop_descuento_id_real']) ? substr((string)$data['coop_descuento_id_real'], 0, 100) : null,
             'patologia_id'        => isset($data['patologia_id']) ? (int)$data['patologia_id'] : null,
             'rango'               => (string)($data['rango'] ?? ''),
-                        // items: [{producto_id, fuente}]
-            'items'               => array_values(array_filter(array_map(function($it){
+            // items: [{producto_id, fuente}]
+            'items'               => array_values(array_filter(array_map(function ($it) {
                 if (!is_array($it)) return null;
                 $pid = isset($it['producto_id']) ? (int)$it['producto_id'] : 0;
-                $fuente = in_array($it['fuente'] ?? '', ['sve','productor'], true) ? $it['fuente'] : '';
-                return $pid > 0 ? ['producto_id'=>$pid, 'fuente'=>$fuente] : null;
+                $fuente = in_array($it['fuente'] ?? '', ['sve', 'productor'], true) ? $it['fuente'] : '';
+                $nombreCustom = isset($it['nombre_producto_custom']) ? trim((string)$it['nombre_producto_custom']) : '';
+                if ($pid <= 0) return null;
+                $out = ['producto_id' => $pid, 'fuente' => $fuente];
+                if ($fuente === 'productor') {
+                    $out['nombre_producto_custom'] = mb_substr($nombreCustom, 0, 150);
+                }
+                return $out;
             }, $data['items'] ?? []))),
 
             'productos_fuente'    => in_array($data['productos_fuente'] ?? '', ['sve', 'productor'], true) ? $data['productos_fuente'] : null,
@@ -111,12 +117,18 @@ try {
             $resp([], false, "Debe seleccionar cooperativa (forma de pago 6).");
             exit;
         }
-        // Si se incluyeron productos, cada item debe tener fuente
+        // Si se incluyeron productos, validar fuente y nombre si productor
         if (!empty($payload['items'])) {
             foreach ($payload['items'] as $it) {
                 if (empty($it['fuente'])) {
                     $resp([], false, "Indicá quién aporta cada producto seleccionado.");
                     exit;
+                }
+                if ($it['fuente'] === 'productor') {
+                    if (empty($it['nombre_producto_custom'])) {
+                        $resp([], false, "Ingresá el nombre del producto que aporta el productor.");
+                        exit;
+                    }
                 }
             }
         }

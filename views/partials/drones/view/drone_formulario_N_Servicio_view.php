@@ -2,7 +2,6 @@
 
 ?>
 
-
 <div class="content">
   <div class="card" style="background-color:#5b21b6;">
     <h3 style="color:white;">Módulo: Registro nueva solicitud de servicio de pulverización con drones</h3>
@@ -347,7 +346,6 @@
         </div>
 
       </div>
-
 
       <!-- Botones -->
       <div class="form-buttons">
@@ -846,7 +844,6 @@
       updateMotivoButton();
     }
 
-
     // Mostrar/Ocultar Cooperativa según forma de pago
     selPago.addEventListener('change', () => {
       const val = parseInt(selPago.value || '0', 10);
@@ -883,16 +880,14 @@
       // (Cambio #4) aquí también recalcularemos costos.
     });
 
-    // Matriz dinámica (unión de productos por múltiples patologías)
+    // matriz dinamica
     async function loadProductosPorPatologias(patologiaIds = []) {
       try {
-        // Traer en paralelo cada set de productos por patología
         const requests = patologiaIds.map(id =>
           fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${encodeURIComponent(id)}`)
           .catch(() => [])
         );
         const results = await Promise.all(requests);
-        // Unir y deduplicar por id
         const map = new Map();
         results.flat().forEach(p => {
           if (!map.has(p.id)) {
@@ -906,7 +901,6 @@
 
         const productos = Array.from(map.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
-        // Render tabla
         if (!productos.length) {
           matrizBody.innerHTML = '';
           return;
@@ -915,32 +909,42 @@
           const rowId = `row_${p.id}`;
           const costo = Number(p.costo_hectarea ?? 0);
           return `
-          <tr>
-            <th scope="row">
-              <label class="gfm-prod">
-                <input type="checkbox" class="gfm-row-toggle"
-                       name="m_sel[]" value="${rowId}"
-                       data-row="${rowId}"
-                       data-producto-id="${p.id}"
-                       data-producto-nombre="${p.nombre.replace(/"/g, '&quot;')}"
-                       data-costo-ha="${costo}" />
-                <span>${p.nombre}</span>
-              </label>
-            </th>
-            <td data-col="SVE">
-              <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="sve" disabled /></label>
-            </td>
-            <td data-col="Productor">
-              <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="productor" disabled /></label>
-            </td>
-          </tr>`;
+      <tr>
+        <th scope="row">
+          <label class="gfm-prod">
+            <input type="checkbox" class="gfm-row-toggle"
+                   name="m_sel[]" value="${rowId}"
+                   data-row="${rowId}"
+                   data-producto-id="${p.id}"
+                   data-producto-nombre="${p.nombre.replace(/"/g, '&quot;')}"
+                   data-costo-ha="${costo}" />
+            <span>${p.nombre}</span>
+          </label>
+        </th>
+        <td data-col="SVE">
+          <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="sve" disabled /></label>
+        </td>
+        <td data-col="Productor">
+          <div style="display:flex; align-items:center; gap:.5rem; justify-content:center;">
+            <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="productor" disabled /></label>
+            <input type="text"
+                   class="gfm-prod-nombre"
+                   data-row="${rowId}"
+                   placeholder="Nombre del producto"
+                   maxlength="150"
+                   hidden
+                   disabled
+                   style="width:220px; max-width:90%;">
+          </div>
+        </td>
+      </tr>`;
         }).join('');
 
-
-        // Comportamiento de habilitar radios al tildar fila
+        // Listeners: habilitar radios y toggle de input nombre
         $$('.gfm-row-toggle', matrizBody).forEach(cb => {
           cb.addEventListener('change', () => {
-            const name = `m_${cb.dataset.row}`;
+            const rowId = cb.dataset.row;
+            const name = `m_${rowId}`;
             const radios = $$(`input[type="radio"][name="${name}"]`, matrizBody);
             if (cb.checked) {
               radios.forEach(r => {
@@ -951,9 +955,26 @@
                 r.checked = false;
                 r.disabled = true;
               });
+              const nameInput = matrizBody.querySelector(`input.gfm-prod-nombre[data-row="${rowId}"]`);
+              if (nameInput) {
+                nameInput.value = '';
+                nameInput.disabled = true;
+                nameInput.setAttribute('hidden', '');
+              }
             }
-            recalcCostos(); // actualizar en tiempo real
+            syncRowFuenteUI(rowId);
+            recalcCostos();
           });
+        });
+
+        // Cambio de fuente por fila → sincronizar UI y costos
+        matrizBody.addEventListener('change', (e) => {
+          if (e.target && e.target.matches('.gfm-radio input')) {
+            const m = e.target.getAttribute('name') || '';
+            const rowId = m.replace(/^m_/, '');
+            syncRowFuenteUI(rowId);
+            recalcCostos();
+          }
         });
 
       } catch (e) {
@@ -1005,22 +1026,27 @@
       const valorHa = num(costoBaseHa);
       const totalBase = valorHa * ha;
 
-      // Productos seleccionados
       const productosSel = $$('.gfm-row-toggle:checked', matrizBody).map(cb => {
         const nombre = cb.dataset.productoNombre || 'Producto';
         const costoHaProd = num(cb.dataset.costoHa || 0);
-        const totalProd = costoHaProd * ha;
+        const name = `m_${cb.dataset.row}`;
+        const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
+        const fuente = choice ? choice.value : '';
+        const esSVE = (fuente === 'sve');
+        const totalProd = esSVE ? (costoHaProd * ha) : 0;
+        const leyenda = esSVE ? 'Aporta SVE' : 'Aporta productor';
         return {
           nombre,
-          costoHaProd,
-          totalProd
+          costoHaProd: esSVE ? costoHaProd : 0,
+          totalProd,
+          fuente,
+          leyenda
         };
       });
 
       const sumaProductos = productosSel.reduce((acc, it) => acc + it.totalProd, 0);
       const precioFinal = totalBase + sumaProductos;
 
-      // Render filas
       const rows = [];
       rows.push(`<tr><th>Valor de las hectáreas</th><td class="costos-muted">${monedaBase}</td><td class="costos-right">${fmt(valorHa)}</td></tr>`);
       rows.push(`<tr><th>Cantidad de hectáreas</th><td></td><td class="costos-right">${ha}</td></tr>`);
@@ -1028,7 +1054,7 @@
 
       if (productosSel.length) {
         productosSel.forEach(it => {
-          rows.push(`<tr><th>Nombre del producto</th><td><span class="badge-prod">${it.nombre}</span></td><td></td></tr>`);
+          rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${it.nombre}</span> <span class="costos-muted">(${it.leyenda})</span></td><td></td></tr>`);
           rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(it.costoHaProd)}</td></tr>`);
           rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(it.totalProd)}</td></tr>`);
         });
@@ -1127,9 +1153,18 @@
         const name = `m_${cb.dataset.row}`;
         const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
         if (!choice) throw new Error('Indicá quién aporta cada producto seleccionado.');
+        const fuente = choice.value;
+        let nombreProductoCustom = null;
+        if (fuente === 'productor') {
+          const nameInput = matrizBody.querySelector(`input.gfm-prod-nombre[data-row="${cb.dataset.row}"]`);
+          const val = (nameInput?.value || '').trim();
+          if (!val) throw new Error('Ingresá el nombre del producto que aporta el productor.');
+          nombreProductoCustom = val.slice(0, 150);
+        }
         items.push({
           producto_id: parseInt(cb.dataset.productoId, 10),
-          fuente: choice.value
+          fuente: fuente,
+          nombre_producto_custom: nombreProductoCustom
         });
       });
 
@@ -1243,17 +1278,14 @@
     });
 
     function validateBeforeModal() {
-      // Quitar clases previas
       ($$('.input-error') || []).forEach(el => el.classList.remove('input-error'));
 
-      // Productor (hidden lleno)
       if (!hidPersona.value) {
         showAlert('error', 'Seleccioná un productor.');
         markInvalid(inpPersona);
         return false;
       }
 
-      // Sí/No obligatorios
       const siNoFields = [{
           el: selRep,
           name: '¿Contamos con un representante?'
@@ -1291,7 +1323,6 @@
         }
       }
 
-      // Hectáreas entero > 0
       const hectInt = parseInt(inpHect.value || '0', 10);
       if (!hectInt || hectInt <= 0) {
         showAlert('error', 'Ingresá la cantidad de hectáreas (entero mayor a 0).');
@@ -1299,7 +1330,6 @@
         return false;
       }
 
-      // Forma de pago
       const fpago = parseInt(selPago.value || '0', 10);
       if (!fpago) {
         showAlert('error', 'Seleccioná la forma de pago.');
@@ -1307,17 +1337,15 @@
         return false;
       }
 
-      // Cooperativa requerida solo si forma de pago id=6
       if (fpago === 6) {
         if (!selCoop.value) {
           showAlert('error', 'Seleccioná la cooperativa para la forma de pago 6.');
-          grupoCooperativaShow(true); // asegurar visible
+          grupoCooperativaShow(true);
           markInvalid(selCoop);
           return false;
         }
       }
 
-      // Motivo / Patología (multi)
       const motivosSel = getSelectedMotivos();
       if (!motivosSel.length) {
         showAlert('error', 'Seleccioná al menos un motivo/patología.');
@@ -1325,14 +1353,12 @@
         return false;
       }
 
-      // Quincena (rango)
       if (!selQuincena.value) {
         showAlert('error', 'Seleccioná la quincena de visita.');
         markInvalid(selQuincena);
         return false;
       }
 
-      // Dirección completa
       if (!selProv.value) {
         showAlert('error', 'Seleccioná la provincia.');
         markInvalid(selProv);
@@ -1355,11 +1381,40 @@
         return false;
       }
 
-      // Matriz: NO obligamos seleccionar productos; si selecciona alguno,
-      // se validará la fuente en buildPayload() (ya implementado).
+      // Validación extra: si hay filas seleccionadas con fuente=productor, exigir nombre
+      const filas = $$('.gfm-row-toggle:checked', matrizBody);
+      for (const cb of filas) {
+        const name = `m_${cb.dataset.row}`;
+        const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
+        if (choice && choice.value === 'productor') {
+          const nameInput = matrizBody.querySelector(`input.gfm-prod-nombre[data-row="${cb.dataset.row}"]`);
+          const val = (nameInput?.value || '').trim();
+          if (!val) {
+            showAlert('error', 'Ingresá el nombre del producto que aporta el productor.');
+            if (nameInput) markInvalid(nameInput);
+            return false;
+          }
+        }
+      }
+
       return true;
     }
 
+    // Sincroniza visibilidad/habilitación del input de nombre según la fuente elegida
+    function syncRowFuenteUI(rowId) {
+      const name = `m_${rowId}`;
+      const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
+      const nameInput = matrizBody.querySelector(`input.gfm-prod-nombre[data-row="${rowId}"]`);
+      if (!nameInput) return;
+      if (choice && choice.value === 'productor') {
+        nameInput.removeAttribute('hidden');
+        nameInput.disabled = false;
+      } else {
+        nameInput.value = '';
+        nameInput.disabled = true;
+        nameInput.setAttribute('hidden', '');
+      }
+    }
 
     // Inicialización
     (async function init() {
