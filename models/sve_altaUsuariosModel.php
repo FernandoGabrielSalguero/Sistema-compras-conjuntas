@@ -48,7 +48,7 @@ class UserModel
 ");
             $stmtInfo->execute([
                 'usuario_id' => $usuario_id,
-                'nombre'     => $data['usuario'] // 👈 mismo valor que el input #usuario
+                'nombre'     => $data['usuario']
             ]);
 
             return ['success' => true, 'message' => 'Usuario creado correctamente.'];

@@ -307,10 +307,11 @@
       const payload = {
         id: $('#producto_id').value ? parseInt($('#producto_id').value, 10) : null,
         nombre: $('#nombre').value.trim(),
+        detalle: $('#detalle').value.trim(),
         principio_activo: $('#principio_activo').value.trim(),
         cantidad_deposito: parseInt($('#cantidad_deposito').value, 10) || 0,
         // Normaliza decimales: soporta "1200", "1200.50", "1.200,50"
-        costo_hectarea: (function (v) {
+        costo_hectarea: (function(v) {
           v = String(v ?? '').trim();
           if (v === '') return 0;
           // quitar espacios (incluye nbsp)
@@ -325,6 +326,8 @@
           const n = Number.parseFloat(v);
           return Number.isFinite(n) ? n : 0;
         })($('#costo_hectarea').value),
+        activo: $('#activo').checked ? 'si' : 'no',
+        patologias: leerPatologiasDelForm()
       };
 
       if (!payload.nombre) {
@@ -339,16 +342,11 @@
         showAlert('error', 'El costo por hectárea no puede ser negativo.');
         return;
       }
-      // Robustez: asegurar arreglo válido de patologías
-      if (!Array.isArray(payload.patologias)) {
-        payload.patologias = [];
-      }
       // (El backend ya limita a 6. Validación blanda: no numéricos)
       if (payload.patologias.some((x) => Number.isNaN(Number.parseInt(String(x), 10)))) {
         showAlert('error', 'Patologías inválidas.');
         return;
       }
-
 
       try {
         if (payload.id) {
@@ -364,6 +362,7 @@
         showAlert('error', err.message || 'Error al guardar.');
       }
     });
+
 
     $('#btn-limpiar').addEventListener('click', limpiarForm);
     $('#btn-cancelar-edicion').addEventListener('click', limpiarForm);
