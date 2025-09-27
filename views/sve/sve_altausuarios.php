@@ -36,14 +36,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <style>
         ::placeholder {
             opacity: 1;
-            /* para mantener visibilidad en todos los navegadores */
         }
-
-        /* control de tabla */
 
         .table-container {
             max-height: 500px;
-            /* o el alto que quieras */
             overflow: auto;
             border: 1px solid #ddd;
             border-radius: 0.5rem;
@@ -57,6 +53,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         .table-container::-webkit-scrollbar-thumb {
             background-color: rgba(0, 0, 0, 0.2);
             border-radius: 4px;
+        }
+
+        /* tamaño del modal */
+
+        .tamaño_modal {
+            max-width: 750px;
         }
     </style>
 </head>
@@ -107,8 +109,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
                     </li>
                     <li onclick="location.href='sve_pulverizacionDrone.php'">
-                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                    <span class="link-text">Drones</span>
+                        <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
+                        <span class="link-text">Drones</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -181,6 +183,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                         <option value="cooperativa">Cooperativa</option>
                                         <option value="productor">Productor</option>
                                         <option value="ingeniero">Ingeniero</option>
+                                        <option value="piloto_drone">Piloto Drone</option>
                                     </select>
                                 </div>
                             </div>
@@ -282,7 +285,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Modal -->
                 <div id="modal" class="modal hidden">
-                    <div class="modal-content">
+                    <div class="modal-content tamaño_modal">
                         <h3>Editar Usuario</h3>
 
                         <!-- Botón cerrar arriba a la derecha -->
