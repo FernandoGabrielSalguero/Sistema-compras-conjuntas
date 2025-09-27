@@ -1,20 +1,24 @@
 <?php
 require_once __DIR__ . '/../config.php';
 
-class UserModel {
+class UserModel
+{
     private $pdo;
 
-    public function __construct($pdo) {
+    public function __construct($pdo)
+    {
         $this->pdo = $pdo;
     }
 
-    public function existeUsuario($usuario) {
+    public function existeUsuario($usuario)
+    {
         $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM usuarios WHERE usuario = :usuario");
         $stmt->execute(['usuario' => $usuario]);
         return $stmt->fetchColumn() > 0;
     }
 
-    public function crearUsuario($data) {
+    public function crearUsuario($data)
+    {
         try {
             if ($this->existeUsuario($data['usuario'])) {
                 return ['success' => false, 'message' => 'El usuario ya está registrado.'];
@@ -37,17 +41,17 @@ class UserModel {
             // Obtener ID insertado
             $usuario_id = $this->pdo->lastInsertId();
 
-            // Insertar datos por defecto en usuarios_info
+            // Insertar datos en usuarios_info usando el mismo valor de "usuario" como "nombre"
             $stmtInfo = $this->pdo->prepare("
-                INSERT INTO usuarios_info (usuario_id, nombre, direccion, telefono, correo)
-                VALUES (:usuario_id, 'Sin nombre', 'Sin dirección', 'Sin teléfono', 'sin-correo@sve.com')
-            ");
+    INSERT INTO usuarios_info (usuario_id, nombre, direccion, telefono, correo)
+    VALUES (:usuario_id, :nombre, 'Sin dirección', 'Sin teléfono', 'sin-correo@sve.com')
+");
             $stmtInfo->execute([
-                'usuario_id' => $usuario_id
+                'usuario_id' => $usuario_id,
+                'nombre'     => $data['usuario'] // 👈 mismo valor que el input #usuario
             ]);
 
             return ['success' => true, 'message' => 'Usuario creado correctamente.'];
-
         } catch (Exception $e) {
             return ['success' => false, 'message' => 'Error al crear el usuario.'];
         }

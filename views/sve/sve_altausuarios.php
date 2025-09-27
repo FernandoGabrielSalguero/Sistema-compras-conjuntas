@@ -58,7 +58,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         /* tamaño del modal */
 
         .tamaño_modal {
-            max-width: 750px;
+            max-width: 800px;
         }
     </style>
 </head>
