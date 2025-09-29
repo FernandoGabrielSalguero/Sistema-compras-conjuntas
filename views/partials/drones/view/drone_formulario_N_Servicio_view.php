@@ -520,6 +520,10 @@
   .content {
     max-width: 100%;
   }
+
+  /* Reforzar visibilidad ante reglas del framework/CDN */
+  #productos-list { display:grid !important; grid-template-columns: 1fr; visibility:visible !important; }
+  #productos-list .prod-card { display:grid !important; opacity:1 !important; visibility:visible !important; }
 </style>
 
 <style>
