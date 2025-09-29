@@ -78,19 +78,6 @@ try {
         exit;
     }
 
-    if ($action === 'export_consolidado') {
-        // Solo SVE puede exportar el consolidado completo
-        if (strtolower($ctx['rol'] ?? '') !== 'sve') {
-            http_response_code(403);
-            echo json_encode(['ok' => false, 'error' => 'No autorizado'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-
-        $data = $model->obtenerConsolidado();
-        echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-
     http_response_code(400);
     echo json_encode(['ok' => false, 'error' => 'Acción no soportada'], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {
