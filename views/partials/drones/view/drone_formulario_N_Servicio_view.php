@@ -461,11 +461,37 @@
     font-size: .9rem;
   }
 
+  /* Estado seleccionado: VERDE */
   .chip input[type="checkbox"]:checked+.chip-box {
-    background: #eef2ff;
-    border-color: #c7d2fe;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, .15) inset;
+    background: #ecfdf5;
+    /* verde muy claro */
+    border-color: #10b981;
+    /* emerald-500 */
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, .20) inset;
   }
+
+  .chip input[type="checkbox"]:checked+.chip-box .chip-name {
+    color: #065f46;
+  }
+
+  /* emerald-800 */
+  .chip input[type="checkbox"]:checked+.chip-box .chip-cost {
+    color: #047857;
+  }
+
+  /* emerald-700 */
+
+  /* Accesibilidad: focus ring en verde */
+  .chip input[type="checkbox"]:focus+.chip-box {
+    outline: 2px solid #10b981;
+    outline-offset: 2px;
+  }
+
+  /* Hover en estado no seleccionado */
+  .chip-box:hover {
+    border-color: #d1d5db;
+  }
+
 
   .chips-custom {
     margin-top: 12px;
