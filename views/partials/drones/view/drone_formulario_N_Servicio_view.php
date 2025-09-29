@@ -390,6 +390,13 @@
     background: #f3e8ff;
   }
 
+/* Forzar que la tarjeta de costos ocupe todo el ancho */
+#card-costos.costos-full {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  flex: 0 0 100% !important;
+  display: block;
+}
 </style>
 
 
