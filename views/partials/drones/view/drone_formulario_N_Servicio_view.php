@@ -269,12 +269,10 @@
           <div class="custom-prod mt-3">
             <h3>Producto del productor (custom)</h3>
             <p class="costos-muted">Si el productor ya tiene un producto que no está en el listado, podés agregarlo acá.</p>
-            <button type="button" class="btn" id="btn-add-custom-prod">Agregar producto del productor</button>
+            <button type="button" class="btn btn-aceptar" id="btn-add-custom-prod">Agregar producto del productor</button>
             <ul id="custom-prods-list" class="productos-list mt-2" aria-live="polite" aria-label="Productos del productor"></ul>
           </div>
         </div>
-
-
 
         <!-- ===== Tarjeta: Costo del servicio ===== -->
         <div class="card full-span" id="card-costos" aria-live="polite">
