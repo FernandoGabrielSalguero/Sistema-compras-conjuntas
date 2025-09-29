@@ -1108,6 +1108,7 @@
 
     btnConfirmar.addEventListener('click', async (e) => {
       e.preventDefault();
+      console.log(buildPayload())
       try {
         const payload = buildPayload(); // se asume función existente en tu base
         const data = await postJson(CTRL_URL, payload);
@@ -1124,6 +1125,55 @@
         showAlert('error', `Error: ${err.message}`);
       }
     });
+
+        // === Build payload para POST (con chips de productos) ===
+    function buildPayload() {
+      const motivos = getSelectedMotivos();
+      const patologiaId = motivos.length ? motivos[0] : null;
+
+      // Armar ítems de productos
+      const items = [];
+      // Productos aportados por SVE (chips tildados)
+      Array.from(ProductosState.seleccionados).forEach(id => {
+        items.push({ producto_id: id, fuente: 'sve' });
+      });
+      // Producto "Otro" (aporta productor)
+      if (ProductosState.customChecked && (ProductosState.customNombre || '').trim()) {
+        items.push({
+          producto_id: 0,
+          fuente: 'productor',
+          nombre_producto_custom: ProductosState.customNombre.trim()
+        });
+      }
+
+      return {
+        productor_id_real: hidPersona.value || null,
+        representante:     getSiNoValue(selRep),
+        linea_tension:     getSiNoValue(selLinea),
+        zona_restringida:  getSiNoValue(selZonaRes),
+        corriente_electrica: getSiNoValue(selCorr),
+        agua_potable:      getSiNoValue(selAgua),
+        libre_obstaculos:  getSiNoValue(selCuart),
+        area_despegue:     getSiNoValue(selDespegue),
+
+        superficie_ha: parseFloat(inpHect.value || '0'),
+        forma_pago_id:  parseInt(selPago.value || '0', 10),
+        // Enviamos el id_real; el controller ya lo mapea al campo que use tu DB
+        coop_descuento_id_real: selCoop.value || null,
+
+        patologia_id: patologiaId,
+        rango:        selQuincena.value || '',
+
+        dir_provincia: selProv.value || '',
+        dir_localidad: inpLoc.value || '',
+        dir_calle:     inpCalle.value || '',
+        dir_numero:    inpNum.value || '',
+        observaciones: inpObs.value || '',
+
+        items // << clave: acá viajan los productos
+      };
+    }
+
 
     // ===== Costo base/Inicialización =====
     async function loadCostoBaseHa() {
@@ -1148,39 +1198,4 @@
 
   })();
 
-  // === Build payload para POST (con chips de productos) ===
-  function buildPayload() {
-    const motivos = (document.getElementById('form_nuevo_servicio_motivo_ids')?.value || '')
-      .split(',').map(n => parseInt(n, 10)).filter(n => n > 0);
-    const patologiaId = motivos.length ? motivos[0] : null;
-
-    return {
-      productor_id_real: document.getElementById('productor_id_real')?.value || null,
-      representante: getSiNoValue(document.getElementById('form_nuevo_servicio_representante')),
-      linea_tension: getSiNoValue(document.getElementById('form_nuevo_servicio_lineas_tension')),
-      zona_restringida: getSiNoValue(document.getElementById('form_nuevo_servicio_zona_restringida')),
-      corriente_electrica: getSiNoValue(document.getElementById('form_nuevo_servicio_corriente')),
-      agua_potable: getSiNoValue(document.getElementById('form_nuevo_servicio_agua')),
-      libre_obstaculos: getSiNoValue(document.getElementById('form_nuevo_servicio_cuarteles')),
-      area_despegue: getSiNoValue(document.getElementById('form_nuevo_servicio_despegue')),
-      superficie_ha: parseFloat(document.getElementById('form_nuevo_servicio_hectareas')?.value || '0'),
-      forma_pago_id: parseInt(document.getElementById('form_nuevo_servicio_pago')?.value || '0', 10),
-      coop_descuento_id_real: document.getElementById('form_nuevo_servicio_cooperativa')?.value || null,
-      patologia_id: patologiaId,
-      rango: document.getElementById('form_nuevo_servicio_quincena')?.value || '',
-      dir_provincia: document.getElementById('form_nuevo_servicio_provincia')?.value || '',
-      dir_localidad: document.getElementById('form_nuevo_servicio_localidad')?.value || '',
-      dir_calle: document.getElementById('form_nuevo_servicio_calle')?.value || '',
-      dir_numero: document.getElementById('form_nuevo_servicio_numero')?.value || '',
-      observaciones: document.getElementById('form_nuevo_servicio_observaciones')?.value || '',
-      productos_seleccionados: Array.from(ProductosState?.seleccionados ?? []), // [ids]
-      producto_custom: (ProductosState?.customChecked && (ProductosState?.customNombre || '').trim()) ? ProductosState.customNombre.trim() : null,
-      total_servicio: (num(costoBaseHa) * Math.max(0, parseInt((document.getElementById('form_nuevo_servicio_hectareas')?.value || '0'), 10))) +
-        Array.from(ProductosState?.seleccionados ?? []).reduce((acc, id) => {
-          const p = ProductosState?.catalog?.get(id);
-          return acc + (p ? num(p.costo_hectarea) * Math.max(0, parseInt((document.getElementById('form_nuevo_servicio_hectareas')?.value || '0'), 10)) : 0);
-        }, 0)
-
-    };
-  }
 </script>
