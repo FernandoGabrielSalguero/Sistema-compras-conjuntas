@@ -130,22 +130,23 @@ class DroneFormularioNservicioModel
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-/** Productos por patología (con costo/ha) */
+/** Productos por patología (con costo/ha) — SOLO activos */
 public function productosPorPatologia(int $patologiaId): array
 {
-    // Único join por IDs numéricos; incluimos también el DETALLE
     $sql = "SELECT s.id,
                    s.nombre,
                    COALESCE(s.costo_hectarea,0) AS costo_hectarea,
-                   COALESCE(s.detalle,'')          AS detalle
+                   COALESCE(s.detalle,'')       AS detalle
               FROM dron_productos_stock_patologias sp
               JOIN dron_productos_stock s ON s.id = sp.producto_id
              WHERE sp.patologia_id = ?
+               AND LOWER(COALESCE(s.activo,'no')) = 'si'
           ORDER BY s.nombre";
     $st = $this->pdo->prepare($sql);
     $st->execute([$patologiaId]);
     return $st->fetchAll(PDO::FETCH_ASSOC);
 }
+
 
 
     /** Costo base por hectárea del servicio */
