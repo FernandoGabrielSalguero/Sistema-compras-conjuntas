@@ -134,15 +134,26 @@ class DroneFormularioNservicioModel
 /** Productos por patología (con costo/ha) */
 public function productosPorPatologia(int $patologiaId): array
 {
-    $sql = "SELECT s.id, s.nombre, COALESCE(s.costo_hectarea, 0) AS costo_hectarea
-              FROM dron_productos_stock s
-              JOIN dron_productos_stock_patologias sp ON sp.producto_id = s.id
-             WHERE sp.patologia_id = ?
-               AND (LOWER(COALESCE(s.activo,'')) IN ('si','sí','true','1') OR s.activo IS NULL)
-          ORDER BY s.nombre";
-    $st = $this->pdo->prepare($sql);
+    // Intento 1: pivote por IDs numéricos
+    $sql1 = "SELECT s.id, s.nombre, COALESCE(s.costo_hectarea,0) AS costo_hectarea
+               FROM dron_productos_stock_patologias sp
+               JOIN dron_productos_stock s ON s.id = sp.producto_id
+              WHERE sp.patologia_id = ?
+           ORDER BY s.nombre";
+    $st = $this->pdo->prepare($sql1);
     $st->execute([$patologiaId]);
-    return $st->fetchAll(PDO::FETCH_ASSOC);
+    $rows = $st->fetchAll(PDO::FETCH_ASSOC);
+    if (!empty($rows)) return $rows;
+
+    // Intento 2: pivote por id_real (si tu esquema usa strings tipo 'P12')
+    $sql2 = "SELECT s.id, s.nombre, COALESCE(s.costo_hectarea,0) AS costo_hectarea
+               FROM dron_productos_stock_patologias sp
+               JOIN dron_productos_stock s ON s.id_real = sp.producto_id_real
+              WHERE sp.patologia_id = ?
+           ORDER BY s.nombre";
+    $st2 = $this->pdo->prepare($sql2);
+    $st2->execute([$patologiaId]);
+    return $st2->fetchAll(PDO::FETCH_ASSOC);
 }
 
     /** Costo base por hectárea del servicio */

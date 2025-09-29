@@ -674,16 +674,15 @@
     }
 
     // Render de lista completa de sugeridos
-    function renderProductosSugeridos(arr) {
-      SUGERIDOS = new Map(arr.map(p => [p.id, {
-        ...p,
-        incluir: false,
-        fuente: '',
-        nombre_custom: ''
-      }]));
-      productosList.innerHTML = '';
-      arr.forEach(p => productosList.appendChild(renderProdCard(p)));
-    }
+function renderProductosSugeridos(arr) {
+  SUGERIDOS = new Map(arr.map(p => [p.id, {...p, incluir:false, fuente:'', nombre_custom:''}]));
+  productosList.innerHTML = '';
+  if (!arr.length) {
+    productosList.innerHTML = `<li class="costos-muted">No hay productos asociados a la patología seleccionada.</li>`;
+    return;
+  }
+  arr.forEach(p => productosList.appendChild(renderProdCard(p)));
+}
 
     // Agregar fila custom del productor
     function addCustomProductoRow(prefill = '') {
@@ -1238,6 +1237,7 @@
         markInvalid(inpNum);
         return false;
       }
+      return true;
     }
 
     // Inicialización
