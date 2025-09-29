@@ -418,17 +418,7 @@
     gap: 12px;
   }
 
-  #productos-list {
-    display: grid !important;
-  }
-
-  /* fuerza visibilidad */
-  #productos-list>li {
-    display: block;
-  }
-
   /* evita colapsos por estilos externos */
-
 
   .prod-card {
     border: 1px solid #e5e7eb;
@@ -521,118 +511,137 @@
     max-width: 100%;
   }
 
-  /* Reforzar visibilidad ante reglas del framework/CDN */
-  #productos-list { display:grid !important; grid-template-columns: 1fr; visibility:visible !important; }
-  #productos-list .prod-card { display:grid !important; opacity:1 !important; visibility:visible !important; }
+  /* Grilla simple y suficiente para productos */
+  .productos-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 12px;
+  }
 </style>
 
-<style>
-  /* --- Hardening visual específico para evitar que estilos globales oculten la lista --- */
-  #productos-wrapper { display:block !important; visibility:visible !important; }
-  #productos-list { display:grid !important; visibility:visible !important; }
-  #productos-list > li { display:block !important; }
-</style>
 
 <script>
-(function () {
-  const CTRL_URL = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
+  (function() {
+    const CTRL_URL = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
 
-  // ===== Helpers =====
-  const $ = (sel, ctx = document) => ctx.querySelector(sel);
-  const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
-  const debounce = (fn, ms = 250) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+    // ===== Helpers =====
+    const $ = (sel, ctx = document) => ctx.querySelector(sel);
+    const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+    const debounce = (fn, ms = 250) => {
+      let t;
+      return (...a) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...a), ms);
+      };
+    };
 
-  const fetchJson = async (url) => {
-    const r = await fetch(url, { credentials: 'same-origin' });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const j = await r.json().catch(() => { throw new Error('Respuesta no es JSON'); });
-    if (!j || typeof j.ok === 'undefined') throw new Error('Formato inesperado');
-    if (!j.ok) throw new Error(j.error || 'Error');
-    return j.data;
-  };
-  const postJson = async (url, data) => {
-    const r = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'same-origin',
-      body: JSON.stringify(data)
-    });
-    const j = await r.json();
-    if (!j.ok) throw new Error(j.error || 'Error');
-    return j.data;
-  };
+    const fetchJson = async (url) => {
+      const r = await fetch(url, {
+        credentials: 'same-origin'
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json().catch(() => {
+        throw new Error('Respuesta no es JSON');
+      });
+      if (!j || typeof j.ok === 'undefined') throw new Error('Formato inesperado');
+      if (!j.ok) throw new Error(j.error || 'Error');
+      return j.data;
+    };
+    const postJson = async (url, data) => {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(data)
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || 'Error');
+      return j.data;
+    };
 
-  // ===== Refs UI =====
-  const form = $('#form-solicitud');
-  const btnSolicitar = $('#btn-solicitar');
-  const modal = $('#modal-resumen');
-  const btnConfirmar = $('#btn-confirmar');
-  const btnCerrarModal = $('#btn-cerrar-modal');
+    // ===== Refs UI =====
+    const form = $('#form-solicitud');
+    const btnSolicitar = $('#btn-solicitar');
+    const modal = $('#modal-resumen');
+    const btnConfirmar = $('#btn-confirmar');
+    const btnCerrarModal = $('#btn-cerrar-modal');
 
-  const inpPersona = $('#form_nuevo_servicio_persona');
-  const hidPersona = $('#productor_id_real');
-  const listPersona = $('#ta-list-personas');
+    const inpPersona = $('#form_nuevo_servicio_persona');
+    const hidPersona = $('#productor_id_real');
+    const listPersona = $('#ta-list-personas');
 
-  const selRep = $('#form_nuevo_servicio_representante');
-  const selLinea = $('#form_nuevo_servicio_lineas_tension');
-  const selZonaRes = $('#form_nuevo_servicio_zona_restringida');
-  const selCorr = $('#form_nuevo_servicio_corriente');
-  const selAgua = $('#form_nuevo_servicio_agua');
-  const selCuart = $('#form_nuevo_servicio_cuarteles');
-  const selDespegue = $('#form_nuevo_servicio_despegue');
-  const inpHect = $('#form_nuevo_servicio_hectareas');
+    const selRep = $('#form_nuevo_servicio_representante');
+    const selLinea = $('#form_nuevo_servicio_lineas_tension');
+    const selZonaRes = $('#form_nuevo_servicio_zona_restringida');
+    const selCorr = $('#form_nuevo_servicio_corriente');
+    const selAgua = $('#form_nuevo_servicio_agua');
+    const selCuart = $('#form_nuevo_servicio_cuarteles');
+    const selDespegue = $('#form_nuevo_servicio_despegue');
+    const inpHect = $('#form_nuevo_servicio_hectareas');
 
-  const selPago = $('#form_nuevo_servicio_pago');
-  const grupoCoop = $('#grupo-cooperativa');
-  const selCoop = $('#form_nuevo_servicio_cooperativa');
+    const selPago = $('#form_nuevo_servicio_pago');
+    const grupoCoop = $('#grupo-cooperativa');
+    const selCoop = $('#form_nuevo_servicio_cooperativa');
 
-  const selMotivoHidden = $('#form_nuevo_servicio_motivo');
-  const selMotivoHiddenIds = $('#form_nuevo_servicio_motivo_ids');
-  const btnMotivoToggle = $('#form_nuevo_servicio_motivo_toggle');
-  const ulMotivoList = $('#form_nuevo_servicio_motivo_list');
-  const selQuincena = $('#form_nuevo_servicio_quincena');
+    const selMotivoHidden = $('#form_nuevo_servicio_motivo');
+    const selMotivoHiddenIds = $('#form_nuevo_servicio_motivo_ids');
+    const btnMotivoToggle = $('#form_nuevo_servicio_motivo_toggle');
+    const ulMotivoList = $('#form_nuevo_servicio_motivo_list');
+    const selQuincena = $('#form_nuevo_servicio_quincena');
 
-  const selProv = $('#form_nuevo_servicio_provincia');
-  const inpLoc = $('#form_nuevo_servicio_localidad');
-  const inpCalle = $('#form_nuevo_servicio_calle');
-  const inpNum = $('#form_nuevo_servicio_numero');
-  const inpObs = $('#form_nuevo_servicio_observaciones');
+    const selProv = $('#form_nuevo_servicio_provincia');
+    const inpLoc = $('#form_nuevo_servicio_localidad');
+    const inpCalle = $('#form_nuevo_servicio_calle');
+    const inpNum = $('#form_nuevo_servicio_numero');
+    const inpObs = $('#form_nuevo_servicio_observaciones');
 
-  // Productos
-  const productosList = $('#productos-list');
-  const customProdsList = $('#custom-prods-list');
-  const btnAddCustomProd = $('#btn-add-custom-prod');
+    // Productos
+    const productosList = $('#productos-list');
+    const customProdsList = $('#custom-prods-list');
+    const btnAddCustomProd = $('#btn-add-custom-prod');
 
-  // ===== Estado =====
-  let SUGERIDOS = new Map(); // id -> {id,nombre,costo_hectarea,incluir,fuente,nombre_custom}
-  let costoBaseHa = 0;
-  let monedaBase = 'Pesos';
+    // ===== Estado =====
+    let SUGERIDOS = new Map(); // id -> {id,nombre,costo_hectarea,incluir,fuente,nombre_custom}
+    let costoBaseHa = 0;
+    let monedaBase = 'Pesos';
 
-  // ===== Render productos sugeridos =====
-  function fmtMon(n, curr) {
-    try { return new Intl.NumberFormat('es-AR', { style: 'currency', currency: curr, minimumFractionDigits: 2 }).format(n); }
-    catch { return '$ ' + Number(n || 0).toFixed(2); }
-  }
-  function renderProductosSugeridos(arr) {
-    SUGERIDOS = new Map(arr.map(p => [Number(p.id), {
-      id: Number(p.id),
-      nombre: String(p.nombre),
-      costo_hectarea: Number(p.costo_hectarea ?? 0),
-      incluir: false,
-      fuente: '',
-      nombre_custom: ''
-    }]));
-
-    if (!arr.length) {
-      productosList.innerHTML = `<li class="costos-muted">No hay productos asociados a la patología seleccionada.</li>`;
-      console.log('[PRODUCTOS] Render vacío');
-      recalcCostos();
-      return;
+    // ===== Render productos sugeridos =====
+    function fmtMon(n, curr) {
+      try {
+        return new Intl.NumberFormat('es-AR', {
+          style: 'currency',
+          currency: curr,
+          minimumFractionDigits: 2
+        }).format(n);
+      } catch {
+        return '$ ' + Number(n || 0).toFixed(2);
+      }
     }
 
-    productosList.innerHTML = arr.map(p => {
-      const id = Number(p.id);
-      return `
+    function renderProductosSugeridos(arr) {
+      SUGERIDOS = new Map(arr.map(p => [Number(p.id), {
+        id: Number(p.id),
+        nombre: String(p.nombre),
+        costo_hectarea: Number(p.costo_hectarea ?? 0),
+        incluir: false,
+        fuente: '',
+        nombre_custom: ''
+      }]));
+
+      if (!arr.length) {
+        productosList.innerHTML = `<li class="costos-muted">No hay productos asociados a la patología seleccionada.</li>`;
+        console.log('[PRODUCTOS] Render vacío');
+        recalcCostos();
+        return;
+      }
+
+      productosList.innerHTML = arr.map(p => {
+        const id = Number(p.id);
+        return `
 <li class="prod-card" data-tipo="sugerido" data-id="${id}" data-incluir="false" data-fuente="">
   <div class="prod-head">
     <div class="prod-name">${p.nombre}</div>
@@ -652,75 +661,81 @@
     </div>
   </div>
 </li>`;
-    }).join('');
+      }).join('');
 
-productosList.removeAttribute('hidden');
-productosList.style.minHeight = '8px';
-console.log('[PRODUCTOS] Renderizados como tarjetas:', Array.from(SUGERIDOS.values()));
-console.log('[PRODUCTOS] Montados:', productosList.childElementCount, 'nodos');
-recalcCostos();
-  }
+      productosList.removeAttribute('hidden');
+      productosList.style.minHeight = '8px';
+      console.log('[PRODUCTOS] Renderizados como tarjetas:', Array.from(SUGERIDOS.values()));
+      console.log('[PRODUCTOS] Montados:', productosList.childElementCount, 'nodos');
+      recalcCostos();
+    }
 
-  // ===== Delegación única en #productos-list =====
-  productosList.addEventListener('change', (e) => {
-    const li = e.target.closest('.prod-card[data-tipo="sugerido"]');
-    if (!li) return;
-    const id = Number(li.dataset.id);
-    const st = SUGERIDOS.get(id);
-    if (!st) return;
+    // ===== Delegación única en #productos-list =====
+    productosList.addEventListener('change', (e) => {
+      const li = e.target.closest('.prod-card[data-tipo="sugerido"]');
+      if (!li) return;
+      const id = Number(li.dataset.id);
+      const st = SUGERIDOS.get(id);
+      if (!st) return;
 
-    if (e.target.classList.contains('incluir-chk')) {
-      const inc = e.target.checked;
-      li.dataset.incluir = String(inc);
-      li.querySelectorAll(`input[name="fuente_${id}"]`).forEach(r => r.disabled = !inc);
-      if (!inc) {
-        st.fuente = '';
-        st.nombre_custom = '';
-        li.dataset.fuente = '';
+      if (e.target.classList.contains('incluir-chk')) {
+        const inc = e.target.checked;
+        li.dataset.incluir = String(inc);
+        li.querySelectorAll(`input[name="fuente_${id}"]`).forEach(r => r.disabled = !inc);
+        if (!inc) {
+          st.fuente = '';
+          st.nombre_custom = '';
+          li.dataset.fuente = '';
+          const input = li.querySelector('.prod-nombre-input');
+          if (input) {
+            input.value = '';
+            input.disabled = true;
+          }
+          const wrap = li.querySelector('.prod-input');
+          if (wrap) wrap.style.display = 'none';
+        }
+        recalcCostos();
+        return;
+      }
+
+      if (e.target.matches(`input[type="radio"][name="fuente_${id}"]`)) {
+        const v = e.target.value; // 'sve' | 'productor'
+        st.fuente = v;
+        li.dataset.fuente = v;
         const input = li.querySelector('.prod-nombre-input');
-        if (input) { input.value = ''; input.disabled = true; }
         const wrap = li.querySelector('.prod-input');
-        if (wrap) wrap.style.display = 'none';
+        if (v === 'productor') {
+          if (input) input.disabled = false;
+          if (wrap) wrap.style.display = 'block';
+        } else {
+          if (input) {
+            input.value = '';
+            input.disabled = true;
+          }
+          if (wrap) wrap.style.display = 'none';
+          st.nombre_custom = '';
+        }
+        recalcCostos();
       }
-      recalcCostos();
-      return;
-    }
+    });
 
-    if (e.target.matches(`input[type="radio"][name="fuente_${id}"]`)) {
-      const v = e.target.value; // 'sve' | 'productor'
-      st.fuente = v;
-      li.dataset.fuente = v;
-      const input = li.querySelector('.prod-nombre-input');
-      const wrap = li.querySelector('.prod-input');
-      if (v === 'productor') {
-        if (input) input.disabled = false;
-        if (wrap) wrap.style.display = 'block';
-      } else {
-        if (input) { input.value = ''; input.disabled = true; }
-        if (wrap) wrap.style.display = 'none';
-        st.nombre_custom = '';
-      }
-      recalcCostos();
-    }
-  });
+    productosList.addEventListener('input', (e) => {
+      const input = e.target;
+      if (!input.classList || !input.classList.contains('prod-nombre-input')) return;
+      const li = input.closest('.prod-card[data-tipo="sugerido"]');
+      if (!li) return;
+      const id = Number(li.dataset.id);
+      const st = SUGERIDOS.get(id);
+      if (!st) return;
+      st.nombre_custom = input.value.trim();
+    });
 
-  productosList.addEventListener('input', (e) => {
-    const input = e.target;
-    if (!input.classList || !input.classList.contains('prod-nombre-input')) return;
-    const li = input.closest('.prod-card[data-tipo="sugerido"]');
-    if (!li) return;
-    const id = Number(li.dataset.id);
-    const st = SUGERIDOS.get(id);
-    if (!st) return;
-    st.nombre_custom = input.value.trim();
-  });
-
-  // ===== Custom del productor =====
-  function addCustomProductoRow(prefill = '') {
-    const li = document.createElement('li');
-    li.className = 'prod-card';
-    li.dataset.tipo = 'custom';
-    li.innerHTML = `
+    // ===== Custom del productor =====
+    function addCustomProductoRow(prefill = '') {
+      const li = document.createElement('li');
+      li.className = 'prod-card';
+      li.dataset.tipo = 'custom';
+      li.innerHTML = `
 <div class="prod-head">
   <div class="prod-name"><span class="badge-custom">Custom</span> Producto del productor</div>
   <button type="button" class="btn btn-cancelar btn-sm btn-remove">Quitar</button>
@@ -734,288 +749,445 @@ recalcCostos();
     </div>
   </div>
 </div>`;
-    li.querySelector('.btn-remove').addEventListener('click', () => { li.remove(); recalcCostos(); });
-    customProdsList.appendChild(li);
-    recalcCostos();
-  }
-  btnAddCustomProd.addEventListener('click', () => addCustomProductoRow());
-
-  // ===== Motivos: carga productos por selección =====
-  async function loadProductosPorPatologias(patologiaIds = []) {
-    const promises = patologiaIds.map(async (id) => {
-      try {
-        const data = await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${encodeURIComponent(id)}`);
-        return Array.isArray(data) ? data : [];
-      } catch { return []; }
-    });
-    const results = await Promise.all(promises);
-
-    const dict = new Map();
-    results.flat().forEach(p => {
-      if (!dict.has(p.id)) dict.set(p.id, { id: p.id, nombre: p.nombre, costo_hectarea: Number(p.costo_hectarea ?? 0) });
-    });
-    const productos = Array.from(dict.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
-    console.log('[PRODUCTOS] Consolidado (array):', productos); // array de objetos (no tabla)
-    renderProductosSugeridos(productos);
-  }
-
-  // ===== Typeahead personas =====
-  (function initTypeahead() {
-    const render = (items) => {
-      listPersona.innerHTML = '';
-      items.forEach((it, i) => {
-        const li = document.createElement('li');
-        li.role = 'option'; li.tabIndex = -1; li.className = 'ta-item';
-        li.textContent = it.label; li.dataset.value = it.value;
-        li.addEventListener('mousedown', (e) => { e.preventDefault(); choose(i); });
-        listPersona.appendChild(li);
+      li.querySelector('.btn-remove').addEventListener('click', () => {
+        li.remove();
+        recalcCostos();
       });
-      listPersona.hidden = items.length === 0;
-      inpPersona.setAttribute('aria-expanded', String(!listPersona.hidden));
-    };
-    let current = [];
-    const choose = (idx) => {
-      const it = current[idx]; if (!it) return;
-      inpPersona.value = it.label; hidPersona.value = it.value;
-      listPersona.hidden = true; inpPersona.setAttribute('aria-expanded','false');
-    };
-    const search = debounce(async () => {
-      const q = inpPersona.value.trim();
-      if (q.length < 2) { listPersona.hidden = true; current = []; hidPersona.value = ''; return; }
-      try {
-        const coop = selCoop.value ? `&coop_id=${encodeURIComponent(selCoop.value)}` : '';
-        const data = await fetchJson(`${CTRL_URL}?action=buscar_usuarios&q=${encodeURIComponent(q)}${coop}`);
-        current = data.map(u => ({ label: u.usuario, value: u.id_real }));
-        render(current);
-      } catch (e) { console.error(e); }
-    }, 200);
-    inpPersona.addEventListener('input', search);
-    inpPersona.addEventListener('keydown', (e) => {
-      if (listPersona.hidden) return;
-      if (e.key === 'Escape') { listPersona.hidden = true; inpPersona.setAttribute('aria-expanded','false'); }
-    });
-    document.addEventListener('click', (e) => {
-      if (!listPersona.contains(e.target) && e.target !== inpPersona) {
-        listPersona.hidden = true; inpPersona.setAttribute('aria-expanded','false');
-      }
-    });
-  })();
+      customProdsList.appendChild(li);
+      recalcCostos();
+    }
+    btnAddCustomProd.addEventListener('click', () => addCustomProductoRow());
 
-  // ===== Cargas select =====
-  async function loadFormasPago() {
-    const data = await fetchJson(`${CTRL_URL}?action=formas_pago`);
-    selPago.innerHTML = `<option value="">Seleccionar</option>` + data.map(fp => `<option value="${fp.id}">${fp.nombre}</option>`).join('');
-  }
-  async function loadRangos() {
-    const data = await fetchJson(`${CTRL_URL}?action=rangos`);
-    selQuincena.innerHTML = `<option value="">Seleccionar</option>` + data.map(r => `<option value="${r.rango}">${r.label}</option>`).join('');
-  }
-  async function loadCooperativas() {
-    const data = await fetchJson(`${CTRL_URL}?action=cooperativas`);
-    selCoop.innerHTML = `<option value="">Seleccionar</option>` + data.map(u => `<option value="${u.id_real}">${u.usuario}</option>`).join('');
-  }
-  async function loadPatologias() {
-    const data = await fetchJson(`${CTRL_URL}?action=patologias`);
-    ulMotivoList.innerHTML = '';
-    data.forEach(p => {
-      const li = document.createElement('li');
-      li.className = 'selectlike-item'; li.role = 'option'; li.dataset.id = String(p.id);
-      li.innerHTML = `<label class="selectlike-label" style="display:flex;align-items:center;gap:.5rem;width:100%">
+    // ===== Motivos: carga productos por selección =====
+    async function loadProductosPorPatologias(patologiaIds = []) {
+      const promises = patologiaIds.map(async (id) => {
+        try {
+          const data = await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${encodeURIComponent(id)}`);
+          return Array.isArray(data) ? data : [];
+        } catch {
+          return [];
+        }
+      });
+      const results = await Promise.all(promises);
+
+      const dict = new Map();
+      results.flat().forEach(p => {
+        if (!dict.has(p.id)) dict.set(p.id, {
+          id: p.id,
+          nombre: p.nombre,
+          costo_hectarea: Number(p.costo_hectarea ?? 0)
+        });
+      });
+      const productos = Array.from(dict.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+      console.log('[PRODUCTOS] Consolidado (array):', productos); // array de objetos (no tabla)
+      renderProductosSugeridos(productos);
+    }
+
+    // ===== Typeahead personas =====
+    (function initTypeahead() {
+      const render = (items) => {
+        listPersona.innerHTML = '';
+        items.forEach((it, i) => {
+          const li = document.createElement('li');
+          li.role = 'option';
+          li.tabIndex = -1;
+          li.className = 'ta-item';
+          li.textContent = it.label;
+          li.dataset.value = it.value;
+          li.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            choose(i);
+          });
+          listPersona.appendChild(li);
+        });
+        listPersona.hidden = items.length === 0;
+        inpPersona.setAttribute('aria-expanded', String(!listPersona.hidden));
+      };
+      let current = [];
+      const choose = (idx) => {
+        const it = current[idx];
+        if (!it) return;
+        inpPersona.value = it.label;
+        hidPersona.value = it.value;
+        listPersona.hidden = true;
+        inpPersona.setAttribute('aria-expanded', 'false');
+      };
+      const search = debounce(async () => {
+        const q = inpPersona.value.trim();
+        if (q.length < 2) {
+          listPersona.hidden = true;
+          current = [];
+          hidPersona.value = '';
+          return;
+        }
+        try {
+          const coop = selCoop.value ? `&coop_id=${encodeURIComponent(selCoop.value)}` : '';
+          const data = await fetchJson(`${CTRL_URL}?action=buscar_usuarios&q=${encodeURIComponent(q)}${coop}`);
+          current = data.map(u => ({
+            label: u.usuario,
+            value: u.id_real
+          }));
+          render(current);
+        } catch (e) {
+          console.error(e);
+        }
+      }, 200);
+      inpPersona.addEventListener('input', search);
+      inpPersona.addEventListener('keydown', (e) => {
+        if (listPersona.hidden) return;
+        if (e.key === 'Escape') {
+          listPersona.hidden = true;
+          inpPersona.setAttribute('aria-expanded', 'false');
+        }
+      });
+      document.addEventListener('click', (e) => {
+        if (!listPersona.contains(e.target) && e.target !== inpPersona) {
+          listPersona.hidden = true;
+          inpPersona.setAttribute('aria-expanded', 'false');
+        }
+      });
+    })();
+
+    // ===== Cargas select =====
+    async function loadFormasPago() {
+      const data = await fetchJson(`${CTRL_URL}?action=formas_pago`);
+      selPago.innerHTML = `<option value="">Seleccionar</option>` + data.map(fp => `<option value="${fp.id}">${fp.nombre}</option>`).join('');
+    }
+    async function loadRangos() {
+      const data = await fetchJson(`${CTRL_URL}?action=rangos`);
+      selQuincena.innerHTML = `<option value="">Seleccionar</option>` + data.map(r => `<option value="${r.rango}">${r.label}</option>`).join('');
+    }
+    async function loadCooperativas() {
+      const data = await fetchJson(`${CTRL_URL}?action=cooperativas`);
+      selCoop.innerHTML = `<option value="">Seleccionar</option>` + data.map(u => `<option value="${u.id_real}">${u.usuario}</option>`).join('');
+    }
+    async function loadPatologias() {
+      const data = await fetchJson(`${CTRL_URL}?action=patologias`);
+      ulMotivoList.innerHTML = '';
+      data.forEach(p => {
+        const li = document.createElement('li');
+        li.className = 'selectlike-item';
+        li.role = 'option';
+        li.dataset.id = String(p.id);
+        li.innerHTML = `<label class="selectlike-label" style="display:flex;align-items:center;gap:.5rem;width:100%">
         <input type="checkbox" value="${p.id}" aria-label="${p.nombre}"><span>${p.nombre}</span>
       </label>`;
-      ulMotivoList.appendChild(li);
-    });
-    setSelectedMotivos([]); updateMotivoButton();
-  }
-
-  function grupoCooperativaShow(show) {
-    if (show) { grupoCoop.hidden = false; selCoop.setAttribute('required','required'); }
-    else { grupoCoop.hidden = true; selCoop.removeAttribute('required'); selCoop.value = ''; }
-  }
-  selPago.addEventListener('change', () => grupoCooperativaShow(parseInt(selPago.value || '0',10) === 6));
-
-
-  // ===== Costos =====
-  const num = (n) => Number.isFinite(Number(n)) ? Number(n) : 0;
-  const fmt = (n) => fmtMon(n, (monedaBase === 'USD' ? 'USD' : 'ARS'));
-
-  function recalcCostos() {
-    const tbody = $('#costos-body'); if (!tbody) return;
-    const ha = Math.max(0, parseInt((inpHect.value || '0'), 10));
-    const valorHa = num(costoBaseHa);
-    const totalBase = valorHa * ha;
-    const rows = [];
-    rows.push(`<tr><th>Valor de las hectáreas</th><td class="costos-muted">${monedaBase}</td><td class="costos-right">${fmt(valorHa)}</td></tr>`);
-    rows.push(`<tr><th>Cantidad de hectáreas</th><td></td><td class="costos-right">${ha}</td></tr>`);
-    rows.push(`<tr><th>Total base (servicio)</th><td></td><td class="costos-right">${fmt(totalBase)}</td></tr>`);
-    let productosTotal = 0;
-
-    productosList.querySelectorAll('.prod-card[data-tipo="sugerido"]').forEach(li => {
-      const id = parseInt(li.dataset.id, 10);
-      const inc = li.dataset.incluir === 'true';
-      if (!inc) return;
-      const p = SUGERIDOS.get(id);
-      const fuente = li.dataset.fuente || '';
-      const costoHaProd = (fuente === 'sve') ? num(p.costo_hectarea || 0) : 0;
-      const totalProd = costoHaProd * ha;
-      productosTotal += totalProd;
-      const leyenda = (fuente === 'sve') ? 'Aporta SVE' : 'Aporta productor';
-      rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${p.nombre}</span> <span class="costos-muted">(${leyenda})</span></td><td></td></tr>`);
-      rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(costoHaProd)}</td></tr>`);
-      rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(totalProd)}</td></tr>`);
-    });
-
-    customProdsList.querySelectorAll('.prod-card[data-tipo="custom"]').forEach(li => {
-      const name = (li.querySelector('.prod-nombre-input')?.value || '').trim() || 'Producto del productor';
-      rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${name}</span> <span class="costos-muted">(Aporta productor)</span></td><td></td></tr>`);
-      rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(0)}</td></tr>`);
-      rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(0)}</td></tr>`);
-    });
-
-    const precioFinal = totalBase + productosTotal;
-    tbody.innerHTML = rows.join('');
-    $('#costos-precio-final').textContent = fmt(precioFinal);
-  }
-
-  // Hectáreas -> recálculo
-  inpHect.addEventListener('input', debounce(recalcCostos, 150));
-
-  // ===== UI motivos (único set) =====
-  function getSelectedMotivos() {
-    const csv = (selMotivoHiddenIds.value || '').trim();
-    if (!csv) return [];
-    return csv.split(',').map(s => parseInt(s, 10)).filter(n => n > 0);
-  }
-
-async function setSelectedMotivos(arr) {
-  const uniq = Array.from(new Set(arr.filter(n => Number.isInteger(n) && n > 0)));
-  selMotivoHiddenIds.value = uniq.join(',');
-  selMotivoHidden.value = uniq.length ? String(uniq[0]) : '';
-  // marcar UI
-  ulMotivoList.querySelectorAll('input[type="checkbox"]')
-    .forEach(cb => cb.checked = uniq.includes(parseInt(cb.value,10)));
-  updateMotivoButton();
-  console.log('[MOTIVOS] setSelectedMotivos ->', uniq);
-
-  if (!uniq.length) {
-    SUGERIDOS = new Map();
-    productosList.innerHTML = '';
-    recalcCostos();
-    return;
-  }
-  await loadProductosPorPatologias(uniq); // ← carga directa y única
-}
-
-
-  function updateMotivoButton() {
-    const ids = getSelectedMotivos();
-    const names = [];
-    ids.forEach(id => {
-      const span = ulMotivoList.querySelector(`li[data-id="${id}"] span`);
-      if (span) names.push(span.textContent || String(id));
-    });
-    btnMotivoToggle.textContent = ids.length ? (names.slice(0,2).join(', ') + (names.length>2 ? ` (+${names.length-2})` : '')) : 'Seleccionar';
-    btnMotivoToggle.setAttribute('aria-expanded', ids.length ? 'true' : 'false');
-  }
-  btnMotivoToggle.addEventListener('click', () => {
-    const isHidden = ulMotivoList.hasAttribute('hidden');
-    if (isHidden) { ulMotivoList.removeAttribute('hidden'); btnMotivoToggle.setAttribute('aria-expanded','true'); }
-    else { ulMotivoList.setAttribute('hidden',''); btnMotivoToggle.setAttribute('aria-expanded','false'); }
-  });
-  document.addEventListener('click', (e) => {
-    if (!ulMotivoList.contains(e.target) && e.target !== btnMotivoToggle) {
-      if (!ulMotivoList.hasAttribute('hidden')) { ulMotivoList.setAttribute('hidden',''); btnMotivoToggle.setAttribute('aria-expanded','false'); }
-    }
-  });
-  function collectAndSetMotivos() {
-    const checked = Array.from(ulMotivoList.querySelectorAll('input[type="checkbox"]:checked'))
-      .map(cb => parseInt(cb.value,10))
-      .filter(n => Number.isInteger(n) && n > 0);
-    console.log('[MOTIVOS] Checkboxes tildados:', checked);
-    setSelectedMotivos(checked);
-  }
-
-ulMotivoList.addEventListener('change', collectAndSetMotivos); // solo una vía → evita duplicados
-
-  // ===== Validación previa al modal =====
-  function markInvalid(el){ try{ el.focus(); }catch{} el.classList.add('input-error'); setTimeout(()=>el.classList.remove('input-error'),1500); }
-  function getSiNoValue(sel){ const v = (sel?.value || '').trim().toLowerCase(); return (v==='si'||v==='sí'||v==='no')?v:''; }
-
-  function validateBeforeModal() {
-    ($$('.input-error') || []).forEach(el => el.classList.remove('input-error'));
-
-    if (!hidPersona.value) { showAlert('error', 'Seleccioná un productor.'); markInvalid(inpPersona); return false; }
-
-    const siNoFields = [
-      { el: selRep, name: '¿Contamos con un representante?' },
-      { el: selLinea, name: '¿Líneas de tensión?' },
-      { el: selZonaRes, name: '¿Zona restringida?' },
-      { el: selCorr, name: '¿Corriente eléctrica?' },
-      { el: selAgua, name: '¿Agua potable?' },
-      { el: selCuart, name: '¿Cuarteles libres?' },
-      { el: selDespegue, name: '¿Área de despegue?' }
-    ];
-    for (const f of siNoFields) {
-      if (!getSiNoValue(f.el)) { showAlert('error', `Completá: ${f.name}`); markInvalid(f.el); return false; }
+        ulMotivoList.appendChild(li);
+      });
+      setSelectedMotivos([]);
+      updateMotivoButton();
     }
 
-    const hectInt = parseInt(inpHect.value || '0', 10);
-    if (!hectInt || hectInt <= 0) { showAlert('error', 'Ingresá la cantidad de hectáreas (entero mayor a 0).'); markInvalid(inpHect); return false; }
+    function grupoCooperativaShow(show) {
+      if (show) {
+        grupoCoop.hidden = false;
+        selCoop.setAttribute('required', 'required');
+      } else {
+        grupoCoop.hidden = true;
+        selCoop.removeAttribute('required');
+        selCoop.value = '';
+      }
+    }
+    selPago.addEventListener('change', () => grupoCooperativaShow(parseInt(selPago.value || '0', 10) === 6));
 
-    const fpago = parseInt(selPago.value || '0', 10);
-    if (!fpago) { showAlert('error', 'Seleccioná la forma de pago.'); markInvalid(selPago); return false; }
-    if (fpago === 6 && !selCoop.value) { showAlert('error', 'Seleccioná la cooperativa para la forma de pago 6.'); grupoCooperativaShow(true); markInvalid(selCoop); return false; }
 
-    const motivosSel = getSelectedMotivos();
-    if (!motivosSel.length) { showAlert('error', 'Seleccioná al menos un motivo/patología.'); markInvalid(btnMotivoToggle); return false; }
+    // ===== Costos =====
+    const num = (n) => Number.isFinite(Number(n)) ? Number(n) : 0;
+    const fmt = (n) => fmtMon(n, (monedaBase === 'USD' ? 'USD' : 'ARS'));
 
-    if (!selQuincena.value) { showAlert('error', 'Seleccioná la quincena de visita.'); markInvalid(selQuincena); return false; }
+    function recalcCostos() {
+      const tbody = $('#costos-body');
+      if (!tbody) return;
+      const ha = Math.max(0, parseInt((inpHect.value || '0'), 10));
+      const valorHa = num(costoBaseHa);
+      const totalBase = valorHa * ha;
+      const rows = [];
+      rows.push(`<tr><th>Valor de las hectáreas</th><td class="costos-muted">${monedaBase}</td><td class="costos-right">${fmt(valorHa)}</td></tr>`);
+      rows.push(`<tr><th>Cantidad de hectáreas</th><td></td><td class="costos-right">${ha}</td></tr>`);
+      rows.push(`<tr><th>Total base (servicio)</th><td></td><td class="costos-right">${fmt(totalBase)}</td></tr>`);
+      let productosTotal = 0;
 
-    if (!selProv.value) { showAlert('error', 'Seleccioná la provincia.'); markInvalid(selProv); return false; }
-    if (!(inpLoc.value || '').trim()) { showAlert('error', 'Ingresá la localidad.'); markInvalid(inpLoc); return false; }
-    if (!(inpCalle.value || '').trim()) { showAlert('error', 'Ingresá la calle.'); markInvalid(inpCalle); return false; }
-    const numero = parseInt((inpNum.value || '0'), 10);
-    if (!numero || numero <= 0) { showAlert('error', 'Ingresá un número de puerta válido.'); markInvalid(inpNum); return false; }
+      productosList.querySelectorAll('.prod-card[data-tipo="sugerido"]').forEach(li => {
+        const id = parseInt(li.dataset.id, 10);
+        const inc = li.dataset.incluir === 'true';
+        if (!inc) return;
+        const p = SUGERIDOS.get(id);
+        const fuente = li.dataset.fuente || '';
+        const costoHaProd = (fuente === 'sve') ? num(p.costo_hectarea || 0) : 0;
+        const totalProd = costoHaProd * ha;
+        productosTotal += totalProd;
+        const leyenda = (fuente === 'sve') ? 'Aporta SVE' : 'Aporta productor';
+        rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${p.nombre}</span> <span class="costos-muted">(${leyenda})</span></td><td></td></tr>`);
+        rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(costoHaProd)}</td></tr>`);
+        rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(totalProd)}</td></tr>`);
+      });
 
-    return true;
-  }
+      customProdsList.querySelectorAll('.prod-card[data-tipo="custom"]').forEach(li => {
+        const name = (li.querySelector('.prod-nombre-input')?.value || '').trim() || 'Producto del productor';
+        rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${name}</span> <span class="costos-muted">(Aporta productor)</span></td><td></td></tr>`);
+        rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(0)}</td></tr>`);
+        rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(0)}</td></tr>`);
+      });
 
-  // ===== Confirmación y POST =====
-  btnSolicitar.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (!validateBeforeModal()) return;
-    modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false');
-  });
-  const closeModal = () => { modal.classList.add('hidden'); modal.setAttribute('aria-hidden','true'); };
-  btnCerrarModal.addEventListener('click', (e) => { e.preventDefault(); closeModal(); });
+      const precioFinal = totalBase + productosTotal;
+      tbody.innerHTML = rows.join('');
+      $('#costos-precio-final').textContent = fmt(precioFinal);
+    }
 
-  btnConfirmar.addEventListener('click', async (e) => {
-    e.preventDefault();
-    try {
-      const payload = buildPayload(); // se asume función existente en tu base
-      const data = await postJson(CTRL_URL, payload);
-      const newId = (data && typeof data.id !== 'undefined') ? String(data.id) : '—';
-      showAlert('success', `Solicitud creada. ID: ${newId}`);
+    // Hectáreas -> recálculo
+    inpHect.addEventListener('input', debounce(recalcCostos, 150));
+
+    // ===== UI motivos (único set) =====
+    function getSelectedMotivos() {
+      const csv = (selMotivoHiddenIds.value || '').trim();
+      if (!csv) return [];
+      return csv.split(',').map(s => parseInt(s, 10)).filter(n => n > 0);
+    }
+
+    // Reemplazar la función existente por esta versión (sólo cambia el final)
+    async function setSelectedMotivos(arr) {
+      const uniq = Array.from(new Set(arr.filter(n => Number.isInteger(n) && n > 0)));
+      selMotivoHiddenIds.value = uniq.join(',');
+      selMotivoHidden.value = uniq.length ? String(uniq[0]) : '';
+      ulMotivoList.querySelectorAll('input[type="checkbox"]')
+        .forEach(cb => cb.checked = uniq.includes(parseInt(cb.value, 10)));
+      updateMotivoButton();
+      console.log('[MOTIVOS] setSelectedMotivos ->', uniq);
+
+      if (!uniq.length) {
+        SUGERIDOS = new Map();
+        productosList.innerHTML = '';
+        recalcCostos();
+        return;
+      }
+
+      // Cargar productos
+      await loadProductosPorPatologias(uniq);
+
+      // UX: cerrar el dropdown para que no tape las tarjetas y hacer foco visual
+      if (!ulMotivoList.hasAttribute('hidden')) {
+        ulMotivoList.setAttribute('hidden', '');
+        btnMotivoToggle.setAttribute('aria-expanded', 'false');
+      }
+      document.getElementById('productos-wrapper')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+
+
+
+    function updateMotivoButton() {
+      const ids = getSelectedMotivos();
+      const names = [];
+      ids.forEach(id => {
+        const span = ulMotivoList.querySelector(`li[data-id="${id}"] span`);
+        if (span) names.push(span.textContent || String(id));
+      });
+      btnMotivoToggle.textContent = ids.length ? (names.slice(0, 2).join(', ') + (names.length > 2 ? ` (+${names.length-2})` : '')) : 'Seleccionar';
+      btnMotivoToggle.setAttribute('aria-expanded', ids.length ? 'true' : 'false');
+    }
+    btnMotivoToggle.addEventListener('click', () => {
+      const isHidden = ulMotivoList.hasAttribute('hidden');
+      if (isHidden) {
+        ulMotivoList.removeAttribute('hidden');
+        btnMotivoToggle.setAttribute('aria-expanded', 'true');
+      } else {
+        ulMotivoList.setAttribute('hidden', '');
+        btnMotivoToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+    document.addEventListener('click', (e) => {
+      if (!ulMotivoList.contains(e.target) && e.target !== btnMotivoToggle) {
+        if (!ulMotivoList.hasAttribute('hidden')) {
+          ulMotivoList.setAttribute('hidden', '');
+          btnMotivoToggle.setAttribute('aria-expanded', 'false');
+        }
+      }
+    });
+
+    function collectAndSetMotivos() {
+      const checked = Array.from(ulMotivoList.querySelectorAll('input[type="checkbox"]:checked'))
+        .map(cb => parseInt(cb.value, 10))
+        .filter(n => Number.isInteger(n) && n > 0);
+      console.log('[MOTIVOS] Checkboxes tildados:', checked);
+      setSelectedMotivos(checked);
+    }
+
+    ulMotivoList.addEventListener('change', collectAndSetMotivos); // solo una vía → evita duplicados
+
+    // ===== Validación previa al modal =====
+    function markInvalid(el) {
+      try {
+        el.focus();
+      } catch {}
+      el.classList.add('input-error');
+      setTimeout(() => el.classList.remove('input-error'), 1500);
+    }
+
+    function getSiNoValue(sel) {
+      const v = (sel?.value || '').trim().toLowerCase();
+      return (v === 'si' || v === 'sí' || v === 'no') ? v : '';
+    }
+
+    function validateBeforeModal() {
+      ($$('.input-error') || []).forEach(el => el.classList.remove('input-error'));
+
+      if (!hidPersona.value) {
+        showAlert('error', 'Seleccioná un productor.');
+        markInvalid(inpPersona);
+        return false;
+      }
+
+      const siNoFields = [{
+          el: selRep,
+          name: '¿Contamos con un representante?'
+        },
+        {
+          el: selLinea,
+          name: '¿Líneas de tensión?'
+        },
+        {
+          el: selZonaRes,
+          name: '¿Zona restringida?'
+        },
+        {
+          el: selCorr,
+          name: '¿Corriente eléctrica?'
+        },
+        {
+          el: selAgua,
+          name: '¿Agua potable?'
+        },
+        {
+          el: selCuart,
+          name: '¿Cuarteles libres?'
+        },
+        {
+          el: selDespegue,
+          name: '¿Área de despegue?'
+        }
+      ];
+      for (const f of siNoFields) {
+        if (!getSiNoValue(f.el)) {
+          showAlert('error', `Completá: ${f.name}`);
+          markInvalid(f.el);
+          return false;
+        }
+      }
+
+      const hectInt = parseInt(inpHect.value || '0', 10);
+      if (!hectInt || hectInt <= 0) {
+        showAlert('error', 'Ingresá la cantidad de hectáreas (entero mayor a 0).');
+        markInvalid(inpHect);
+        return false;
+      }
+
+      const fpago = parseInt(selPago.value || '0', 10);
+      if (!fpago) {
+        showAlert('error', 'Seleccioná la forma de pago.');
+        markInvalid(selPago);
+        return false;
+      }
+      if (fpago === 6 && !selCoop.value) {
+        showAlert('error', 'Seleccioná la cooperativa para la forma de pago 6.');
+        grupoCooperativaShow(true);
+        markInvalid(selCoop);
+        return false;
+      }
+
+      const motivosSel = getSelectedMotivos();
+      if (!motivosSel.length) {
+        showAlert('error', 'Seleccioná al menos un motivo/patología.');
+        markInvalid(btnMotivoToggle);
+        return false;
+      }
+
+      if (!selQuincena.value) {
+        showAlert('error', 'Seleccioná la quincena de visita.');
+        markInvalid(selQuincena);
+        return false;
+      }
+
+      if (!selProv.value) {
+        showAlert('error', 'Seleccioná la provincia.');
+        markInvalid(selProv);
+        return false;
+      }
+      if (!(inpLoc.value || '').trim()) {
+        showAlert('error', 'Ingresá la localidad.');
+        markInvalid(inpLoc);
+        return false;
+      }
+      if (!(inpCalle.value || '').trim()) {
+        showAlert('error', 'Ingresá la calle.');
+        markInvalid(inpCalle);
+        return false;
+      }
+      const numero = parseInt((inpNum.value || '0'), 10);
+      if (!numero || numero <= 0) {
+        showAlert('error', 'Ingresá un número de puerta válido.');
+        markInvalid(inpNum);
+        return false;
+      }
+
+      return true;
+    }
+
+    // ===== Confirmación y POST =====
+    btnSolicitar.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (!validateBeforeModal()) return;
+      modal.classList.remove('hidden');
+      modal.setAttribute('aria-hidden', 'false');
+    });
+    const closeModal = () => {
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+    };
+    btnCerrarModal.addEventListener('click', (e) => {
+      e.preventDefault();
       closeModal();
-      form.reset(); grupoCooperativaShow(false); selQuincena.value=''; setSelectedMotivos([]); recalcCostos();
-    } catch (err) { console.log(err); showAlert('error', `Error: ${err.message}`); }
-  });
+    });
 
-  // ===== Costo base/Inicialización =====
-  async function loadCostoBaseHa() {
-    try {
-      const data = await fetchJson(`${CTRL_URL}?action=costo_base_ha`);
-      costoBaseHa = Number(data.costo || 0);
-      monedaBase = data.moneda || 'Pesos';
-    } catch (e) { costoBaseHa = 0; monedaBase = 'Pesos'; console.error(e); }
-    recalcCostos();
-  }
+    btnConfirmar.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        const payload = buildPayload(); // se asume función existente en tu base
+        const data = await postJson(CTRL_URL, payload);
+        const newId = (data && typeof data.id !== 'undefined') ? String(data.id) : '—';
+        showAlert('success', `Solicitud creada. ID: ${newId}`);
+        closeModal();
+        form.reset();
+        grupoCooperativaShow(false);
+        selQuincena.value = '';
+        setSelectedMotivos([]);
+        recalcCostos();
+      } catch (err) {
+        console.log(err);
+        showAlert('error', `Error: ${err.message}`);
+      }
+    });
 
-  (async function init(){
-    await Promise.all([loadFormasPago(), loadRangos(), loadPatologias(), loadCooperativas(), loadCostoBaseHa()]);
-    grupoCooperativaShow(false);
-    recalcCostos();
+    // ===== Costo base/Inicialización =====
+    async function loadCostoBaseHa() {
+      try {
+        const data = await fetchJson(`${CTRL_URL}?action=costo_base_ha`);
+        costoBaseHa = Number(data.costo || 0);
+        monedaBase = data.moneda || 'Pesos';
+      } catch (e) {
+        costoBaseHa = 0;
+        monedaBase = 'Pesos';
+        console.error(e);
+      }
+      recalcCostos();
+    }
+
+    (async function init() {
+      await Promise.all([loadFormasPago(), loadRangos(), loadPatologias(), loadCooperativas(), loadCostoBaseHa()]);
+      grupoCooperativaShow(false);
+      recalcCostos();
+    })();
+
   })();
-
-})();
 </script>
