@@ -258,7 +258,7 @@
         </div>
 
         <!-- ===== Tarjeta: Costo del servicio ===== -->
-        <div class="card full-span" id="card-costos" aria-live="polite">
+        <div class="card full-span costos-full" id="card-costos" aria-live="polite">
           <h2>Costo del servicio</h2>
           <div class="tabla-wrapper">
             <table class="data-table" aria-label="Resumen de costos del servicio">
