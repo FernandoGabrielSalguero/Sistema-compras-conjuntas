@@ -7,11 +7,31 @@ include __DIR__ . '/drone_drawerListado_view.php';
 </noscript>
 <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
 
+<!-- Descarga de consolidado -->
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
 <div class="content">
     <!-- Filtros mínimos -->
+
+    <?php if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+    $__ROL__ = strtolower($_SESSION['rol'] ?? ''); ?>
     <div class="card" style="background-color:#5b21b6;">
-        <h3 style="color:white;">Buscar proyecto de vuelo</h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <h3 style="color:white;margin:0;">Buscar proyecto de vuelo</h3>
+            <?php if ($__ROL__ === 'sve'): ?>
+                <button type="button" id="btn-export" class="btn-icon" title="Descargar consolidado" aria-label="Descargar consolidado" style="background:#EEF2FF;">
+                    <!-- Ícono download -->
+                    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+                        <path fill="#3730A3" d="M12 3a1 1 0 0 1 1 1v8.586l2.293-2.293 1.414 1.414L12 16.414l-4.707-4.707 1.414-1.414L11 12.586V4a1 1 0 0 1 1-1Zm-7 14h2v2H5a2 2 0 0 1-2-2v-1h2v1Zm4 2h6v-2H9v2Zm11-2h-2v2h2a2 2 0 0 0 2-2v-1h-2v1Z" />
+                    </svg>
+                </button>
+            <?php endif; ?>
+        </div>
         <form class="form-grid grid-4" id="form-search" autocomplete="off" aria-describedby="help-busqueda">
+
+
             <p id="help-busqueda" class="sr-only">Usá los campos para filtrar por piloto, productor, estado y fecha.</p>
 
             <div class="input-group">
@@ -422,4 +442,66 @@ include __DIR__ . '/drone_drawerListado_view.php';
 
         load(); // arranque
     })();
+
+    // ---- Exportar consolidado (solo si existe el botón, o sea rol SVE) ----
+    const btnExport = document.getElementById('btn-export');
+
+    async function fetchConsolidado() {
+        const url = `${DRONE_API}?action=export_consolidado`;
+        const res = await fetch(url, {
+            cache: 'no-store'
+        });
+        if (!res.ok) {
+            const msg = `Error ${res.status}`;
+            throw new Error(msg);
+        }
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || 'Error en exportación');
+        return json.data;
+    }
+
+    function buildAndDownloadXLSX(data) {
+        // data: { solicitudes, costos, items, recetas, eventos, motivos, parametros, rangos }
+        const wb = XLSX.utils.book_new();
+
+        const addSheet = (arr, name) => {
+            const cleanName = String(name).substring(0, 31) || 'Hoja';
+            const ws = XLSX.utils.json_to_sheet(Array.isArray(arr) ? arr : []);
+            XLSX.utils.book_append_sheet(wb, ws, cleanName);
+        };
+
+        addSheet(data.solicitudes, 'solicitudes');
+        addSheet(data.costos, 'costos');
+        addSheet(data.items, 'items');
+        addSheet(data.recetas, 'items_receta');
+        addSheet(data.eventos, 'eventos');
+        addSheet(data.motivos, 'motivos');
+        addSheet(data.parametros, 'parametros');
+        addSheet(data.rangos, 'rangos');
+
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        const fname = `consolidado_drones_${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.xlsx`;
+        XLSX.writeFile(wb, fname, {
+            compression: true
+        });
+    }
+
+    async function onExportClick() {
+        try {
+            els.cards.setAttribute('aria-busy', 'true');
+            const data = await fetchConsolidado();
+            buildAndDownloadXLSX(data);
+            if (typeof showAlert === 'function') showAlert('success', 'Consolidado generado.');
+        } catch (err) {
+            console.error(err);
+            if (typeof showAlert === 'function') showAlert('error', 'No se pudo generar el consolidado.');
+        } finally {
+            els.cards.setAttribute('aria-busy', 'false');
+        }
+    }
+
+    if (btnExport) {
+        btnExport.addEventListener('click', onExportClick);
+    }
 </script>
