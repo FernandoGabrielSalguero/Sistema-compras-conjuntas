@@ -257,10 +257,24 @@
           </div>
         </div>
 
-                <!-- ===== Productos disponibles (JSON) ===== -->
-        <div class="card full-span costos-full" id="card-productos-json" aria-live="polite" hidden>
+        <!-- ===== Productos disponibles (chips) ===== -->
+        <div class="card full-span costos-full" id="card-productos" aria-live="polite" hidden>
           <h2>Productos disponibles para tratar patología</h2>
-          <pre id="productos-json" class="json-box" aria-label="Productos en formato JSON"></pre>
+          <div id="productos-chips" class="chips-grid" role="group" aria-label="Productos sugeridos"></div>
+
+          <!-- Chip “Otro” + input -->
+          <div class="chips-custom">
+            <label class="chip">
+              <input type="checkbox" id="chip-custom" />
+              <span class="chip-box">
+                <span class="chip-name">Otro</span>
+              </span>
+            </label>
+            <div id="custom-wrapper" class="custom-input" hidden>
+              <label for="custom-producto" class="sr-only">Nombre de producto</label>
+              <input type="text" id="custom-producto" placeholder="Nombre del producto..." />
+            </div>
+          </div>
         </div>
 
         <!-- ===== Tarjeta: Costo del servicio ===== -->
@@ -396,33 +410,96 @@
     background: #f3e8ff;
   }
 
-/* Forzar que la tarjeta de costos ocupe todo el ancho */
-#card-costos.costos-full {
-  grid-column: 1 / -1 !important;
-  width: 100% !important;
-  flex: 0 0 100% !important;
-  display: block;
-  background-color: aliceblue;
-}
+  /* Forzar que la tarjeta de costos ocupe todo el ancho */
+  #card-costos.costos-full {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    display: block;
+    background-color: aliceblue;
+  }
 
-/* ===== Productos JSON ===== */
-#card-productos-json { margin-top: 8px; }
-.json-box {
-  display: block;
-  width: 100%;
-  min-height: 80px;
-  max-height: 360px;
-  overflow: auto;
-  background: #0b1021;
-  color: #d1ffe7;
-  border-radius: 10px;
-  padding: 12px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 13px;
-  line-height: 1.4;
-  white-space: pre;
-  tab-size: 2;
-}
+  /* ===== Productos (chips) ===== */
+  .chips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .chip {
+    display: inline-block;
+  }
+
+  .chip input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .chip-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: 8px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    background: #fff;
+    cursor: pointer;
+    user-select: none;
+    transition: box-shadow .15s, border-color .15s, background .15s;
+  }
+
+  .chip-name {
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .chip-cost {
+    color: #6b7280;
+    font-size: .9rem;
+  }
+
+  .chip input[type="checkbox"]:checked+.chip-box {
+    background: #eef2ff;
+    border-color: #c7d2fe;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, .15) inset;
+  }
+
+  .chips-custom {
+    margin-top: 12px;
+  }
+
+  .custom-input {
+    margin-top: 8px;
+  }
+
+  .custom-input input {
+    width: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 10px;
+    outline: none;
+  }
+
+  .custom-input input:focus {
+    border-color: var(--primary-color, #6d28d9);
+    box-shadow: 0 0 0 3px rgba(109, 40, 217, .1);
+  }
+
+  /* accesibilidad invisible */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 </style>
 
 
@@ -628,58 +705,112 @@
     selPago.addEventListener('change', () => grupoCooperativaShow(parseInt(selPago.value || '0', 10) === 6));
 
 
-    // ===== Productos por patología (render JSON) =====
-    async function loadProductosJson(patologiaIds = []) {
-      const card = document.getElementById('card-productos-json');
-      const pre = document.getElementById('productos-json');
+    // ===== Productos por patología (chips) =====
+    const ProductosState = {
+      seleccionados: new Set(), // ids seleccionados
+      customChecked: false,
+      customNombre: ''
+    };
+
+    async function loadProductosChips(patologiaIds = []) {
+      const card = document.getElementById('card-productos');
+      const grid = document.getElementById('productos-chips');
+      const chipCustom = document.getElementById('chip-custom');
+      const customWrap = document.getElementById('custom-wrapper');
+      const customInp = document.getElementById('custom-producto');
+
+      // reset visual
+      grid.innerHTML = '';
+      ProductosState.seleccionados.clear();
 
       if (!Array.isArray(patologiaIds) || patologiaIds.length === 0) {
-        if (pre) pre.textContent = '';
         if (card) card.hidden = true;
+        // reset custom
+        if (chipCustom) chipCustom.checked = false;
+        if (customWrap) customWrap.hidden = true;
+        if (customInp) customInp.value = '';
+        ProductosState.customChecked = false;
+        ProductosState.customNombre = '';
         return;
       }
 
-      try {
-        // Traigo productos para cada patología, de-duplico por id y ordeno por nombre
-        const results = await Promise.all(
-          patologiaIds.map(async (id) => {
-            try {
-              const data = await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${encodeURIComponent(id)}`);
-              return Array.isArray(data) ? data : [];
-            } catch {
-              return [];
-            }
-          })
-        );
-
-        const dict = new Map();
-        results.flat().forEach(p => {
-          const pid = Number(p.id);
-          if (!dict.has(pid)) {
-            dict.set(pid, {
-              id: pid,
-              nombre: String(p.nombre ?? ''),
-              detalle: String(p.detalle ?? ''),
-              costo_hectarea: Number(p.costo_hectarea ?? 0)
-            });
+      // fetch y consolidado
+      const results = await Promise.all(
+        patologiaIds.map(async (id) => {
+          try {
+            const data = await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${encodeURIComponent(id)}`);
+            return Array.isArray(data) ? data : [];
+          } catch {
+            return [];
           }
-        });
+        })
+      );
 
-        const productos = Array.from(dict.values())
-          .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+      const dict = new Map();
+      results.flat().forEach(p => {
+        const pid = Number(p.id);
+        if (!dict.has(pid)) {
+          dict.set(pid, {
+            id: pid,
+            nombre: String(p.nombre ?? ''),
+            detalle: String(p.detalle ?? ''),
+            costo_hectarea: Number(p.costo_hectarea ?? 0)
+          });
+        }
+      });
 
-        // Consola: array de objetos
-        console.log('[PRODUCTOS][ARRAY]', productos);
+      const productos = Array.from(dict.values())
+        .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
-        // UI: JSON prettified
-        if (pre) pre.textContent = JSON.stringify(productos, null, 2);
-        if (card) card.hidden = productos.length === 0;
-      } catch (e) {
-        console.error('[PRODUCTOS][ERROR]', e);
-        if (pre) pre.textContent = '[]';
-        if (card) card.hidden = false;
-      }
+      // Render chips
+      const frag = document.createDocumentFragment();
+      productos.forEach(p => {
+        const label = document.createElement('label');
+        label.className = 'chip';
+        label.innerHTML = `
+          <input type="checkbox" value="${p.id}">
+          <span class="chip-box">
+            <span class="chip-name">${p.nombre}</span>
+            <span class="chip-cost">${fmtMon(p.costo_hectarea, (monedaBase==='USD'?'USD':'ARS'))}/ha</span>
+          </span>
+        `;
+        frag.appendChild(label);
+      });
+      grid.appendChild(frag);
+
+      // Listener de selección
+      grid.addEventListener('change', (e) => {
+        const cb = e.target;
+        if (cb && cb.type === 'checkbox' && cb.value) {
+          const id = parseInt(cb.value, 10);
+          if (cb.checked) ProductosState.seleccionados.add(id);
+          else ProductosState.seleccionados.delete(id);
+          console.log('[PRODUCTOS][seleccionados]', Array.from(ProductosState.seleccionados));
+        }
+      }, {
+        once: true
+      }); // se vuelve a adjuntar en cada render
+
+      // Custom “Otro”
+      chipCustom.addEventListener('change', () => {
+        ProductosState.customChecked = chipCustom.checked;
+        customWrap.hidden = !chipCustom.checked;
+        if (!chipCustom.checked) {
+          ProductosState.customNombre = '';
+          customInp.value = '';
+        }
+      });
+      customInp.addEventListener('input', () => {
+        ProductosState.customNombre = customInp.value.trim();
+      });
+
+      // Mostrar tarjeta
+      if (card) card.hidden = productos.length === 0;
+
+      // Debug array
+      console.log('[PRODUCTOS][ARRAY]', productos);
     }
+
 
 
 
@@ -722,8 +853,8 @@
       updateMotivoButton();
       console.log('[MOTIVOS] setSelectedMotivos ->', uniq);
 
-      // Cargar y mostrar productos como JSON
-      await loadProductosJson(uniq);
+      // Cargar y mostrar productos como chips
+      await loadProductosChips(uniq);
 
       // Recalcular costos base
       recalcCostos();
@@ -944,13 +1075,13 @@
     (async function init() {
       await Promise.all([loadFormasPago(), loadRangos(), loadPatologias(), loadCooperativas(), loadCostoBaseHa()]);
       grupoCooperativaShow(false);
-      await loadProductosJson([]);
+      await loadProductosChips([]);
       recalcCostos();
     })();
 
   })();
 
-    // === Build payload para POST (sin productos) ===
+  // === Build payload para POST (con chips de productos) ===
   function buildPayload() {
     const motivos = (document.getElementById('form_nuevo_servicio_motivo_ids')?.value || '')
       .split(',').map(n => parseInt(n, 10)).filter(n => n > 0);
@@ -974,8 +1105,10 @@
       dir_localidad: document.getElementById('form_nuevo_servicio_localidad')?.value || '',
       dir_calle: document.getElementById('form_nuevo_servicio_calle')?.value || '',
       dir_numero: document.getElementById('form_nuevo_servicio_numero')?.value || '',
-      observaciones: document.getElementById('form_nuevo_servicio_observaciones')?.value || ''
+      observaciones: document.getElementById('form_nuevo_servicio_observaciones')?.value || '',
+      productos_seleccionados: Array.from(ProductosState?.seleccionados ?? []), // [ids]
+      producto_custom: (ProductosState?.customChecked && (ProductosState?.customNombre || '').trim()) ? ProductosState.customNombre.trim() : null
+
     };
   }
-
 </script>
