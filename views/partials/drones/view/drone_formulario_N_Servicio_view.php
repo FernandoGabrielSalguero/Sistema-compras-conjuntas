@@ -502,6 +502,7 @@
   }
 
   #card-productos {
+    background-color: lightblue;
     grid-column: 1 / -1 !important;
     width: 100% !important;
     flex: 0 0 100% !important;
