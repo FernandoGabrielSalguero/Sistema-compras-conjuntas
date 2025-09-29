@@ -605,73 +605,149 @@
     // Estado interno de productos sugeridos (por id)
     let SUGERIDOS = new Map(); // id -> {id, nombre, costo_hectarea, incluir: bool, fuente: 'sve'|'productor', nombre_custom: ''}
 
-    // Renderiza una tarjeta de producto sugerido
-    function renderProdCard(p) {
-      const li = document.createElement('li');
-      li.className = 'prod-card';
-      li.dataset.tipo = 'sugerido';
-      li.dataset.id = String(p.id);
-      li.dataset.incluir = String(!!p.incluir);
-      li.dataset.fuente = p.fuente || '';
+    // Render de lista completa (HTML directo) + delegación de eventos.
+    // Esto evita cualquier interferencia de estilos/DOM que pudieran impedir el appendChild.
+    function renderProductosSugeridos(arr) {
+      // Estado interno
+      SUGERIDOS = new Map(arr.map(p => [Number(p.id), {
+        id: Number(p.id),
+        nombre: String(p.nombre),
+        costo_hectarea: Number(p.costo_hectarea ?? 0),
+        incluir: false,
+        fuente: '',
+        nombre_custom: ''
+      }]));
 
-      li.innerHTML = `
-    <div class="prod-head">
-      <div class="prod-name">${p.nombre}</div>
-      <div class="chk">
-        <label><input type="checkbox" class="incluir-chk" ${p.incluir ? 'checked' : ''}> Incluir</label>
-      </div>
-    </div>
-    <div class="prod-controls">
-      <label class="radio"><input type="radio" name="fuente_${p.id}" value="sve" ${p.fuente==='sve'?'checked':''} ${p.incluir?'':'disabled'}> Lo aporta <span class="badge-sve">SVE</span></label>
-      <label class="radio"><input type="radio" name="fuente_${p.id}" value="productor" ${p.fuente==='productor'?'checked':''} ${p.incluir?'':'disabled'}> Lo aporta el productor</label>
-      <span class="costos-muted">Costo/ha: ${fmt(Number(p.costo_hectarea||0))}</span>
-    </div>
-    <div class="prod-input">
-      <div class="input-group">
-        <label for="prod_nombre_${p.id}">Nombre del producto del productor</label>
-        <div class="input-icon input-icon-name">
-          <input type="text" id="prod_nombre_${p.id}" class="prod-nombre-input" placeholder="Ej: Herbicida XYZ" value="${p.nombre_custom ? p.nombre_custom.replace(/"/g,'&quot;') : ''}" ${p.fuente==='productor' && p.incluir ? '' : 'disabled'}>
+      // HTML
+      if (!productosList) {
+        console.error('[PRODUCTOS] #productos-list no existe en el DOM');
+        return;
+      }
+
+      if (!arr.length) {
+        productosList.innerHTML = `<li class="costos-muted">No hay productos asociados a la patología seleccionada.</li>`;
+        console.log('[PRODUCTOS] Render vacío');
+        return;
+      }
+
+      const html = arr.map(p => {
+        const id = Number(p.id);
+        const costo = fmt(Number(p.costo_hectarea ?? 0));
+        return `
+      <li class="prod-card" data-tipo="sugerido" data-id="${id}" data-incluir="false" data-fuente="">
+        <div class="prod-head">
+          <div class="prod-name">${p.nombre}</div>
+          <div class="chk">
+            <label><input type="checkbox" class="incluir-chk"> Incluir</label>
+          </div>
         </div>
-      </div>
-    </div>
-  `;
+        <div class="prod-controls">
+          <label class="radio"><input type="radio" name="fuente_${id}" value="sve" disabled> Lo aporta <span class="badge-sve">SVE</span></label>
+          <label class="radio"><input type="radio" name="fuente_${id}" value="productor" disabled> Lo aporta el productor</label>
+          <span class="costos-muted">Costo/ha: ${costo}</span>
+        </div>
+        <div class="prod-input" style="display:none;">
+          <div class="input-group">
+            <label for="prod_nombre_${id}">Nombre del producto del productor</label>
+            <div class="input-icon input-icon-name">
+              <input type="text" id="prod_nombre_${id}" class="prod-nombre-input" placeholder="Ej: Herbicida XYZ" disabled>
+            </div>
+          </div>
+        </div>
+      </li>`;
+      }).join('');
 
-      // Listeners
-      const chk = li.querySelector('.incluir-chk');
-      const radios = li.querySelectorAll(`input[name="fuente_${p.id}"]`);
-      const input = li.querySelector('.prod-nombre-input');
+      productosList.innerHTML = html;
+      productosList.removeAttribute('hidden');
 
-      chk.addEventListener('change', () => {
-        const inc = chk.checked;
-        li.dataset.incluir = String(inc);
-        radios.forEach(r => r.disabled = !inc);
-        if (!inc) {
-          input.value = '';
-          input.disabled = true;
-          li.dataset.fuente = '';
-          SUGERIDOS.get(p.id).fuente = '';
-          SUGERIDOS.get(p.id).nombre_custom = '';
-        }
-        recalcCostos();
-      });
-      radios.forEach(r => r.addEventListener('change', () => {
-        li.dataset.fuente = r.value;
-        SUGERIDOS.get(p.id).fuente = r.value;
-        if (r.value === 'productor' && chk.checked) {
-          input.disabled = false;
-        } else {
-          input.disabled = true;
-          input.value = '';
-          SUGERIDOS.get(p.id).nombre_custom = '';
-        }
-        recalcCostos();
-      }));
-      input.addEventListener('input', debounce(() => {
-        SUGERIDOS.get(p.id).nombre_custom = input.value.trim();
-      }, 150));
+      // Métricas de render
+      console.log('[PRODUCTOS] Renderizados:', arr.length, 'items. Childs:', productosList.childElementCount);
+      if (console.table) console.table(arr);
 
-      return li;
+      // Recalcular costos por si veníamos de un estado anterior
+      recalcCostos();
     }
+
+    // Tras cargar productos por patologías (ya lo hacés), reforzamos logs
+    // (esto ya está dentro de tu loadProductosPorPatologias actual).
+    // Queda como referencia: después de renderProductosSugeridos(productos);
+    console.log('[PRODUCTOS] Post-render childElementCount:', productosList?.childElementCount);
+
+
+    // Delegación de eventos para TODA la lista de productos
+    productosList.addEventListener('change', (e) => {
+      const target = e.target;
+      const li = target.closest('.prod-card[data-tipo="sugerido"]');
+      if (!li) return;
+
+      const id = Number(li.dataset.id);
+      const state = SUGERIDOS.get(id);
+      if (!state) return;
+
+      // Toggle incluir
+      if (target.classList.contains('incluir-chk')) {
+        const inc = target.checked;
+        li.dataset.incluir = String(inc);
+
+        const radios = li.querySelectorAll(`input[name="fuente_${id}"]`);
+        radios.forEach(r => r.disabled = !inc);
+
+        // si se desmarca, limpio estado y oculto input
+        if (!inc) {
+          state.fuente = '';
+          state.nombre_custom = '';
+          li.dataset.fuente = '';
+          const input = li.querySelector('.prod-nombre-input');
+          if (input) {
+            input.value = '';
+            input.disabled = true;
+          }
+          const prodInput = li.querySelector('.prod-input');
+          if (prodInput) prodInput.style.display = 'none';
+        }
+        recalcCostos();
+        return;
+      }
+
+      // Asignación de fuente (SVE / productor)
+      if (target.matches(`input[type="radio"][name="fuente_${id}"]`)) {
+        const value = target.value; // 'sve' | 'productor'
+        state.fuente = value;
+        li.dataset.fuente = value;
+
+        const input = li.querySelector('.prod-nombre-input');
+        const prodInput = li.querySelector('.prod-input');
+
+        if (value === 'productor') {
+          if (input) {
+            input.disabled = false;
+          }
+          if (prodInput) prodInput.style.display = 'block';
+        } else {
+          if (input) {
+            input.value = '';
+            input.disabled = true;
+          }
+          if (prodInput) prodInput.style.display = 'none';
+          state.nombre_custom = '';
+        }
+        recalcCostos();
+        return;
+      }
+    });
+
+    // Input del nombre custom (delegado)
+    productosList.addEventListener('input', (e) => {
+      const input = e.target;
+      if (!input.classList || !input.classList.contains('prod-nombre-input')) return;
+      const li = input.closest('.prod-card[data-tipo="sugerido"]');
+      if (!li) return;
+      const id = Number(li.dataset.id);
+      const state = SUGERIDOS.get(id);
+      if (!state) return;
+
+      state.nombre_custom = input.value.trim();
+    });
 
     // Render de lista completa de sugeridos
     function renderProductosSugeridos(arr) {
