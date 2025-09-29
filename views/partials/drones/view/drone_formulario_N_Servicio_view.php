@@ -257,24 +257,6 @@
           </div>
         </div>
 
-        <!-- ===== Selector de productos (UX simplificada) ===== -->
-        <div class="card full-span" id="productos-wrapper">
-          <h2>Productos sugeridos por patología</h2>
-          <p class="costos-muted" id="productos-ayuda">Seleccioná uno o varios productos sugeridos. Si los marcás, los aporta SVE.</p>
-
-
-          <!-- Lista de productos sugeridos (se genera dinámicamente) -->
-          <ul id="productos-list" class="productos-list" aria-live="polite" aria-label="Productos sugeridos"></ul>
-
-          <!-- Productos custom del productor -->
-          <div class="custom-prod mt-3">
-            <h3>Producto del productor (custom)</h3>
-            <p class="costos-muted">Si el productor ya tiene un producto que no está en el listado, podés agregarlo acá.</p>
-            <button type="button" class="btn btn-aceptar" id="btn-add-custom-prod">Agregar producto del productor</button>
-            <ul id="custom-prods-list" class="productos-list mt-2" aria-live="polite" aria-label="Productos del productor"></ul>
-          </div>
-        </div>
-
         <!-- ===== Tarjeta: Costo del servicio ===== -->
         <div class="card full-span" id="card-costos" aria-live="polite">
           <h2>Costo del servicio</h2>
@@ -408,121 +390,6 @@
     background: #f3e8ff;
   }
 
-  /* ===== Productos (UX simplificada) ===== */
-  .productos-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    gap: 12px;
-  }
-
-  /* evita colapsos por estilos externos */
-
-  .prod-card {
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 12px;
-    background: #fff;
-    display: grid;
-    gap: 8px;
-  }
-
-  .prod-card .prod-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: .75rem;
-  }
-
-  .prod-card .prod-name {
-    font-weight: 600;
-    color: #111827;
-  }
-
-  .prod-card .prod-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: center;
-  }
-
-  .prod-card .prod-controls .radio {
-    display: inline-flex;
-    align-items: center;
-    gap: .35rem;
-  }
-
-  .prod-card .prod-controls .radio input[type="radio"] {
-    accent-color: var(--primary-color);
-  }
-
-  .prod-card .prod-controls .chk input[type="checkbox"] {
-    accent-color: var(--primary-color);
-  }
-
-  .prod-card .prod-input {
-    display: none;
-  }
-
-  .prod-card[data-fuente="productor"][data-incluir="true"] .prod-input {
-    display: block;
-  }
-
-  .badge-sve {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: #eef2ff;
-  }
-
-  .badge-custom {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: #fef3c7;
-  }
-
-  .mt-2 {
-    margin-top: .5rem;
-  }
-
-  .mt-3 {
-    margin-top: 1rem;
-  }
-
-  /* Fuerza a que las tarjetas de productos y costos sean de ancho completo (una debajo de la otra) */
-  .card.full-span {
-    grid-column: 1 / -1 !important;
-    width: 100% !important;
-    flex: 0 0 100% !important;
-    display: block;
-  }
-
-  /* Si algún contenedor usa flex, evitamos que se achiquen */
-  #productos-wrapper,
-  #card-costos {
-    min-width: 100%;
-  }
-
-  /* (opcional) que el contenedor pueda expandir del todo */
-  .content {
-    max-width: 100%;
-  }
-
-  /* Grilla simple y suficiente para productos */
-  .productos-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    gap: 12px;
-  }
-
-  /* Salvaguardas por si el framework pisa estilos */
-#productos-list { display: grid; gap: 12px; }
-#productos-list li.prod-card { display: grid; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; }
-
 </style>
 
 
@@ -603,13 +470,7 @@
     const inpNum = $('#form_nuevo_servicio_numero');
     const inpObs = $('#form_nuevo_servicio_observaciones');
 
-    // Productos
-    const productosList = $('#productos-list');
-    const customProdsList = $('#custom-prods-list');
-    const btnAddCustomProd = $('#btn-add-custom-prod');
-
     // ===== Estado =====
-    let SUGERIDOS = new Map(); // id -> {id,nombre,detalle,costo_hectarea,incluir}
     let costoBaseHa = 0;
     let monedaBase = 'Pesos';
 
@@ -624,174 +485,6 @@
       } catch {
         return '$ ' + Number(n || 0).toFixed(2);
       }
-    }
-
-function renderProductosSugeridos(arr) {
-  // 1) Estado
-  SUGERIDOS = new Map(arr.map(p => [Number(p.id), {
-    id: Number(p.id),
-    nombre: String(p.nombre),
-    detalle: String(p.detalle ?? ''),
-    costo_hectarea: Number(p.costo_hectarea ?? 0),
-    incluir: false
-  }]));
-
-  // 2) Limpio UL y fuerzo visibilidad
-  productosList.innerHTML = '';
-  productosList.hidden = false;
-  productosList.style.minHeight = '12px';
-  productosList.style.display = 'grid';       // por si algún CSS externo pisa esto
-  productosList.style.gap = '12px';
-
-  // 3) Si no hay data, muestro vacío y salgo
-  if (!arr.length) {
-    const li = document.createElement('li');
-    li.className = 'costos-muted';
-    li.textContent = 'No hay productos asociados a la patología seleccionada.';
-    productosList.appendChild(li);
-    recalcCostos();
-    return;
-  }
-
-  // 4) Creo los <li> a mano (evita conflictos con innerHTML + framework)
-  const frag = document.createDocumentFragment();
-  arr.forEach(p => {
-    const id = Number(p.id);
-    const costoFmt = fmtMon(Number(p.costo_hectarea ?? 0), (monedaBase === 'USD' ? 'USD' : 'ARS'));
-
-    const li = document.createElement('li');
-    li.className = 'prod-card';
-    li.dataset.tipo = 'sugerido';
-    li.dataset.id = String(id);
-    li.dataset.incluir = 'false';
-
-    const head = document.createElement('div');
-    head.className = 'prod-head';
-
-    const name = document.createElement('div');
-    name.className = 'prod-name';
-    name.textContent = p.nombre;
-
-    const chkWrap = document.createElement('div');
-    chkWrap.className = 'chk';
-    const label = document.createElement('label');
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.className = 'incluir-chk';
-    label.appendChild(cb);
-    label.appendChild(document.createTextNode(' Incluir'));
-    chkWrap.appendChild(label);
-
-    head.appendChild(name);
-    head.appendChild(chkWrap);
-
-    const controls = document.createElement('div');
-    controls.className = 'prod-controls';
-    const spanCosto = document.createElement('span');
-    spanCosto.className = 'costos-muted';
-    spanCosto.textContent = `Costo/ha: ${costoFmt}`;
-    controls.appendChild(spanCosto);
-
-    li.appendChild(head);
-    li.appendChild(controls);
-
-    if ((p.detalle ?? '').trim() !== '') {
-      const det = document.createElement('div');
-      det.className = 'costos-muted';
-      det.textContent = p.detalle;
-      li.appendChild(det);
-    }
-
-    frag.appendChild(li);
-  });
-  productosList.appendChild(frag);
-
-  // 5) Debug útil (podés quitarlo luego)
-  console.log('[PRODUCTOS] UL childElementCount =', productosList.childElementCount);
-  const firstLi = productosList.querySelector('li.prod-card');
-  if (firstLi) console.log('[PRODUCTOS] Primer LI:', firstLi.outerHTML);
-
-  recalcCostos();
-}
-
-function __debugProductosDOM() {
-  const ul = document.getElementById('productos-list');
-  if (!ul) return console.warn('UL productos no encontrado');
-  console.log('[DEBUG] UL visible?', getComputedStyle(ul).display, 'hidden attr?', ul.hasAttribute('hidden'));
-  console.log('[DEBUG] Hijos:', ul.childElementCount, Array.from(ul.children).slice(0,3));
-}
-
-
-
-    // Solo controlamos la marca/desmarca del checkbox
-    productosList.addEventListener('change', (e) => {
-      const li = e.target.closest('.prod-card[data-tipo="sugerido"]');
-      if (!li) return;
-      const id = Number(li.dataset.id);
-      const st = SUGERIDOS.get(id);
-      if (!st) return;
-
-      if (e.target.classList.contains('incluir-chk')) {
-        const inc = e.target.checked;
-        li.dataset.incluir = String(inc);
-        st.incluir = inc; // por defecto, fuente = SVE (no se pide)
-        recalcCostos();
-      }
-    });
-
-    // ===== Custom del productor =====
-    function addCustomProductoRow(prefill = '') {
-      const li = document.createElement('li');
-      li.className = 'prod-card';
-      li.dataset.tipo = 'custom';
-      li.innerHTML = `
-<div class="prod-head">
-  <div class="prod-name"><span class="badge-custom">Custom</span> Producto del productor</div>
-  <button type="button" class="btn btn-cancelar btn-sm btn-remove">Quitar</button>
-</div>
-<div class="prod-controls"><span class="costos-muted">Lo aporta el productor</span></div>
-<div class="prod-input" style="display:block;">
-  <div class="input-group">
-    <label>Nombre del producto</label>
-    <div class="input-icon input-icon-name">
-      <input type="text" class="prod-nombre-input" placeholder="Ej: Fungicida ABC" value="${prefill.replace(/"/g,'&quot;')}">
-    </div>
-  </div>
-</div>`;
-      li.querySelector('.btn-remove').addEventListener('click', () => {
-        li.remove();
-        recalcCostos();
-      });
-      customProdsList.appendChild(li);
-      recalcCostos();
-    }
-    btnAddCustomProd.addEventListener('click', () => addCustomProductoRow());
-
-    // ===== Motivos: carga productos por selección =====
-    async function loadProductosPorPatologias(patologiaIds = []) {
-      const promises = patologiaIds.map(async (id) => {
-        try {
-          const data = await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${encodeURIComponent(id)}`);
-          return Array.isArray(data) ? data : [];
-        } catch {
-          return [];
-        }
-      });
-      const results = await Promise.all(promises);
-
-      const dict = new Map();
-      results.flat().forEach(p => {
-        if (!dict.has(p.id)) dict.set(p.id, {
-          id: p.id,
-          nombre: p.nombre,
-          detalle: p.detalle ?? '',
-          costo_hectarea: Number(p.costo_hectarea ?? 0)
-        });
-      });
-
-      const productos = Array.from(dict.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
-      console.log('[PRODUCTOS] Consolidado (array):', productos); // array de objetos (no tabla)
-      renderProductosSugeridos(productos);
     }
 
     // ===== Typeahead personas =====
@@ -915,33 +608,11 @@ function __debugProductosDOM() {
       rows.push(`<tr><th>Valor de las hectáreas</th><td class="costos-muted">${monedaBase}</td><td class="costos-right">${fmt(valorHa)}</td></tr>`);
       rows.push(`<tr><th>Cantidad de hectáreas</th><td></td><td class="costos-right">${ha}</td></tr>`);
       rows.push(`<tr><th>Total base (servicio)</th><td></td><td class="costos-right">${fmt(totalBase)}</td></tr>`);
-      let productosTotal = 0;
 
-      productosList.querySelectorAll('.prod-card[data-tipo="sugerido"]').forEach(li => {
-        const id = parseInt(li.dataset.id, 10);
-        const inc = li.dataset.incluir === 'true';
-        if (!inc) return;
-        const p = SUGERIDOS.get(id);
-        const costoHaProd = num(p.costo_hectarea || 0); // siempre SVE si está tildado
-        const totalProd = costoHaProd * ha;
-        productosTotal += totalProd;
-        rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${p.nombre}</span> <span class="costos-muted">(Aporta SVE)</span></td><td></td></tr>`);
-        rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(costoHaProd)}</td></tr>`);
-        rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(totalProd)}</td></tr>`);
-      });
-
-
-      customProdsList.querySelectorAll('.prod-card[data-tipo="custom"]').forEach(li => {
-        const name = (li.querySelector('.prod-nombre-input')?.value || '').trim() || 'Producto del productor';
-        rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${name}</span> <span class="costos-muted">(Aporta productor)</span></td><td></td></tr>`);
-        rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(0)}</td></tr>`);
-        rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(0)}</td></tr>`);
-      });
-
-      const precioFinal = totalBase + productosTotal;
       tbody.innerHTML = rows.join('');
-      $('#costos-precio-final').textContent = fmt(precioFinal);
+      $('#costos-precio-final').textContent = fmt(totalBase);
     }
+
 
     // Hectáreas -> recálculo
     inpHect.addEventListener('input', debounce(recalcCostos, 150));
@@ -953,7 +624,6 @@ function __debugProductosDOM() {
       return csv.split(',').map(s => parseInt(s, 10)).filter(n => n > 0);
     }
 
-    // Reemplazar la función existente por esta versión (sólo cambia el final)
     async function setSelectedMotivos(arr) {
       const uniq = Array.from(new Set(arr.filter(n => Number.isInteger(n) && n > 0)));
       selMotivoHiddenIds.value = uniq.join(',');
@@ -963,28 +633,15 @@ function __debugProductosDOM() {
       updateMotivoButton();
       console.log('[MOTIVOS] setSelectedMotivos ->', uniq);
 
-      if (!uniq.length) {
-        SUGERIDOS = new Map();
-        productosList.innerHTML = '';
-        recalcCostos();
-        return;
-      }
+      // No hay productos a cargar; solo recalcular costos base
+      recalcCostos();
 
-      // Cargar productos
-      await loadProductosPorPatologias(uniq);
-
-      // UX: cerrar el dropdown para que no tape las tarjetas y hacer foco visual
+      // Cerrar dropdown si está abierto
       if (!ulMotivoList.hasAttribute('hidden')) {
         ulMotivoList.setAttribute('hidden', '');
         btnMotivoToggle.setAttribute('aria-expanded', 'false');
       }
-      document.getElementById('productos-wrapper')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
     }
-
-
 
     function updateMotivoButton() {
       const ids = getSelectedMotivos();
@@ -1200,33 +857,8 @@ function __debugProductosDOM() {
 
   })();
 
-  // === Build payload para POST ===
+    // === Build payload para POST (sin productos) ===
   function buildPayload() {
-    // Productos seleccionados (SVE por defecto)
-    const itemsSugeridos = [];
-    SUGERIDOS.forEach(p => {
-      if (p.incluir) {
-        itemsSugeridos.push({
-          producto_id: Number(p.id),
-          fuente: 'sve'
-        });
-      }
-    });
-
-    // Productos custom del productor (si los dejás activos)
-    const itemsCustom = [];
-    customProdsList.querySelectorAll('.prod-card[data-tipo="custom"]').forEach(li => {
-      const name = (li.querySelector('.prod-nombre-input')?.value || '').trim();
-      if (name) {
-        itemsCustom.push({
-          producto_id: 0,
-          fuente: 'productor',
-          nombre_producto_custom: name
-        });
-      }
-    });
-
-    // Patología: tomamos la primera seleccionada (el backend guarda una)
     const motivos = (document.getElementById('form_nuevo_servicio_motivo_ids')?.value || '')
       .split(',').map(n => parseInt(n, 10)).filter(n => n > 0);
     const patologiaId = motivos.length ? motivos[0] : null;
@@ -1249,9 +881,8 @@ function __debugProductosDOM() {
       dir_localidad: document.getElementById('form_nuevo_servicio_localidad')?.value || '',
       dir_calle: document.getElementById('form_nuevo_servicio_calle')?.value || '',
       dir_numero: document.getElementById('form_nuevo_servicio_numero')?.value || '',
-      observaciones: document.getElementById('form_nuevo_servicio_observaciones')?.value || '',
-      items: [...itemsSugeridos, ...itemsCustom],
-      productos_fuente: itemsSugeridos.length ? 'sve' : (itemsCustom.length ? 'productor' : null)
+      observaciones: document.getElementById('form_nuevo_servicio_observaciones')?.value || ''
     };
   }
+
 </script>
