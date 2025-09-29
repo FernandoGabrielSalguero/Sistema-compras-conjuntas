@@ -8,88 +8,89 @@ class DroneFormularioNservicioModel
     public PDO $pdo;
 
     /** Búsqueda de PRODUCTORES por nombre (filtrado por rol en sesión) */
-    public function buscarUsuariosFiltrado(string $q, string $rol, string $idReal, ?string $coopIdReal = null): array
-{
-    $like = '%' . $q . '%';
+    /** Búsqueda de PRODUCTORES por nombre (filtrado por rol en sesión) */
+    public function buscarUsuariosFiltrado(string $q, string $rol, string $idReal, ?string $coopId = null): array
+    {
+        $like = '%' . $q . '%';
 
-    // SVE: si hay coop, filtra por esa; si no, libre (productores habilitados)
-    if ($rol === 'sve') {
-        if ($coopIdReal) {
-            $sql = "SELECT DISTINCT u.usuario, u.id_real
+        if ($rol === 'sve') {
+            // Si SVE pasa una cooperativa por parámetro, filtramos por ella; si no, todos los habilitados
+            if ($coopId) {
+                $sql = "SELECT u.usuario, u.id_real
                       FROM usuarios u
-                      INNER JOIN rel_productor_coop rpc ON rpc.productor_id_real = u.id_real
-                     WHERE u.rol='productor'
-                       AND u.permiso_ingreso='Habilitado'
+                      JOIN rel_productor_coop rpc ON rpc.productor_id_real = u.id_real
+                     WHERE u.rol = 'productor'
+                       AND u.permiso_ingreso = 'Habilitado'
                        AND rpc.cooperativa_id_real = ?
                        AND u.usuario LIKE ?
                   ORDER BY u.usuario
                      LIMIT 10";
-            $st = $this->pdo->prepare($sql);
-            $st->execute([$coopIdReal, $like]);
-            return $st->fetchAll(PDO::FETCH_ASSOC);
-        }
-        $sql = "SELECT usuario, id_real
+                $st = $this->pdo->prepare($sql);
+                $st->execute([$coopId, $like]);
+                return $st->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+            $sql = "SELECT usuario, id_real
                   FROM usuarios
-                 WHERE rol='productor'
-                   AND permiso_ingreso='Habilitado'
+                 WHERE rol = 'productor'
+                   AND permiso_ingreso = 'Habilitado'
                    AND usuario LIKE ?
               ORDER BY usuario
                  LIMIT 10";
-        $st = $this->pdo->prepare($sql);
-        $st->execute([$like]);
-        return $st->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    // INGENIERO: siempre filtra por cooperativas vinculadas al ingeniero; si además hay coop elegida, la aplica
-    if ($rol === 'ingeniero') {
-        if ($coopIdReal) {
-            $sql = "SELECT DISTINCT u.usuario, u.id_real
-                      FROM usuarios u
-                      INNER JOIN rel_productor_coop rpc ON rpc.productor_id_real = u.id_real
-                      INNER JOIN rel_coop_ingeniero rci ON rci.cooperativa_id_real = rpc.cooperativa_id_real
-                     WHERE u.rol='productor'
-                       AND u.permiso_ingreso='Habilitado'
-                       AND rci.ingeniero_id_real = ?
-                       AND rpc.cooperativa_id_real = ?
-                       AND u.usuario LIKE ?
-                  ORDER BY u.usuario
-                     LIMIT 10";
             $st = $this->pdo->prepare($sql);
-            $st->execute([$idReal, $coopIdReal, $like]);
+            $st->execute([$like]);
             return $st->fetchAll(PDO::FETCH_ASSOC);
         }
-        $sql = "SELECT DISTINCT u.usuario, u.id_real
+
+        if ($rol === 'ingeniero') {
+            // Productores de cooperativas vinculadas al ingeniero
+            $sql = "SELECT DISTINCT u.usuario, u.id_real
                   FROM usuarios u
-                  INNER JOIN rel_productor_coop rpc ON rpc.productor_id_real = u.id_real
-                  INNER JOIN rel_coop_ingeniero rci ON rci.cooperativa_id_real = rpc.cooperativa_id_real
-                 WHERE u.rol='productor'
-                   AND u.permiso_ingreso='Habilitado'
+                  JOIN rel_productor_coop rpc ON rpc.productor_id_real = u.id_real
+                  JOIN rel_coop_ingeniero rci ON rci.cooperativa_id_real = rpc.cooperativa_id_real
+                 WHERE u.rol = 'productor'
+                   AND u.permiso_ingreso = 'Habilitado'
                    AND rci.ingeniero_id_real = ?
                    AND u.usuario LIKE ?
               ORDER BY u.usuario
                  LIMIT 10";
-        $st = $this->pdo->prepare($sql);
-        $st->execute([$idReal, $like]);
-        return $st->fetchAll(PDO::FETCH_ASSOC);
-    }
+            $st = $this->pdo->prepare($sql);
+            $st->execute([$idReal, $like]);
+            return $st->fetchAll(PDO::FETCH_ASSOC);
+        }
 
-    // PRODUCTOR: sólo él mismo (coop_id es irrelevante)
-    if ($rol === 'productor') {
-        $sql = "SELECT usuario, id_real
+        if ($rol === 'cooperativa') {
+            // Productores asociados a ESTA cooperativa (se usa SIEMPRE el id de sesión)
+            $sql = "SELECT u.usuario, u.id_real
+                  FROM usuarios u
+                  JOIN rel_productor_coop rpc ON rpc.productor_id_real = u.id_real
+                 WHERE u.rol = 'productor'
+                   AND u.permiso_ingreso = 'Habilitado'
+                   AND rpc.cooperativa_id_real = ?
+                   AND u.usuario LIKE ?
+              ORDER BY u.usuario
+                 LIMIT 10";
+            $st = $this->pdo->prepare($sql);
+            $st->execute([$idReal, $like]);
+            return $st->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        if ($rol === 'productor') {
+            $sql = "SELECT usuario, id_real
                   FROM usuarios
-                 WHERE rol='productor'
-                   AND permiso_ingreso='Habilitado'
+                 WHERE rol = 'productor'
+                   AND permiso_ingreso = 'Habilitado'
                    AND id_real = ?
                    AND usuario LIKE ?
               ORDER BY usuario
                  LIMIT 10";
-        $st = $this->pdo->prepare($sql);
-        $st->execute([$idReal, $like]);
-        return $st->fetchAll(PDO::FETCH_ASSOC);
-    }
+            $st = $this->pdo->prepare($sql);
+            $st->execute([$idReal, $like]);
+            return $st->fetchAll(PDO::FETCH_ASSOC);
+        }
 
-    return [];
-}
+        return [];
+    }
 
 
     /** Rangos disponibles (orden comenzando por octubre) */
@@ -130,18 +131,19 @@ class DroneFormularioNservicioModel
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /** Productos por patología (con costo/ha) */
-    public function productosPorPatologia(int $patologiaId): array
-    {
-        $sql = "SELECT s.id, s.nombre, s.costo_hectarea
-                  FROM dron_productos_stock s
-                  INNER JOIN dron_productos_stock_patologias sp ON sp.producto_id = s.id
-                 WHERE sp.patologia_id = ? AND s.activo='si'
-              ORDER BY s.nombre";
-        $st = $this->pdo->prepare($sql);
-        $st->execute([$patologiaId]);
-        return $st->fetchAll(PDO::FETCH_ASSOC);
-    }
+/** Productos por patología (con costo/ha) */
+public function productosPorPatologia(int $patologiaId): array
+{
+    $sql = "SELECT s.id, s.nombre, COALESCE(s.costo_hectarea, 0) AS costo_hectarea
+              FROM dron_productos_stock s
+              JOIN dron_productos_stock_patologias sp ON sp.producto_id = s.id
+             WHERE sp.patologia_id = ?
+               AND (LOWER(COALESCE(s.activo,'')) IN ('si','sí','true','1') OR s.activo IS NULL)
+          ORDER BY s.nombre";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([$patologiaId]);
+    return $st->fetchAll(PDO::FETCH_ASSOC);
+}
 
     /** Costo base por hectárea del servicio */
     public function costoBaseHectarea(): array

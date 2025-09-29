@@ -38,17 +38,17 @@ try {
                     break;
                 }
 
+                // Contexto de sesión
                 session_start();
                 $rol    = strtolower((string)($_SESSION['user']['rol'] ?? $_SESSION['rol'] ?? ''));
                 $idReal = (string)($_SESSION['user']['id_real'] ?? $_SESSION['id_real'] ?? '');
-                $coopId = trim((string)($_GET['coop_id'] ?? ''));
 
-                $resp($model->buscarUsuariosFiltrado(
-                    $q,
-                    $rol,
-                    $idReal,
-                    $coopId !== '' ? $coopId : null
-                ));
+                // Si te pasan una cooperativa por GET (ej. para búsquedas acotadas desde SVE) la tomamos,
+                // si no, null. Para rol=cooperativa, el modelo usa SIEMPRE el id de sesión.
+                $coopId = trim((string)($_GET['coop_id'] ?? ''));
+                $coopId = ($coopId !== '') ? $coopId : null;
+
+                $resp($model->buscarUsuariosFiltrado($q, $rol, $idReal, $coopId));
                 break;
 
 

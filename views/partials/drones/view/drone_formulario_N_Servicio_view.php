@@ -489,6 +489,25 @@
   .mt-3 {
     margin-top: 1rem;
   }
+
+  /* Fuerza a que las tarjetas de productos y costos sean de ancho completo (una debajo de la otra) */
+  .card.full-span {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    display: block;
+  }
+
+  /* Si algún contenedor usa flex, evitamos que se achiquen */
+  #productos-wrapper,
+  #card-costos {
+    min-width: 100%;
+  }
+
+  /* (opcional) que el contenedor pueda expandir del todo */
+  .content {
+    max-width: 100%;
+  }
 </style>
 
 <script>
@@ -1219,24 +1238,6 @@
         markInvalid(inpNum);
         return false;
       }
-
-      // Validación extra: si hay filas seleccionadas con fuente=productor, exigir nombre
-      const filas = $$('.gfm-row-toggle:checked', matrizBody);
-      for (const cb of filas) {
-        const name = `m_${cb.dataset.row}`;
-        const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
-        if (choice && choice.value === 'productor') {
-          const nameInput = matrizBody.querySelector(`input.gfm-prod-nombre[data-row="${cb.dataset.row}"]`);
-          const val = (nameInput?.value || '').trim();
-          if (!val) {
-            showAlert('error', 'Ingresá el nombre del producto que aporta el productor.');
-            if (nameInput) markInvalid(nameInput);
-            return false;
-          }
-        }
-      }
-
-      return true;
     }
 
     // Inicialización
