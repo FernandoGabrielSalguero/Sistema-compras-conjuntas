@@ -257,6 +257,12 @@
           </div>
         </div>
 
+                <!-- ===== Productos disponibles (JSON) ===== -->
+        <div class="card full-span costos-full" id="card-productos-json" aria-live="polite" hidden>
+          <h2>Productos disponibles para tratar patología</h2>
+          <pre id="productos-json" class="json-box" aria-label="Productos en formato JSON"></pre>
+        </div>
+
         <!-- ===== Tarjeta: Costo del servicio ===== -->
         <div class="card full-span costos-full" id="card-costos" aria-live="polite">
           <h2>Costo del servicio</h2>
@@ -397,6 +403,25 @@
   flex: 0 0 100% !important;
   display: block;
   background-color: aliceblue;
+}
+
+/* ===== Productos JSON ===== */
+#card-productos-json { margin-top: 8px; }
+.json-box {
+  display: block;
+  width: 100%;
+  min-height: 80px;
+  max-height: 360px;
+  overflow: auto;
+  background: #0b1021;
+  color: #d1ffe7;
+  border-radius: 10px;
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: pre;
+  tab-size: 2;
 }
 </style>
 
@@ -602,6 +627,62 @@
     }
     selPago.addEventListener('change', () => grupoCooperativaShow(parseInt(selPago.value || '0', 10) === 6));
 
+
+    // ===== Productos por patología (render JSON) =====
+    async function loadProductosJson(patologiaIds = []) {
+      const card = document.getElementById('card-productos-json');
+      const pre = document.getElementById('productos-json');
+
+      if (!Array.isArray(patologiaIds) || patologiaIds.length === 0) {
+        if (pre) pre.textContent = '';
+        if (card) card.hidden = true;
+        return;
+      }
+
+      try {
+        // Traigo productos para cada patología, de-duplico por id y ordeno por nombre
+        const results = await Promise.all(
+          patologiaIds.map(async (id) => {
+            try {
+              const data = await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${encodeURIComponent(id)}`);
+              return Array.isArray(data) ? data : [];
+            } catch {
+              return [];
+            }
+          })
+        );
+
+        const dict = new Map();
+        results.flat().forEach(p => {
+          const pid = Number(p.id);
+          if (!dict.has(pid)) {
+            dict.set(pid, {
+              id: pid,
+              nombre: String(p.nombre ?? ''),
+              detalle: String(p.detalle ?? ''),
+              costo_hectarea: Number(p.costo_hectarea ?? 0)
+            });
+          }
+        });
+
+        const productos = Array.from(dict.values())
+          .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+        // Consola: array de objetos
+        console.log('[PRODUCTOS][ARRAY]', productos);
+
+        // UI: JSON prettified
+        if (pre) pre.textContent = JSON.stringify(productos, null, 2);
+        if (card) card.hidden = productos.length === 0;
+      } catch (e) {
+        console.error('[PRODUCTOS][ERROR]', e);
+        if (pre) pre.textContent = '[]';
+        if (card) card.hidden = false;
+      }
+    }
+
+
+
     // ===== Costos =====
     const num = (n) => Number.isFinite(Number(n)) ? Number(n) : 0;
     const fmt = (n) => fmtMon(n, (monedaBase === 'USD' ? 'USD' : 'ARS'));
@@ -641,7 +722,10 @@
       updateMotivoButton();
       console.log('[MOTIVOS] setSelectedMotivos ->', uniq);
 
-      // No hay productos a cargar; solo recalcular costos base
+      // Cargar y mostrar productos como JSON
+      await loadProductosJson(uniq);
+
+      // Recalcular costos base
       recalcCostos();
 
       // Cerrar dropdown si está abierto
@@ -860,6 +944,7 @@
     (async function init() {
       await Promise.all([loadFormasPago(), loadRangos(), loadPatologias(), loadCooperativas(), loadCostoBaseHa()]);
       grupoCooperativaShow(false);
+      await loadProductosJson([]);
       recalcCostos();
     })();
 
