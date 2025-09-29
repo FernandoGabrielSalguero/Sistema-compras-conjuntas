@@ -742,7 +742,8 @@
     const ProductosState = {
       seleccionados: new Set(), // ids seleccionados
       customChecked: false,
-      customNombre: ''
+      customNombre: '',
+      catalog: new Map() // id -> { id, nombre, costo_hectarea }
     };
 
     async function loadProductosChips(patologiaIds = []) {
@@ -752,18 +753,19 @@
       const customWrap = document.getElementById('custom-wrapper');
       const customInp = document.getElementById('custom-producto');
 
-      // reset visual
+      // reset visual/estado
       grid.innerHTML = '';
       ProductosState.seleccionados.clear();
+      ProductosState.catalog = new Map();
 
       if (!Array.isArray(patologiaIds) || patologiaIds.length === 0) {
         if (card) card.hidden = true;
-        // reset custom
         if (chipCustom) chipCustom.checked = false;
         if (customWrap) customWrap.hidden = true;
         if (customInp) customInp.value = '';
         ProductosState.customChecked = false;
         ProductosState.customNombre = '';
+        recalcCostos();
         return;
       }
 
@@ -783,17 +785,21 @@
       results.flat().forEach(p => {
         const pid = Number(p.id);
         if (!dict.has(pid)) {
-          dict.set(pid, {
+          const item = {
             id: pid,
             nombre: String(p.nombre ?? ''),
             detalle: String(p.detalle ?? ''),
             costo_hectarea: Number(p.costo_hectarea ?? 0)
-          });
+          };
+          dict.set(pid, item);
         }
       });
 
       const productos = Array.from(dict.values())
         .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+      // guardar catálogo
+      productos.forEach(p => ProductosState.catalog.set(p.id, p));
 
       // Render chips
       const frag = document.createDocumentFragment();
@@ -811,38 +817,38 @@
       });
       grid.appendChild(frag);
 
-      // Listener de selección
-      grid.addEventListener('change', (e) => {
+      // Delegación: selección/deselección de chips → recálculo
+      grid.onchange = (e) => {
         const cb = e.target;
         if (cb && cb.type === 'checkbox' && cb.value) {
           const id = parseInt(cb.value, 10);
           if (cb.checked) ProductosState.seleccionados.add(id);
           else ProductosState.seleccionados.delete(id);
-          console.log('[PRODUCTOS][seleccionados]', Array.from(ProductosState.seleccionados));
+          recalcCostos();
         }
-      }, {
-        once: true
-      }); // se vuelve a adjuntar en cada render
+      };
 
       // Custom “Otro”
-      chipCustom.addEventListener('change', () => {
+      chipCustom.onchange = () => {
         ProductosState.customChecked = chipCustom.checked;
         customWrap.hidden = !chipCustom.checked;
         if (!chipCustom.checked) {
           ProductosState.customNombre = '';
           customInp.value = '';
         }
-      });
-      customInp.addEventListener('input', () => {
+        recalcCostos();
+      };
+      customInp.oninput = () => {
         ProductosState.customNombre = customInp.value.trim();
-      });
+      };
 
       // Mostrar tarjeta
       if (card) card.hidden = productos.length === 0;
 
-      // Debug array
       console.log('[PRODUCTOS][ARRAY]', productos);
+      recalcCostos();
     }
+
 
 
 
@@ -854,17 +860,45 @@
     function recalcCostos() {
       const tbody = $('#costos-body');
       if (!tbody) return;
+
       const ha = Math.max(0, parseInt((inpHect.value || '0'), 10));
       const valorHa = num(costoBaseHa);
       const totalBase = valorHa * ha;
+
       const rows = [];
       rows.push(`<tr><th>Valor de las hectáreas</th><td class="costos-muted">${monedaBase}</td><td class="costos-right">${fmt(valorHa)}</td></tr>`);
       rows.push(`<tr><th>Cantidad de hectáreas</th><td></td><td class="costos-right">${ha}</td></tr>`);
       rows.push(`<tr><th>Total base (servicio)</th><td></td><td class="costos-right">${fmt(totalBase)}</td></tr>`);
 
+      // ===== Productos SVE seleccionados =====
+      let productosTotal = 0;
+      if (ProductosState && ProductosState.seleccionados && ProductosState.catalog) {
+        Array.from(ProductosState.seleccionados).forEach(id => {
+          const p = ProductosState.catalog.get(id);
+          if (!p) return;
+          const costoHaProd = num(p.costo_hectarea || 0);
+          const totalProd = costoHaProd * ha;
+          productosTotal += totalProd;
+
+          rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${p.nombre}</span> <span class="costos-muted">(Aporta SVE)</span></td><td></td></tr>`);
+          rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(costoHaProd)}</td></tr>`);
+          rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(totalProd)}</td></tr>`);
+        });
+      }
+
+      // ===== Producto “Otro” (custom, costo $0/ha) =====
+      if (ProductosState?.customChecked) {
+        const name = (ProductosState.customNombre || 'Producto del productor').trim();
+        rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${name}</span> <span class="costos-muted">(Aporta productor)</span></td><td></td></tr>`);
+        rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(0)}</td></tr>`);
+        rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(0)}</td></tr>`);
+      }
+
+      const precioFinal = totalBase + productosTotal;
       tbody.innerHTML = rows.join('');
-      $('#costos-precio-final').textContent = fmt(totalBase);
+      $('#costos-precio-final').textContent = fmt(precioFinal);
     }
+
 
 
     // Hectáreas -> recálculo
@@ -1140,7 +1174,12 @@
       dir_numero: document.getElementById('form_nuevo_servicio_numero')?.value || '',
       observaciones: document.getElementById('form_nuevo_servicio_observaciones')?.value || '',
       productos_seleccionados: Array.from(ProductosState?.seleccionados ?? []), // [ids]
-      producto_custom: (ProductosState?.customChecked && (ProductosState?.customNombre || '').trim()) ? ProductosState.customNombre.trim() : null
+      producto_custom: (ProductosState?.customChecked && (ProductosState?.customNombre || '').trim()) ? ProductosState.customNombre.trim() : null,
+      total_servicio: (num(costoBaseHa) * Math.max(0, parseInt((document.getElementById('form_nuevo_servicio_hectareas')?.value || '0'), 10))) +
+        Array.from(ProductosState?.seleccionados ?? []).reduce((acc, id) => {
+          const p = ProductosState?.catalog?.get(id);
+          return acc + (p ? num(p.costo_hectarea) * Math.max(0, parseInt((document.getElementById('form_nuevo_servicio_hectareas')?.value || '0'), 10)) : 0);
+        }, 0)
 
     };
   }
