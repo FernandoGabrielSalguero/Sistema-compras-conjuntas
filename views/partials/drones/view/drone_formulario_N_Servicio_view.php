@@ -394,7 +394,7 @@
 
   .costos-muted {
     color: #6b7280;
-    font-size: nine5rem;
+    font-size: .95rem;
   }
 
   .costos-right {
@@ -407,26 +407,6 @@
     padding: 2px 8px;
     border-radius: 999px;
     background: #f3e8ff;
-  }
-
-  /* Ajustes para input-group dentro de celdas de la matriz */
-  .gform-matrix td .input-group {
-    margin: 0;
-    width: 100%;
-    max-width: 320px;
-  }
-
-  .gform-matrix td .input-group label {
-    margin-bottom: .25rem;
-    font-weight: 600;
-  }
-
-  .gform-matrix td .input-group .input-icon {
-    width: 100%;
-  }
-
-  .gform-matrix td .input-group input[type="text"] {
-    width: 100%;
   }
 
   /* ===== Productos (UX simplificada) ===== */
@@ -829,7 +809,8 @@
     // Personas (productores)
     initTypeahead(inpPersona, listPersona, {
       source: async (q) => {
-        const data = await fetchJson(`${CTRL_URL}?action=buscar_usuarios&q=${encodeURIComponent(q)}`);
+        const coop = selCoop.value ? `&coop_id=${encodeURIComponent(selCoop.value)}` : '';
+        const data = await fetchJson(`${CTRL_URL}?action=buscar_usuarios&q=${encodeURIComponent(q)}${coop}`);
         return data.map(u => ({
           label: u.usuario,
           value: u.id_real
@@ -1256,24 +1237,6 @@
       }
 
       return true;
-    }
-
-    // Sincroniza visibilidad/habilitación del input de nombre según la fuente elegida
-    function syncRowFuenteUI(rowId) {
-      const name = `m_${rowId}`;
-      const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
-      const group = matrizBody.querySelector(`.gfm-prod-input[data-row="${rowId}"]`);
-      const input = group ? group.querySelector('input.gfm-prod-nombre') : null;
-      if (!group || !input) return;
-
-      if (choice && choice.value === 'productor') {
-        group.removeAttribute('hidden');
-        input.disabled = false;
-      } else {
-        input.value = '';
-        input.disabled = true;
-        group.setAttribute('hidden', '');
-      }
     }
 
     // Inicialización

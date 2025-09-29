@@ -38,13 +38,20 @@ try {
                     break;
                 }
 
-                // Contexto de sesión
                 session_start();
-                $rol = strtolower((string)($_SESSION['user']['rol'] ?? $_SESSION['rol'] ?? ''));
+                $rol    = strtolower((string)($_SESSION['user']['rol'] ?? $_SESSION['rol'] ?? ''));
                 $idReal = (string)($_SESSION['user']['id_real'] ?? $_SESSION['id_real'] ?? '');
+                $coopId = trim((string)($_GET['coop_id'] ?? ''));
 
-                $resp($model->buscarUsuariosFiltrado($q, $rol, $idReal));
+                $resp($model->buscarUsuariosFiltrado(
+                    $q,
+                    $rol,
+                    $idReal,
+                    $coopId !== '' ? $coopId : null
+                ));
                 break;
+
+
             case 'productos_por_patologia':
                 $pid = (int)($_GET['patologia_id'] ?? 0);
                 if ($pid <= 0) {
