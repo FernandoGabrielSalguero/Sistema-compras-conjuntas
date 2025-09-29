@@ -23,7 +23,7 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             <h3 style="color:white;">Buscar proyecto de vuelo</h3>
             <?php if ($isSVE): ?>
                 <button type="button" id="btn-export-excel" class="btn-icon" title="Descargar Excel" aria-label="Descargar Excel">
-                    <span class="material-symbols-outlined" style="color: white;" aria-hidden="true">download</span>
+                    <span class="material-symbols-outlined" aria-hidden="true">download</span>
                 </button>
             <?php endif; ?>
         </div>
@@ -153,8 +153,8 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
     }
 
     .badge.primary {
-        background: #E0E7FF;
-        color: #3730A3
+        background: #5b21b6;
+        color: #fff
     }
 
     .badge.success {
