@@ -257,68 +257,24 @@
           </div>
         </div>
 
-        <!-- Matriz (full width, parte del mismo formulario) -->
-        <fieldset id="form_nuevo_servicio_matriz"
-          class="gform-grid cols-1 full-span"
-          aria-labelledby="legend-matriz">
-          <div class="gform-question" data-required="true">
-            <div id="legend-matriz" class="gform-legend">
-              Elegí los productos <span class="gform-required">*</span>
-            </div>
-            <div class="gform-helper">
-              Primero seleccioná el producto. Solo entonces podés elegir una opción en la fila.
-            </div>
+        <!-- ===== Selector de productos (UX simplificada) ===== -->
+        <div class="card full-span" id="productos-wrapper">
+          <h2>Productos sugeridos por patología</h2>
+          <p class="costos-muted" id="productos-ayuda">Seleccioná qué productos incluir y quién los aporta.</p>
 
-            <div class="gform-matrix-scroll" role="region"
-              aria-label="Desplazate horizontalmente para ver todas las columnas">
-              <table class="gform-matrix" role="table" aria-label="Matriz de productos">
-                <thead>
-                  <tr>
-                    <th scope="col" class="gfm-empty"></th>
-                    <th scope="col">SVE</th>
-                    <th scope="col">Productor</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">
-                      <label class="gfm-prod">
-                        <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="row1" data-row="row1" />
-                        <span>Producto 1</span>
-                      </label>
-                    </th>
-                    <td data-col="SVE">
-                      <label class="gfm-radio"><input type="radio" name="m_row1" value="sve" disabled /></label>
-                    </td>
-                    <td data-col="Productor">
-                      <label class="gfm-radio"><input type="radio" name="m_row1" value="productor" disabled /></label>
-                    </td>
-                  </tr>
+          <!-- Lista de productos sugeridos (se genera dinámicamente) -->
+          <ul id="productos-list" class="productos-list" aria-live="polite" aria-label="Productos sugeridos"></ul>
 
-                  <tr>
-                    <th scope="row">
-                      <label class="gfm-prod">
-                        <input type="checkbox" class="gfm-row-toggle" name="m_sel[]" value="row2" data-row="row2" />
-                        <span>Producto 2</span>
-                      </label>
-                    </th>
-                    <td data-col="SVE">
-                      <label class="gfm-radio"><input type="radio" name="m_row2" value="sve" disabled /></label>
-                    </td>
-                    <td data-col="Productor">
-                      <label class="gfm-radio"><input type="radio" name="m_row2" value="productor" disabled /></label>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-
-            <div class="gform-error">
-              Seleccioná al menos un producto y, para cada producto seleccionado, elegí una opción.
-            </div>
+          <!-- Productos custom del productor -->
+          <div class="custom-prod mt-3">
+            <h3>Producto del productor (custom)</h3>
+            <p class="costos-muted">Si el productor ya tiene un producto que no está en el listado, podés agregarlo acá.</p>
+            <button type="button" class="btn" id="btn-add-custom-prod">Agregar producto del productor</button>
+            <ul id="custom-prods-list" class="productos-list mt-2" aria-live="polite" aria-label="Productos del productor"></ul>
           </div>
-        </fieldset>
+        </div>
+
+
 
         <!-- ===== Tarjeta: Costo del servicio ===== -->
         <div class="card full-span" id="card-costos" aria-live="polite">
@@ -373,157 +329,6 @@
   /* Fuerza ocultamiento para elementos con atributo hidden */
   [hidden] {
     display: none !important;
-  }
-
-  /* ===== Matriz (Google Forms-like) ===== */
-  .gform-matrix-scroll {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin: .5rem 0;
-    padding-bottom: .25rem;
-  }
-
-  .gform-matrix {
-    min-width: 640px;
-  }
-
-  @supports (position: sticky) {
-    .gform-matrix thead th {
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    .gform-matrix thead th.gfm-empty,
-    .gform-matrix tbody th[scope="row"] {
-      position: sticky;
-      left: 0;
-      z-index: 2;
-      background: #fff;
-    }
-
-    .gform-matrix tbody tr:nth-child(even) th[scope="row"] {
-      background: #fafafa;
-    }
-  }
-
-  .full-span {
-    grid-column: 1 / -1;
-  }
-
-  .gform-matrix {
-    width: 100%;
-    border: 1px solid #e9d7f7;
-    border-radius: 12px;
-    overflow: hidden;
-    border-collapse: separate;
-    border-spacing: 0;
-    background: #fff;
-  }
-
-  .gform-matrix thead th {
-    background: #faf5ff;
-    color: #111827;
-    font-weight: 700;
-    text-align: center;
-    padding: 12px 16px;
-    font-size: .95rem;
-    border-bottom: 1px solid #efe7fb;
-  }
-
-  .gform-matrix thead .gfm-empty {
-    background: #fff;
-    border-bottom-color: transparent;
-  }
-
-  .gform-matrix tbody th[scope="row"] {
-    text-align: left;
-    font-weight: 600;
-    color: #374151;
-    padding: 14px 16px;
-    white-space: nowrap;
-  }
-
-  .gform-matrix td {
-    text-align: center;
-    padding: 10px 16px;
-    border-bottom: 1px solid #f3f4f6;
-  }
-
-  .gform-matrix tbody tr:nth-child(even) {
-    background: #fafafa;
-  }
-
-  .gform-matrix tbody tr:last-child td,
-  .gform-matrix tbody tr:last-child th {
-    border-bottom: 0;
-  }
-
-  .gfm-prod {
-    display: inline-flex;
-    align-items: center;
-    gap: .5rem;
-    cursor: pointer;
-  }
-
-  .gfm-prod input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--primary-color);
-  }
-
-  .gfm-radio {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    min-height: 32px;
-    cursor: pointer;
-  }
-
-  .gfm-radio input {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    border: 2px solid #9ca3af;
-    border-radius: 50%;
-    display: inline-block;
-    position: relative;
-    outline: none;
-    background: #fff;
-    transition: border-color .15s ease, box-shadow .15s ease, opacity .15s ease;
-  }
-
-  .gfm-radio input[disabled] {
-    opacity: .45;
-    cursor: not-allowed;
-  }
-
-  .gfm-radio input:hover:not([disabled]) {
-    box-shadow: 0 0 0 4px rgba(91, 33, 182, .08);
-  }
-
-  .gfm-radio input:checked {
-    border-color: var(--primary-color);
-  }
-
-  .gfm-radio input:checked::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 8px;
-    height: 8px;
-    background: var(--primary-color);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-  }
-
-  .input-error {
-    outline: 2px solid #ef4444;
-    border-radius: 6px;
   }
 
   /* ===== Select-like multi (Motivos) ===== */
@@ -623,6 +428,87 @@
   .gform-matrix td .input-group input[type="text"] {
     width: 100%;
   }
+
+  /* ===== Productos (UX simplificada) ===== */
+  .productos-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 12px;
+  }
+
+  .prod-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px;
+    background: #fff;
+    display: grid;
+    gap: 8px;
+  }
+
+  .prod-card .prod-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+  }
+
+  .prod-card .prod-name {
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .prod-card .prod-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .prod-card .prod-controls .radio {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+  }
+
+  .prod-card .prod-controls .radio input[type="radio"] {
+    accent-color: var(--primary-color);
+  }
+
+  .prod-card .prod-controls .chk input[type="checkbox"] {
+    accent-color: var(--primary-color);
+  }
+
+  .prod-card .prod-input {
+    display: none;
+  }
+
+  .prod-card[data-fuente="productor"][data-incluir="true"] .prod-input {
+    display: block;
+  }
+
+  .badge-sve {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #eef2ff;
+  }
+
+  .badge-custom {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fef3c7;
+  }
+
+  .mt-2 {
+    margin-top: .5rem;
+  }
+
+  .mt-3 {
+    margin-top: 1rem;
+  }
 </style>
 
 <script>
@@ -712,10 +598,152 @@
     const inpNum = $('#form_nuevo_servicio_numero');
     const inpObs = $('#form_nuevo_servicio_observaciones');
 
-    // Matriz
-    const matrizFS = $('#form_nuevo_servicio_matriz');
-    const matrizTable = matrizFS.querySelector('table.gform-matrix');
-    const matrizBody = matrizTable.querySelector('tbody');
+    // Productos (UX simplificada)
+    const productosList = $('#productos-list');
+    const customProdsList = $('#custom-prods-list');
+    const btnAddCustomProd = $('#btn-add-custom-prod');
+
+    // Estado interno de productos sugeridos (por id)
+    let SUGERIDOS = new Map(); // id -> {id, nombre, costo_hectarea, incluir: bool, fuente: 'sve'|'productor', nombre_custom: ''}
+
+    // Renderiza una tarjeta de producto sugerido
+    function renderProdCard(p) {
+      const li = document.createElement('li');
+      li.className = 'prod-card';
+      li.dataset.tipo = 'sugerido';
+      li.dataset.id = String(p.id);
+      li.dataset.incluir = String(!!p.incluir);
+      li.dataset.fuente = p.fuente || '';
+
+      li.innerHTML = `
+    <div class="prod-head">
+      <div class="prod-name">${p.nombre}</div>
+      <div class="chk">
+        <label><input type="checkbox" class="incluir-chk" ${p.incluir ? 'checked' : ''}> Incluir</label>
+      </div>
+    </div>
+    <div class="prod-controls">
+      <label class="radio"><input type="radio" name="fuente_${p.id}" value="sve" ${p.fuente==='sve'?'checked':''} ${p.incluir?'':'disabled'}> Lo aporta <span class="badge-sve">SVE</span></label>
+      <label class="radio"><input type="radio" name="fuente_${p.id}" value="productor" ${p.fuente==='productor'?'checked':''} ${p.incluir?'':'disabled'}> Lo aporta el productor</label>
+      <span class="costos-muted">Costo/ha: ${fmt(Number(p.costo_hectarea||0))}</span>
+    </div>
+    <div class="prod-input">
+      <div class="input-group">
+        <label for="prod_nombre_${p.id}">Nombre del producto del productor</label>
+        <div class="input-icon input-icon-name">
+          <input type="text" id="prod_nombre_${p.id}" class="prod-nombre-input" placeholder="Ej: Herbicida XYZ" value="${p.nombre_custom ? p.nombre_custom.replace(/"/g,'&quot;') : ''}" ${p.fuente==='productor' && p.incluir ? '' : 'disabled'}>
+        </div>
+      </div>
+    </div>
+  `;
+
+      // Listeners
+      const chk = li.querySelector('.incluir-chk');
+      const radios = li.querySelectorAll(`input[name="fuente_${p.id}"]`);
+      const input = li.querySelector('.prod-nombre-input');
+
+      chk.addEventListener('change', () => {
+        const inc = chk.checked;
+        li.dataset.incluir = String(inc);
+        radios.forEach(r => r.disabled = !inc);
+        if (!inc) {
+          input.value = '';
+          input.disabled = true;
+          li.dataset.fuente = '';
+          SUGERIDOS.get(p.id).fuente = '';
+          SUGERIDOS.get(p.id).nombre_custom = '';
+        }
+        recalcCostos();
+      });
+      radios.forEach(r => r.addEventListener('change', () => {
+        li.dataset.fuente = r.value;
+        SUGERIDOS.get(p.id).fuente = r.value;
+        if (r.value === 'productor' && chk.checked) {
+          input.disabled = false;
+        } else {
+          input.disabled = true;
+          input.value = '';
+          SUGERIDOS.get(p.id).nombre_custom = '';
+        }
+        recalcCostos();
+      }));
+      input.addEventListener('input', debounce(() => {
+        SUGERIDOS.get(p.id).nombre_custom = input.value.trim();
+      }, 150));
+
+      return li;
+    }
+
+    // Render de lista completa de sugeridos
+    function renderProductosSugeridos(arr) {
+      SUGERIDOS = new Map(arr.map(p => [p.id, {
+        ...p,
+        incluir: false,
+        fuente: '',
+        nombre_custom: ''
+      }]));
+      productosList.innerHTML = '';
+      arr.forEach(p => productosList.appendChild(renderProdCard(p)));
+    }
+
+    // Agregar fila custom del productor
+    function addCustomProductoRow(prefill = '') {
+      const li = document.createElement('li');
+      li.className = 'prod-card';
+      li.dataset.tipo = 'custom';
+      li.innerHTML = `
+    <div class="prod-head">
+      <div class="prod-name"><span class="badge-custom">Custom</span> Producto del productor</div>
+      <button type="button" class="btn btn-cancelar btn-sm btn-remove">Quitar</button>
+    </div>
+    <div class="prod-controls">
+      <span class="costos-muted">Lo aporta el productor</span>
+    </div>
+    <div class="prod-input" style="display:block;">
+      <div class="input-group">
+        <label>Nombre del producto</label>
+        <div class="input-icon input-icon-name">
+          <input type="text" class="prod-nombre-input" placeholder="Ej: Fungicida ABC" value="${prefill.replace(/"/g,'&quot;')}">
+        </div>
+      </div>
+    </div>
+  `;
+      const btnRemove = li.querySelector('.btn-remove');
+      btnRemove.addEventListener('click', () => {
+        li.remove();
+        recalcCostos();
+      });
+      customProdsList.appendChild(li);
+    }
+
+    btnAddCustomProd.addEventListener('click', () => addCustomProductoRow());
+
+    // Carga productos por patologías seleccionadas (unión única)
+    async function loadProductosPorPatologias(patologiaIds = []) {
+      try {
+        const requests = patologiaIds.map(id =>
+          fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${encodeURIComponent(id)}`).catch(() => [])
+        );
+        const results = await Promise.all(requests);
+        const map = new Map();
+        results.flat().forEach(p => {
+          if (!map.has(p.id)) {
+            map.set(p.id, {
+              id: p.id,
+              nombre: p.nombre,
+              costo_hectarea: Number(p.costo_hectarea ?? 0)
+            });
+          }
+        });
+        const productos = Array.from(map.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+        renderProductosSugeridos(productos);
+        recalcCostos();
+      } catch (e) {
+        console.error(e);
+        productosList.innerHTML = '';
+        showAlert('error', 'Error cargando productos sugeridos.');
+      }
+    }
 
     // ---- Typeahead solo para Personas (productores) ----
     const initTypeahead = (input, ulList, opts) => {
@@ -885,134 +913,16 @@
       }
     }
 
-    // Motivos (multi) → cargar matriz con la unión de productos de todas las patologías seleccionadas
     document.addEventListener('motivos:change', async () => {
       const ids = getSelectedMotivos().map(n => parseInt(n, 10)).filter(n => n > 0);
       if (!ids.length) {
-        matrizBody.innerHTML = '';
+        SUGERIDOS = new Map();
+        productosList.innerHTML = '';
+        recalcCostos();
         return;
       }
-      try {
-        await loadProductosPorPatologias(ids);
-      } catch (e) {
-        showAlert('error', 'No se pudieron cargar los productos de la patología.');
-      }
-      // (Cambio #4) aquí también recalcularemos costos.
+      await loadProductosPorPatologias(ids);
     });
-
-    // matriz dinamica
-    async function loadProductosPorPatologias(patologiaIds = []) {
-      try {
-        const requests = patologiaIds.map(id =>
-          fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${encodeURIComponent(id)}`)
-          .catch(() => [])
-        );
-        const results = await Promise.all(requests);
-        const map = new Map();
-        results.flat().forEach(p => {
-          if (!map.has(p.id)) {
-            map.set(p.id, {
-              id: p.id,
-              nombre: p.nombre,
-              costo_hectarea: Number(p.costo_hectarea ?? 0)
-            });
-          }
-        });
-
-        const productos = Array.from(map.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
-
-        if (!productos.length) {
-          matrizBody.innerHTML = '';
-          return;
-        }
-        matrizBody.innerHTML = productos.map((p) => {
-          const rowId = `row_${p.id}`;
-          const costo = Number(p.costo_hectarea ?? 0);
-          return `
-      <tr>
-        <th scope="row">
-          <label class="gfm-prod">
-            <input type="checkbox" class="gfm-row-toggle"
-                   name="m_sel[]" value="${rowId}"
-                   data-row="${rowId}"
-                   data-producto-id="${p.id}"
-                   data-producto-nombre="${p.nombre.replace(/"/g, '&quot;')}"
-                   data-costo-ha="${costo}" />
-            <span>${p.nombre}</span>
-          </label>
-        </th>
-        <td data-col="SVE">
-          <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="sve" disabled /></label>
-        </td>
-<td data-col="Productor">
-  <div class="prod-editor" style="display:flex; align-items:center; gap:.75rem; justify-content:center;">
-    <label class="gfm-radio"><input type="radio" name="m_${rowId}" value="productor" disabled /></label>
-
-    <div class="input-group gfm-prod-input" data-row="${rowId}" hidden>
-      <label for="gfm_prod_nombre_${rowId}">Nombre del producto</label>
-      <div class="input-icon input-icon-name">
-        <input
-          type="text"
-          id="gfm_prod_nombre_${rowId}"
-          name="gfm_prod_nombre_${rowId}"
-          class="gfm-prod-nombre"
-          data-row="${rowId}"
-          placeholder="Nombre del producto"
-          maxlength="150"
-          disabled
-        />
-      </div>
-    </div>
-  </div>
-</td>
-
-      </tr>`;
-        }).join('');
-
-        // Listeners: habilitar radios y toggle de input nombre
-        $$('.gfm-row-toggle', matrizBody).forEach(cb => {
-          cb.addEventListener('change', () => {
-            const rowId = cb.dataset.row;
-            const name = `m_${rowId}`;
-            const radios = $$(`input[type="radio"][name="${name}"]`, matrizBody);
-            if (cb.checked) {
-              radios.forEach(r => {
-                r.disabled = false;
-              });
-            } else {
-              radios.forEach(r => {
-                r.checked = false;
-                r.disabled = true;
-              });
-              const group = matrizBody.querySelector(`.gfm-prod-input[data-row="${rowId}"]`);
-              const input = group ? group.querySelector('input.gfm-prod-nombre') : null;
-              if (group && input) {
-                input.value = '';
-                input.disabled = true;
-                group.setAttribute('hidden', '');
-              }
-            }
-            syncRowFuenteUI(rowId);
-            recalcCostos();
-          });
-        });
-
-        // Cambio de fuente por fila → sincronizar UI y costos
-        matrizBody.addEventListener('change', (e) => {
-          if (e.target && e.target.matches('.gfm-radio input')) {
-            const m = e.target.getAttribute('name') || '';
-            const rowId = m.replace(/^m_/, '');
-            syncRowFuenteUI(rowId);
-            recalcCostos();
-          }
-        });
-
-      } catch (e) {
-        console.error(e);
-        matrizBody.innerHTML = '';
-        showAlert('error', 'Error cargando la matriz de productos.');
-      }
-    }
 
     // ===== Costos ====
     let costoBaseHa = 0;
@@ -1056,57 +966,48 @@
       const valorHa = num(costoBaseHa);
       const totalBase = valorHa * ha;
 
-      const productosSel = $$('.gfm-row-toggle:checked', matrizBody).map(cb => {
-        const nombre = cb.dataset.productoNombre || 'Producto';
-        const costoHaProd = num(cb.dataset.costoHa || 0);
-        const name = `m_${cb.dataset.row}`;
-        const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
-        const fuente = choice ? choice.value : '';
-        const esSVE = (fuente === 'sve');
-        const totalProd = esSVE ? (costoHaProd * ha) : 0;
-        const leyenda = esSVE ? 'Aporta SVE' : 'Aporta productor';
-        return {
-          nombre,
-          costoHaProd: esSVE ? costoHaProd : 0,
-          totalProd,
-          fuente,
-          leyenda
-        };
-      });
-
-      const sumaProductos = productosSel.reduce((acc, it) => acc + it.totalProd, 0);
-      const precioFinal = totalBase + sumaProductos;
-
       const rows = [];
       rows.push(`<tr><th>Valor de las hectáreas</th><td class="costos-muted">${monedaBase}</td><td class="costos-right">${fmt(valorHa)}</td></tr>`);
       rows.push(`<tr><th>Cantidad de hectáreas</th><td></td><td class="costos-right">${ha}</td></tr>`);
       rows.push(`<tr><th>Total base (servicio)</th><td></td><td class="costos-right">${fmt(totalBase)}</td></tr>`);
 
-      if (productosSel.length) {
-        productosSel.forEach(it => {
-          rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${it.nombre}</span> <span class="costos-muted">(${it.leyenda})</span></td><td></td></tr>`);
-          rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(it.costoHaProd)}</td></tr>`);
-          rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(it.totalProd)}</td></tr>`);
-        });
-      }
+      let productosTotal = 0;
 
+      // Sugeridos
+      productosList.querySelectorAll('.prod-card[data-tipo="sugerido"]').forEach(li => {
+        const id = parseInt(li.dataset.id, 10);
+        const inc = li.dataset.incluir === 'true';
+        if (!inc) return;
+        const p = SUGERIDOS.get(id);
+        const fuente = li.dataset.fuente || '';
+        const costoHaProd = (fuente === 'sve') ? num(p.costo_hectarea || 0) : 0;
+        const totalProd = costoHaProd * ha;
+        productosTotal += totalProd;
+        const leyenda = (fuente === 'sve') ? 'Aporta SVE' : 'Aporta productor';
+        rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${p.nombre}</span> <span class="costos-muted">(${leyenda})</span></td><td></td></tr>`);
+        rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(costoHaProd)}</td></tr>`);
+        rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(totalProd)}</td></tr>`);
+      });
+
+      // Custom (del productor, sin costo)
+      customProdsList.querySelectorAll('.prod-card[data-tipo="custom"]').forEach(li => {
+        const name = (li.querySelector('.prod-nombre-input')?.value || '').trim() || 'Producto del productor';
+        rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${name}</span> <span class="costos-muted">(Aporta productor)</span></td><td></td></tr>`);
+        rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(0)}</td></tr>`);
+        rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(0)}</td></tr>`);
+      });
+
+      const precioFinal = totalBase + productosTotal;
       tbody.innerHTML = rows.join('');
       $('#costos-precio-final').textContent = fmt(precioFinal);
     }
 
+
     // Recalcular cuando cambia la cantidad de hectáreas
     inpHect.addEventListener('input', debounce(recalcCostos, 150));
 
-    // Recalcular también cuando cambia fuente (no afecta el valor pero puede ser útil si luego hay reglas)
-    matrizBody.addEventListener('change', (e) => {
-      if (e.target && (e.target.matches('.gfm-row-toggle') || e.target.matches('.gfm-radio input'))) {
-        recalcCostos();
-      }
-    });
-
     // Al cambiar motivos, la matriz se recompone y luego recalculamos
     document.addEventListener('motivos:change', () => {
-      // recalcCostos se llama después de render por loadProductosPorPatologias -> listeners ya lo hacen
       setTimeout(recalcCostos, 0);
     });
 
@@ -1138,7 +1039,6 @@
         showAlert('success', `Solicitud creada. ID: ${newId}`);
         closeModal();
         form.reset();
-        matrizBody.innerHTML = '';
         grupoCooperativaShow(false);
         selQuincena.value = '';
         setSelectedMotivos([]);
@@ -1148,78 +1048,6 @@
         showAlert('error', `Error: ${err.message}`);
       }
     });
-
-    function buildPayload() {
-      if (!hidPersona.value) throw new Error('Seleccioná un productor.');
-
-      const rep = normalizaSiNo(selRep.value);
-      const linea = normalizaSiNo(selLinea.value);
-      const zRestr = normalizaSiNo(selZonaRes.value);
-      const corr = normalizaSiNo(selCorr.value);
-      const agua = normalizaSiNo(selAgua.value);
-      const cuart = normalizaSiNo(selCuart.value);
-      const despegue = normalizaSiNo(selDespegue.value);
-      const fpago = parseInt(selPago.value || '0', 10);
-      const hectInt = parseInt(inpHect.value || '0', 10);
-      const provincia = selProv.value.trim();
-      const localidad = inpLoc.value.trim();
-      const calle = inpCalle.value.trim();
-      const numero = String(inpNum.value || '').trim();
-      const rango = selQuincena.value;
-      const motivosSel = getSelectedMotivos();
-      const patologiaId = motivosSel.length ? motivosSel[0] : 0;
-      const coopIdReal = selCoop.value || null;
-
-      if ([rep, linea, zRestr, corr, agua, cuart, despegue].some(v => !v)) throw new Error('Completá los campos de Sí/No.');
-      if (!hectInt || hectInt < 0) throw new Error('Ingresá la cantidad de hectáreas (entero).');
-      if (!fpago) throw new Error('Seleccioná la forma de pago.');
-      if (!rango) throw new Error('Seleccioná la quincena.');
-      if (!patologiaId) throw new Error('Seleccioná un motivo/patología.');
-      if (!provincia || !localidad || !calle || !numero) throw new Error('Completá la dirección.');
-      if (fpago === 6 && !coopIdReal) throw new Error('Seleccioná la cooperativa para la forma de pago 6.');
-
-      const items = [];
-      $$('.gfm-row-toggle:checked', matrizBody).forEach(cb => {
-        const name = `m_${cb.dataset.row}`;
-        const choice = $(`input[type="radio"][name="${name}"]:checked`, matrizBody);
-        if (!choice) throw new Error('Indicá quién aporta cada producto seleccionado.');
-        const fuente = choice.value;
-        let nombreProductoCustom = null;
-        if (fuente === 'productor') {
-          const nameInput = matrizBody.querySelector(`input.gfm-prod-nombre[data-row="${cb.dataset.row}"]`);
-          const val = (nameInput?.value || '').trim();
-          if (!val) throw new Error('Ingresá el nombre del producto que aporta el productor.');
-          nombreProductoCustom = val.slice(0, 150);
-        }
-        items.push({
-          producto_id: parseInt(cb.dataset.productoId, 10),
-          fuente: fuente,
-          nombre_producto_custom: nombreProductoCustom
-        });
-      });
-
-      return {
-        productor_id_real: hidPersona.value,
-        representante: rep,
-        linea_tension: linea,
-        zona_restringida: zRestr,
-        corriente_electrica: corr,
-        agua_potable: agua,
-        libre_obstaculos: cuart,
-        area_despegue: despegue,
-        superficie_ha: Number(hectInt.toFixed(2)),
-        forma_pago_id: fpago,
-        coop_descuento_id_real: coopIdReal,
-        patologia_id: patologiaId,
-        rango: rango,
-        items: items,
-        dir_provincia: provincia,
-        dir_localidad: localidad,
-        dir_calle: calle,
-        dir_numero: numero,
-        observaciones: inpObs.value || null
-      };
-    }
 
     // ---------- Validador previo al modal ----------
     function markInvalid(el) {

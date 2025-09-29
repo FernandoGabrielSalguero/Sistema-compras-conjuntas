@@ -37,7 +37,13 @@ try {
                     $resp([], true);
                     break;
                 }
-                $resp($model->buscarUsuarios($q));
+
+                // Contexto de sesión
+                session_start();
+                $rol = strtolower((string)($_SESSION['user']['rol'] ?? $_SESSION['rol'] ?? ''));
+                $idReal = (string)($_SESSION['user']['id_real'] ?? $_SESSION['id_real'] ?? '');
+
+                $resp($model->buscarUsuariosFiltrado($q, $rol, $idReal));
                 break;
             case 'productos_por_patologia':
                 $pid = (int)($_GET['patologia_id'] ?? 0);
@@ -83,19 +89,36 @@ try {
             'coop_descuento_nombre' => !empty($data['coop_descuento_id_real']) ? substr((string)$data['coop_descuento_id_real'], 0, 100) : null,
             'patologia_id'        => isset($data['patologia_id']) ? (int)$data['patologia_id'] : null,
             'rango'               => (string)($data['rango'] ?? ''),
-            // items: [{producto_id, fuente}]
-            'items'               => array_values(array_filter(array_map(function ($it) {
+
+            'items' => array_values(array_filter(array_map(function ($it) {
                 if (!is_array($it)) return null;
+
                 $pid = isset($it['producto_id']) ? (int)$it['producto_id'] : 0;
                 $fuente = in_array($it['fuente'] ?? '', ['sve', 'productor'], true) ? $it['fuente'] : '';
                 $nombreCustom = isset($it['nombre_producto_custom']) ? trim((string)$it['nombre_producto_custom']) : '';
-                if ($pid <= 0) return null;
-                $out = ['producto_id' => $pid, 'fuente' => $fuente];
-                if ($fuente === 'productor') {
-                    $out['nombre_producto_custom'] = mb_substr($nombreCustom, 0, 150);
+
+                if ($fuente === '') return null;
+
+                // Caso SVE: requiere producto válido
+                if ($fuente === 'sve') {
+                    if ($pid <= 0) return null;
+                    return ['producto_id' => $pid, 'fuente' => 'sve'];
                 }
-                return $out;
+
+                // Caso productor: acepta con producto existente (pid>0) o custom (pid<=0) pero exige nombre
+                if ($fuente === 'productor') {
+                    if ($nombreCustom === '') return null;
+                    $out = [
+                        'producto_id' => $pid > 0 ? $pid : 0,
+                        'fuente' => 'productor',
+                        'nombre_producto_custom' => mb_substr($nombreCustom, 0, 150)
+                    ];
+                    return $out;
+                }
+
+                return null;
             }, $data['items'] ?? []))),
+
 
             'productos_fuente'    => in_array($data['productos_fuente'] ?? '', ['sve', 'productor'], true) ? $data['productos_fuente'] : null,
             'dir_provincia'       => substr(trim((string)($data['dir_provincia'] ?? '')), 0, 100),
@@ -124,11 +147,13 @@ try {
                     $resp([], false, "Indicá quién aporta cada producto seleccionado.");
                     exit;
                 }
-                if ($it['fuente'] === 'productor') {
-                    if (empty($it['nombre_producto_custom'])) {
-                        $resp([], false, "Ingresá el nombre del producto que aporta el productor.");
-                        exit;
-                    }
+                if ($it['fuente'] === 'sve' && (int)($it['producto_id'] ?? 0) <= 0) {
+                    $resp([], false, "Producto inválido para aporte SVE.");
+                    exit;
+                }
+                if ($it['fuente'] === 'productor' && empty($it['nombre_producto_custom'])) {
+                    $resp([], false, "Ingresá el nombre del producto que aporta el productor.");
+                    exit;
                 }
             }
         }
