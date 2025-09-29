@@ -650,8 +650,11 @@
 </li>`;
     }).join('');
 
-    console.log('[PRODUCTOS] Renderizados como tarjetas:', Array.from(SUGERIDOS.values())); // array de objetos
-    recalcCostos();
+productosList.removeAttribute('hidden');
+productosList.style.minHeight = '8px';
+console.log('[PRODUCTOS] Renderizados como tarjetas:', Array.from(SUGERIDOS.values()));
+console.log('[PRODUCTOS] Montados:', productosList.childElementCount, 'nodos');
+recalcCostos();
   }
 
   // ===== Delegación única en #productos-list =====
@@ -827,13 +830,6 @@
   }
   selPago.addEventListener('change', () => grupoCooperativaShow(parseInt(selPago.value || '0',10) === 6));
 
-  // ===== Motivos change -> cargar productos (un solo listener) =====
-  document.addEventListener('motivos:change', async () => {
-    const ids = getSelectedMotivos().map(Number).filter(n => n > 0);
-    console.log('[MOTIVOS] Seleccionados:', ids);
-    if (!ids.length) { SUGERIDOS = new Map(); productosList.innerHTML = ''; recalcCostos(); return; }
-    await loadProductosPorPatologias(ids);
-  });
 
   // ===== Costos =====
   const num = (n) => Number.isFinite(Number(n)) ? Number(n) : 0;
@@ -886,16 +882,27 @@
     if (!csv) return [];
     return csv.split(',').map(s => parseInt(s, 10)).filter(n => n > 0);
   }
-  function setSelectedMotivos(arr) {
-    const uniq = Array.from(new Set(arr.filter(n => Number.isInteger(n) && n > 0)));
-    selMotivoHiddenIds.value = uniq.join(',');
-    selMotivoHidden.value = uniq.length ? String(uniq[0]) : '';
-    // marcar UI
-    ulMotivoList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = uniq.includes(parseInt(cb.value,10)));
-    updateMotivoButton();
-    console.log('[MOTIVOS] setSelectedMotivos ->', uniq);
-    document.dispatchEvent(new CustomEvent('motivos:change', { detail: { ids: uniq } }));
+
+async function setSelectedMotivos(arr) {
+  const uniq = Array.from(new Set(arr.filter(n => Number.isInteger(n) && n > 0)));
+  selMotivoHiddenIds.value = uniq.join(',');
+  selMotivoHidden.value = uniq.length ? String(uniq[0]) : '';
+  // marcar UI
+  ulMotivoList.querySelectorAll('input[type="checkbox"]')
+    .forEach(cb => cb.checked = uniq.includes(parseInt(cb.value,10)));
+  updateMotivoButton();
+  console.log('[MOTIVOS] setSelectedMotivos ->', uniq);
+
+  if (!uniq.length) {
+    SUGERIDOS = new Map();
+    productosList.innerHTML = '';
+    recalcCostos();
+    return;
   }
+  await loadProductosPorPatologias(uniq); // ← carga directa y única
+}
+
+
   function updateMotivoButton() {
     const ids = getSelectedMotivos();
     const names = [];
@@ -923,8 +930,8 @@
     console.log('[MOTIVOS] Checkboxes tildados:', checked);
     setSelectedMotivos(checked);
   }
-  ulMotivoList.addEventListener('change', collectAndSetMotivos);
-  ulMotivoList.addEventListener('click', (e) => { if (e.target && e.target.matches('input[type="checkbox"]')) collectAndSetMotivos(); });
+
+ulMotivoList.addEventListener('change', collectAndSetMotivos); // solo una vía → evita duplicados
 
   // ===== Validación previa al modal =====
   function markInvalid(el){ try{ el.focus(); }catch{} el.classList.add('input-error'); setTimeout(()=>el.classList.remove('input-error'),1500); }
