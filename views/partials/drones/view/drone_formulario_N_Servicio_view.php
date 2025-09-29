@@ -522,910 +522,489 @@
   }
 </style>
 
+<style>
+  /* --- Hardening visual específico para evitar que estilos globales oculten la lista --- */
+  #productos-wrapper { display:block !important; visibility:visible !important; }
+  #productos-list { display:grid !important; visibility:visible !important; }
+  #productos-list > li { display:block !important; }
+</style>
+
 <script>
-  (function() {
-    const CTRL_URL = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
+(function () {
+  const CTRL_URL = '../partials/drones/controller/drone_formulario_N_Servicio_controller.php';
 
-    // Helpers
-    const $ = (sel, ctx = document) => ctx.querySelector(sel);
-    const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
-    const on = (el, ev, fn) => el.addEventListener(ev, fn);
-    const debounce = (fn, ms = 250) => {
-      let t;
-      return (...a) => {
-        clearTimeout(t);
-        t = setTimeout(() => fn(...a), ms);
-      }
+  // ===== Helpers =====
+  const $ = (sel, ctx = document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+  const debounce = (fn, ms = 250) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+
+  const fetchJson = async (url) => {
+    const r = await fetch(url, { credentials: 'same-origin' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json().catch(() => { throw new Error('Respuesta no es JSON'); });
+    if (!j || typeof j.ok === 'undefined') throw new Error('Formato inesperado');
+    if (!j.ok) throw new Error(j.error || 'Error');
+    return j.data;
+  };
+  const postJson = async (url, data) => {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(data)
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'Error');
+    return j.data;
+  };
+
+  // ===== Refs UI =====
+  const form = $('#form-solicitud');
+  const btnSolicitar = $('#btn-solicitar');
+  const modal = $('#modal-resumen');
+  const btnConfirmar = $('#btn-confirmar');
+  const btnCerrarModal = $('#btn-cerrar-modal');
+
+  const inpPersona = $('#form_nuevo_servicio_persona');
+  const hidPersona = $('#productor_id_real');
+  const listPersona = $('#ta-list-personas');
+
+  const selRep = $('#form_nuevo_servicio_representante');
+  const selLinea = $('#form_nuevo_servicio_lineas_tension');
+  const selZonaRes = $('#form_nuevo_servicio_zona_restringida');
+  const selCorr = $('#form_nuevo_servicio_corriente');
+  const selAgua = $('#form_nuevo_servicio_agua');
+  const selCuart = $('#form_nuevo_servicio_cuarteles');
+  const selDespegue = $('#form_nuevo_servicio_despegue');
+  const inpHect = $('#form_nuevo_servicio_hectareas');
+
+  const selPago = $('#form_nuevo_servicio_pago');
+  const grupoCoop = $('#grupo-cooperativa');
+  const selCoop = $('#form_nuevo_servicio_cooperativa');
+
+  const selMotivoHidden = $('#form_nuevo_servicio_motivo');
+  const selMotivoHiddenIds = $('#form_nuevo_servicio_motivo_ids');
+  const btnMotivoToggle = $('#form_nuevo_servicio_motivo_toggle');
+  const ulMotivoList = $('#form_nuevo_servicio_motivo_list');
+  const selQuincena = $('#form_nuevo_servicio_quincena');
+
+  const selProv = $('#form_nuevo_servicio_provincia');
+  const inpLoc = $('#form_nuevo_servicio_localidad');
+  const inpCalle = $('#form_nuevo_servicio_calle');
+  const inpNum = $('#form_nuevo_servicio_numero');
+  const inpObs = $('#form_nuevo_servicio_observaciones');
+
+  // Productos
+  const productosList = $('#productos-list');
+  const customProdsList = $('#custom-prods-list');
+  const btnAddCustomProd = $('#btn-add-custom-prod');
+
+  // ===== Estado =====
+  let SUGERIDOS = new Map(); // id -> {id,nombre,costo_hectarea,incluir,fuente,nombre_custom}
+  let costoBaseHa = 0;
+  let monedaBase = 'Pesos';
+
+  // ===== Render productos sugeridos =====
+  function fmtMon(n, curr) {
+    try { return new Intl.NumberFormat('es-AR', { style: 'currency', currency: curr, minimumFractionDigits: 2 }).format(n); }
+    catch { return '$ ' + Number(n || 0).toFixed(2); }
+  }
+  function renderProductosSugeridos(arr) {
+    SUGERIDOS = new Map(arr.map(p => [Number(p.id), {
+      id: Number(p.id),
+      nombre: String(p.nombre),
+      costo_hectarea: Number(p.costo_hectarea ?? 0),
+      incluir: false,
+      fuente: '',
+      nombre_custom: ''
+    }]));
+
+    if (!arr.length) {
+      productosList.innerHTML = `<li class="costos-muted">No hay productos asociados a la patología seleccionada.</li>`;
+      console.log('[PRODUCTOS] Render vacío');
+      recalcCostos();
+      return;
     }
 
-    const fetchJson = async (url) => {
-      const r = await fetch(url, {
-        credentials: 'same-origin'
-      });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      const j = await r.json().catch(() => {
-        throw new Error('Respuesta no es JSON');
-      });
-      if (!j || typeof j.ok === 'undefined') throw new Error('Formato inesperado');
-      if (!j.ok) throw new Error(j.error || 'Error');
-      return j.data;
-    };
-
-    const postJson = async (url, data) => {
-      const r = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify(data)
-      });
-      const j = await r.json();
-      if (!j.ok) throw new Error(j.error || 'Error');
-      return j.data;
-    };
-    const normalizaSiNo = (v) => {
-      if (typeof v !== 'string') return null;
-      const s = v.trim().toLowerCase();
-      if (s === 'si' || s === 'sí') return 'si';
-      if (s === 'no') return 'no';
-      return null;
-    };
-
-    // Referencias UI
-    const form = $('#form-solicitud');
-    const btnSolicitar = $('#btn-solicitar');
-    const modal = $('#modal-resumen');
-    const btnConfirmar = $('#btn-confirmar');
-    const btnCerrarModal = $('#btn-cerrar-modal');
-
-    // Campos
-    const inpPersona = $('#form_nuevo_servicio_persona');
-    const hidPersona = $('#productor_id_real');
-    const listPersona = $('#ta-list-personas');
-
-    const selRep = $('#form_nuevo_servicio_representante');
-    const selLinea = $('#form_nuevo_servicio_lineas_tension');
-    const selZonaRes = $('#form_nuevo_servicio_zona_restringida');
-    const selCorr = $('#form_nuevo_servicio_corriente');
-    const selAgua = $('#form_nuevo_servicio_agua');
-    const selCuart = $('#form_nuevo_servicio_cuarteles');
-    const selDespegue = $('#form_nuevo_servicio_despegue');
-    const inpHect = $('#form_nuevo_servicio_hectareas');
-
-    const selPago = $('#form_nuevo_servicio_pago');
-    const grupoCoop = $('#grupo-cooperativa');
-    const selCoop = $('#form_nuevo_servicio_cooperativa');
-
-    const selMotivoHidden = $('#form_nuevo_servicio_motivo'); // compatibilidad (primer id)
-    const selMotivoHiddenIds = $('#form_nuevo_servicio_motivo_ids'); // CSV de ids
-    const btnMotivoToggle = $('#form_nuevo_servicio_motivo_toggle');
-    const ulMotivoList = $('#form_nuevo_servicio_motivo_list');
-    const selQuincena = $('#form_nuevo_servicio_quincena');
-
-    const selProv = $('#form_nuevo_servicio_provincia');
-    const inpLoc = $('#form_nuevo_servicio_localidad');
-    const inpCalle = $('#form_nuevo_servicio_calle');
-    const inpNum = $('#form_nuevo_servicio_numero');
-    const inpObs = $('#form_nuevo_servicio_observaciones');
-
-    // Productos (UX simplificada)
-    const productosList = $('#productos-list');
-    const customProdsList = $('#custom-prods-list');
-    const btnAddCustomProd = $('#btn-add-custom-prod');
-
-    // Estado interno de productos sugeridos (por id)
-    let SUGERIDOS = new Map(); // id -> {id, nombre, costo_hectarea, incluir: bool, fuente: 'sve'|'productor', nombre_custom: ''}
-
-    // === ÚNICO renderProductosSugeridos (sin duplicados) ===
-    function renderProductosSugeridos(arr) {
-      try {
-        SUGERIDOS = new Map(arr.map(p => [Number(p.id), {
-          id: Number(p.id),
-          nombre: String(p.nombre),
-          costo_hectarea: Number(p.costo_hectarea ?? 0),
-          incluir: false,
-          fuente: '',
-          nombre_custom: ''
-        }]));
-
-        if (!productosList) {
-          console.error('[PRODUCTOS] #productos-list no existe en el DOM');
-          return;
-        }
-
-        if (!arr.length) {
-          productosList.innerHTML = `<li class="costos-muted">No hay productos asociados a la patología seleccionada.</li>`;
-          console.log('[PRODUCTOS] Render vacío');
-          recalcCostos();
-          return;
-        }
-
-        const html = arr.map(p => {
-          const id = Number(p.id);
-          return `
-        <li class="prod-card" data-tipo="sugerido" data-id="${id}" data-incluir="false" data-fuente="">
-          <div class="prod-head">
-            <div class="prod-name">${p.nombre}</div>
-            <div class="chk">
-              <label><input type="checkbox" class="incluir-chk"> Incluir</label>
-            </div>
-          </div>
-          <div class="prod-controls">
-            <label class="radio"><input type="radio" name="fuente_${id}" value="sve" disabled> Lo aporta <span class="badge-sve">SVE</span></label>
-            <label class="radio"><input type="radio" name="fuente_${id}" value="productor" disabled> Lo aporta el productor</label>
-            <span class="costos-muted">Costo/ha: ${fmt(Number(p.costo_hectarea ?? 0))}</span>
-          </div>
-          <div class="prod-input" style="display:none;">
-            <div class="input-group">
-              <label for="prod_nombre_${id}">Nombre del producto del productor</label>
-              <div class="input-icon input-icon-name">
-                <input type="text" id="prod_nombre_${id}" class="prod-nombre-input" placeholder="Ej: Herbicida XYZ" disabled>
-              </div>
-            </div>
-          </div>
-        </li>`;
-        }).join('');
-
-        productosList.innerHTML = html;
-        recalcCostos();
-
-        console.log('[PRODUCTOS] Renderizados:', arr.length, 'items. Childs:', productosList.childElementCount);
-      } catch (err) {
-        console.error('[PRODUCTOS] Error en renderProductosSugeridos:', err);
-        productosList.innerHTML = `<li class="costos-muted">No se pudieron renderizar los productos.</li>`;
-      }
-    }
-
-
-    // Delegación de eventos para TODA la lista de productos (única instancia)
-    productosList.addEventListener('change', (e) => {
-      const target = e.target;
-      const li = target.closest('.prod-card[data-tipo="sugerido"]');
-      if (!li) return;
-
-      const id = Number(li.dataset.id);
-      const state = SUGERIDOS.get(id);
-      if (!state) return;
-
-      // Toggle incluir
-      if (target.classList.contains('incluir-chk')) {
-        const inc = target.checked;
-        li.dataset.incluir = String(inc);
-
-        const radios = li.querySelectorAll(`input[name="fuente_${id}"]`);
-        radios.forEach(r => r.disabled = !inc);
-
-        if (!inc) {
-          state.fuente = '';
-          state.nombre_custom = '';
-          li.dataset.fuente = '';
-          const input = li.querySelector('.prod-nombre-input');
-          if (input) {
-            input.value = '';
-            input.disabled = true;
-          }
-          const prodInput = li.querySelector('.prod-input');
-          if (prodInput) prodInput.style.display = 'none';
-        }
-        recalcCostos();
-        return;
-      }
-
-      // Fuente (SVE / productor)
-      if (target.matches(`input[type="radio"][name="fuente_${id}"]`)) {
-        const value = target.value;
-        state.fuente = value;
-        li.dataset.fuente = value;
-
-        const input = li.querySelector('.prod-nombre-input');
-        const prodInput = li.querySelector('.prod-input');
-
-        if (value === 'productor') {
-          if (input) input.disabled = false;
-          if (prodInput) prodInput.style.display = 'block';
-        } else {
-          if (input) {
-            input.value = '';
-            input.disabled = true;
-          }
-          if (prodInput) prodInput.style.display = 'none';
-          state.nombre_custom = '';
-        }
-        recalcCostos();
-      }
-    });
-
-    // Entrada de nombre custom (única instancia)
-    productosList.addEventListener('input', (e) => {
-      const input = e.target;
-      if (!input.classList || !input.classList.contains('prod-nombre-input')) return;
-      const li = input.closest('.prod-card[data-tipo="sugerido"]');
-      if (!li) return;
-      const id = Number(li.dataset.id);
-      const state = SUGERIDOS.get(id);
-      if (!state) return;
-
-      state.nombre_custom = input.value.trim();
-    });
-
-
-    // Cada vez que se cargan patologías, antes de render, aseguro que el UL exista y esté visible
-    if (!document.getElementById('productos-list')) {
-      console.error('[PRODUCTOS] Faltante #productos-list en DOM');
-    }
-
-    // Input del nombre custom (delegado)
-    productosList.addEventListener('input', (e) => {
-      const input = e.target;
-      if (!input.classList || !input.classList.contains('prod-nombre-input')) return;
-      const li = input.closest('.prod-card[data-tipo="sugerido"]');
-      if (!li) return;
-      const id = Number(li.dataset.id);
-      const state = SUGERIDOS.get(id);
-      if (!state) return;
-
-      state.nombre_custom = input.value.trim();
-    });
-
-    // Delegación: incluye/selección de fuente/nombre custom
-    productosList.addEventListener('change', (e) => {
-      const target = e.target;
-      const li = target.closest('.prod-card[data-tipo="sugerido"]');
-      if (!li) return;
-
-      const id = Number(li.dataset.id);
-      const state = SUGERIDOS.get(id);
-      if (!state) return;
-
-      // Toggle incluir
-      if (target.classList.contains('incluir-chk')) {
-        const inc = target.checked;
-        li.dataset.incluir = String(inc);
-
-        const radios = li.querySelectorAll(`input[name="fuente_${id}"]`);
-        radios.forEach(r => r.disabled = !inc);
-
-        if (!inc) {
-          state.fuente = '';
-          state.nombre_custom = '';
-          li.dataset.fuente = '';
-          const input = li.querySelector('.prod-nombre-input');
-          if (input) {
-            input.value = '';
-            input.disabled = true;
-          }
-          const prodInput = li.querySelector('.prod-input');
-          if (prodInput) prodInput.style.display = 'none';
-        }
-        recalcCostos();
-        return;
-      }
-
-      // Fuente (sve/productor)
-      if (target.matches(`input[type="radio"][name="fuente_${id}"]`)) {
-        const value = target.value;
-        state.fuente = value;
-        li.dataset.fuente = value;
-
-        const input = li.querySelector('.prod-nombre-input');
-        const prodInput = li.querySelector('.prod-input');
-
-        if (value === 'productor') {
-          if (input) input.disabled = false;
-          if (prodInput) prodInput.style.display = 'block';
-        } else {
-          if (input) {
-            input.value = '';
-            input.disabled = true;
-          }
-          if (prodInput) prodInput.style.display = 'none';
-          state.nombre_custom = '';
-        }
-        recalcCostos();
-      }
-    });
-
-    // Entrada de nombre custom
-    productosList.addEventListener('input', (e) => {
-      const input = e.target;
-      if (!input.classList || !input.classList.contains('prod-nombre-input')) return;
-      const li = input.closest('.prod-card[data-tipo="sugerido"]');
-      if (!li) return;
-      const id = Number(li.dataset.id);
-      const state = SUGERIDOS.get(id);
-      if (!state) return;
-
-      state.nombre_custom = input.value.trim();
-    });
-
-
-    // Agregar fila custom del productor
-    function addCustomProductoRow(prefill = '') {
-      const li = document.createElement('li');
-      li.className = 'prod-card';
-      li.dataset.tipo = 'custom';
-      li.innerHTML = `
-    <div class="prod-head">
-      <div class="prod-name"><span class="badge-custom">Custom</span> Producto del productor</div>
-      <button type="button" class="btn btn-cancelar btn-sm btn-remove">Quitar</button>
-    </div>
-    <div class="prod-controls">
-      <span class="costos-muted">Lo aporta el productor</span>
-    </div>
-    <div class="prod-input" style="display:block;">
-      <div class="input-group">
-        <label>Nombre del producto</label>
-        <div class="input-icon input-icon-name">
-          <input type="text" class="prod-nombre-input" placeholder="Ej: Fungicida ABC" value="${prefill.replace(/"/g,'&quot;')}">
-        </div>
+    productosList.innerHTML = arr.map(p => {
+      const id = Number(p.id);
+      return `
+<li class="prod-card" data-tipo="sugerido" data-id="${id}" data-incluir="false" data-fuente="">
+  <div class="prod-head">
+    <div class="prod-name">${p.nombre}</div>
+    <div class="chk"><label><input type="checkbox" class="incluir-chk"> Incluir</label></div>
+  </div>
+  <div class="prod-controls">
+    <label class="radio"><input type="radio" name="fuente_${id}" value="sve" disabled> Lo aporta <span class="badge-sve">SVE</span></label>
+    <label class="radio"><input type="radio" name="fuente_${id}" value="productor" disabled> Lo aporta el productor</label>
+    <span class="costos-muted">Costo/ha: ${fmtMon(Number(p.costo_hectarea ?? 0), monedaBase === 'USD' ? 'USD' : 'ARS')}</span>
+  </div>
+  <div class="prod-input" style="display:none;">
+    <div class="input-group">
+      <label for="prod_nombre_${id}">Nombre del producto del productor</label>
+      <div class="input-icon input-icon-name">
+        <input type="text" id="prod_nombre_${id}" class="prod-nombre-input" placeholder="Ej: Herbicida XYZ" disabled>
       </div>
     </div>
-  `;
-      const btnRemove = li.querySelector('.btn-remove');
-      btnRemove.addEventListener('click', () => {
-        li.remove();
-        recalcCostos();
-      });
-      customProdsList.appendChild(li);
-    }
+  </div>
+</li>`;
+    }).join('');
 
-    btnAddCustomProd.addEventListener('click', () => addCustomProductoRow());
+    console.log('[PRODUCTOS] Renderizados como tarjetas:', Array.from(SUGERIDOS.values())); // array de objetos
+    recalcCostos();
+  }
 
-    // Carga productos por patologías seleccionadas (unión única)
-    async function loadProductosPorPatologias(patologiaIds = []) {
-      try {
-        // Traza por cada patología
-        const requests = patologiaIds.map(async (id) => {
-          const data = await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${encodeURIComponent(id)}`).catch(() => []);
-          console.log(`[PRODUCTOS] Patología ${id}:`, data);
-          return data;
-        });
+  // ===== Delegación única en #productos-list =====
+  productosList.addEventListener('change', (e) => {
+    const li = e.target.closest('.prod-card[data-tipo="sugerido"]');
+    if (!li) return;
+    const id = Number(li.dataset.id);
+    const st = SUGERIDOS.get(id);
+    if (!st) return;
 
-        const results = await Promise.all(requests);
-
-        // Consolidar y de-duplicar por id de producto
-        const map = new Map();
-        results.flat().forEach(p => {
-          if (!map.has(p.id)) {
-            map.set(p.id, {
-              id: p.id,
-              nombre: p.nombre,
-              costo_hectarea: Number(p.costo_hectarea ?? 0)
-            });
-          }
-        });
-
-        const productos = Array.from(map.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
-
-        // Traza consolidada
-        console.log('[PRODUCTOS] Consolidado:', productos);
-        if (console.table) console.table(productos);
-
-        renderProductosSugeridos(productos);
-        recalcCostos();
-      } catch (e) {
-        console.error('[PRODUCTOS] Error cargando productos sugeridos:', e);
-        productosList.innerHTML = '';
-        showAlert('error', 'Error cargando productos sugeridos.');
+    if (e.target.classList.contains('incluir-chk')) {
+      const inc = e.target.checked;
+      li.dataset.incluir = String(inc);
+      li.querySelectorAll(`input[name="fuente_${id}"]`).forEach(r => r.disabled = !inc);
+      if (!inc) {
+        st.fuente = '';
+        st.nombre_custom = '';
+        li.dataset.fuente = '';
+        const input = li.querySelector('.prod-nombre-input');
+        if (input) { input.value = ''; input.disabled = true; }
+        const wrap = li.querySelector('.prod-input');
+        if (wrap) wrap.style.display = 'none';
       }
+      recalcCostos();
+      return;
     }
 
-
-    // ---- Typeahead solo para Personas (productores) ----
-    const initTypeahead = (input, ulList, opts) => {
-      let selectedIndex = -1,
-        current = [];
-      const render = (items) => {
-        ulList.innerHTML = '';
-        items.forEach((it, i) => {
-          const li = document.createElement('li');
-          li.role = 'option';
-          li.tabIndex = -1;
-          li.textContent = it.label;
-          li.dataset.value = it.value;
-          li.className = 'ta-item';
-          li.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            choose(i);
-          });
-          ulList.appendChild(li);
-        });
-        ulList.hidden = items.length === 0;
-        input.setAttribute('aria-expanded', String(!ulList.hidden));
-      };
-      const choose = (idx) => {
-        const it = current[idx];
-        if (!it) return;
-        input.value = it.label;
-        if (opts.onChoose) opts.onChoose(it);
-        ulList.hidden = true;
-        input.setAttribute('aria-expanded', 'false');
-      };
-      const search = debounce(async () => {
-        const q = input.value.trim();
-        if (q.length < 2) {
-          ulList.hidden = true;
-          current = [];
-          if (opts.onClear) opts.onClear();
-          return;
-        }
-        try {
-          const items = await opts.source(q);
-          current = items.map(x => ({
-            label: x.label,
-            value: x.value
-          }));
-          render(current);
-          selectedIndex = -1;
-        } catch (e) {
-          console.error(e);
-        }
-      }, 200);
-
-      input.addEventListener('input', search);
-      input.addEventListener('keydown', (e) => {
-        if (ulList.hidden) return;
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          selectedIndex = Math.min(selectedIndex + 1, ulList.children.length - 1);
-          ulList.children[selectedIndex]?.focus();
-        }
-        if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          selectedIndex = Math.max(selectedIndex - 1, 0);
-          ulList.children[selectedIndex]?.focus();
-        }
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          if (selectedIndex >= 0) choose(selectedIndex);
-        }
-        if (e.key === 'Escape') {
-          ulList.hidden = true;
-          input.setAttribute('aria-expanded', 'false');
-        }
-      });
-      document.addEventListener('click', (e) => {
-        if (!ulList.contains(e.target) && e.target !== input) {
-          ulList.hidden = true;
-          input.setAttribute('aria-expanded', 'false');
-        }
-      });
-    };
-
-    // Personas (productores)
-    initTypeahead(inpPersona, listPersona, {
-      source: async (q) => {
-        const coop = selCoop.value ? `&coop_id=${encodeURIComponent(selCoop.value)}` : '';
-        const data = await fetchJson(`${CTRL_URL}?action=buscar_usuarios&q=${encodeURIComponent(q)}${coop}`);
-        return data.map(u => ({
-          label: u.usuario,
-          value: u.id_real
-        }));
-      },
-      onChoose: (it) => {
-        hidPersona.value = it.value;
-      },
-      onClear: () => {
-        hidPersona.value = '';
-      }
-    });
-
-    // ---- Cargas dinámicas (selects) ----
-    async function loadFormasPago() {
-      const data = await fetchJson(`${CTRL_URL}?action=formas_pago`);
-      selPago.innerHTML = `<option value="">Seleccionar</option>` + data.map(fp => `<option value="${fp.id}">${fp.nombre}</option>`).join('');
-    }
-    async function loadRangos() {
-      const data = await fetchJson(`${CTRL_URL}?action=rangos`);
-      selQuincena.innerHTML = `<option value="">Seleccionar</option>` + data.map(r => `<option value="${r.rango}">${r.label}</option>`).join('');
-    }
-    async function loadCooperativas() {
-      const data = await fetchJson(`${CTRL_URL}?action=cooperativas`);
-      selCoop.innerHTML = `<option value="">Seleccionar</option>` + data.map(u => `<option value="${u.id_real}">${u.usuario}</option>`).join('');
-    }
-    async function loadPatologias() {
-      const data = await fetchJson(`${CTRL_URL}?action=patologias`);
-      // Render de lista con checkboxes
-      ulMotivoList.innerHTML = '';
-      data.forEach(p => {
-        const li = document.createElement('li');
-        li.className = 'selectlike-item';
-        li.role = 'option';
-        li.dataset.id = String(p.id);
-
-        const label = document.createElement('label');
-        label.className = 'selectlike-label';
-        label.style.display = 'flex';
-        label.style.alignItems = 'center';
-        label.style.gap = '.5rem';
-        label.style.width = '100%';
-
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.value = String(p.id);
-        cb.setAttribute('aria-label', p.nombre);
-
-        const span = document.createElement('span');
-        span.textContent = p.nombre;
-
-        label.appendChild(cb);
-        label.appendChild(span);
-        li.appendChild(label);
-        ulMotivoList.appendChild(li);
-      });
-
-      // Reset selección
-      setSelectedMotivos([]);
-      updateMotivoButton();
-    }
-
-    // Mostrar/Ocultar Cooperativa según forma de pago
-    selPago.addEventListener('change', () => {
-      const val = parseInt(selPago.value || '0', 10);
-      if (val === 6) {
-        grupoCooperativaShow(true);
+    if (e.target.matches(`input[type="radio"][name="fuente_${id}"]`)) {
+      const v = e.target.value; // 'sve' | 'productor'
+      st.fuente = v;
+      li.dataset.fuente = v;
+      const input = li.querySelector('.prod-nombre-input');
+      const wrap = li.querySelector('.prod-input');
+      if (v === 'productor') {
+        if (input) input.disabled = false;
+        if (wrap) wrap.style.display = 'block';
       } else {
-        grupoCooperativaShow(false);
-      }
-    });
-
-    function grupoCooperativaShow(show) {
-      if (show) {
-        grupoCoop.hidden = false;
-        selCoop.setAttribute('required', 'required');
-      } else {
-        grupoCoop.hidden = true;
-        selCoop.removeAttribute('required');
-        selCoop.value = '';
-      }
-    }
-
-    document.addEventListener('motivos:change', async () => {
-      const ids = getSelectedMotivos().map(n => parseInt(n, 10)).filter(n => n > 0);
-      console.log('[MOTIVOS] Seleccionados:', ids);
-      if (!ids.length) {
-        SUGERIDOS = new Map();
-        productosList.innerHTML = '';
-        recalcCostos();
-        return;
-      }
-      try {
-        await loadProductosPorPatologias(ids);
-      } catch (e) {
-        console.error('[MOTIVOS] Error cargando productos por patologías:', e);
-      }
-    });
-
-
-    // ===== Costos ====
-    let costoBaseHa = 0;
-    let monedaBase = 'Pesos';
-
-    async function loadCostoBaseHa() {
-      try {
-        const data = await fetchJson(`${CTRL_URL}?action=costo_base_ha`);
-        costoBaseHa = Number(data.costo || 0);
-        monedaBase = data.moneda || 'Pesos';
-      } catch (e) {
-        costoBaseHa = 0;
-        monedaBase = 'Pesos';
-        console.error(e);
+        if (input) { input.value = ''; input.disabled = true; }
+        if (wrap) wrap.style.display = 'none';
+        st.nombre_custom = '';
       }
       recalcCostos();
     }
+  });
 
-    function num(n) {
-      const v = Number(n);
-      return Number.isFinite(v) ? v : 0;
-    }
+  productosList.addEventListener('input', (e) => {
+    const input = e.target;
+    if (!input.classList || !input.classList.contains('prod-nombre-input')) return;
+    const li = input.closest('.prod-card[data-tipo="sugerido"]');
+    if (!li) return;
+    const id = Number(li.dataset.id);
+    const st = SUGERIDOS.get(id);
+    if (!st) return;
+    st.nombre_custom = input.value.trim();
+  });
 
-    function fmt(n) {
+  // ===== Custom del productor =====
+  function addCustomProductoRow(prefill = '') {
+    const li = document.createElement('li');
+    li.className = 'prod-card';
+    li.dataset.tipo = 'custom';
+    li.innerHTML = `
+<div class="prod-head">
+  <div class="prod-name"><span class="badge-custom">Custom</span> Producto del productor</div>
+  <button type="button" class="btn btn-cancelar btn-sm btn-remove">Quitar</button>
+</div>
+<div class="prod-controls"><span class="costos-muted">Lo aporta el productor</span></div>
+<div class="prod-input" style="display:block;">
+  <div class="input-group">
+    <label>Nombre del producto</label>
+    <div class="input-icon input-icon-name">
+      <input type="text" class="prod-nombre-input" placeholder="Ej: Fungicida ABC" value="${prefill.replace(/"/g,'&quot;')}">
+    </div>
+  </div>
+</div>`;
+    li.querySelector('.btn-remove').addEventListener('click', () => { li.remove(); recalcCostos(); });
+    customProdsList.appendChild(li);
+    recalcCostos();
+  }
+  btnAddCustomProd.addEventListener('click', () => addCustomProductoRow());
+
+  // ===== Motivos: carga productos por selección =====
+  async function loadProductosPorPatologias(patologiaIds = []) {
+    const promises = patologiaIds.map(async (id) => {
       try {
-        return new Intl.NumberFormat('es-AR', {
-          style: 'currency',
-          currency: (monedaBase === 'USD' ? 'USD' : 'ARS'),
-          minimumFractionDigits: 2
-        }).format(n);
-      } catch (_) {
-        return '$ ' + (n.toFixed ? n.toFixed(2) : n);
-      }
-    }
-
-    function recalcCostos() {
-      const tbody = $('#costos-body');
-      if (!tbody) return;
-
-      const ha = Math.max(0, parseInt((inpHect.value || '0'), 10));
-      const valorHa = num(costoBaseHa);
-      const totalBase = valorHa * ha;
-
-      const rows = [];
-      rows.push(`<tr><th>Valor de las hectáreas</th><td class="costos-muted">${monedaBase}</td><td class="costos-right">${fmt(valorHa)}</td></tr>`);
-      rows.push(`<tr><th>Cantidad de hectáreas</th><td></td><td class="costos-right">${ha}</td></tr>`);
-      rows.push(`<tr><th>Total base (servicio)</th><td></td><td class="costos-right">${fmt(totalBase)}</td></tr>`);
-
-      let productosTotal = 0;
-
-      // Sugeridos
-      productosList.querySelectorAll('.prod-card[data-tipo="sugerido"]').forEach(li => {
-        const id = parseInt(li.dataset.id, 10);
-        const inc = li.dataset.incluir === 'true';
-        if (!inc) return;
-        const p = SUGERIDOS.get(id);
-        const fuente = li.dataset.fuente || '';
-        const costoHaProd = (fuente === 'sve') ? num(p.costo_hectarea || 0) : 0;
-        const totalProd = costoHaProd * ha;
-        productosTotal += totalProd;
-        const leyenda = (fuente === 'sve') ? 'Aporta SVE' : 'Aporta productor';
-        rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${p.nombre}</span> <span class="costos-muted">(${leyenda})</span></td><td></td></tr>`);
-        rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(costoHaProd)}</td></tr>`);
-        rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(totalProd)}</td></tr>`);
-      });
-
-      // Custom (del productor, sin costo)
-      customProdsList.querySelectorAll('.prod-card[data-tipo="custom"]').forEach(li => {
-        const name = (li.querySelector('.prod-nombre-input')?.value || '').trim() || 'Producto del productor';
-        rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${name}</span> <span class="costos-muted">(Aporta productor)</span></td><td></td></tr>`);
-        rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(0)}</td></tr>`);
-        rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(0)}</td></tr>`);
-      });
-
-      const precioFinal = totalBase + productosTotal;
-      tbody.innerHTML = rows.join('');
-      $('#costos-precio-final').textContent = fmt(precioFinal);
-    }
-
-
-    // Recalcular cuando cambia la cantidad de hectáreas
-    inpHect.addEventListener('input', debounce(recalcCostos, 150));
-
-    // Al cambiar motivos, la matriz se recompone y luego recalculamos
-    document.addEventListener('motivos:change', () => {
-      setTimeout(recalcCostos, 0);
+        const data = await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${encodeURIComponent(id)}`);
+        return Array.isArray(data) ? data : [];
+      } catch { return []; }
     });
+    const results = await Promise.all(promises);
 
-
-    // Modal con validación previa (todos los campos obligatorios)
-    btnSolicitar.addEventListener('click', (e) => {
-      e.preventDefault();
-      const ok = validateBeforeModal();
-      if (!ok) return;
-      modal.classList.remove('hidden');
-      modal.setAttribute('aria-hidden', 'false');
+    const dict = new Map();
+    results.flat().forEach(p => {
+      if (!dict.has(p.id)) dict.set(p.id, { id: p.id, nombre: p.nombre, costo_hectarea: Number(p.costo_hectarea ?? 0) });
     });
-    const closeModal = () => {
-      modal.classList.add('hidden');
-      modal.setAttribute('aria-hidden', 'true');
+    const productos = Array.from(dict.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+    console.log('[PRODUCTOS] Consolidado (array):', productos); // array de objetos (no tabla)
+    renderProductosSugeridos(productos);
+  }
+
+  // ===== Typeahead personas =====
+  (function initTypeahead() {
+    const render = (items) => {
+      listPersona.innerHTML = '';
+      items.forEach((it, i) => {
+        const li = document.createElement('li');
+        li.role = 'option'; li.tabIndex = -1; li.className = 'ta-item';
+        li.textContent = it.label; li.dataset.value = it.value;
+        li.addEventListener('mousedown', (e) => { e.preventDefault(); choose(i); });
+        listPersona.appendChild(li);
+      });
+      listPersona.hidden = items.length === 0;
+      inpPersona.setAttribute('aria-expanded', String(!listPersona.hidden));
     };
-    btnCerrarModal.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeModal();
-    });
-
-    // Confirmar y guardar
-    btnConfirmar.addEventListener('click', async (e) => {
-      e.preventDefault();
+    let current = [];
+    const choose = (idx) => {
+      const it = current[idx]; if (!it) return;
+      inpPersona.value = it.label; hidPersona.value = it.value;
+      listPersona.hidden = true; inpPersona.setAttribute('aria-expanded','false');
+    };
+    const search = debounce(async () => {
+      const q = inpPersona.value.trim();
+      if (q.length < 2) { listPersona.hidden = true; current = []; hidPersona.value = ''; return; }
       try {
-        const payload = buildPayload();
-        const data = await postJson(CTRL_URL, payload);
-        const newId = (data && typeof data.id !== 'undefined') ? String(data.id) : '—';
-        showAlert('success', `Solicitud creada. ID: ${newId}`);
-        closeModal();
-        form.reset();
-        grupoCooperativaShow(false);
-        selQuincena.value = '';
-        setSelectedMotivos([]);
-        recalcCostos();
-      } catch (err) {
-        console.log(err);
-        showAlert('error', `Error: ${err.message}`);
-      }
+        const coop = selCoop.value ? `&coop_id=${encodeURIComponent(selCoop.value)}` : '';
+        const data = await fetchJson(`${CTRL_URL}?action=buscar_usuarios&q=${encodeURIComponent(q)}${coop}`);
+        current = data.map(u => ({ label: u.usuario, value: u.id_real }));
+        render(current);
+      } catch (e) { console.error(e); }
+    }, 200);
+    inpPersona.addEventListener('input', search);
+    inpPersona.addEventListener('keydown', (e) => {
+      if (listPersona.hidden) return;
+      if (e.key === 'Escape') { listPersona.hidden = true; inpPersona.setAttribute('aria-expanded','false'); }
     });
-
-    // ---------- Validador previo al modal ----------
-    function markInvalid(el) {
-      try {
-        el.focus();
-      } catch (e) {}
-      el.classList.add('input-error');
-      setTimeout(() => el.classList.remove('input-error'), 1500);
-    }
-
-    function getSiNoValue(sel) {
-      const v = (sel?.value || '').trim().toLowerCase();
-      return (v === 'si' || v === 'sí' || v === 'no') ? v : '';
-    }
-
-    // ===== Helpers Motivos (multi) =====
-    function getSelectedMotivos() {
-      const csv = (selMotivoHiddenIds.value || '').trim();
-      if (!csv) return [];
-      return csv.split(',').map(s => parseInt(s, 10)).filter(n => n > 0);
-    }
-
-    function setSelectedMotivos(arr) {
-      const uniq = Array.from(new Set(arr.filter(n => Number.isInteger(n) && n > 0)));
-      selMotivoHiddenIds.value = uniq.join(',');
-      // Compat: el primer seleccionado para validación/payload actual
-      selMotivoHidden.value = uniq.length ? String(uniq[0]) : '';
-      // Marcar checkboxes en UI
-      Array.from(ulMotivoList.querySelectorAll('input[type="checkbox"]')).forEach(cb => {
-        cb.checked = uniq.includes(parseInt(cb.value, 10));
-      });
-      updateMotivoButton();
-      console.log('[MOTIVOS] setSelectedMotivos ->', uniq);
-      document.dispatchEvent(new CustomEvent('motivos:change', {
-        detail: {
-          ids: uniq
-        }
-      }));
-    }
-
-    function updateMotivoButton() {
-      const ids = getSelectedMotivos();
-      const names = [];
-      ids.forEach(id => {
-        const li = ulMotivoList.querySelector(`li[data-id="${id}"] span`);
-        if (li) names.push(li.textContent || String(id));
-      });
-      if (!ids.length) {
-        btnMotivoToggle.textContent = 'Seleccionar';
-        btnMotivoToggle.setAttribute('aria-expanded', 'false');
-        return;
-      }
-      const label = names.slice(0, 2).join(', ') + (names.length > 2 ? ` (+${names.length - 2})` : '');
-      btnMotivoToggle.textContent = label;
-    }
-    // Toggle de la lista
-    btnMotivoToggle.addEventListener('click', () => {
-      const isHidden = ulMotivoList.hasAttribute('hidden');
-      if (isHidden) {
-        ulMotivoList.removeAttribute('hidden');
-        btnMotivoToggle.setAttribute('aria-expanded', 'true');
-      } else {
-        ulMotivoList.setAttribute('hidden', '');
-        btnMotivoToggle.setAttribute('aria-expanded', 'false');
-      }
-    });
-    // Cerrar al hacer click afuera
     document.addEventListener('click', (e) => {
-      if (!ulMotivoList.contains(e.target) && e.target !== btnMotivoToggle) {
-        if (!ulMotivoList.hasAttribute('hidden')) {
-          ulMotivoList.setAttribute('hidden', '');
-          btnMotivoToggle.setAttribute('aria-expanded', 'false');
-        }
+      if (!listPersona.contains(e.target) && e.target !== inpPersona) {
+        listPersona.hidden = true; inpPersona.setAttribute('aria-expanded','false');
       }
     });
-
-    // Cambios de selección (robusto: change + click directo en el checkbox)
-    function collectAndSetMotivos() {
-      const checked = Array.from(ulMotivoList.querySelectorAll('input[type="checkbox"]:checked'))
-        .map(cb => parseInt(cb.value, 10))
-        .filter(n => Number.isInteger(n) && n > 0);
-      console.log('[MOTIVOS] Checkboxes tildados:', checked);
-      setSelectedMotivos(checked);
-    }
-    ulMotivoList.addEventListener('change', collectAndSetMotivos);
-    ulMotivoList.addEventListener('click', (e) => {
-      if (e.target && e.target.matches('input[type="checkbox"]')) collectAndSetMotivos();
-    });
-
-    function validateBeforeModal() {
-      ($$('.input-error') || []).forEach(el => el.classList.remove('input-error'));
-
-      if (!hidPersona.value) {
-        showAlert('error', 'Seleccioná un productor.');
-        markInvalid(inpPersona);
-        return false;
-      }
-
-      const siNoFields = [{
-          el: selRep,
-          name: '¿Contamos con un representante?'
-        },
-        {
-          el: selLinea,
-          name: '¿Líneas de tensión?'
-        },
-        {
-          el: selZonaRes,
-          name: '¿Zona restringida?'
-        },
-        {
-          el: selCorr,
-          name: '¿Corriente eléctrica?'
-        },
-        {
-          el: selAgua,
-          name: '¿Agua potable?'
-        },
-        {
-          el: selCuart,
-          name: '¿Cuarteles libres?'
-        },
-        {
-          el: selDespegue,
-          name: '¿Área de despegue?'
-        }
-      ];
-      for (const f of siNoFields) {
-        if (!getSiNoValue(f.el)) {
-          showAlert('error', `Completá: ${f.name}`);
-          markInvalid(f.el);
-          return false;
-        }
-      }
-
-      const hectInt = parseInt(inpHect.value || '0', 10);
-      if (!hectInt || hectInt <= 0) {
-        showAlert('error', 'Ingresá la cantidad de hectáreas (entero mayor a 0).');
-        markInvalid(inpHect);
-        return false;
-      }
-
-      const fpago = parseInt(selPago.value || '0', 10);
-      if (!fpago) {
-        showAlert('error', 'Seleccioná la forma de pago.');
-        markInvalid(selPago);
-        return false;
-      }
-
-      if (fpago === 6) {
-        if (!selCoop.value) {
-          showAlert('error', 'Seleccioná la cooperativa para la forma de pago 6.');
-          grupoCooperativaShow(true);
-          markInvalid(selCoop);
-          return false;
-        }
-      }
-
-      const motivosSel = getSelectedMotivos();
-      if (!motivosSel.length) {
-        showAlert('error', 'Seleccioná al menos un motivo/patología.');
-        markInvalid(btnMotivoToggle);
-        return false;
-      }
-
-      if (!selQuincena.value) {
-        showAlert('error', 'Seleccioná la quincena de visita.');
-        markInvalid(selQuincena);
-        return false;
-      }
-
-      if (!selProv.value) {
-        showAlert('error', 'Seleccioná la provincia.');
-        markInvalid(selProv);
-        return false;
-      }
-      if (!(inpLoc.value || '').trim()) {
-        showAlert('error', 'Ingresá la localidad.');
-        markInvalid(inpLoc);
-        return false;
-      }
-      if (!(inpCalle.value || '').trim()) {
-        showAlert('error', 'Ingresá la calle.');
-        markInvalid(inpCalle);
-        return false;
-      }
-      const numero = parseInt((inpNum.value || '0'), 10);
-      if (!numero || numero <= 0) {
-        showAlert('error', 'Ingresá un número de puerta válido.');
-        markInvalid(inpNum);
-        return false;
-      }
-      return true;
-    }
-
-    // Inicialización
-    (async function init() {
-      try {
-        await Promise.all([loadFormasPago(), loadRangos(), loadPatologias(), loadCooperativas(), loadCostoBaseHa()]);
-        grupoCooperativaShow(false);
-        recalcCostos();
-      } catch (e) {
-        console.error(e);
-      }
-    })();
   })();
+
+  // ===== Cargas select =====
+  async function loadFormasPago() {
+    const data = await fetchJson(`${CTRL_URL}?action=formas_pago`);
+    selPago.innerHTML = `<option value="">Seleccionar</option>` + data.map(fp => `<option value="${fp.id}">${fp.nombre}</option>`).join('');
+  }
+  async function loadRangos() {
+    const data = await fetchJson(`${CTRL_URL}?action=rangos`);
+    selQuincena.innerHTML = `<option value="">Seleccionar</option>` + data.map(r => `<option value="${r.rango}">${r.label}</option>`).join('');
+  }
+  async function loadCooperativas() {
+    const data = await fetchJson(`${CTRL_URL}?action=cooperativas`);
+    selCoop.innerHTML = `<option value="">Seleccionar</option>` + data.map(u => `<option value="${u.id_real}">${u.usuario}</option>`).join('');
+  }
+  async function loadPatologias() {
+    const data = await fetchJson(`${CTRL_URL}?action=patologias`);
+    ulMotivoList.innerHTML = '';
+    data.forEach(p => {
+      const li = document.createElement('li');
+      li.className = 'selectlike-item'; li.role = 'option'; li.dataset.id = String(p.id);
+      li.innerHTML = `<label class="selectlike-label" style="display:flex;align-items:center;gap:.5rem;width:100%">
+        <input type="checkbox" value="${p.id}" aria-label="${p.nombre}"><span>${p.nombre}</span>
+      </label>`;
+      ulMotivoList.appendChild(li);
+    });
+    setSelectedMotivos([]); updateMotivoButton();
+  }
+
+  function grupoCooperativaShow(show) {
+    if (show) { grupoCoop.hidden = false; selCoop.setAttribute('required','required'); }
+    else { grupoCoop.hidden = true; selCoop.removeAttribute('required'); selCoop.value = ''; }
+  }
+  selPago.addEventListener('change', () => grupoCooperativaShow(parseInt(selPago.value || '0',10) === 6));
+
+  // ===== Motivos change -> cargar productos (un solo listener) =====
+  document.addEventListener('motivos:change', async () => {
+    const ids = getSelectedMotivos().map(Number).filter(n => n > 0);
+    console.log('[MOTIVOS] Seleccionados:', ids);
+    if (!ids.length) { SUGERIDOS = new Map(); productosList.innerHTML = ''; recalcCostos(); return; }
+    await loadProductosPorPatologias(ids);
+  });
+
+  // ===== Costos =====
+  const num = (n) => Number.isFinite(Number(n)) ? Number(n) : 0;
+  const fmt = (n) => fmtMon(n, (monedaBase === 'USD' ? 'USD' : 'ARS'));
+
+  function recalcCostos() {
+    const tbody = $('#costos-body'); if (!tbody) return;
+    const ha = Math.max(0, parseInt((inpHect.value || '0'), 10));
+    const valorHa = num(costoBaseHa);
+    const totalBase = valorHa * ha;
+    const rows = [];
+    rows.push(`<tr><th>Valor de las hectáreas</th><td class="costos-muted">${monedaBase}</td><td class="costos-right">${fmt(valorHa)}</td></tr>`);
+    rows.push(`<tr><th>Cantidad de hectáreas</th><td></td><td class="costos-right">${ha}</td></tr>`);
+    rows.push(`<tr><th>Total base (servicio)</th><td></td><td class="costos-right">${fmt(totalBase)}</td></tr>`);
+    let productosTotal = 0;
+
+    productosList.querySelectorAll('.prod-card[data-tipo="sugerido"]').forEach(li => {
+      const id = parseInt(li.dataset.id, 10);
+      const inc = li.dataset.incluir === 'true';
+      if (!inc) return;
+      const p = SUGERIDOS.get(id);
+      const fuente = li.dataset.fuente || '';
+      const costoHaProd = (fuente === 'sve') ? num(p.costo_hectarea || 0) : 0;
+      const totalProd = costoHaProd * ha;
+      productosTotal += totalProd;
+      const leyenda = (fuente === 'sve') ? 'Aporta SVE' : 'Aporta productor';
+      rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${p.nombre}</span> <span class="costos-muted">(${leyenda})</span></td><td></td></tr>`);
+      rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(costoHaProd)}</td></tr>`);
+      rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(totalProd)}</td></tr>`);
+    });
+
+    customProdsList.querySelectorAll('.prod-card[data-tipo="custom"]').forEach(li => {
+      const name = (li.querySelector('.prod-nombre-input')?.value || '').trim() || 'Producto del productor';
+      rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${name}</span> <span class="costos-muted">(Aporta productor)</span></td><td></td></tr>`);
+      rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(0)}</td></tr>`);
+      rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(0)}</td></tr>`);
+    });
+
+    const precioFinal = totalBase + productosTotal;
+    tbody.innerHTML = rows.join('');
+    $('#costos-precio-final').textContent = fmt(precioFinal);
+  }
+
+  // Hectáreas -> recálculo
+  inpHect.addEventListener('input', debounce(recalcCostos, 150));
+
+  // ===== UI motivos (único set) =====
+  function getSelectedMotivos() {
+    const csv = (selMotivoHiddenIds.value || '').trim();
+    if (!csv) return [];
+    return csv.split(',').map(s => parseInt(s, 10)).filter(n => n > 0);
+  }
+  function setSelectedMotivos(arr) {
+    const uniq = Array.from(new Set(arr.filter(n => Number.isInteger(n) && n > 0)));
+    selMotivoHiddenIds.value = uniq.join(',');
+    selMotivoHidden.value = uniq.length ? String(uniq[0]) : '';
+    // marcar UI
+    ulMotivoList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = uniq.includes(parseInt(cb.value,10)));
+    updateMotivoButton();
+    console.log('[MOTIVOS] setSelectedMotivos ->', uniq);
+    document.dispatchEvent(new CustomEvent('motivos:change', { detail: { ids: uniq } }));
+  }
+  function updateMotivoButton() {
+    const ids = getSelectedMotivos();
+    const names = [];
+    ids.forEach(id => {
+      const span = ulMotivoList.querySelector(`li[data-id="${id}"] span`);
+      if (span) names.push(span.textContent || String(id));
+    });
+    btnMotivoToggle.textContent = ids.length ? (names.slice(0,2).join(', ') + (names.length>2 ? ` (+${names.length-2})` : '')) : 'Seleccionar';
+    btnMotivoToggle.setAttribute('aria-expanded', ids.length ? 'true' : 'false');
+  }
+  btnMotivoToggle.addEventListener('click', () => {
+    const isHidden = ulMotivoList.hasAttribute('hidden');
+    if (isHidden) { ulMotivoList.removeAttribute('hidden'); btnMotivoToggle.setAttribute('aria-expanded','true'); }
+    else { ulMotivoList.setAttribute('hidden',''); btnMotivoToggle.setAttribute('aria-expanded','false'); }
+  });
+  document.addEventListener('click', (e) => {
+    if (!ulMotivoList.contains(e.target) && e.target !== btnMotivoToggle) {
+      if (!ulMotivoList.hasAttribute('hidden')) { ulMotivoList.setAttribute('hidden',''); btnMotivoToggle.setAttribute('aria-expanded','false'); }
+    }
+  });
+  function collectAndSetMotivos() {
+    const checked = Array.from(ulMotivoList.querySelectorAll('input[type="checkbox"]:checked'))
+      .map(cb => parseInt(cb.value,10))
+      .filter(n => Number.isInteger(n) && n > 0);
+    console.log('[MOTIVOS] Checkboxes tildados:', checked);
+    setSelectedMotivos(checked);
+  }
+  ulMotivoList.addEventListener('change', collectAndSetMotivos);
+  ulMotivoList.addEventListener('click', (e) => { if (e.target && e.target.matches('input[type="checkbox"]')) collectAndSetMotivos(); });
+
+  // ===== Validación previa al modal =====
+  function markInvalid(el){ try{ el.focus(); }catch{} el.classList.add('input-error'); setTimeout(()=>el.classList.remove('input-error'),1500); }
+  function getSiNoValue(sel){ const v = (sel?.value || '').trim().toLowerCase(); return (v==='si'||v==='sí'||v==='no')?v:''; }
+
+  function validateBeforeModal() {
+    ($$('.input-error') || []).forEach(el => el.classList.remove('input-error'));
+
+    if (!hidPersona.value) { showAlert('error', 'Seleccioná un productor.'); markInvalid(inpPersona); return false; }
+
+    const siNoFields = [
+      { el: selRep, name: '¿Contamos con un representante?' },
+      { el: selLinea, name: '¿Líneas de tensión?' },
+      { el: selZonaRes, name: '¿Zona restringida?' },
+      { el: selCorr, name: '¿Corriente eléctrica?' },
+      { el: selAgua, name: '¿Agua potable?' },
+      { el: selCuart, name: '¿Cuarteles libres?' },
+      { el: selDespegue, name: '¿Área de despegue?' }
+    ];
+    for (const f of siNoFields) {
+      if (!getSiNoValue(f.el)) { showAlert('error', `Completá: ${f.name}`); markInvalid(f.el); return false; }
+    }
+
+    const hectInt = parseInt(inpHect.value || '0', 10);
+    if (!hectInt || hectInt <= 0) { showAlert('error', 'Ingresá la cantidad de hectáreas (entero mayor a 0).'); markInvalid(inpHect); return false; }
+
+    const fpago = parseInt(selPago.value || '0', 10);
+    if (!fpago) { showAlert('error', 'Seleccioná la forma de pago.'); markInvalid(selPago); return false; }
+    if (fpago === 6 && !selCoop.value) { showAlert('error', 'Seleccioná la cooperativa para la forma de pago 6.'); grupoCooperativaShow(true); markInvalid(selCoop); return false; }
+
+    const motivosSel = getSelectedMotivos();
+    if (!motivosSel.length) { showAlert('error', 'Seleccioná al menos un motivo/patología.'); markInvalid(btnMotivoToggle); return false; }
+
+    if (!selQuincena.value) { showAlert('error', 'Seleccioná la quincena de visita.'); markInvalid(selQuincena); return false; }
+
+    if (!selProv.value) { showAlert('error', 'Seleccioná la provincia.'); markInvalid(selProv); return false; }
+    if (!(inpLoc.value || '').trim()) { showAlert('error', 'Ingresá la localidad.'); markInvalid(inpLoc); return false; }
+    if (!(inpCalle.value || '').trim()) { showAlert('error', 'Ingresá la calle.'); markInvalid(inpCalle); return false; }
+    const numero = parseInt((inpNum.value || '0'), 10);
+    if (!numero || numero <= 0) { showAlert('error', 'Ingresá un número de puerta válido.'); markInvalid(inpNum); return false; }
+
+    return true;
+  }
+
+  // ===== Confirmación y POST =====
+  btnSolicitar.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!validateBeforeModal()) return;
+    modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false');
+  });
+  const closeModal = () => { modal.classList.add('hidden'); modal.setAttribute('aria-hidden','true'); };
+  btnCerrarModal.addEventListener('click', (e) => { e.preventDefault(); closeModal(); });
+
+  btnConfirmar.addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      const payload = buildPayload(); // se asume función existente en tu base
+      const data = await postJson(CTRL_URL, payload);
+      const newId = (data && typeof data.id !== 'undefined') ? String(data.id) : '—';
+      showAlert('success', `Solicitud creada. ID: ${newId}`);
+      closeModal();
+      form.reset(); grupoCooperativaShow(false); selQuincena.value=''; setSelectedMotivos([]); recalcCostos();
+    } catch (err) { console.log(err); showAlert('error', `Error: ${err.message}`); }
+  });
+
+  // ===== Costo base/Inicialización =====
+  async function loadCostoBaseHa() {
+    try {
+      const data = await fetchJson(`${CTRL_URL}?action=costo_base_ha`);
+      costoBaseHa = Number(data.costo || 0);
+      monedaBase = data.moneda || 'Pesos';
+    } catch (e) { costoBaseHa = 0; monedaBase = 'Pesos'; console.error(e); }
+    recalcCostos();
+  }
+
+  (async function init(){
+    await Promise.all([loadFormasPago(), loadRangos(), loadPatologias(), loadCooperativas(), loadCostoBaseHa()]);
+    grupoCooperativaShow(false);
+    recalcCostos();
+  })();
+
+})();
 </script>
