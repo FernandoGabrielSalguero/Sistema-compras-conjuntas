@@ -418,6 +418,18 @@
     gap: 12px;
   }
 
+  #productos-list {
+    display: grid !important;
+  }
+
+  /* fuerza visibilidad */
+  #productos-list>li {
+    display: block;
+  }
+
+  /* evita colapsos por estilos externos */
+
+
   .prod-card {
     border: 1px solid #e5e7eb;
     border-radius: 12px;
@@ -605,155 +617,9 @@
     // Estado interno de productos sugeridos (por id)
     let SUGERIDOS = new Map(); // id -> {id, nombre, costo_hectarea, incluir: bool, fuente: 'sve'|'productor', nombre_custom: ''}
 
-    // Render de lista completa (HTML directo) + delegación de eventos.
-    // Esto evita cualquier interferencia de estilos/DOM que pudieran impedir el appendChild.
-    function renderProductosSugeridos(arr) {
-      // Estado interno
-      SUGERIDOS = new Map(arr.map(p => [Number(p.id), {
-        id: Number(p.id),
-        nombre: String(p.nombre),
-        costo_hectarea: Number(p.costo_hectarea ?? 0),
-        incluir: false,
-        fuente: '',
-        nombre_custom: ''
-      }]));
-
-      // HTML
-      if (!productosList) {
-        console.error('[PRODUCTOS] #productos-list no existe en el DOM');
-        return;
-      }
-
-      if (!arr.length) {
-        productosList.innerHTML = `<li class="costos-muted">No hay productos asociados a la patología seleccionada.</li>`;
-        console.log('[PRODUCTOS] Render vacío');
-        return;
-      }
-
-      const html = arr.map(p => {
-        const id = Number(p.id);
-        const costo = fmt(Number(p.costo_hectarea ?? 0));
-        return `
-      <li class="prod-card" data-tipo="sugerido" data-id="${id}" data-incluir="false" data-fuente="">
-        <div class="prod-head">
-          <div class="prod-name">${p.nombre}</div>
-          <div class="chk">
-            <label><input type="checkbox" class="incluir-chk"> Incluir</label>
-          </div>
-        </div>
-        <div class="prod-controls">
-          <label class="radio"><input type="radio" name="fuente_${id}" value="sve" disabled> Lo aporta <span class="badge-sve">SVE</span></label>
-          <label class="radio"><input type="radio" name="fuente_${id}" value="productor" disabled> Lo aporta el productor</label>
-          <span class="costos-muted">Costo/ha: ${costo}</span>
-        </div>
-        <div class="prod-input" style="display:none;">
-          <div class="input-group">
-            <label for="prod_nombre_${id}">Nombre del producto del productor</label>
-            <div class="input-icon input-icon-name">
-              <input type="text" id="prod_nombre_${id}" class="prod-nombre-input" placeholder="Ej: Herbicida XYZ" disabled>
-            </div>
-          </div>
-        </div>
-      </li>`;
-      }).join('');
-
-      productosList.innerHTML = html;
-      productosList.removeAttribute('hidden');
-
-      // Métricas de render
-      console.log('[PRODUCTOS] Renderizados:', arr.length, 'items. Childs:', productosList.childElementCount);
-      if (console.table) console.table(arr);
-
-      // Recalcular costos por si veníamos de un estado anterior
-      recalcCostos();
-    }
-
-    // Tras cargar productos por patologías (ya lo hacés), reforzamos logs
-    // (esto ya está dentro de tu loadProductosPorPatologias actual).
-    // Queda como referencia: después de renderProductosSugeridos(productos);
-    console.log('[PRODUCTOS] Post-render childElementCount:', productosList?.childElementCount);
-
-
-    // Delegación de eventos para TODA la lista de productos
-    productosList.addEventListener('change', (e) => {
-      const target = e.target;
-      const li = target.closest('.prod-card[data-tipo="sugerido"]');
-      if (!li) return;
-
-      const id = Number(li.dataset.id);
-      const state = SUGERIDOS.get(id);
-      if (!state) return;
-
-      // Toggle incluir
-      if (target.classList.contains('incluir-chk')) {
-        const inc = target.checked;
-        li.dataset.incluir = String(inc);
-
-        const radios = li.querySelectorAll(`input[name="fuente_${id}"]`);
-        radios.forEach(r => r.disabled = !inc);
-
-        // si se desmarca, limpio estado y oculto input
-        if (!inc) {
-          state.fuente = '';
-          state.nombre_custom = '';
-          li.dataset.fuente = '';
-          const input = li.querySelector('.prod-nombre-input');
-          if (input) {
-            input.value = '';
-            input.disabled = true;
-          }
-          const prodInput = li.querySelector('.prod-input');
-          if (prodInput) prodInput.style.display = 'none';
-        }
-        recalcCostos();
-        return;
-      }
-
-      // Asignación de fuente (SVE / productor)
-      if (target.matches(`input[type="radio"][name="fuente_${id}"]`)) {
-        const value = target.value; // 'sve' | 'productor'
-        state.fuente = value;
-        li.dataset.fuente = value;
-
-        const input = li.querySelector('.prod-nombre-input');
-        const prodInput = li.querySelector('.prod-input');
-
-        if (value === 'productor') {
-          if (input) {
-            input.disabled = false;
-          }
-          if (prodInput) prodInput.style.display = 'block';
-        } else {
-          if (input) {
-            input.value = '';
-            input.disabled = true;
-          }
-          if (prodInput) prodInput.style.display = 'none';
-          state.nombre_custom = '';
-        }
-        recalcCostos();
-        return;
-      }
-    });
-
-    // Input del nombre custom (delegado)
-    productosList.addEventListener('input', (e) => {
-      const input = e.target;
-      if (!input.classList || !input.classList.contains('prod-nombre-input')) return;
-      const li = input.closest('.prod-card[data-tipo="sugerido"]');
-      if (!li) return;
-      const id = Number(li.dataset.id);
-      const state = SUGERIDOS.get(id);
-      if (!state) return;
-
-      state.nombre_custom = input.value.trim();
-    });
-
-    // Render de lista completa de sugeridos
-    // Render de lista completa de sugeridos (HTML directo) + guard/metrics
+    // === ÚNICO renderProductosSugeridos (sin duplicados) ===
     function renderProductosSugeridos(arr) {
       try {
-        // Estado interno
         SUGERIDOS = new Map(arr.map(p => [Number(p.id), {
           id: Number(p.id),
           nombre: String(p.nombre),
@@ -802,17 +668,105 @@
         }).join('');
 
         productosList.innerHTML = html;
-        productosList.removeAttribute('hidden');
+        recalcCostos();
 
         console.log('[PRODUCTOS] Renderizados:', arr.length, 'items. Childs:', productosList.childElementCount);
-        if (console.table) console.table(arr);
-
-        recalcCostos();
       } catch (err) {
         console.error('[PRODUCTOS] Error en renderProductosSugeridos:', err);
         productosList.innerHTML = `<li class="costos-muted">No se pudieron renderizar los productos.</li>`;
       }
     }
+
+
+    // Delegación de eventos para TODA la lista de productos (única instancia)
+    productosList.addEventListener('change', (e) => {
+      const target = e.target;
+      const li = target.closest('.prod-card[data-tipo="sugerido"]');
+      if (!li) return;
+
+      const id = Number(li.dataset.id);
+      const state = SUGERIDOS.get(id);
+      if (!state) return;
+
+      // Toggle incluir
+      if (target.classList.contains('incluir-chk')) {
+        const inc = target.checked;
+        li.dataset.incluir = String(inc);
+
+        const radios = li.querySelectorAll(`input[name="fuente_${id}"]`);
+        radios.forEach(r => r.disabled = !inc);
+
+        if (!inc) {
+          state.fuente = '';
+          state.nombre_custom = '';
+          li.dataset.fuente = '';
+          const input = li.querySelector('.prod-nombre-input');
+          if (input) {
+            input.value = '';
+            input.disabled = true;
+          }
+          const prodInput = li.querySelector('.prod-input');
+          if (prodInput) prodInput.style.display = 'none';
+        }
+        recalcCostos();
+        return;
+      }
+
+      // Fuente (SVE / productor)
+      if (target.matches(`input[type="radio"][name="fuente_${id}"]`)) {
+        const value = target.value;
+        state.fuente = value;
+        li.dataset.fuente = value;
+
+        const input = li.querySelector('.prod-nombre-input');
+        const prodInput = li.querySelector('.prod-input');
+
+        if (value === 'productor') {
+          if (input) input.disabled = false;
+          if (prodInput) prodInput.style.display = 'block';
+        } else {
+          if (input) {
+            input.value = '';
+            input.disabled = true;
+          }
+          if (prodInput) prodInput.style.display = 'none';
+          state.nombre_custom = '';
+        }
+        recalcCostos();
+      }
+    });
+
+    // Entrada de nombre custom (única instancia)
+    productosList.addEventListener('input', (e) => {
+      const input = e.target;
+      if (!input.classList || !input.classList.contains('prod-nombre-input')) return;
+      const li = input.closest('.prod-card[data-tipo="sugerido"]');
+      if (!li) return;
+      const id = Number(li.dataset.id);
+      const state = SUGERIDOS.get(id);
+      if (!state) return;
+
+      state.nombre_custom = input.value.trim();
+    });
+
+
+    // Cada vez que se cargan patologías, antes de render, aseguro que el UL exista y esté visible
+    if (!document.getElementById('productos-list')) {
+      console.error('[PRODUCTOS] Faltante #productos-list en DOM');
+    }
+
+    // Input del nombre custom (delegado)
+    productosList.addEventListener('input', (e) => {
+      const input = e.target;
+      if (!input.classList || !input.classList.contains('prod-nombre-input')) return;
+      const li = input.closest('.prod-card[data-tipo="sugerido"]');
+      if (!li) return;
+      const id = Number(li.dataset.id);
+      const state = SUGERIDOS.get(id);
+      if (!state) return;
+
+      state.nombre_custom = input.value.trim();
+    });
 
     // Delegación: incluye/selección de fuente/nombre custom
     productosList.addEventListener('change', (e) => {
