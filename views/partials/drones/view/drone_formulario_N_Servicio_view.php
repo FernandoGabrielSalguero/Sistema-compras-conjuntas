@@ -674,15 +674,20 @@
     }
 
     // Render de lista completa de sugeridos
-function renderProductosSugeridos(arr) {
-  SUGERIDOS = new Map(arr.map(p => [p.id, {...p, incluir:false, fuente:'', nombre_custom:''}]));
-  productosList.innerHTML = '';
-  if (!arr.length) {
-    productosList.innerHTML = `<li class="costos-muted">No hay productos asociados a la patología seleccionada.</li>`;
-    return;
-  }
-  arr.forEach(p => productosList.appendChild(renderProdCard(p)));
-}
+    function renderProductosSugeridos(arr) {
+      SUGERIDOS = new Map(arr.map(p => [p.id, {
+        ...p,
+        incluir: false,
+        fuente: '',
+        nombre_custom: ''
+      }]));
+      productosList.innerHTML = '';
+      if (!arr.length) {
+        productosList.innerHTML = `<li class="costos-muted">No hay productos asociados a la patología seleccionada.</li>`;
+        return;
+      }
+      arr.forEach(p => productosList.appendChild(renderProdCard(p)));
+    }
 
     // Agregar fila custom del productor
     function addCustomProductoRow(prefill = '') {
@@ -719,10 +724,16 @@ function renderProductosSugeridos(arr) {
     // Carga productos por patologías seleccionadas (unión única)
     async function loadProductosPorPatologias(patologiaIds = []) {
       try {
-        const requests = patologiaIds.map(id =>
-          fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${encodeURIComponent(id)}`).catch(() => [])
-        );
+        // Traza por cada patología
+        const requests = patologiaIds.map(async (id) => {
+          const data = await fetchJson(`${CTRL_URL}?action=productos_por_patologia&patologia_id=${encodeURIComponent(id)}`).catch(() => []);
+          console.log(`[PRODUCTOS] Patología ${id}:`, data);
+          return data;
+        });
+
         const results = await Promise.all(requests);
+
+        // Consolidar y de-duplicar por id de producto
         const map = new Map();
         results.flat().forEach(p => {
           if (!map.has(p.id)) {
@@ -733,15 +744,22 @@ function renderProductosSugeridos(arr) {
             });
           }
         });
+
         const productos = Array.from(map.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+        // Traza consolidada
+        console.log('[PRODUCTOS] Consolidado:', productos);
+        if (console.table) console.table(productos);
+
         renderProductosSugeridos(productos);
         recalcCostos();
       } catch (e) {
-        console.error(e);
+        console.error('[PRODUCTOS] Error cargando productos sugeridos:', e);
         productosList.innerHTML = '';
         showAlert('error', 'Error cargando productos sugeridos.');
       }
     }
+
 
     // ---- Typeahead solo para Personas (productores) ----
     const initTypeahead = (input, ulList, opts) => {
@@ -914,14 +932,20 @@ function renderProductosSugeridos(arr) {
 
     document.addEventListener('motivos:change', async () => {
       const ids = getSelectedMotivos().map(n => parseInt(n, 10)).filter(n => n > 0);
+      console.log('[MOTIVOS] Seleccionados:', ids);
       if (!ids.length) {
         SUGERIDOS = new Map();
         productosList.innerHTML = '';
         recalcCostos();
         return;
       }
-      await loadProductosPorPatologias(ids);
+      try {
+        await loadProductosPorPatologias(ids);
+      } catch (e) {
+        console.error('[MOTIVOS] Error cargando productos por patologías:', e);
+      }
     });
+
 
     // ===== Costos ====
     let costoBaseHa = 0;
@@ -1079,6 +1103,7 @@ function renderProductosSugeridos(arr) {
         cb.checked = uniq.includes(parseInt(cb.value, 10));
       });
       updateMotivoButton();
+      console.log('[MOTIVOS] setSelectedMotivos ->', uniq);
       document.dispatchEvent(new CustomEvent('motivos:change', {
         detail: {
           ids: uniq
@@ -1127,6 +1152,7 @@ function renderProductosSugeridos(arr) {
       const checked = Array.from(ulMotivoList.querySelectorAll('input[type="checkbox"]:checked'))
         .map(cb => parseInt(cb.value, 10))
         .filter(n => Number.isInteger(n) && n > 0);
+      console.log('[MOTIVOS] Checkboxes tildados:', checked);
       setSelectedMotivos(checked);
     }
     ulMotivoList.addEventListener('change', collectAndSetMotivos);
