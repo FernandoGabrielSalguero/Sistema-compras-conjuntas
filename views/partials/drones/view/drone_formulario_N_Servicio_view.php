@@ -603,7 +603,7 @@
     const btnAddCustomProd = $('#btn-add-custom-prod');
 
     // ===== Estado =====
-    let SUGERIDOS = new Map(); // id -> {id,nombre,costo_hectarea,incluir,fuente,nombre_custom}
+    let SUGERIDOS = new Map(); // id -> {id,nombre,detalle,costo_hectarea,incluir}
     let costoBaseHa = 0;
     let monedaBase = 'Pesos';
 
@@ -621,13 +621,13 @@
     }
 
     function renderProductosSugeridos(arr) {
+      // Estado local (sin fuente; por defecto será SVE si se marca)
       SUGERIDOS = new Map(arr.map(p => [Number(p.id), {
         id: Number(p.id),
         nombre: String(p.nombre),
+        detalle: String(p.detalle ?? ''),
         costo_hectarea: Number(p.costo_hectarea ?? 0),
-        incluir: false,
-        fuente: '',
-        nombre_custom: ''
+        incluir: false
       }]));
 
       if (!arr.length) {
@@ -637,38 +637,33 @@
         return;
       }
 
+      // Mini-tarjeta simple con checkbox + detalle + costo/ha
       productosList.innerHTML = arr.map(p => {
         const id = Number(p.id);
+        const costoFmt = fmtMon(Number(p.costo_hectarea ?? 0), (monedaBase === 'USD' ? 'USD' : 'ARS'));
+        const detalle = (p.detalle ?? '').toString().trim();
         return `
-<li class="prod-card" data-tipo="sugerido" data-id="${id}" data-incluir="false" data-fuente="">
+<li class="prod-card" data-tipo="sugerido" data-id="${id}" data-incluir="false">
   <div class="prod-head">
     <div class="prod-name">${p.nombre}</div>
     <div class="chk"><label><input type="checkbox" class="incluir-chk"> Incluir</label></div>
   </div>
   <div class="prod-controls">
-    <label class="radio"><input type="radio" name="fuente_${id}" value="sve" disabled> Lo aporta <span class="badge-sve">SVE</span></label>
-    <label class="radio"><input type="radio" name="fuente_${id}" value="productor" disabled> Lo aporta el productor</label>
-    <span class="costos-muted">Costo/ha: ${fmtMon(Number(p.costo_hectarea ?? 0), monedaBase === 'USD' ? 'USD' : 'ARS')}</span>
+    <span class="costos-muted">Costo/ha: ${costoFmt}</span>
   </div>
-  <div class="prod-input" style="display:none;">
-    <div class="input-group">
-      <label for="prod_nombre_${id}">Nombre del producto del productor</label>
-      <div class="input-icon input-icon-name">
-        <input type="text" id="prod_nombre_${id}" class="prod-nombre-input" placeholder="Ej: Herbicida XYZ" disabled>
-      </div>
-    </div>
-  </div>
+  ${detalle ? `<div class="costos-muted">${detalle}</div>` : ``}
 </li>`;
       }).join('');
 
       productosList.removeAttribute('hidden');
       productosList.style.minHeight = '8px';
-      console.log('[PRODUCTOS] Renderizados como tarjetas:', Array.from(SUGERIDOS.values()));
+      console.log('[PRODUCTOS] Renderizados (mini-tarjetas):', Array.from(SUGERIDOS.values()));
       console.log('[PRODUCTOS] Montados:', productosList.childElementCount, 'nodos');
       recalcCostos();
     }
 
-    // ===== Delegación única en #productos-list =====
+
+    // Solo controlamos la marca/desmarca del checkbox
     productosList.addEventListener('change', (e) => {
       const li = e.target.closest('.prod-card[data-tipo="sugerido"]');
       if (!li) return;
@@ -679,53 +674,9 @@
       if (e.target.classList.contains('incluir-chk')) {
         const inc = e.target.checked;
         li.dataset.incluir = String(inc);
-        li.querySelectorAll(`input[name="fuente_${id}"]`).forEach(r => r.disabled = !inc);
-        if (!inc) {
-          st.fuente = '';
-          st.nombre_custom = '';
-          li.dataset.fuente = '';
-          const input = li.querySelector('.prod-nombre-input');
-          if (input) {
-            input.value = '';
-            input.disabled = true;
-          }
-          const wrap = li.querySelector('.prod-input');
-          if (wrap) wrap.style.display = 'none';
-        }
-        recalcCostos();
-        return;
-      }
-
-      if (e.target.matches(`input[type="radio"][name="fuente_${id}"]`)) {
-        const v = e.target.value; // 'sve' | 'productor'
-        st.fuente = v;
-        li.dataset.fuente = v;
-        const input = li.querySelector('.prod-nombre-input');
-        const wrap = li.querySelector('.prod-input');
-        if (v === 'productor') {
-          if (input) input.disabled = false;
-          if (wrap) wrap.style.display = 'block';
-        } else {
-          if (input) {
-            input.value = '';
-            input.disabled = true;
-          }
-          if (wrap) wrap.style.display = 'none';
-          st.nombre_custom = '';
-        }
+        st.incluir = inc; // por defecto, fuente = SVE (no se pide)
         recalcCostos();
       }
-    });
-
-    productosList.addEventListener('input', (e) => {
-      const input = e.target;
-      if (!input.classList || !input.classList.contains('prod-nombre-input')) return;
-      const li = input.closest('.prod-card[data-tipo="sugerido"]');
-      if (!li) return;
-      const id = Number(li.dataset.id);
-      const st = SUGERIDOS.get(id);
-      if (!st) return;
-      st.nombre_custom = input.value.trim();
     });
 
     // ===== Custom del productor =====
@@ -773,9 +724,11 @@
         if (!dict.has(p.id)) dict.set(p.id, {
           id: p.id,
           nombre: p.nombre,
+          detalle: p.detalle ?? '',
           costo_hectarea: Number(p.costo_hectarea ?? 0)
         });
       });
+
       const productos = Array.from(dict.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
       console.log('[PRODUCTOS] Consolidado (array):', productos); // array de objetos (no tabla)
       renderProductosSugeridos(productos);
@@ -910,15 +863,14 @@
         const inc = li.dataset.incluir === 'true';
         if (!inc) return;
         const p = SUGERIDOS.get(id);
-        const fuente = li.dataset.fuente || '';
-        const costoHaProd = (fuente === 'sve') ? num(p.costo_hectarea || 0) : 0;
+        const costoHaProd = num(p.costo_hectarea || 0); // siempre SVE si está tildado
         const totalProd = costoHaProd * ha;
         productosTotal += totalProd;
-        const leyenda = (fuente === 'sve') ? 'Aporta SVE' : 'Aporta productor';
-        rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${p.nombre}</span> <span class="costos-muted">(${leyenda})</span></td><td></td></tr>`);
+        rows.push(`<tr><th>Producto</th><td><span class="badge-prod">${p.nombre}</span> <span class="costos-muted">(Aporta SVE)</span></td><td></td></tr>`);
         rows.push(`<tr><th>Precio por hectárea del producto</th><td></td><td class="costos-right">${fmt(costoHaProd)}</td></tr>`);
         rows.push(`<tr><th>Costo total del producto</th><td></td><td class="costos-right">${fmt(totalProd)}</td></tr>`);
       });
+
 
       customProdsList.querySelectorAll('.prod-card[data-tipo="custom"]').forEach(li => {
         const name = (li.querySelector('.prod-nombre-input')?.value || '').trim() || 'Producto del productor';
@@ -1188,4 +1140,59 @@
     })();
 
   })();
+
+  // === Build payload para POST ===
+  function buildPayload() {
+    // Productos seleccionados (SVE por defecto)
+    const itemsSugeridos = [];
+    SUGERIDOS.forEach(p => {
+      if (p.incluir) {
+        itemsSugeridos.push({
+          producto_id: Number(p.id),
+          fuente: 'sve'
+        });
+      }
+    });
+
+    // Productos custom del productor (si los dejás activos)
+    const itemsCustom = [];
+    customProdsList.querySelectorAll('.prod-card[data-tipo="custom"]').forEach(li => {
+      const name = (li.querySelector('.prod-nombre-input')?.value || '').trim();
+      if (name) {
+        itemsCustom.push({
+          producto_id: 0,
+          fuente: 'productor',
+          nombre_producto_custom: name
+        });
+      }
+    });
+
+    // Patología: tomamos la primera seleccionada (el backend guarda una)
+    const motivos = (document.getElementById('form_nuevo_servicio_motivo_ids')?.value || '')
+      .split(',').map(n => parseInt(n, 10)).filter(n => n > 0);
+    const patologiaId = motivos.length ? motivos[0] : null;
+
+    return {
+      productor_id_real: document.getElementById('productor_id_real')?.value || null,
+      representante: getSiNoValue(document.getElementById('form_nuevo_servicio_representante')),
+      linea_tension: getSiNoValue(document.getElementById('form_nuevo_servicio_lineas_tension')),
+      zona_restringida: getSiNoValue(document.getElementById('form_nuevo_servicio_zona_restringida')),
+      corriente_electrica: getSiNoValue(document.getElementById('form_nuevo_servicio_corriente')),
+      agua_potable: getSiNoValue(document.getElementById('form_nuevo_servicio_agua')),
+      libre_obstaculos: getSiNoValue(document.getElementById('form_nuevo_servicio_cuarteles')),
+      area_despegue: getSiNoValue(document.getElementById('form_nuevo_servicio_despegue')),
+      superficie_ha: parseFloat(document.getElementById('form_nuevo_servicio_hectareas')?.value || '0'),
+      forma_pago_id: parseInt(document.getElementById('form_nuevo_servicio_pago')?.value || '0', 10),
+      coop_descuento_id_real: document.getElementById('form_nuevo_servicio_cooperativa')?.value || null,
+      patologia_id: patologiaId,
+      rango: document.getElementById('form_nuevo_servicio_quincena')?.value || '',
+      dir_provincia: document.getElementById('form_nuevo_servicio_provincia')?.value || '',
+      dir_localidad: document.getElementById('form_nuevo_servicio_localidad')?.value || '',
+      dir_calle: document.getElementById('form_nuevo_servicio_calle')?.value || '',
+      dir_numero: document.getElementById('form_nuevo_servicio_numero')?.value || '',
+      observaciones: document.getElementById('form_nuevo_servicio_observaciones')?.value || '',
+      items: [...itemsSugeridos, ...itemsCustom],
+      productos_fuente: itemsSugeridos.length ? 'sve' : (itemsCustom.length ? 'productor' : null)
+    };
+  }
 </script>

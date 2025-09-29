@@ -8,7 +8,6 @@ class DroneFormularioNservicioModel
     public PDO $pdo;
 
     /** Búsqueda de PRODUCTORES por nombre (filtrado por rol en sesión) */
-    /** Búsqueda de PRODUCTORES por nombre (filtrado por rol en sesión) */
     public function buscarUsuariosFiltrado(string $q, string $rol, string $idReal, ?string $coopId = null): array
     {
         $like = '%' . $q . '%';
@@ -134,27 +133,20 @@ class DroneFormularioNservicioModel
 /** Productos por patología (con costo/ha) */
 public function productosPorPatologia(int $patologiaId): array
 {
-    // Intento 1: pivote por IDs numéricos
-    $sql1 = "SELECT s.id, s.nombre, COALESCE(s.costo_hectarea,0) AS costo_hectarea
-               FROM dron_productos_stock_patologias sp
-               JOIN dron_productos_stock s ON s.id = sp.producto_id
-              WHERE sp.patologia_id = ?
-           ORDER BY s.nombre";
-    $st = $this->pdo->prepare($sql1);
+    // Único join por IDs numéricos; incluimos también el DETALLE
+    $sql = "SELECT s.id,
+                   s.nombre,
+                   COALESCE(s.costo_hectarea,0) AS costo_hectarea,
+                   COALESCE(s.detalle,'')          AS detalle
+              FROM dron_productos_stock_patologias sp
+              JOIN dron_productos_stock s ON s.id = sp.producto_id
+             WHERE sp.patologia_id = ?
+          ORDER BY s.nombre";
+    $st = $this->pdo->prepare($sql);
     $st->execute([$patologiaId]);
-    $rows = $st->fetchAll(PDO::FETCH_ASSOC);
-    if (!empty($rows)) return $rows;
-
-    // Intento 2: pivote por id_real (si tu esquema usa strings tipo 'P12')
-    $sql2 = "SELECT s.id, s.nombre, COALESCE(s.costo_hectarea,0) AS costo_hectarea
-               FROM dron_productos_stock_patologias sp
-               JOIN dron_productos_stock s ON s.id_real = sp.producto_id_real
-              WHERE sp.patologia_id = ?
-           ORDER BY s.nombre";
-    $st2 = $this->pdo->prepare($sql2);
-    $st2->execute([$patologiaId]);
-    return $st2->fetchAll(PDO::FETCH_ASSOC);
+    return $st->fetchAll(PDO::FETCH_ASSOC);
 }
+
 
     /** Costo base por hectárea del servicio */
     public function costoBaseHectarea(): array
