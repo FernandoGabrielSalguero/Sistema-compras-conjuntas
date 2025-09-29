@@ -396,6 +396,7 @@
   width: 100% !important;
   flex: 0 0 100% !important;
   display: block;
+  background-color: aliceblue;
 }
 </style>
 
