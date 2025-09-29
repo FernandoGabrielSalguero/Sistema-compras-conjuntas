@@ -1,17 +1,34 @@
 <?php
 include __DIR__ . '/drone_drawerListado_view.php';
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+$isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sve';
 ?>
+
 <link rel="preload" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript>
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
 </noscript>
 <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
 
+<!-- Descarga de consolidado -->
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
 <div class="content">
-    <!-- Filtros mínimos -->
+
     <div class="card" style="background-color:#5b21b6;">
-        <h3 style="color:white;">Buscar proyecto de vuelo</h3>
+        <div class="product-header">
+            <h3 style="color:white;">Buscar proyecto de vuelo</h3>
+            <?php if ($isSVE): ?>
+                <button type="button" id="btn-export-excel" class="btn-icon" title="Descargar Excel" aria-label="Descargar Excel">
+                    <span class="material-symbols-outlined" aria-hidden="true">download</span>
+                </button>
+            <?php endif; ?>
+        </div>
         <form class="form-grid grid-4" id="form-search" autocomplete="off" aria-describedby="help-busqueda">
+
             <p id="help-busqueda" class="sr-only">Usá los campos para filtrar por piloto, productor, estado y fecha.</p>
 
             <div class="input-group">
@@ -421,5 +438,117 @@ include __DIR__ . '/drone_drawerListado_view.php';
         els.fecha_visita.addEventListener('change', debouncedLoad);
 
         load(); // arranque
+    })();
+</script>
+
+<script>
+    /* ===== Export Excel (encapsulado) ===== */
+    (function() {
+        if (window.__SVE_DRONE_EXPORT_INIT__) return;
+        window.__SVE_DRONE_EXPORT_INIT__ = true;
+
+        const DRONE_API = '../partials/drones/controller/drone_list_controller.php';
+        const btn = document.getElementById('btn-export-excel');
+        if (!btn) return; // si no es SVE no existe el botón
+
+        const $ = (s, ctx = document) => ctx.querySelector(s);
+        const els = {
+            piloto: $('#piloto'),
+            ses_usuario: $('#ses_usuario'),
+            estado_filtro: $('#estado_filtro'),
+            fecha_visita: $('#fecha_visita')
+        };
+
+        const getFilters = () => ({
+            piloto: els.piloto ? els.piloto.value.trim() : '',
+            ses_usuario: els.ses_usuario ? els.ses_usuario.value.trim() : '',
+            estado: els.estado_filtro ? els.estado_filtro.value : '',
+            fecha_visita: els.fecha_visita ? els.fecha_visita.value : ''
+        });
+
+        function showMsg(type, msg) {
+            if (typeof window.showAlert === 'function') {
+                window.showAlert(type, msg);
+            } else {
+                alert(msg);
+            }
+        }
+
+        async function fetchRows() {
+            const res = await fetch(`${DRONE_API}?action=export_solicitudes`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    filtros: getFilters()
+                })
+            });
+            const json = await res.json();
+            if (!json.ok) {
+                const err = json.error || 'Error al exportar';
+                throw new Error(err);
+            }
+            return json.data.items || [];
+        }
+
+        function mapHeaders(rows) {
+            const headerMap = {
+                id: 'ID',
+                productor_id_real: 'Productor ID',
+                ses_usuario: 'Productor (sesión)',
+                productor_nombre: 'Productor (nombre)',
+                piloto: 'Piloto',
+                piloto_id: 'Piloto ID',
+                fecha_visita: 'Fecha visita',
+                hora_visita_desde: 'Hora desde',
+                hora_visita_hasta: 'Hora hasta',
+                observaciones: 'Observaciones',
+                estado: 'Estado',
+                motivo_cancelacion: 'Motivo cancelación',
+                coop_descuento_nombre: 'Desc. Coop',
+                moneda: 'Moneda',
+                costo_base_por_ha: 'Costo base/ha',
+                base_ha: 'Base ha',
+                base_total: 'Base total',
+                productos_total: 'Productos total',
+                total: 'Total',
+                created_at: 'Creado',
+                updated_at: 'Actualizado'
+            };
+            return rows.map(r => {
+                const o = {};
+                Object.keys(headerMap).forEach(k => {
+                    o[headerMap[k]] = (r[k] ?? '');
+                });
+                return o;
+            });
+        }
+
+        async function exportExcel() {
+            try {
+                btn.disabled = true;
+                const rows = await fetchRows();
+                if (!rows.length) {
+                    showMsg('info', 'No hay datos para exportar.');
+                    return;
+                }
+                const data = mapHeaders(rows);
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes');
+                const now = new Date();
+                const pad = n => String(n).padStart(2, '0');
+                const fname = `solicitudes_drones_${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.xlsx`;
+                XLSX.writeFile(wb, fname);
+            } catch (e) {
+                console.error(e);
+                showMsg('error', e.message || 'Error al exportar');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        btn.addEventListener('click', exportExcel);
     })();
 </script>

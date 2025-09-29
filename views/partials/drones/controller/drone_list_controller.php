@@ -78,6 +78,39 @@ try {
         exit;
     }
 
+    // funciones para exportar 
+
+    if ($action === 'export_solicitudes') {
+        if (strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['ok' => false, 'error' => 'Método no permitido'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        // Solo SVE
+        if (strtolower((string)$ctx['rol']) !== 'sve') {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'No autorizado'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        $body    = read_json_body();
+        $filtros = isset($body['filtros']) && is_array($body['filtros']) ? $body['filtros'] : [];
+
+        $filters = [
+            'q'            => isset($filtros['q']) ? trim((string)$filtros['q']) : '',
+            'ses_usuario'  => isset($filtros['ses_usuario']) ? trim((string)$filtros['ses_usuario']) : '',
+            'piloto'       => isset($filtros['piloto']) ? trim((string)$filtros['piloto']) : '',
+            'estado'       => isset($filtros['estado']) ? trim((string)$filtros['estado']) : '',
+            'fecha_visita' => isset($filtros['fecha_visita']) ? trim((string)$filtros['fecha_visita']) : '',
+        ];
+
+        $data = $model->exportSolicitudes($filters, $ctx);
+        echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    
     http_response_code(400);
     echo json_encode(['ok' => false, 'error' => 'Acción no soportada'], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {

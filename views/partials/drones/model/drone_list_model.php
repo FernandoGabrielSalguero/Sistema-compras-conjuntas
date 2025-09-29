@@ -144,4 +144,83 @@ final class DroneListModel
 
         return ['items' => $rows, 'total' => count($rows)];
     }
+
+    /**
+     * Exporta solicitudes + costos respetando visibilidad y filtros.
+     * @param array $f   Filtros
+     * @param array $ctx Contexto sesión ['rol','id_real']
+     */
+    public function exportSolicitudes(array $f, array $ctx = []): array
+    {
+        $where  = [];
+        $params = [];
+
+        // Predicado de visibilidad
+        $pred = AuthzVista::sqlVisibleProductores('s.productor_id_real', $ctx, $params);
+        $where[] = $pred;
+
+        if (!empty($f['q'])) {
+            $where[]      = "(s.ses_usuario LIKE :q OR p.nombre LIKE :q OR s.productor_id_real LIKE :q)";
+            $params[':q'] = '%' . $f['q'] . '%';
+        }
+        if (!empty($f['ses_usuario'])) {
+            $where[] = "s.ses_usuario LIKE :ses_usuario";
+            $params[':ses_usuario'] = '%' . $f['ses_usuario'] . '%';
+        }
+        if (!empty($f['piloto'])) {
+            $where[] = "p.nombre LIKE :piloto";
+            $params[':piloto'] = '%' . $f['piloto'] . '%';
+        }
+        if (!empty($f['estado'])) {
+            $where[] = "s.estado = :estado";
+            $params[':estado'] = strtolower(trim($f['estado']));
+        }
+        if (!empty($f['fecha_visita'])) {
+            $where[] = "s.fecha_visita = :fecha_visita";
+            $params[':fecha_visita'] = $f['fecha_visita'];
+        }
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $sql = "
+            SELECT
+                s.id,
+                s.productor_id_real,
+                s.ses_usuario,
+                COALESCE(ui.nombre, u.usuario) AS productor_nombre,
+                p.nombre AS piloto,
+                s.piloto_id,
+                s.fecha_visita,
+                s.hora_visita_desde,
+                s.hora_visita_hasta,
+                s.observaciones,
+                s.estado,
+                s.motivo_cancelacion,
+                s.coop_descuento_nombre,
+                c.moneda,
+                c.costo_base_por_ha,
+                c.base_ha,
+                c.base_total,
+                c.productos_total,
+                c.total,
+                s.created_at,
+                s.updated_at
+            FROM drones_solicitud s
+            LEFT JOIN dron_pilotos p            ON p.id = s.piloto_id
+            LEFT JOIN drones_solicitud_costos c ON c.solicitud_id = s.id
+            LEFT JOIN usuarios u                ON u.id_real = s.productor_id_real
+            LEFT JOIN usuarios_info ui          ON ui.usuario_id = u.id
+            $whereSql
+            ORDER BY s.created_at DESC, s.id DESC
+        ";
+
+        $st = $this->pdo->prepare($sql);
+        foreach ($params as $k => $v) {
+            $st->bindValue($k, $v, is_int($v) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $st->execute();
+        $rows = $st->fetchAll() ?: [];
+
+        return ['items' => $rows, 'total' => count($rows)];
+    }
 }
