@@ -201,98 +201,45 @@ include __DIR__ . '/drone_drawerListado_view.php';
             ses_usuario: $('#ses_usuario'),
             estado_filtro: $('#estado_filtro'),
             fecha_visita: $('#fecha_visita'),
-            cards: $('#cards')
+            cards: $('#cards'),
+            btnExport: document.getElementById('btn-export')
         };
 
         // helpers
         function debounce(fn, t = 300) {
             let id;
-            return (...a) => {
-                clearTimeout(id);
-                id = setTimeout(() => fn(...a), t);
-            };
+            return (...a) => { clearTimeout(id); id = setTimeout(() => fn(...a), t); };
         }
+        function esc(s){ return (s ?? '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+        const fmtNum = (v) => { if (v===null||v===undefined||v==='') return ''; const n=Number(v); if(!Number.isFinite(n)) return ''; return Number.isInteger(n)?String(n):String(n).replace('.',','); };
+        const getFilters = () => ({ piloto: els.piloto.value.trim(), ses_usuario: els.ses_usuario.value.trim(), estado: els.estado_filtro.value, fecha_visita: els.fecha_visita.value });
 
-        function esc(s) {
-            return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-        }
-        const fmtNum = (v) => {
-            if (v === null || v === undefined || v === '') return '';
-            const n = Number(v);
-            if (!Number.isFinite(n)) return '';
-            return Number.isInteger(n) ? String(n) : String(n).replace('.', ',');
-        };
-
-        const getFilters = () => ({
-            piloto: els.piloto.value.trim(),
-            ses_usuario: els.ses_usuario.value.trim(),
-            estado: els.estado_filtro.value,
-            fecha_visita: els.fecha_visita.value
-        });
-
-        // Estado -> UI
-        function prettyEstado(e) {
-            switch ((e || '').toLowerCase()) {
-                case 'ingresada':
-                    return 'Ingresada';
-                case 'procesando':
-                    return 'Procesando';
-                case 'aprobada_coop':
-                    return 'Aprobada coop';
-                case 'cancelada':
-                    return 'Cancelada';
-                case 'completada':
-                    return 'Completada';
-                default:
-                    return e || '';
-            }
-        }
-
-        function badgeClass(e) {
-            switch ((e || '').toLowerCase()) {
-                case 'ingresada':
-                    return 'warning';
-                case 'procesando':
-                    return 'info';
-                case 'aprobada_coop':
-                    return 'primary';
-                case 'completada':
-                    return 'success';
-                case 'cancelada':
-                    return 'danger';
-                default:
-                    return 'secondary';
-            }
-        }
+        function prettyEstado(e){ switch((e||'').toLowerCase()){case 'ingresada':return 'Ingresada';case 'procesando':return 'Procesando';case 'aprobada_coop':return 'Aprobada coop';case 'cancelada':return 'Cancelada';case 'completada':return 'Completada';default:return e||'';}}
+        function badgeClass(e){ switch((e||'').toLowerCase()){case 'ingresada':return 'warning';case 'procesando':return 'info';case 'aprobada_coop':return 'primary';case 'completada':return 'success';case 'cancelada':return 'danger';default:return 'secondary';}}
 
         // Listado
         let currentListAbort = null;
         async function load() {
-            const params = new URLSearchParams({
-                action: 'list_solicitudes',
-                ...getFilters()
-            });
-            els.cards.setAttribute('aria-busy', 'true');
+            const params = new URLSearchParams({ action: 'list_solicitudes', ...getFilters() });
+            els.cards?.setAttribute('aria-busy','true');
             try {
                 if (currentListAbort) currentListAbort.abort();
                 currentListAbort = new AbortController();
-                const res = await fetch(`${DRONE_API}?${params.toString()}`, {
-                    cache: 'no-store',
-                    signal: currentListAbort.signal
-                });
+                const res = await fetch(`${DRONE_API}?${params.toString()}`, { cache: 'no-store', signal: currentListAbort.signal });
                 const json = await res.json();
                 if (!json.ok) throw new Error(json.error || 'Error');
                 renderCards(json.data.items || []);
             } catch (e) {
                 if (e.name === 'AbortError') return;
                 console.error(e);
-                els.cards.innerHTML = '<div class="card">Ocurrió un error cargando las solicitudes.</div>';
+                if (els.cards) els.cards.innerHTML = '<div class="card">Ocurrió un error cargando las solicitudes.</div>';
             } finally {
-                els.cards.setAttribute('aria-busy', 'false');
+                els.cards?.setAttribute('aria-busy','false');
             }
         }
 
         function renderCards(items) {
+            if (!els.cards) return;
             els.cards.innerHTML = '';
             items.forEach(it => {
                 const card = document.createElement('div');
@@ -301,8 +248,7 @@ include __DIR__ . '/drone_drawerListado_view.php';
             <div class="product-header">
                 <h4>${esc(it.productor_nombre || it.ses_usuario || 'Sin dato')}</h4>
                 <p>Pedido número: ${esc(it.id ?? '')}</p>
-                                <button type="button" class="btn-icon btn-delete" title="Eliminar solicitud" aria-label="Eliminar solicitud ${esc(it.id ?? '')}" data-id="${esc(it.id ?? '')}">
-                    <!-- Trash SVG, sin dependencias -->
+                <button type="button" class="btn-icon btn-delete" title="Eliminar solicitud" aria-label="Eliminar solicitud ${esc(it.id ?? '')}" data-id="${esc(it.id ?? '')}">
                     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                         <path d="M9 3h6a1 1 0 0 1 1 1v1h4v2h-1v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7H3V5h4V4a1 1 0 0 1 1-1Zm1 2v0h4V5h-4Zm-3 4v11h10V9H7Zm3 2h2v7H10v-7Zm4 0h2v7h-2v-7Z"/>
                     </svg>
@@ -340,28 +286,22 @@ include __DIR__ . '/drone_drawerListado_view.php';
                         Detalle
                     </button>
                 </div>
-            </div>
-        `;
+            </div>`;
                 els.cards.appendChild(card);
             });
 
-            // bind botones Detalle
-            // bind botones Detalle
             els.cards.querySelectorAll('.btn-detalle').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const id = btn.getAttribute('data-id');
                     if (!id) return;
                     if (window.DroneDrawerListado && typeof window.DroneDrawerListado.open === 'function') {
-                        window.DroneDrawerListado.open({
-                            id: Number(id)
-                        });
+                        window.DroneDrawerListado.open({ id: Number(id) });
                     } else {
                         console.error('DroneDrawerListado no está disponible');
                     }
                 });
             });
 
-            // bind botón eliminar (abre modal)
             els.cards.querySelectorAll('.btn-delete').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const id = btn.getAttribute('data-id');
@@ -371,67 +311,81 @@ include __DIR__ . '/drone_drawerListado_view.php';
             });
         }
 
-
         // ----- Modal eliminar -----
         const modal = document.getElementById('modal-delete');
         const btnCancelDelete = document.getElementById('btn-cancel-delete');
         const btnConfirmDelete = document.getElementById('btn-confirm-delete');
-        let deleteCtx = {
-            id: null,
-            cardEl: null
-        };
+        let deleteCtx = { id: null, cardEl: null };
 
-        function openDeleteModal(id, cardEl) {
-            deleteCtx.id = id;
-            deleteCtx.cardEl = cardEl;
-            modal.classList.remove('hidden');
-            btnConfirmDelete.focus();
-        }
-
-        function closeDeleteModal() {
-            modal.classList.add('hidden');
-            deleteCtx = {
-                id: null,
-                cardEl: null
-            };
-        }
+        function openDeleteModal(id, cardEl){ deleteCtx.id=id; deleteCtx.cardEl=cardEl; modal.classList.remove('hidden'); btnConfirmDelete.focus(); }
+        function closeDeleteModal(){ modal.classList.add('hidden'); deleteCtx = { id:null, cardEl:null }; }
 
         btnCancelDelete.addEventListener('click', closeDeleteModal);
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeDeleteModal();
-        });
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeDeleteModal(); });
 
         btnConfirmDelete.addEventListener('click', async () => {
-            const id = deleteCtx.id;
-            if (!id) return;
+            const id = deleteCtx.id; if (!id) return;
             try {
                 const res = await fetch(`${DRONE_API}?action=delete_solicitud`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        id
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
                 });
                 const json = await res.json();
                 if (!json.ok) throw new Error(json.error || 'No se pudo eliminar');
-
-                // Remover tarjeta del DOM sin layout shift brusco
                 if (deleteCtx.cardEl && deleteCtx.cardEl.parentNode) {
                     deleteCtx.cardEl.style.transition = 'opacity .18s ease, transform .18s ease';
                     deleteCtx.cardEl.style.opacity = '0';
                     deleteCtx.cardEl.style.transform = 'scale(.98)';
                     setTimeout(() => deleteCtx.cardEl.remove(), 180);
                 }
-                showAlert('success', '¡Solicitud eliminada!');
+                if (typeof showAlert === 'function') showAlert('success', '¡Solicitud eliminada!');
             } catch (e) {
-                showAlert('error', 'No se pudo eliminar la solicitud.');
-            } finally {
-                closeDeleteModal();
-            }
+                if (typeof showAlert === 'function') showAlert('error', 'No se pudo eliminar la solicitud.');
+            } finally { closeDeleteModal(); }
         });
 
+        // ---- Exportar consolidado (rol SVE) ----
+        async function fetchConsolidado() {
+            const res = await fetch(`${DRONE_API}?action=export_consolidado`, { cache: 'no-store' });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+            if (!json.ok) throw new Error(json.error || 'Error en exportación');
+            return json.data;
+        }
+        function buildAndDownloadXLSX(data) {
+            const wb = XLSX.utils.book_new();
+            const addSheet = (arr, name) => {
+                const cleanName = String(name).substring(0,31) || 'Hoja';
+                const ws = XLSX.utils.json_to_sheet(Array.isArray(arr) ? arr : []);
+                XLSX.utils.book_append_sheet(wb, ws, cleanName);
+            };
+            addSheet(data.solicitudes, 'solicitudes');
+            addSheet(data.costos, 'costos');
+            addSheet(data.items, 'items');
+            addSheet(data.recetas, 'items_receta');
+            addSheet(data.eventos, 'eventos');
+            addSheet(data.motivos, 'motivos');
+            addSheet(data.parametros, 'parametros');
+            addSheet(data.rangos, 'rangos');
+            const now = new Date();
+            const pad = n => String(n).padStart(2,'0');
+            XLSX.writeFile(wb, `consolidado_drones_${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.xlsx`, { compression: true });
+        }
+        async function onExportClick(){
+            try{
+                els.cards?.setAttribute('aria-busy','true');
+                const data = await fetchConsolidado();
+                buildAndDownloadXLSX(data);
+                if (typeof showAlert === 'function') showAlert('success','Consolidado generado.');
+            }catch(err){
+                console.error(err);
+                if (typeof showAlert === 'function') showAlert('error','No se pudo generar el consolidado.');
+            }finally{
+                els.cards?.setAttribute('aria-busy','false');
+            }
+        }
+        if (els.btnExport) els.btnExport.addEventListener('click', onExportClick);
 
         // Filtros en vivo
         const debouncedLoad = debounce(load, 300);
@@ -442,66 +396,4 @@ include __DIR__ . '/drone_drawerListado_view.php';
 
         load(); // arranque
     })();
-
-    // ---- Exportar consolidado (solo si existe el botón, o sea rol SVE) ----
-    const btnExport = document.getElementById('btn-export');
-
-    async function fetchConsolidado() {
-        const url = `${DRONE_API}?action=export_consolidado`;
-        const res = await fetch(url, {
-            cache: 'no-store'
-        });
-        if (!res.ok) {
-            const msg = `Error ${res.status}`;
-            throw new Error(msg);
-        }
-        const json = await res.json();
-        if (!json.ok) throw new Error(json.error || 'Error en exportación');
-        return json.data;
-    }
-
-    function buildAndDownloadXLSX(data) {
-        // data: { solicitudes, costos, items, recetas, eventos, motivos, parametros, rangos }
-        const wb = XLSX.utils.book_new();
-
-        const addSheet = (arr, name) => {
-            const cleanName = String(name).substring(0, 31) || 'Hoja';
-            const ws = XLSX.utils.json_to_sheet(Array.isArray(arr) ? arr : []);
-            XLSX.utils.book_append_sheet(wb, ws, cleanName);
-        };
-
-        addSheet(data.solicitudes, 'solicitudes');
-        addSheet(data.costos, 'costos');
-        addSheet(data.items, 'items');
-        addSheet(data.recetas, 'items_receta');
-        addSheet(data.eventos, 'eventos');
-        addSheet(data.motivos, 'motivos');
-        addSheet(data.parametros, 'parametros');
-        addSheet(data.rangos, 'rangos');
-
-        const now = new Date();
-        const pad = n => String(n).padStart(2, '0');
-        const fname = `consolidado_drones_${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.xlsx`;
-        XLSX.writeFile(wb, fname, {
-            compression: true
-        });
-    }
-
-    async function onExportClick() {
-        try {
-            els.cards.setAttribute('aria-busy', 'true');
-            const data = await fetchConsolidado();
-            buildAndDownloadXLSX(data);
-            if (typeof showAlert === 'function') showAlert('success', 'Consolidado generado.');
-        } catch (err) {
-            console.error(err);
-            if (typeof showAlert === 'function') showAlert('error', 'No se pudo generar el consolidado.');
-        } finally {
-            els.cards.setAttribute('aria-busy', 'false');
-        }
-    }
-
-    if (btnExport) {
-        btnExport.addEventListener('click', onExportClick);
-    }
 </script>
