@@ -421,14 +421,14 @@
 
   /* ===== Productos (chips) ===== */
   .chips-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     margin-top: 6px;
   }
 
   .chip {
-    display: inline-block;
+    flex: 0 1 auto;
   }
 
   .chip input[type="checkbox"] {
@@ -499,6 +499,12 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+  }
+
+  #card-productos {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    flex: 0 0 100% !important;
   }
 </style>
 
