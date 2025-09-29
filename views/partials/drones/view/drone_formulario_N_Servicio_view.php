@@ -260,7 +260,8 @@
         <!-- ===== Selector de productos (UX simplificada) ===== -->
         <div class="card full-span" id="productos-wrapper">
           <h2>Productos sugeridos por patología</h2>
-          <p class="costos-muted" id="productos-ayuda">Seleccioná qué productos incluir y quién los aporta.</p>
+          <p class="costos-muted" id="productos-ayuda">Seleccioná uno o varios productos sugeridos. Si los marcás, los aporta SVE.</p>
+
 
           <!-- Lista de productos sugeridos (se genera dinámicamente) -->
           <ul id="productos-list" class="productos-list" aria-live="polite" aria-label="Productos sugeridos"></ul>
@@ -517,6 +518,11 @@
     display: grid;
     gap: 12px;
   }
+
+  /* Salvaguardas por si el framework pisa estilos */
+#productos-list { display: grid; gap: 12px; }
+#productos-list li.prod-card { display: grid; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; }
+
 </style>
 
 
@@ -620,47 +626,101 @@
       }
     }
 
-    function renderProductosSugeridos(arr) {
-      // Estado local (sin fuente; por defecto será SVE si se marca)
-      SUGERIDOS = new Map(arr.map(p => [Number(p.id), {
-        id: Number(p.id),
-        nombre: String(p.nombre),
-        detalle: String(p.detalle ?? ''),
-        costo_hectarea: Number(p.costo_hectarea ?? 0),
-        incluir: false
-      }]));
+function renderProductosSugeridos(arr) {
+  // 1) Estado
+  SUGERIDOS = new Map(arr.map(p => [Number(p.id), {
+    id: Number(p.id),
+    nombre: String(p.nombre),
+    detalle: String(p.detalle ?? ''),
+    costo_hectarea: Number(p.costo_hectarea ?? 0),
+    incluir: false
+  }]));
 
-      if (!arr.length) {
-        productosList.innerHTML = `<li class="costos-muted">No hay productos asociados a la patología seleccionada.</li>`;
-        console.log('[PRODUCTOS] Render vacío');
-        recalcCostos();
-        return;
-      }
+  // 2) Limpio UL y fuerzo visibilidad
+  productosList.innerHTML = '';
+  productosList.hidden = false;
+  productosList.style.minHeight = '12px';
+  productosList.style.display = 'grid';       // por si algún CSS externo pisa esto
+  productosList.style.gap = '12px';
 
-      // Mini-tarjeta simple con checkbox + detalle + costo/ha
-      productosList.innerHTML = arr.map(p => {
-        const id = Number(p.id);
-        const costoFmt = fmtMon(Number(p.costo_hectarea ?? 0), (monedaBase === 'USD' ? 'USD' : 'ARS'));
-        const detalle = (p.detalle ?? '').toString().trim();
-        return `
-<li class="prod-card" data-tipo="sugerido" data-id="${id}" data-incluir="false">
-  <div class="prod-head">
-    <div class="prod-name">${p.nombre}</div>
-    <div class="chk"><label><input type="checkbox" class="incluir-chk"> Incluir</label></div>
-  </div>
-  <div class="prod-controls">
-    <span class="costos-muted">Costo/ha: ${costoFmt}</span>
-  </div>
-  ${detalle ? `<div class="costos-muted">${detalle}</div>` : ``}
-</li>`;
-      }).join('');
+  // 3) Si no hay data, muestro vacío y salgo
+  if (!arr.length) {
+    const li = document.createElement('li');
+    li.className = 'costos-muted';
+    li.textContent = 'No hay productos asociados a la patología seleccionada.';
+    productosList.appendChild(li);
+    recalcCostos();
+    return;
+  }
 
-      productosList.removeAttribute('hidden');
-      productosList.style.minHeight = '8px';
-      console.log('[PRODUCTOS] Renderizados (mini-tarjetas):', Array.from(SUGERIDOS.values()));
-      console.log('[PRODUCTOS] Montados:', productosList.childElementCount, 'nodos');
-      recalcCostos();
+  // 4) Creo los <li> a mano (evita conflictos con innerHTML + framework)
+  const frag = document.createDocumentFragment();
+  arr.forEach(p => {
+    const id = Number(p.id);
+    const costoFmt = fmtMon(Number(p.costo_hectarea ?? 0), (monedaBase === 'USD' ? 'USD' : 'ARS'));
+
+    const li = document.createElement('li');
+    li.className = 'prod-card';
+    li.dataset.tipo = 'sugerido';
+    li.dataset.id = String(id);
+    li.dataset.incluir = 'false';
+
+    const head = document.createElement('div');
+    head.className = 'prod-head';
+
+    const name = document.createElement('div');
+    name.className = 'prod-name';
+    name.textContent = p.nombre;
+
+    const chkWrap = document.createElement('div');
+    chkWrap.className = 'chk';
+    const label = document.createElement('label');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'incluir-chk';
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(' Incluir'));
+    chkWrap.appendChild(label);
+
+    head.appendChild(name);
+    head.appendChild(chkWrap);
+
+    const controls = document.createElement('div');
+    controls.className = 'prod-controls';
+    const spanCosto = document.createElement('span');
+    spanCosto.className = 'costos-muted';
+    spanCosto.textContent = `Costo/ha: ${costoFmt}`;
+    controls.appendChild(spanCosto);
+
+    li.appendChild(head);
+    li.appendChild(controls);
+
+    if ((p.detalle ?? '').trim() !== '') {
+      const det = document.createElement('div');
+      det.className = 'costos-muted';
+      det.textContent = p.detalle;
+      li.appendChild(det);
     }
+
+    frag.appendChild(li);
+  });
+  productosList.appendChild(frag);
+
+  // 5) Debug útil (podés quitarlo luego)
+  console.log('[PRODUCTOS] UL childElementCount =', productosList.childElementCount);
+  const firstLi = productosList.querySelector('li.prod-card');
+  if (firstLi) console.log('[PRODUCTOS] Primer LI:', firstLi.outerHTML);
+
+  recalcCostos();
+}
+
+function __debugProductosDOM() {
+  const ul = document.getElementById('productos-list');
+  if (!ul) return console.warn('UL productos no encontrado');
+  console.log('[DEBUG] UL visible?', getComputedStyle(ul).display, 'hidden attr?', ul.hasAttribute('hidden'));
+  console.log('[DEBUG] Hijos:', ul.childElementCount, Array.from(ul.children).slice(0,3));
+}
+
 
 
     // Solo controlamos la marca/desmarca del checkbox
@@ -840,7 +900,6 @@
       }
     }
     selPago.addEventListener('change', () => grupoCooperativaShow(parseInt(selPago.value || '0', 10) === 6));
-
 
     // ===== Costos =====
     const num = (n) => Number.isFinite(Number(n)) ? Number(n) : 0;
