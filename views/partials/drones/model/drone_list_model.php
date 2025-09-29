@@ -150,7 +150,7 @@ final class DroneListModel
      * @param array $f   Filtros
      * @param array $ctx Contexto sesión ['rol','id_real']
      */
-    public function exportSolicitudes(array $f, array $ctx = []): array
+        public function exportSolicitudes(array $f, array $ctx = []): array
     {
         $where  = [];
         $params = [];
@@ -182,34 +182,64 @@ final class DroneListModel
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
+        /* Seleccionamos TODAS las columnas de ambas tablas con prefijos para evitar colisiones */
         $sql = "
             SELECT
-                s.id,
-                s.productor_id_real,
-                s.ses_usuario,
-                COALESCE(ui.nombre, u.usuario) AS productor_nombre,
-                p.nombre AS piloto,
-                s.piloto_id,
-                s.fecha_visita,
-                s.hora_visita_desde,
-                s.hora_visita_hasta,
-                s.observaciones,
-                s.estado,
-                s.motivo_cancelacion,
-                s.coop_descuento_nombre,
-                c.moneda,
-                c.costo_base_por_ha,
-                c.base_ha,
-                c.base_total,
-                c.productos_total,
-                c.total,
-                s.created_at,
-                s.updated_at
+                /* ===== drones_solicitud (prefijo s_) ===== */
+                s.id                          AS s_id,
+                s.productor_id_real           AS s_productor_id_real,
+                s.representante               AS s_representante,
+                s.linea_tension               AS s_linea_tension,
+                s.zona_restringida            AS s_zona_restringida,
+                s.corriente_electrica         AS s_corriente_electrica,
+                s.agua_potable                AS s_agua_potable,
+                s.libre_obstaculos            AS s_libre_obstaculos,
+                s.area_despegue               AS s_area_despegue,
+                s.superficie_ha               AS s_superficie_ha,
+                s.fecha_visita                AS s_fecha_visita,
+                s.hora_visita_desde           AS s_hora_visita_desde,
+                s.hora_visita_hasta           AS s_hora_visita_hasta,
+                s.piloto_id                   AS s_piloto_id,
+                s.forma_pago_id               AS s_forma_pago_id,
+                s.coop_descuento_nombre       AS s_coop_descuento_nombre,
+                s.dir_provincia               AS s_dir_provincia,
+                s.dir_localidad               AS s_dir_localidad,
+                s.dir_calle                   AS s_dir_calle,
+                s.dir_numero                  AS s_dir_numero,
+                s.en_finca                    AS s_en_finca,
+                s.ubicacion_lat               AS s_ubicacion_lat,
+                s.ubicacion_lng               AS s_ubicacion_lng,
+                s.ubicacion_acc               AS s_ubicacion_acc,
+                s.ubicacion_ts                AS s_ubicacion_ts,
+                s.observaciones               AS s_observaciones,
+                s.ses_usuario                 AS s_ses_usuario,
+                s.ses_rol                     AS s_ses_rol,
+                s.ses_nombre                  AS s_ses_nombre,
+                s.ses_correo                  AS s_ses_correo,
+                s.ses_telefono                AS s_ses_telefono,
+                s.ses_direccion               AS s_ses_direccion,
+                s.ses_cuit                    AS s_ses_cuit,
+                s.ses_last_activity_ts        AS s_ses_last_activity_ts,
+                s.estado                      AS s_estado,
+                s.motivo_cancelacion          AS s_motivo_cancelacion,
+                s.created_at                  AS s_created_at,
+                s.updated_at                  AS s_updated_at,
+
+                /* ===== drones_solicitud_costos (prefijo c_) ===== */
+                c.id                          AS c_id,
+                c.solicitud_id                AS c_solicitud_id,
+                c.moneda                      AS c_moneda,
+                c.costo_base_por_ha           AS c_costo_base_por_ha,
+                c.base_ha                     AS c_base_ha,
+                c.base_total                  AS c_base_total,
+                c.productos_total             AS c_productos_total,
+                c.total                       AS c_total,
+                c.desglose_json               AS c_desglose_json,
+                c.created_at                  AS c_created_at
+
             FROM drones_solicitud s
-            LEFT JOIN dron_pilotos p            ON p.id = s.piloto_id
+            LEFT JOIN dron_pilotos p            ON p.id = s.piloto_id   /* para filtrar por nombre de piloto si se usa */
             LEFT JOIN drones_solicitud_costos c ON c.solicitud_id = s.id
-            LEFT JOIN usuarios u                ON u.id_real = s.productor_id_real
-            LEFT JOIN usuarios_info ui          ON ui.usuario_id = u.id
             $whereSql
             ORDER BY s.created_at DESC, s.id DESC
         ";
@@ -223,4 +253,5 @@ final class DroneListModel
 
         return ['items' => $rows, 'total' => count($rows)];
     }
+
 }

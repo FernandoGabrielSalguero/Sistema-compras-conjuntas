@@ -442,7 +442,7 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 </script>
 
 <script>
-    /* ===== Export Excel (encapsulado) ===== */
+    /* ===== Export Excel (encapsulado, todas las columnas s_* y c_*) ===== */
     (function() {
         if (window.__SVE_DRONE_EXPORT_INIT__) return;
         window.__SVE_DRONE_EXPORT_INIT__ = true;
@@ -485,44 +485,8 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                 })
             });
             const json = await res.json();
-            if (!json.ok) {
-                const err = json.error || 'Error al exportar';
-                throw new Error(err);
-            }
+            if (!json.ok) throw new Error(json.error || 'Error al exportar');
             return json.data.items || [];
-        }
-
-        function mapHeaders(rows) {
-            const headerMap = {
-                id: 'ID',
-                productor_id_real: 'Productor ID',
-                ses_usuario: 'Productor (sesión)',
-                productor_nombre: 'Productor (nombre)',
-                piloto: 'Piloto',
-                piloto_id: 'Piloto ID',
-                fecha_visita: 'Fecha visita',
-                hora_visita_desde: 'Hora desde',
-                hora_visita_hasta: 'Hora hasta',
-                observaciones: 'Observaciones',
-                estado: 'Estado',
-                motivo_cancelacion: 'Motivo cancelación',
-                coop_descuento_nombre: 'Desc. Coop',
-                moneda: 'Moneda',
-                costo_base_por_ha: 'Costo base/ha',
-                base_ha: 'Base ha',
-                base_total: 'Base total',
-                productos_total: 'Productos total',
-                total: 'Total',
-                created_at: 'Creado',
-                updated_at: 'Actualizado'
-            };
-            return rows.map(r => {
-                const o = {};
-                Object.keys(headerMap).forEach(k => {
-                    o[headerMap[k]] = (r[k] ?? '');
-                });
-                return o;
-            });
         }
 
         async function exportExcel() {
@@ -533,10 +497,12 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                     showMsg('info', 'No hay datos para exportar.');
                     return;
                 }
-                const data = mapHeaders(rows);
-                const ws = XLSX.utils.json_to_sheet(data);
+
+                // Exportamos tal cual vienen las claves (s_* y c_*)
+                const ws = XLSX.utils.json_to_sheet(rows);
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes');
+
                 const now = new Date();
                 const pad = n => String(n).padStart(2, '0');
                 const fname = `solicitudes_drones_${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.xlsx`;
