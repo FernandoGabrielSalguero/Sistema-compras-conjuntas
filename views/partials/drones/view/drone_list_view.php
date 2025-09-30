@@ -307,13 +307,13 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             </div>
             <div class="product-body">
                 <div class="user-info">
-                    <div>
-                        <strong>${esc(it.piloto || 'Sin piloto asignado')}</strong>
-                        <div class="role">
-                            Fecha visita: ${esc(it.fecha_visita || '')}
-                            ${it.hora_visita ? `(${esc(it.hora_visita)})` : ''}
-                        </div>
-                    </div>
+<div>
+    <strong>Piloto: ${esc(it.piloto || 'Sin piloto asignado')}</strong>
+    <div class="role">
+        Fecha visita: ${esc(it.fecha_visita || '')}
+        ${it.hora_visita ? `(${esc(it.hora_visita)})` : ''}
+    </div>
+</div>
                 </div>
 
                 <div class="mini-block">
