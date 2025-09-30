@@ -24,10 +24,11 @@ final class DroneDrawerListadoModel
         // --- solicitud + joins
         $st = $this->pdo->prepare("
         SELECT s.*, 
-               p.nombre   AS piloto_nombre, p.telefono AS piloto_telefono, p.zona_asignada AS piloto_zona_asignada, p.correo AS piloto_correo,
+               u.id AS piloto_usuario_id, ui.nombre AS piloto_nombre, ui.telefono AS piloto_telefono, ui.correo AS piloto_correo,
                fp.nombre  AS forma_pago_nombre, fp.descripcion AS forma_pago_descripcion
         FROM drones_solicitud s
-        LEFT JOIN dron_pilotos p      ON p.id  = s.piloto_id
+        LEFT JOIN usuarios u        ON u.id  = s.piloto_id
+        LEFT JOIN usuarios_info ui  ON ui.usuario_id = u.id
         LEFT JOIN dron_formas_pago fp ON fp.id = s.forma_pago_id
         WHERE s.id = :id
     ");
@@ -150,9 +151,10 @@ final class DroneDrawerListadoModel
             'parametros' => $parametros,
             'productor'  => $prod,
             'piloto'     => [
+                'usuario_id'    => $sol['piloto_usuario_id'] ?? null,
                 'nombre'        => $sol['piloto_nombre'] ?? null,
                 'telefono'      => $sol['piloto_telefono'] ?? null,
-                'zona_asignada' => $sol['piloto_zona_asignada'] ?? null,
+                'zona_asignada' => null,
                 'correo'        => $sol['piloto_correo'] ?? null
             ],
             'forma_pago' => [
@@ -167,7 +169,16 @@ final class DroneDrawerListadoModel
     /** Catálogos usados por el drawer */
     public function listPilotos(): array
     {
-        return $this->pdo->query("SELECT id, nombre FROM dron_pilotos WHERE activo='si' ORDER BY nombre")->fetchAll() ?: [];
+        $sql = "
+        SELECT u.id AS id, 
+               COALESCE(NULLIF(TRIM(ui.nombre),''), u.usuario) AS nombre
+        FROM usuarios u
+        LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+        WHERE u.rol='piloto_drone'
+          AND u.permiso_ingreso='Habilitado'
+        ORDER BY nombre
+    ";
+        return $this->pdo->query($sql)->fetchAll() ?: [];
     }
     public function listFormasPago(): array
     {
@@ -283,17 +294,17 @@ final class DroneDrawerListadoModel
                 $prev = $stC->fetch() ?: null;
 
                 // 2) Mergeamos lo nuevo con lo previo (actualización parcial)
-$round2 = fn($x) => ($x === null ? null : round((float)$x, 2));
+                $round2 = fn($x) => ($x === null ? null : round((float)$x, 2));
 
-$merged = [
-    'moneda'             => $c['moneda'] ?? ($prev['moneda'] ?? 'Pesos'),
-    'costo_base_por_ha'  => $round2($c['costo_base_por_ha'] ?? ($prev['costo_base_por_ha'] ?? null)),
-    'base_ha'            => $round2($c['base_ha'] ?? ($prev['base_ha'] ?? null)),
-    'base_total'         => $round2($c['base_total'] ?? ($prev['base_total'] ?? null)),
-    'productos_total'    => $round2($c['productos_total'] ?? ($prev['productos_total'] ?? null)),
-    'total'              => $round2($c['total'] ?? ($prev['total'] ?? null)),
-    'desglose_json'      => $c['desglose_json'] ?? ($prev['desglose_json'] ?? null),
-];
+                $merged = [
+                    'moneda'             => $c['moneda'] ?? ($prev['moneda'] ?? 'Pesos'),
+                    'costo_base_por_ha'  => $round2($c['costo_base_por_ha'] ?? ($prev['costo_base_por_ha'] ?? null)),
+                    'base_ha'            => $round2($c['base_ha'] ?? ($prev['base_ha'] ?? null)),
+                    'base_total'         => $round2($c['base_total'] ?? ($prev['base_total'] ?? null)),
+                    'productos_total'    => $round2($c['productos_total'] ?? ($prev['productos_total'] ?? null)),
+                    'total'              => $round2($c['total'] ?? ($prev['total'] ?? null)),
+                    'desglose_json'      => $c['desglose_json'] ?? ($prev['desglose_json'] ?? null),
+                ];
 
                 // 3) Validamos requeridos según tu esquema (al menos costo_base_por_ha no puede ser null)
                 if ($merged['costo_base_por_ha'] === null) {
