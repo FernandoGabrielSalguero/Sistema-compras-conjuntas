@@ -36,21 +36,38 @@ final class DroneVariableModel
         }
 
         if ($entity === 'pilotos') {
-            $where = "1";
+            // Leer desde usuarios + usuarios_info (rol=piloto_drone)
+            $where  = "u.rol = 'piloto_drone'";
             $params = [];
-            if (!$inactivos) { $where .= " AND activo = 'si'"; }
+            if (!$inactivos) {
+                $where .= " AND u.permiso_ingreso = 'Habilitado'";
+            }
             if ($q !== '') {
-                $where .= " AND (nombre LIKE :q OR telefono LIKE :q OR zona_asignada LIKE :q OR correo LIKE :q)";
+                $where .= " AND (COALESCE(NULLIF(TRIM(ui.nombre),''), u.usuario) LIKE :q
+                              OR ui.telefono LIKE :q
+                              OR ui.zona_asignada LIKE :q
+                              OR ui.correo LIKE :q
+                              OR u.usuario LIKE :q)";
                 $params[':q'] = '%'.$q.'%';
             }
-            $sql = "SELECT id, nombre, telefono, zona_asignada, correo, activo, created_at, updated_at
-                    FROM {$tbl}
-                    WHERE {$where}
-                    ORDER BY nombre ASC";
+            $sql = "
+                SELECT
+                    u.id AS id,
+                    COALESCE(NULLIF(TRIM(ui.nombre),''), u.usuario) AS nombre,
+                    ui.telefono,
+                    ui.zona_asignada,
+                    ui.correo,
+                    CASE WHEN u.permiso_ingreso = 'Habilitado' THEN 'si' ELSE 'no' END AS activo
+                FROM usuarios u
+                LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+                WHERE {$where}
+                ORDER BY nombre ASC
+            ";
             $st = $this->pdo->prepare($sql);
             $st->execute($params);
             return $st->fetchAll();
         }
+
 
         // genérico nombre/descripcion
         $where = '1';
@@ -78,8 +95,21 @@ final class DroneVariableModel
             return $row ?: null;
         }
         if ($entity === 'pilotos') {
-            $st = $this->pdo->prepare("SELECT id, nombre, telefono, zona_asignada, correo, activo, created_at, updated_at FROM {$tbl} WHERE id = :id");
-            $st->execute([':id'=>$id]);
+            $sql = "
+                SELECT
+                    u.id AS id,
+                    COALESCE(NULLIF(TRIM(ui.nombre),''), u.usuario) AS nombre,
+                    ui.telefono,
+                    ui.zona_asignada,
+                    ui.correo,
+                    CASE WHEN u.permiso_ingreso = 'Habilitado' THEN 'si' ELSE 'no' END AS activo
+                FROM usuarios u
+                LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+                WHERE u.id = :id AND u.rol = 'piloto_drone'
+                LIMIT 1
+            ";
+            $st = $this->pdo->prepare($sql);
+            $st->execute([':id' => $id]);
             $row = $st->fetch();
             return $row ?: null;
         }
