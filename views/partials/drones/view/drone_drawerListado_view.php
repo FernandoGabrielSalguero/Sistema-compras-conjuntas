@@ -679,13 +679,41 @@
         function esc(s) {
             return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         }
-        const fmtNum = (v) => {
+
+        /** Para inputs type=number -> SIEMPRE punto y 2 decimales (o entero) */
+        function fmtNumInput(v, dec = 2) {
             if (v === null || v === undefined || v === '') return '';
             const n = Number(v);
             if (!Number.isFinite(n)) return '';
-            return Number.isInteger(n) ? String(n) : String(n).replace('.', ',');
-        };
-        const parseNum = (v) => (v === '' || v === null || v === undefined) ? null : Number(String(v).replace(',', '.'));
+            // si es entero, sin decimales; si no, fijo a "dec"
+            return Number.isInteger(n) ? String(n) : n.toFixed(dec);
+        }
+
+        /** Para mostrar texto al usuario (resúmenes) -> coma decimal (es-AR) */
+        function fmtNumText(v, dec = 2) {
+            if (v === null || v === undefined || v === '') return '';
+            const n = Number(v);
+            if (!Number.isFinite(n)) return '';
+            const nf = new Intl.NumberFormat('es-AR', {
+                minimumFractionDigits: dec,
+                maximumFractionDigits: dec
+            });
+            return nf.format(n);
+        }
+
+        /** Acepta coma o punto y devuelve Number (o null) */
+        function parseNum(v) {
+            if (v === '' || v === null || v === undefined) return null;
+            const n = Number(String(v).replace(',', '.'));
+            return Number.isFinite(n) ? n : null;
+        }
+
+        /** Redondeo seguro a 2 decimales (evita 0.1+0.2=0.30000000000004) */
+        function round2(n) {
+            if (n === null || n === undefined) return null;
+            return Math.round(Number(n) * 100) / 100;
+        }
+
 
         function setV(id, val) {
             const n = document.getElementById(id);
@@ -896,7 +924,7 @@
         <div>
           <strong>${esc(nombre)}</strong>
           <div class="meta">Fuente: ${esc(it.fuente || 'sve')}${pat ? ` · Patología: ${esc(pat.nombre)}` : ''}</div>
-          <div class="meta">Costo/ha: $${fmtNum(costo)}</div>
+          <div class="meta">Costo/ha: $${fmtNumText(costo)}</div>
         </div>
         <div class="acciones">
           <button type="button" class="btn btn-cancelar" data-role="quitar">Quitar</button>
@@ -939,9 +967,9 @@
                 tr.innerHTML = `
         <td>${esc(nombre)}</td>
         <td><div class="input-icon input-icon-edit"><input type="text" value="${esc(r.principio_activo ?? (it.principio_activo || ''))}"></div></td>
-        <td><div class="input-icon input-icon-hashtag"><input type="number" step="0.001" value="${fmtNum(r.dosis)}"></div></td>
+        <td><div class="input-icon input-icon-hashtag"><input type="number" step="0.01" value="${fmtNumInput(r.dosis)}"></div></td>
         <td><div class="input-icon input-icon-edit"><input type="text" value="${esc(r.unidad||'')}"></div></td>
-        <td><div class="input-icon input-icon-hashtag"><input type="number" value="${fmtNum(r.orden_mezcla)}"></div></td>
+        <td><div class="input-icon input-icon-hashtag"><input type="number" step="1" value="${fmtNumInput(r.orden_mezcla, 0)}"></div></td>
         <td><div class="input-icon input-icon-edit"><input type="text" value="${esc(r.notas||'')}"></div></td>`;
                 const [pa, dosis, uni, ord, notas] = tr.querySelectorAll('input');
                 pa.addEventListener('input', e => it.receta.principio_activo = e.target.value);
@@ -954,43 +982,44 @@
         }
 
         function recalcCostos() {
-            // si base_ha está vacío, tomar la superficie de la solicitud
+            // base_ha: si está vacío, copiar superficie_ha
             let base_ha = parseNum($('#base_ha')?.value);
             if (base_ha === null) {
                 const sup = parseNum($('#superficie_ha')?.value);
                 if (sup !== null) {
                     base_ha = sup;
-                    if ($('#base_ha')) $('#base_ha').value = fmtNum(base_ha); // reflejar en UI
+                    if ($('#base_ha')) $('#base_ha').value = fmtNumInput(base_ha); // punto y 2 dec
                 }
             }
 
             const costo_base = parseNum($('#costo_base_por_ha')?.value);
-            const base_total = (base_ha || 0) * (costo_base || 0);
-            if ($('#base_total')) $('#base_total').value = fmtNum(base_total);
+
+            // cálculos con redondeo
+            const base_total = round2((base_ha || 0) * (costo_base || 0));
 
             let productos_total = 0;
             state.items.forEach(it => {
-                // usar snapshot si lo hubiera; sino, del catálogo
                 const pInfo = catalog.productos.find(p => String(p.id) === String(it.producto_id));
-                const ch = Number(
-                    (it.costo_hectarea_snapshot ?? null) !== null ?
-                    it.costo_hectarea_snapshot :
-                    (pInfo?.costo_hectarea ?? 0)
-                );
-                productos_total += ch * (base_ha || 0);
-                it.total_producto_snapshot = ch * (base_ha || 0);
+                const ch = Number((it.costo_hectarea_snapshot ?? pInfo?.costo_hectarea ?? 0));
+                const tps = round2(ch * (base_ha || 0));
+                productos_total = round2(productos_total + tps);
+                it.total_producto_snapshot = tps;
             });
-            if ($('#productos_total')) $('#productos_total').value = fmtNum(productos_total);
 
-            const total = base_total + productos_total;
-            if ($('#total')) $('#total').value = fmtNum(total);
+            const total = round2((base_total || 0) + (productos_total || 0));
 
+            // Escribir SIEMPRE con formato input (punto) en inputs numéricos:
+            if ($('#base_total')) $('#base_total').value = fmtNumInput(base_total);
+            if ($('#productos_total')) $('#productos_total').value = fmtNumInput(productos_total);
+            if ($('#total')) $('#total').value = fmtNumInput(total);
+
+            // Y mostrar con formato de texto (coma) en resúmenes
             const resumen = $('#costos-resumen');
             if (resumen) {
                 resumen.innerHTML =
-                    `<p>Base: ${fmtNum(base_ha||0)} ha × $${fmtNum(costo_base||0)} = $${fmtNum(base_total)}</p>
-           <p>Productos: $${fmtNum(productos_total)}</p>
-           <p><strong>Total: $${fmtNum(total)}</strong></p>`;
+                    `<p>Base: ${fmtNumText(base_ha||0)} ha × $${fmtNumText(costo_base||0)} = $${fmtNumText(base_total)}</p>
+             <p>Productos: $${fmtNumText(productos_total)}</p>
+             <p><strong>Total: $${fmtNumText(total)}</strong></p>`;
             }
         }
 
@@ -1006,7 +1035,7 @@
             const s = d.solicitud || {};
             setV('productor_id_real', s.productor_id_real);
             setV('ses_usuario_edit', s.ses_usuario ?? d?.productor?.usuario ?? '');
-            setV('superficie_ha', fmtNum(s.superficie_ha));
+            setV('superficie_ha', fmtNumInput(s.superficie_ha));
             setV('fecha_visita_edit', s.fecha_visita);
             setV('hora_visita_desde', s.hora_visita_desde);
             setV('hora_visita_hasta', s.hora_visita_hasta);
@@ -1051,17 +1080,18 @@
             // costos (si vienen guardados, llegan completos; si no, vienen calculados del backend)
             const c = d.costos || {};
             setV('costo_moneda', c.moneda);
-            setV('costo_base_por_ha', fmtNum(c.costo_base_por_ha));
-            setV('base_ha', fmtNum(c.base_ha));
-            setV('base_total', fmtNum(c.base_total));
-            setV('productos_total', fmtNum(c.productos_total));
-            setV('total', fmtNum(c.total));
+            setV('costo_base_por_ha', fmtNumInput(c.costo_base_por_ha));
+            setV('base_ha', fmtNumInput(c.base_ha));
+            setV('base_total', fmtNumInput(c.base_total));
+            setV('productos_total', fmtNumInput(c.productos_total));
+            setV('total', fmtNumInput(c.total));
 
             // Asegurar que Base ha copie la Superficie si no vino seteada
             const sup = parseNum(s.superficie_ha);
             if ((getV('base_ha') === null || getV('base_ha') === '') && sup !== null) {
-                setV('base_ha', fmtNum(sup));
+                setV('base_ha', fmtNumInput(sup));
             }
+
 
             // Recalcular y refrescar resumen
             recalcCostos();
@@ -1195,6 +1225,27 @@
                 // si se tocan inputs de receta, base_ha, costo_base_por_ha
                 if (['base_ha', 'costo_base_por_ha'].includes(t.id)) recalcSafe();
             });
+
+            // Normalizar inputs numéricos al perder foco: coma -> punto y 2 dec
+            ['superficie_ha', 'costo_base_por_ha', 'base_ha', 'base_total', 'productos_total', 'total',
+                'volumen_ha', 'velocidad_vuelo', 'alto_vuelo', 'ancho_pasada', 'ubicacion_lat', 'ubicacion_lng', 'ubicacion_acc'
+            ].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('blur', () => {
+                    const n = parseNum(el.value);
+                    el.value = (n === null) ? '' : fmtNumInput(n);
+                    // recalcular si afecta costos
+                    if (['superficie_ha', 'costo_base_por_ha', 'base_ha'].includes(id)) {
+                        try {
+                            recalcCostos();
+                        } catch {}
+                    }
+                });
+            });
+
+
+
         }
 
         // Guardar

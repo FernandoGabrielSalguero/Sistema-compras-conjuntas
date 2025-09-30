@@ -116,21 +116,23 @@ final class DroneDrawerListadoModel
             $baseHa       = isset($sol['superficie_ha']) ? (float)$sol['superficie_ha'] : 0.0;
             $costoBaseDef = $this->getCostoBaseHaPorDefecto() ?? 0.0;
 
+            $round2 = fn(float $n): float => round($n, 2);
+
             $productosTotal = 0.0;
             foreach ($items as $it) {
                 $chs = isset($it['costo_hectarea_snapshot'])
                     ? (float)$it['costo_hectarea_snapshot']
                     : (float)($it['producto_costo_hectarea'] ?? 0);
-                $productosTotal += ($chs * $baseHa);
+                $productosTotal = $round2($productosTotal + $round2($chs * $baseHa));
             }
 
-            $baseTotal = $baseHa * $costoBaseDef;
-            $total     = $baseTotal + $productosTotal;
+            $baseTotal = $round2($baseHa * $costoBaseDef);
+            $total     = $round2($baseTotal + $productosTotal);
 
             $costosEfectivos = [
                 'moneda'            => 'Pesos',
-                'costo_base_por_ha' => $costoBaseDef,
-                'base_ha'           => $baseHa,
+                'costo_base_por_ha' => $round2($costoBaseDef),
+                'base_ha'           => $round2($baseHa),
                 'base_total'        => $baseTotal,
                 'productos_total'   => $productosTotal,
                 'total'             => $total,
@@ -281,15 +283,17 @@ final class DroneDrawerListadoModel
                 $prev = $stC->fetch() ?: null;
 
                 // 2) Mergeamos lo nuevo con lo previo (actualización parcial)
-                $merged = [
-                    'moneda'             => $c['moneda'] ?? ($prev['moneda'] ?? 'Pesos'),
-                    'costo_base_por_ha'  => self::dec($c['costo_base_por_ha'] ?? ($prev['costo_base_por_ha'] ?? null)),
-                    'base_ha'            => self::dec($c['base_ha'] ?? ($prev['base_ha'] ?? null)),
-                    'base_total'         => self::dec($c['base_total'] ?? ($prev['base_total'] ?? null)),
-                    'productos_total'    => self::dec($c['productos_total'] ?? ($prev['productos_total'] ?? null)),
-                    'total'              => self::dec($c['total'] ?? ($prev['total'] ?? null)),
-                    'desglose_json'      => $c['desglose_json'] ?? ($prev['desglose_json'] ?? null),
-                ];
+$round2 = fn($x) => ($x === null ? null : round((float)$x, 2));
+
+$merged = [
+    'moneda'             => $c['moneda'] ?? ($prev['moneda'] ?? 'Pesos'),
+    'costo_base_por_ha'  => $round2($c['costo_base_por_ha'] ?? ($prev['costo_base_por_ha'] ?? null)),
+    'base_ha'            => $round2($c['base_ha'] ?? ($prev['base_ha'] ?? null)),
+    'base_total'         => $round2($c['base_total'] ?? ($prev['base_total'] ?? null)),
+    'productos_total'    => $round2($c['productos_total'] ?? ($prev['productos_total'] ?? null)),
+    'total'              => $round2($c['total'] ?? ($prev['total'] ?? null)),
+    'desglose_json'      => $c['desglose_json'] ?? ($prev['desglose_json'] ?? null),
+];
 
                 // 3) Validamos requeridos según tu esquema (al menos costo_base_por_ha no puede ser null)
                 if ($merged['costo_base_por_ha'] === null) {
