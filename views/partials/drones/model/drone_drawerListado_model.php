@@ -22,10 +22,15 @@ final class DroneDrawerListadoModel
     public function obtenerSolicitudFull(int $id): array
     {
         // --- solicitud + joins
-        $st = $this->pdo->prepare("
+$st = $this->pdo->prepare("
         SELECT s.*, 
-               u.id AS piloto_usuario_id, ui.nombre AS piloto_nombre, ui.telefono AS piloto_telefono, ui.correo AS piloto_correo,
-               fp.nombre  AS forma_pago_nombre, fp.descripcion AS forma_pago_descripcion
+               u.id AS piloto_usuario_id, 
+               ui.nombre AS piloto_nombre, 
+               ui.telefono AS piloto_telefono, 
+               ui.correo AS piloto_correo,
+               ui.zona_asignada AS piloto_zona_asignada,
+               fp.nombre  AS forma_pago_nombre, 
+               fp.descripcion AS forma_pago_descripcion
         FROM drones_solicitud s
         LEFT JOIN usuarios u        ON u.id  = s.piloto_id
         LEFT JOIN usuarios_info ui  ON ui.usuario_id = u.id
@@ -150,13 +155,13 @@ final class DroneDrawerListadoModel
             'rangos'     => $rangos,
             'parametros' => $parametros,
             'productor'  => $prod,
-            'piloto'     => [
-                'usuario_id'    => $sol['piloto_usuario_id'] ?? null,
-                'nombre'        => $sol['piloto_nombre'] ?? null,
-                'telefono'      => $sol['piloto_telefono'] ?? null,
-                'zona_asignada' => null,
-                'correo'        => $sol['piloto_correo'] ?? null
-            ],
+'piloto'     => [
+    'usuario_id'    => $sol['piloto_usuario_id'] ?? null,
+    'nombre'        => $sol['piloto_nombre'] ?? null,
+    'telefono'      => $sol['piloto_telefono'] ?? null,
+    'zona_asignada' => $sol['piloto_zona_asignada'] ?? null,
+    'correo'        => $sol['piloto_correo'] ?? null
+],
             'forma_pago' => [
                 'nombre'       => $sol['forma_pago_nombre'] ?? null,
                 'descripcion'  => $sol['forma_pago_descripcion'] ?? null
