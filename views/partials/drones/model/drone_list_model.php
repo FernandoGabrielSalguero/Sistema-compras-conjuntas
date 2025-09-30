@@ -89,7 +89,7 @@ final class DroneListModel
             $params[':ses_usuario'] = '%' . $f['ses_usuario'] . '%';
         }
         if (!empty($f['piloto'])) {
-            $where[] = "p.nombre LIKE :piloto";
+            $where[] = "(COALESCE(uip.nombre, up.usuario) LIKE :piloto)";
             $params[':piloto'] = '%' . $f['piloto'] . '%';
         }
         if (!empty($f['estado'])) {
@@ -104,36 +104,46 @@ final class DroneListModel
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
         $sql = "
-            SELECT
-                s.id,
-                s.ses_usuario,
-                s.productor_id_real,
-                COALESCE(ui.nombre, u.usuario) AS productor_nombre,
-                p.nombre AS piloto,
-                s.piloto_id,
-                s.fecha_visita,
-                CASE
-                  WHEN s.hora_visita_desde IS NOT NULL AND s.hora_visita_hasta IS NOT NULL THEN
-                    CONCAT(
-                      LPAD(HOUR(s.hora_visita_desde),2,'0'), ':', LPAD(MINUTE(s.hora_visita_desde),2,'0'),
-                      ' - ',
-                      LPAD(HOUR(s.hora_visita_hasta),2,'0'),  ':', LPAD(MINUTE(s.hora_visita_hasta),2,'0')
-                    )
-                  ELSE NULL
-                END AS hora_visita,
-                s.observaciones,
-                s.estado,
-                s.motivo_cancelacion,
-                s.coop_descuento_nombre,
-                c.total AS costo_total
-            FROM drones_solicitud s
-            LEFT JOIN dron_pilotos p            ON p.id = s.piloto_id
-            LEFT JOIN drones_solicitud_costos c ON c.solicitud_id = s.id
-            LEFT JOIN usuarios u                ON u.id_real = s.productor_id_real
-            LEFT JOIN usuarios_info ui          ON ui.usuario_id = u.id
-            $whereSql
-            ORDER BY s.created_at DESC, s.id DESC
-        ";
+    SELECT
+        s.id,
+        s.ses_usuario,
+        s.productor_id_real,
+        COALESCE(ui.nombre, u.usuario) AS productor_nombre,
+
+        /* Piloto: usuarios/usuarios_info */
+        COALESCE(uip.nombre, up.usuario) AS piloto,
+        s.piloto_id,
+
+        s.fecha_visita,
+        CASE
+          WHEN s.hora_visita_desde IS NOT NULL AND s.hora_visita_hasta IS NOT NULL THEN
+            CONCAT(
+              LPAD(HOUR(s.hora_visita_desde),2,'0'), ':', LPAD(MINUTE(s.hora_visita_desde),2,'0'),
+              ' - ',
+              LPAD(HOUR(s.hora_visita_hasta),2,'0'),  ':', LPAD(MINUTE(s.hora_visita_hasta),2,'0')
+            )
+          ELSE NULL
+        END AS hora_visita,
+        s.observaciones,
+        s.estado,
+        s.motivo_cancelacion,
+        s.coop_descuento_nombre,
+        c.total AS costo_total
+    FROM drones_solicitud s
+    LEFT JOIN drones_solicitud_costos c ON c.solicitud_id = s.id
+
+    /* Productor */
+    LEFT JOIN usuarios u   ON u.id_real = s.productor_id_real
+    LEFT JOIN usuarios_info ui  ON ui.usuario_id = u.id
+
+    /* Piloto (NUEVO origen) */
+    LEFT JOIN usuarios up      ON up.id = s.piloto_id
+    LEFT JOIN usuarios_info uip ON uip.usuario_id = up.id
+
+    $whereSql
+    ORDER BY s.created_at DESC, s.id DESC
+";
+
 
         $st = $this->pdo->prepare($sql);
         foreach ($params as $k => $v) {
@@ -150,7 +160,7 @@ final class DroneListModel
      * @param array $f   Filtros
      * @param array $ctx Contexto sesión ['rol','id_real']
      */
-        public function exportSolicitudes(array $f, array $ctx = []): array
+    public function exportSolicitudes(array $f, array $ctx = []): array
     {
         $where  = [];
         $params = [];
@@ -168,7 +178,7 @@ final class DroneListModel
             $params[':ses_usuario'] = '%' . $f['ses_usuario'] . '%';
         }
         if (!empty($f['piloto'])) {
-            $where[] = "p.nombre LIKE :piloto";
+            $where[] = "(COALESCE(uip.nombre, up.usuario) LIKE :piloto)";
             $params[':piloto'] = '%' . $f['piloto'] . '%';
         }
         if (!empty($f['estado'])) {
@@ -237,11 +247,15 @@ final class DroneListModel
                 c.desglose_json               AS c_desglose_json,
                 c.created_at                  AS c_created_at
 
-            FROM drones_solicitud s
-            LEFT JOIN dron_pilotos p            ON p.id = s.piloto_id   /* para filtrar por nombre de piloto si se usa */
-            LEFT JOIN drones_solicitud_costos c ON c.solicitud_id = s.id
-            $whereSql
-            ORDER BY s.created_at DESC, s.id DESC
+FROM drones_solicitud s
+LEFT JOIN drones_solicitud_costos c ON c.solicitud_id = s.id
+
+/* Piloto (NUEVO origen) */
+LEFT JOIN usuarios up       ON up.id = s.piloto_id
+LEFT JOIN usuarios_info uip ON uip.usuario_id = up.id
+
+$whereSql
+ORDER BY s.created_at DESC, s.id DESC
         ";
 
         $st = $this->pdo->prepare($sql);
@@ -253,5 +267,4 @@ final class DroneListModel
 
         return ['items' => $rows, 'total' => count($rows)];
     }
-
 }
