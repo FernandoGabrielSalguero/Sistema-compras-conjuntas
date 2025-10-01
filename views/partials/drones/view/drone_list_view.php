@@ -442,58 +442,110 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 </script>
 
 <script>
-    async function exportExcel() {
-    try {
-        btn.disabled = true;
-        const rows = await fetchRows();
-        if (!rows.length) {
-            showMsg('info', 'No hay datos para exportar.');
-            return;
+    /* ===== Export Excel (encapsulado, registra el click y define helpers) ===== */
+    (function() {
+        if (window.__SVE_DRONE_EXPORT_INIT__) return;
+        window.__SVE_DRONE_EXPORT_INIT__ = true;
+
+        const btn = document.getElementById('btn-export-excel');
+        if (!btn) return; // si no es SVE, no hay botón
+
+        const $ = (s, ctx = document) => ctx.querySelector(s);
+        const els = {
+            piloto: $('#piloto'),
+            ses_usuario: $('#ses_usuario'),
+            estado_filtro: $('#estado_filtro'),
+            fecha_visita: $('#fecha_visita')
+        };
+
+        const getFilters = () => ({
+            piloto: els.piloto ? els.piloto.value.trim() : '',
+            ses_usuario: els.ses_usuario ? els.ses_usuario.value.trim() : '',
+            estado: els.estado_filtro ? els.estado_filtro.value : '',
+            fecha_visita: els.fecha_visita ? els.fecha_visita.value : ''
+        });
+
+        function showMsg(type, msg) {
+            if (typeof window.showAlert === 'function') {
+                window.showAlert(type, msg);
+            } else {
+                alert(msg);
+            }
         }
 
-        // 1) Asegurar encabezados estables: union de claves y orden sugerido por prefijo
-        const keySet = new Set();
-        for (const r of rows) for (const k of Object.keys(r)) keySet.add(k);
-        const keys = Array.from(keySet);
+        async function fetchRows() {
+            const res = await fetch(`${DRONE_API}?action=export_solicitudes`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    filtros: getFilters()
+                })
+            });
+            const json = await res.json();
+            if (!json.ok) throw new Error(json.error || 'Error al exportar');
+            return json.data.items || [];
+        }
 
-        // Ordenar por prefijos para legibilidad en Excel
-        const order = ['s_', 's_productor_', 's_piloto_', 'c_', 'e_', 'si_', 'sir_', 'sm_', 'sp_', 'sr_'];
-        keys.sort((a, b) => {
-            const pa = order.findIndex(p => a.startsWith(p));
-            const pb = order.findIndex(p => b.startsWith(p));
-            const ia = pa === -1 ? 999 : pa;
-            const ib = pb === -1 ? 999 : pb;
-            if (ia !== ib) return ia - ib;
-            return a.localeCompare(b);
-        });
+        async function exportExcel() {
+            try {
+                btn.disabled = true;
+                const rows = await fetchRows();
+                if (!rows.length) {
+                    showMsg('info', 'No hay datos para exportar.');
+                    return;
+                }
 
-        // 2) Normalizar filas a las mismas columnas (evita columnas “bailando”)
-        const flatRows = rows.map(r => {
-            const obj = {};
-            for (const k of keys) obj[k] = (k in r) ? r[k] : '';
-            return obj;
-        });
+                // 1) Encabezados estables
+                const keySet = new Set();
+                for (const r of rows)
+                    for (const k of Object.keys(r)) keySet.add(k);
+                const keys = Array.from(keySet);
 
-        // 3) Hoja
-        const ws = XLSX.utils.json_to_sheet(flatRows, { header: keys });
+                // 2) Orden por prefijos para legibilidad
+                const order = ['s_', 's_productor_', 's_piloto_', 'c_', 'e_', 'si_', 'sir_', 'sm_', 'sp_', 'sr_'];
+                keys.sort((a, b) => {
+                    const pa = order.findIndex(p => a.startsWith(p));
+                    const pb = order.findIndex(p => b.startsWith(p));
+                    const ia = pa === -1 ? 999 : pa;
+                    const ib = pb === -1 ? 999 : pb;
+                    if (ia !== ib) return ia - ib;
+                    return a.localeCompare(b);
+                });
 
-        // Autofit básico de columnas (anchos por longitud de header y valores)
-        const colWidths = keys.map(k => Math.min(60, Math.max(12, k.length + 2)));
-        ws['!cols'] = colWidths.map(w => ({ wch: w }));
+                // 3) Normalizar filas a las mismas columnas
+                const flatRows = rows.map(r => {
+                    const obj = {};
+                    for (const k of keys) obj[k] = (k in r) ? r[k] : '';
+                    return obj;
+                });
 
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes (full)');
+                // 4) Hoja y anchos
+                const ws = XLSX.utils.json_to_sheet(flatRows, {
+                    header: keys
+                });
+                const colWidths = keys.map(k => Math.min(60, Math.max(12, k.length + 2)));
+                ws['!cols'] = colWidths.map(w => ({
+                    wch: w
+                }));
 
-        const now = new Date();
-        const pad = n => String(n).padStart(2, '0');
-        const fname = `drones_export_full_${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.xlsx`;
-        XLSX.writeFile(wb, fname);
-    } catch (e) {
-        console.error(e);
-        showMsg('error', e.message || 'Error al exportar');
-    } finally {
-        btn.disabled = false;
-    }
-}
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes (full)');
 
+                const now = new Date();
+                const pad = n => String(n).padStart(2, '0');
+                const fname = `drones_export_full_${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.xlsx`;
+                XLSX.writeFile(wb, fname);
+            } catch (e) {
+                console.error(e);
+                showMsg('error', e.message || 'Error al exportar');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // 👇 Registrar el click del botón
+        btn.addEventListener('click', exportExcel);
+    })();
 </script>

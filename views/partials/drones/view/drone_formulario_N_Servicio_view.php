@@ -50,7 +50,7 @@
 
         <!-- Líneas de tensión -->
         <div class="input-group">
-          <label for="form_nuevo_servicio_lineas_tension">¿Hay líneas de media/alta tensión a menos de 3 km?</label>
+          <label for="form_nuevo_servicio_lineas_tension">¿Hay líneas de media/alta tensión a menos de 30 metros?</label>
           <div class="input-icon input-icon-tension">
             <select id="form_nuevo_servicio_lineas_tension" name="form_nuevo_servicio_lineas_tension" required>
               <option value="">Seleccionar</option>
