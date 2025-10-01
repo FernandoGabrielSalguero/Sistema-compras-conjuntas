@@ -443,22 +443,6 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 
 <script>
     /* ===== Export Excel (encapsulado, todas las columnas s_* y c_*) ===== */
-
-    function clampJsonStrings(rows, keys = ['items_json', 'motivos_json', 'eventos_json', 'rangos_json'], maxLen = 65000) {
-        return rows.map(r => {
-            const o = {
-                ...r
-            };
-            keys.forEach(k => {
-                if (o[k] && typeof o[k] === 'string' && o[k].length > maxLen) {
-                    o[k] = o[k].slice(0, maxLen - 3) + '...';
-                }
-            });
-            return o;
-        });
-    }
-
-
     (function() {
         if (window.__SVE_DRONE_EXPORT_INIT__) return;
         window.__SVE_DRONE_EXPORT_INIT__ = true;
@@ -514,9 +498,8 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                     return;
                 }
 
-                
                 // Exportamos tal cual vienen las claves (s_* y c_*)
-                const ws = XLSX.utils.json_to_sheet(clampJsonStrings(rows));
+                const ws = XLSX.utils.json_to_sheet(rows);
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes');
 
