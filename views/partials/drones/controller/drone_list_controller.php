@@ -87,12 +87,17 @@ try {
             exit;
         }
 
-        // Solo SVE
-        if (strtolower((string)$ctx['rol']) !== 'sve') {
-            http_response_code(403);
-            echo json_encode(['ok' => false, 'error' => 'No autorizado'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
+// Solo SVE
+if (strtolower((string)$ctx['rol']) !== 'sve') {
+    http_response_code(403);
+    echo json_encode(['ok' => false, 'error' => 'No autorizado'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+// Opcionalmente “prepararnos” para lotes grandes en export:
+// (no cambia la salida; ayuda a evitar timeouts en entornos restringidos)
+@set_time_limit(0);
+@ini_set('memory_limit', '1024M');
 
         $body    = read_json_body();
         $filtros = isset($body['filtros']) && is_array($body['filtros']) ? $body['filtros'] : [];
