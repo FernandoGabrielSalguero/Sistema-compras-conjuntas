@@ -100,7 +100,7 @@ unset($_SESSION['cierre_info']);
             </div>
             <nav class="sidebar-menu">
                 <ul>
-                    <li onclick="location.href='sve_dashboard.php'">
+                    <li onclick="location.href='ing_dashboard.php'">
                         <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
                     </li>
 
