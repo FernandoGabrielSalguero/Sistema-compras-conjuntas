@@ -240,167 +240,362 @@
     const btnViewWeek = document.getElementById('btn-view-week');
     const viewLabel = document.getElementById('view-label');
 
-    let viewDate = new Date();
-    let viewMode = 'month';
-    let meta = { pilotos: [], zonas: [] };
-    let currentData = { visitas: [], notas: [] };
+    // Estado
+    let viewDate = new Date(); // referencia
+    let viewMode = 'month'; // 'month' | 'week'
+    let meta = {
+      pilotos: [],
+      zonas: []
+    };
+    let currentData = {
+      visitas: [],
+      notas: []
+    };
 
+    // Utilidades
     const pad2 = n => String(n).padStart(2, '0');
-    const dISO = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-    const monthLabel = (y,m)=>['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][m]+' '+y;
-    const sameDay = (a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
-    const startOfWeek = d=>{const x=new Date(d);x.setDate(x.getDate()-x.getDay());x.setHours(0,0,0,0);return x;};
-    const formatWeekRange = d0=>{const s=startOfWeek(d0);const e=new Date(s);e.setDate(s.getDate()+6);return `${s.toLocaleDateString('es-AR')} – ${e.toLocaleDateString('es-AR')}`;};
+    const dISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    const monthLabel = (y, m) => {
+      const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+      return `${meses[m]} ${y}`;
+    };
+    const formatWeekRange = (d0) => {
+      const start = startOfWeek(d0);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      return `${start.toLocaleDateString('es-AR')} – ${end.toLocaleDateString('es-AR')}`;
+    };
+    const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    const startOfWeek = (d) => {
+      const x = new Date(d);
+      x.setDate(x.getDate() - x.getDay());
+      x.setHours(0, 0, 0, 0);
+      return x;
+    };
 
-    async function fetchJSON(url, opts={}){const res=await fetch(url,opts);const json=await res.json();if(!json.ok) throw new Error(json.error||'Error de red');return json;}
+    // API helpers
+    async function fetchJSON(url, opts = {}) {
+      const res = await fetch(url, opts);
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'Error de red');
+      return json;
+    }
 
-    async function loadMeta(){
+    async function loadMeta() {
       const json = await fetchJSON(`${API}?action=meta`);
       meta = json.data;
-      filtroPiloto.innerHTML = `<option value="">Todos los pilotos</option>` + meta.pilotos.map(p=>`<option value="${p.id}">${p.nombre} (ID ${p.id})</option>`).join('');
-      filtroZona.innerHTML = `<option value="">Todas las zonas</option>` + meta.zonas.map(z=>`<option value="${z}">${z}</option>`).join('');
+      // pilotos
+      filtroPiloto.innerHTML = `<option value="">Todos los pilotos</option>` +
+        meta.pilotos.map(p => `<option value="${p.id}">${p.nombre} (ID ${p.id})</option>`).join('');
+      // zonas
+      filtroZona.innerHTML = `<option value="">Todas las zonas</option>` +
+        meta.zonas.map(z => `<option value="${z}">${z}</option>`).join('');
     }
 
-    async function loadCalendar(date){
-      const y=date.getFullYear(), m=date.getMonth()+1;
-      const params=new URLSearchParams({year:String(y),month:String(m)});
-      if(filtroPiloto.value) params.append('piloto_id', filtroPiloto.value);
-      if(filtroZona.value) params.append('zona', filtroZona.value);
-      const json = await fetchJSON(`${API}?${params.toString()}`);
-      currentData = { visitas: json.data.visitas, notas: json.data.notas };
-    }
-
-    function renderMonth(date){
-      const y=date.getFullYear(), m=date.getMonth();
-      titleEl.textContent = monthLabel(y,m);
-      root.className='calendar-grid'; root.innerHTML='';
-      ['Dom','Lun','Martes','Miércoles','Jue','Vie','Sábado'].forEach(h=>{
-        const th=document.createElement('div'); th.className='cal-cell muted'; th.style.minHeight='auto'; th.setAttribute('role','columnheader'); th.innerHTML=`<strong>${h}</strong>`; root.appendChild(th);
+    async function loadCalendar(date) {
+      const y = date.getFullYear();
+      const m = date.getMonth() + 1;
+      const params = new URLSearchParams({
+        year: String(y),
+        month: String(m)
       });
-      const first=new Date(y,m,1), start=new Date(first); start.setDate(first.getDate()-first.getDay());
-      const last=new Date(y,m+1,0), end=new Date(last); end.setDate(last.getDate()+(6-last.getDay()));
-      for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
-        const iso=dISO(d), inMonth=d.getMonth()===m;
-        const cell=document.createElement('div');
-        cell.className='cal-cell'+(inMonth?'':' muted')+(sameDay(d,new Date())?' today':'');
-        cell.setAttribute('role','gridcell'); cell.setAttribute('aria-label', d.toLocaleDateString('es-AR'));
-        cell.innerHTML=`<span class="daynum">${d.getDate()}</span><div class="cal-events" data-date="${iso}"></div><button class="btn btn-xs cal-add btn-aceptar" data-date="${iso}" type="button">+</button>`;
+      if (filtroPiloto.value) params.append('piloto_id', filtroPiloto.value);
+      if (filtroZona.value) params.append('zona', filtroZona.value);
+      const json = await fetchJSON(`${API}?${params.toString()}`);
+      currentData = {
+        visitas: json.data.visitas,
+        notas: json.data.notas
+      };
+    }
+
+    // Render
+    function renderMonth(date) {
+      const y = date.getFullYear();
+      const m = date.getMonth(); // 0-11
+      titleEl.textContent = monthLabel(y, m);
+      root.className = 'calendar-grid';
+      root.innerHTML = '';
+
+      // Encabezados
+      const headers = ['Dom', 'Lun', 'Martes', 'Miércoles', 'Jue', 'Vie', 'Sábado'];
+      headers.forEach(h => {
+        const th = document.createElement('div');
+        th.className = 'cal-cell muted';
+        th.setAttribute('role', 'columnheader');
+        th.style.minHeight = 'auto';
+        th.innerHTML = `<strong>${h}</strong>`;
+        root.appendChild(th);
+      });
+
+      // Rango a mostrar (domingo..sábado)
+      const firstOfMonth = new Date(y, m, 1);
+      const start = new Date(firstOfMonth);
+      start.setDate(firstOfMonth.getDate() - firstOfMonth.getDay());
+      const lastOfMonth = new Date(y, m + 1, 0);
+      const end = new Date(lastOfMonth);
+      end.setDate(lastOfMonth.getDate() + (6 - lastOfMonth.getDay()));
+
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const inMonth = d.getMonth() === m;
+        const iso = dISO(d);
+        const cell = document.createElement('div');
+        cell.className = 'cal-cell' + (inMonth ? '' : ' muted') + (sameDay(d, new Date()) ? ' today' : '');
+        cell.setAttribute('role', 'gridcell');
+        cell.setAttribute('aria-label', `${d.toLocaleDateString('es-AR')}`);
+        cell.innerHTML = `
+        <span class="daynum">${d.getDate()}</span>
+        <div class="cal-events" data-date="${iso}"></div>
+        <button class="btn btn-xs cal-add btn-aceptar" data-date="${iso}" type="button">+</button>
+      `;
         root.appendChild(cell);
       }
+
       paintData();
     }
 
-    function renderWeek(date){
-      const start=startOfWeek(date);
-      titleEl.textContent=`Semana: ${formatWeekRange(start)}`;
-      root.className='week-grid'; root.innerHTML='';
-      const blank=document.createElement('div'); blank.className='cal-cell muted'; blank.style.minHeight='auto'; blank.innerHTML='<strong>Hora</strong>'; root.appendChild(blank);
-      const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-      for(let i=0;i<7;i++){ const d=new Date(start); d.setDate(start.getDate()+i);
-        const th=document.createElement('div'); th.className='cal-cell muted'; th.style.minHeight='auto'; th.innerHTML=`<strong>${dias[i]} ${d.getDate()}/${pad2(d.getMonth()+1)}</strong>`; root.appendChild(th);
+    function renderWeek(date) {
+      const start = startOfWeek(date);
+      titleEl.textContent = `Semana: ${formatWeekRange(start)}`;
+      root.className = 'week-grid';
+      root.innerHTML = '';
+
+      // encabezado vacío para columna de horas
+      const blank = document.createElement('div');
+      blank.className = 'cal-cell muted';
+      blank.style.minHeight = 'auto';
+      blank.innerHTML = '<strong>Hora</strong>';
+      root.appendChild(blank);
+
+      // encabezados días
+      const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        const th = document.createElement('div');
+        th.className = 'cal-cell muted';
+        th.style.minHeight = 'auto';
+        th.innerHTML = `<strong>${dias[i]} ${d.getDate()}/${pad2(d.getMonth()+1)}</strong>`;
+        root.appendChild(th);
       }
-      const timeRow=document.createElement('div'); timeRow.className='week-time'; timeRow.textContent='Eventos y notas de la semana'; root.appendChild(timeRow);
-      for(let i=0;i<7;i++){ const d=new Date(start); d.setDate(start.getDate()+i); const iso=dISO(d);
-        const cell=document.createElement('div'); cell.className='cal-cell';
-        cell.innerHTML=`<div class="cal-events" data-date="${iso}"></div><button class="btn btn-xs cal-add btn-aceptar" data-date="${iso}" type="button">+</button>`;
-        if(sameDay(d,new Date())) cell.classList.add('today');
+
+      // solo 1 bloque de "contenidos" por día (simple, no por hora)
+      const timeRow = document.createElement('div');
+      timeRow.className = 'week-time';
+      timeRow.textContent = 'Eventos y notas de la semana';
+      root.appendChild(timeRow);
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        const iso = dISO(d);
+        const cell = document.createElement('div');
+        cell.className = 'cal-cell';
+        cell.innerHTML = `
+        <div class="cal-events" data-date="${iso}"></div>
+        <button class="btn btn-xs cal-add btn-aceptar" data-date="${iso}" type="button">+</button>
+      `;
+        if (sameDay(d, new Date())) cell.classList.add('today');
         root.appendChild(cell);
       }
+
       paintData();
     }
 
-    function paintData(){
-      root.querySelectorAll('.cal-events').forEach(el=>el.innerHTML='');
-      currentData.visitas.forEach(ev=>{
-        const c=root.querySelector(`.cal-events[data-date="${ev.fecha}"]`); if(!c) return;
-        const item=document.createElement('div'); item.className='cal-event';
-        const rango=(ev.hora_desde&&ev.hora_hasta)?`${ev.hora_desde}–${ev.hora_hasta}`:(ev.hora_desde||'');
-        const meta=[ev.nombre, ev.piloto?`Piloto: ${ev.piloto}`:'', ev.zona?`Zona: ${ev.zona}`:''].filter(Boolean).join(' · ');
-        item.title=`${ev.nombre}${ev.piloto?' · Piloto: '+ev.piloto:''}${ev.zona?' · Zona: '+ev.zona:''}`;
-        item.innerHTML=`<strong>${rango}</strong> · ${meta}`;
+    function paintData() {
+      // Limpio
+      root.querySelectorAll('.cal-events').forEach(el => el.innerHTML = '');
+
+      // Visitas
+      currentData.visitas.forEach(ev => {
+        const c = root.querySelector(`.cal-events[data-date="${ev.fecha}"]`);
+        if (!c) return;
+        const item = document.createElement('div');
+        item.className = 'cal-event';
+        item.title = `${ev.nombre}${ev.piloto ? ' · Piloto: '+ev.piloto : ''}${ev.zona ? ' · Zona: '+ev.zona : ''}`;
+        const rango = (ev.hora_desde && ev.hora_hasta) ? `${ev.hora_desde}–${ev.hora_hasta}` : (ev.hora_desde || '');
+        const meta = [ev.nombre, ev.piloto ? `Piloto: ${ev.piloto}` : '', ev.zona ? `Zona: ${ev.zona}` : ''].filter(Boolean).join(' · ');
+        item.innerHTML = `<strong>${rango}</strong> · ${meta}`;
         c.appendChild(item);
       });
-      currentData.notas.forEach(n=>{
-        const c=root.querySelector(`.cal-events[data-date="${n.fecha}"]`); if(!c) return;
-<!-- Modal Confirmación -->
-<div id="confirm-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-  <div class="modal-content">
-    <h3 id="confirm-title">Confirmar acción</h3>
-    <p id="confirm-message">¿Seguro que deseas continuar?</p>
-    <div class="form-buttons">
-      <button class="btn btn-aceptar" id="btn-confirm-yes" type="button">Sí</button>
-      <button class="btn btn-cancelar" id="btn-confirm-no" type="button">Cancelar</button>
-    </div>
-  </div>
-</div>
+
+      // Notas
+      currentData.notas.forEach(n => {
+        const c = root.querySelector(`.cal-events[data-date="${n.fecha}"]`);
+        if (!c) return;
+        const note = document.createElement('div');
+        note.className = 'cal-note';
+        note.dataset.noteId = String(n.id);
+        note.innerHTML = `
+        <span>📝 ${n.texto}</span>
+        <span class="actions">
+          <a data-action="edit" data-id="${n.id}">Editar</a> ·
+          <a data-action="del" data-id="${n.id}">Eliminar</a>
+        </span>
+      `;
+        c.appendChild(note);
       });
-      root.querySelectorAll('.cal-add').forEach(btn=>{ btn.onclick=()=>createNote(btn.dataset.date); });
-      root.querySelectorAll('.cal-note .actions a').forEach(a=>{
-        const id=a.getAttribute('data-id'), action=a.getAttribute('data-action');
-        a.onclick=()=>{ if(action==='edit') editNote(id); if(action==='del') deleteNote(id); };
+
+      // Wire botones + Nota / editar / borrar
+      root.querySelectorAll('.cal-add').forEach(btn => {
+        btn.onclick = () => createNote(btn.dataset.date);
+      });
+      root.querySelectorAll('.cal-note .actions a').forEach(a => {
+        const id = a.getAttribute('data-id');
+        const action = a.getAttribute('data-action');
+        a.onclick = () => {
+          if (action === 'edit') editNote(id);
+          if (action === 'del') deleteNote(id);
+        };
       });
     }
 
-    async function createNote(fecha){ openModal(fecha); }
-
-    async function editNote(id){
-      const actual=currentData.notas.find(n=>String(n.id)===String(id)); if(!actual) return;
-      const texto=window.prompt('Editar nota:', actual.texto); if(texto===null) return;
-      const body=new FormData(); body.append('action','note_update'); body.append('id',String(id)); body.append('texto',texto);
-      await fetchJSON(API,{method:'POST', body}); await reloadAndRender();
+    // Notas CRUD (alta con modal estándar)
+    async function createNote(fecha) {
+      openModal(fecha);
     }
 
-    async function deleteNote(id){
-      if(!window.confirm('¿Eliminar nota?')) return;
-      const body=new FormData(); body.append('action','note_delete'); body.append('id',String(id));
-      await fetchJSON(API,{method:'POST', body}); await reloadAndRender();
+    async function editNote(id) {
+      const actual = currentData.notas.find(n => String(n.id) === String(id));
+      if (!actual) return;
+      const texto = window.prompt('Editar nota:', actual.texto);
+      if (texto === null) return;
+      const body = new FormData();
+      body.append('action', 'note_update');
+      body.append('id', String(id));
+      body.append('texto', texto);
+      const json = await fetchJSON(API, {
+        method: 'POST',
+        body
+      });
+      await reloadAndRender();
     }
 
-    async function reloadAndRender(){ await loadCalendar(viewDate); render(); healthEl.textContent=''; }
-    function render(){ viewMode==='month'?renderMonth(viewDate):renderWeek(viewDate); }
+    async function deleteNote(id) {
+      if (!window.confirm('¿Eliminar nota?')) return;
+      const body = new FormData();
+      body.append('action', 'note_delete');
+      body.append('id', String(id));
+      const json = await fetchJSON(API, {
+        method: 'POST',
+        body
+      });
+      await reloadAndRender();
+    }
 
-    btnPrev.addEventListener('click', async ()=>{ viewMode==='month'?viewDate.setMonth(viewDate.getMonth()-1):viewDate.setDate(viewDate.getDate()-7); await reloadAndRender(); });
-    btnNext.addEventListener('click', async ()=>{ viewMode==='month'?viewDate.setMonth(viewDate.getMonth()+1):viewDate.setDate(viewDate.getDate()+7); await reloadAndRender(); });
-    btnToday.addEventListener('click', async ()=>{ viewDate=new Date(); await reloadAndRender(); });
-    btnAddNoteToday.addEventListener('click', ()=> createNote(dISO(new Date())));
+    // Render switcher
+    function render() {
+      if (viewMode === 'month') renderMonth(viewDate);
+      else renderWeek(viewDate);
+    }
+
+    async function reloadAndRender() {
+      await loadCalendar(viewDate);
+      render();
+      healthEl.textContent = '';
+    }
+
+    // Listeners navegación
+    btnPrev.addEventListener('click', async () => {
+      if (viewMode === 'month') {
+        viewDate.setMonth(viewDate.getMonth() - 1);
+      } else {
+        viewDate.setDate(viewDate.getDate() - 7);
+      }
+      await reloadAndRender();
+    });
+    btnNext.addEventListener('click', async () => {
+      if (viewMode === 'month') {
+        viewDate.setMonth(viewDate.getMonth() + 1);
+      } else {
+        viewDate.setDate(viewDate.getDate() + 7);
+      }
+      await reloadAndRender();
+    });
+    btnToday.addEventListener('click', async () => {
+      viewDate = new Date();
+      await reloadAndRender();
+    });
+    btnAddNoteToday.addEventListener('click', () => createNote(dISO(new Date())));
+
+    // Filtros
     filtroPiloto.addEventListener('change', reloadAndRender);
     filtroZona.addEventListener('change', reloadAndRender);
 
-    function setView(mode){
-      viewMode=mode; viewLabel.textContent=mode==='month'?'mes':'semana';
-      btnViewMonth.classList.toggle('btn-aceptar', mode==='month'); btnViewMonth.classList.toggle('btn-info', mode!=='month');
-      btnViewWeek.classList.toggle('btn-aceptar', mode==='week'); btnViewWeek.classList.toggle('btn-info', mode!=='week');
+    // Vista
+    function setView(mode) {
+      viewMode = mode;
+      viewLabel.textContent = mode === 'month' ? 'mes' : 'semana';
+      btnViewMonth.classList.toggle('btn-aceptar', mode === 'month');
+      btnViewMonth.classList.toggle('btn-info', mode !== 'month');
+      btnViewWeek.classList.toggle('btn-aceptar', mode === 'week');
+      btnViewWeek.classList.toggle('btn-info', mode !== 'week');
       render();
     }
-    btnViewMonth.addEventListener('click', ()=> setView('month'));
-    btnViewWeek.addEventListener('click', ()=> setView('week'));
+    btnViewMonth.addEventListener('click', () => setView('month'));
+    btnViewWeek.addEventListener('click', () => setView('week'));
 
-    // ===== Modal dentro del IIFE =====
-    const modal=document.getElementById('modal');
-    const modalText=document.getElementById('modal-text');
-    const modalDate=document.getElementById('modal-date');
-    const btnModalAccept=document.getElementById('btn-modal-accept');
-    const btnModalCancel=document.getElementById('btn-modal-cancel');
-
-    function openModal(fecha){ modalDate.value=fecha; modalText.value=''; modal.classList.remove('hidden'); setTimeout(()=>modalText.focus(),0); }
-    function closeModal(){ modal.classList.add('hidden'); }
-    btnModalCancel.addEventListener('click', closeModal);
-    modal.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });
-    document.addEventListener('keydown', e=>{ if(!modal.classList.contains('hidden') && e.key==='Escape') closeModal(); });
-
-    btnModalAccept.addEventListener('click', async ()=>{
-      const fecha=modalDate.value.trim(); const texto=modalText.value.trim();
-      if(!fecha || !texto){ alert('Completá el texto de la nota.'); return; }
-      const body=new FormData(); body.append('action','note_create'); body.append('fecha',fecha); body.append('texto',texto);
-      if(filtroPiloto.value) body.append('piloto_id', filtroPiloto.value);
-      if(filtroZona.value) body.append('zona', filtroZona.value);
-      try{ await fetchJSON(API,{method:'POST', body}); closeModal(); await reloadAndRender(); }
-      catch(e){ alert(e?.message || 'No se pudo crear la nota'); }
-    });
-
-    (async function init(){
-      try{ await loadMeta(); await loadCalendar(viewDate); render(); healthEl.textContent=''; }
-      catch(e){ healthEl.innerHTML='<strong style="color:#b91c1c;">Error:</strong> '+(e?.message || e); }
+    // Init
+    (async function init() {
+      try {
+        await loadMeta();
+        await loadCalendar(viewDate);
+        render();
+        healthEl.textContent = '';
+      } catch (e) {
+        healthEl.innerHTML = '<strong style="color:#b91c1c;">Error:</strong> ' + (e?.message || e);
+      }
     })();
   })();
+
+
+  // ===== Modal Nueva Nota =====
+  const modal = document.getElementById('modal');
+  const modalText = document.getElementById('modal-text');
+  const modalDate = document.getElementById('modal-date');
+  const btnModalAccept = document.getElementById('btn-modal-accept');
+  const btnModalCancel = document.getElementById('btn-modal-cancel');
+
+  function openModal(fecha) {
+    modalDate.value = fecha;
+    modalText.value = '';
+    modal.classList.remove('hidden');
+    setTimeout(() => modalText.focus(), 0);
+  }
+
+  function closeModal() {
+    modal.classList.add('hidden');
+  }
+
+  btnModalCancel.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (!modal.classList.contains('hidden') && e.key === 'Escape') closeModal();
+  });
+
+  btnModalAccept.addEventListener('click', async () => {
+    const fecha = modalDate.value.trim();
+    const texto = modalText.value.trim();
+    if (!fecha || !texto) {
+      alert('Completá el texto de la nota.');
+      return;
+    }
+    const body = new FormData();
+    body.append('action', 'note_create');
+    body.append('fecha', fecha);
+    body.append('texto', texto);
+    if (filtroPiloto.value) body.append('piloto_id', filtroPiloto.value);
+    if (filtroZona.value) body.append('zona', filtroZona.value);
+    try {
+      await fetchJSON(API, {
+        method: 'POST',
+        body
+      });
+      closeModal();
+      await reloadAndRender();
+    } catch (e) {
+      alert(e?.message || 'No se pudo crear la nota');
+    }
+  });
 </script>
