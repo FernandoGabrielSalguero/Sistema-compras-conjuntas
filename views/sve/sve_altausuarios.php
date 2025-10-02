@@ -380,34 +380,22 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     </div>
                                 </div>
 
-<!-- Zonas (desplegable con checkboxes, máx 4) -->
-<div class="input-group col-span-3">
-    <label for="zonasToggle">Zonas</label>
-    <div class="dropdown" style="position:relative;">
-        <button type="button" id="zonasToggle" class="input" onclick="toggleZonasDD()" aria-haspopup="true" aria-expanded="false">
-            Seleccioná zonas
-            <span class="material-icons" style="float:right;">expand_more</span>
-        </button>
+                                <!-- Zonas (multi-select, máx 4) -->
+                                <div class="input-group col-span-3">
+                                    <label for="edit_zonas">Zonas</label>
+                                    <div class="input-icon">
+                                        <span class="material-icons">map</span>
+                                        <select id="edit_zonas" class="input" multiple size="4" aria-label="Seleccioná hasta 4 zonas">
+                                            <option value="Norte">Norte</option>
+                                            <option value="Sur">Sur</option>
+                                            <option value="Este">Este</option>
+                                            <option value="Oeste">Oeste</option>
+                                        </select>
+                                    </div>
+                                    <small class="help-text">Podés seleccionar hasta 4 zonas.</small>
+                                    <input type="hidden" name="zona_asignada" id="edit_zona_asignada" value="">
+                                </div>
 
-        <div id="zonasMenu" class="dropdown-menu hidden"
-             style="position:absolute; z-index:30; inset-inline:0; top:calc(100% + 4px); background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:8px; box-shadow:0 10px 20px rgba(0,0,0,.12);">
-            <label class="checkbox" style="display:flex;gap:8px;align-items:center;padding:4px 6px;">
-                <input type="checkbox" name="zona_chk" value="Norte" onchange="onZonasChange()"> <span>Norte</span>
-            </label>
-            <label class="checkbox" style="display:flex;gap:8px;align-items:center;padding:4px 6px;">
-                <input type="checkbox" name="zona_chk" value="Sur" onchange="onZonasChange()"> <span>Sur</span>
-            </label>
-            <label class="checkbox" style="display:flex;gap:8px;align-items:center;padding:4px 6px;">
-                <input type="checkbox" name="zona_chk" value="Este" onchange="onZonasChange()"> <span>Este</span>
-            </label>
-            <label class="checkbox" style="display:flex;gap:8px;align-items:center;padding:4px 6px;">
-                <input type="checkbox" name="zona_chk" value="Oeste" onchange="onZonasChange()"> <span>Oeste</span>
-            </label>
-        </div>
-    </div>
-    <small id="zonasHelp" class="help-text">Podés tildar hasta 4 zonas.</small>
-    <input type="hidden" name="zona_asignada" id="edit_zona_asignada" value="">
-</div>
 
 
                                 <!-- Correo (ocupa 3 columnas) -->
@@ -539,62 +527,42 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             icon.textContent = isHidden ? 'visibility_off' : 'visibility';
         }
 
-// ---- Desplegable Zonas (máx 4) ----
-const ZONAS_LIMIT = 4;
+        // ---- Zonas (select múltiple con tope 4) ----
+        const ZONAS_LIMIT = 4;
 
-function toggleZonasDD() {
-    const menu = document.getElementById('zonasMenu');
-    const expanded = menu.classList.contains('hidden');
-    menu.classList.toggle('hidden', !expanded === false);
-    // toggle correcto:
-    menu.classList.toggle('hidden');
-    const btn = document.getElementById('zonasToggle');
-    btn.setAttribute('aria-expanded', (!menu.classList.contains('hidden')).toString());
-}
+        function syncZonasHiddenFromSelect() {
+            const select = document.getElementById('edit_zonas');
+            const values = Array.from(select.selectedOptions).map(o => o.value);
+            document.getElementById('edit_zona_asignada').value = values.join(',');
+        }
 
-// Cerrar al click afuera
-document.addEventListener('click', (e) => {
-    const menu = document.getElementById('zonasMenu');
-    const btn = document.getElementById('zonasToggle');
-    if (!menu || !btn) return;
-    if (!menu.contains(e.target) && !btn.contains(e.target)) {
-        menu.classList.add('hidden');
-        btn.setAttribute('aria-expanded', 'false');
-    }
-});
+        function enforceZonasLimit() {
+            const select = document.getElementById('edit_zonas');
+            const selected = Array.from(select.selectedOptions);
+            if (selected.length > ZONAS_LIMIT) {
+                selected[selected.length - 1].selected = false;
+                showAlert('error', `Podés seleccionar como máximo ${ZONAS_LIMIT} zonas.`);
+            }
+            syncZonasHiddenFromSelect();
+        }
 
-function onZonasChange() {
-    const checks = document.querySelectorAll('#zonasMenu input[name="zona_chk"]');
-    const seleccionadas = Array.from(checks).filter(c => c.checked);
+        // Precarga/Reseteo desde CSV
+        function initZonasFromCSV(csv) {
+            const select = document.getElementById('edit_zonas');
+            const arr = (csv || '').split(',').map(x => x.trim()).filter(Boolean);
+            Array.from(select.options).forEach(opt => {
+                opt.selected = arr.includes(opt.value);
+            });
+            syncZonasHiddenFromSelect();
+        }
 
-    if (seleccionadas.length > ZONAS_LIMIT) {
-        // desmarco el último
-        const last = seleccionadas[seleccionadas.length - 1];
-        last.checked = false;
-        showAlert('error', `Podés seleccionar como máximo ${ZONAS_LIMIT} zonas.`);
-        return;
-    }
-    const valores = Array.from(checks).filter(c => c.checked).map(c => c.value);
-    document.getElementById('edit_zona_asignada').value = valores.join(',');
-    actualizarEtiquetaZonas();
-}
-
-function actualizarEtiquetaZonas() {
-    const btn = document.getElementById('zonasToggle');
-    const csv = document.getElementById('edit_zona_asignada').value.trim();
-    if (!csv) { btn.firstChild.textContent = 'Seleccioná zonas'; return; }
-    const arr = csv.split(',').map(x => x.trim()).filter(Boolean);
-    btn.firstChild.textContent = arr.join(', ');
-}
-
-// Precarga/Reseteo del desplegable a partir de CSV
-function initZonasFromCSV(csv) {
-    const checks = document.querySelectorAll('#zonasMenu input[name="zona_chk"]');
-    const arr = (csv || '').split(',').map(x => x.trim()).filter(Boolean);
-    checks.forEach(chk => chk.checked = arr.includes(chk.value));
-    document.getElementById('edit_zona_asignada').value = arr.join(',');
-    actualizarEtiquetaZonas();
-}
+        // Listener de cambios
+        document.addEventListener('DOMContentLoaded', () => {
+            const select = document.getElementById('edit_zonas');
+            if (select) {
+                select.addEventListener('change', enforceZonasLimit);
+            }
+        });
 
         function guardarNuevaContrasena() {
             const nuevaPass = document.getElementById('nuevaContrasena').value;
@@ -630,73 +598,73 @@ function initZonasFromCSV(csv) {
         }
 
         // funciones para el modal
-function abrirModalEditar(id) {
-    fetch(`/controllers/sve_actualizarUsuarioController.php?id=${id}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const u = data.user;
-                document.getElementById('edit_id').value = u.id || '';
-                document.getElementById('edit_usuario').value = u.usuario || '';
-                document.getElementById('edit_rol').value = u.rol || '';
-                document.getElementById('edit_permiso').value = u.permiso_ingreso || '';
-                document.getElementById('edit_cuit').value = u.cuit || '';
-                document.getElementById('edit_id_real').value = u.id_real || '';
-                document.getElementById('edit_nombre').value = u.nombre || '';
-                document.getElementById('edit_direccion').value = u.direccion || '';
-                document.getElementById('edit_telefono').value = u.telefono || '';
-                document.getElementById('edit_correo').value = u.correo || '';
+        function abrirModalEditar(id) {
+            fetch(`/controllers/sve_actualizarUsuarioController.php?id=${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const u = data.user;
+                        document.getElementById('edit_id').value = u.id || '';
+                        document.getElementById('edit_usuario').value = u.usuario || '';
+                        document.getElementById('edit_rol').value = u.rol || '';
+                        document.getElementById('edit_permiso').value = u.permiso_ingreso || '';
+                        document.getElementById('edit_cuit').value = u.cuit || '';
+                        document.getElementById('edit_id_real').value = u.id_real || '';
+                        document.getElementById('edit_nombre').value = u.nombre || '';
+                        document.getElementById('edit_direccion').value = u.direccion || '';
+                        document.getElementById('edit_telefono').value = u.telefono || '';
+                        document.getElementById('edit_correo').value = u.correo || '';
 
-                // Precarga zonas desde DB
-                initZonasFromCSV(u.zona_asignada || '');
+                        // Precarga zonas desde DB
+                        initZonasFromCSV(u.zona_asignada || '');
 
-                document.getElementById('modal').classList.remove('hidden');
-            } else {
-                showAlert('error', data.message);
-            }
-        })
-        .catch(error => {
-            console.error("❌ Error al obtener usuario:", error);
-            showAlert('error', 'No se pudo cargar el usuario.');
-        });
-}
-
-document.getElementById('formEditarUsuario').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    // Garantizo que el hidden está sincronizado
-    onZonasChange();
-
-    const formData = new FormData(this);
-
-    fetch('/controllers/sve_actualizarUsuarioController.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            showAlert('success', data.message);
-            document.getElementById('modal').classList.add('hidden');
-            cargarUsuarios();
-        } else {
-            showAlert('error', data.message);
+                        document.getElementById('modal').classList.remove('hidden');
+                    } else {
+                        showAlert('error', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("❌ Error al obtener usuario:", error);
+                    showAlert('error', 'No se pudo cargar el usuario.');
+                });
         }
-    })
-    .catch(error => {
-        console.error('❌ Error al actualizar usuario:', error);
-        showAlert('error', 'No se pudo guardar los cambios.');
-    });
-});
+
+        document.getElementById('formEditarUsuario').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Garantizo que el hidden está sincronizado desde el select
+            syncZonasHiddenFromSelect();
+
+            const formData = new FormData(this);
+
+            fetch('/controllers/sve_actualizarUsuarioController.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('success', data.message);
+                        document.getElementById('modal').classList.add('hidden');
+                        cargarUsuarios();
+                    } else {
+                        showAlert('error', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error al actualizar usuario:', error);
+                    showAlert('error', 'No se pudo guardar los cambios.');
+                });
+        });
 
 
-function cerrarModalEditar() {
-    document.getElementById('modal').classList.add('hidden');
-    const form = document.getElementById('formEditarUsuario');
-    form.reset();
-    // Limpio dropdown
-    initZonasFromCSV('');
-}
+        function cerrarModalEditar() {
+            document.getElementById('modal').classList.add('hidden');
+            const form = document.getElementById('formEditarUsuario');
+            form.reset();
+            // Limpio selección de zonas
+            initZonasFromCSV('');
+        }
 
         // buscar tipeando nombre / cuit
         document.getElementById('buscarCuit').addEventListener('input', cargarUsuarios);
