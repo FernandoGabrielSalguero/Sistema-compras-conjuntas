@@ -484,12 +484,21 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
                                 <select id="producto_new"></select>
                             </div>
                         </div>
+
+                        <div class="input-group" id="grp_producto_otro_text" style="display:none;">
+                            <label for="producto_new_text">Nombre del producto (proveído por el productor)</label>
+                            <div class="input-icon input-icon-edit">
+                                <input type="text" id="producto_new_text" placeholder="Ingresá el nombre del producto" />
+                            </div>
+                            <small class="helper-text">Se guardará con fuente: productor.</small>
+                        </div>
                     </div>
 
                     <div class="form-buttons">
                         <button type="button" class="btn btn-info" id="btn_add_producto">Agregar producto</button>
                     </div>
                 </div>
+
 
 <!-- Receta -->
 <div id="card-receta" class="card card--ops-hide">
@@ -1130,8 +1139,15 @@ tr.innerHTML = `
             });
             selPatNew.append(new Option('Otra', '__otra__'));
 
-            fillSelect($('#producto_new'), catalog.productos, {
+            const selProdNew = $('#producto_new');
+            fillSelect(selProdNew, catalog.productos, {
                 placeholder: 'Seleccionar producto'
+            });
+            // Agregar opción "Otro" y toggle del input
+            selProdNew.append(new Option('Otro', '__otro__'));
+            $('#grp_producto_otro_text').style.display = 'none';
+            selProdNew.addEventListener('change', (e) => {
+                $('#grp_producto_otro_text').style.display = e.target.value === '__otro__' ? '' : 'none';
             });
 
             // costos (si vienen guardados, llegan completos; si no, vienen calculados del backend)
@@ -1239,29 +1255,61 @@ state.items = (d.items || []).map(it => ({
                 renderRangos();
             });
 $('#btn_add_producto')?.addEventListener('click', () => {
-    const pid = $('#producto_new').value;
-    if (!pid) return showAlert('error', 'Elegí un producto');
-    const prod = catalog.productos.find(p => String(p.id) === String(pid));
+    const val = $('#producto_new').value;
     const patologiaIdAuto = state.motivos[0]?.patologia_id ?? null;
-    state.items.push({
-        patologia_id: patologiaIdAuto,
-        fuente: 'sve',
-        producto_id: Number(pid),
-        nombre_producto: prod?.nombre || null,
-        costo_hectarea_snapshot: prod?.costo_hectarea ?? null,
-        receta: {
-            principio_activo: null,
-            dosis: null,
-            unidad: 'ml/ha',
-            orden_mezcla: null,
-            notas: ''
+
+    if (!val) {
+        return showAlert('error', 'Elegí un producto');
+    }
+
+    if (val === '__otro__') {
+        const nombreLibre = ($('#producto_new_text').value || '').trim();
+        if (!nombreLibre) {
+            return showAlert('error', 'Escribí el nombre del producto');
         }
-    });
-    $('#producto_new').value = '';
+        // Producto ingresado por el productor
+        state.items.push({
+            patologia_id: patologiaIdAuto,
+            fuente: 'productor',
+            producto_id: null,
+            nombre_producto: nombreLibre,
+            costo_hectarea_snapshot: null, // sin costo (no impacta en cálculos)
+            receta: {
+                principio_activo: null,
+                dosis: null,
+                unidad: 'ml/ha',
+                orden_mezcla: null,
+                notas: ''
+            }
+        });
+        // reset y ocultar input
+        $('#producto_new_text').value = '';
+        $('#grp_producto_otro_text').style.display = 'none';
+        $('#producto_new').value = '';
+    } else {
+        const prod = catalog.productos.find(p => String(p.id) === String(val));
+        state.items.push({
+            patologia_id: patologiaIdAuto,
+            fuente: 'sve',
+            producto_id: Number(val),
+            nombre_producto: prod?.nombre || null,
+            costo_hectarea_snapshot: prod?.costo_hectarea ?? null,
+            receta: {
+                principio_activo: null,
+                dosis: null,
+                unidad: 'ml/ha',
+                orden_mezcla: null,
+                notas: ''
+            }
+        });
+        $('#producto_new').value = '';
+    }
+
     renderProductos();
     renderRecetaCombinada();
     recalcCostos();
 });
+
 
             // listeners dependientes existentes...
             $('#base_ha')?.addEventListener('input', recalcCostos);
