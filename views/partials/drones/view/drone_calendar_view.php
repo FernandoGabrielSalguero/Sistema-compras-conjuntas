@@ -42,7 +42,7 @@
     <div id="calendar-health" style="margin-top:8px;color:#64748b;">Verificando conexión…</div>
   </div>
 
-  <!-- Modal Nueva Nota -->
+  <!-- Modal Crear/Editar Nota -->
   <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-content">
       <h3 id="modal-title">Nueva nota</h3>
@@ -59,11 +59,24 @@
         </div>
       </div>
       <div class="form-buttons">
-        <button class="btn btn-aceptar" id="btn-modal-accept" type="button">Aceptar</button>
+        <button class="btn btn-aceptar" id="btn-modal-accept" type="button">Guardar</button>
         <button class="btn btn-cancelar" id="btn-modal-cancel" type="button">Cancelar</button>
       </div>
     </div>
   </div>
+
+  <!-- Modal Confirmación genérico -->
+  <div id="confirm-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div class="modal-content">
+      <h3 id="confirm-title">Confirmación</h3>
+      <p id="confirm-message" style="margin:.5rem 0 1rem 0;">¿Estás seguro?</p>
+      <div class="form-buttons">
+        <button class="btn btn-aceptar" id="btn-confirm-accept" type="button">Sí</button>
+        <button class="btn btn-cancelar" id="btn-confirm-cancel" type="button">No</button>
+      </div>
+    </div>
+  </div>
+
 
 
 </div>
@@ -153,12 +166,16 @@
     gap: .5rem
   }
 
+  /* Altura de las celdas en vista semanal.
+     ⬇️ Ajustá estos dos valores para “extender” o “compactar” los días */
   .week-grid .cal-cell {
-    min-height: 240px
+    min-height: 320px
+      /* ← ajustar aquí */
   }
 
   .week-grid .cal-events {
-    max-height: 200px
+    max-height: 260px
+      /* ← y aquí */
   }
 
   .week-time {
@@ -220,6 +237,11 @@
     .cal-cell {
       min-height: 120px
     }
+  }
+
+  /* Tamaño mínimo para modales de confirmación */
+  #confirm-modal .modal-content {
+    max-width: 420px;
   }
 </style>
 
@@ -457,30 +479,33 @@
     async function editNote(id) {
       const actual = currentData.notas.find(n => String(n.id) === String(id));
       if (!actual) return;
-      const texto = window.prompt('Editar nota:', actual.texto);
-      if (texto === null) return;
-      const body = new FormData();
-      body.append('action', 'note_update');
-      body.append('id', String(id));
-      body.append('texto', texto);
-      const json = await fetchJSON(API, {
-        method: 'POST',
-        body
+      // Usamos el mismo modal de "Nueva nota" para editar
+      openModal(actual.fecha, actual.texto, {
+        mode: 'edit',
+        id: String(id)
       });
-      await reloadAndRender();
     }
 
     async function deleteNote(id) {
-      if (!window.confirm('¿Eliminar nota?')) return;
-      const body = new FormData();
-      body.append('action', 'note_delete');
-      body.append('id', String(id));
-      const json = await fetchJSON(API, {
-        method: 'POST',
-        body
-      });
-      await reloadAndRender();
+      const actual = currentData.notas.find(n => String(n.id) === String(id));
+      if (!actual) return;
+      openConfirm(
+        'Eliminar nota',
+        `¿Confirmás eliminar la nota del ${actual.fecha}?`,
+        async () => {
+          const body = new FormData();
+          body.append('action', 'note_delete');
+          body.append('id', String(id));
+          await fetchJSON(API, {
+            method: 'POST',
+            body
+          });
+          closeConfirm();
+          await reloadAndRender();
+        }
+      );
     }
+
 
     // Render switcher
     function render() {
@@ -548,22 +573,70 @@
   })();
 
 
-  // ===== Modal Nueva Nota =====
+  // ===== Modales (crear/editar y confirmación) =====
+  // NOTA: colocamos todo dentro del IIFE para usar fetchJSON/reloadAndRender sin exponer globales.
   const modal = document.getElementById('modal');
   const modalText = document.getElementById('modal-text');
   const modalDate = document.getElementById('modal-date');
   const btnModalAccept = document.getElementById('btn-modal-accept');
   const btnModalCancel = document.getElementById('btn-modal-cancel');
 
-  function openModal(fecha) {
+  const confirmModal = document.getElementById('confirm-modal');
+  const confirmTitle = document.getElementById('confirm-title');
+  const confirmMessage = document.getElementById('confirm-message');
+  const btnConfirmAccept = document.getElementById('btn-confirm-accept');
+  const btnConfirmCancel = document.getElementById('btn-confirm-cancel');
+
+  let modalState = {
+    mode: 'create',
+    id: null
+  };
+
+  function openModal(fecha, texto = '', state = {
+    mode: 'create',
+    id: null
+  }) {
+    modalState = state;
     modalDate.value = fecha;
-    modalText.value = '';
+    modalText.value = texto || '';
+    document.getElementById('modal-title').textContent = (modalState.mode === 'edit') ? 'Editar nota' : 'Nueva nota';
+    btnModalAccept.textContent = (modalState.mode === 'edit') ? 'Actualizar' : 'Guardar';
     modal.classList.remove('hidden');
     setTimeout(() => modalText.focus(), 0);
   }
 
   function closeModal() {
     modal.classList.add('hidden');
+  }
+
+  function openConfirm(title, message, onAccept) {
+    confirmTitle.textContent = title;
+    confirmMessage.textContent = message;
+    confirmModal.classList.remove('hidden');
+    // Limpio listeners previos
+    btnConfirmAccept.onclick = null;
+    btnConfirmCancel.onclick = null;
+
+    btnConfirmAccept.onclick = () => onAccept && onAccept();
+    btnConfirmCancel.onclick = closeConfirm;
+    confirmModal.addEventListener('click', backdropCloseConfirm);
+    document.addEventListener('keydown', escCloseConfirm);
+  }
+
+  function closeConfirm() {
+    confirmModal.classList.add('hidden');
+    btnConfirmAccept.onclick = null;
+    btnConfirmCancel.onclick = null;
+    confirmModal.removeEventListener('click', backdropCloseConfirm);
+    document.removeEventListener('keydown', escCloseConfirm);
+  }
+
+  function backdropCloseConfirm(e) {
+    if (e.target === confirmModal) closeConfirm();
+  }
+
+  function escCloseConfirm(e) {
+    if (!confirmModal.classList.contains('hidden') && e.key === 'Escape') closeConfirm();
   }
 
   btnModalCancel.addEventListener('click', closeModal);
@@ -582,11 +655,17 @@
       return;
     }
     const body = new FormData();
-    body.append('action', 'note_create');
-    body.append('fecha', fecha);
-    body.append('texto', texto);
-    if (filtroPiloto.value) body.append('piloto_id', filtroPiloto.value);
-    if (filtroZona.value) body.append('zona', filtroZona.value);
+    if (modalState.mode === 'edit' && modalState.id) {
+      body.append('action', 'note_update');
+      body.append('id', String(modalState.id));
+      body.append('texto', texto);
+    } else {
+      body.append('action', 'note_create');
+      body.append('fecha', fecha);
+      body.append('texto', texto);
+      if (filtroPiloto.value) body.append('piloto_id', filtroPiloto.value);
+      if (filtroZona.value) body.append('zona', filtroZona.value);
+    }
     try {
       await fetchJSON(API, {
         method: 'POST',
@@ -595,7 +674,7 @@
       closeModal();
       await reloadAndRender();
     } catch (e) {
-      alert(e?.message || 'No se pudo crear la nota');
+      alert(e?.message || 'No se pudo guardar la nota');
     }
   });
 </script>
