@@ -30,7 +30,7 @@
         <button id="btn-today" class="btn btn-info" type="button" aria-label="Ir a hoy">Hoy</button>
         <button id="btn-add-note-today" class="btn btn-aceptar" type="button" aria-label="Agregar nota hoy">+ Nota hoy</button>
       </div>
-      <h2 id="cal-title" style="margin:0;font-weight:700;" style="color: white;"></h2>
+      <h2 id="cal-title" style="margin:0;font-weight:700; color: white;"></h2>
       <div class="form-grid grid-3" style="gap:8px;">
         <button id="btn-prev" class="btn btn-cancelar" type="button" aria-label="Anterior">‹</button>
         <button id="btn-next" class="btn btn-aceptar" type="button" aria-label="Siguiente">›</button>
