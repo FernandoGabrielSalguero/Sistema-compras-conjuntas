@@ -24,7 +24,7 @@
     </div>
   </div>
 
-  <div id="calendar-root" class="card" aria-live="polite">
+  <div id="calendar-root" style="background-color: #3b0764;" class="card" aria-live="polite">
     <div class="calendar-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
       <div style="display:flex;align-items:center;gap:8px;">
         <button id="btn-today" class="btn btn-info" type="button" aria-label="Ir a hoy">Hoy</button>
