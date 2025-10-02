@@ -166,7 +166,7 @@
       cell.innerHTML = `
         <span class="daynum">${d.getDate()}</span>
         <div class="cal-events" data-date="${iso}"></div>
-        <button class="btn btn-xs cal-add btn-aceptar" data-date="${iso}" type="button">+ Nota</button>
+        <button class="btn btn-xs cal-add btn-aceptar" data-date="${iso}" type="button">+</button>
       `;
       root.appendChild(cell);
     }
