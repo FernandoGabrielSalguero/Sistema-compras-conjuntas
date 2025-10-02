@@ -380,23 +380,43 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     </div>
                                 </div>
 
-                                <!-- Zonas (multi-select, máx 4) -->
+                                <!-- Zonas (dropdown con checkboxes, máx 4) -->
                                 <div class="input-group col-span-3">
-                                    <label for="edit_zonas">Zonas</label>
-                                    <div class="input-icon">
+                                    <label for="zonasTrigger">Zonas</label>
+
+                                    <div class="input-icon" style="position:relative;">
                                         <span class="material-icons">map</span>
-                                        <select id="edit_zonas" class="input" multiple size="4" aria-label="Seleccioná hasta 4 zonas">
-                                            <option value="Norte">Norte</option>
-                                            <option value="Sur">Sur</option>
-                                            <option value="Este">Este</option>
-                                            <option value="Oeste">Oeste</option>
-                                        </select>
+
+                                        <!-- Trigger con mismo look & feel que un <select class="input"> -->
+                                        <button type="button" id="zonasTrigger" class="input" aria-haspopup="listbox" aria-expanded="false">
+                                            <span id="zonasLabel">Seleccioná zonas</span>
+                                            <span class="material-icons" style="float:right;">expand_more</span>
+                                        </button>
+
+                                        <!-- Menú -->
+                                        <div id="zonasMenu" class="dropdown-menu hidden"
+                                            role="listbox" aria-multiselectable="true"
+                                            style="position:absolute; z-index:30; left:0; right:0; top:calc(100% + 4px);
+                background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:8px;
+                box-shadow:0 10px 20px rgba(0,0,0,.12); max-height:220px; overflow:auto;">
+                                            <label class="checkbox" style="display:flex;gap:8px;align-items:center;padding:6px 8px; cursor:pointer;">
+                                                <input type="checkbox" name="zona_chk" value="Norte"> <span>Norte</span>
+                                            </label>
+                                            <label class="checkbox" style="display:flex;gap:8px;align-items:center;padding:6px 8px; cursor:pointer;">
+                                                <input type="checkbox" name="zona_chk" value="Sur"> <span>Sur</span>
+                                            </label>
+                                            <label class="checkbox" style="display:flex;gap:8px;align-items:center;padding:6px 8px; cursor:pointer;">
+                                                <input type="checkbox" name="zona_chk" value="Este"> <span>Este</span>
+                                            </label>
+                                            <label class="checkbox" style="display:flex;gap:8px;align-items:center;padding:6px 8px; cursor:pointer;">
+                                                <input type="checkbox" name="zona_chk" value="Oeste"> <span>Oeste</span>
+                                            </label>
+                                        </div>
                                     </div>
+
                                     <small class="help-text">Podés seleccionar hasta 4 zonas.</small>
                                     <input type="hidden" name="zona_asignada" id="edit_zona_asignada" value="">
                                 </div>
-
-
 
                                 <!-- Correo (ocupa 3 columnas) -->
                                 <div class="input-group col-span-3">
@@ -528,42 +548,79 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         // ---- Zonas (select múltiple con tope 4) ----
+        // ---- Zonas (dropdown con checkboxes, máx 4) ----
         const ZONAS_LIMIT = 4;
 
-        function syncZonasHiddenFromSelect() {
-            const select = document.getElementById('edit_zonas');
-            const values = Array.from(select.selectedOptions).map(o => o.value);
-            document.getElementById('edit_zona_asignada').value = values.join(',');
+        function toggleZonasMenu(forceState) {
+            const menu = document.getElementById('zonasMenu');
+            const trigger = document.getElementById('zonasTrigger');
+            const willOpen = typeof forceState === 'boolean' ? forceState : menu.classList.contains('hidden');
+            menu.classList.toggle('hidden', !willOpen);
+            trigger.setAttribute('aria-expanded', String(willOpen));
         }
 
-        function enforceZonasLimit() {
-            const select = document.getElementById('edit_zonas');
-            const selected = Array.from(select.selectedOptions);
-            if (selected.length > ZONAS_LIMIT) {
-                selected[selected.length - 1].selected = false;
+        function zonasToCSV() {
+            const checks = document.querySelectorAll('#zonasMenu input[name="zona_chk"]');
+            const valores = Array.from(checks).filter(c => c.checked).map(c => c.value);
+            document.getElementById('edit_zona_asignada').value = valores.join(',');
+            actualizarZonasLabel(valores);
+        }
+
+        function actualizarZonasLabel(valoresArr) {
+            const label = document.getElementById('zonasLabel');
+            if (!valoresArr || valoresArr.length === 0) {
+                label.textContent = 'Seleccioná zonas';
+                return;
+            }
+            label.textContent = valoresArr.join(', ');
+        }
+
+        function onZonasChange(e) {
+            const checks = document.querySelectorAll('#zonasMenu input[name="zona_chk"]');
+            const seleccionadas = Array.from(checks).filter(c => c.checked);
+            if (seleccionadas.length > ZONAS_LIMIT) {
+                // desmarco el último cambio
+                e.target.checked = false;
                 showAlert('error', `Podés seleccionar como máximo ${ZONAS_LIMIT} zonas.`);
+                return;
             }
-            syncZonasHiddenFromSelect();
+            zonasToCSV();
         }
 
-        // Precarga/Reseteo desde CSV
+        // Precarga / reset desde CSV
         function initZonasFromCSV(csv) {
-            const select = document.getElementById('edit_zonas');
+            const checks = document.querySelectorAll('#zonasMenu input[name="zona_chk"]');
             const arr = (csv || '').split(',').map(x => x.trim()).filter(Boolean);
-            Array.from(select.options).forEach(opt => {
-                opt.selected = arr.includes(opt.value);
+            checks.forEach(chk => {
+                chk.checked = arr.includes(chk.value);
             });
-            syncZonasHiddenFromSelect();
+            zonasToCSV();
         }
 
-        // Listener de cambios
+        // Listeners de UI
         document.addEventListener('DOMContentLoaded', () => {
-            const select = document.getElementById('edit_zonas');
-            if (select) {
-                select.addEventListener('change', enforceZonasLimit);
+            const trigger = document.getElementById('zonasTrigger');
+            const menu = document.getElementById('zonasMenu');
+            if (trigger && menu) {
+                trigger.addEventListener('click', () => toggleZonasMenu());
+                menu.querySelectorAll('input[name="zona_chk"]').forEach(chk => {
+                    chk.addEventListener('change', onZonasChange);
+                });
             }
+
+            // Cerrar al click afuera
+            document.addEventListener('click', (e) => {
+                const within = trigger.contains(e.target) || menu.contains(e.target);
+                if (!within) toggleZonasMenu(false);
+            });
+
+            // Accesibilidad: ESC para cerrar
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') toggleZonasMenu(false);
+            });
         });
 
+        // funcion de contraseña
         function guardarNuevaContrasena() {
             const nuevaPass = document.getElementById('nuevaContrasena').value;
 
@@ -633,7 +690,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             e.preventDefault();
 
             // Garantizo que el hidden está sincronizado desde el select
-            syncZonasHiddenFromSelect();
+            zonasToCSV();
 
             const formData = new FormData(this);
 
