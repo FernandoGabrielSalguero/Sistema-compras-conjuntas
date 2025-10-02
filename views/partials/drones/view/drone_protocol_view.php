@@ -493,63 +493,78 @@ declare(strict_types=1);
     // Funcion para descargar en PDF de una sola página 
 
     async function descargarComoPDFUnaPagina() {
-  try {
-    if (!sectionEl) {
-      showAlert('error', 'No se encontró la sección a exportar.');
-      return;
-    }
+      try {
+        if (!sectionEl) {
+          showAlert('error', 'No se encontró la sección a exportar.');
+          return;
+        }
 
-    // Forzar visibilidad de la sección en el CLON interno que crea html2canvas
-    // (No pasamos un nodo clonado nuestro para evitar el error del "cloned iframe")
-    const canvas = await html2canvas(sectionEl, {
-      backgroundColor: '#ffffff',
-      scale: 2,
-      useCORS: true,
-      scrollX: 0,
-      scrollY: -window.scrollY,
-      onclone: (clonedDoc) => {
-        const cont = clonedDoc.querySelector('#protocolo-contenido');
-        if (cont) cont.hidden = false;
-        const hdr = clonedDoc.querySelector('.protocolo-header');
-        if (hdr) hdr.style.minHeight = '80px';
+        // Forzar visibilidad de la sección en el CLON interno que crea html2canvas
+        // (No pasamos un nodo clonado nuestro para evitar el error del "cloned iframe")
+        const canvas = await html2canvas(sectionEl, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+          useCORS: true,
+          scrollX: 0,
+          scrollY: -window.scrollY,
+          onclone: (clonedDoc) => {
+            const cont = clonedDoc.querySelector('#protocolo-contenido');
+            if (cont) cont.hidden = false;
+            const hdr = clonedDoc.querySelector('.protocolo-header');
+            if (hdr) hdr.style.minHeight = '80px';
+          }
+        });
+
+        // Imagen del canvas
+        const imgData = canvas.toDataURL('image/jpeg', 0.98);
+
+        // Crear PDF A4 y escalar para que entre en 1 página (mantener aspecto)
+        const {
+          jsPDF
+        } = window.jspdf;
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+
+        const margin = 8; // mm
+        const maxW = pageW - margin * 2;
+        const maxH = pageH - margin * 2;
+
+        // Conversión px->mm (1 px ≈ 0.264583 mm)
+        const px2mm = 0.264583;
+        const imgWmm = canvas.width * px2mm;
+        const imgHmm = canvas.height * px2mm;
+
+        // Forzar a ocupar todo el ancho disponible (maxW)
+        const ratio = maxW / imgWmm;
+        let w = maxW;
+        let h = imgHmm * ratio;
+
+        // Si la altura calculada excede la hoja, reducimos a alto máximo
+        if (h > maxH) {
+          const ratioH = maxH / imgHmm;
+          h = maxH;
+          w = imgWmm * ratioH;
+        }
+
+        const x = (pageW - w) / 2;
+        const y = (pageH - h) / 2;
+
+        pdf.addImage(imgData, 'JPEG', x, y, w, h, '', 'FAST');
+
+        const hoy = new Date().toISOString().slice(0, 10);
+        pdf.save(`protocolo_${h}.pdf`.replace('{h}', hoy));
+        showAlert('success', 'PDF generado correctamente.');
+      } catch (err) {
+        const msg = (err && err.message) ? err.message : String(err);
+        showAlert('error', 'No se pudo generar el PDF: ' + msg);
       }
-    });
-
-    // Imagen del canvas
-    const imgData = canvas.toDataURL('image/jpeg', 0.98);
-
-    // Crear PDF A4 y escalar para que entre en 1 página (mantener aspecto)
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-    const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = pdf.internal.pageSize.getHeight();
-
-    const margin = 8; // mm
-    const maxW = pageW - margin * 2;
-    const maxH = pageH - margin * 2;
-
-    // Conversión px->mm (1 px ≈ 0.264583 mm)
-    const px2mm = 0.264583;
-    const imgWmm = canvas.width  * px2mm;
-    const imgHmm = canvas.height * px2mm;
-
-    const ratio = Math.min(maxW / imgWmm, maxH / imgHmm);
-    const w = imgWmm * ratio;
-    const h = imgHmm * ratio;
-    const x = (pageW - w) / 2;
-    const y = (pageH - h) / 2;
-
-    pdf.addImage(imgData, 'JPEG', x, y, w, h, '', 'FAST');
-
-    const hoy = new Date().toISOString().slice(0, 10);
-    pdf.save(`protocolo_${h}.pdf`.replace('{h}', hoy));
-    showAlert('success', 'PDF generado correctamente.');
-  } catch (err) {
-    const msg = (err && err.message) ? err.message : String(err);
-    showAlert('error', 'No se pudo generar el PDF: ' + msg);
-  }
-}
+    }
 
 
     function updateMapsButton(lat, lng) {
