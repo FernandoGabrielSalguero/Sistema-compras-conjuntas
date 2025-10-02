@@ -146,7 +146,7 @@ declare(strict_types=1);
                 </div>
               </div>
               <div class="input-group">
-                <label for="pv_usuario">Usuario</label>
+                <label for="pv_usuario">Productor</label>
                 <div class="input-icon input-icon-user">
                   <input id="pv_usuario" readonly>
                 </div>
