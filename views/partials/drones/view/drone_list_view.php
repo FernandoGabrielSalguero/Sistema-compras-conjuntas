@@ -497,46 +497,77 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                     return;
                 }
 
-                // 1) Encabezados estables
-                const keySet = new Set();
-                for (const r of rows)
-                    for (const k of Object.keys(r)) keySet.add(k);
-                const keys = Array.from(keySet);
+                                // 1) Whitelist + orden exacto de columnas requeridas
+                const keys = [
+                    's_agua_potable',
+                    's_area_despegue',
+                    's_corriente_electrica',
+                    's_dir_calle',
+                    's_dir_localidad',
+                    's_dir_numero',
+                    's_dir_provincia',
+                    's_en_finca',
+                    's_estado',
+                    's_fecha_visita',
+                    's_forma_pago_id',
+                    's_hora_visita_desde',
+                    's_hora_visita_hasta',
+                    's_id',
+                    's_libre_obstaculos',
+                    's_linea_tension',
+                    's_motivo_cancelacion',
+                    's_observaciones',
+                    's_productor_id_real',
+                    's_productor_nombre',
+                    's_representante',
+                    's_ses_correo',
+                    's_ses_nombre',
+                    's_ses_rol',
+                    's_ses_telefono',
+                    's_ses_usuario',
+                    's_superficie_ha',
+                    's_zona_restringida',
+                    'c_base_ha',
+                    'c_base_total',
+                    'c_productos_total',
+                    'c_solicitud_id',
+                    'c_total',
+                    'si_costo_hectarea_snapshot',
+                    'si_fuente',
+                    'si_nombre_producto',
+                    'si_patologia_nombre',
+                    'si_producto_id',
+                    'si_producto_nombre',
+                    'si_solicitud_id',
+                    'si_total_producto_snapshot',
+                    'sm_patologia_nombre',
+                    'sr_rango'
+                ];
 
-                // 2) Orden por prefijos para legibilidad
-                const order = ['s_', 's_productor_', 's_piloto_', 'c_', 'e_', 'si_', 'sir_', 'sm_', 'sp_', 'sr_'];
-                keys.sort((a, b) => {
-                    const pa = order.findIndex(p => a.startsWith(p));
-                    const pb = order.findIndex(p => b.startsWith(p));
-                    const ia = pa === -1 ? 999 : pa;
-                    const ib = pb === -1 ? 999 : pb;
-                    if (ia !== ib) return ia - ib;
-                    return a.localeCompare(b);
-                });
-
-                // 3) Normalizar filas a las mismas columnas
+                // 2) Normalizar filas SOLO con las columnas whitelist
                 const flatRows = rows.map(r => {
                     const obj = {};
                     for (const k of keys) obj[k] = (k in r) ? r[k] : '';
                     return obj;
                 });
 
-                // 4) Hoja y anchos
-                const ws = XLSX.utils.json_to_sheet(flatRows, {
-                    header: keys
-                });
+                // 3) Hoja y anchos
+                const ws = XLSX.utils.json_to_sheet(flatRows, { header: keys });
+
+
                 const colWidths = keys.map(k => Math.min(60, Math.max(12, k.length + 2)));
                 ws['!cols'] = colWidths.map(w => ({
                     wch: w
                 }));
 
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes (full)');
+                XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes');
 
                 const now = new Date();
                 const pad = n => String(n).padStart(2, '0');
-                const fname = `drones_export_full_${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.xlsx`;
+                const fname = `drones_export_${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.xlsx`;
                 XLSX.writeFile(wb, fname);
+
             } catch (e) {
                 console.error(e);
                 showMsg('error', e.message || 'Error al exportar');

@@ -194,151 +194,78 @@ if (!empty($f['q'])) {
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-        /* Seleccionamos TODAS las columnas relevantes con prefijos para evitar colisiones.
-   Nota: Esto "aplana" 1:N. Habrá repetición de datos de s_* cuando existan múltiples hijos (evento/item/receta/rango/motivo). */
-$sql = "
+        $sql = "
 SELECT
     /* ===== drones_solicitud (prefijo s_) ===== */
-    s.id                          AS s_id,
-    s.productor_id_real           AS s_productor_id_real,
-    s.representante               AS s_representante,
-    s.linea_tension               AS s_linea_tension,
-    s.zona_restringida            AS s_zona_restringida,
-    s.corriente_electrica         AS s_corriente_electrica,
-    s.agua_potable                AS s_agua_potable,
-    s.libre_obstaculos            AS s_libre_obstaculos,
-    s.area_despegue               AS s_area_despegue,
-    s.superficie_ha               AS s_superficie_ha,
-    s.fecha_visita                AS s_fecha_visita,
-    s.hora_visita_desde           AS s_hora_visita_desde,
-    s.hora_visita_hasta           AS s_hora_visita_hasta,
-    s.piloto_id                   AS s_piloto_id,
-    s.forma_pago_id               AS s_forma_pago_id,
-    s.coop_descuento_nombre       AS s_coop_descuento_nombre,
-    s.dir_provincia               AS s_dir_provincia,
-    s.dir_localidad               AS s_dir_localidad,
-    s.dir_calle                   AS s_dir_calle,
-    s.dir_numero                  AS s_dir_numero,
-    s.en_finca                    AS s_en_finca,
-    s.ubicacion_lat               AS s_ubicacion_lat,
-    s.ubicacion_lng               AS s_ubicacion_lng,
-    s.ubicacion_acc               AS s_ubicacion_acc,
-    s.ubicacion_ts                AS s_ubicacion_ts,
-    s.observaciones               AS s_observaciones,
-    s.ses_usuario                 AS s_ses_usuario,
-    s.ses_rol                     AS s_ses_rol,
-    s.ses_nombre                  AS s_ses_nombre,
-    s.ses_correo                  AS s_ses_correo,
-    s.ses_telefono                AS s_ses_telefono,
-    s.ses_direccion               AS s_ses_direccion,
-    s.ses_cuit                    AS s_ses_cuit,
-    s.ses_last_activity_ts        AS s_ses_last_activity_ts,
-    s.estado                      AS s_estado,
-    s.motivo_cancelacion          AS s_motivo_cancelacion,
-    s.created_at                  AS s_created_at,
-    s.updated_at                  AS s_updated_at,
-
-    /* ===== datos derivados legibles ===== */
-    COALESCE(ui.nombre, u.usuario)    AS s_productor_nombre,
-    COALESCE(uip.nombre, up.usuario)  AS s_piloto_nombre,
+    s.agua_potable           AS s_agua_potable,
+    s.area_despegue          AS s_area_despegue,
+    s.corriente_electrica    AS s_corriente_electrica,
+    s.dir_calle              AS s_dir_calle,
+    s.dir_localidad          AS s_dir_localidad,
+    s.dir_numero             AS s_dir_numero,
+    s.dir_provincia          AS s_dir_provincia,
+    s.en_finca               AS s_en_finca,
+    s.estado                 AS s_estado,
+    s.fecha_visita           AS s_fecha_visita,
+    s.forma_pago_id          AS s_forma_pago_id,
+    s.hora_visita_desde      AS s_hora_visita_desde,
+    s.hora_visita_hasta      AS s_hora_visita_hasta,
+    s.id                     AS s_id,
+    s.libre_obstaculos       AS s_libre_obstaculos,
+    s.linea_tension          AS s_linea_tension,
+    s.motivo_cancelacion     AS s_motivo_cancelacion,
+    s.observaciones          AS s_observaciones,
+    s.productor_id_real      AS s_productor_id_real,
+    COALESCE(ui.nombre, u.usuario) AS s_productor_nombre,
+    s.representante          AS s_representante,
+    s.ses_correo             AS s_ses_correo,
+    s.ses_nombre             AS s_ses_nombre,
+    s.ses_rol                AS s_ses_rol,
+    s.ses_telefono           AS s_ses_telefono,
+    s.ses_usuario            AS s_ses_usuario,
+    s.superficie_ha          AS s_superficie_ha,
+    s.zona_restringida       AS s_zona_restringida,
 
     /* ===== drones_solicitud_costos (prefijo c_) ===== */
-    c.id                          AS c_id,
-    c.solicitud_id                AS c_solicitud_id,
-    c.moneda                      AS c_moneda,
-    c.costo_base_por_ha           AS c_costo_base_por_ha,
-    c.base_ha                     AS c_base_ha,
-    c.base_total                  AS c_base_total,
-    c.productos_total             AS c_productos_total,
-    c.total                       AS c_total,
-    c.desglose_json               AS c_desglose_json,
-    c.created_at                  AS c_created_at,
-
-    /* ===== drones_solicitud_evento (prefijo e_) ===== */
-    e.id                          AS e_id,
-    e.tipo                        AS e_tipo,
-    e.detalle                     AS e_detalle,
-    e.payload                     AS e_payload,
-    e.actor                       AS e_actor,
-    e.created_at                  AS e_created_at,
+    c.base_ha                AS c_base_ha,
+    c.base_total             AS c_base_total,
+    c.productos_total        AS c_productos_total,
+    c.solicitud_id           AS c_solicitud_id,
+    c.total                  AS c_total,
 
     /* ===== drones_solicitud_item (prefijo si_) ===== */
-    si.id                         AS si_id,
-    si.solicitud_id               AS si_solicitud_id,
-    si.patologia_id               AS si_patologia_id,
-    si.fuente                     AS si_fuente,
-    si.producto_id                AS si_producto_id,
-    si.costo_hectarea_snapshot    AS si_costo_hectarea_snapshot,
-    si.total_producto_snapshot    AS si_total_producto_snapshot,
-    si.nombre_producto            AS si_nombre_producto,
-    si.created_at                 AS si_created_at,
-    si.updated_at                 AS si_updated_at,
-
-    /* Legibles de item */
-    pa.nombre                     AS si_patologia_nombre,
-    ps.nombre                     AS si_producto_nombre,
-
-    /* ===== drones_solicitud_item_receta (prefijo sir_) ===== */
-    sir.id                        AS sir_id,
-    sir.solicitud_item_id         AS sir_solicitud_item_id,
-    sir.principio_activo          AS sir_principio_activo,
-    sir.dosis                     AS sir_dosis,
-    sir.unidad                    AS sir_unidad,
-    sir.orden_mezcla              AS sir_orden_mezcla,
-    sir.notas                     AS sir_notas,
-    sir.created_by                AS sir_created_by,
-    sir.updated_by                AS sir_updated_by,
-    sir.created_at                AS sir_created_at,
-    sir.updated_at                AS sir_updated_at,
+    si.costo_hectarea_snapshot AS si_costo_hectarea_snapshot,
+    si.fuente                  AS si_fuente,
+    si.nombre_producto         AS si_nombre_producto,
+    pa.nombre                  AS si_patologia_nombre,
+    si.producto_id             AS si_producto_id,
+    ps.nombre                  AS si_producto_nombre,
+    si.solicitud_id            AS si_solicitud_id,
+    si.total_producto_snapshot AS si_total_producto_snapshot,
 
     /* ===== drones_solicitud_motivo (prefijo sm_) ===== */
-    sm.id                         AS sm_id,
-    sm.patologia_id               AS sm_patologia_id,
-    sm.es_otros                   AS sm_es_otros,
-    sm.otros_text                 AS sm_otros_text,
-    sm.created_at                 AS sm_created_at,
-    pm.nombre                     AS sm_patologia_nombre,
-
-    /* ===== drones_solicitud_parametros (prefijo sp_) ===== */
-    sp.id                         AS sp_id,
-    sp.volumen_ha                 AS sp_volumen_ha,
-    sp.velocidad_vuelo            AS sp_velocidad_vuelo,
-    sp.alto_vuelo                 AS sp_alto_vuelo,
-    sp.ancho_pasada               AS sp_ancho_pasada,
-    sp.tamano_gota                AS sp_tamano_gota,
-    sp.observaciones              AS sp_observaciones,
-    sp.created_at                 AS sp_created_at,
-    sp.updated_at                 AS sp_updated_at,
+    pm.nombre                 AS sm_patologia_nombre,
 
     /* ===== drones_solicitud_rango (prefijo sr_) ===== */
-    sr.id                         AS sr_id,
-    sr.rango                      AS sr_rango,
-    sr.created_at                 AS sr_created_at
+    sr.rango                  AS sr_rango
 
 FROM drones_solicitud s
 LEFT JOIN drones_solicitud_costos       c   ON c.solicitud_id = s.id
-LEFT JOIN drones_solicitud_evento       e   ON e.solicitud_id = s.id
 LEFT JOIN drones_solicitud_item         si  ON si.solicitud_id = s.id
-LEFT JOIN drones_solicitud_item_receta  sir ON sir.solicitud_item_id = si.id
 LEFT JOIN drones_solicitud_motivo       sm  ON sm.solicitud_id = s.id
-LEFT JOIN drones_solicitud_parametros   sp  ON sp.solicitud_id = s.id
 LEFT JOIN drones_solicitud_rango        sr  ON sr.solicitud_id = s.id
 
-/* Productor */
+/* Productor (para s_productor_nombre) */
 LEFT JOIN usuarios       u   ON u.id_real = s.productor_id_real
 LEFT JOIN usuarios_info  ui  ON ui.usuario_id = u.id
-
-/* Piloto */
-LEFT JOIN usuarios       up  ON up.id = s.piloto_id
-LEFT JOIN usuarios_info  uip ON uip.usuario_id = up.id
 
 /* Legibles para item/motivo */
 LEFT JOIN dron_patologias      pa ON pa.id = si.patologia_id
 LEFT JOIN dron_productos_stock ps ON ps.id = si.producto_id
 LEFT JOIN dron_patologias      pm ON pm.id = sm.patologia_id
 
-$whereSql
-ORDER BY s.created_at DESC, s.id DESC, e.created_at ASC, si.id ASC, sir.orden_mezcla ASC
+{$whereSql}
+ORDER BY s.created_at DESC, s.id DESC, si.id ASC
 ";
 
 
