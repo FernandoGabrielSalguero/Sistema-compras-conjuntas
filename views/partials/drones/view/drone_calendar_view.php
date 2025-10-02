@@ -341,22 +341,19 @@
       });
     }
 
-    async function createNote(fecha){ openModal(fecha, '', null); }
+    async function createNote(fecha){ openModal(fecha); }
 
     async function editNote(id){
       const actual=currentData.notas.find(n=>String(n.id)===String(id)); if(!actual) return;
-      openModal(actual.fecha, actual.texto, actual.id);
+      const texto=window.prompt('Editar nota:', actual.texto); if(texto===null) return;
+      const body=new FormData(); body.append('action','note_update'); body.append('id',String(id)); body.append('texto',texto);
+      await fetchJSON(API,{method:'POST', body}); await reloadAndRender();
     }
 
     async function deleteNote(id){
-      const actual=currentData.notas.find(n=>String(n.id)===String(id));
-      const textoPreview = actual ? (actual.texto.length>60 ? actual.texto.slice(0,60)+'…' : actual.texto) : '';
-      openConfirm(`¿Eliminar la nota${textoPreview ? `: “${textoPreview}”` : ''}?`, async ()=>{
-        const body=new FormData(); body.append('action','note_delete'); body.append('id',String(id));
-        await fetchJSON(API,{method:'POST', body});
-        closeConfirm();
-        await reloadAndRender();
-      });
+      if(!window.confirm('¿Eliminar nota?')) return;
+      const body=new FormData(); body.append('action','note_delete'); body.append('id',String(id));
+      await fetchJSON(API,{method:'POST', body}); await reloadAndRender();
     }
 
     async function reloadAndRender(){ await loadCalendar(viewDate); render(); healthEl.textContent=''; }
