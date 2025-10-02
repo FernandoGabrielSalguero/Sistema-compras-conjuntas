@@ -600,10 +600,24 @@ declare(strict_types=1);
 
         pdf.addImage(imgData, 'JPEG', x, y, w, h, '', 'FAST');
 
+// Tomamos productor (usuario) y fecha de la visita desde inputs
+const productor = (document.getElementById('pv_usuario')?.value || 'productor').trim();
+const fechaVisita = (document.getElementById('pv_fecha')?.value || 'fecha').trim();
 
-        const hoy = new Date().toISOString().slice(0, 10);
-        pdf.save(`protocolo_${h}.pdf`.replace('{h}', hoy));
-        showAlert('success', 'PDF generado correctamente.');
+// Sanitizar para que no tenga caracteres inválidos en el nombre
+function slugify(txt) {
+  return txt.normalize("NFD").replace(/[\u0300-\u036f]/g, "") // sin tildes
+            .replace(/[^a-zA-Z0-9_-]/g, "_");                  // solo seguro
+}
+
+const nombreProd = slugify(productor);
+const fecha = slugify(fechaVisita);
+
+// Armar nombre final
+const filename = `protocolo_${nombreProd}_${fecha}.pdf`;
+
+pdf.save(filename);
+showAlert('success', 'PDF generado correctamente.');
       } catch (err) {
         const msg = (err && err.message) ? err.message : String(err);
         showAlert('error', 'No se pudo generar el PDF: ' + msg);
