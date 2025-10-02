@@ -6,8 +6,9 @@ declare(strict_types=1);
 <link rel="preload" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css" as="style" onload="this.rel='stylesheet'">
 <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
 
-<!-- Descargar PDF (incluye html2canvas + jsPDF) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<!-- Exportar a PDF en una sola página -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <!-- Íconos de Material Design -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
@@ -179,22 +180,22 @@ declare(strict_types=1);
           <div class="protocolo-bloque">
             <h3 style="color: #5b21b6;">Productos a utilizar</h3>
             <div class="tabla-wrapper">
-<table class="data-table" aria-label="Productos y receta">
-  <thead>
-    <tr>
-      <th>Producto</th>
-      <th>Principio activo</th>
-      <th>Dosis</th>
-      <th>Orden mezcla</th>
-      <th>Notas</th>
-    </tr>
-  </thead>
-  <tbody id="tabla-items">
-    <tr>
-      <td colspan="5">Sin datos</td>
-    </tr>
-  </tbody>
-</table>
+              <table class="data-table" aria-label="Productos y receta">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Principio activo</th>
+                    <th>Dosis</th>
+                    <th>Orden mezcla</th>
+                    <th>Notas</th>
+                  </tr>
+                </thead>
+                <tbody id="tabla-items">
+                  <tr>
+                    <td colspan="5">Sin datos</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -369,7 +370,17 @@ declare(strict_types=1);
   }
 
   /* (Opcional) Alinear números en Orden mezcla */
-.data-table td:nth-child(4), .data-table th:nth-child(4){ text-align:center; }
+  .data-table td:nth-child(4),
+  .data-table th:nth-child(4) {
+    text-align: center;
+  }
+
+  /* Ajustes solo para exportación (usados en el clon) */
+  @media print {
+    .protocolo-header {
+      min-height: 80px !important;
+    }
+  }
 </style>
 
 <script>
@@ -389,8 +400,9 @@ declare(strict_types=1);
       estado: $('#filtro_estado')
     };
 
-// Bind botón descargar (PDF)
-btnDescargar?.addEventListener('click', descargarComoPDF);
+    // Bind botón descargar (PDF 1 página)
+    btnDescargar?.addEventListener('click', descargarComoPDFUnaPagina);
+
 
     // Healthcheck inicial
     fetch(API + '?t=' + Date.now(), {
@@ -478,36 +490,71 @@ btnDescargar?.addEventListener('click', descargarComoPDF);
       });
     }
 
-function descargarComoPDF() {
-  try {
-    if (!sectionEl) {
-      showAlert('error', 'No se encontró la sección a exportar.');
-      return;
-    }
-    // Asegurar que el contenido esté visible en el render
-    const el = sectionEl.cloneNode(true);
-    const contenidoClone = el.querySelector('#protocolo-contenido');
-    if (contenidoClone) contenidoClone.hidden = false;
+    async function descargarComoPDFUnaPagina() {
+      try {
+        if (!sectionEl) {
+          showAlert('error', 'No se encontró la sección a exportar.');
+          return;
+        }
 
-    const hoy = new Date().toISOString().slice(0, 10);
-    const opt = {
-      margin:       10,                 // mm
-      filename:     `protocolo_${hoy}.pdf`,
-      image:        { type: 'jpeg', quality: 0.95 },
-      html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(el).save().then(() => {
-      showAlert('success', 'PDF generado correctamente.');
-    }).catch((err) => {
-      const msg = (err && err.message) ? err.message : String(err);
-      showAlert('error', 'No se pudo generar el PDF: ' + msg);
-    });
-  } catch (err) {
-    const msg = (err && err.message) ? err.message : String(err);
-    showAlert('error', 'No se pudo generar el PDF: ' + msg);
-  }
-}
+        // Clonar y forzar que todo esté visible (evita FOUC)
+        const node = sectionEl.cloneNode(true);
+        const contenido = node.querySelector('#protocolo-contenido');
+        if (contenido) contenido.hidden = false;
+
+        // Ajustes menores solo para el render del PDF (reducir aire del header)
+        const hdr = node.querySelector('.protocolo-header');
+        if (hdr) hdr.style.minHeight = '80px';
+
+        // Render a canvas de alta resolución con fondo blanco
+        const canvas = await html2canvas(node, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+          useCORS: true
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.98);
+
+        // Crear PDF A4 y escalar la imagen para que ENTRE COMPLETA en 1 página
+        const {
+          jsPDF
+        } = window.jspdf;
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        const margin = 8; // mm
+        const maxW = pageWidth - margin * 2;
+        const maxH = pageHeight - margin * 2;
+
+        // Tamaño de la imagen en mm conservando relación de aspecto
+        // 1 px ~= 0.264583 mm
+        const px2mm = 0.264583;
+        const imgWmm = canvas.width * px2mm;
+        const imgHmm = canvas.height * px2mm;
+
+        const ratio = Math.min(maxW / imgWmm, maxH / imgHmm); // fit to page
+        const finalW = imgWmm * ratio;
+        const finalH = imgHmm * ratio;
+        const x = (pageWidth - finalW) / 2;
+        const y = (pageHeight - finalH) / 2;
+
+        pdf.addImage(imgData, 'JPEG', x, y, finalW, finalH, '', 'FAST');
+
+        const hoy = new Date().toISOString().slice(0, 10);
+        pdf.save(`protocolo_${hoy}.pdf`);
+        showAlert('success', 'PDF generado correctamente.');
+      } catch (err) {
+        const msg = (err && err.message) ? err.message : String(err);
+        showAlert('error', 'No se pudo generar el PDF: ' + msg);
+      }
+    }
+
 
 
     function updateMapsButton(lat, lng) {
@@ -598,43 +645,43 @@ function descargarComoPDF() {
       }
 
       // Items + receta (ordenado por prioridad: orden_mezcla ASC) y sin columna "#"
-const tbody = document.getElementById('tabla-items');
-/** @type {Array<{producto:string, principio:string, dosis:string, orden:number|string, notas:string}>} */
-const filas = [];
+      const tbody = document.getElementById('tabla-items');
+      /** @type {Array<{producto:string, principio:string, dosis:string, orden:number|string, notas:string}>} */
+      const filas = [];
 
-if (Array.isArray(data.items) && data.items.length) {
-  data.items.forEach((it) => {
-    const producto = it.nombre_producto || '';
-    if (it.receta && it.receta.length) {
-      it.receta.forEach((rc) => {
-        const ordenVal = (rc.orden_mezcla === null || rc.orden_mezcla === undefined) ? 9999 : Number(rc.orden_mezcla);
-        filas.push({
-          producto,
-          principio: rc.principio_activo || '',
-          dosis: `${rc.dosis ?? ''} ${rc.unidad || ''}`.trim(),
-          orden: isNaN(ordenVal) ? 9999 : ordenVal,
-          notas: rc.notas || ''
+      if (Array.isArray(data.items) && data.items.length) {
+        data.items.forEach((it) => {
+          const producto = it.nombre_producto || '';
+          if (it.receta && it.receta.length) {
+            it.receta.forEach((rc) => {
+              const ordenVal = (rc.orden_mezcla === null || rc.orden_mezcla === undefined) ? 9999 : Number(rc.orden_mezcla);
+              filas.push({
+                producto,
+                principio: rc.principio_activo || '',
+                dosis: `${rc.dosis ?? ''} ${rc.unidad || ''}`.trim(),
+                orden: isNaN(ordenVal) ? 9999 : ordenVal,
+                notas: rc.notas || ''
+              });
+            });
+          } else {
+            filas.push({
+              producto,
+              principio: '',
+              dosis: '',
+              orden: 9999,
+              notas: 'Sin receta cargada'
+            });
+          }
         });
-      });
-    } else {
-      filas.push({
-        producto,
-        principio: '',
-        dosis: '',
-        orden: 9999,
-        notas: 'Sin receta cargada'
-      });
-    }
-  });
-}
+      }
 
-// ordenar por orden_mezcla asc (prioridad)
-filas.sort((a, b) => (a.orden - b.orden));
+      // ordenar por orden_mezcla asc (prioridad)
+      filas.sort((a, b) => (a.orden - b.orden));
 
-if (!filas.length) {
-  tbody.innerHTML = '<tr><td colspan="5">Sin datos</td></tr>';
-} else {
-  tbody.innerHTML = filas.map(f => `
+      if (!filas.length) {
+        tbody.innerHTML = '<tr><td colspan="5">Sin datos</td></tr>';
+      } else {
+        tbody.innerHTML = filas.map(f => `
     <tr>
       <td>${f.producto}</td>
       <td>${f.principio}</td>
@@ -643,7 +690,7 @@ if (!filas.length) {
       <td>${f.notas}</td>
     </tr>
   `).join('');
-}
+      }
 
 
 
