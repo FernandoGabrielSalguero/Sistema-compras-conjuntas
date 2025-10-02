@@ -501,19 +501,36 @@ declare(strict_types=1);
 
         // Forzar visibilidad de la sección en el CLON interno que crea html2canvas
         // (No pasamos un nodo clonado nuestro para evitar el error del "cloned iframe")
-        const canvas = await html2canvas(sectionEl, {
-          backgroundColor: '#ffffff',
-          scale: 2,
-          useCORS: true,
-          scrollX: 0,
-          scrollY: -window.scrollY,
-          onclone: (clonedDoc) => {
-            const cont = clonedDoc.querySelector('#protocolo-contenido');
-            if (cont) cont.hidden = false;
-            const hdr = clonedDoc.querySelector('.protocolo-header');
-            if (hdr) hdr.style.minHeight = '80px';
-          }
-        });
+const canvas = await html2canvas(sectionEl, {
+  backgroundColor: '#ffffff',
+  scale: 2,
+  useCORS: true,
+  scrollX: 0,
+  scrollY: -window.scrollY,
+  onclone: (clonedDoc) => {
+    // Mostrar contenido
+    const cont = clonedDoc.querySelector('#protocolo-contenido');
+    if (cont) cont.hidden = false;
+
+    // Compactar el layout del clon para que la imagen no tenga “aire”
+    const card = clonedDoc.querySelector('.protocolo-card');
+    if (card) {
+      card.style.boxShadow = 'none';
+      card.style.border = 'none';
+      card.style.borderRadius = '0';
+      card.style.margin = '0';
+      card.style.padding = '12px';
+    }
+    const content = clonedDoc.querySelector('.content');
+    if (content) {
+      content.style.padding = '0';
+      content.style.margin = '0';
+    }
+    const hdr = clonedDoc.querySelector('.protocolo-header');
+    if (hdr) hdr.style.minHeight = '72px';
+  }
+});
+
 
         // Imagen del canvas
         const imgData = canvas.toDataURL('image/jpeg', 0.98);
@@ -531,31 +548,26 @@ declare(strict_types=1);
         const pageW = pdf.internal.pageSize.getWidth();
         const pageH = pdf.internal.pageSize.getHeight();
 
-        const margin = 8; // mm
-        const maxW = pageW - margin * 2;
-        const maxH = pageH - margin * 2;
+const margin = 4; // mm (más pequeño para aprovechar la hoja)
+const maxW = pageW - margin * 2;
+const maxH = pageH - margin * 2;
 
-        // Conversión px->mm (1 px ≈ 0.264583 mm)
-        const px2mm = 0.264583;
-        const imgWmm = canvas.width * px2mm;
-        const imgHmm = canvas.height * px2mm;
+// px -> mm
+const px2mm = 0.264583;
+const imgWmm = canvas.width  * px2mm;
+const imgHmm = canvas.height * px2mm;
 
-        // Forzar a ocupar todo el ancho disponible (maxW)
-        const ratio = maxW / imgWmm;
-        let w = maxW;
-        let h = imgHmm * ratio;
+// Encajar por el lado LIMITANTE (usa todo el ancho o todo el alto)
+const ratio = Math.min(maxW / imgWmm, maxH / imgHmm);
+const w = imgWmm * ratio;
+const h = imgHmm * ratio;
 
-        // Si la altura calculada excede la hoja, reducimos a alto máximo
-        if (h > maxH) {
-          const ratioH = maxH / imgHmm;
-          h = maxH;
-          w = imgWmm * ratioH;
-        }
+// Centrado horizontal y alineado ARRIBA con pequeño margen
+const x = (pageW - w) / 2;
+const y = margin;
 
-        const x = (pageW - w) / 2;
-        const y = (pageH - h) / 2;
+pdf.addImage(imgData, 'JPEG', x, y, w, h, '', 'FAST');
 
-        pdf.addImage(imgData, 'JPEG', x, y, w, h, '', 'FAST');
 
         const hoy = new Date().toISOString().slice(0, 10);
         pdf.save(`protocolo_${h}.pdf`.replace('{h}', hoy));
