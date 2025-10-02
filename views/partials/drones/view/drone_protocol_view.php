@@ -381,6 +381,38 @@ declare(strict_types=1);
       min-height: 80px !important;
     }
   }
+
+  /* ===== Listado de Servicios: mostrar 10 filas con scroll vertical ===== */
+  aside .tabla-wrapper {
+    /* Altura calculada: alto del header + 10 filas */
+    --headH: 44px;
+    /* ajustable si tu header es más alto/bajo */
+    --rowH: 40px;
+    /* alto promedio de una fila (ajustable) */
+    max-height: calc(var(--headH) + (var(--rowH) * 10));
+    overflow-y: auto;
+    /* scroll vertical solo en el listado */
+    border: 1px solid #e5e7eb;
+    /* opcional: delimita visualmente el área scrolleable */
+    border-radius: 6px;
+    /* opcional */
+  }
+
+  /* Header pegado arriba mientras se hace scroll */
+  aside .data-table thead th {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    /* asegura contraste sobre el contenido scrolleado */
+    z-index: 2;
+  }
+
+  /* Ajuste suave de altura de filas para que ~40px sea realista con el framework */
+  #tabla-servicios tr>td,
+  #tabla-servicios tr>th {
+    padding-top: .45rem;
+    padding-bottom: .45rem;
+  }
 </style>
 
 <script>
@@ -501,35 +533,35 @@ declare(strict_types=1);
 
         // Forzar visibilidad de la sección en el CLON interno que crea html2canvas
         // (No pasamos un nodo clonado nuestro para evitar el error del "cloned iframe")
-const canvas = await html2canvas(sectionEl, {
-  backgroundColor: '#ffffff',
-  scale: 2,
-  useCORS: true,
-  scrollX: 0,
-  scrollY: -window.scrollY,
-  onclone: (clonedDoc) => {
-    // Mostrar contenido
-    const cont = clonedDoc.querySelector('#protocolo-contenido');
-    if (cont) cont.hidden = false;
+        const canvas = await html2canvas(sectionEl, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+          useCORS: true,
+          scrollX: 0,
+          scrollY: -window.scrollY,
+          onclone: (clonedDoc) => {
+            // Mostrar contenido
+            const cont = clonedDoc.querySelector('#protocolo-contenido');
+            if (cont) cont.hidden = false;
 
-    // Compactar el layout del clon para que la imagen no tenga “aire”
-    const card = clonedDoc.querySelector('.protocolo-card');
-    if (card) {
-      card.style.boxShadow = 'none';
-      card.style.border = 'none';
-      card.style.borderRadius = '0';
-      card.style.margin = '0';
-      card.style.padding = '12px';
-    }
-    const content = clonedDoc.querySelector('.content');
-    if (content) {
-      content.style.padding = '0';
-      content.style.margin = '0';
-    }
-    const hdr = clonedDoc.querySelector('.protocolo-header');
-    if (hdr) hdr.style.minHeight = '72px';
-  }
-});
+            // Compactar el layout del clon para que la imagen no tenga “aire”
+            const card = clonedDoc.querySelector('.protocolo-card');
+            if (card) {
+              card.style.boxShadow = 'none';
+              card.style.border = 'none';
+              card.style.borderRadius = '0';
+              card.style.margin = '0';
+              card.style.padding = '12px';
+            }
+            const content = clonedDoc.querySelector('.content');
+            if (content) {
+              content.style.padding = '0';
+              content.style.margin = '0';
+            }
+            const hdr = clonedDoc.querySelector('.protocolo-header');
+            if (hdr) hdr.style.minHeight = '72px';
+          }
+        });
 
 
         // Imagen del canvas
@@ -548,25 +580,25 @@ const canvas = await html2canvas(sectionEl, {
         const pageW = pdf.internal.pageSize.getWidth();
         const pageH = pdf.internal.pageSize.getHeight();
 
-const margin = 4; // mm (más pequeño para aprovechar la hoja)
-const maxW = pageW - margin * 2;
-const maxH = pageH - margin * 2;
+        const margin = 4; // mm (más pequeño para aprovechar la hoja)
+        const maxW = pageW - margin * 2;
+        const maxH = pageH - margin * 2;
 
-// px -> mm
-const px2mm = 0.264583;
-const imgWmm = canvas.width  * px2mm;
-const imgHmm = canvas.height * px2mm;
+        // px -> mm
+        const px2mm = 0.264583;
+        const imgWmm = canvas.width * px2mm;
+        const imgHmm = canvas.height * px2mm;
 
-// Encajar por el lado LIMITANTE (usa todo el ancho o todo el alto) 
-const ratio = Math.min(maxW / imgWmm, maxH / imgHmm);
-const w = imgWmm * ratio;
-const h = imgHmm * ratio;
+        // Encajar por el lado LIMITANTE (usa todo el ancho o todo el alto) 
+        const ratio = Math.min(maxW / imgWmm, maxH / imgHmm);
+        const w = imgWmm * ratio;
+        const h = imgHmm * ratio;
 
-// Centrado horizontal y alineado ARRIBA con pequeño margen
-const x = (pageW - w) / 2;
-const y = margin;
+        // Centrado horizontal y alineado ARRIBA con pequeño margen
+        const x = (pageW - w) / 2;
+        const y = margin;
 
-pdf.addImage(imgData, 'JPEG', x, y, w, h, '', 'FAST');
+        pdf.addImage(imgData, 'JPEG', x, y, w, h, '', 'FAST');
 
 
         const hoy = new Date().toISOString().slice(0, 10);
