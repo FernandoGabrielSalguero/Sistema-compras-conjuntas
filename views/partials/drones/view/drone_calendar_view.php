@@ -322,9 +322,17 @@
       });
       currentData.notas.forEach(n=>{
         const c=root.querySelector(`.cal-events[data-date="${n.fecha}"]`); if(!c) return;
-        const note=document.createElement('div'); note.className='cal-note'; note.dataset.noteId=String(n.id);
-        note.innerHTML=`<span>📝 ${n.texto}</span><span class="actions"><a data-action="edit" data-id="${n.id}">Editar</a> · <a data-action="del" data-id="${n.id}">Eliminar</a></span>`;
-        c.appendChild(note);
+<!-- Modal Confirmación -->
+<div id="confirm-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+  <div class="modal-content">
+    <h3 id="confirm-title">Confirmar acción</h3>
+    <p id="confirm-message">¿Seguro que deseas continuar?</p>
+    <div class="form-buttons">
+      <button class="btn btn-aceptar" id="btn-confirm-yes" type="button">Sí</button>
+      <button class="btn btn-cancelar" id="btn-confirm-no" type="button">Cancelar</button>
+    </div>
+  </div>
+</div>
       });
       root.querySelectorAll('.cal-add').forEach(btn=>{ btn.onclick=()=>createNote(btn.dataset.date); });
       root.querySelectorAll('.cal-note .actions a').forEach(a=>{
@@ -333,19 +341,22 @@
       });
     }
 
-    async function createNote(fecha){ openModal(fecha); }
+    async function createNote(fecha){ openModal(fecha, '', null); }
 
     async function editNote(id){
       const actual=currentData.notas.find(n=>String(n.id)===String(id)); if(!actual) return;
-      const texto=window.prompt('Editar nota:', actual.texto); if(texto===null) return;
-      const body=new FormData(); body.append('action','note_update'); body.append('id',String(id)); body.append('texto',texto);
-      await fetchJSON(API,{method:'POST', body}); await reloadAndRender();
+      openModal(actual.fecha, actual.texto, actual.id);
     }
 
     async function deleteNote(id){
-      if(!window.confirm('¿Eliminar nota?')) return;
-      const body=new FormData(); body.append('action','note_delete'); body.append('id',String(id));
-      await fetchJSON(API,{method:'POST', body}); await reloadAndRender();
+      const actual=currentData.notas.find(n=>String(n.id)===String(id));
+      const textoPreview = actual ? (actual.texto.length>60 ? actual.texto.slice(0,60)+'…' : actual.texto) : '';
+      openConfirm(`¿Eliminar la nota${textoPreview ? `: “${textoPreview}”` : ''}?`, async ()=>{
+        const body=new FormData(); body.append('action','note_delete'); body.append('id',String(id));
+        await fetchJSON(API,{method:'POST', body});
+        closeConfirm();
+        await reloadAndRender();
+      });
     }
 
     async function reloadAndRender(){ await loadCalendar(viewDate); render(); healthEl.textContent=''; }
@@ -373,22 +384,97 @@
     const modalDate=document.getElementById('modal-date');
     const btnModalAccept=document.getElementById('btn-modal-accept');
     const btnModalCancel=document.getElementById('btn-modal-cancel');
+    const modalTitle=document.getElementById('modal-title');
 
-    function openModal(fecha){ modalDate.value=fecha; modalText.value=''; modal.classList.remove('hidden'); setTimeout(()=>modalText.focus(),0); }
-    function closeModal(){ modal.classList.add('hidden'); }
+    // Estado del modal (null = crear)
+    let editNoteId = null;
+
+    function openModal(fecha, textoInicial = '', noteId = null){
+      editNoteId = noteId;
+      modalDate.value = fecha;
+      modalText.value = textoInicial || '';
+      modalTitle.textContent = editNoteId ? 'Actualizar nota' : 'Nueva nota';
+      btnModalAccept.textContent = editNoteId ? 'Actualizar' : 'Aceptar';
+      modal.classList.remove('hidden');
+      setTimeout(()=> modalText.focus(), 0);
+    }
+    function closeModal(){
+      modal.classList.add('hidden');
+      editNoteId = null;
+    }
     btnModalCancel.addEventListener('click', closeModal);
     modal.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });
     document.addEventListener('keydown', e=>{ if(!modal.classList.contains('hidden') && e.key==='Escape') closeModal(); });
 
     btnModalAccept.addEventListener('click', async ()=>{
-      const fecha=modalDate.value.trim(); const texto=modalText.value.trim();
+      const fecha = modalDate.value.trim();
+      const texto = modalText.value.trim();
       if(!fecha || !texto){ alert('Completá el texto de la nota.'); return; }
-      const body=new FormData(); body.append('action','note_create'); body.append('fecha',fecha); body.append('texto',texto);
-      if(filtroPiloto.value) body.append('piloto_id', filtroPiloto.value);
-      if(filtroZona.value) body.append('zona', filtroZona.value);
-      try{ await fetchJSON(API,{method:'POST', body}); closeModal(); await reloadAndRender(); }
-      catch(e){ alert(e?.message || 'No se pudo crear la nota'); }
+
+      const body = new FormData();
+
+      if(editNoteId){
+        body.append('action','note_update');
+        body.append('id', String(editNoteId));
+        body.append('texto', texto);
+      }else{
+        body.append('action','note_create');
+        body.append('fecha', fecha);
+        body.append('texto', texto);
+        if(filtroPiloto.value) body.append('piloto_id', filtroPiloto.value);
+        if(filtroZona.value) body.append('zona', filtroZona.value);
+      }
+
+      try{
+        await fetchJSON(API,{ method:'POST', body });
+        closeModal();
+        await reloadAndRender();
+      }catch(e){
+        alert(e?.message || 'No se pudo guardar la nota');
+      }
     });
+
+    // ===== Modal de Confirmación =====
+    const confirmModal = document.getElementById('confirm-modal');
+    const confirmMsg   = document.getElementById('confirm-message');
+    const btnConfirmYes= document.getElementById('btn-confirm-yes');
+    const btnConfirmNo = document.getElementById('btn-confirm-no');
+    let confirmCb = null;
+
+    function openConfirm(message, onYes){
+      confirmMsg.textContent = message || '¿Seguro que deseas continuar?';
+      confirmCb = typeof onYes === 'function' ? onYes : null;
+      confirmModal.classList.remove('hidden');
+    }
+    function closeConfirm(){
+      confirmModal.classList.add('hidden');
+      confirmCb = null;
+    }
+    btnConfirmNo.addEventListener('click', closeConfirm);
+    confirmModal.addEventListener('click', e=>{ if(e.target === confirmModal) closeConfirm(); });
+    document.addEventListener('keydown', e=>{ if(!confirmModal.classList.contains('hidden') && e.key==='Escape') closeConfirm(); });
+    btnConfirmYes.addEventListener('click', async ()=>{
+      try{ if(confirmCb) await confirmCb(); }
+      finally{ /* confirmCb ejecuta closeConfirm para evitar doble cierre */ }
+    });
+
+    function openConfirm(message, onYes){
+      confirmMsg.textContent = message || '¿Seguro que deseas continuar?';
+      confirmCb = typeof onYes === 'function' ? onYes : null;
+      confirmModal.classList.remove('hidden');
+    }
+    function closeConfirm(){
+      confirmModal.classList.add('hidden');
+      confirmCb = null;
+    }
+    btnConfirmNo.addEventListener('click', closeConfirm);
+    confirmModal.addEventListener('click', e=>{ if(e.target === confirmModal) closeConfirm(); });
+    document.addEventListener('keydown', e=>{ if(!confirmModal.classList.contains('hidden') && e.key==='Escape') closeConfirm(); });
+    btnConfirmYes.addEventListener('click', async ()=>{
+      try{ if(confirmCb) await confirmCb(); }
+      finally{ /* confirmCb ejecuta closeConfirm para evitar doble cierre */ }
+    });
+
 
     (async function init(){
       try{ await loadMeta(); await loadCalendar(viewDate); render(); healthEl.textContent=''; }
