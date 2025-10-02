@@ -479,11 +479,8 @@
     async function editNote(id) {
       const actual = currentData.notas.find(n => String(n.id) === String(id));
       if (!actual) return;
-      // Usamos el mismo modal de "Nueva nota" para editar
-      openModal(actual.fecha, actual.texto, {
-        mode: 'edit',
-        id: String(id)
-      });
+      // Usamos el mismo modal de "Nueva nota" para editar (prellenado)
+      openModal(actual.fecha, actual.texto, { mode: 'edit', id: String(id) });
     }
 
     async function deleteNote(id) {
@@ -493,19 +490,23 @@
         'Eliminar nota',
         `¿Confirmás eliminar la nota del ${actual.fecha}?`,
         async () => {
-          const body = new FormData();
-          body.append('action', 'note_delete');
-          body.append('id', String(id));
-          await fetchJSON(API, {
-            method: 'POST',
-            body
-          });
-          closeConfirm();
-          await reloadAndRender();
+          try {
+            const body = new FormData();
+            body.append('action', 'note_delete');
+            body.append('id', String(id));
+            await fetchJSON(API, { method: 'POST', body });
+            closeConfirm();
+            if (typeof showAlert === 'function') showAlert('success', 'Nota eliminada.');
+            else alert('Nota eliminada.');
+            await reloadAndRender();
+          } catch (e) {
+            closeConfirm();
+            if (typeof showAlert === 'function') showAlert('error', e?.message || 'No se pudo eliminar la nota');
+            else alert(e?.message || 'No se pudo eliminar la nota');
+          }
         }
       );
     }
-
 
     // Render switcher
     function render() {
@@ -513,11 +514,19 @@
       else renderWeek(viewDate);
     }
 
-    async function reloadAndRender() {
+        async function reloadAndRender() {
       await loadCalendar(viewDate);
       render();
       healthEl.textContent = '';
     }
+
+    // === Exponer utilidades al ámbito global para handlers fuera del IIFE ===
+    // Evita errores: "filtroPiloto is not defined" y "fetchJSON is not defined"
+    window.filtroPiloto = filtroPiloto;
+    window.filtroZona = filtroZona;
+    window.fetchJSON = fetchJSON;
+    window.reloadAndRender = reloadAndRender;
+
 
     // Listeners navegación
     btnPrev.addEventListener('click', async () => {
@@ -651,11 +660,14 @@
     const fecha = modalDate.value.trim();
     const texto = modalText.value.trim();
     if (!fecha || !texto) {
-      alert('Completá el texto de la nota.');
+      if (typeof showAlert === 'function') showAlert('info', 'Completá la fecha y el texto de la nota.');
+      else alert('Completá la fecha y el texto de la nota.');
       return;
     }
     const body = new FormData();
-    if (modalState.mode === 'edit' && modalState.id) {
+    const isEdit = (modalState.mode === 'edit' && modalState.id);
+
+    if (isEdit) {
       body.append('action', 'note_update');
       body.append('id', String(modalState.id));
       body.append('texto', texto);
@@ -667,14 +679,18 @@
       if (filtroZona.value) body.append('zona', filtroZona.value);
     }
     try {
-      await fetchJSON(API, {
-        method: 'POST',
-        body
-      });
+      await fetchJSON(API, { method: 'POST', body });
       closeModal();
+      if (typeof showAlert === 'function') {
+        showAlert('success', isEdit ? 'Nota actualizada.' : 'Nota creada.');
+      } else {
+        alert(isEdit ? 'Nota actualizada.' : 'Nota creada.');
+      }
       await reloadAndRender();
     } catch (e) {
-      alert(e?.message || 'No se pudo guardar la nota');
+      if (typeof showAlert === 'function') showAlert('error', e?.message || 'No se pudo guardar la nota');
+      else alert(e?.message || 'No se pudo guardar la nota');
     }
   });
+
 </script>
