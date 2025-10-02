@@ -169,7 +169,7 @@
   /* Altura de las celdas en vista semanal.
      ⬇️ Ajustá estos dos valores para “extender” o “compactar” los días */
   .week-grid .cal-cell {
-    min-height: 320px
+    min-height: 620px
       /* ← ajustar aquí */
   }
 
@@ -351,9 +351,15 @@
     const btnConfirmAccept = document.getElementById('btn-confirm-accept');
     const btnConfirmCancel = document.getElementById('btn-confirm-cancel');
 
-    let modalState = { mode: 'create', id: null };
+    let modalState = {
+      mode: 'create',
+      id: null
+    };
 
-    function openModal(fecha, texto = '', state = { mode: 'create', id: null }) {
+    function openModal(fecha, texto = '', state = {
+      mode: 'create',
+      id: null
+    }) {
       modalState = state;
       modalDate.value = fecha;
       modalText.value = texto || '';
@@ -363,7 +369,9 @@
       setTimeout(() => modalText.focus(), 0);
     }
 
-    function closeModal() { modal.classList.add('hidden'); }
+    function closeModal() {
+      modal.classList.add('hidden');
+    }
 
     function openConfirm(title, message, onAccept) {
       confirmTitle.textContent = title;
@@ -385,12 +393,21 @@
       document.removeEventListener('keydown', escCloseConfirm);
     }
 
-    function backdropCloseConfirm(e) { if (e.target === confirmModal) closeConfirm(); }
-    function escCloseConfirm(e) { if (!confirmModal.classList.contains('hidden') && e.key === 'Escape') closeConfirm(); }
+    function backdropCloseConfirm(e) {
+      if (e.target === confirmModal) closeConfirm();
+    }
+
+    function escCloseConfirm(e) {
+      if (!confirmModal.classList.contains('hidden') && e.key === 'Escape') closeConfirm();
+    }
 
     btnModalCancel.addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-    document.addEventListener('keydown', (e) => { if (!modal.classList.contains('hidden') && e.key === 'Escape') closeModal(); });
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (!modal.classList.contains('hidden') && e.key === 'Escape') closeModal();
+    });
 
     btnModalAccept.addEventListener('click', async () => {
       const fecha = modalDate.value.trim();
@@ -416,7 +433,10 @@
       }
 
       try {
-        await fetchJSON(API, { method: 'POST', body });
+        await fetchJSON(API, {
+          method: 'POST',
+          body
+        });
         closeModal();
         showAlert('success', isEdit ? 'Nota actualizada.' : 'Nota creada.');
         await reloadAndRender();
@@ -576,7 +596,10 @@
       const actual = currentData.notas.find(n => String(n.id) === String(id));
       if (!actual) return;
       // Usamos el mismo modal de "Nueva nota" para editar (prellenado)
-      openModal(actual.fecha, actual.texto, { mode: 'edit', id: String(id) });
+      openModal(actual.fecha, actual.texto, {
+        mode: 'edit',
+        id: String(id)
+      });
     }
 
     async function deleteNote(id) {
@@ -590,7 +613,10 @@
             const body = new FormData();
             body.append('action', 'note_delete');
             body.append('id', String(id));
-            await fetchJSON(API, { method: 'POST', body });
+            await fetchJSON(API, {
+              method: 'POST',
+              body
+            });
             closeConfirm();
             if (typeof showAlert === 'function') showAlert('success', 'Nota eliminada.');
             else alert('Nota eliminada.');
@@ -676,7 +702,4 @@
       }
     })();
   })();
-
-
-
 </script>
