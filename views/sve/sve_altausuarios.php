@@ -307,6 +307,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
 
                                 <!-- Rol -->
+                                <!-- Rol -->
                                 <div class="input-group">
                                     <label for="edit_rol">Rol</label>
                                     <div class="input-icon">
@@ -316,6 +317,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                             <option value="cooperativa">Cooperativa</option>
                                             <option value="productor">Productor</option>
                                             <option value="ingeniero">Ingeniero</option>
+                                            <option value="piloto_drone">Piloto Drone</option>
                                         </select>
                                     </div>
                                 </div>
@@ -376,6 +378,28 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                         <span class="material-icons">phone</span>
                                         <input type="text" name="telefono" id="edit_telefono">
                                     </div>
+                                </div>
+
+                                <!-- Zonas (checkboxes múltiples, máx 4) -->
+                                <div class="input-group col-span-3">
+                                    <label for="edit_zonas_group">Zonas</label>
+                                    <div id="edit_zonas_group" class="checkbox-group" style="display:flex;gap:16px;flex-wrap:wrap;">
+                                        <label class="checkbox">
+                                            <input type="checkbox" name="zona_chk" value="Norte"> <span>Norte</span>
+                                        </label>
+                                        <label class="checkbox">
+                                            <input type="checkbox" name="zona_chk" value="Sur"> <span>Sur</span>
+                                        </label>
+                                        <label class="checkbox">
+                                            <input type="checkbox" name="zona_chk" value="Este"> <span>Este</span>
+                                        </label>
+                                        <label class="checkbox">
+                                            <input type="checkbox" name="zona_chk" value="Oeste"> <span>Oeste</span>
+                                        </label>
+                                    </div>
+                                    <small id="zonasHelp" class="help-text">Podés tildar hasta 4 zonas.</small>
+                                    <!-- Hidden para enviar CSV al backend -->
+                                    <input type="hidden" name="zona_asignada" id="edit_zona_asignada" value="">
                                 </div>
 
                                 <!-- Correo (ocupa 3 columnas) -->
@@ -507,6 +531,32 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             icon.textContent = isHidden ? 'visibility_off' : 'visibility';
         }
 
+        // ---- Gestión de Zonas (máx 4) ----
+        (function initZonasLimiter() {
+            const cont = document.getElementById('edit_zonas_group');
+            if (!cont) return;
+            const limit = 4;
+
+            const syncHidden = () => {
+                const seleccionadas = Array.from(cont.querySelectorAll('input[name="zona_chk"]:checked')).map(c => c.value);
+                document.getElementById('edit_zona_asignada').value = seleccionadas.join(',');
+            };
+
+            cont.addEventListener('change', () => {
+                const checks = cont.querySelectorAll('input[name="zona_chk"]');
+                const seleccionadas = Array.from(checks).filter(c => c.checked);
+
+                if (seleccionadas.length > limit) {
+                    // desmarcar el último que intentó marcar
+                    const last = seleccionadas[seleccionadas.length - 1];
+                    last.checked = false;
+                    showAlert('error', `Podés seleccionar como máximo ${limit} zonas.`);
+                }
+                syncHidden();
+            });
+        })();
+
+
         function guardarNuevaContrasena() {
             const nuevaPass = document.getElementById('nuevaContrasena').value;
 
@@ -558,6 +608,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         document.getElementById('edit_telefono').value = u.telefono || '';
                         document.getElementById('edit_correo').value = u.correo || '';
 
+                        // Zonas: setear checks en base a CSV "Norte,Sur,..."
+                        const zonasCSV = (u.zona_asignada || '').toString();
+                        const zonas = zonasCSV ? zonasCSV.split(',').map(z => z.trim()) : [];
+                        document.querySelectorAll('#edit_zonas_group input[name="zona_chk"]').forEach(chk => {
+                            chk.checked = zonas.includes(chk.value);
+                        });
+                        // Sincronizar hidden
+                        document.getElementById('edit_zona_asignada').value = zonas.join(',');
+
                         document.getElementById('modal').classList.remove('hidden');
                     } else {
                         showAlert('error', data.message);
@@ -569,8 +628,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
         }
 
+
         document.getElementById('formEditarUsuario').addEventListener('submit', function(e) {
             e.preventDefault();
+
+            // Construir CSV de zonas seleccionadas y guardar en hidden
+            const zonasSeleccionadas = Array.from(document.querySelectorAll('#edit_zonas_group input[name="zona_chk"]:checked'))
+                .map(chk => chk.value);
+            if (zonasSeleccionadas.length > 4) {
+                showAlert('error', 'Podés seleccionar como máximo 4 zonas.');
+                return;
+            }
+            document.getElementById('edit_zona_asignada').value = zonasSeleccionadas.join(',');
 
             const formData = new FormData(this);
 
@@ -596,7 +665,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         function cerrarModalEditar() {
             document.getElementById('modal').classList.add('hidden');
-            document.getElementById('formEditarUsuario').reset();
+            const form = document.getElementById('formEditarUsuario');
+            form.reset();
+            // Limpio checks y hidden de zonas
+            document.querySelectorAll('#edit_zonas_group input[name="zona_chk"]').forEach(chk => chk.checked = false);
+            document.getElementById('edit_zona_asignada').value = '';
         }
 
         // buscar tipeando nombre / cuit
