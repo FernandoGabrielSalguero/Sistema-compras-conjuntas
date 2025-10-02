@@ -631,7 +631,7 @@ function initZonasFromCSV(csv) {
 
         // funciones para el modal
 function abrirModalEditar(id) {
-    fetch(`/controllers/sve_actualizarUsuarioController.php.php?id=${id}`)
+    fetch(`/controllers/sve_actualizarUsuarioController.php?id=${id}`)
         .then(res => res.json())
         .then(data => {
             if (data.success) {
