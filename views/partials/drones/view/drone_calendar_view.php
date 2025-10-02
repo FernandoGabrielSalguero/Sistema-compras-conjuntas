@@ -27,7 +27,7 @@
     <div class="calendar-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
       <div style="display:flex;align-items:center;gap:8px;">
         <button id="btn-today" class="btn btn-info" type="button" aria-label="Ir a hoy">Hoy</button>
-        <button id="btn-add-note-today" class="btn" type="button" aria-label="Agregar nota hoy">+ Nota hoy</button>
+        <button id="btn-add-note-today" class="btn btn-aceptar" type="button" aria-label="Agregar nota hoy">+ Nota hoy</button>
       </div>
       <h2 id="cal-title" style="margin:0;font-weight:700;"></h2>
       <div class="form-grid grid-3" style="gap:8px;">
@@ -166,7 +166,7 @@
       cell.innerHTML = `
         <span class="daynum">${d.getDate()}</span>
         <div class="cal-events" data-date="${iso}"></div>
-        <button class="btn btn-xs cal-add" data-date="${iso}" type="button">+ Nota</button>
+        <button class="btn btn-xs cal-add btn-aceptar" data-date="${iso}" type="button">+ Nota</button>
       `;
       root.appendChild(cell);
     }
