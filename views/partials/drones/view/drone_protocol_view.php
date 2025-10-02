@@ -557,7 +557,7 @@ const px2mm = 0.264583;
 const imgWmm = canvas.width  * px2mm;
 const imgHmm = canvas.height * px2mm;
 
-// Encajar por el lado LIMITANTE (usa todo el ancho o todo el alto)
+// Encajar por el lado LIMITANTE (usa todo el ancho o todo el alto) 
 const ratio = Math.min(maxW / imgWmm, maxH / imgHmm);
 const w = imgWmm * ratio;
 const h = imgHmm * ratio;
