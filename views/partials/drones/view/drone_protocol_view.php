@@ -5,8 +5,9 @@ declare(strict_types=1);
 <!-- Links CDN propio -->
 <link rel="preload" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css" as="style" onload="this.rel='stylesheet'">
 <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
-<!-- descargar imagen -->
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<!-- Descargar PDF (incluye html2canvas + jsPDF) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <!-- Íconos de Material Design -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
@@ -178,23 +179,22 @@ declare(strict_types=1);
           <div class="protocolo-bloque">
             <h3 style="color: #5b21b6;">Productos a utilizar</h3>
             <div class="tabla-wrapper">
-              <table class="data-table" aria-label="Productos y receta">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Producto</th>
-                    <th>Principio activo</th>
-                    <th>Dosis</th>
-                    <th>Orden mezcla</th>
-                    <th>Notas</th>
-                  </tr>
-                </thead>
-                <tbody id="tabla-items">
-                  <tr>
-                    <td colspan="6">Sin datos</td>
-                  </tr>
-                </tbody>
-              </table>
+<table class="data-table" aria-label="Productos y receta">
+  <thead>
+    <tr>
+      <th>Producto</th>
+      <th>Principio activo</th>
+      <th>Dosis</th>
+      <th>Orden mezcla</th>
+      <th>Notas</th>
+    </tr>
+  </thead>
+  <tbody id="tabla-items">
+    <tr>
+      <td colspan="5">Sin datos</td>
+    </tr>
+  </tbody>
+</table>
             </div>
           </div>
 
@@ -367,6 +367,9 @@ declare(strict_types=1);
     display: flex;
     justify-content: flex-end;
   }
+
+  /* (Opcional) Alinear números en Orden mezcla */
+.data-table td:nth-child(4), .data-table th:nth-child(4){ text-align:center; }
 </style>
 
 <script>
@@ -386,8 +389,8 @@ declare(strict_types=1);
       estado: $('#filtro_estado')
     };
 
-    // Bind botón descargar
-    btnDescargar?.addEventListener('click', descargarComoImagen);
+// Bind botón descargar (PDF)
+btnDescargar?.addEventListener('click', descargarComoPDF);
 
     // Healthcheck inicial
     fetch(API + '?t=' + Date.now(), {
@@ -475,36 +478,37 @@ declare(strict_types=1);
       });
     }
 
-    async function descargarComoImagen() {
-      try {
-        if (!sectionEl) {
-          showAlert('error', 'No se encontró la sección a exportar.');
-          return;
-        }
-        // Forzar fondo blanco y mostrar contenido oculto en el DOM clonado
-        const canvas = await html2canvas(sectionEl, {
-          backgroundColor: '#ffffff',
-          scale: 2,
-          useCORS: true,
-          onclone: (clonedDoc) => {
-            const el = clonedDoc.querySelector('#protocolo-contenido');
-            if (el) el.hidden = false; // evitar FOUC en la exportación
-          }
-        });
-        const dataURL = canvas.toDataURL('image/png');
-        const a = document.createElement('a');
-        const hoy = new Date().toISOString().slice(0, 10);
-        a.href = dataURL;
-        a.download = `protocolo_${hoy}.png`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        showAlert('success', 'Descarga generada correctamente.');
-      } catch (err) {
-        const msg = (err && err.message) ? err.message : String(err);
-        showAlert('error', 'No se pudo generar la imagen: ' + msg);
-      }
+function descargarComoPDF() {
+  try {
+    if (!sectionEl) {
+      showAlert('error', 'No se encontró la sección a exportar.');
+      return;
     }
+    // Asegurar que el contenido esté visible en el render
+    const el = sectionEl.cloneNode(true);
+    const contenidoClone = el.querySelector('#protocolo-contenido');
+    if (contenidoClone) contenidoClone.hidden = false;
+
+    const hoy = new Date().toISOString().slice(0, 10);
+    const opt = {
+      margin:       10,                 // mm
+      filename:     `protocolo_${hoy}.pdf`,
+      image:        { type: 'jpeg', quality: 0.95 },
+      html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(el).save().then(() => {
+      showAlert('success', 'PDF generado correctamente.');
+    }).catch((err) => {
+      const msg = (err && err.message) ? err.message : String(err);
+      showAlert('error', 'No se pudo generar el PDF: ' + msg);
+    });
+  } catch (err) {
+    const msg = (err && err.message) ? err.message : String(err);
+    showAlert('error', 'No se pudo generar el PDF: ' + msg);
+  }
+}
+
 
     function updateMapsButton(lat, lng) {
       if (!btnMaps) return;
@@ -593,36 +597,55 @@ declare(strict_types=1);
         btnMaps.setAttribute('aria-disabled', 'true');
       }
 
-      // Items + receta
-      const tbody = document.getElementById('tabla-items');
-      const rows = [];
-      if (Array.isArray(data.items) && data.items.length) {
-        data.items.forEach((it, idx) => {
-          if (it.receta && it.receta.length) {
-            it.receta.forEach((rc, j) => {
-              rows.push(`
-              <tr>
-                <td>${idx + 1}${it.receta.length > 1 ? '.'+(j+1) : ''}</td>
-                <td>${j===0 ? (it.nombre_producto || '') : ''}</td>
-                <td>${rc.principio_activo || ''}</td>
-                <td>${rc.dosis ?? ''} ${rc.unidad || ''}</td>
-                <td>${rc.orden_mezcla ?? ''}</td>
-                <td>${rc.notas || ''}</td>
-              </tr>
-            `);
-            });
-          } else {
-            rows.push(`
-            <tr>
-              <td>${idx + 1}</td>
-              <td>${it.nombre_producto || ''}</td>
-              <td colspan="4" class="muted">Sin receta cargada</td>
-            </tr>
-          `);
-          }
+      // Items + receta (ordenado por prioridad: orden_mezcla ASC) y sin columna "#"
+const tbody = document.getElementById('tabla-items');
+/** @type {Array<{producto:string, principio:string, dosis:string, orden:number|string, notas:string}>} */
+const filas = [];
+
+if (Array.isArray(data.items) && data.items.length) {
+  data.items.forEach((it) => {
+    const producto = it.nombre_producto || '';
+    if (it.receta && it.receta.length) {
+      it.receta.forEach((rc) => {
+        const ordenVal = (rc.orden_mezcla === null || rc.orden_mezcla === undefined) ? 9999 : Number(rc.orden_mezcla);
+        filas.push({
+          producto,
+          principio: rc.principio_activo || '',
+          dosis: `${rc.dosis ?? ''} ${rc.unidad || ''}`.trim(),
+          orden: isNaN(ordenVal) ? 9999 : ordenVal,
+          notas: rc.notas || ''
         });
-      }
-      tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="6">Sin datos</td></tr>';
+      });
+    } else {
+      filas.push({
+        producto,
+        principio: '',
+        dosis: '',
+        orden: 9999,
+        notas: 'Sin receta cargada'
+      });
+    }
+  });
+}
+
+// ordenar por orden_mezcla asc (prioridad)
+filas.sort((a, b) => (a.orden - b.orden));
+
+if (!filas.length) {
+  tbody.innerHTML = '<tr><td colspan="5">Sin datos</td></tr>';
+} else {
+  tbody.innerHTML = filas.map(f => `
+    <tr>
+      <td>${f.producto}</td>
+      <td>${f.principio}</td>
+      <td>${f.dosis}</td>
+      <td>${(f.orden === 9999) ? '' : f.orden}</td>
+      <td>${f.notas}</td>
+    </tr>
+  `).join('');
+}
+
+
 
       // parámetros
       const p = data.parametros || {};
