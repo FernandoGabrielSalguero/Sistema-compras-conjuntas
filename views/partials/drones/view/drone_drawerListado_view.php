@@ -227,9 +227,45 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
     button.icon-btn .material-icons {
         font-size: 20px;
     }
+
+        /* --- Control por rol (sin JS) --- */
+    /* Ocultar tarjetas operativas para cooperativa/ingeniero */
+    .role-cooperativa .card--ops-hide,
+    .role-ingeniero .card--ops-hide {
+        display: none !important;
+    }
+
+    /* Solo lectura la tarjeta de Costos */
+    .role-cooperativa #card-costos input,
+    .role-cooperativa #card-costos select,
+    .role-cooperativa #card-costos textarea,
+    .role-cooperativa #card-costos button,
+    .role-ingeniero #card-costos input,
+    .role-ingeniero #card-costos select,
+    .role-ingeniero #card-costos textarea,
+    .role-ingeniero #card-costos button {
+        pointer-events: none;
+    }
+    /* Señal visual */
+    .role-cooperativa #card-costos input,
+    .role-cooperativa #card-costos select,
+    .role-cooperativa #card-costos textarea,
+    .role-ingeniero #card-costos input,
+    .role-ingeniero #card-costos select,
+    .role-ingeniero #card-costos textarea {
+        background: #f9fafb;
+        color: #374151;
+        opacity: 0.95;
+    }
+    /* Mantener legible el resumen */
+    .role-cooperativa #card-costos .costos-resumen,
+    .role-ingeniero   #card-costos .costos-resumen {
+        opacity: 1;
+    }
+
 </style>
 
-<div id="drawerListado" class="sv-drawer hidden" aria-hidden="true">
+<div id="drawerListado" class="sv-drawer hidden role-<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true" data-role="<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOTES, 'UTF-8'); ?>">
     <div class="sv-drawer__overlay" data-close></div>
     <aside class="sv-drawer__panel" role="dialog" aria-modal="true" aria-labelledby="drawerListado-title">
         <div class="sv-drawer__header">
@@ -455,9 +491,10 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
                     </div>
                 </div>
 
-                <!-- Receta -->
-                <div class="card">
-                    <h2 style="color:#5b21b6;">Receta</h2>
+<!-- Receta -->
+<div id="card-receta" class="card card--ops-hide">
+    <h2 style="color:#5b21b6;">Receta</h2>
+
                     <table class="data-table" id="tabla-receta-combinada" aria-label="Receta">
                         <thead>
                             <tr>
@@ -473,9 +510,10 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
                     </table>
                 </div>
 
-                <!-- Parámetros de vuelo -->
-                <div class="card">
-                    <h2 style="color:#5b21b6;">Parámetros de vuelo</h2>
+<!-- Parámetros de vuelo -->
+<div id="card-parametros" class="card card--ops-hide">
+    <h2 style="color:#5b21b6;">Parámetros de vuelo</h2>
+
                     <div class="form-grid grid-4">
                         <div class="input-group">
                             <label for="volumen_ha">Vol / hectárea</label>
@@ -548,9 +586,10 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
                     </div>
                 </div>
 
-                <!-- Programar visita -->
-                <div class="card">
-                    <h2 style="color:#5b21b6;">Programar visita</h2>
+<!-- Programar visita -->
+<div id="card-visita" class="card card--ops-hide">
+    <h2 style="color:#5b21b6;">Programar visita</h2>
+
                     <div class="form-grid grid-4">
                         <div class="input-group">
                             <label for="fecha_visita_edit">Fecha visita</label>
@@ -581,9 +620,10 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
                     </div>
                 </div>
 
-                <!-- Costos -->
-                <div class="card">
-                    <h2 style="color:#5b21b6;">Costos</h2>
+<!-- Costos -->
+<div id="card-costos" class="card">
+    <h2 style="color:#5b21b6;">Costos</h2>
+
                     <div class="form-grid grid-4">
                         <div class="input-group">
                             <label for="costo_moneda">Moneda</label>
@@ -949,20 +989,26 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
             });
         }
 
-        function ensureRecetaSlots() {
-            state.items.forEach(it => {
-                if (!it.receta) {
-                    const first = Array.isArray(it.recetas) && it.recetas.length ? it.recetas[0] : null;
-                    it.receta = {
-                        principio_activo: first?.principio_activo ?? it.principio_activo ?? null,
-                        dosis: first?.dosis ?? null,
-                        unidad: first?.unidad ?? '',
-                        orden_mezcla: first?.orden_mezcla ?? null,
-                        notas: first?.notas ?? ''
-                    };
-                }
-            });
+function ensureRecetaSlots() {
+    state.items.forEach(it => {
+        if (!it.receta) {
+            const first = Array.isArray(it.recetas) && it.recetas.length ? it.recetas[0] : null;
+            it.receta = {
+                principio_activo: first?.principio_activo ?? it.principio_activo ?? null,
+                dosis: first?.dosis ?? null,
+                unidad: (first?.unidad ?? it.unidad ?? 'ml/ha'),
+                orden_mezcla: first?.orden_mezcla ?? null,
+                notas: first?.notas ?? ''
+            };
+        } else {
+            // si existe receta pero unidad vacía -> default
+            if (!it.receta.unidad || String(it.receta.unidad).trim() === '') {
+                it.receta.unidad = 'ml/ha';
+            }
         }
+    });
+}
+
 
         function renderRecetaCombinada() {
             const tb = $('#tabla-receta-combinada tbody');
@@ -972,15 +1018,16 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
             state.items.forEach((it) => {
                 const pInfo = catalog.productos.find(p => String(p.id) === String(it.producto_id));
                 const nombre = it.nombre_producto || pInfo?.nombre || `Producto #${it.producto_id}`;
-                const r = it.receta;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-        <td>${esc(nombre)}</td>
-        <td><div class="input-icon input-icon-edit"><input type="text" value="${esc(r.principio_activo ?? (it.principio_activo || ''))}"></div></td>
-        <td><div class="input-icon input-icon-hashtag"><input type="number" step="0.01" value="${fmtNumInput(r.dosis)}"></div></td>
-        <td><div class="input-icon input-icon-edit"><input type="text" value="${esc(r.unidad||'')}"></div></td>
-        <td><div class="input-icon input-icon-hashtag"><input type="number" step="1" value="${fmtNumInput(r.orden_mezcla, 0)}"></div></td>
-        <td><div class="input-icon input-icon-edit"><input type="text" value="${esc(r.notas||'')}"></div></td>`;
+const r = it.receta;
+const tr = document.createElement('tr');
+tr.innerHTML = `
+<td>${esc(nombre)}</td>
+<td><div class="input-icon input-icon-edit"><input type="text" value="${esc(r.principio_activo ?? (it.principio_activo || ''))}"></div></td>
+<td><div class="input-icon input-icon-hashtag"><input type="number" step="0.01" value="${fmtNumInput(r.dosis)}"></div></td>
+<td><div class="input-icon input-icon-edit"><input type="text" value="${esc((r.unidad && String(r.unidad).trim() !== '' ? r.unidad : 'ml/ha'))}"></div></td>
+<td><div class="input-icon input-icon-hashtag"><input type="number" step="1" value="${fmtNumInput(r.orden_mezcla, 0)}"></div></td>
+<td><div class="input-icon input-icon-edit"><input type="text" value="${esc(r.notas||'')}"></div></td>`;
+
                 const [pa, dosis, uni, ord, notas] = tr.querySelectorAll('input');
                 pa.addEventListener('input', e => it.receta.principio_activo = e.target.value);
                 dosis.addEventListener('input', e => it.receta.dosis = parseNum(e.target.value));
@@ -1121,24 +1168,26 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
             }));
             renderRangos();
 
-            // items
-            state.items = (d.items || []).map(it => ({
-                patologia_id: it.patologia_id,
-                fuente: it.fuente || 'sve',
-                producto_id: it.producto_id,
-                nombre_producto: it.producto_nombre || it.nombre_producto || null,
-                costo_hectarea_snapshot: it.costo_hectarea_snapshot ?? it.producto_costo_hectarea ?? null,
-                receta: (() => {
-                    const r0 = (it.recetas && it.recetas[0]) ? it.recetas[0] : null;
-                    return {
-                        principio_activo: r0?.principio_activo ?? it.principio_activo ?? null,
-                        dosis: r0?.dosis ?? null,
-                        unidad: r0?.unidad ?? '',
-                        orden_mezcla: r0?.orden_mezcla ?? null,
-                        notas: r0?.notas ?? ''
-                    };
-                })()
-            }));
+// items
+state.items = (d.items || []).map(it => ({
+    patologia_id: it.patologia_id,
+    fuente: it.fuente || 'sve',
+    producto_id: it.producto_id,
+    nombre_producto: it.producto_nombre || it.nombre_producto || null,
+    costo_hectarea_snapshot: it.costo_hectarea_snapshot ?? it.producto_costo_hectarea ?? null,
+    receta: (() => {
+        const r0 = (it.recetas && it.recetas[0]) ? it.recetas[0] : null;
+        const unidad = (r0?.unidad ?? it.unidad ?? '').trim() || 'ml/ha';
+        return {
+            principio_activo: r0?.principio_activo ?? it.principio_activo ?? null,
+            dosis: r0?.dosis ?? null,
+            unidad,
+            orden_mezcla: r0?.orden_mezcla ?? null,
+            notas: r0?.notas ?? ''
+        };
+    })()
+}));
+
             renderProductos();
             renderRecetaCombinada();
             recalcCostos();
@@ -1189,30 +1238,31 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
                 $('#rango_new').value = '';
                 renderRangos();
             });
-            $('#btn_add_producto')?.addEventListener('click', () => {
-                const pid = $('#producto_new').value;
-                if (!pid) return showAlert('error', 'Elegí un producto');
-                const prod = catalog.productos.find(p => String(p.id) === String(pid));
-                const patologiaIdAuto = state.motivos[0]?.patologia_id ?? null;
-                state.items.push({
-                    patologia_id: patologiaIdAuto,
-                    fuente: 'sve',
-                    producto_id: Number(pid),
-                    nombre_producto: prod?.nombre || null,
-                    costo_hectarea_snapshot: prod?.costo_hectarea ?? null,
-                    receta: {
-                        principio_activo: null,
-                        dosis: null,
-                        unidad: '',
-                        orden_mezcla: null,
-                        notas: ''
-                    }
-                });
-                $('#producto_new').value = '';
-                renderProductos();
-                renderRecetaCombinada();
-                recalcCostos();
-            });
+$('#btn_add_producto')?.addEventListener('click', () => {
+    const pid = $('#producto_new').value;
+    if (!pid) return showAlert('error', 'Elegí un producto');
+    const prod = catalog.productos.find(p => String(p.id) === String(pid));
+    const patologiaIdAuto = state.motivos[0]?.patologia_id ?? null;
+    state.items.push({
+        patologia_id: patologiaIdAuto,
+        fuente: 'sve',
+        producto_id: Number(pid),
+        nombre_producto: prod?.nombre || null,
+        costo_hectarea_snapshot: prod?.costo_hectarea ?? null,
+        receta: {
+            principio_activo: null,
+            dosis: null,
+            unidad: 'ml/ha',
+            orden_mezcla: null,
+            notas: ''
+        }
+    });
+    $('#producto_new').value = '';
+    renderProductos();
+    renderRecetaCombinada();
+    recalcCostos();
+});
+
             // listeners dependientes existentes...
             $('#base_ha')?.addEventListener('input', recalcCostos);
             $('#costo_base_por_ha')?.addEventListener('input', recalcCostos);
