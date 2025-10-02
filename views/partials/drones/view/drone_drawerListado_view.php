@@ -1,5 +1,15 @@
 <?php
-// Drawer desacoplado: formulario completo + ver JSON + actualizar pedido
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+$__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
+?>
+<script>
+// Dump de sesión en consola (solo debug)
+console.log("SESSION PHP:", <?php echo json_encode($_SESSION, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT); ?>);
+console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOTES, 'UTF-8'); ?>");
+</script>
+
 ?>
 
 <head>
