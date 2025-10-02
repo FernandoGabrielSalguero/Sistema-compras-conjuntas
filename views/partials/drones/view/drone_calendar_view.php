@@ -174,7 +174,7 @@
   }
 
   .week-grid .cal-events {
-    max-height: 260px
+    max-height: 560px
       /* ← y aquí */
   }
 
