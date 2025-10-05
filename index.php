@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 case 'ingeniero':
                     header('Location: /views/ingeniero/ing_dashboard.php');
                     break;
-                case 'drone_pilot_dashboard':
+                case 'piloto_drone':
                     header('Location: /views/drone_pilot/drone_pilot_dashboard.php');
                     break;
                 default:
