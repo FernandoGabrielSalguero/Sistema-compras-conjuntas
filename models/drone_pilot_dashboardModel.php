@@ -6,29 +6,27 @@ class DronePilotDashboardModel
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
-        // Asegura modo estricto de errores
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
 
     /**
-     * Retorna solicitudes asignadas a un piloto.
-     * Filtra por piloto_id y ordena por created_at desc.
+     * Solicitudes asignadas al piloto con el nombre del productor.
+     * JOIN: drones_solicitud.productor_id_real -> usuarios.id_real -> usuarios_info.nombre
      */
     public function getSolicitudesByPilotoId(int $pilotoId): array
     {
         $sql = "SELECT 
                     s.id,
                     s.productor_id_real,
-                    s.estado,
+                    COALESCE(ui.nombre, u.usuario, s.productor_id_real) AS productor_nombre,
                     s.superficie_ha,
                     s.fecha_visita,
                     s.hora_visita_desde,
                     s.hora_visita_hasta,
-                    s.dir_provincia,
-                    s.dir_localidad,
-                    s.observaciones,
-                    DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') AS created_at
+                    s.dir_localidad
                 FROM drones_solicitud s
+                LEFT JOIN usuarios u           ON u.id_real = s.productor_id_real
+                LEFT JOIN usuarios_info ui      ON ui.usuario_id = u.id
                 WHERE s.piloto_id = :piloto_id
                 ORDER BY s.created_at DESC";
         $stmt = $this->pdo->prepare($sql);

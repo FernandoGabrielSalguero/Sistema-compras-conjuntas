@@ -15,6 +15,17 @@ $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
 $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
+$sesionDebug = [
+    'nombre' => $nombre,
+    'correo' => $correo,
+    'cuit' => $cuit,
+    'telefono' => $telefono,
+    'observaciones' => $observaciones,
+    'usuario_id' => $_SESSION['usuario_id'] ?? ($_SESSION['id'] ?? null),
+    'rol' => $_SESSION['rol'] ?? null
+];
+echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED_UNICODE) . ");";
+
 ?>
 
 <!DOCTYPE html>
@@ -85,20 +96,48 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <p>Te presentamos el tablero Power BI. Vas a poder consultar todas las metricas desde esta página</p>
                 </div>
 
-                <!-- Pedidos -->
-                <div class="card" id="card-solicitudes">
-                    <div class="card-header flex items-center justify-between">
-                        <h3 class="title">Mis solicitudes asignadas</h3>
+                <!-- Mis solicitudes (tabla estándar) -->
+                <div class="card tabla-card" id="card-solicitudes">
+                    <div class="flex items-center justify-between">
+                        <h2>Mis solicitudes asignadas</h2>
                         <button class="btn" id="btn-refrescar-solicitudes" title="Refrescar">
-                            <span class="material-icons">refresh</span>
-                            Refrescar
+                            <span class="material-icons">refresh</span> Refrescar
                         </button>
                     </div>
-                    <div class="divider"></div>
-                    <div id="solicitudes-listado" class="grid gap-2">
-                        <!-- Contenido generado por JS -->
+                    <div class="tabla-wrapper">
+                        <table class="data-table" id="tabla-solicitudes">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Productor</th>
+                                    <th>Fecha visita</th>
+                                    <th>Desde</th>
+                                    <th>Hasta</th>
+                                    <th>Superficie (ha)</th>
+                                    <th>Localidad</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-solicitudes">
+                                <!-- Filas generadas por JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+
+                <!-- Modal estándar -->
+                <div id="modal" class="modal hidden">
+                    <div class="modal-content">
+                        <h3 id="modal-title">Detalle de la solicitud</h3>
+                        <div id="modal-body">
+                            <!-- Contenido dinámico -->
+                        </div>
+                        <div class="form-buttons">
+                            <button class="btn btn-aceptar" onclick="closeModal()">Aceptar</button>
+                            <button class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+
 
                 <!-- contenedor del toastify -->
                 <div id="toast-container"></div>
@@ -111,133 +150,98 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-    <!-- toast y lógica del dashboard del piloto -->
     <script>
-        // ---- Exponer variables de sesión en JS y loguear en consola
-        const SESION_PILOTO = {
-            nombre: <?php echo json_encode($nombre); ?>,
-            correo: <?php echo json_encode($correo); ?>,
-            cuit: <?php echo json_encode($cuit); ?>,
-            telefono: <?php echo json_encode($telefono); ?>,
-            observaciones: <?php echo json_encode($observaciones); ?>,
-            usuario_id: <?php echo json_encode($_SESSION['usuario_id'] ?? ($_SESSION['id'] ?? null)); ?>,
-            rol: <?php echo json_encode($_SESSION['rol'] ?? null); ?>
-        };
-        console.group('SESSION PILOTO');
-        console.table(SESION_PILOTO);
-        console.groupEnd();
-
-        // ---- Helpers UI
-        const $listado = document.getElementById('solicitudes-listado');
+        // --- Lógica: fetch + render a tabla
+        const $tbody = document.getElementById('tbody-solicitudes');
         const $btnRefrescar = document.getElementById('btn-refrescar-solicitudes');
 
-        function renderSkeleton(cantidad = 3) {
-            $listado.innerHTML = '';
-            for (let i = 0; i < cantidad; i++) {
-                const sk = document.createElement('div');
-                sk.className = 'card shadow-sm animate-pulse';
-                sk.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <div class="skeleton h-4 w-40"></div>
-                        <div class="skeleton h-4 w-24"></div>
-                    </div>
-                    <div class="mt-2 grid grid-cols-2 gap-2">
-                        <div class="skeleton h-3 w-full"></div>
-                        <div class="skeleton h-3 w-full"></div>
-                    </div>
-                `;
-                $listado.appendChild(sk);
+        function rowSkeleton(n = 3) {
+            $tbody.innerHTML = '';
+            for (let i = 0; i < n; i++) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                <td colspan="7">
+                    <div class="skeleton h-4 w-full"></div>
+                </td>`;
+                $tbody.appendChild(tr);
             }
         }
 
-        function renderSolicitudes(solicitudes) {
-            if (!Array.isArray(solicitudes) || solicitudes.length === 0) {
-                $listado.innerHTML = `
-                    <div class="alert info">
-                        <span class="material-icons">info</span>
-                        No se encontraron solicitudes asignadas a tu usuario.
-                    </div>`;
+        function renderRows(items) {
+            if (!Array.isArray(items) || items.length === 0) {
+                $tbody.innerHTML = `
+                <tr>
+                    <td colspan="7">
+                        <div class="alert info">
+                            <span class="material-icons">info</span>
+                            No se encontraron solicitudes asignadas a tu usuario.
+                        </div>
+                    </td>
+                </tr>`;
                 return;
             }
-
-            $listado.innerHTML = solicitudes.map(s => `
-                <div class="card hover:shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                            <h4 class="title">Solicitud #${s.id}</h4>
-                        </div>
-                        <span class="badge ${estadoBadgeClass(s.estado)}">${s.estado}</span>
-                    </div>
-                    <div class="mt-2 grid md:grid-cols-3 grid-cols-1 gap-2 text-sm">
-                        <div><strong>Productor:</strong> ${s.productor_id_real ?? '-'}</div>
-                        <div><strong>Superficie (ha):</strong> ${s.superficie_ha}</div>
-                        <div><strong>Visita:</strong> ${formatRangoVisita(s.fecha_visita, s.hora_visita_desde, s.hora_visita_hasta)}</div>
-                        <div><strong>Provincia:</strong> ${s.dir_provincia ?? '-'}</div>
-                        <div><strong>Localidad:</strong> ${s.dir_localidad ?? '-'}</div>
-                        <div><strong>Creada:</strong> ${s.created_at}</div>
-                    </div>
-                    ${s.observaciones ? `<div class="mt-2"><strong>Obs.:</strong> ${escapeHtml(s.observaciones)}</div>` : ''}
-                </div>
-            `).join('');
-        }
-
-        function estadoBadgeClass(estado) {
-            switch (estado) {
-                case 'ingresada': return 'badge-neutral';
-                case 'procesando': return 'badge-warning';
-                case 'aprobada_coop': return 'badge-success';
-                case 'cancelada': return 'badge-danger';
-                case 'completada': return 'badge-primary';
-                default: return 'badge';
-            }
-        }
-
-        function formatRangoVisita(fecha, desde, hasta) {
-            if (!fecha) return '-';
-            const d = fecha;
-            const r = [desde, hasta].filter(Boolean).join(' - ');
-            return r ? `${d} | ${r}` : d;
-        }
-
-        function escapeHtml(str) {
-            return String(str ?? '').replace(/[&<>"']/g, m => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-            }[m]));
+            $tbody.innerHTML = items.map(s => `
+            <tr data-id="${s.id}">
+                <td>${s.id}</td>
+                <td>${s.productor_nombre ?? '-'}</td>
+                <td>${s.fecha_visita ?? '-'}</td>
+                <td>${s.hora_visita_desde ?? '-'}</td>
+                <td>${s.hora_visita_hasta ?? '-'}</td>
+                <td>${s.superficie_ha ?? '-'}</td>
+                <td>${s.dir_localidad ?? '-'}</td>
+            </tr>
+        `).join('');
         }
 
         async function cargarSolicitudes() {
-            if (!SESION_PILOTO.usuario_id) {
-                console.warn('No hay usuario_id en la sesión, no se puede consultar solicitudes.');
-                $listado.innerHTML = `
-                    <div class="alert danger">
-                        <span class="material-icons">error</span>
-                        Tu sesión no contiene un identificador de usuario válido (usuario_id). Vuelve a iniciar sesión.
-                    </div>`;
-                return;
-            }
-
             try {
-                renderSkeleton(3);
-                const url = `../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`;
-                const res = await fetch(url, { credentials: 'same-origin' });
+                rowSkeleton(3);
+                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
+                    credentials: 'same-origin'
+                });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const payload = await res.json();
-                console.debug('Solicitudes (API):', payload);
-                renderSolicitudes(payload.data || []);
-            } catch (err) {
-                console.error('Error al cargar solicitudes:', err);
-                $listado.innerHTML = `
-                    <div class="alert danger">
-                        <span class="material-icons">error</span>
-                        Ocurrió un error al obtener tus solicitudes. Intenta nuevamente.
-                    </div>`;
+                renderRows(payload.data || []);
+            } catch (e) {
+                console.error(e);
+                $tbody.innerHTML = `
+                <tr>
+                    <td colspan="7">
+                        <div class="alert danger">
+                            <span class="material-icons">error</span>
+                            Ocurrió un error al obtener las solicitudes. Intenta nuevamente.
+                        </div>
+                    </td>
+                </tr>`;
             }
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
         }
 
         $btnRefrescar?.addEventListener('click', cargarSolicitudes);
         document.addEventListener('DOMContentLoaded', cargarSolicitudes);
+
+// Abrir modal
+document.getElementById('tbody-solicitudes')?.addEventListener('click', (e) => {
+    const tr = e.target.closest('tr[data-id]');
+    if (!tr) return;
+    const celdas = [...tr.children].map(td => td.textContent);
+    const modal = document.getElementById('modal');
+    document.getElementById('modal-title').textContent = `Solicitud #${celdas[0]}`;
+    document.getElementById('modal-body').innerHTML = `
+        <p><strong>Productor:</strong> ${celdas[1]}</p>
+        <p><strong>Fecha visita:</strong> ${celdas[2]} ${celdas[3] && celdas[4] ? `(${celdas[3]}–${celdas[4]})` : ''}</p>
+        <p><strong>Superficie (ha):</strong> ${celdas[5]}</p>
+        <p><strong>Localidad:</strong> ${celdas[6]}</p>
+    `;
+    modal.classList.remove('hidden');
+});
+
+
     </script>
+
 
 
 </body>
