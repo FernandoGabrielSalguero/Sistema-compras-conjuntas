@@ -14,6 +14,7 @@ class AuthModel
     public function login($usuario, $contrasenaIngresada)
     {
         $sql = "SELECT 
+    u.id AS id,
     u.usuario,
     u.contrasena,
     u.rol,
@@ -27,6 +28,7 @@ FROM usuarios u
 LEFT JOIN usuarios_info ui ON u.id = ui.usuario_id
 WHERE u.usuario = :usuario
 AND u.permiso_ingreso = 'Habilitado'";
+
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['usuario' => $usuario]);

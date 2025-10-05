@@ -56,10 +56,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['correo']    = $user['correo'] ?? '';
             $_SESSION['telefono']  = $user['telefono'] ?? '';
             $_SESSION['direccion'] = $user['direccion'] ?? '';
+            $_SESSION['usuario_id']        = $user['id'];
             $_SESSION['id_real']   = $user['id_real'];
             $_SESSION['cuit']      = $user['cuit'];
             $_SESSION['LAST_ACTIVITY'] = time();
             refreshSessionCookie();
+
 
             switch ($user['rol']) {
                 case 'cooperativa':

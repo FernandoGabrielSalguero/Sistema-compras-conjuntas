@@ -1,6 +1,4 @@
 <?php
-// middleware/sessionManager.php
-// Configuración y control centralizados de sesión (timeout deslizante)
 
 // ===== Config =====
 define('SESSION_INACTIVITY', 3600); // 1 hora
