@@ -74,11 +74,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 case 'ingeniero':
                     header('Location: /views/ingeniero/ing_dashboard.php');
                     break;
+                case 'drone_pilot_dashboard':
+                    header('Location: /views/drone_pilot/drone_pilot_dashboard.php');
+                    break;
                 default:
                     header('Location: /');
                     break;
             }
-            exit;
+            exit; 
         } else {
             // Log ERROR (credenciales/permiso)
             $authLog->registrar([
