@@ -48,12 +48,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             <nav class="sidebar-menu">
                 <ul>
-                    <li onclick="location.href='sve_dashboard.php'">
-                        <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
-                    </li>
-                    <li onclick="location.href='sve_pulverizacionDrone.php'">
+                    <li onclick="location.href='drone_pilot_dashboard.php'">
                     <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                    <span class="link-text">Drones</span>
+                    <span class="link-text">Solicitudes</span>
                     </li>
                     <li onclick="location.href='../../../logout.php'">
                         <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
