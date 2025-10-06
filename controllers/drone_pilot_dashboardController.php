@@ -78,7 +78,7 @@ try {
             $reporteId = $model->crearReporte($payload);
 
             // Subir fotos
-            $baseDir = __DIR__ . '/../uploads/drone_reports/' . $sid;
+            $baseDir = __DIR__ . '/../uploads/ReporteDrones/' . $sid;
             if (!is_dir($baseDir)) @mkdir($baseDir, 0775, true);
 
             if (!empty($_FILES['fotos']['name'][0])) {
@@ -101,7 +101,7 @@ try {
                     $fname = 'foto_' . $reporteId . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
                     $dest  = $baseDir . '/' . $fname;
                     if (move_uploaded_file($tmp, $dest)) {
-                        $rutaPublica = 'uploads/drone_reports/' . $sid . '/' . $fname;
+                        $rutaPublica = 'uploads/ReporteDrones/' . $sid . '/' . $fname;
                         $model->guardarMedia($reporteId, 'foto', $rutaPublica);
                     }
                 }
@@ -114,7 +114,7 @@ try {
                 $fname = 'firma_cliente_' . $reporteId . '_' . bin2hex(random_bytes(4)) . '.png';
                 $dest  = $baseDir . '/' . $fname;
                 file_put_contents($dest, $data);
-                $rutaPublica = 'uploads/drone_reports/' . $sid . '/' . $fname;
+                $rutaPublica = 'uploads/ReporteDrones/' . $sid . '/' . $fname;
                 $model->guardarMedia($reporteId, 'firma_cliente', $rutaPublica);
             }
 
@@ -125,7 +125,7 @@ try {
                 $fname = 'firma_piloto_' . $reporteId . '_' . bin2hex(random_bytes(4)) . '.png';
                 $dest  = $baseDir . '/' . $fname;
                 file_put_contents($dest, $data);
-                $rutaPublica = 'uploads/drone_reports/' . $sid . '/' . $fname;
+                $rutaPublica = 'uploads/ReporteDrones/' . $sid . '/' . $fname;
                 $model->guardarMedia($reporteId, 'firma_piloto', $rutaPublica);
             }
 

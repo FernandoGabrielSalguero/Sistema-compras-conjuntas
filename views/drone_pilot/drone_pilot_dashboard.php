@@ -127,10 +127,6 @@ $sesionDebug = [
                             <tbody id="tbody-solicitudes">
                                 <!-- Filas generadas por JS -->
                             </tbody>
-
-                            <tbody id="tbody-solicitudes">
-                                <!-- Filas generadas por JS -->
-                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -385,28 +381,7 @@ $sesionDebug = [
             }
         }
 
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-        }
-
         document.addEventListener('DOMContentLoaded', cargarSolicitudes);
-
-        // Abrir modal
-        document.getElementById('tbody-solicitudes')?.addEventListener('click', (e) => {
-            const tr = e.target.closest('tr[data-id]');
-            if (!tr) return;
-            const celdas = [...tr.children].map(td => td.textContent);
-            const modal = document.getElementById('modal');
-            document.getElementById('modal-title').textContent = `Solicitud #${celdas[0]}`;
-            document.getElementById('modal-body').innerHTML = `
-        <p><strong>Productor:</strong> ${celdas[1]}</p>
-        <p><strong>Fecha visita:</strong> ${celdas[2]} ${celdas[3] && celdas[4] ? `(${celdas[3]}–${celdas[4]})` : ''}</p>
-        <p><strong>Superficie (ha):</strong> ${celdas[5]}</p>
-        <p><strong>Localidad:</strong> ${celdas[6]}</p>
-    `;
-            modal.classList.remove('hidden');
-        });
-
 
         // listeners, detalle, reporte, firma
         let signatureCliente, signaturePiloto;
@@ -427,6 +402,25 @@ $sesionDebug = [
         function closeModalReporte() {
             document.getElementById('modal-reporte').classList.add('hidden');
         }
+
+        function abrirReporte(id) {
+            document.getElementById('reporte_solicitud_id').value = id;
+            // Prefill cliente/piloto
+            const fila = $tbody.querySelector(`tr[data-id="${id}"]`);
+            const nomCliente = fila?.children?.[1]?.textContent?.trim() || '';
+            document.getElementById('nom_cliente').value = nomCliente;
+            document.getElementById('nom_piloto').value = <?php echo json_encode($nombre); ?>;
+            openModalReporte();
+        }
+
+        // Delegación solo para botones con data-action
+        document.getElementById('tbody-solicitudes')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-action]');
+            if (!btn) return; // ignora clicks en la fila
+            const id = btn.dataset.id;
+            if (btn.dataset.action === 'ver') verDetalle(id);
+            if (btn.dataset.action === 'reporte') abrirReporte(id);
+        });
 
         function initSignatures() {
             const makePad = (idCanvas, clearBtnId) => {
