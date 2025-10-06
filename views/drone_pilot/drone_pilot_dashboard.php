@@ -53,27 +53,45 @@ $sesionDebug = [
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" defer></script>
 
     <style>
-        /* Modal 80% viewport, centrado y con área scroll interna */
+        /* Modal 80% viewport, centrado, sin overflow externo */
+        .modal.modal-80 {
+            /* el overlay NO debe sumar padding que rompa el 80vh */
+            padding: 0 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .modal.modal-80 .modal-content {
             width: 80vw;
             height: 80vh;
             max-width: 80vw;
             max-height: 80vh;
+            box-sizing: border-box;
+            /* cuenta padding dentro del 80% */
             display: flex;
             flex-direction: column;
+            overflow: hidden;
+            /* nada se escapa del modal */
+            padding: 1.25rem;
+            /* padding real del contenido */
+            gap: .75rem;
         }
 
-        .modal.modal-80 {
-            /* por si tu framework usa flex/center, mantenemos padding para respiración */
-            padding: 2rem;
+        .modal.modal-80 h3 {
+            margin: 0;
+            /* evita sumar alto extra */
+            line-height: 1.2;
+            flex-shrink: 0;
         }
 
         .modal.modal-80 .modal-body {
             flex: 1;
             min-height: 0;
-            /* clave para que el overflow funcione en contenedores flex */
+            /* imprescindible para que funcione el scroll */
             overflow: auto;
             /* scroll solo en el cuerpo */
+            -webkit-overflow-scrolling: touch;
         }
 
         .modal.modal-80 .modal-footer {
@@ -86,9 +104,20 @@ $sesionDebug = [
             padding-top: .75rem;
             border-top: 1px solid rgba(0, 0, 0, .08);
             background: inherit;
-            /* evita parpadeo al hacer scroll */
+            flex-shrink: 0;
+        }
+
+        /* evita que algún grid interno cause scroll horizontal */
+        .modal.modal-80 .card-grid {
+            min-width: 0;
+        }
+
+        /* las tarjetas de firma no crecen infinito */
+        .modal.modal-80 canvas {
+            max-height: 220px;
         }
     </style>
+
 
 </head>
 
