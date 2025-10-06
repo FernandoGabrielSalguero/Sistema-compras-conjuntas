@@ -178,6 +178,30 @@ $sesionDebug = [
             border: 1px solid rgba(0, 0, 0, .1);
             border-radius: 999px;
         }
+
+        /* 🔻 Responsive: 1 columna en móviles para facilitar la carga */
+        @media (max-width: 640px) {
+            .modal.modal-80 .modal-content {
+                width: 95vw;
+                height: 90vh;
+                max-width: 95vw;
+                max-height: 90vh;
+            }
+
+            .modal.modal-80 .card-grid.grid-4 {
+                display: grid;
+                grid-template-columns: 1fr !important;
+                gap: .75rem;
+            }
+
+            .modal.modal-80 .card-grid.grid-4>.input-group {
+                grid-column: span 1 !important;
+            }
+
+            .modal.modal-80 canvas {
+                max-height: 180px;
+            }
+        }
     </style>
 
 
@@ -397,7 +421,8 @@ $sesionDebug = [
 
                                     <div class="input-group" style="grid-column: span 4;">
                                         <label>Subir fotos (hasta 10)</label>
-                                        <input type="file" id="fotos" name="fotos[]" accept="image/jpeg,image/png,image/webp" capture="environment" multiple />
+                                        <input type="file" id="fotos" name="fotos[]" accept="image/jpeg,image/png,image/webp" multiple />
+
                                         <small class="text-muted">Formatos: JPG, PNG, WEBP — máx. 10 fotos</small>
 
                                         <!-- Previsualización de imágenes EXISTENTES (DB) -->
@@ -411,7 +436,7 @@ $sesionDebug = [
 
 
                                     <!-- Firmas -->
-                                    <div class="input-group" style="grid-column: span 2;">
+                                    <div class="input-group" id="group-firma-cliente" style="grid-column: span 2;">
                                         <label>Firma del cliente</label>
                                         <div class="card p-2">
                                             <canvas id="firma-cliente" style="width:100%;height:200px;border:1px solid #ddd;border-radius:12px;"></canvas>
@@ -422,7 +447,7 @@ $sesionDebug = [
                                         <input type="hidden" id="firma_cliente_base64" name="firma_cliente_base64" />
                                     </div>
 
-                                    <div class="input-group" style="grid-column: span 2;">
+                                    <div class="input-group" id="group-firma-piloto" style="grid-column: span 2;">
                                         <label>Firma del piloto</label>
                                         <div class="card p-2">
                                             <canvas id="firma-piloto" style="width:100%;height:200px;border:1px solid #ddd;border-radius:12px;"></canvas>
@@ -433,11 +458,12 @@ $sesionDebug = [
                                         <input type="hidden" id="firma_piloto_base64" name="firma_piloto_base64" />
                                     </div>
 
+
                                 </div>
                             </div>
 
                             <div class="modal-footer">
-                                <button type="submit" class="btn btn-aceptar">Guardar reporte</button>
+                                <button type="submit" id="btn-submit-reporte" class="btn btn-aceptar">Guardar reporte</button>
                                 <button type="button" class="btn btn-cancelar" onclick="closeModalReporte()">Cancelar</button>
                             </div>
                         </form>
@@ -581,6 +607,35 @@ $sesionDebug = [
             if (el && value != null) el.value = value;
         }
 
+        /** Muestra enteros si no hay decimales en DB; conserva decimales reales */
+        function normalizeNumberForInput(val) {
+            if (val === null || val === undefined || val === '') return '';
+            // Mantener exactamente lo que viene si contiene coma (la convertimos a punto) o punto
+            const s = String(val).replace(',', '.').trim();
+            if (!s || isNaN(s)) return s;
+            const n = Number(s);
+            // ¿tenía parte decimal distinta de 0?
+            const hadDecimals = /\.\d*[1-9]\d*$/.test(s);
+            return hadDecimals ? s : String(Math.trunc(n));
+        }
+
+        function setIfExistsNumber(id, value) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const v = normalizeNumberForInput(value);
+            if (v !== '') el.value = v;
+        }
+
+        /** Muestra/oculta grupos de firma si ya existen en DB */
+        function toggleFirmaGroupsByMedia(mediaList) {
+            const hasFirmaCliente = mediaList?.some(m => m.tipo === 'firma_cliente');
+            const hasFirmaPiloto = mediaList?.some(m => m.tipo === 'firma_piloto');
+            const gCliente = document.getElementById('group-firma-cliente');
+            const gPiloto = document.getElementById('group-firma-piloto');
+            if (gCliente) gCliente.style.display = hasFirmaCliente ? 'none' : '';
+            if (gPiloto) gPiloto.style.display = hasFirmaPiloto ? 'none' : '';
+        }
+
         /** Render de adjuntos existentes (DB) debajo del input file */
         function renderMediaExistente(mediaList) {
             const cont = document.getElementById('preview-fotos-existentes');
@@ -598,10 +653,13 @@ $sesionDebug = [
                 const url = '../../' + m.ruta; // ajustá el prefijo si tu path público difiere
                 const etiqueta = (m.tipo || '').replace('_', ' ');
                 item.innerHTML = `
-            <img src="${url}" alt="${etiqueta}">
-            <div class="meta"><span class="badge-tipo">${etiqueta}</span></div>
-        `;
+    <a href="${url}" target="_blank" rel="noopener">
+        <img src="${url}" alt="${etiqueta}">
+    </a>
+    <div class="meta"><span class="badge-tipo">${etiqueta}</span></div>
+`;
                 cont.appendChild(item);
+
             });
         }
 
@@ -653,15 +711,24 @@ $sesionDebug = [
                     setIfExists('nombre_finca', rep.nombre_finca ?? '');
                     setIfExists('cultivo_pulverizado', rep.cultivo_pulverizado ?? '');
                     setIfExists('cuadro_cuartel', rep.cuadro_cuartel ?? '');
-                    setIfExists('sup_pulverizada', rep.sup_pulverizada ?? '');
-                    setIfExists('vol_aplicado', rep.vol_aplicado ?? '');
-                    setIfExists('vel_viento', rep.vel_viento ?? '');
-                    setIfExists('temperatura', rep.temperatura ?? '');
-                    setIfExists('humedad_relativa', rep.humedad_relativa ?? '');
+                    // 🔢 numéricos: enteros si no hay decimales en DB
+                    setIfExistsNumber('sup_pulverizada', rep.sup_pulverizada ?? '');
+                    setIfExistsNumber('vol_aplicado', rep.vol_aplicado ?? '');
+                    setIfExistsNumber('vel_viento', rep.vel_viento ?? '');
+                    setIfExistsNumber('temperatura', rep.temperatura ?? '');
+                    setIfExistsNumber('humedad_relativa', rep.humedad_relativa ?? '');
                     setIfExists('observaciones_rep', rep.observaciones ?? '');
+                    // Cambiar texto del botón
+                    const btn = document.getElementById('btn-submit-reporte');
+                    if (btn) btn.textContent = 'Actualizar reporte';
+                } else {
+                    const btn = document.getElementById('btn-submit-reporte');
+                    if (btn) btn.textContent = 'Guardar reporte';
                 }
 
+
                 renderMediaExistente(media);
+                toggleFirmaGroupsByMedia(media);
             } catch (e) {
                 console.error(e);
                 // Si falla la carga, al menos abrimos el modal con los datos mínimos

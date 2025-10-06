@@ -92,11 +92,11 @@ class DronePilotDashboardModel
         return $row ?: null;
     }
 
-/** Crea/actualiza reporte (UPSERT por clave única solicitud_id+fecha_visita+hora_ingreso) */
-public function crearReporte(array $data): int
-{
-    // Usamos ON DUPLICATE KEY UPDATE con LAST_INSERT_ID(id) para poder obtener el id también cuando es UPDATE.
-    $sql = "INSERT INTO drones_solicitud_Reporte
+    /** Crea/actualiza reporte (UPSERT por clave única solicitud_id+fecha_visita+hora_ingreso) */
+    public function crearReporte(array $data): int
+    {
+        // Usamos ON DUPLICATE KEY UPDATE con LAST_INSERT_ID(id) para poder obtener el id también cuando es UPDATE.
+        $sql = "INSERT INTO drones_solicitud_Reporte
         (solicitud_id, nom_cliente, nom_piloto, nom_encargado, fecha_visita, hora_ingreso, hora_egreso, nombre_finca, cultivo_pulverizado, cuadro_cuartel, sup_pulverizada, vol_aplicado, vel_viento, temperatura, humedad_relativa, observaciones, created_at)
         VALUES
         (:solicitud_id, :nom_cliente, :nom_piloto, :nom_encargado, :fecha_visita, :hora_ingreso, :hora_egreso, :nombre_finca, :cultivo_pulverizado, :cuadro_cuartel, :sup_pulverizada, :vol_aplicado, :vel_viento, :temperatura, :humedad_relativa, :observaciones, NOW())
@@ -118,28 +118,28 @@ public function crearReporte(array $data): int
             observaciones       = VALUES(observaciones),
             id = LAST_INSERT_ID(id)"; // ← truco para obtener el id también cuando es UPDATE
 
-    $st = $this->pdo->prepare($sql);
-    $st->execute([
-        ':solicitud_id'        => $data['solicitud_id'],
-        ':nom_cliente'         => $data['nom_cliente'],
-        ':nom_piloto'          => $data['nom_piloto'],
-        ':nom_encargado'       => $data['nom_encargado'],
-        ':fecha_visita'        => $data['fecha_visita'],
-        ':hora_ingreso'        => $data['hora_ingreso'],
-        ':hora_egreso'         => $data['hora_egreso'],
-        ':nombre_finca'        => $data['nombre_finca'],
-        ':cultivo_pulverizado' => $data['cultivo_pulverizado'],
-        ':cuadro_cuartel'      => $data['cuadro_cuartel'],
-        ':sup_pulverizada'     => $data['sup_pulverizada'],
-        ':vol_aplicado'        => $data['vol_aplicado'],
-        ':vel_viento'          => $data['vel_viento'],
-        ':temperatura'         => $data['temperatura'],
-        ':humedad_relativa'    => $data['humedad_relativa'],
-        ':observaciones'       => $data['observaciones'],
-    ]);
+        $st = $this->pdo->prepare($sql);
+        $st->execute([
+            ':solicitud_id'        => $data['solicitud_id'],
+            ':nom_cliente'         => $data['nom_cliente'],
+            ':nom_piloto'          => $data['nom_piloto'],
+            ':nom_encargado'       => $data['nom_encargado'],
+            ':fecha_visita'        => $data['fecha_visita'],
+            ':hora_ingreso'        => $data['hora_ingreso'],
+            ':hora_egreso'         => $data['hora_egreso'],
+            ':nombre_finca'        => $data['nombre_finca'],
+            ':cultivo_pulverizado' => $data['cultivo_pulverizado'],
+            ':cuadro_cuartel'      => $data['cuadro_cuartel'],
+            ':sup_pulverizada'     => $data['sup_pulverizada'],
+            ':vol_aplicado'        => $data['vol_aplicado'],
+            ':vel_viento'          => $data['vel_viento'],
+            ':temperatura'         => $data['temperatura'],
+            ':humedad_relativa'    => $data['humedad_relativa'],
+            ':observaciones'       => $data['observaciones'],
+        ]);
 
-    return (int)$this->pdo->lastInsertId();
-}
+        return (int)$this->pdo->lastInsertId();
+    }
 
 
     /** Obtiene el último reporte de una solicitud (para prellenar modal) */
@@ -194,5 +194,13 @@ public function crearReporte(array $data): int
         $sql = "INSERT INTO drones_solicitud_reporte_media (reporte_id, tipo, ruta) VALUES (:rid, :tipo, :ruta)";
         $st = $this->pdo->prepare($sql);
         $st->execute([':rid' => $reporteId, ':tipo' => $tipo, ':ruta' => $ruta]);
+    }
+
+    /** Marca la solicitud como visita_realizada */
+    public function marcarVisitaRealizada(int $solicitudId): void
+    {
+        $sql = "UPDATE drones_solicitud SET estado = 'visita_realizada' WHERE id = :id";
+        $st  = $this->pdo->prepare($sql);
+        $st->execute([':id' => $solicitudId]);
     }
 }

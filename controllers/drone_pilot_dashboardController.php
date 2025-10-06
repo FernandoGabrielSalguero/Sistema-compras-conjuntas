@@ -33,7 +33,7 @@ try {
             jsonResponse(true, $solicitudes);
         }
 
-                if ($action === 'detalle_solicitud') {
+        if ($action === 'detalle_solicitud') {
             $id = (int)($_GET['id'] ?? 0);
             if ($id <= 0) jsonResponse(false, null, 'ID inválido.', 400);
             $sol = $model->getSolicitudDetalle($id, (int)$usuarioId);
@@ -61,7 +61,6 @@ try {
         }
 
         jsonResponse(false, null, 'Acción no soportada.', 400);
-
     }
 
     if ($method === 'POST') {
@@ -147,6 +146,10 @@ try {
                 $rutaPublica = 'uploads/ReporteDrones/' . $sid . '/' . $fname;
                 $model->guardarMedia($reporteId, 'firma_piloto', $rutaPublica);
             }
+
+
+            // Cambiar estado de la solicitud a visita_realizada
+            $model->marcarVisitaRealizada($sid);
 
             $pdo->commit();
             jsonResponse(true, ['reporte_id' => $reporteId], 'Reporte creado');
