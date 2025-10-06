@@ -94,32 +94,77 @@ class DronePilotDashboardModel
 
     /** Crea reporte */
     public function crearReporte(array $data): int
-{
-    $sql = "INSERT INTO drones_solicitud_Reporte
+    {
+        $sql = "INSERT INTO drones_solicitud_Reporte
             (solicitud_id, nom_cliente, nom_piloto, nom_encargado, fecha_visita, hora_ingreso, hora_egreso, nombre_finca, cultivo_pulverizado, cuadro_cuartel, sup_pulverizada, vol_aplicado, vel_viento, temperatura, humedad_relativa, observaciones, created_at)
             VALUES
             (:solicitud_id, :nom_cliente, :nom_piloto, :nom_encargado, :fecha_visita, :hora_ingreso, :hora_egreso, :nombre_finca, :cultivo_pulverizado, :cuadro_cuartel, :sup_pulverizada, :vol_aplicado, :vel_viento, :temperatura, :humedad_relativa, :observaciones, NOW())";
-    $st = $this->pdo->prepare($sql);
-    $st->execute([
-        ':solicitud_id'       => $data['solicitud_id'],
-        ':nom_cliente'        => $data['nom_cliente'],
-        ':nom_piloto'         => $data['nom_piloto'],
-        ':nom_encargado'      => $data['nom_encargado'],
-        ':fecha_visita'       => $data['fecha_visita'],
-        ':hora_ingreso'       => $data['hora_ingreso'],
-        ':hora_egreso'        => $data['hora_egreso'],
-        ':nombre_finca'       => $data['nombre_finca'],
-        ':cultivo_pulverizado' => $data['cultivo_pulverizado'],
-        ':cuadro_cuartel'     => $data['cuadro_cuartel'],
-        ':sup_pulverizada'    => $data['sup_pulverizada'],
-        ':vol_aplicado'       => $data['vol_aplicado'],
-        ':vel_viento'         => $data['vel_viento'],
-        ':temperatura'        => $data['temperatura'],
-        ':humedad_relativa'   => $data['humedad_relativa'],
-        ':observaciones'      => $data['observaciones'],
-    ]);
-    return (int)$this->pdo->lastInsertId();
-}
+        $st = $this->pdo->prepare($sql);
+        $st->execute([
+            ':solicitud_id'       => $data['solicitud_id'],
+            ':nom_cliente'        => $data['nom_cliente'],
+            ':nom_piloto'         => $data['nom_piloto'],
+            ':nom_encargado'      => $data['nom_encargado'],
+            ':fecha_visita'       => $data['fecha_visita'],
+            ':hora_ingreso'       => $data['hora_ingreso'],
+            ':hora_egreso'        => $data['hora_egreso'],
+            ':nombre_finca'       => $data['nombre_finca'],
+            ':cultivo_pulverizado' => $data['cultivo_pulverizado'],
+            ':cuadro_cuartel'     => $data['cuadro_cuartel'],
+            ':sup_pulverizada'    => $data['sup_pulverizada'],
+            ':vol_aplicado'       => $data['vol_aplicado'],
+            ':vel_viento'         => $data['vel_viento'],
+            ':temperatura'        => $data['temperatura'],
+            ':humedad_relativa'   => $data['humedad_relativa'],
+            ':observaciones'      => $data['observaciones'],
+        ]);
+        return (int)$this->pdo->lastInsertId();
+    }
+
+    /** Obtiene el último reporte de una solicitud (para prellenar modal) */
+    public function getReporteBySolicitud(int $solicitudId): ?array
+    {
+        $sql = "SELECT 
+                id,
+                solicitud_id,
+                nom_cliente,
+                nom_piloto,
+                nom_encargado,
+                fecha_visita,
+                hora_ingreso,
+                hora_egreso,
+                nombre_finca,
+                cultivo_pulverizado,
+                cuadro_cuartel,
+                sup_pulverizada,
+                vol_aplicado,
+                vel_viento,
+                temperatura,
+                humedad_relativa,
+                observaciones,
+                created_at
+            FROM drones_solicitud_Reporte
+            WHERE solicitud_id = :sid
+            ORDER BY created_at DESC, id DESC
+            LIMIT 1";
+        $st = $this->pdo->prepare($sql);
+        $st->execute([':sid' => $solicitudId]);
+        $row = $st->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    /** Media asociada a un reporte (fotos y firmas) */
+    public function getMediaByReporte(int $reporteId): array
+    {
+        $sql = "SELECT tipo, ruta
+            FROM drones_solicitud_reporte_media
+            WHERE reporte_id = :rid
+            ORDER BY created_at ASC, id ASC";
+        $st = $this->pdo->prepare($sql);
+        $st->execute([':rid' => $reporteId]);
+        return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
 
     /** Guarda registros de media (foto/firma) */
     public function guardarMedia(int $reporteId, string $tipo, string $ruta): void

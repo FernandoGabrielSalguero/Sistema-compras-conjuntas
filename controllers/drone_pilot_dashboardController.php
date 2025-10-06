@@ -57,24 +57,23 @@ try {
             if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
 
             $payload = [
-    'solicitud_id'        => $sid,
-    'nom_cliente'         => trim($_POST['nom_cliente'] ?? ''),
-    'nom_piloto'          => trim($_POST['nom_piloto'] ?? ''),
-    'nom_encargado'       => trim($_POST['nom_encargado'] ?? ''),
-    'fecha_visita'        => $_POST['fecha_visita'] ?? null,
-    'hora_ingreso'        => $_POST['hora_ingreso'] ?? null,
-    'hora_egreso'         => $_POST['hora_egreso'] ?? null,
-    'nombre_finca'        => trim($_POST['nombre_finca'] ?? ''),
-    'cultivo_pulverizado' => trim($_POST['cultivo_pulverizado'] ?? ''),
-    'cuadro_cuartel'      => trim($_POST['cuadro_cuartel'] ?? ''),
-    'sup_pulverizada'     => $_POST['sup_pulverizada'] ?? null,
-    'vol_aplicado'        => $_POST['vol_aplicado'] ?? null,
-    'vel_viento'          => $_POST['vel_viento'] ?? null,
-    'temperatura'         => $_POST['temperatura'] ?? null,
-    'humedad_relativa'    => $_POST['humedad_relativa'] ?? null,
-    'observaciones'       => trim($_POST['observaciones'] ?? ''),
-];
-
+                'solicitud_id'        => $sid,
+                'nom_cliente'         => trim($_POST['nom_cliente'] ?? ''),
+                'nom_piloto'          => trim($_POST['nom_piloto'] ?? ''),
+                'nom_encargado'       => trim($_POST['nom_encargado'] ?? ''),
+                'fecha_visita'        => $_POST['fecha_visita'] ?? null,
+                'hora_ingreso'        => $_POST['hora_ingreso'] ?? null,
+                'hora_egreso'         => $_POST['hora_egreso'] ?? null,
+                'nombre_finca'        => trim($_POST['nombre_finca'] ?? ''),
+                'cultivo_pulverizado' => trim($_POST['cultivo_pulverizado'] ?? ''),
+                'cuadro_cuartel'      => trim($_POST['cuadro_cuartel'] ?? ''),
+                'sup_pulverizada'     => $_POST['sup_pulverizada'] ?? null,
+                'vol_aplicado'        => $_POST['vol_aplicado'] ?? null,
+                'vel_viento'          => $_POST['vel_viento'] ?? null,
+                'temperatura'         => $_POST['temperatura'] ?? null,
+                'humedad_relativa'    => $_POST['humedad_relativa'] ?? null,
+                'observaciones'       => trim($_POST['observaciones'] ?? ''),
+            ];
 
             $pdo->beginTransaction();
             $reporteId = $model->crearReporte($payload);
@@ -131,10 +130,28 @@ try {
                 $model->guardarMedia($reporteId, 'firma_piloto', $rutaPublica);
             }
 
+            if ($action === 'reporte_solicitud') {
+                $id = (int)($_GET['id'] ?? 0); // id de la solicitud
+                if ($id <= 0) jsonResponse(false, null, 'ID inválido.', 400);
+
+                // Validar pertenencia de la solicitud al piloto
+                $sol = $model->getSolicitudDetalle($id, (int)$usuarioId);
+                if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
+
+                $rep = $model->getReporteBySolicitud($id);
+                $media = [];
+                if ($rep) {
+                    $media = $model->getMediaByReporte((int)$rep['id']);
+                }
+
+                jsonResponse(true, ['reporte' => $rep, 'media' => $media]);
+            }
+
 
             $pdo->commit();
             jsonResponse(true, ['reporte_id' => $reporteId], 'Reporte creado');
         }
+
 
         jsonResponse(false, null, 'Acción no soportada.', 400);
     }

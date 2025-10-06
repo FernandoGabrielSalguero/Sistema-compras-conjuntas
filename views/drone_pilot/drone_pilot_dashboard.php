@@ -162,6 +162,22 @@ $sesionDebug = [
             text-align: center;
             word-break: break-all;
         }
+
+        /* Título de secciones de previsualización (DB / nuevas) */
+        .preview-title {
+            font-size: .9rem;
+            font-weight: 600;
+            color: #444;
+            margin-top: .25rem;
+        }
+
+        /* Etiqueta de tipo (foto, firma_cliente, firma_piloto) */
+        .preview-grid .badge-tipo {
+            font-size: .7rem;
+            padding: .1rem .35rem;
+            border: 1px solid rgba(0, 0, 0, .1);
+            border-radius: 999px;
+        }
     </style>
 
 
@@ -382,12 +398,17 @@ $sesionDebug = [
                                     <div class="input-group" style="grid-column: span 4;">
                                         <label>Subir fotos (hasta 10)</label>
                                         <input type="file" id="fotos" name="fotos[]" accept="image/jpeg,image/png,image/webp" capture="environment" multiple />
-                                        <small class="text-muted">Podes seleccionar desde el dispositivo o tomar las fotos en el momento</small>
+                                        <small class="text-muted">Formatos: JPG, PNG, WEBP — máx. 10 fotos</small>
 
-                                        <!-- Previsualización -->
+                                        <!-- Previsualización de imágenes EXISTENTES (DB) -->
+                                        <div class="preview-title">Adjuntos existentes</div>
+                                        <div id="preview-fotos-existentes" class="preview-grid"></div>
+
+                                        <!-- Previsualización de NUEVAS imágenes seleccionadas -->
+                                        <div class="preview-title">Nuevas imágenes seleccionadas</div>
                                         <div id="preview-fotos" class="preview-grid" aria-live="polite"></div>
-
                                     </div>
+
 
                                     <!-- Firmas -->
                                     <div class="input-group" style="grid-column: span 2;">
@@ -531,17 +552,124 @@ $sesionDebug = [
             document.getElementById('modal-reporte').classList.add('hidden');
         }
 
-        function abrirReporte(id) {
+        function resetFormReporte() {
+            const form = document.getElementById('form-reporte');
+            if (!form) return;
+            form.reset();
+
+            // Limpiar previews
+            document.getElementById('preview-fotos')?.replaceChildren();
+            document.getElementById('preview-fotos-existentes')?.replaceChildren();
+
+            // Limpiar lienzos de firma si ya estaban instanciados
+            try {
+                signatureCliente?.clear();
+            } catch (e) {}
+            try {
+                signaturePiloto?.clear();
+            } catch (e) {}
+
+            // Limpiar hiddens de firmas
+            const hc = document.getElementById('firma_cliente_base64');
+            const hp = document.getElementById('firma_piloto_base64');
+            if (hc) hc.value = '';
+            if (hp) hp.value = '';
+        }
+
+        function setIfExists(id, value) {
+            const el = document.getElementById(id);
+            if (el && value != null) el.value = value;
+        }
+
+        /** Render de adjuntos existentes (DB) debajo del input file */
+        function renderMediaExistente(mediaList) {
+            const cont = document.getElementById('preview-fotos-existentes');
+            if (!cont) return;
+            cont.innerHTML = '';
+
+            if (!Array.isArray(mediaList) || !mediaList.length) {
+                cont.innerHTML = '<div class="text-muted" style="font-size:.85rem;">Sin adjuntos previos.</div>';
+                return;
+            }
+
+            mediaList.forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'preview-item';
+                const url = '../../' + m.ruta; // ajustá el prefijo si tu path público difiere
+                const etiqueta = (m.tipo || '').replace('_', ' ');
+                item.innerHTML = `
+            <img src="${url}" alt="${etiqueta}">
+            <div class="meta"><span class="badge-tipo">${etiqueta}</span></div>
+        `;
+                cont.appendChild(item);
+            });
+        }
+
+        // (Opcional) Normalizadores por si la API devolviera formatos no compatibles con <input type="date/time">
+        function toDateInput(val) {
+            // Acepta 'YYYY-MM-DD' o 'DD/MM/YYYY' y retorna 'YYYY-MM-DD'; si no matchea, devuelve tal cual.
+            if (!val) return '';
+            if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+            const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(val);
+            return m ? `${m[3]}-${m[2]}-${m[1]}` : val;
+        }
+
+        function toTimeInput(val) {
+            // Acepta 'HH:mm' o 'HH:mm:ss' y retorna 'HH:mm'
+            if (!val) return '';
+            const m = /^(\d{2}:\d{2})(:\d{2})?$/.exec(val);
+            return m ? m[1] : val;
+        }
+
+        async function abrirReporte(id) {
+            resetFormReporte();
             document.getElementById('reporte_solicitud_id').value = id;
-            // Prefill cliente/piloto
+
+            // Prefill básico desde grilla/sesión
             const fila = $tbody.querySelector(`tr[data-id="${id}"]`);
             const nomCliente = fila?.children?.[1]?.textContent?.trim() || '';
-            document.getElementById('nom_cliente').value = nomCliente;
-            document.getElementById('nom_piloto').value = <?php echo json_encode($nombre); ?>;
-            document.getElementById('nom_encargado').value = '';
+            setIfExists('nom_cliente', nomCliente);
+            setIfExists('nom_piloto', <?php echo json_encode($nombre); ?>);
+
+            // Traer último reporte (si existe) para prelleno
+            try {
+                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=reporte_solicitud&id=${encodeURIComponent(id)}`, {
+                    credentials: 'same-origin'
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const payload = await res.json();
+                if (!payload.ok) throw new Error(payload.message || 'Error de API');
+
+                const rep = payload.data?.reporte || null;
+                const media = payload.data?.media || [];
+
+                if (rep) {
+                    setIfExists('nom_cliente', rep.nom_cliente ?? nomCliente);
+                    setIfExists('nom_piloto', rep.nom_piloto ?? <?php echo json_encode($nombre); ?>);
+                    setIfExists('nom_encargado', rep.nom_encargado ?? '');
+                    setIfExists('fecha_visita_rep', toDateInput(rep.fecha_visita ?? ''));
+                    setIfExists('hora_ingreso', toTimeInput(rep.hora_ingreso ?? ''));
+                    setIfExists('hora_egreso', toTimeInput(rep.hora_egreso ?? ''));
+                    setIfExists('nombre_finca', rep.nombre_finca ?? '');
+                    setIfExists('cultivo_pulverizado', rep.cultivo_pulverizado ?? '');
+                    setIfExists('cuadro_cuartel', rep.cuadro_cuartel ?? '');
+                    setIfExists('sup_pulverizada', rep.sup_pulverizada ?? '');
+                    setIfExists('vol_aplicado', rep.vol_aplicado ?? '');
+                    setIfExists('vel_viento', rep.vel_viento ?? '');
+                    setIfExists('temperatura', rep.temperatura ?? '');
+                    setIfExists('humedad_relativa', rep.humedad_relativa ?? '');
+                    setIfExists('observaciones_rep', rep.observaciones ?? '');
+                }
+
+                renderMediaExistente(media);
+            } catch (e) {
+                console.error(e);
+                // Si falla la carga, al menos abrimos el modal con los datos mínimos
+            }
 
             openModalReporte();
         }
+
 
         // Delegación solo para botones con data-action
         document.getElementById('tbody-solicitudes')?.addEventListener('click', (e) => {
@@ -564,6 +692,7 @@ $sesionDebug = [
                     ctx.scale(ratio, ratio);
                 };
                 resize();
+                window.removeEventListener('resize', resize);
                 window.addEventListener('resize', resize);
                 const pad = new SignaturePad(canvas, {
                     minWidth: 0.8,
@@ -722,6 +851,7 @@ $sesionDebug = [
                 showAlert?.('error', 'No se pudo cargar el detalle de la solicitud.');
             }
         }
+
 
         // --- Previsualización de fotos seleccionadas (máx 10)
         const inputFotos = document.getElementById('fotos');
