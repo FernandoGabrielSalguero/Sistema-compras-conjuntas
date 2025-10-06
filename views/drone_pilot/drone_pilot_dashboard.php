@@ -85,27 +85,31 @@ $sesionDebug = [
             flex-shrink: 0;
         }
 
-.modal.modal-80 .modal-body{
-    flex: 1;
-    min-height: 0;                /* imprescindible para que funcione el scroll */
-    overflow-y: auto;             /* scroll vertical dentro del modal */
-    overflow-x: hidden;           /* si luego querés horizontal, cambiá a auto */
-    -webkit-overflow-scrolling: touch;
-    padding-right: .25rem;
-}
+        .modal.modal-80 .modal-body {
+            flex: 1;
+            min-height: 0;
+            /* imprescindible para que funcione el scroll */
+            overflow-y: auto;
+            /* scroll vertical dentro del modal */
+            overflow-x: hidden;
+            /* si luego querés horizontal, cambiá a auto */
+            -webkit-overflow-scrolling: touch;
+            padding-right: .25rem;
+        }
 
-/* El form es un contenedor flex intermedio: SIN esto, .modal-body no puede scrollear */
-.modal.modal-80 .modal-content form{
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;                /* clave para permitir que .modal-body calcule altura */
-}
+        /* El form es un contenedor flex intermedio: SIN esto, .modal-body no puede scrollear */
+        .modal.modal-80 .modal-content form {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            /* clave para permitir que .modal-body calcule altura */
+        }
 
-/* Si necesitás scroll horizontal, activá max-content; si no, mantené 0 para evitar barras laterales */
-.modal.modal-80 .card-grid{
-    min-width: 0;
-}
+        /* Si necesitás scroll horizontal, activá max-content; si no, mantené 0 para evitar barras laterales */
+        .modal.modal-80 .card-grid {
+            min-width: 0;
+        }
 
 
         .modal.modal-80 .modal-footer {
@@ -124,6 +128,39 @@ $sesionDebug = [
         /* las tarjetas de firma no crecen infinito */
         .modal.modal-80 canvas {
             max-height: 220px;
+        }
+
+        /* Previsualización de fotos seleccionadas */
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: .5rem;
+            margin-top: .5rem;
+        }
+
+        .preview-item {
+            border: 1px solid rgba(0, 0, 0, .08);
+            border-radius: 12px;
+            padding: .25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .25rem;
+            background: #fff;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .preview-item .meta {
+            font-size: .75rem;
+            color: #666;
+            text-align: center;
+            word-break: break-all;
         }
     </style>
 
@@ -252,6 +289,13 @@ $sesionDebug = [
                                     </div>
 
                                     <div class="input-group">
+                                        <label for="nom_encargado">Nombre del encargado</label>
+                                        <div class="input-icon input-icon-name">
+                                            <input type="text" id="nom_encargado" name="nom_encargado" placeholder="…" />
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group">
                                         <label for="fecha_visita_rep">Fecha de visita</label>
                                         <div class="input-icon input-icon-calendar">
                                             <input type="date" id="fecha_visita_rep" name="fecha_visita" required />
@@ -337,8 +381,12 @@ $sesionDebug = [
 
                                     <div class="input-group" style="grid-column: span 4;">
                                         <label>Subir fotos (hasta 10)</label>
-                                        <input type="file" id="fotos" name="fotos[]" accept="image/jpeg,image/png,image/webp" multiple />
-                                        <small class="text-muted">Formatos: JPG, PNG, WEBP</small>
+                                        <input type="file" id="fotos" name="fotos[]" accept="image/jpeg,image/png,image/webp" capture="environment" multiple />
+                                        <small class="text-muted">Podes seleccionar desde el dispositivo o tomar las fotos en el momento</small>
+
+                                        <!-- Previsualización -->
+                                        <div id="preview-fotos" class="preview-grid" aria-live="polite"></div>
+
                                     </div>
 
                                     <!-- Firmas -->
@@ -490,6 +538,8 @@ $sesionDebug = [
             const nomCliente = fila?.children?.[1]?.textContent?.trim() || '';
             document.getElementById('nom_cliente').value = nomCliente;
             document.getElementById('nom_piloto').value = <?php echo json_encode($nombre); ?>;
+            document.getElementById('nom_encargado').value = '';
+
             openModalReporte();
         }
 
@@ -672,6 +722,62 @@ $sesionDebug = [
                 showAlert?.('error', 'No se pudo cargar el detalle de la solicitud.');
             }
         }
+
+        // --- Previsualización de fotos seleccionadas (máx 10)
+        const inputFotos = document.getElementById('fotos');
+        const previewFotos = document.getElementById('preview-fotos');
+
+        function bytesToSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024,
+                sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function renderPreviews(files) {
+            previewFotos.innerHTML = '';
+            if (!files || !files.length) return;
+
+            Array.from(files).forEach(f => {
+                const url = URL.createObjectURL(f);
+                const item = document.createElement('div');
+                item.className = 'preview-item';
+                item.innerHTML = `
+            <img src="${url}" alt="${f.name}">
+            <div class="meta">${f.name}<br>${bytesToSize(f.size)}</div>
+        `;
+                previewFotos.appendChild(item);
+                // Liberar URL cuando la imagen cargue
+                item.querySelector('img').onload = () => URL.revokeObjectURL(url);
+            });
+        }
+
+        inputFotos?.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files || []);
+            if (!files.length) {
+                renderPreviews([]);
+                return;
+            }
+
+            const valid = files.filter(f => /image\/(jpeg|png|webp)/.test(f.type));
+            if (valid.length !== files.length) {
+                showAlert?.('info', 'Algunos archivos no son imágenes válidas (JPG/PNG/WEBP) y se omitieron.');
+            }
+
+            let finalFiles = valid.slice(0, 10);
+            if (valid.length > 10) {
+                showAlert?.('info', 'Solo se permiten 10 fotos. Se tomarán las primeras 10.');
+            }
+
+            // Forzar límite en el input usando DataTransfer
+            const dt = new DataTransfer();
+            finalFiles.forEach(f => dt.items.add(f));
+            inputFotos.files = dt.files;
+
+            renderPreviews(finalFiles);
+        });
+
 
         document.getElementById('form-reporte')?.addEventListener('submit', async (e) => {
             e.preventDefault();

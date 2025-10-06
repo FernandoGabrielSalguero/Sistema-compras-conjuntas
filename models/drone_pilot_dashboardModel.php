@@ -94,31 +94,32 @@ class DronePilotDashboardModel
 
     /** Crea reporte */
     public function crearReporte(array $data): int
-    {
-        $sql = "INSERT INTO drones_solicitud_Reporte
-                (solicitud_id, nom_cliente, nom_piloto, fecha_visita, hora_ingreso, hora_egreso, nombre_finca, cultivo_pulverizado, cuadro_cuartel, sup_pulverizada, vol_aplicado, vel_viento, temperatura, humedad_relativa, observaciones, created_at)
-                VALUES
-                (:solicitud_id, :nom_cliente, :nom_piloto, :fecha_visita, :hora_ingreso, :hora_egreso, :nombre_finca, :cultivo_pulverizado, :cuadro_cuartel, :sup_pulverizada, :vol_aplicado, :vel_viento, :temperatura, :humedad_relativa, :observaciones, NOW())";
-        $st = $this->pdo->prepare($sql);
-        $st->execute([
-            ':solicitud_id'       => $data['solicitud_id'],
-            ':nom_cliente'        => $data['nom_cliente'],
-            ':nom_piloto'         => $data['nom_piloto'],
-            ':fecha_visita'       => $data['fecha_visita'],
-            ':hora_ingreso'       => $data['hora_ingreso'],
-            ':hora_egreso'        => $data['hora_egreso'],
-            ':nombre_finca'       => $data['nombre_finca'],
-            ':cultivo_pulverizado' => $data['cultivo_pulverizado'],
-            ':cuadro_cuartel'     => $data['cuadro_cuartel'],
-            ':sup_pulverizada'    => $data['sup_pulverizada'],
-            ':vol_aplicado'       => $data['vol_aplicado'],
-            ':vel_viento'         => $data['vel_viento'],
-            ':temperatura'        => $data['temperatura'],
-            ':humedad_relativa'   => $data['humedad_relativa'],
-            ':observaciones'      => $data['observaciones'],
-        ]);
-        return (int)$this->pdo->lastInsertId();
-    }
+{
+    $sql = "INSERT INTO drones_solicitud_Reporte
+            (solicitud_id, nom_cliente, nom_piloto, nom_encargado, fecha_visita, hora_ingreso, hora_egreso, nombre_finca, cultivo_pulverizado, cuadro_cuartel, sup_pulverizada, vol_aplicado, vel_viento, temperatura, humedad_relativa, observaciones, created_at)
+            VALUES
+            (:solicitud_id, :nom_cliente, :nom_piloto, :nom_encargado, :fecha_visita, :hora_ingreso, :hora_egreso, :nombre_finca, :cultivo_pulverizado, :cuadro_cuartel, :sup_pulverizada, :vol_aplicado, :vel_viento, :temperatura, :humedad_relativa, :observaciones, NOW())";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([
+        ':solicitud_id'       => $data['solicitud_id'],
+        ':nom_cliente'        => $data['nom_cliente'],
+        ':nom_piloto'         => $data['nom_piloto'],
+        ':nom_encargado'      => $data['nom_encargado'],
+        ':fecha_visita'       => $data['fecha_visita'],
+        ':hora_ingreso'       => $data['hora_ingreso'],
+        ':hora_egreso'        => $data['hora_egreso'],
+        ':nombre_finca'       => $data['nombre_finca'],
+        ':cultivo_pulverizado' => $data['cultivo_pulverizado'],
+        ':cuadro_cuartel'     => $data['cuadro_cuartel'],
+        ':sup_pulverizada'    => $data['sup_pulverizada'],
+        ':vol_aplicado'       => $data['vol_aplicado'],
+        ':vel_viento'         => $data['vel_viento'],
+        ':temperatura'        => $data['temperatura'],
+        ':humedad_relativa'   => $data['humedad_relativa'],
+        ':observaciones'      => $data['observaciones'],
+    ]);
+    return (int)$this->pdo->lastInsertId();
+}
 
     /** Guarda registros de media (foto/firma) */
     public function guardarMedia(int $reporteId, string $tipo, string $ruta): void
