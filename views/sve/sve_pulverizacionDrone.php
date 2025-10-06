@@ -17,39 +17,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 //Cargamos los operativos cerrados
 $cierre_info = $_SESSION['cierre_info'] ?? null;
-unset($_SESSION['cierre_info']); 
-
-// --- Render parcial por AJAX (sin crear archivos nuevos) ---
-if (isset($_GET['partial'])) {
-    // Whitelist de paneles => rutas relativas a este archivo
-    $panel = preg_replace('/[^a-zA-Z0-9\-_#]/', '', $_GET['partial']); // saneo básico
-    $panel = ltrim($panel, '#'); // admitir "#panel-xyz"
-
-    $map = [
-        'panel-solicitudes' => '/../partials/drones/view/drone_list_view.php',
-        'panel-formulario'  => '/../partials/drones/view/drone_formulario_N_Servicio_view.php',
-        'panel-protocolo'   => '/../partials/drones/view/drone_protocol_view.php',
-        'panel-calendario'  => '/../partials/drones/view/drone_calendar_view.php',
-        'panel-registro'    => '/../partials/drones/view/drone_registro_view.php',
-        'panel-stock'       => '/../partials/drones/view/drone_stock_view.php',
-        'panel-variables'   => '/../partials/drones/view/drone_variables_view.php',
-    ];
-
-    if (!isset($map[$panel])) {
-        http_response_code(400);
-        echo 'Panel inválido';
-        exit;
-    }
-
-    $viewFile = __DIR__ . $map[$panel];
-    if (is_file($viewFile)) {
-        require $viewFile;
-    } else {
-        http_response_code(404);
-        echo 'No se encontró la vista solicitada.';
-    }
-    exit;
-}
+unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 ?>
 
 <!DOCTYPE html>
@@ -301,6 +269,8 @@ if (isset($_GET['partial'])) {
     </div>
   </div>
 
+
+
   <!-- JS simple para alternar contenido entre tarjetas -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -332,71 +302,28 @@ if (isset($_GET['partial'])) {
         }
       }
 
-// Helpers AJAX para cargar paneles
-async function fetchPanelHTML(panelSelector) {
-  const panelId = panelSelector.replace('#', '');
-  const url = `sve_pulverizacionDrone.php?partial=${encodeURIComponent(panelId)}`;
-  const res = await fetch(url, {
-    credentials: 'same-origin',
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return await res.text();
-}
+      // Cambiar de pestaña SIN recargar
+      buttons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          if (!isTabButton(btn)) return;
+          const target = btn.dataset.target;
+          if (!target) return;
+          sessionStorage.setItem(STORAGE_KEY, target);
+          activate(target);
+        });
+      });
 
-async function loadPanel(panelSelector, { activateAfter = true } = {}) {
-  const panel = document.querySelector(panelSelector);
-  if (!panel) return;
-
-  // Estado de carga local del panel
-  panel.setAttribute('aria-busy', 'true');
-  const prevHTML = panel.innerHTML;
-  panel.innerHTML = '<div class="s-4 text-center">Cargando…</div>';
-
-  try {
-    const html = await fetchPanelHTML(panelSelector);
-    panel.innerHTML = html;
-    if (activateAfter) activate(panelSelector);
-  } catch (err) {
-    panel.innerHTML = `<p class="text-error">No se pudo cargar el contenido (${err.message}).</p>`;
-    // fallback opcional: restaurar contenido anterior
-    // panel.innerHTML = prevHTML;
-  } finally {
-    panel.removeAttribute('aria-busy');
-  }
-}
-
-// Cambiar de pestaña y refrescar contenido vía AJAX
-buttons.forEach(btn => {
-  btn.addEventListener('click', async (e) => {
-    if (!isTabButton(btn)) return;
-    const target = btn.dataset.target;
-    if (!target) return;
-    sessionStorage.setItem(STORAGE_KEY, target);
-
-    // Spinner global opcional si existe
-    try { window.showGlobalSpinner && window.showGlobalSpinner(); } catch(_) {}
-
-    await loadPanel(target, { activateAfter: true });
-
-    // Ocultar spinner global opcional
-    try { window.hideGlobalSpinner && window.hideGlobalSpinner(); } catch(_) {}
-  });
-});
-
-// Botón "Actualizar" (vía AJAX sobre el panel activo)
-const refreshBtn = document.getElementById('btn-refresh');
-if (refreshBtn) {
-  refreshBtn.addEventListener('click', async () => {
-    const activeBtn = document.querySelector('.tab-buttons .tab-button.active[data-target]');
-    const current = activeBtn ? activeBtn.dataset.target : '#panel-solicitudes';
-    sessionStorage.setItem(STORAGE_KEY, current);
-
-    try { window.showGlobalSpinner && window.showGlobalSpinner(); } catch(_) {}
-    await loadPanel(current, { activateAfter: true });
-    try { window.hideGlobalSpinner && window.hideGlobalSpinner(); } catch(_) {}
-  });
-}
+      // Botón "Actualizar" (recarga manual)
+      const refreshBtn = document.getElementById('btn-refresh');
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+          // Conserva la pestaña actual al recargar
+          const activeBtn = document.querySelector('.tab-buttons .tab-button.active[data-target]');
+          const current = activeBtn ? activeBtn.dataset.target : '#panel-solicitudes';
+          sessionStorage.setItem(STORAGE_KEY, current);
+          location.reload();
+        });
+      }
 
       // Activar la pestaña persistida (o default)
       const initial = sessionStorage.getItem(STORAGE_KEY) || '#panel-solicitudes';
