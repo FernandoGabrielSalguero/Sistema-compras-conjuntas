@@ -423,7 +423,7 @@ $sesionDebug = [
                                         <label>Subir fotos (hasta 10)</label>
                                         <input type="file" id="fotos" name="fotos[]" accept="image/jpeg,image/png,image/webp" multiple />
 
-                                        <small class="text-muted">Formatos: JPG, PNG, WEBP — máx. 10 fotos</small>
+                                        <!-- <small class="text-muted">Formatos: JPG, PNG, WEBP — máx. 10 fotos</small> -->
 
                                         <!-- Previsualización de imágenes EXISTENTES (DB) -->
                                         <div class="preview-title">Adjuntos existentes</div>
