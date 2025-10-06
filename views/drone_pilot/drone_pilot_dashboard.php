@@ -85,21 +85,28 @@ $sesionDebug = [
             flex-shrink: 0;
         }
 
-        .modal.modal-80 .modal-body {
-            flex: 1;
-            min-height: 0;
-            /* habilita scroll vertical y horizontal */
-            overflow-y: auto;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            padding-right: .25rem;
-            /* evita corte de scroll */
-        }
+.modal.modal-80 .modal-body{
+    flex: 1;
+    min-height: 0;                /* imprescindible para que funcione el scroll */
+    overflow-y: auto;             /* scroll vertical dentro del modal */
+    overflow-x: hidden;           /* si luego querés horizontal, cambiá a auto */
+    -webkit-overflow-scrolling: touch;
+    padding-right: .25rem;
+}
 
-        .modal.modal-80 .card-grid {
-            min-width: max-content;
-            /* evita que el grid se rompa en pantallas pequeñas */
-        }
+/* El form es un contenedor flex intermedio: SIN esto, .modal-body no puede scrollear */
+.modal.modal-80 .modal-content form{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;                /* clave para permitir que .modal-body calcule altura */
+}
+
+/* Si necesitás scroll horizontal, activá max-content; si no, mantené 0 para evitar barras laterales */
+.modal.modal-80 .card-grid{
+    min-width: 0;
+}
+
 
         .modal.modal-80 .modal-footer {
             position: sticky;
@@ -112,11 +119,6 @@ $sesionDebug = [
             border-top: 1px solid rgba(0, 0, 0, .08);
             background: inherit;
             flex-shrink: 0;
-        }
-
-        /* evita que algún grid interno cause scroll horizontal */
-        .modal.modal-80 .card-grid {
-            min-width: 0;
         }
 
         /* las tarjetas de firma no crecen infinito */
