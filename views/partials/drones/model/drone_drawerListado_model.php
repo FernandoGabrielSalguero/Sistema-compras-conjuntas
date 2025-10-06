@@ -22,7 +22,7 @@ final class DroneDrawerListadoModel
     public function obtenerSolicitudFull(int $id): array
     {
         // --- solicitud + joins
-$st = $this->pdo->prepare("
+        $st = $this->pdo->prepare("
         SELECT s.*, 
                u.id AS piloto_usuario_id, 
                ui.nombre AS piloto_nombre, 
@@ -155,13 +155,13 @@ $st = $this->pdo->prepare("
             'rangos'     => $rangos,
             'parametros' => $parametros,
             'productor'  => $prod,
-'piloto'     => [
-    'usuario_id'    => $sol['piloto_usuario_id'] ?? null,
-    'nombre'        => $sol['piloto_nombre'] ?? null,
-    'telefono'      => $sol['piloto_telefono'] ?? null,
-    'zona_asignada' => $sol['piloto_zona_asignada'] ?? null,
-    'correo'        => $sol['piloto_correo'] ?? null
-],
+            'piloto'     => [
+                'usuario_id'    => $sol['piloto_usuario_id'] ?? null,
+                'nombre'        => $sol['piloto_nombre'] ?? null,
+                'telefono'      => $sol['piloto_telefono'] ?? null,
+                'zona_asignada' => $sol['piloto_zona_asignada'] ?? null,
+                'correo'        => $sol['piloto_correo'] ?? null
+            ],
             'forma_pago' => [
                 'nombre'       => $sol['forma_pago_nombre'] ?? null,
                 'descripcion'  => $sol['forma_pago_descripcion'] ?? null
@@ -409,23 +409,47 @@ $st = $this->pdo->prepare("
                 }
             }
 
-            // parámetros
-            $this->pdo->prepare("DELETE FROM drones_solicitud_parametros WHERE solicitud_id=:id")->execute([':id' => $id]);
-            if ($parametros) {
-                $this->pdo->prepare("
-                    INSERT INTO drones_solicitud_parametros
-                    (solicitud_id, volumen_ha, velocidad_vuelo, alto_vuelo, ancho_pasada, tamano_gota, observaciones, created_at)
-                    VALUES (:sid, :vol, :vel, :alto, :ancho, :gota, :obs, NOW())
-                ")->execute([
-                    ':sid'  => $id,
-                    ':vol'  => self::dec($parametros['volumen_ha'] ?? null),
-                    ':vel'  => self::dec($parametros['velocidad_vuelo'] ?? null),
-                    ':alto' => self::dec($parametros['alto_vuelo'] ?? null),
-                    ':ancho' => self::dec($parametros['ancho_pasada'] ?? null),
-                    ':gota' => self::n($parametros['tamano_gota'] ?? null),
-                    ':obs'  => self::n($parametros['observaciones'] ?? null),
-                ]);
+            // parámetros (seguro: sólo actualiza si el front envía valores no vacíos)
+            if ($parametros !== null) {
+                // Detectar si hay al menos UN valor no vacío
+                $vals = [
+                    $parametros['volumen_ha']       ?? null,
+                    $parametros['velocidad_vuelo']  ?? null,
+                    $parametros['alto_vuelo']       ?? null,
+                    $parametros['ancho_pasada']     ?? null,
+                    $parametros['tamano_gota']      ?? null,
+                    $parametros['observaciones']    ?? null,
+                ];
+                $hasAny = false;
+                foreach ($vals as $v) {
+                    if ($v !== null && $v !== '') {
+                        $hasAny = true;
+                        break;
+                    }
+                }
+
+                if ($hasAny) {
+                    // Reemplazo total del snapshot de parámetros
+                    $this->pdo->prepare("DELETE FROM drones_solicitud_parametros WHERE solicitud_id=:id")
+                        ->execute([':id' => $id]);
+
+                    $this->pdo->prepare("
+            INSERT INTO drones_solicitud_parametros
+            (solicitud_id, volumen_ha, velocidad_vuelo, alto_vuelo, ancho_pasada, tamano_gota, observaciones, created_at)
+            VALUES (:sid, :vol, :vel, :alto, :ancho, :gota, :obs, NOW())
+        ")->execute([
+                        ':sid'   => $id,
+                        ':vol'   => self::dec($parametros['volumen_ha'] ?? null),
+                        ':vel'   => self::dec($parametros['velocidad_vuelo'] ?? null),
+                        ':alto'  => self::dec($parametros['alto_vuelo'] ?? null),
+                        ':ancho' => self::dec($parametros['ancho_pasada'] ?? null),
+                        ':gota'  => self::n($parametros['tamano_gota'] ?? null),
+                        ':obs'   => self::n($parametros['observaciones'] ?? null),
+                    ]);
+                }
+                // Si $hasAny === false: no tocamos la tabla; conserva lo existente.
             }
+
 
             // audit
             $this->pdo->prepare("

@@ -5,9 +5,9 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 $__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
 ?>
 <script>
-// Dump de sesión en consola (solo debug)
-console.log("SESSION PHP:", <?php echo json_encode($_SESSION, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT); ?>);
-console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOTES, 'UTF-8'); ?>");
+    // Dump de sesión en consola (solo debug)
+    console.log("SESSION PHP:", <?php echo json_encode($_SESSION, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT); ?>);
+    console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOTES, 'UTF-8'); ?>");
 </script>
 
 ?>
@@ -228,7 +228,7 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
         font-size: 20px;
     }
 
-        /* --- Control por rol (sin JS) --- */
+    /* --- Control por rol (sin JS) --- */
     /* Ocultar tarjetas operativas para cooperativa/ingeniero */
     .role-cooperativa .card--ops-hide,
     .role-ingeniero .card--ops-hide {
@@ -246,6 +246,7 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
     .role-ingeniero #card-costos button {
         pointer-events: none;
     }
+
     /* Señal visual */
     .role-cooperativa #card-costos input,
     .role-cooperativa #card-costos select,
@@ -257,12 +258,12 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
         color: #374151;
         opacity: 0.95;
     }
+
     /* Mantener legible el resumen */
     .role-cooperativa #card-costos .costos-resumen,
-    .role-ingeniero   #card-costos .costos-resumen {
+    .role-ingeniero #card-costos .costos-resumen {
         opacity: 1;
     }
-
 </style>
 
 <div id="drawerListado" class="sv-drawer hidden role-<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true" data-role="<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOTES, 'UTF-8'); ?>">
@@ -500,9 +501,9 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
                 </div>
 
 
-<!-- Receta -->
-<div id="card-receta" class="card card--ops-hide">
-    <h2 style="color:#5b21b6;">Receta</h2>
+                <!-- Receta -->
+                <div id="card-receta" class="card card--ops-hide">
+                    <h2 style="color:#5b21b6;">Receta</h2>
 
                     <table class="data-table" id="tabla-receta-combinada" aria-label="Receta">
                         <thead>
@@ -519,9 +520,9 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
                     </table>
                 </div>
 
-<!-- Parámetros de vuelo -->
-<div id="card-parametros" class="card card--ops-hide">
-    <h2 style="color:#5b21b6;">Parámetros de vuelo</h2>
+                <!-- Parámetros de vuelo -->
+                <div id="card-parametros" class="card card--ops-hide">
+                    <h2 style="color:#5b21b6;">Parámetros de vuelo</h2>
 
                     <div class="form-grid grid-4">
                         <div class="input-group">
@@ -595,9 +596,9 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
                     </div>
                 </div>
 
-<!-- Programar visita -->
-<div id="card-visita" class="card card--ops-hide">
-    <h2 style="color:#5b21b6;">Programar visita</h2>
+                <!-- Programar visita -->
+                <div id="card-visita" class="card card--ops-hide">
+                    <h2 style="color:#5b21b6;">Programar visita</h2>
 
                     <div class="form-grid grid-4">
                         <div class="input-group">
@@ -629,9 +630,9 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
                     </div>
                 </div>
 
-<!-- Costos -->
-<div id="card-costos" class="card">
-    <h2 style="color:#5b21b6;">Costos</h2>
+                <!-- Costos -->
+                <div id="card-costos" class="card">
+                    <h2 style="color:#5b21b6;">Costos</h2>
 
                     <div class="form-grid grid-4">
                         <div class="input-group">
@@ -794,6 +795,8 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
                 case 'procesando':
                     return 'info';
                 case 'aprobada_coop':
+                    return 'primary';
+                case 'visita_realizada':
                     return 'primary';
                 case 'completada':
                     return 'success';
@@ -998,25 +1001,25 @@ console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOT
             });
         }
 
-function ensureRecetaSlots() {
-    state.items.forEach(it => {
-        if (!it.receta) {
-            const first = Array.isArray(it.recetas) && it.recetas.length ? it.recetas[0] : null;
-            it.receta = {
-                principio_activo: first?.principio_activo ?? it.principio_activo ?? null,
-                dosis: first?.dosis ?? null,
-                unidad: (first?.unidad ?? it.unidad ?? 'ml/ha'),
-                orden_mezcla: first?.orden_mezcla ?? null,
-                notas: first?.notas ?? ''
-            };
-        } else {
-            // si existe receta pero unidad vacía -> default
-            if (!it.receta.unidad || String(it.receta.unidad).trim() === '') {
-                it.receta.unidad = 'ml/ha';
-            }
+        function ensureRecetaSlots() {
+            state.items.forEach(it => {
+                if (!it.receta) {
+                    const first = Array.isArray(it.recetas) && it.recetas.length ? it.recetas[0] : null;
+                    it.receta = {
+                        principio_activo: first?.principio_activo ?? it.principio_activo ?? null,
+                        dosis: first?.dosis ?? null,
+                        unidad: (first?.unidad ?? it.unidad ?? 'ml/ha'),
+                        orden_mezcla: first?.orden_mezcla ?? null,
+                        notas: first?.notas ?? ''
+                    };
+                } else {
+                    // si existe receta pero unidad vacía -> default
+                    if (!it.receta.unidad || String(it.receta.unidad).trim() === '') {
+                        it.receta.unidad = 'ml/ha';
+                    }
+                }
+            });
         }
-    });
-}
 
 
         function renderRecetaCombinada() {
@@ -1027,9 +1030,9 @@ function ensureRecetaSlots() {
             state.items.forEach((it) => {
                 const pInfo = catalog.productos.find(p => String(p.id) === String(it.producto_id));
                 const nombre = it.nombre_producto || pInfo?.nombre || `Producto #${it.producto_id}`;
-const r = it.receta;
-const tr = document.createElement('tr');
-tr.innerHTML = `
+                const r = it.receta;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
 <td>${esc(nombre)}</td>
 <td><div class="input-icon input-icon-edit"><input type="text" value="${esc(r.principio_activo ?? (it.principio_activo || ''))}"></div></td>
 <td><div class="input-icon input-icon-hashtag"><input type="number" step="0.01" value="${fmtNumInput(r.dosis)}"></div></td>
@@ -1159,6 +1162,15 @@ tr.innerHTML = `
             setV('productos_total', fmtNumInput(c.productos_total));
             setV('total', fmtNumInput(c.total));
 
+            // --- Parámetros de vuelo (FIX: mostrar valores guardados) ---
+            const p = d.parametros || {};
+            setV('volumen_ha', fmtNumInput(p.volumen_ha));
+            setV('velocidad_vuelo', fmtNumInput(p.velocidad_vuelo));
+            setV('alto_vuelo', fmtNumInput(p.alto_vuelo));
+            setV('ancho_pasada', fmtNumInput(p.ancho_pasada));
+            setV('tamano_gota', p.tamano_gota ?? '');
+            setV('param_observaciones', p.observaciones ?? '');
+
             // Asegurar que Base ha copie la Superficie si no vino seteada
             const sup = parseNum(s.superficie_ha);
             if ((getV('base_ha') === null || getV('base_ha') === '') && sup !== null) {
@@ -1184,25 +1196,25 @@ tr.innerHTML = `
             }));
             renderRangos();
 
-// items
-state.items = (d.items || []).map(it => ({
-    patologia_id: it.patologia_id,
-    fuente: it.fuente || 'sve',
-    producto_id: it.producto_id,
-    nombre_producto: it.producto_nombre || it.nombre_producto || null,
-    costo_hectarea_snapshot: it.costo_hectarea_snapshot ?? it.producto_costo_hectarea ?? null,
-    receta: (() => {
-        const r0 = (it.recetas && it.recetas[0]) ? it.recetas[0] : null;
-        const unidad = (r0?.unidad ?? it.unidad ?? '').trim() || 'ml/ha';
-        return {
-            principio_activo: r0?.principio_activo ?? it.principio_activo ?? null,
-            dosis: r0?.dosis ?? null,
-            unidad,
-            orden_mezcla: r0?.orden_mezcla ?? null,
-            notas: r0?.notas ?? ''
-        };
-    })()
-}));
+            // items
+            state.items = (d.items || []).map(it => ({
+                patologia_id: it.patologia_id,
+                fuente: it.fuente || 'sve',
+                producto_id: it.producto_id,
+                nombre_producto: it.producto_nombre || it.nombre_producto || null,
+                costo_hectarea_snapshot: it.costo_hectarea_snapshot ?? it.producto_costo_hectarea ?? null,
+                receta: (() => {
+                    const r0 = (it.recetas && it.recetas[0]) ? it.recetas[0] : null;
+                    const unidad = (r0?.unidad ?? it.unidad ?? '').trim() || 'ml/ha';
+                    return {
+                        principio_activo: r0?.principio_activo ?? it.principio_activo ?? null,
+                        dosis: r0?.dosis ?? null,
+                        unidad,
+                        orden_mezcla: r0?.orden_mezcla ?? null,
+                        notas: r0?.notas ?? ''
+                    };
+                })()
+            }));
 
             renderProductos();
             renderRecetaCombinada();
@@ -1254,61 +1266,61 @@ state.items = (d.items || []).map(it => ({
                 $('#rango_new').value = '';
                 renderRangos();
             });
-$('#btn_add_producto')?.addEventListener('click', () => {
-    const val = $('#producto_new').value;
-    const patologiaIdAuto = state.motivos[0]?.patologia_id ?? null;
+            $('#btn_add_producto')?.addEventListener('click', () => {
+                const val = $('#producto_new').value;
+                const patologiaIdAuto = state.motivos[0]?.patologia_id ?? null;
 
-    if (!val) {
-        return showAlert('error', 'Elegí un producto');
-    }
+                if (!val) {
+                    return showAlert('error', 'Elegí un producto');
+                }
 
-    if (val === '__otro__') {
-        const nombreLibre = ($('#producto_new_text').value || '').trim();
-        if (!nombreLibre) {
-            return showAlert('error', 'Escribí el nombre del producto');
-        }
-        // Producto ingresado por el productor
-        state.items.push({
-            patologia_id: patologiaIdAuto,
-            fuente: 'productor',
-            producto_id: null,
-            nombre_producto: nombreLibre,
-            costo_hectarea_snapshot: null, // sin costo (no impacta en cálculos)
-            receta: {
-                principio_activo: null,
-                dosis: null,
-                unidad: 'ml/ha',
-                orden_mezcla: null,
-                notas: ''
-            }
-        });
-        // reset y ocultar input
-        $('#producto_new_text').value = '';
-        $('#grp_producto_otro_text').style.display = 'none';
-        $('#producto_new').value = '';
-    } else {
-        const prod = catalog.productos.find(p => String(p.id) === String(val));
-        state.items.push({
-            patologia_id: patologiaIdAuto,
-            fuente: 'sve',
-            producto_id: Number(val),
-            nombre_producto: prod?.nombre || null,
-            costo_hectarea_snapshot: prod?.costo_hectarea ?? null,
-            receta: {
-                principio_activo: null,
-                dosis: null,
-                unidad: 'ml/ha',
-                orden_mezcla: null,
-                notas: ''
-            }
-        });
-        $('#producto_new').value = '';
-    }
+                if (val === '__otro__') {
+                    const nombreLibre = ($('#producto_new_text').value || '').trim();
+                    if (!nombreLibre) {
+                        return showAlert('error', 'Escribí el nombre del producto');
+                    }
+                    // Producto ingresado por el productor
+                    state.items.push({
+                        patologia_id: patologiaIdAuto,
+                        fuente: 'productor',
+                        producto_id: null,
+                        nombre_producto: nombreLibre,
+                        costo_hectarea_snapshot: null, // sin costo (no impacta en cálculos)
+                        receta: {
+                            principio_activo: null,
+                            dosis: null,
+                            unidad: 'ml/ha',
+                            orden_mezcla: null,
+                            notas: ''
+                        }
+                    });
+                    // reset y ocultar input
+                    $('#producto_new_text').value = '';
+                    $('#grp_producto_otro_text').style.display = 'none';
+                    $('#producto_new').value = '';
+                } else {
+                    const prod = catalog.productos.find(p => String(p.id) === String(val));
+                    state.items.push({
+                        patologia_id: patologiaIdAuto,
+                        fuente: 'sve',
+                        producto_id: Number(val),
+                        nombre_producto: prod?.nombre || null,
+                        costo_hectarea_snapshot: prod?.costo_hectarea ?? null,
+                        receta: {
+                            principio_activo: null,
+                            dosis: null,
+                            unidad: 'ml/ha',
+                            orden_mezcla: null,
+                            notas: ''
+                        }
+                    });
+                    $('#producto_new').value = '';
+                }
 
-    renderProductos();
-    renderRecetaCombinada();
-    recalcCostos();
-});
+                renderProductos();
+                renderRecetaCombinada();
+                recalcCostos();
+            });
 
 
             // listeners dependientes existentes...
@@ -1433,14 +1445,20 @@ $('#btn_add_producto')?.addEventListener('click', () => {
                 rangos: state.rangos.map(r => ({
                     rango: r.rango
                 })),
-                parametros: {
-                    volumen_ha: parseNum(getV('volumen_ha')),
-                    velocidad_vuelo: parseNum(getV('velocidad_vuelo')),
-                    alto_vuelo: parseNum(getV('alto_vuelo')),
-                    ancho_pasada: parseNum(getV('ancho_pasada')),
-                    tamano_gota: getV('tamano_gota'),
-                    observaciones: getV('param_observaciones')
-                }
+                parametros: (function() {
+                    const obj = {
+                        volumen_ha: parseNum(getV('volumen_ha')),
+                        velocidad_vuelo: parseNum(getV('velocidad_vuelo')),
+                        alto_vuelo: parseNum(getV('alto_vuelo')),
+                        ancho_pasada: parseNum(getV('ancho_pasada')),
+                        tamano_gota: getV('tamano_gota'),
+                        observaciones: getV('param_observaciones')
+                    };
+                    const hasAny = [obj.volumen_ha, obj.velocidad_vuelo, obj.alto_vuelo, obj.ancho_pasada].some(v => v !== null) ||
+                        (obj.tamano_gota ?? '').toString().trim() !== '' ||
+                        (obj.observaciones ?? '').toString().trim() !== '';
+                    return hasAny ? obj : undefined; // si no hay nada, no enviar -> no borra en backend
+                })()
             };
 
             if (!payload.id) {
