@@ -213,12 +213,14 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         function esc(s) {
             return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         }
+        // Soporta strings "123.45" o "123,45"
         const fmtNum = (v) => {
             if (v === null || v === undefined || v === '') return '';
-            const n = Number(v);
+            const n = Number(String(v).replace(',', '.'));
             if (!Number.isFinite(n)) return '';
-            return Number.isInteger(n) ? String(n) : String(n).replace('.', ',');
+            return Number.isInteger(n) ? String(n) : String(n.toFixed(2)).replace('.', ',');
         };
+
 
         const getFilters = () => ({
             piloto: els.piloto.value.trim(),
@@ -323,8 +325,11 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 
                 <div class="mini-block">
                     <div class="mini-title">Costo servicio</div>
-                    <p class="price">$${fmtNum(it.costo_total ?? 0)}</p>
+                    ${ (it.costo_total === null || it.costo_total === undefined || it.costo_total === '') 
+                        ? '<p class="price">—</p>' 
+                        : `<p class="price">$${fmtNum(it.costo_total)}</p>` }
                 </div>
+
 
                 <hr />
 

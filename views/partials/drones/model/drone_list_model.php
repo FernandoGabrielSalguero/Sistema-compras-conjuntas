@@ -117,21 +117,23 @@ if (!empty($f['q'])) {
 
         s.fecha_visita,
         CASE
-          WHEN s.hora_visita_desde IS NOT NULL AND s.hora_visita_hasta IS NOT NULL THEN
+        WHEN s.hora_visita_desde IS NOT NULL AND s.hora_visita_hasta IS NOT NULL THEN
             CONCAT(
-              LPAD(HOUR(s.hora_visita_desde),2,'0'), ':', LPAD(MINUTE(s.hora_visita_desde),2,'0'),
-              ' - ',
-              LPAD(HOUR(s.hora_visita_hasta),2,'0'),  ':', LPAD(MINUTE(s.hora_visita_hasta),2,'0')
+            LPAD(HOUR(s.hora_visita_desde),2,'0'), ':', LPAD(MINUTE(s.hora_visita_desde),2,'0'),
+            ' - ',
+            LPAD(HOUR(s.hora_visita_hasta),2,'0'),  ':', LPAD(MINUTE(s.hora_visita_hasta),2,'0')
             )
-          ELSE NULL
+        ELSE NULL
         END AS hora_visita,
         s.observaciones,
         s.estado,
         s.motivo_cancelacion,
         s.coop_descuento_nombre,
-        c.total AS costo_total
+        /* Si por algún motivo total es NULL, calculamos un fallback */
+        ROUND(COALESCE(c.total, c.base_total + c.productos_total), 2) AS costo_total
     FROM drones_solicitud s
     LEFT JOIN drones_solicitud_costos c ON c.solicitud_id = s.id
+
 
     /* Productor */
     LEFT JOIN usuarios u   ON u.id_real = s.productor_id_real
