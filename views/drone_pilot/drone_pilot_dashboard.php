@@ -43,6 +43,10 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
+    <!-- CDN firma con dedo -->
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" defer></script>
+
 </head>
 
 <body>
@@ -100,9 +104,6 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
                 <div class="card tabla-card" id="card-solicitudes">
                     <div class="flex items-center justify-between">
                         <h2>Mis solicitudes asignadas</h2>
-                        <button class="btn" id="btn-refrescar-solicitudes" title="Refrescar">
-                            <span class="material-icons">refresh</span> Refrescar
-                        </button>
                     </div>
                     <div class="tabla-wrapper">
                         <table class="data-table" id="tabla-solicitudes">
@@ -115,29 +116,155 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
                                     <th>Hasta</th>
                                     <th>Superficie (ha)</th>
                                     <th>Localidad</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
+                            <tbody id="tbody-solicitudes">
+                                <!-- Filas generadas por JS -->
+                            </tbody>
+
                             <tbody id="tbody-solicitudes">
                                 <!-- Filas generadas por JS -->
                             </tbody>
                         </table>
                     </div>
                 </div>
-
-                <!-- Modal estándar -->
+                <!-- Modal Detalle de la solicitud -->
                 <div id="modal" class="modal hidden">
                     <div class="modal-content">
                         <h3 id="modal-title">Detalle de la solicitud</h3>
+
                         <div id="modal-body">
-                            <!-- Contenido dinámico -->
+                            <!-- Se carga por JS -->
                         </div>
+
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" onclick="closeModal()">Aceptar</button>
-                            <button class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
+                            <button class="btn btn-aceptar" onclick="closeModal()">Cerrar</button>
                         </div>
                     </div>
                 </div>
 
+                <!-- Modal Reporte de Servicio -->
+                <div id="modal-reporte" class="modal hidden">
+                    <div class="modal-content">
+                        <h3 id="modal-reporte-title">Generar reporte</h3>
+
+                        <form id="form-reporte" enctype="multipart/form-data">
+                            <input type="hidden" name="action" value="crear_reporte">
+                            <input type="hidden" name="solicitud_id" id="reporte_solicitud_id">
+
+                            <div class="grid md:grid-cols-2 grid-cols-1 gap-3">
+                                <div class="input-group">
+                                    <label for="nom_cliente">Cliente</label>
+                                    <div class="input-icon input-icon-name">
+                                        <input type="text" id="nom_cliente" name="nom_cliente" placeholder="…" required />
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="nom_piloto">Piloto</label>
+                                    <div class="input-icon input-icon-name">
+                                        <input type="text" id="nom_piloto" name="nom_piloto" placeholder="…" required />
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="fecha_visita_rep">Fecha de visita</label>
+                                    <div class="input-icon input-icon-calendar">
+                                        <input type="date" id="fecha_visita_rep" name="fecha_visita" required />
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="hora_ingreso">Hora ingreso</label>
+                                    <div class="input-icon input-icon-time">
+                                        <input type="time" id="hora_ingreso" name="hora_ingreso" required />
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="hora_egreso">Hora egreso</label>
+                                    <div class="input-icon input-icon-time">
+                                        <input type="time" id="hora_egreso" name="hora_egreso" required />
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="nombre_finca">Nombre de la finca</label>
+                                    <div class="input-icon input-icon-name">
+                                        <input type="text" id="nombre_finca" name="nombre_finca" placeholder="…" />
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="cultivo_pulverizado">Cultivo pulverizado</label>
+                                    <div class="input-icon input-icon-name">
+                                        <input type="text" id="cultivo_pulverizado" name="cultivo_pulverizado" placeholder="…" />
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="cuadro_cuartel">Cuadro/Cuartel</label>
+                                    <div class="input-icon input-icon-name">
+                                        <input type="text" id="cuadro_cuartel" name="cuadro_cuartel" placeholder="…" />
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="sup_pulverizada">Sup. pulverizada (ha)</label>
+                                    <div class="input-icon input-icon-number">
+                                        <input type="number" step="0.01" id="sup_pulverizada" name="sup_pulverizada" placeholder="…" />
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="vol_aplicado">Volumen aplicado (L)</label>
+                                    <div class="input-icon input-icon-number">
+                                        <input type="number" step="0.01" id="vol_aplicado" name="vol_aplicado" placeholder="…" />
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="vel_viento">Velocidad del viento (km/h)</label>
+                                    <div class="input-icon input-icon-number">
+                                        <input type="number" step="0.1" id="vel_viento" name="vel_viento" placeholder="…" />
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="temperatura">Temperatura (°C)</label>
+                                    <div class="input-icon input-icon-number">
+                                        <input type="number" step="0.1" id="temperatura" name="temperatura" placeholder="…" />
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="humedad_relativa">Humedad relativa (%)</label>
+                                    <div class="input-icon input-icon-number">
+                                        <input type="number" step="0.1" id="humedad_relativa" name="humedad_relativa" placeholder="…" />
+                                    </div>
+                                </div>
+                                <div class="input-group md:col-span-2">
+                                    <label for="observaciones_rep">Observaciones</label>
+                                    <div class="input-icon input-icon-message">
+                                        <input type="text" id="observaciones_rep" name="observaciones" placeholder="…" />
+                                    </div>
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label>Subir fotos (hasta 10)</label>
+                                    <input type="file" id="fotos" name="fotos[]" accept="image/jpeg,image/png,image/webp" multiple />
+                                    <small class="text-muted">Formatos: JPG, PNG, WEBP</small>
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label>Firma del cliente</label>
+                                    <div class="card p-2">
+                                        <canvas id="firma-canvas" style="width:100%;height:220px;border:1px solid #ddd;border-radius:12px;"></canvas>
+                                        <div class="form-buttons">
+                                            <button type="button" class="btn" id="limpiar-firma">Limpiar</button>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="firma_base64" name="firma_base64" />
+                                </div>
+                            </div>
+
+                            <div class="form-buttons">
+                                <button type="submit" class="btn btn-aceptar">Guardar reporte</button>
+                                <button type="button" class="btn btn-cancelar" onclick="closeModalReporte()">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
                 <!-- contenedor del toastify -->
                 <div id="toast-container"></div>
@@ -153,7 +280,6 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
     <script>
         // --- Lógica: fetch + render a tabla
         const $tbody = document.getElementById('tbody-solicitudes');
-        const $btnRefrescar = document.getElementById('btn-refrescar-solicitudes');
 
         function rowSkeleton(n = 3) {
             $tbody.innerHTML = '';
@@ -170,27 +296,35 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
         function renderRows(items) {
             if (!Array.isArray(items) || items.length === 0) {
                 $tbody.innerHTML = `
-                <tr>
-                    <td colspan="7">
-                        <div class="alert info">
-                            <span class="material-icons">info</span>
-                            No se encontraron solicitudes asignadas a tu usuario.
-                        </div>
-                    </td>
-                </tr>`;
+            <tr>
+                <td colspan="8">
+                    <div class="alert info">
+                        <span class="material-icons">info</span>
+                        No se encontraron solicitudes asignadas a tu usuario.
+                    </div>
+                </td>
+            </tr>`;
                 return;
             }
             $tbody.innerHTML = items.map(s => `
-            <tr data-id="${s.id}">
-                <td>${s.id}</td>
-                <td>${s.productor_nombre ?? '-'}</td>
-                <td>${s.fecha_visita ?? '-'}</td>
-                <td>${s.hora_visita_desde ?? '-'}</td>
-                <td>${s.hora_visita_hasta ?? '-'}</td>
-                <td>${s.superficie_ha ?? '-'}</td>
-                <td>${s.dir_localidad ?? '-'}</td>
-            </tr>
-        `).join('');
+        <tr data-id="${s.id}">
+            <td>${s.id}</td>
+            <td>${s.productor_nombre ?? '-'}</td>
+            <td>${s.fecha_visita ?? '-'}</td>
+            <td>${s.hora_visita_desde ?? '-'}</td>
+            <td>${s.hora_visita_hasta ?? '-'}</td>
+            <td>${s.superficie_ha ?? '-'}</td>
+            <td>${s.dir_localidad ?? '-'}</td>
+            <td>
+                <button class="btn-icon" title="Ver detalle" data-action="ver" data-id="${s.id}">
+                    <span class="material-icons">visibility</span>
+                </button>
+                <button class="btn-icon" title="Cargar reporte" data-action="reporte" data-id="${s.id}">
+                    <span class="material-icons">description</span>
+                </button>
+            </td>
+        </tr>
+    `).join('');
         }
 
         async function cargarSolicitudes() {
@@ -220,31 +354,225 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
             document.getElementById('modal').classList.add('hidden');
         }
 
-        $btnRefrescar?.addEventListener('click', cargarSolicitudes);
         document.addEventListener('DOMContentLoaded', cargarSolicitudes);
 
-// Abrir modal
-document.getElementById('tbody-solicitudes')?.addEventListener('click', (e) => {
-    const tr = e.target.closest('tr[data-id]');
-    if (!tr) return;
-    const celdas = [...tr.children].map(td => td.textContent);
-    const modal = document.getElementById('modal');
-    document.getElementById('modal-title').textContent = `Solicitud #${celdas[0]}`;
-    document.getElementById('modal-body').innerHTML = `
+        // Abrir modal
+        document.getElementById('tbody-solicitudes')?.addEventListener('click', (e) => {
+            const tr = e.target.closest('tr[data-id]');
+            if (!tr) return;
+            const celdas = [...tr.children].map(td => td.textContent);
+            const modal = document.getElementById('modal');
+            document.getElementById('modal-title').textContent = `Solicitud #${celdas[0]}`;
+            document.getElementById('modal-body').innerHTML = `
         <p><strong>Productor:</strong> ${celdas[1]}</p>
         <p><strong>Fecha visita:</strong> ${celdas[2]} ${celdas[3] && celdas[4] ? `(${celdas[3]}–${celdas[4]})` : ''}</p>
         <p><strong>Superficie (ha):</strong> ${celdas[5]}</p>
         <p><strong>Localidad:</strong> ${celdas[6]}</p>
     `;
-    modal.classList.remove('hidden');
-});
+            modal.classList.remove('hidden');
+        });
 
 
+        // listeners, detalle, reporte, firma
+        let signaturePad;
+
+        function openModal() {
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        function openModalReporte() {
+            document.getElementById('modal-reporte').classList.remove('hidden');
+            initSignature();
+        }
+
+        function closeModalReporte() {
+            document.getElementById('modal-reporte').classList.add('hidden');
+        }
+
+        function initSignature() {
+            const canvas = document.getElementById('firma-canvas');
+            if (!canvas) return;
+            const resize = () => {
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                const ctx = canvas.getContext('2d');
+                ctx.scale(ratio, ratio);
+                if (signaturePad) signaturePad.clear();
+            };
+            resize();
+            window.addEventListener('resize', resize);
+            signaturePad = new SignaturePad(canvas, {
+                minWidth: 0.8,
+                maxWidth: 2.5
+            });
+            document.getElementById('limpiar-firma').onclick = () => signaturePad.clear();
+        }
+
+        function mapBtn(lat, lng) {
+            if (!lat || !lng) return '';
+            const url = `https://www.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lng)}`;
+            return `<button class="btn" onclick="window.open('${url}','_blank')" type="button">Maps</button>`;
+        }
+
+        async function verDetalle(id) {
+            try {
+                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=detalle_solicitud&id=${encodeURIComponent(id)}`, {
+                    credentials: 'same-origin'
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const payload = await res.json();
+                if (!payload.ok) throw new Error(payload.message || 'Error de API');
+
+                const s = payload.data.solicitud;
+                const recetas = payload.data.receta || [];
+                const params = payload.data.parametros || {};
+
+                const motivoCancel = (s.estado === 'cancelada' && s.motivo_cancelacion) ?
+                    `<div class="input-group"><label>Motivo cancelación</label><div class="input-icon input-icon-message"><input type="text" readonly value="${s.motivo_cancelacion}"/></div></div>` :
+                    '';
+
+                const geo = (s.ubicacion_lat && s.ubicacion_lng) ? `
+            <div class="grid md:grid-cols-3 grid-cols-1 gap-2">
+                <div class="input-group"><label>Lat</label><div class="input-icon input-icon-location"><input type="text" readonly value="${s.ubicacion_lat}"/></div></div>
+                <div class="input-group"><label>Lng</label><div class="input-icon input-icon-location"><input type="text" readonly value="${s.ubicacion_lng}"/></div></div>
+                <div class="input-group"><label>Abrir en Google Maps</label>${mapBtn(s.ubicacion_lat, s.ubicacion_lng)}</div>
+            </div>` : '';
+
+                const recetaRows = recetas.map(r => `
+            <tr>
+                <td>${r.solicitud_item_id}</td>
+                <td>${r.nombre_producto ?? '-'}</td>
+                <td>${r.principio_activo ?? '-'}</td>
+                <td>${r.dosis ?? '-'}</td>
+                <td>${r.unidad ?? '-'}</td>
+                <td>${r.orden_mezcla ?? '-'}</td>
+                <td>${r.notas ?? '-'}</td>
+            </tr>
+        `).join('');
+
+                const estadoChip = (() => {
+                    const m = {
+                        'ingresada': 'neutral',
+                        'procesando': 'warning',
+                        'aprobada_coop': 'success',
+                        'cancelada': 'danger',
+                        'completada': 'primary'
+                    } [s.estado] || 'neutral';
+                    return `<span class="badge ${m}">${s.estado}</span>`;
+                })();
+
+                document.getElementById('modal-title').textContent = `PROGRAMA / SOLICITUD #${s.id}`;
+                document.getElementById('modal-body').innerHTML = `
+            <h4 class="title">Fecha de la visita</h4>
+            <div class="grid md:grid-cols-3 grid-cols-1 gap-2">
+                <div class="input-group"><label>Fecha visita</label><div class="input-icon input-icon-calendar"><input type="text" readonly value="${s.fecha_visita ?? '-'}"/></div></div>
+                <div class="input-group"><label>Horario</label><div class="input-icon input-icon-time"><input type="text" readonly value="${(s.hora_visita_desde || '-') + ' - ' + (s.hora_visita_hasta || '-')}"/></div></div>
+                <div class="input-group"><label>Estado</label><div>${estadoChip}</div></div>
+            </div>
+
+            <h4 class="title mt-2">Dirección</h4>
+            <div class="grid md:grid-cols-4 grid-cols-1 gap-2">
+                <div class="input-group"><label>Provincia</label><div class="input-icon input-icon-location"><input type="text" readonly value="${s.dir_provincia ?? '-'}"/></div></div>
+                <div class="input-group"><label>Localidad</label><div class="input-icon input-icon-location"><input type="text" readonly value="${s.dir_localidad ?? '-'}"/></div></div>
+                <div class="input-group"><label>Calle</label><div class="input-icon input-icon-location"><input type="text" readonly value="${s.dir_calle ?? '-'}"/></div></div>
+                <div class="input-group"><label>Número</label><div class="input-icon input-icon-number"><input type="text" readonly value="${s.dir_numero ?? '-'}"/></div></div>
+            </div>
+
+            <h4 class="title mt-2">Datos de Geolocalización</h4>
+            ${geo}
+
+            ${motivoCancel}
+
+            <h4 class="title mt-2">Productos a utilizar</h4>
+            <div class="tabla-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Ítem</th>
+                            <th>Producto</th>
+                            <th>Principio activo</th>
+                            <th>Dosis</th>
+                            <th>Unidad</th>
+                            <th>Orden mezcla</th>
+                            <th>Notas</th>
+                        </tr>
+                    </thead>
+                    <tbody>${recetaRows || '<tr><td colspan="7">Sin recetas cargadas</td></tr>'}</tbody>
+                </table>
+            </div>
+
+            <h4 class="title mt-2">Parámetros de vuelo</h4>
+            <div class="grid md:grid-cols-3 grid-cols-1 gap-2">
+                <div class="input-group"><label>Volumen/ha</label><div class="input-icon input-icon-number"><input type="text" readonly value="${params.volumen_ha ?? '-'}"/></div></div>
+                <div class="input-group"><label>Velocidad vuelo</label><div class="input-icon input-icon-number"><input type="text" readonly value="${params.velocidad_vuelo ?? '-'}"/></div></div>
+                <div class="input-group"><label>Alto vuelo</label><div class="input-icon input-icon-number"><input type="text" readonly value="${params.alto_vuelo ?? '-'}"/></div></div>
+                <div class="input-group"><label>Ancho pasada</label><div class="input-icon input-icon-number"><input type="text" readonly value="${params.ancho_pasada ?? '-'}"/></div></div>
+                <div class="input-group"><label>Tamaño de gota</label><div class="input-icon input-icon-number"><input type="text" readonly value="${params.tamano_gota ?? '-'}"/></div></div>
+                <div class="input-group md:col-span-3"><label>Observaciones</label><div class="input-icon input-icon-message"><input type="text" readonly value="${params.observaciones ?? '-'}"/></div></div>
+            </div>
+        `;
+                openModal();
+            } catch (e) {
+                console.error(e);
+                showAlert?.('error', 'No se pudo cargar el detalle de la solicitud.');
+            }
+        }
+
+        function abrirReporte(id) {
+            document.getElementById('reporte_solicitud_id').value = id;
+            // Prefills útiles:
+            const fila = $tbody.querySelector(`tr[data-id="${id}"]`);
+            const nomCliente = fila?.children?.[1]?.textContent?.trim() || '';
+            document.getElementById('nom_cliente').value = nomCliente;
+            document.getElementById('nom_piloto').value = <?php echo json_encode($nombre); ?>;
+            openModalReporte();
+        }
+
+        // Delegación de eventos para acciones
+        document.getElementById('tbody-solicitudes')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-action]');
+            if (!btn) return;
+            const id = btn.dataset.id;
+            const action = btn.dataset.action;
+            if (action === 'ver') verDetalle(id);
+            if (action === 'reporte') abrirReporte(id);
+        });
+
+        // Envío del formulario de reporte
+        document.getElementById('form-reporte')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const fotos = document.getElementById('fotos');
+                if (fotos.files.length > 10) {
+                    showAlert?.('info', 'Máximo 10 fotos.');
+                    return;
+                }
+                // firma
+                const firmaData = signaturePad && !signaturePad.isEmpty() ? signaturePad.toDataURL('image/png') : '';
+                document.getElementById('firma_base64').value = firmaData;
+
+                const formData = new FormData(e.target);
+                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php`, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+                const payload = await res.json();
+                if (!res.ok || !payload.ok) throw new Error(payload.message || 'Error API');
+                showAlert?.('success', 'Reporte guardado correctamente.');
+                closeModalReporte();
+            } catch (err) {
+                console.error(err);
+                showAlert?.('error', 'No se pudo guardar el reporte.');
+            }
+        });
     </script>
 
-
-
 </body>
-
 
 </html>
