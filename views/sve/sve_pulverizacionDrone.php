@@ -300,16 +300,19 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         }
       }
 
-      // Cambiar de pestaña SIN recargar
-      buttons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          if (!isTabButton(btn)) return;
-          const target = btn.dataset.target;
-          if (!target) return;
-          sessionStorage.setItem(STORAGE_KEY, target);
-          activate(target);
-        });
-      });
+// Cambiar de pestaña y forzar actualización (recarga)
+buttons.forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    if (!isTabButton(btn)) return;
+    const target = btn.dataset.target;
+    if (!target) return;
+    // Guardamos la pestaña elegida y recargamos para refrescar contenido del servidor
+    sessionStorage.setItem(STORAGE_KEY, target);
+    // Opcional: mostrar spinner si tu spinner-global.js expone un método (no rompe si no existe)
+    try { window.showGlobalSpinner && window.showGlobalSpinner(); } catch(_) {}
+    location.reload();
+  });
+});
 
       // Botón "Actualizar" (recarga manual)
       const refreshBtn = document.getElementById('btn-refresh');
