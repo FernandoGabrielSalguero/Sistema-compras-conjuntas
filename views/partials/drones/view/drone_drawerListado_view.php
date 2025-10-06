@@ -302,6 +302,7 @@ $__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
                                     <option value="procesando">Procesando</option>
                                     <option value="aprobada_coop">Aprobada coop</option>
                                     <option value="cancelada">Cancelada</option>
+                                    <option value="visita_realizada">Visita Realizada</option>
                                     <option value="completada">Completada</option>
                                 </select>
                             </div>
