@@ -17,38 +17,38 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 //Cargamos los operativos cerrados
 $cierre_info = $_SESSION['cierre_info'] ?? null;
-unset($_SESSION['cierre_info']);
+unset($_SESSION['cierre_info']); 
 
 // --- Render parcial por AJAX (sin crear archivos nuevos) ---
 if (isset($_GET['partial'])) {
-  // Whitelist de paneles => rutas relativas a este archivo
-  $panel = preg_replace('/[^a-zA-Z0-9\-_#]/', '', $_GET['partial']); // saneo básico
-  $panel = ltrim($panel, '#'); // admitir "#panel-xyz"
+    // Whitelist de paneles => rutas relativas a este archivo
+    $panel = preg_replace('/[^a-zA-Z0-9\-_#]/', '', $_GET['partial']); // saneo básico
+    $panel = ltrim($panel, '#'); // admitir "#panel-xyz"
 
-  $map = [
-    'panel-solicitudes' => '/../partials/drones/view/drone_list_view.php',
-    'panel-formulario'  => '/../partials/drones/view/drone_formulario_N_Servicio_view.php',
-    'panel-protocolo'   => '/../partials/drones/view/drone_protocol_view.php',
-    'panel-calendario'  => '/../partials/drones/view/drone_calendar_view.php',
-    'panel-registro'    => '/../partials/drones/view/drone_registro_view.php',
-    'panel-stock'       => '/../partials/drones/view/drone_stock_view.php',
-    'panel-variables'   => '/../partials/drones/view/drone_variables_view.php',
-  ];
+    $map = [
+        'panel-solicitudes' => '/../partials/drones/view/drone_list_view.php',
+        'panel-formulario'  => '/../partials/drones/view/drone_formulario_N_Servicio_view.php',
+        'panel-protocolo'   => '/../partials/drones/view/drone_protocol_view.php',
+        'panel-calendario'  => '/../partials/drones/view/drone_calendar_view.php',
+        'panel-registro'    => '/../partials/drones/view/drone_registro_view.php',
+        'panel-stock'       => '/../partials/drones/view/drone_stock_view.php',
+        'panel-variables'   => '/../partials/drones/view/drone_variables_view.php',
+    ];
 
-  if (!isset($map[$panel])) {
-    http_response_code(400);
-    echo 'Panel inválido';
+    if (!isset($map[$panel])) {
+        http_response_code(400);
+        echo 'Panel inválido';
+        exit;
+    }
+
+    $viewFile = __DIR__ . $map[$panel];
+    if (is_file($viewFile)) {
+        require $viewFile;
+    } else {
+        http_response_code(404);
+        echo 'No se encontró la vista solicitada.';
+    }
     exit;
-  }
-
-  $viewFile = __DIR__ . $map[$panel];
-  if (is_file($viewFile)) {
-    require $viewFile;
-  } else {
-    http_response_code(404);
-    echo 'No se encontró la vista solicitada.';
-  }
-  exit;
 }
 ?>
 
@@ -116,47 +116,47 @@ if (isset($_GET['partial'])) {
 
       <nav class="sidebar-menu">
         <ul>
-          <li onclick="location.href='sve_dashboard.php'">
-            <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
-          </li>
-          <li onclick="location.href='sve_consolidado.php'">
-            <span class="material-icons" style="color: #5b21b6;">analytics</span><span class="link-text">Consolidado</span>
-          </li>
-          <li onclick="location.href='sve_altausuarios.php'">
-            <span class="material-icons" style="color: #5b21b6;">person</span><span class="link-text">Alta usuarios</span>
-          </li>
-          <li onclick="location.href='sve_asociarProductores.php'">
-            <span class="material-icons" style="color: #5b21b6;">link</span><span class="link-text">Asociaciones</span>
-          </li>
-          <li onclick="location.href='sve_cargaMasiva.php'">
-            <span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Carga masiva</span>
-          </li>
-          <li onclick="location.href='sve_registro_login.php'">
-            <span class="material-icons" style="color: #5b21b6;">login</span><span class="link-text">Ingresos</span>
-          </li>
-          <li onclick="location.href='sve_operativos.php'">
-            <span class="material-icons" style="color: #5b21b6;">assignment</span><span class="link-text">Operativos</span>
-          </li>
-          <li onclick="location.href='sve_mercadodigital.php'">
-            <span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
-          </li>
-          <li onclick="location.href='sve_listadoPedidos.php'">
-            <span class="material-icons" style="color: #5b21b6;">assignment_turned_in</span><span class="link-text">Listado Pedidos</span>
-          </li>
-          <li onclick="location.href='sve_productos.php'">
-            <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
-          </li>
-          <li onclick="location.href='sve_pulverizacionDrone.php'">
-            <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-            <span class="link-text">Drones</span>
-          </li>
-          <li onclick="location.href='sve_publicaciones.php'">
-            <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
-          </li>
-          <li onclick="location.href='../../../logout.php'">
-            <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
-          </li>
-        </ul>
+                    <li onclick="location.href='sve_dashboard.php'">
+                        <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
+                    </li>
+                    <li onclick="location.href='sve_consolidado.php'">
+                        <span class="material-icons" style="color: #5b21b6;">analytics</span><span class="link-text">Consolidado</span>
+                    </li>
+                    <li onclick="location.href='sve_altausuarios.php'">
+                        <span class="material-icons" style="color: #5b21b6;">person</span><span class="link-text">Alta usuarios</span>
+                    </li>
+                    <li onclick="location.href='sve_asociarProductores.php'">
+                        <span class="material-icons" style="color: #5b21b6;">link</span><span class="link-text">Asociaciones</span>
+                    </li>
+                    <li onclick="location.href='sve_cargaMasiva.php'">
+                        <span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Carga masiva</span>
+                    </li>
+                    <li onclick="location.href='sve_registro_login.php'">
+                        <span class="material-icons" style="color: #5b21b6;">login</span><span class="link-text">Ingresos</span>
+                    </li>
+                    <li onclick="location.href='sve_operativos.php'">
+                        <span class="material-icons" style="color: #5b21b6;">assignment</span><span class="link-text">Operativos</span>
+                    </li>
+                    <li onclick="location.href='sve_mercadodigital.php'">
+                        <span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
+                    </li>
+                    <li onclick="location.href='sve_listadoPedidos.php'">
+                        <span class="material-icons" style="color: #5b21b6;">assignment_turned_in</span><span class="link-text">Listado Pedidos</span>
+                    </li>
+                    <li onclick="location.href='sve_productos.php'">
+                        <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
+                    </li>
+                    <li onclick="location.href='sve_pulverizacionDrone.php'">
+                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
+                    <span class="link-text">Drones</span>
+                    </li>
+                    <li onclick="location.href='sve_publicaciones.php'">
+                        <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
+                    </li>
+                    <li onclick="location.href='../../../logout.php'">
+                        <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
+                    </li>
+                </ul>
       </nav>
 
       <div class="sidebar-footer">
@@ -332,95 +332,75 @@ if (isset($_GET['partial'])) {
         }
       }
 
-      // Helpers AJAX para cargar paneles
-      async function fetchPanelHTML(panelSelector) {
-        const panelId = panelSelector.replace('#', '');
-        const url = `sve_pulverizacionDrone.php?partial=${encodeURIComponent(panelId)}`;
-        const res = await fetch(url, {
-          credentials: 'same-origin',
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.text();
-      }
+// Helpers AJAX para cargar paneles
+async function fetchPanelHTML(panelSelector) {
+  const panelId = panelSelector.replace('#', '');
+  const url = `sve_pulverizacionDrone.php?partial=${encodeURIComponent(panelId)}`;
+  const res = await fetch(url, {
+    credentials: 'same-origin',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.text();
+}
 
-      async function loadPanel(panelSelector, {
-        activateAfter = true
-      } = {}) {
-        const panel = document.querySelector(panelSelector);
-        if (!panel) return;
+async function loadPanel(panelSelector, { activateAfter = true } = {}) {
+  const panel = document.querySelector(panelSelector);
+  if (!panel) return;
 
-        // Estado de carga local del panel
-        panel.setAttribute('aria-busy', 'true');
-        const prevHTML = panel.innerHTML;
-        panel.innerHTML = '<div class="s-4 text-center">Cargando…</div>';
+  // Estado de carga local del panel
+  panel.setAttribute('aria-busy', 'true');
+  const prevHTML = panel.innerHTML;
+  panel.innerHTML = '<div class="s-4 text-center">Cargando…</div>';
 
-        try {
-          const html = await fetchPanelHTML(panelSelector);
-          panel.innerHTML = html;
-          if (activateAfter) activate(panelSelector);
-        } catch (err) {
-          panel.innerHTML = `<p class="text-error">No se pudo cargar el contenido (${err.message}).</p>`;
-          // fallback opcional: restaurar contenido anterior
-          // panel.innerHTML = prevHTML;
-        } finally {
-          panel.removeAttribute('aria-busy');
-        }
-      }
+  try {
+    const html = await fetchPanelHTML(panelSelector);
+    panel.innerHTML = html;
+    if (activateAfter) activate(panelSelector);
+  } catch (err) {
+    panel.innerHTML = `<p class="text-error">No se pudo cargar el contenido (${err.message}).</p>`;
+    // fallback opcional: restaurar contenido anterior
+    // panel.innerHTML = prevHTML;
+  } finally {
+    panel.removeAttribute('aria-busy');
+  }
+}
 
-      // Cambiar de pestaña y refrescar contenido vía AJAX
-      buttons.forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          if (!isTabButton(btn)) return;
-          const target = btn.dataset.target;
-          if (!target) return;
-          sessionStorage.setItem(STORAGE_KEY, target);
+// Cambiar de pestaña y refrescar contenido vía AJAX
+buttons.forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    if (!isTabButton(btn)) return;
+    const target = btn.dataset.target;
+    if (!target) return;
+    sessionStorage.setItem(STORAGE_KEY, target);
 
-          // Spinner global opcional si existe
-          try {
-            window.showGlobalSpinner && window.showGlobalSpinner();
-          } catch (_) {}
+    // Spinner global opcional si existe
+    try { window.showGlobalSpinner && window.showGlobalSpinner(); } catch(_) {}
 
-          await loadPanel(target, {
-            activateAfter: true
-          });
+    await loadPanel(target, { activateAfter: true });
 
-          // Ocultar spinner global opcional
-          try {
-            window.hideGlobalSpinner && window.hideGlobalSpinner();
-          } catch (_) {}
-        });
-      });
+    // Ocultar spinner global opcional
+    try { window.hideGlobalSpinner && window.hideGlobalSpinner(); } catch(_) {}
+  });
+});
 
-      // Botón "Actualizar" (vía AJAX sobre el panel activo)
-      const refreshBtn = document.getElementById('btn-refresh');
-      if (refreshBtn) {
-        refreshBtn.addEventListener('click', async () => {
-          const activeBtn = document.querySelector('.tab-buttons .tab-button.active[data-target]');
-          const current = activeBtn ? activeBtn.dataset.target : '#panel-solicitudes';
-          sessionStorage.setItem(STORAGE_KEY, current);
+// Botón "Actualizar" (vía AJAX sobre el panel activo)
+const refreshBtn = document.getElementById('btn-refresh');
+if (refreshBtn) {
+  refreshBtn.addEventListener('click', async () => {
+    const activeBtn = document.querySelector('.tab-buttons .tab-button.active[data-target]');
+    const current = activeBtn ? activeBtn.dataset.target : '#panel-solicitudes';
+    sessionStorage.setItem(STORAGE_KEY, current);
 
-          try {
-            window.showGlobalSpinner && window.showGlobalSpinner();
-          } catch (_) {}
-          await loadPanel(current, {
-            activateAfter: true
-          });
-          try {
-            window.hideGlobalSpinner && window.hideGlobalSpinner();
-          } catch (_) {}
-        });
-      }
+    try { window.showGlobalSpinner && window.showGlobalSpinner(); } catch(_) {}
+    await loadPanel(current, { activateAfter: true });
+    try { window.hideGlobalSpinner && window.hideGlobalSpinner(); } catch(_) {}
+  });
+}
 
-      // Activar la pestaña persistida (o default) y refrescar su HTML por AJAX
+      // Activar la pestaña persistida (o default)
       const initial = sessionStorage.getItem(STORAGE_KEY) || '#panel-solicitudes';
-      activate(initial); // pinta estados
-      // Opcional: traer contenido fresco del servidor al cargar
-      loadPanel(initial, {
-        activateAfter: false
-      }).catch(() => {});
+      activate(initial);
     });
   </script>
 
