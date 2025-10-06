@@ -300,16 +300,16 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         }
       }
 
-      // // Cambiar de pestaña SIN recargar
-      // buttons.forEach(btn => {
-      //   btn.addEventListener('click', (e) => {
-      //     if (!isTabButton(btn)) return;
-      //     const target = btn.dataset.target;
-      //     if (!target) return;
-      //     sessionStorage.setItem(STORAGE_KEY, target);
-      //     activate(target);
-      //   });
-      // });
+      // Cambiar de pestaña SIN recargar
+      buttons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          if (!isTabButton(btn)) return;
+          const target = btn.dataset.target;
+          if (!target) return;
+          sessionStorage.setItem(STORAGE_KEY, target);
+          activate(target);
+        });
+      });
 
       // Botón "Actualizar" (recarga manual)
       const refreshBtn = document.getElementById('btn-refresh');
