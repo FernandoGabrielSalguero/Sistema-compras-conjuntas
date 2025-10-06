@@ -130,10 +130,10 @@ class DroneFormularioNservicioModel
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-/** Productos por patología (con costo/ha) — SOLO activos */
-public function productosPorPatologia(int $patologiaId): array
-{
-    $sql = "SELECT s.id,
+    /** Productos por patología (con costo/ha) — SOLO activos */
+    public function productosPorPatologia(int $patologiaId): array
+    {
+        $sql = "SELECT s.id,
                    s.nombre,
                    COALESCE(s.costo_hectarea,0) AS costo_hectarea,
                    COALESCE(s.detalle,'')       AS detalle
@@ -142,10 +142,10 @@ public function productosPorPatologia(int $patologiaId): array
              WHERE sp.patologia_id = ?
                AND LOWER(COALESCE(s.activo,'no')) = 'si'
           ORDER BY s.nombre";
-    $st = $this->pdo->prepare($sql);
-    $st->execute([$patologiaId]);
-    return $st->fetchAll(PDO::FETCH_ASSOC);
-}
+        $st = $this->pdo->prepare($sql);
+        $st->execute([$patologiaId]);
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
 
 
 
@@ -164,12 +164,12 @@ public function productosPorPatologia(int $patologiaId): array
         return $row;
     }
 
-    /** Inserta la solicitud + secundarios en transacción */
+    /** Inserta la solicitud + secundarios en transacción (y crea costos) */
     public function crearSolicitud(array $d): array
     {
         $this->pdo->beginTransaction();
         try {
-            // drones_solicitud
+            // ===== 1) drones_solicitud
             $sql = "INSERT INTO drones_solicitud
                 (productor_id_real, representante, linea_tension, zona_restringida, corriente_electrica, agua_potable,
                  libre_obstaculos, area_despegue, superficie_ha, forma_pago_id, coop_descuento_nombre,
@@ -196,17 +196,17 @@ public function productosPorPatologia(int $patologiaId): array
             ]);
             $solicitudId = (int)$this->pdo->lastInsertId();
 
-            // motivo
+            // ===== 2) motivo
             $sqlMot = "INSERT INTO drones_solicitud_motivo (solicitud_id, patologia_id, es_otros) VALUES (?,?,0)";
             $stm = $this->pdo->prepare($sqlMot);
             $stm->execute([$solicitudId, $d['patologia_id']]);
 
-            // rango
+            // ===== 3) rango
             $sqlR = "INSERT INTO drones_solicitud_rango (solicitud_id, rango) VALUES (?,?)";
             $str = $this->pdo->prepare($sqlR);
             $str->execute([$solicitudId, $d['rango']]);
 
-            // items
+            // ===== 4) items
             if (!empty($d['items'])) {
                 $sqlI = "INSERT INTO drones_solicitud_item
                     (solicitud_id, patologia_id, fuente, producto_id, costo_hectarea_snapshot, total_producto_snapshot, nombre_producto)
@@ -242,7 +242,44 @@ public function productosPorPatologia(int $patologiaId): array
                 }
             }
 
-            // evento
+            // ===== 5) costos (SIEMPRE)
+            // costo/ha vigente
+            $stCh = $this->pdo->query("SELECT costo, COALESCE(moneda,'Pesos') AS moneda
+                                         FROM dron_costo_hectarea
+                                     ORDER BY updated_at DESC
+                                        LIMIT 1");
+            $rowCh = $stCh->fetch(PDO::FETCH_ASSOC) ?: ['costo' => 0.0, 'moneda' => 'Pesos'];
+            $costoHa = (float)$rowCh['costo'];
+            $moneda  = (string)$rowCh['moneda'];
+
+            // suma de productos (solo SVE)
+            $stSum = $this->pdo->prepare("SELECT COALESCE(SUM(total_producto_snapshot),0)
+                                            FROM drones_solicitud_item
+                                           WHERE solicitud_id = ? AND fuente = 'sve'");
+            $stSum->execute([$solicitudId]);
+            $productosTotal = (float)$stSum->fetchColumn();
+
+            $baseHa     = (float)$d['superficie_ha'];
+            $baseTotal  = (float)$baseHa * (float)$costoHa;
+            $totalFinal = $baseTotal + $productosTotal;
+
+            $stCost = $this->pdo->prepare("
+                INSERT INTO drones_solicitud_costos
+                    (solicitud_id, moneda, costo_base_por_ha, base_ha, base_total, productos_total, total, desglose_json)
+                VALUES
+                    (:sid, :moneda, :costo_ha, :base_ha, :base_total, :prod_total, :total, NULL)
+            ");
+            $stCost->execute([
+                ':sid'        => $solicitudId,
+                ':moneda'     => $moneda ?: 'Pesos',
+                ':costo_ha'   => $costoHa,
+                ':base_ha'    => $baseHa,
+                ':base_total' => $baseTotal,
+                ':prod_total' => $productosTotal,
+                ':total'      => $totalFinal,
+            ]);
+
+            // ===== 6) evento
             $sqlE = "INSERT INTO drones_solicitud_evento (solicitud_id, tipo, detalle, actor)
                      VALUES (?, 'creada', 'Solicitud ingresada por formulario', 'sistema')";
             $ste = $this->pdo->prepare($sqlE);
@@ -255,6 +292,55 @@ public function productosPorPatologia(int $patologiaId): array
             return ['ok' => false, 'error' => $e->getMessage()];
         }
     }
+
+    /** Recalcula y actualiza costos para una solicitud existente */
+    public function recalcularCostos(int $solicitudId): void
+    {
+        if ($solicitudId <= 0) return;
+
+        $stS = $this->pdo->prepare("SELECT superficie_ha FROM drones_solicitud WHERE id=?");
+        $stS->execute([$solicitudId]);
+        $sup = (float)($stS->fetchColumn() ?: 0);
+
+        $stCh = $this->pdo->query("SELECT costo, COALESCE(moneda,'Pesos') AS moneda
+                                     FROM dron_costo_hectarea
+                                 ORDER BY updated_at DESC
+                                    LIMIT 1");
+        $rowCh = $stCh->fetch(PDO::FETCH_ASSOC) ?: ['costo' => 0.0, 'moneda' => 'Pesos'];
+        $costoHa = (float)$rowCh['costo'];
+        $moneda  = (string)$rowCh['moneda'];
+
+        $stSum = $this->pdo->prepare("SELECT COALESCE(SUM(total_producto_snapshot),0)
+                                        FROM drones_solicitud_item
+                                       WHERE solicitud_id = ? AND fuente = 'sve'");
+        $stSum->execute([$solicitudId]);
+        $productosTotal = (float)$stSum->fetchColumn();
+
+        $baseTotal  = $sup * $costoHa;
+        $totalFinal = $baseTotal + $productosTotal;
+
+        $stU = $this->pdo->prepare("
+            UPDATE drones_solicitud_costos
+               SET moneda = :moneda,
+                   costo_base_por_ha = :costo_ha,
+                   base_ha = :base_ha,
+                   base_total = :base_total,
+                   productos_total = :prod_total,
+                   total = :total
+             WHERE solicitud_id = :sid
+        ");
+        $stU->execute([
+            ':moneda'     => $moneda,
+            ':costo_ha'   => $costoHa,
+            ':base_ha'    => $sup,
+            ':base_total' => $baseTotal,
+            ':prod_total' => $productosTotal,
+            ':total'      => $totalFinal,
+            ':sid'        => $solicitudId,
+        ]);
+    }
+
+
 
     // === Helpers ===
     private function productoCostoHa(int $id): float
