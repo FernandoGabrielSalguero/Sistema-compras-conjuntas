@@ -347,7 +347,7 @@ $sesionDebug = [
                                         <div class="card p-2">
                                             <canvas id="firma-cliente" style="width:100%;height:200px;border:1px solid #ddd;border-radius:12px;"></canvas>
                                             <div class="form-buttons">
-                                                <button type="button" class="btn" id="limpiar-firma-cliente">Limpiar</button>
+                                                <button type="button" class="btn btn-cancelar" id="limpiar-firma-cliente">Limpiar</button>
                                             </div>
                                         </div>
                                         <input type="hidden" id="firma_cliente_base64" name="firma_cliente_base64" />
@@ -358,7 +358,7 @@ $sesionDebug = [
                                         <div class="card p-2">
                                             <canvas id="firma-piloto" style="width:100%;height:200px;border:1px solid #ddd;border-radius:12px;"></canvas>
                                             <div class="form-buttons">
-                                                <button type="button" class="btn" id="limpiar-firma-piloto">Limpiar</button>
+                                                <button type="button" class="btn btn-cancelar" id="limpiar-firma-piloto">Limpiar</button>
                                             </div>
                                         </div>
                                         <input type="hidden" id="firma_piloto_base64" name="firma_piloto_base64" />
