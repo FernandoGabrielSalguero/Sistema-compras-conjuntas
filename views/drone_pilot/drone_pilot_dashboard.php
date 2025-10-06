@@ -88,10 +88,17 @@ $sesionDebug = [
         .modal.modal-80 .modal-body {
             flex: 1;
             min-height: 0;
-            /* imprescindible para que funcione el scroll */
-            overflow: auto;
-            /* scroll solo en el cuerpo */
+            /* habilita scroll vertical y horizontal */
+            overflow-y: auto;
+            overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+            padding-right: .25rem;
+            /* evita corte de scroll */
+        }
+
+        .modal.modal-80 .card-grid {
+            min-width: max-content;
+            /* evita que el grid se rompa en pantallas pequeñas */
         }
 
         .modal.modal-80 .modal-footer {
