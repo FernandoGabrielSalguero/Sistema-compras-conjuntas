@@ -52,6 +52,44 @@ $sesionDebug = [
     <!-- CDN firma con dedo -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" defer></script>
 
+    <style>
+        /* Modal 80% viewport, centrado y con área scroll interna */
+        .modal.modal-80 .modal-content {
+            width: 80vw;
+            height: 80vh;
+            max-width: 80vw;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal.modal-80 {
+            /* por si tu framework usa flex/center, mantenemos padding para respiración */
+            padding: 2rem;
+        }
+
+        .modal.modal-80 .modal-body {
+            flex: 1;
+            min-height: 0;
+            /* clave para que el overflow funcione en contenedores flex */
+            overflow: auto;
+            /* scroll solo en el cuerpo */
+        }
+
+        .modal.modal-80 .modal-footer {
+            position: sticky;
+            /* el pie siempre visible dentro del modal */
+            bottom: 0;
+            display: flex;
+            gap: .5rem;
+            justify-content: flex-end;
+            padding-top: .75rem;
+            border-top: 1px solid rgba(0, 0, 0, .08);
+            background: inherit;
+            /* evita parpadeo al hacer scroll */
+        }
+    </style>
+
 </head>
 
 <body>
@@ -132,23 +170,23 @@ $sesionDebug = [
                 </div>
 
                 <!-- Modal Detalle de la solicitud -->
-                <div id="modal" class="modal hidden">
+                <div id="modal" class="modal hidden modal-80">
                     <div class="modal-content">
                         <h3 id="modal-title">Detalle de la solicitud</h3>
 
-                        <!-- Usamos card-grid grid-4 del CDN -->
-                        <div id="modal-body" class="card-grid grid-4 gap-2">
+                        <!-- Área scroll del modal -->
+                        <div id="modal-body" class="modal-body card-grid grid-4 gap-2">
                             <!-- Contenido dinámico -->
                         </div>
 
-                        <div class="form-buttons">
+                        <div class="modal-footer">
                             <button class="btn btn-aceptar" onclick="closeModal()">Cerrar</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Modal Reporte de Servicio -->
-                <div id="modal-reporte" class="modal hidden">
+                <div id="modal-reporte" class="modal hidden modal-80">
                     <div class="modal-content">
                         <h3 id="modal-reporte-title">Generar reporte</h3>
 
@@ -156,145 +194,149 @@ $sesionDebug = [
                             <input type="hidden" name="action" value="crear_reporte">
                             <input type="hidden" name="solicitud_id" id="reporte_solicitud_id">
 
-                            <!-- Usamos card-grid grid-4 del CDN -->
-                            <div class="card-grid grid-4 gap-2">
+                            <!-- Área scroll del modal -->
+                            <div class="modal-body">
+                                <!-- Usamos card-grid grid-4 del CDN -->
+                                <div class="card-grid grid-4 gap-2">
 
-                                <div class="input-group">
-                                    <label for="nom_cliente">Cliente</label>
-                                    <div class="input-icon input-icon-name">
-                                        <input type="text" id="nom_cliente" name="nom_cliente" placeholder="…" required />
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="nom_piloto">Piloto</label>
-                                    <div class="input-icon input-icon-name">
-                                        <input type="text" id="nom_piloto" name="nom_piloto" placeholder="…" required />
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="fecha_visita_rep">Fecha de visita</label>
-                                    <div class="input-icon input-icon-calendar">
-                                        <input type="date" id="fecha_visita_rep" name="fecha_visita" required />
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="hora_ingreso">Hora ingreso</label>
-                                    <div class="input-icon input-icon-time">
-                                        <input type="time" id="hora_ingreso" name="hora_ingreso" required />
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="hora_egreso">Hora egreso</label>
-                                    <div class="input-icon input-icon-time">
-                                        <input type="time" id="hora_egreso" name="hora_egreso" required />
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="nombre_finca">Nombre de la finca</label>
-                                    <div class="input-icon input-icon-name">
-                                        <input type="text" id="nombre_finca" name="nombre_finca" placeholder="…" />
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="cultivo_pulverizado">Cultivo pulverizado</label>
-                                    <div class="input-icon input-icon-name">
-                                        <input type="text" id="cultivo_pulverizado" name="cultivo_pulverizado" placeholder="…" />
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="cuadro_cuartel">Cuadro/Cuartel</label>
-                                    <div class="input-icon input-icon-name">
-                                        <input type="text" id="cuadro_cuartel" name="cuadro_cuartel" placeholder="…" />
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="sup_pulverizada">Sup. pulverizada (ha)</label>
-                                    <div class="input-icon input-icon-number">
-                                        <input type="number" step="0.01" id="sup_pulverizada" name="sup_pulverizada" placeholder="…" />
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="vol_aplicado">Volumen aplicado (L)</label>
-                                    <div class="input-icon input-icon-number">
-                                        <input type="number" step="0.01" id="vol_aplicado" name="vol_aplicado" placeholder="…" />
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="vel_viento">Velocidad del viento (km/h)</label>
-                                    <div class="input-icon input-icon-number">
-                                        <input type="number" step="0.1" id="vel_viento" name="vel_viento" placeholder="…" />
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="temperatura">Temperatura (°C)</label>
-                                    <div class="input-icon input-icon-number">
-                                        <input type="number" step="0.1" id="temperatura" name="temperatura" placeholder="…" />
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="humedad_relativa">Humedad relativa (%)</label>
-                                    <div class="input-icon input-icon-number">
-                                        <input type="number" step="0.1" id="humedad_relativa" name="humedad_relativa" placeholder="…" />
-                                    </div>
-                                </div>
-
-                                <div class="input-group" style="grid-column: span 4;">
-                                    <label for="observaciones_rep">Observaciones</label>
-                                    <div class="input-icon input-icon-message">
-                                        <input type="text" id="observaciones_rep" name="observaciones" placeholder="…" />
-                                    </div>
-                                </div>
-
-                                <div class="input-group" style="grid-column: span 4;">
-                                    <label>Subir fotos (hasta 10)</label>
-                                    <input type="file" id="fotos" name="fotos[]" accept="image/jpeg,image/png,image/webp" multiple />
-                                    <small class="text-muted">Formatos: JPG, PNG, WEBP</small>
-                                </div>
-
-                                <!-- Firmas -->
-                                <div class="input-group" style="grid-column: span 2;">
-                                    <label>Firma del cliente</label>
-                                    <div class="card p-2">
-                                        <canvas id="firma-cliente" style="width:100%;height:200px;border:1px solid #ddd;border-radius:12px;"></canvas>
-                                        <div class="form-buttons">
-                                            <button type="button" class="btn" id="limpiar-firma-cliente">Limpiar</button>
+                                    <div class="input-group">
+                                        <label for="nom_cliente">Cliente</label>
+                                        <div class="input-icon input-icon-name">
+                                            <input type="text" id="nom_cliente" name="nom_cliente" placeholder="…" required />
                                         </div>
                                     </div>
-                                    <input type="hidden" id="firma_cliente_base64" name="firma_cliente_base64" />
-                                </div>
 
-                                <div class="input-group" style="grid-column: span 2;">
-                                    <label>Firma del piloto</label>
-                                    <div class="card p-2">
-                                        <canvas id="firma-piloto" style="width:100%;height:200px;border:1px solid #ddd;border-radius:12px;"></canvas>
-                                        <div class="form-buttons">
-                                            <button type="button" class="btn" id="limpiar-firma-piloto">Limpiar</button>
+                                    <div class="input-group">
+                                        <label for="nom_piloto">Piloto</label>
+                                        <div class="input-icon input-icon-name">
+                                            <input type="text" id="nom_piloto" name="nom_piloto" placeholder="…" required />
                                         </div>
                                     </div>
-                                    <input type="hidden" id="firma_piloto_base64" name="firma_piloto_base64" />
-                                </div>
 
+                                    <div class="input-group">
+                                        <label for="fecha_visita_rep">Fecha de visita</label>
+                                        <div class="input-icon input-icon-calendar">
+                                            <input type="date" id="fecha_visita_rep" name="fecha_visita" required />
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label for="hora_ingreso">Hora ingreso</label>
+                                        <div class="input-icon input-icon-time">
+                                            <input type="time" id="hora_ingreso" name="hora_ingreso" required />
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label for="hora_egreso">Hora egreso</label>
+                                        <div class="input-icon input-icon-time">
+                                            <input type="time" id="hora_egreso" name="hora_egreso" required />
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label for="nombre_finca">Nombre de la finca</label>
+                                        <div class="input-icon input-icon-name">
+                                            <input type="text" id="nombre_finca" name="nombre_finca" placeholder="…" />
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label for="cultivo_pulverizado">Cultivo pulverizado</label>
+                                        <div class="input-icon input-icon-name">
+                                            <input type="text" id="cultivo_pulverizado" name="cultivo_pulverizado" placeholder="…" />
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label for="cuadro_cuartel">Cuadro/Cuartel</label>
+                                        <div class="input-icon input-icon-name">
+                                            <input type="text" id="cuadro_cuartel" name="cuadro_cuartel" placeholder="…" />
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label for="sup_pulverizada">Sup. pulverizada (ha)</label>
+                                        <div class="input-icon input-icon-number">
+                                            <input type="number" step="0.01" id="sup_pulverizada" name="sup_pulverizada" placeholder="…" />
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label for="vol_aplicado">Volumen aplicado (L)</label>
+                                        <div class="input-icon input-icon-number">
+                                            <input type="number" step="0.01" id="vol_aplicado" name="vol_aplicado" placeholder="…" />
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label for="vel_viento">Velocidad del viento (km/h)</label>
+                                        <div class="input-icon input-icon-number">
+                                            <input type="number" step="0.1" id="vel_viento" name="vel_viento" placeholder="…" />
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label for="temperatura">Temperatura (°C)</label>
+                                        <div class="input-icon input-icon-number">
+                                            <input type="number" step="0.1" id="temperatura" name="temperatura" placeholder="…" />
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label for="humedad_relativa">Humedad relativa (%)</label>
+                                        <div class="input-icon input-icon-number">
+                                            <input type="number" step="0.1" id="humedad_relativa" name="humedad_relativa" placeholder="…" />
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group" style="grid-column: span 4;">
+                                        <label for="observaciones_rep">Observaciones</label>
+                                        <div class="input-icon input-icon-message">
+                                            <input type="text" id="observaciones_rep" name="observaciones" placeholder="…" />
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group" style="grid-column: span 4;">
+                                        <label>Subir fotos (hasta 10)</label>
+                                        <input type="file" id="fotos" name="fotos[]" accept="image/jpeg,image/png,image/webp" multiple />
+                                        <small class="text-muted">Formatos: JPG, PNG, WEBP</small>
+                                    </div>
+
+                                    <!-- Firmas -->
+                                    <div class="input-group" style="grid-column: span 2;">
+                                        <label>Firma del cliente</label>
+                                        <div class="card p-2">
+                                            <canvas id="firma-cliente" style="width:100%;height:200px;border:1px solid #ddd;border-radius:12px;"></canvas>
+                                            <div class="form-buttons">
+                                                <button type="button" class="btn" id="limpiar-firma-cliente">Limpiar</button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="firma_cliente_base64" name="firma_cliente_base64" />
+                                    </div>
+
+                                    <div class="input-group" style="grid-column: span 2;">
+                                        <label>Firma del piloto</label>
+                                        <div class="card p-2">
+                                            <canvas id="firma-piloto" style="width:100%;height:200px;border:1px solid #ddd;border-radius:12px;"></canvas>
+                                            <div class="form-buttons">
+                                                <button type="button" class="btn" id="limpiar-firma-piloto">Limpiar</button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="firma_piloto_base64" name="firma_piloto_base64" />
+                                    </div>
+
+                                </div>
                             </div>
 
-                            <div class="form-buttons">
+                            <div class="modal-footer">
                                 <button type="submit" class="btn btn-aceptar">Guardar reporte</button>
                                 <button type="button" class="btn btn-cancelar" onclick="closeModalReporte()">Cancelar</button>
                             </div>
                         </form>
                     </div>
                 </div>
+
 
 
                 <!-- contenedor del toastify -->
