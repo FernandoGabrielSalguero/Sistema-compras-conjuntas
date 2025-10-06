@@ -107,16 +107,28 @@ try {
                 }
             }
 
-            // Firma base64
-            $firma64 = $_POST['firma_base64'] ?? '';
-            if ($firma64 && str_starts_with($firma64, 'data:image/png;base64,')) {
-                $data = base64_decode(substr($firma64, strlen('data:image/png;base64,')));
-                $fname = 'firma_' . $reporteId . '_' . bin2hex(random_bytes(4)) . '.png';
+            // Firma cliente base64
+            $firmaCliente64 = $_POST['firma_cliente_base64'] ?? '';
+            if ($firmaCliente64 && str_starts_with($firmaCliente64, 'data:image/png;base64,')) {
+                $data = base64_decode(substr($firmaCliente64, strlen('data:image/png;base64,')));
+                $fname = 'firma_cliente_' . $reporteId . '_' . bin2hex(random_bytes(4)) . '.png';
                 $dest  = $baseDir . '/' . $fname;
                 file_put_contents($dest, $data);
                 $rutaPublica = 'uploads/drone_reports/' . $sid . '/' . $fname;
-                $model->guardarMedia($reporteId, 'firma', $rutaPublica);
+                $model->guardarMedia($reporteId, 'firma_cliente', $rutaPublica);
             }
+
+            // Firma piloto base64
+            $firmaPiloto64 = $_POST['firma_piloto_base64'] ?? '';
+            if ($firmaPiloto64 && str_starts_with($firmaPiloto64, 'data:image/png;base64,')) {
+                $data = base64_decode(substr($firmaPiloto64, strlen('data:image/png;base64,')));
+                $fname = 'firma_piloto_' . $reporteId . '_' . bin2hex(random_bytes(4)) . '.png';
+                $dest  = $baseDir . '/' . $fname;
+                file_put_contents($dest, $data);
+                $rutaPublica = 'uploads/drone_reports/' . $sid . '/' . $fname;
+                $model->guardarMedia($reporteId, 'firma_piloto', $rutaPublica);
+            }
+
 
             $pdo->commit();
             jsonResponse(true, ['reporte_id' => $reporteId], 'Reporte creado');

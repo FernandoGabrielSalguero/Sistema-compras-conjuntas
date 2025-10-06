@@ -24,7 +24,12 @@ $sesionDebug = [
     'usuario_id' => $_SESSION['usuario_id'] ?? ($_SESSION['id'] ?? null),
     'rol' => $_SESSION['rol'] ?? null
 ];
-echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED_UNICODE) . ");";
+?>
+<script>
+    // Log de sesión solo en consola
+    console.log('SESSION PILOTO', <?php echo json_encode($sesionDebug, JSON_UNESCAPED_UNICODE); ?>);
+</script>
+<?php
 
 ?>
 
@@ -129,13 +134,15 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
                         </table>
                     </div>
                 </div>
+
                 <!-- Modal Detalle de la solicitud -->
                 <div id="modal" class="modal hidden">
                     <div class="modal-content">
                         <h3 id="modal-title">Detalle de la solicitud</h3>
 
-                        <div id="modal-body">
-                            <!-- Se carga por JS -->
+                        <!-- Usamos card-grid grid-4 del CDN -->
+                        <div id="modal-body" class="card-grid grid-4 gap-2">
+                            <!-- Contenido dinámico -->
                         </div>
 
                         <div class="form-buttons">
@@ -153,13 +160,16 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
                             <input type="hidden" name="action" value="crear_reporte">
                             <input type="hidden" name="solicitud_id" id="reporte_solicitud_id">
 
-                            <div class="grid md:grid-cols-2 grid-cols-1 gap-3">
+                            <!-- Usamos card-grid grid-4 del CDN -->
+                            <div class="card-grid grid-4 gap-2">
+
                                 <div class="input-group">
                                     <label for="nom_cliente">Cliente</label>
                                     <div class="input-icon input-icon-name">
                                         <input type="text" id="nom_cliente" name="nom_cliente" placeholder="…" required />
                                     </div>
                                 </div>
+
                                 <div class="input-group">
                                     <label for="nom_piloto">Piloto</label>
                                     <div class="input-icon input-icon-name">
@@ -173,89 +183,113 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
                                         <input type="date" id="fecha_visita_rep" name="fecha_visita" required />
                                     </div>
                                 </div>
+
                                 <div class="input-group">
                                     <label for="hora_ingreso">Hora ingreso</label>
                                     <div class="input-icon input-icon-time">
                                         <input type="time" id="hora_ingreso" name="hora_ingreso" required />
                                     </div>
                                 </div>
+
                                 <div class="input-group">
                                     <label for="hora_egreso">Hora egreso</label>
                                     <div class="input-icon input-icon-time">
                                         <input type="time" id="hora_egreso" name="hora_egreso" required />
                                     </div>
                                 </div>
+
                                 <div class="input-group">
                                     <label for="nombre_finca">Nombre de la finca</label>
                                     <div class="input-icon input-icon-name">
                                         <input type="text" id="nombre_finca" name="nombre_finca" placeholder="…" />
                                     </div>
                                 </div>
+
                                 <div class="input-group">
                                     <label for="cultivo_pulverizado">Cultivo pulverizado</label>
                                     <div class="input-icon input-icon-name">
                                         <input type="text" id="cultivo_pulverizado" name="cultivo_pulverizado" placeholder="…" />
                                     </div>
                                 </div>
+
                                 <div class="input-group">
                                     <label for="cuadro_cuartel">Cuadro/Cuartel</label>
                                     <div class="input-icon input-icon-name">
                                         <input type="text" id="cuadro_cuartel" name="cuadro_cuartel" placeholder="…" />
                                     </div>
                                 </div>
+
                                 <div class="input-group">
                                     <label for="sup_pulverizada">Sup. pulverizada (ha)</label>
                                     <div class="input-icon input-icon-number">
                                         <input type="number" step="0.01" id="sup_pulverizada" name="sup_pulverizada" placeholder="…" />
                                     </div>
                                 </div>
+
                                 <div class="input-group">
                                     <label for="vol_aplicado">Volumen aplicado (L)</label>
                                     <div class="input-icon input-icon-number">
                                         <input type="number" step="0.01" id="vol_aplicado" name="vol_aplicado" placeholder="…" />
                                     </div>
                                 </div>
+
                                 <div class="input-group">
                                     <label for="vel_viento">Velocidad del viento (km/h)</label>
                                     <div class="input-icon input-icon-number">
                                         <input type="number" step="0.1" id="vel_viento" name="vel_viento" placeholder="…" />
                                     </div>
                                 </div>
+
                                 <div class="input-group">
                                     <label for="temperatura">Temperatura (°C)</label>
                                     <div class="input-icon input-icon-number">
                                         <input type="number" step="0.1" id="temperatura" name="temperatura" placeholder="…" />
                                     </div>
                                 </div>
+
                                 <div class="input-group">
                                     <label for="humedad_relativa">Humedad relativa (%)</label>
                                     <div class="input-icon input-icon-number">
                                         <input type="number" step="0.1" id="humedad_relativa" name="humedad_relativa" placeholder="…" />
                                     </div>
                                 </div>
-                                <div class="input-group md:col-span-2">
+
+                                <div class="input-group" style="grid-column: span 4;">
                                     <label for="observaciones_rep">Observaciones</label>
                                     <div class="input-icon input-icon-message">
                                         <input type="text" id="observaciones_rep" name="observaciones" placeholder="…" />
                                     </div>
                                 </div>
 
-                                <div class="md:col-span-2">
+                                <div class="input-group" style="grid-column: span 4;">
                                     <label>Subir fotos (hasta 10)</label>
                                     <input type="file" id="fotos" name="fotos[]" accept="image/jpeg,image/png,image/webp" multiple />
                                     <small class="text-muted">Formatos: JPG, PNG, WEBP</small>
                                 </div>
 
-                                <div class="md:col-span-2">
+                                <!-- Firmas -->
+                                <div class="input-group" style="grid-column: span 2;">
                                     <label>Firma del cliente</label>
                                     <div class="card p-2">
-                                        <canvas id="firma-canvas" style="width:100%;height:220px;border:1px solid #ddd;border-radius:12px;"></canvas>
+                                        <canvas id="firma-cliente" style="width:100%;height:200px;border:1px solid #ddd;border-radius:12px;"></canvas>
                                         <div class="form-buttons">
-                                            <button type="button" class="btn" id="limpiar-firma">Limpiar</button>
+                                            <button type="button" class="btn" id="limpiar-firma-cliente">Limpiar</button>
                                         </div>
                                     </div>
-                                    <input type="hidden" id="firma_base64" name="firma_base64" />
+                                    <input type="hidden" id="firma_cliente_base64" name="firma_cliente_base64" />
                                 </div>
+
+                                <div class="input-group" style="grid-column: span 2;">
+                                    <label>Firma del piloto</label>
+                                    <div class="card p-2">
+                                        <canvas id="firma-piloto" style="width:100%;height:200px;border:1px solid #ddd;border-radius:12px;"></canvas>
+                                        <div class="form-buttons">
+                                            <button type="button" class="btn" id="limpiar-firma-piloto">Limpiar</button>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="firma_piloto_base64" name="firma_piloto_base64" />
+                                </div>
+
                             </div>
 
                             <div class="form-buttons">
@@ -265,6 +299,7 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
                         </form>
                     </div>
                 </div>
+
 
                 <!-- contenedor del toastify -->
                 <div id="toast-container"></div>
@@ -374,7 +409,7 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
 
 
         // listeners, detalle, reporte, firma
-        let signaturePad;
+        let signatureCliente, signaturePiloto;
 
         function openModal() {
             document.getElementById('modal').classList.remove('hidden');
@@ -386,31 +421,36 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
 
         function openModalReporte() {
             document.getElementById('modal-reporte').classList.remove('hidden');
-            initSignature();
+            initSignatures();
         }
 
         function closeModalReporte() {
             document.getElementById('modal-reporte').classList.add('hidden');
         }
 
-        function initSignature() {
-            const canvas = document.getElementById('firma-canvas');
-            if (!canvas) return;
-            const resize = () => {
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                const ctx = canvas.getContext('2d');
-                ctx.scale(ratio, ratio);
-                if (signaturePad) signaturePad.clear();
+        function initSignatures() {
+            const makePad = (idCanvas, clearBtnId) => {
+                const canvas = document.getElementById(idCanvas);
+                if (!canvas) return null;
+                const resize = () => {
+                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                    canvas.width = canvas.offsetWidth * ratio;
+                    canvas.height = canvas.offsetHeight * ratio;
+                    const ctx = canvas.getContext('2d');
+                    ctx.scale(ratio, ratio);
+                };
+                resize();
+                window.addEventListener('resize', resize);
+                const pad = new SignaturePad(canvas, {
+                    minWidth: 0.8,
+                    maxWidth: 2.5
+                });
+                const btn = document.getElementById(clearBtnId);
+                if (btn) btn.onclick = () => pad.clear();
+                return pad;
             };
-            resize();
-            window.addEventListener('resize', resize);
-            signaturePad = new SignaturePad(canvas, {
-                minWidth: 0.8,
-                maxWidth: 2.5
-            });
-            document.getElementById('limpiar-firma').onclick = () => signaturePad.clear();
+            signatureCliente = makePad('firma-cliente', 'limpiar-firma-cliente');
+            signaturePiloto = makePad('firma-piloto', 'limpiar-firma-piloto');
         }
 
         function mapBtn(lat, lng) {
@@ -433,15 +473,19 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
                 const params = payload.data.parametros || {};
 
                 const motivoCancel = (s.estado === 'cancelada' && s.motivo_cancelacion) ?
-                    `<div class="input-group"><label>Motivo cancelación</label><div class="input-icon input-icon-message"><input type="text" readonly value="${s.motivo_cancelacion}"/></div></div>` :
+                    `<div class="input-group" style="grid-column: span 4;">
+                    <label>Motivo cancelación</label>
+                    <div class="input-icon input-icon-message">
+                        <input type="text" readonly value="${s.motivo_cancelacion}"/>
+                    </div>
+               </div>` :
                     '';
 
                 const geo = (s.ubicacion_lat && s.ubicacion_lng) ? `
-            <div class="grid md:grid-cols-3 grid-cols-1 gap-2">
-                <div class="input-group"><label>Lat</label><div class="input-icon input-icon-location"><input type="text" readonly value="${s.ubicacion_lat}"/></div></div>
-                <div class="input-group"><label>Lng</label><div class="input-icon input-icon-location"><input type="text" readonly value="${s.ubicacion_lng}"/></div></div>
-                <div class="input-group"><label>Abrir en Google Maps</label>${mapBtn(s.ubicacion_lat, s.ubicacion_lng)}</div>
-            </div>` : '';
+            <div class="input-group"><label>Lat</label><div class="input-icon input-icon-location"><input type="text" readonly value="${s.ubicacion_lat}"/></div></div>
+            <div class="input-group"><label>Lng</label><div class="input-icon input-icon-location"><input type="text" readonly value="${s.ubicacion_lng}"/></div></div>
+            <div class="input-group" style="align-self:end;"><label>&nbsp;</label>${mapBtn(s.ubicacion_lat, s.ubicacion_lng)}</div>
+        ` : '';
 
                 const recetaRows = recetas.map(r => `
             <tr>
@@ -457,65 +501,97 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
 
                 const estadoChip = (() => {
                     const m = {
-                        'ingresada': 'neutral',
-                        'procesando': 'warning',
-                        'aprobada_coop': 'success',
-                        'cancelada': 'danger',
-                        'completada': 'primary'
+                        ingresada: 'neutral',
+                        procesando: 'warning',
+                        aprobada_coop: 'success',
+                        cancelada: 'danger',
+                        completada: 'primary'
                     } [s.estado] || 'neutral';
                     return `<span class="badge ${m}">${s.estado}</span>`;
                 })();
 
                 document.getElementById('modal-title').textContent = `PROGRAMA / SOLICITUD #${s.id}`;
+
+                // Cuerpo del modal en card-grid grid-4
                 document.getElementById('modal-body').innerHTML = `
-            <h4 class="title">Fecha de la visita</h4>
-            <div class="grid md:grid-cols-3 grid-cols-1 gap-2">
-                <div class="input-group"><label>Fecha visita</label><div class="input-icon input-icon-calendar"><input type="text" readonly value="${s.fecha_visita ?? '-'}"/></div></div>
-                <div class="input-group"><label>Horario</label><div class="input-icon input-icon-time"><input type="text" readonly value="${(s.hora_visita_desde || '-') + ' - ' + (s.hora_visita_hasta || '-')}"/></div></div>
-                <div class="input-group"><label>Estado</label><div>${estadoChip}</div></div>
+            <div class="input-group">
+                <label>Fecha visita</label>
+                <div class="input-icon input-icon-calendar"><input type="text" readonly value="${s.fecha_visita ?? '-'}"/></div>
+            </div>
+            <div class="input-group">
+                <label>Horario</label>
+                <div class="input-icon input-icon-time"><input type="text" readonly value="${(s.hora_visita_desde || '-') + ' - ' + (s.hora_visita_hasta || '-')}"/></div>
+            </div>
+            <div class="input-group">
+                <label>Estado</label>
+                <div>${estadoChip}</div>
+            </div>
+            <div class="input-group"><label>&nbsp;</label></div>
+
+            <div class="input-group">
+                <label>Provincia</label>
+                <div class="input-icon input-icon-location"><input type="text" readonly value="${s.dir_provincia ?? '-'}"/></div>
+            </div>
+            <div class="input-group">
+                <label>Localidad</label>
+                <div class="input-icon input-icon-location"><input type="text" readonly value="${s.dir_localidad ?? '-'}"/></div>
+            </div>
+            <div class="input-group">
+                <label>Calle</label>
+                <div class="input-icon input-icon-location"><input type="text" readonly value="${s.dir_calle ?? '-'}"/></div>
+            </div>
+            <div class="input-group">
+                <label>Número</label>
+                <div class="input-icon input-icon-number"><input type="text" readonly value="${s.dir_numero ?? '-'}"/></div>
             </div>
 
-            <h4 class="title mt-2">Dirección</h4>
-            <div class="grid md:grid-cols-4 grid-cols-1 gap-2">
-                <div class="input-group"><label>Provincia</label><div class="input-icon input-icon-location"><input type="text" readonly value="${s.dir_provincia ?? '-'}"/></div></div>
-                <div class="input-group"><label>Localidad</label><div class="input-icon input-icon-location"><input type="text" readonly value="${s.dir_localidad ?? '-'}"/></div></div>
-                <div class="input-group"><label>Calle</label><div class="input-icon input-icon-location"><input type="text" readonly value="${s.dir_calle ?? '-'}"/></div></div>
-                <div class="input-group"><label>Número</label><div class="input-icon input-icon-number"><input type="text" readonly value="${s.dir_numero ?? '-'}"/></div></div>
-            </div>
-
-            <h4 class="title mt-2">Datos de Geolocalización</h4>
             ${geo}
 
+            <div class="input-group" style="grid-column: span 4;">
+                <h4 class="title">Productos a utilizar</h4>
+                <div class="tabla-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Ítem</th><th>Producto</th><th>Principio activo</th><th>Dosis</th><th>Unidad</th><th>Orden mezcla</th><th>Notas</th>
+                            </tr>
+                        </thead>
+                        <tbody>${recetaRows || '<tr><td colspan="7">Sin recetas cargadas</td></tr>'}</tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="input-group" style="grid-column: span 4;">
+                <h4 class="title">Parámetros de vuelo</h4>
+            </div>
+            <div class="input-group">
+                <label>Volumen/ha</label>
+                <div class="input-icon input-icon-number"><input type="text" readonly value="${params.volumen_ha ?? '-'}"/></div>
+            </div>
+            <div class="input-group">
+                <label>Velocidad vuelo</label>
+                <div class="input-icon input-icon-number"><input type="text" readonly value="${params.velocidad_vuelo ?? '-'}"/></div>
+            </div>
+            <div class="input-group">
+                <label>Alto vuelo</label>
+                <div class="input-icon input-icon-number"><input type="text" readonly value="${params.alto_vuelo ?? '-'}"/></div>
+            </div>
+            <div class="input-group">
+                <label>Ancho pasada</label>
+                <div class="input-icon input-icon-number"><input type="text" readonly value="${params.ancho_pasada ?? '-'}"/></div>
+            </div>
+            <div class="input-group">
+                <label>Tamaño de gota</label>
+                <div class="input-icon input-icon-number"><input type="text" readonly value="${params.tamano_gota ?? '-'}"/></div>
+            </div>
+            <div class="input-group" style="grid-column: span 4;">
+                <label>Observaciones</label>
+                <div class="input-icon input-icon-message"><input type="text" readonly value="${params.observaciones ?? '-'}"/></div>
+            </div>
+
             ${motivoCancel}
-
-            <h4 class="title mt-2">Productos a utilizar</h4>
-            <div class="tabla-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Ítem</th>
-                            <th>Producto</th>
-                            <th>Principio activo</th>
-                            <th>Dosis</th>
-                            <th>Unidad</th>
-                            <th>Orden mezcla</th>
-                            <th>Notas</th>
-                        </tr>
-                    </thead>
-                    <tbody>${recetaRows || '<tr><td colspan="7">Sin recetas cargadas</td></tr>'}</tbody>
-                </table>
-            </div>
-
-            <h4 class="title mt-2">Parámetros de vuelo</h4>
-            <div class="grid md:grid-cols-3 grid-cols-1 gap-2">
-                <div class="input-group"><label>Volumen/ha</label><div class="input-icon input-icon-number"><input type="text" readonly value="${params.volumen_ha ?? '-'}"/></div></div>
-                <div class="input-group"><label>Velocidad vuelo</label><div class="input-icon input-icon-number"><input type="text" readonly value="${params.velocidad_vuelo ?? '-'}"/></div></div>
-                <div class="input-group"><label>Alto vuelo</label><div class="input-icon input-icon-number"><input type="text" readonly value="${params.alto_vuelo ?? '-'}"/></div></div>
-                <div class="input-group"><label>Ancho pasada</label><div class="input-icon input-icon-number"><input type="text" readonly value="${params.ancho_pasada ?? '-'}"/></div></div>
-                <div class="input-group"><label>Tamaño de gota</label><div class="input-icon input-icon-number"><input type="text" readonly value="${params.tamano_gota ?? '-'}"/></div></div>
-                <div class="input-group md:col-span-3"><label>Observaciones</label><div class="input-icon input-icon-message"><input type="text" readonly value="${params.observaciones ?? '-'}"/></div></div>
-            </div>
         `;
+
                 openModal();
             } catch (e) {
                 console.error(e);
@@ -523,27 +599,6 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
             }
         }
 
-        function abrirReporte(id) {
-            document.getElementById('reporte_solicitud_id').value = id;
-            // Prefills útiles:
-            const fila = $tbody.querySelector(`tr[data-id="${id}"]`);
-            const nomCliente = fila?.children?.[1]?.textContent?.trim() || '';
-            document.getElementById('nom_cliente').value = nomCliente;
-            document.getElementById('nom_piloto').value = <?php echo json_encode($nombre); ?>;
-            openModalReporte();
-        }
-
-        // Delegación de eventos para acciones
-        document.getElementById('tbody-solicitudes')?.addEventListener('click', (e) => {
-            const btn = e.target.closest('button[data-action]');
-            if (!btn) return;
-            const id = btn.dataset.id;
-            const action = btn.dataset.action;
-            if (action === 'ver') verDetalle(id);
-            if (action === 'reporte') abrirReporte(id);
-        });
-
-        // Envío del formulario de reporte
         document.getElementById('form-reporte')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             try {
@@ -552,9 +607,11 @@ echo "console.log('SESSION PILOTO', " . json_encode($sesionDebug, JSON_UNESCAPED
                     showAlert?.('info', 'Máximo 10 fotos.');
                     return;
                 }
-                // firma
-                const firmaData = signaturePad && !signaturePad.isEmpty() ? signaturePad.toDataURL('image/png') : '';
-                document.getElementById('firma_base64').value = firmaData;
+                // firmas
+                const firmaCliente = signatureCliente && !signatureCliente.isEmpty() ? signatureCliente.toDataURL('image/png') : '';
+                const firmaPiloto = signaturePiloto && !signaturePiloto.isEmpty() ? signaturePiloto.toDataURL('image/png') : '';
+                document.getElementById('firma_cliente_base64').value = firmaCliente;
+                document.getElementById('firma_piloto_base64').value = firmaPiloto;
 
                 const formData = new FormData(e.target);
                 const res = await fetch(`../../controllers/drone_pilot_dashboardController.php`, {

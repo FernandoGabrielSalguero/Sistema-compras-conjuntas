@@ -123,6 +123,7 @@ class DronePilotDashboardModel
     /** Guarda registros de media (foto/firma) */
     public function guardarMedia(int $reporteId, string $tipo, string $ruta): void
     {
+        // $tipo: 'foto' | 'firma_cliente' | 'firma_piloto'
         $sql = "INSERT INTO drones_solicitud_reporte_media (reporte_id, tipo, ruta) VALUES (:rid, :tipo, :ruta)";
         $st = $this->pdo->prepare($sql);
         $st->execute([':rid' => $reporteId, ':tipo' => $tipo, ':ruta' => $ruta]);
