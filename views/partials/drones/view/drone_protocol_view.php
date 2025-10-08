@@ -685,14 +685,20 @@ declare(strict_types=1);
             return;
           }
           pintarDetalle(json.data);
-          healthEl.textContent = 'Protocolo cargado correctamente';
+          healthEl.textContent = 'Estas viendo el protocolo de la solicitud número ' + id;
         })
         .catch(err => showAlert('error', err && err.message ? err.message : String(err)));
     }
 
     function setVal(id, v) {
       const el = document.getElementById(id);
-      if (el) el.value = v ?? '';
+      if (!el) return;
+      el.value = (v ?? '');
+      // Auto-ajuste de altura si es textarea
+      if (el.tagName === 'TEXTAREA') {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+      }
     }
 
     function pintarDetalle(data) {
@@ -709,8 +715,6 @@ declare(strict_types=1);
       setVal('pv_lat', d.ubicacion_lat || '');
       setVal('pv_lng', d.ubicacion_lng || '');
       setVal('pv_usuario', d.ses_usuario || '');
-      setVal('pv_estado', d.estado || '');
-      setVal('pv_motivo', d.motivo_cancelacion || '');
 
       // Habilitar/Deshabilitar botón Maps
       updateMapsButton(d.ubicacion_lat, d.ubicacion_lng);
@@ -769,8 +773,6 @@ declare(strict_types=1);
   `).join('');
       }
 
-
-
       // parámetros
       const p = data.parametros || {};
       setVal('pp_volumen', p.volumen_ha ?? '');
@@ -778,7 +780,11 @@ declare(strict_types=1);
       setVal('pp_alto', p.alto_vuelo ?? '');
       setVal('pp_ancho', p.ancho_pasada ?? '');
       setVal('pp_gota', p.tamano_gota ?? '');
+      // nuevo: hectáreas viene desde la solicitud (d)
+      setVal('pp_hectareas', (data.solicitud?.superficie_ha ?? ''));
       setVal('pp_obs', p.observaciones || '');
+      // nuevo: observaciones de agua (parametros)
+      setVal('pp_obs_agua', p.observaciones_agua || '');
     }
   })();
 </script>
