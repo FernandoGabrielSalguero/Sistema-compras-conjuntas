@@ -183,7 +183,7 @@ try {
                 }
             }
 
-            $model->marcarVisitaRealizada($sid);
+            $model->marcarCompletada($sid);
             $pdo->commit();
             jsonResponse(true, ['reporte_id' => $reporteId], 'Reporte creado');
         }
