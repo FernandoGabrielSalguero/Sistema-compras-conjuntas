@@ -1173,7 +1173,7 @@ $sesionDebug = [
       <div><b>Superficie:</b> ${s.superficie_ha ?? '-'} ha</div>
       <div><b>Hay agua en el lugar:</b> ${(s.agua_potable==='si'?'Sí':'No')}</div>
       <div class="card-footer">
-        <button class="btn btn-secundario" data-action="ver" data-id="${s.id}">Detalle</button>
+        <button class="btn btn-info" data-action="ver" data-id="${s.id}">Detalle</button>
         <button class="btn btn-aceptar" data-action="reporte" data-id="${s.id}">Generar reporte</button>
       </div>
     </div>`).join('');
