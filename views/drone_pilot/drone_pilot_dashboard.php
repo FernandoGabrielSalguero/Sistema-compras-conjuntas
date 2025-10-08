@@ -263,14 +263,76 @@ $sesionDebug = [
             border: 1px solid rgba(0, 0, 0, .08);
             border-radius: 10px;
             background: #fafafa;
+            /* 👉 permite saltos y evita cortes */
             white-space: pre-wrap;
-            word-break: break-word
+            /* respeta \n si vienen del backend */
+            overflow-wrap: anywhere;
+            /* fuerza salto en palabras largas */
+            word-break: break-word;
+            /* fallback */
         }
+
 
         @media (max-width:640px) {
             .cards-grid {
                 grid-template-columns: 1fr
             }
+        }
+
+        /* ====== Anti-desborde y full responsive en modales ====== */
+
+        /* inputs y selects ocupan 100% del ancho disponible */
+        .modal.modal-80 .input-icon input,
+        .modal.modal-80 .input-icon select,
+        .modal.modal-80 .input-icon textarea {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* las tablas tienen contenedor con scroll horizontal propio */
+        .tabla-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            /* 👉 scroll propio */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tabla-wrapper>table {
+            min-width: 720px;
+            /* asegura scroll y evita romper layout en mobile */
+        }
+
+        /* grillas de formularios: 1 columna en móviles para usar el 100% */
+        @media (max-width: 640px) {
+            .modal.modal-80 .card-grid.grid-4 {
+                grid-template-columns: 1fr !important;
+                gap: .75rem;
+            }
+
+            .modal.modal-80 .card-grid.grid-4>.input-group {
+                grid-column: span 1 !important;
+            }
+
+            /* modal ocupando más alto útil en mobile */
+            .modal.modal-80 .modal-content {
+                width: 95vw;
+                height: 90vh;
+                max-width: 95vw;
+                max-height: 90vh;
+            }
+        }
+
+        /* evita desbordes por textos largos en labels/valores */
+        .modal.modal-80 .input-group label,
+        .modal.modal-80 .input-group .text-box,
+        .modal.modal-80 .input-icon {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .modal.modal-80 .input-icon input[readonly] {
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     </style>
 
@@ -999,18 +1061,20 @@ $sesionDebug = [
             ${geo}
 
             <div class="input-group" style="grid-column: span 4;">
-                <h4 class="title">Productos a utilizar</h4>
-                <div class="tabla-wrapper">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Ítem</th><th>Producto</th><th>Principio activo</th><th>Dosis</th><th>Unidad</th><th>Orden mezcla</th><th>Notas</th>
-                            </tr>
-                        </thead>
-                        <tbody>${recetaRows || '<tr><td colspan="7">Sin recetas cargadas</td></tr>'}</tbody>
-                    </table>
-                </div>
-            </div>
+    <h4 class="title">Productos a utilizar</h4>
+    <!-- tabla con scroll horizontal propio -->
+    <div class="tabla-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Ítem</th><th>Producto</th><th>Principio activo</th><th>Dosis</th><th>Unidad</th><th>Orden mezcla</th><th>Notas</th>
+                </tr>
+            </thead>
+            <tbody>${recetaRows || '<tr><td colspan="7">Sin recetas cargadas</td></tr>'}</tbody>
+        </table>
+    </div>
+</div>
+
 
             <div class="input-group" style="grid-column: span 4;">
                 <h4 class="title">Parámetros de vuelo</h4>
@@ -1158,7 +1222,6 @@ $sesionDebug = [
     <div class="card-solicitud" data-id="${s.id}">
       <div class="flex items-center justify-between">
         <h4 style="margin:0">${s.productor_nombre ?? '-'}</h4>
-        <span class="chip ${s.estado ?? 'ingresada'}">${s.estado ?? 'ingresada'}</span>
       </div>
       <div><small>Pedido N° <b>${s.id}</b></small></div>
       <div><b>Fecha visita:</b> ${s.fecha_visita ?? '-'}</div>
