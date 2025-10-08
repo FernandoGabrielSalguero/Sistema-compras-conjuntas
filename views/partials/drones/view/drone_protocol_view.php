@@ -160,21 +160,6 @@ declare(strict_types=1);
               </div>
             </div>
 
-            <h3 style="color: #5b21b6;">Estado de la solicitud</h3>
-            <div class="grid-2">
-              <div class="input-group">
-                <label for="pv_estado">Estado</label>
-                <div class="input-icon input-icon-flag">
-                  <input id="pv_estado" readonly>
-                </div>
-              </div>
-              <div class="input-group">
-                <label for="pv_motivo">Motivo cancelación</label>
-                <div class="input-icon input-icon-warning">
-                  <input id="pv_motivo" placeholder="NO esta cancelada aún" readonly>
-                </div>
-              </div>
-            </div>
           </div>
 
           <div class="protocolo-bloque">
