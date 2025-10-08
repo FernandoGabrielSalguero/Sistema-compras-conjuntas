@@ -226,14 +226,22 @@ declare(strict_types=1);
                   <input id="pp_hectareas" readonly>
                 </div>
               </div>
-
             </div>
+
             <div class="input-group">
               <label for="pp_obs">Observaciones</label>
               <div class="input-icon input-icon-note">
-                <input id="pp_obs" readonly>
+                <textarea id="pp_obs" rows="2" readonly></textarea>
               </div>
             </div>
+
+            <div class="input-group">
+              <label for="pp_obs_agua">Observaciones de agua</label>
+              <div class="input-icon input-icon-note">
+                <textarea id="pp_obs_agua" rows="2" readonly></textarea>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -300,6 +308,16 @@ declare(strict_types=1);
 
   [readonly] {
     background: #f8fafc
+  }
+
+  /* Textareas de solo lectura auto-ajustables y con quiebre de línea */
+  textarea[readonly] {
+    width: 100%;
+    min-height: 64px;
+    resize: none;
+    overflow: hidden;
+    white-space: pre-wrap;
+    line-height: 1.35;
   }
 
   /* Evitar FOUC del contenido dinámico */
