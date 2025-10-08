@@ -53,68 +53,63 @@ $sesionDebug = [
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" defer></script>
 
     <style>
-        /* Modal 80% viewport, centrado, sin overflow externo */
+        /* =========================
+   Modales responsivos SVE
+   (reemplaza el bloque anterior)
+   ========================= */
+
+        /* Overlay: centrado, con paddings seguros y scroll si el contenido supera la altura disponible */
         .modal.modal-80 {
-            /* el overlay NO debe sumar padding que rompa el 80vh */
-            padding: 0 !important;
             display: flex;
             align-items: center;
             justify-content: center;
+            /* safe areas + separación mínima en bordes */
+            --modal-pad: clamp(8px, 2.2vw, 20px);
+            padding:
+                calc(var(--modal-pad) + env(safe-area-inset-top)) var(--modal-pad) calc(var(--modal-pad) + env(safe-area-inset-bottom)) var(--modal-pad) !important;
+            /* si el contenido excede, que scrollee el overlay sin romper layout */
+            overflow: auto;
         }
 
+        /* Contenedor del modal */
         .modal.modal-80 .modal-content {
-            width: 80vw;
-            height: 80vh;
-            max-width: 80vw;
-            max-height: 80vh;
+            width: min(100%, 980px);
+            /* límite visual en desktop */
+            max-width: min(95vw, 980px);
+            height: auto;
+            max-height: calc(100dvh - (var(--modal-pad)*2) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
             box-sizing: border-box;
-            /* cuenta padding dentro del 80% */
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            /* nada se escapa del modal */
-            padding: 1.25rem;
-            /* padding real del contenido */
             gap: .75rem;
+            overflow: hidden;
+            /* evita scrollbars dobles */
+            padding: 1.25rem;
+            border-radius: 16px;
         }
 
+        /* Título */
         .modal.modal-80 h3 {
             margin: 0;
-            /* evita sumar alto extra */
-            line-height: 1.2;
+            line-height: 1.25;
             flex-shrink: 0;
+            text-align: center;
         }
 
+        /* Cuerpo scrollable */
         .modal.modal-80 .modal-body {
             flex: 1;
             min-height: 0;
-            /* imprescindible para que funcione el scroll */
-            overflow-y: auto;
-            /* scroll vertical dentro del modal */
-            overflow-x: hidden;
-            /* si luego querés horizontal, cambiá a auto */
+            overflow: auto;
+            /* vertical por defecto */
             -webkit-overflow-scrolling: touch;
             padding-right: .25rem;
+            overscroll-behavior: contain;
         }
 
-        /* El form es un contenedor flex intermedio: SIN esto, .modal-body no puede scrollear */
-        .modal.modal-80 .modal-content form {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            min-height: 0;
-            /* clave para permitir que .modal-body calcule altura */
-        }
-
-        /* Si necesitás scroll horizontal, activá max-content; si no, mantené 0 para evitar barras laterales */
-        .modal.modal-80 .card-grid {
-            min-width: 0;
-        }
-
-
+        /* Footer pegajoso dentro del modal */
         .modal.modal-80 .modal-footer {
             position: sticky;
-            /* el pie siempre visible dentro del modal */
             bottom: 0;
             display: flex;
             gap: .5rem;
@@ -125,12 +120,103 @@ $sesionDebug = [
             flex-shrink: 0;
         }
 
-        /* las tarjetas de firma no crecen infinito */
-        .modal.modal-80 canvas {
-            max-height: 220px;
+        /* Grillas */
+        .modal.modal-80 .card-grid {
+            min-width: 0;
         }
 
-        /* Previsualización de fotos seleccionadas */
+        /* evita overflow horizontal */
+        .modal.modal-80 .card-grid.grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: .75rem;
+        }
+
+        /* Escalas responsivas de la grilla */
+        @media (max-width:1024px) {
+            .modal.modal-80 .card-grid.grid-4 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width:640px) {
+            .modal.modal-80 .modal-content {
+                max-width: 100vw;
+                width: 100%;
+                max-height: calc(100dvh - (var(--modal-pad)*2) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+                border-radius: 12px;
+            }
+
+            .modal.modal-80 .card-grid.grid-4 {
+                grid-template-columns: 1fr;
+                gap: .75rem;
+            }
+        }
+
+        /* Inputs 100% */
+        .modal.modal-80 .input-icon input,
+        .modal.modal-80 .input-icon select,
+        .modal.modal-80 .input-icon textarea {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* Evita desbordes por textos largos */
+        .modal.modal-80 .input-group label,
+        .modal.modal-80 .input-group .text-box,
+        .modal.modal-80 .input-icon {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .modal.modal-80 .input-icon input[readonly] {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Caja de texto multilínea */
+        .text-box {
+            padding: .5rem;
+            border: 1px solid rgba(0, 0, 0, .08);
+            border-radius: 10px;
+            background: #fafafa;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        /* ====== Tablas con scroll horizontal propio ====== */
+        .tabla-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            /* 👉 scroll horizontal del contenedor */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tabla-wrapper>table {
+            min-width: 720px;
+            /* fuerza scroll en pantallas pequeñas */
+            width: 100%;
+        }
+
+        /* en móviles muy angostos permitimos una min-width menor para mejorar usabilidad */
+        @media (max-width:375px) {
+            .tabla-wrapper>table {
+                min-width: 600px;
+            }
+        }
+
+        /* ====== Firmas / canvas ====== */
+        .modal.modal-80 canvas {
+            display: block;
+            width: 100%;
+            height: clamp(140px, 24vh, 220px);
+            max-height: 220px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+        }
+
+        /* ====== Previsualizaciones ====== */
         .preview-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -163,7 +249,6 @@ $sesionDebug = [
             word-break: break-all;
         }
 
-        /* Título de secciones de previsualización (DB / nuevas) */
         .preview-title {
             font-size: .9rem;
             font-weight: 600;
@@ -171,7 +256,6 @@ $sesionDebug = [
             margin-top: .25rem;
         }
 
-        /* Etiqueta de tipo (foto, firma_cliente, firma_piloto) */
         .preview-grid .badge-tipo {
             font-size: .7rem;
             padding: .1rem .35rem;
@@ -179,34 +263,17 @@ $sesionDebug = [
             border-radius: 999px;
         }
 
-        /* 🔻 Responsive: 1 columna en móviles para facilitar la carga */
-        @media (max-width: 640px) {
-            .modal.modal-80 .modal-content {
-                width: 95vw;
-                height: 90vh;
-                max-width: 95vw;
-                max-height: 90vh;
-            }
-
-            .modal.modal-80 .card-grid.grid-4 {
-                display: grid;
-                grid-template-columns: 1fr !important;
-                gap: .75rem;
-            }
-
-            .modal.modal-80 .card-grid.grid-4>.input-group {
-                grid-column: span 1 !important;
-            }
-
-            .modal.modal-80 canvas {
-                max-height: 180px;
-            }
-        }
-
+        /* ====== Tarjetas / listado ====== */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem
+            gap: 1rem;
+        }
+
+        @media (max-width:640px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .card-solicitud {
@@ -216,7 +283,7 @@ $sesionDebug = [
             padding: 1rem;
             display: flex;
             flex-direction: column;
-            gap: .5rem
+            gap: .5rem;
         }
 
         .card-solicitud .chip {
@@ -258,84 +325,12 @@ $sesionDebug = [
             margin-top: .5rem
         }
 
-        .text-box {
-            padding: .5rem;
-            border: 1px solid rgba(0, 0, 0, .08);
-            border-radius: 10px;
-            background: #fafafa;
-            /* 👉 permite saltos y evita cortes */
-            white-space: pre-wrap;
-            /* respeta \n si vienen del backend */
-            overflow-wrap: anywhere;
-            /* fuerza salto en palabras largas */
-            word-break: break-word;
-            /* fallback */
-        }
-
-
-        @media (max-width:640px) {
-            .cards-grid {
-                grid-template-columns: 1fr
-            }
-        }
-
-        /* ====== Anti-desborde y full responsive en modales ====== */
-
-        /* inputs y selects ocupan 100% del ancho disponible */
-        .modal.modal-80 .input-icon input,
-        .modal.modal-80 .input-icon select,
-        .modal.modal-80 .input-icon textarea {
-            width: 100%;
-            max-width: 100%;
-        }
-
-        /* las tablas tienen contenedor con scroll horizontal propio */
-        .tabla-wrapper {
-            width: 100%;
-            overflow-x: auto;
-            /* 👉 scroll propio */
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .tabla-wrapper>table {
-            min-width: 720px;
-            /* asegura scroll y evita romper layout en mobile */
-        }
-
-        /* grillas de formularios: 1 columna en móviles para usar el 100% */
-        @media (max-width: 640px) {
-            .modal.modal-80 .card-grid.grid-4 {
-                grid-template-columns: 1fr !important;
-                gap: .75rem;
-            }
-
-            .modal.modal-80 .card-grid.grid-4>.input-group {
-                grid-column: span 1 !important;
-            }
-
-            /* modal ocupando más alto útil en mobile */
-            .modal.modal-80 .modal-content {
-                width: 95vw;
-                height: 90vh;
-                max-width: 95vw;
-                max-height: 90vh;
-            }
-        }
-
-        /* evita desbordes por textos largos en labels/valores */
-        .modal.modal-80 .input-group label,
-        .modal.modal-80 .input-group .text-box,
-        .modal.modal-80 .input-icon {
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .modal.modal-80 .input-icon input[readonly] {
-            overflow: hidden;
-            text-overflow: ellipsis;
+        /* Utilidades adicionales para estabilidad en iOS/Android */
+        .modal.modal-80,
+        .modal.modal-80 .modal-body {
+            -webkit-tap-highlight-color: transparent;
         }
     </style>
-
 
 </head>
 
