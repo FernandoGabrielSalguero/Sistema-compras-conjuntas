@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 class DroneProtocolModel
@@ -53,29 +54,32 @@ class DroneProtocolModel
     {
         // drones_solicitud
         $sqlS = "
-            SELECT
-              fecha_visita, hora_visita_desde, hora_visita_hasta,
-              dir_provincia, dir_localidad, dir_calle, dir_numero,
-              ubicacion_lat, ubicacion_lng,
-              ses_usuario, estado, motivo_cancelacion
-            FROM drones_solicitud
-            WHERE id = :id
-            LIMIT 1
-        ";
+    SELECT
+      fecha_visita, hora_visita_desde, hora_visita_hasta,
+      dir_provincia, dir_localidad, dir_calle, dir_numero,
+      ubicacion_lat, ubicacion_lng,
+      ses_usuario, estado, motivo_cancelacion,
+      superficie_ha
+    FROM drones_solicitud
+    WHERE id = :id
+    LIMIT 1
+";
         $stS = $this->pdo->prepare($sqlS);
         $stS->execute([':id' => $id]);
         $solicitud = $stS->fetch(PDO::FETCH_ASSOC);
-        if (!$solicitud) { return null; }
+        if (!$solicitud) {
+            return null;
+        }
 
         // parámetros (el más reciente para esa solicitud)
         $sqlP = "
-            SELECT volumen_ha, velocidad_vuelo, alto_vuelo, ancho_pasada,
-                   tamano_gota, observaciones
-            FROM drones_solicitud_parametros
-            WHERE solicitud_id = :id
-            ORDER BY id DESC
-            LIMIT 1
-        ";
+    SELECT volumen_ha, velocidad_vuelo, alto_vuelo, ancho_pasada,
+           tamano_gota, observaciones, observaciones_agua
+    FROM drones_solicitud_parametros
+    WHERE solicitud_id = :id
+    ORDER BY id DESC
+    LIMIT 1
+";
         $stP = $this->pdo->prepare($sqlP);
         $stP->execute([':id' => $id]);
         $parametros = $stP->fetch(PDO::FETCH_ASSOC) ?: null;
@@ -123,7 +127,7 @@ class DroneProtocolModel
         return [
             'solicitud'  => $solicitud,
             'parametros' => $parametros,
-            'items'      => array_map(function(array $x){
+            'items'      => array_map(function (array $x) {
                 return [
                     'id' => (int)$x['id'],
                     'nombre_producto' => $x['nombre_producto'],
