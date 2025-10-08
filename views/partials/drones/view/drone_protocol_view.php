@@ -220,6 +220,12 @@ declare(strict_types=1);
                   <input id="pp_gota" readonly>
                 </div>
               </div>
+              <div class="input-group">
+                <label for="pp_hectareas">Hectareas a pulverizar</label>
+                <div class="input-icon input-icon-hashtag">
+                  <input id="pp_hectareas" readonly>
+                </div>
+              </div>
 
             </div>
             <div class="input-group">
