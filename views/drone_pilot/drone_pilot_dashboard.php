@@ -500,10 +500,11 @@ $sesionDebug = [
                 </div>
 
                 <!-- Mis solicitudes (tabla estándar) -->
-                <div class="card tabla-card" id="card-solicitudes" style="background-color: #f9f0ffff;">
+                <div class="card tabla-card" id="card-solicitudes" style="background-color: #5b21b6;">
                     <div class="flex items-center justify-between">
-                        <h2>Mis solicitudes asignadas</h2>
+                        <h2 style="color: white;">Mis solicitudes asignadas</h2>
                     </div>
+                    <br>
                     <!-- 🔄 Cards en lugar de tabla -->
                     <div id="cards-solicitudes" class="cards-grid"></div>
                 </div>
