@@ -348,6 +348,100 @@ $sesionDebug = [
         .modal.modal-80 .modal-body {
             -webkit-tap-highlight-color: transparent;
         }
+
+        /* =========================
+   Mobile-first para modales SVE
+   ========================= */
+        @media (max-width: 1024px) {
+
+            /* Una columna en ambos modales */
+            #modal .card-grid.grid-4,
+            #modal-reporte .card-grid.grid-4 {
+                display: grid;
+                grid-template-columns: 1fr !important;
+                gap: .75rem;
+            }
+
+            /* Asegurar que cada input-group ocupe la fila completa */
+            #modal .card-grid.grid-4>.input-group,
+            #modal-reporte .card-grid.grid-4>.input-group {
+                grid-column: 1 / -1 !important;
+                min-width: 0;
+            }
+
+            /* Etiqueta arriba, control abajo */
+            #modal .input-group>label,
+            #modal-reporte .input-group>label {
+                display: block;
+                margin: 0 0 .35rem 0;
+                line-height: 1.2;
+                text-align: left !important;
+                white-space: normal;
+            }
+
+            /* Cualquier grid interno dentro de tarjetas del modal de reporte también a 1 columna */
+            #modal-reporte .card .card-grid.grid-4 {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Filas que SÍ o SÍ deben ser de ancho completo (usaremos la clase .full-row) */
+            #modal-reporte .full-row {
+                grid-column: 1 / -1 !important;
+            }
+
+            /* Previews de imágenes: una por fila */
+            #modal-reporte .preview-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Firmas: full width y una debajo de la otra */
+            #modal-reporte #group-firma-cliente,
+            #modal-reporte #group-firma-piloto {
+                grid-column: 1 / -1 !important;
+            }
+
+            /* Tablas: contenedor con scroll horizontal y mesa con ancho mínimo */
+            #modal .tabla-wrapper,
+            #modal-reporte .tabla-wrapper {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #modal .tabla-wrapper>table,
+            #modal-reporte .tabla-wrapper>table {
+                width: max-content;
+                /* permite crecer horizontal para que aparezca el scroll */
+                min-width: 720px;
+                /* umbral cómodo en mobile */
+            }
+        }
+
+        /* Evitar inputs “más anchos que 100%” en los modales */
+        .modal.modal-80 .input-icon,
+        .modal.modal-80 .input-icon input,
+        .modal.modal-80 .input-icon select,
+        .modal.modal-80 .input-icon textarea {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Que el body del modal siempre scrollee verticalmente */
+        .modal.modal-80 .modal-body {
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        /* Canvas de firmas full width y alto cómodo */
+        #modal-reporte canvas {
+            display: block;
+            width: 100%;
+            height: clamp(160px, 26vh, 240px);
+            max-height: 240px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+        }
     </style>
 
 
@@ -542,28 +636,26 @@ $sesionDebug = [
                                         </div>
                                     </div>
 
-                                    <div class="input-group" style="grid-column: span 4;">
+                                    <div class="input-group full-row">
                                         <label for="observaciones_rep">Observaciones</label>
                                         <div class="input-icon input-icon-message">
                                             <input type="text" id="observaciones_rep" name="observaciones" placeholder="…" />
                                         </div>
                                     </div>
 
-                                    <div class="input-group" style="grid-column: span 4;">
+                                    <div class="input-group full-row">
                                         <label>Subir fotos (hasta 10)</label>
                                         <input type="file" id="fotos" name="fotos[]" accept="image/jpeg,image/png,image/webp" multiple />
 
-                                        <!-- Previsualización de imágenes EXISTENTES (DB) -->
                                         <div class="preview-title">Adjuntos existentes</div>
                                         <div id="preview-fotos-existentes" class="preview-grid"></div>
 
-                                        <!-- Previsualización de NUEVAS imágenes seleccionadas -->
                                         <div class="preview-title">Nuevas imágenes seleccionadas</div>
                                         <div id="preview-fotos" class="preview-grid" aria-live="polite"></div>
                                     </div>
 
                                     <!-- 🧪 Receta editable del piloto -->
-                                    <div class="input-group" style="grid-column: span 4;">
+                                    <div class="input-group full-row">
                                         <h4 class="title">Productos utilizados</h4>
                                         <div class="tabla-wrapper">
                                             <table class="data-table" id="tabla-receta">
@@ -587,7 +679,7 @@ $sesionDebug = [
                                     </div>
 
                                     <!-- ➕ Agregar producto a la receta -->
-                                    <div class="card p-2" style="grid-column: span 4;">
+                                    <div class="card p-2 full-row">
                                         <h4 class="title">Agregar producto</h4>
                                         <div class="card-grid grid-4 gap-2">
                                             <div class="input-group">
@@ -630,7 +722,7 @@ $sesionDebug = [
 
 
                                     <!-- Firmas -->
-                                    <div class="input-group" id="group-firma-cliente" style="grid-column: span 2;">
+                                    <div class="input-group full-row" id="group-firma-cliente">
                                         <label>Firma del cliente</label>
                                         <div class="card p-2">
                                             <canvas id="firma-cliente" style="width:100%;height:200px;border:1px solid #ddd;border-radius:12px;"></canvas>
@@ -641,7 +733,7 @@ $sesionDebug = [
                                         <input type="hidden" id="firma_cliente_base64" name="firma_cliente_base64" />
                                     </div>
 
-                                    <div class="input-group" id="group-firma-piloto" style="grid-column: span 2;">
+                                    <div class="input-group full-row" id="group-firma-piloto">
                                         <label>Firma del piloto</label>
                                         <div class="card p-2">
                                             <canvas id="firma-piloto" style="width:100%;height:200px;border:1px solid #ddd;border-radius:12px;"></canvas>
