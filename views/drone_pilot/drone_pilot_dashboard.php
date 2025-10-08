@@ -202,6 +202,76 @@ $sesionDebug = [
                 max-height: 180px;
             }
         }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem
+        }
+
+        .card-solicitud {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: .5rem
+        }
+
+        .card-solicitud .chip {
+            display: inline-block;
+            border-radius: 999px;
+            padding: .125rem .5rem;
+            font-size: .75rem
+        }
+
+        .chip.ingresada {
+            background: #fde68a;
+            color: #92400e
+        }
+
+        .chip.visita_realizada {
+            background: #a7f3d0;
+            color: #065f46
+        }
+
+        .chip.cancelada {
+            background: #fecaca;
+            color: #991b1b
+        }
+
+        .chip.completada {
+            background: #bfdbfe;
+            color: #1e40af
+        }
+
+        .chip.aprobada_coop {
+            background: #d1fae5;
+            color: #064e3b
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: .5rem;
+            margin-top: .5rem
+        }
+
+        .text-box {
+            padding: .5rem;
+            border: 1px solid rgba(0, 0, 0, .08);
+            border-radius: 10px;
+            background: #fafafa;
+            white-space: pre-wrap;
+            word-break: break-word
+        }
+
+        @media (max-width:640px) {
+            .cards-grid {
+                grid-template-columns: 1fr
+            }
+        }
     </style>
 
 
@@ -263,25 +333,8 @@ $sesionDebug = [
                     <div class="flex items-center justify-between">
                         <h2>Mis solicitudes asignadas</h2>
                     </div>
-                    <div class="tabla-wrapper">
-                        <table class="data-table" id="tabla-solicitudes">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Productor</th>
-                                    <th>Fecha visita</th>
-                                    <th>Desde</th>
-                                    <th>Hasta</th>
-                                    <th>Superficie (ha)</th>
-                                    <th>Localidad</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody-solicitudes">
-                                <!-- Filas generadas por JS -->
-                            </tbody>
-                        </table>
-                    </div>
+                    <!-- 🔄 Cards en lugar de tabla -->
+                    <div id="cards-solicitudes" class="cards-grid"></div>
                 </div>
 
                 <!-- Modal Detalle de la solicitud -->
@@ -423,8 +476,6 @@ $sesionDebug = [
                                         <label>Subir fotos (hasta 10)</label>
                                         <input type="file" id="fotos" name="fotos[]" accept="image/jpeg,image/png,image/webp" multiple />
 
-                                        <!-- <small class="text-muted">Formatos: JPG, PNG, WEBP — máx. 10 fotos</small> -->
-
                                         <!-- Previsualización de imágenes EXISTENTES (DB) -->
                                         <div class="preview-title">Adjuntos existentes</div>
                                         <div id="preview-fotos-existentes" class="preview-grid"></div>
@@ -432,6 +483,72 @@ $sesionDebug = [
                                         <!-- Previsualización de NUEVAS imágenes seleccionadas -->
                                         <div class="preview-title">Nuevas imágenes seleccionadas</div>
                                         <div id="preview-fotos" class="preview-grid" aria-live="polite"></div>
+                                    </div>
+
+                                    <!-- 🧪 Receta editable del piloto -->
+                                    <div class="input-group" style="grid-column: span 4;">
+                                        <h4 class="title">Productos utilizados</h4>
+                                        <div class="tabla-wrapper">
+                                            <table class="data-table" id="tabla-receta">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Producto</th>
+                                                        <th>Principio activo</th>
+                                                        <th>Tiempo carencia</th>
+                                                        <th>Dosis</th>
+                                                        <th>Cant. usada</th>
+                                                        <th>Vencimiento</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tbody-receta">
+                                                    <tr>
+                                                        <td colspan="6">Cargando…</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- ➕ Agregar producto a la receta -->
+                                    <div class="card p-2" style="grid-column: span 4;">
+                                        <h4 class="title">Agregar producto</h4>
+                                        <div class="card-grid grid-4 gap-2">
+                                            <div class="input-group">
+                                                <label>Nombre (catálogo o manual)</label>
+                                                <div class="input-icon input-icon-name">
+                                                    <input list="cat-productos" id="add_nombre_producto" placeholder="Nombre del producto">
+                                                </div>
+                                            </div>
+                                            <div class="input-group">
+                                                <label>Principio activo</label>
+                                                <div class="input-icon input-icon-name">
+                                                    <input id="add_principio_activo" placeholder="…" />
+                                                </div>
+                                            </div>
+                                            <div class="input-group">
+                                                <label>Dosis</label>
+                                                <div class="input-icon input-icon-number">
+                                                    <input type="number" step="0.01" id="add_dosis" placeholder="…" />
+                                                </div>
+                                            </div>
+                                            <div class="input-group">
+                                                <label>Cant. usada</label>
+                                                <div class="input-icon input-icon-number">
+                                                    <input type="number" step="0.01" id="add_cant_usada" placeholder="…" />
+                                                </div>
+                                            </div>
+                                            <div class="input-group">
+                                                <label>Fecha vencimiento</label>
+                                                <div class="input-icon input-icon-calendar">
+                                                    <input type="date" id="add_fecha_vto" />
+                                                </div>
+                                            </div>
+                                            <div class="input-group" style="align-self:end;">
+                                                <button class="btn btn-aceptar" type="button" id="btn-add-producto">Agregar</button>
+                                            </div>
+                                        </div>
+                                        <!-- catálogo liviano por nombre -->
+                                        <datalist id="cat-productos"></datalist>
                                     </div>
 
 
@@ -729,6 +846,18 @@ $sesionDebug = [
 
                 renderMediaExistente(media);
                 toggleFirmaGroupsByMedia(media);
+
+                // Cargar receta editable
+                try {
+                    const resRec = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=receta_editable&id=${encodeURIComponent(id)}`, {
+                        credentials: 'same-origin'
+                    });
+                    const payloadRec = await resRec.json();
+                    buildTablaReceta(payloadRec.data || [], id);
+                } catch (e) {
+                    console.error('receta_editable', e);
+                }
+
             } catch (e) {
                 console.error(e);
                 // Si falla la carga, al menos abrimos el modal con los datos mínimos
@@ -843,6 +972,14 @@ $sesionDebug = [
                 <div class="input-icon input-icon-time"><input type="text" readonly value="${(s.hora_visita_desde || '-') + ' - ' + (s.hora_visita_hasta || '-')}"/></div>
             </div>
             <div class="input-group">
+    <label>Superficie (ha)</label>
+    <div class="input-icon input-icon-number"><input type="text" readonly value="${s.superficie_ha ?? '-'}"/></div>
+</div>
+<div class="input-group">
+    <label>Hay agua en el lugar</label>
+    <div class="input-icon input-icon-check"><input type="text" readonly value="${(s.agua_potable==='si'?'Sí':'No')}"/></div>
+</div>
+            <div class="input-group">
                 <label>Estado</label>
                 <div>${estadoChip}</div>
             </div>
@@ -904,10 +1041,14 @@ $sesionDebug = [
                 <label>Tamaño de gota</label>
                 <div class="input-icon input-icon-number"><input type="text" readonly value="${params.tamano_gota ?? '-'}"/></div>
             </div>
-            <div class="input-group" style="grid-column: span 4;">
-                <label>Observaciones</label>
-                <div class="input-icon input-icon-message"><input type="text" readonly value="${params.observaciones ?? '-'}"/></div>
-            </div>
+<div class="input-group" style="grid-column: span 4;">
+    <label>Observaciones</label>
+    <div class="text-box">${(s.observaciones ?? params.observaciones ?? '-')}</div>
+</div>
+<div class="input-group" style="grid-column: span 4;">
+    <label>Observaciones del agua</label>
+    <div class="text-box">${(params.observaciones_agua ?? '-')}</div>
+</div>
 
             ${motivoCancel}
         `;
@@ -1005,6 +1146,206 @@ $sesionDebug = [
                 showAlert?.('error', 'No se pudo guardar el reporte.');
             }
         });
+
+        // skeleton para cards
+        function cardsSkeleton(n = 3) {
+            const c = document.getElementById('cards-solicitudes');
+            c.innerHTML = Array.from({
+                length: n
+            }).map(() => `<div class="card-solicitud"><div class="skeleton h-4 w-full"></div><div class="skeleton h-4 w-3/4"></div></div>`).join('');
+        }
+        async function renderCards(items) {
+            const c = document.getElementById('cards-solicitudes');
+            if (!Array.isArray(items) || !items.length) {
+                c.innerHTML = `<div class="alert info"><span class="material-icons">info</span> No se encontraron solicitudes.</div>`;
+                return;
+            }
+            c.innerHTML = items.map(s => `
+    <div class="card-solicitud" data-id="${s.id}">
+      <div class="flex items-center justify-between">
+        <h4 style="margin:0">${s.productor_nombre ?? '-'}</h4>
+        <span class="chip ${s.estado ?? 'ingresada'}">${s.estado ?? 'ingresada'}</span>
+      </div>
+      <div><small>Pedido N° <b>${s.id}</b></small></div>
+      <div><b>Fecha visita:</b> ${s.fecha_visita ?? '-'}</div>
+      <div><b>Horario:</b> ${(s.hora_visita_desde ?? '-')+' - '+(s.hora_visita_hasta ?? '-')}</div>
+      <div><b>Localidad:</b> ${s.dir_localidad ?? '-'}</div>
+      <div><b>Superficie:</b> ${s.superficie_ha ?? '-'} ha</div>
+      <div><b>Hay agua en el lugar:</b> ${(s.agua_potable==='si'?'Sí':'No')}</div>
+      <div class="card-footer">
+        <button class="btn btn-secundario" data-action="ver" data-id="${s.id}">Detalle</button>
+        <button class="btn btn-aceptar" data-action="reporte" data-id="${s.id}">Generar reporte</button>
+      </div>
+    </div>`).join('');
+        }
+        // Cargar solicitudes usando cardsSkeleton()
+        async function cargarSolicitudes() {
+            try {
+                cardsSkeleton(3);
+                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
+                    credentials: 'same-origin'
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const payload = await res.json();
+                renderCards(payload.data || []);
+            } catch (e) {
+                console.error(e);
+                document.getElementById('cards-solicitudes').innerHTML = `<div class="alert danger"><span class="material-icons">error</span>Error al cargar</div>`;
+            }
+        }
+        // Delegación de clicks en cards
+        document.getElementById('cards-solicitudes')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-action]');
+            if (!btn) return;
+            const id = btn.dataset.id;
+            if (btn.dataset.action === 'ver') verDetalle(id);
+            if (btn.dataset.action === 'reporte') abrirReporte(id);
+        });
+
+        // Construye filas con inputs editables
+        function buildTablaReceta(rows, solicitudId) {
+            const tb = document.getElementById('tbody-receta');
+            if (!rows.length) {
+                tb.innerHTML = '<tr><td colspan="6">Sin productos</td></tr>';
+                return;
+            }
+            tb.innerHTML = rows.map(r => `
+    <tr data-id="${r.id}">
+      <td>${r.nombre_producto ?? '-'}</td>
+      <td>${r.principio_activo ?? '-'}</td>
+      <td>${r.tiempo_carencia ?? '-'}</td>
+      <td>${(r.dosis ?? '-') }</td>
+      <td><input type="number" step="0.01" class="inp-cant" value="${r.cant_prod_usado ?? ''}" style="width:110px"></td>
+      <td><input type="date" class="inp-fecha" value="${(r.fecha_vencimiento ?? '')}" style="width:150px"></td>
+    </tr>
+  `).join('');
+
+            // Guardar edición en el submit general del reporte
+            const form = document.getElementById('form-reporte');
+            form.dataset.sid = String(solicitudId);
+        }
+
+        // Al enviar el reporte, primero persistimos edición de receta
+        document.getElementById('form-reporte')?.addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            const sid = ev.currentTarget.dataset.sid;
+            if (sid) {
+                const rows = Array.from(document.querySelectorAll('#tbody-receta tr')).map(tr => {
+                    return {
+                        id: tr.dataset.id,
+                        cant_prod_usado: tr.querySelector('.inp-cant')?.value || null,
+                        fecha_vencimiento: tr.querySelector('.inp-fecha')?.value || null
+                    }
+                });
+                try {
+                    await fetch(`../../controllers/drone_pilot_dashboardController.php`, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        body: new URLSearchParams({
+                            action: 'actualizar_receta',
+                            solicitud_id: sid,
+                            recetas_json: JSON.stringify(rows)
+                        })
+                    });
+                } catch (e) {
+                    console.error('actualizar_receta', e);
+                }
+            }
+
+            // sigue el submit original (guardar_reporte)
+            try {
+                const fotos = document.getElementById('fotos');
+                if (fotos.files.length > 10) {
+                    showAlert?.('info', 'Máximo 10 fotos.');
+                    return;
+                }
+                const firmaCliente = signatureCliente && !signatureCliente.isEmpty() ? signatureCliente.toDataURL('image/png') : '';
+                const firmaPiloto = signaturePiloto && !signaturePiloto.isEmpty() ? signaturePiloto.toDataURL('image/png') : '';
+                document.getElementById('firma_cliente_base64').value = firmaCliente;
+                document.getElementById('firma_piloto_base64').value = firmaPiloto;
+
+                const formData = new FormData(ev.target);
+                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php`, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+                const payload = await res.json();
+                if (!res.ok || !payload.ok) throw new Error(payload.message || 'Error API');
+                showAlert?.('success', 'Reporte guardado correctamente.');
+                closeModalReporte();
+            } catch (err) {
+                console.error(err);
+                showAlert?.('error', 'No se pudo guardar el reporte.');
+            }
+        });
+
+        // Cargar catálogo liviano para datalist (por nombre)
+        async function cargarCatalogoProductos() {
+            try {
+                const dl = document.getElementById('cat-productos');
+                if (!dl) return;
+                // pequeño catálogo desde stock por nombre (solo una vez por vista)
+                // Reusar endpoint del mismo controller: simple listado por AJAX ad-hoc dentro del HTML para no crear archivo extra.
+                const res = await fetch(`../../controllers/generic_list.php?entity=dron_productos_stock&fields=id,nombre,principio_activo,tiempo_carencia`, {
+                    credentials: 'same-origin'
+                });
+                if (!res.ok) return;
+                const items = await res.json();
+                dl.innerHTML = (items || []).map(i => `<option value="${i.nombre}"></option>`).join('');
+            } catch (e) {
+                console.warn('catalogo productos', e);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', cargarCatalogoProductos);
+
+        // Alta de producto a la receta
+        document.getElementById('btn-add-producto')?.addEventListener('click', async () => {
+            const sid = document.getElementById('reporte_solicitud_id').value;
+            const nombre = document.getElementById('add_nombre_producto').value.trim();
+            const pa = document.getElementById('add_principio_activo').value.trim();
+            const dosis = document.getElementById('add_dosis').value || '';
+            const cant = document.getElementById('add_cant_usada').value || '';
+            const vto = document.getElementById('add_fecha_vto').value || '';
+            if (!nombre) {
+                showAlert?.('info', 'Escribe el nombre del producto.');
+                return;
+            }
+
+            const body = new URLSearchParams({
+                action: 'agregar_producto_receta',
+                solicitud_id: sid,
+                nombre_producto: nombre,
+                principio_activo: pa,
+                dosis,
+                cant_prod_usado: cant,
+                fecha_vencimiento: vto
+            });
+            const res = await fetch(`../../controllers/drone_pilot_dashboardController.php`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                body
+            });
+            const js = await res.json();
+            if (js?.ok) {
+                showAlert?.('success', 'Producto agregado.');
+                // Refrescar tabla
+                const resRec = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=receta_editable&id=${encodeURIComponent(sid)}`, {
+                    credentials: 'same-origin'
+                });
+                const payloadRec = await resRec.json();
+                buildTablaReceta(payloadRec.data || [], sid);
+                // limpiar inputs
+                ['add_nombre_producto', 'add_principio_activo', 'add_dosis', 'add_cant_usada', 'add_fecha_vto'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '';
+                });
+            } else {
+                showAlert?.('error', js?.message || 'No se pudo agregar.');
+            }
+        });
+    </script>
+
     </script>
 
 </body>

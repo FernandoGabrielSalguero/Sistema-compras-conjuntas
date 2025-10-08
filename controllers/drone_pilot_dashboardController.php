@@ -63,6 +63,54 @@ try {
         jsonResponse(false, null, 'Acción no soportada.', 400);
     }
 
+    if ($method === 'GET' && $action === 'receta_editable') {
+        $sid = (int)($_GET['id'] ?? 0);
+        if ($sid <= 0) jsonResponse(false, null, 'ID inválido', 400);
+
+        // Validar pertenencia
+        $sol = $model->getSolicitudDetalle($sid, (int)$usuarioId);
+        if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
+
+        $recetas = $model->getRecetaEditableBySolicitud($sid);
+        jsonResponse(true, $recetas);
+    }
+
+    if ($method === 'POST' && $action === 'actualizar_receta') {
+        $sid = (int)($_POST['solicitud_id'] ?? 0);
+        if ($sid <= 0) jsonResponse(false, null, 'Solicitud inválida.', 400);
+        // Validar pertenencia
+        $sol = $model->getSolicitudDetalle($sid, (int)$usuarioId);
+        if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
+
+        $rows = json_decode($_POST['recetas_json'] ?? '[]', true) ?: [];
+        $model->actualizarRecetaValores($rows, $_SESSION['nombre'] ?? 'piloto');
+        jsonResponse(true, null, 'Receta actualizada');
+    }
+
+    if ($method === 'POST' && $action === 'agregar_producto_receta') {
+        $sid = (int)($_POST['solicitud_id'] ?? 0);
+        if ($sid <= 0) jsonResponse(false, null, 'Solicitud inválida.', 400);
+
+        // Validar pertenencia
+        $sol = $model->getSolicitudDetalle($sid, (int)$usuarioId);
+        if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
+
+        $data = [
+            'solicitud_id'      => $sid,
+            'nombre_producto'   => trim($_POST['nombre_producto'] ?? ''),
+            'principio_activo'  => trim($_POST['principio_activo'] ?? ''),
+            'dosis'             => $_POST['dosis'] ?? null,
+            'cant_prod_usado'   => $_POST['cant_prod_usado'] ?? null,
+            'fecha_vencimiento' => $_POST['fecha_vencimiento'] ?? null,
+            'created_by'        => $_SESSION['nombre'] ?? 'piloto',
+        ];
+        if ($data['nombre_producto'] === '') jsonResponse(false, null, 'Falta nombre de producto', 400);
+
+        $model->agregarProductoAReceta($data);
+        jsonResponse(true, null, 'Producto agregado a la receta');
+    }
+
+
     if ($method === 'POST') {
         if (($action ?? '') === 'crear_reporte') {
             // Validación básica

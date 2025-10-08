@@ -13,14 +13,16 @@ class DronePilotDashboardModel
     public function getSolicitudesByPilotoId(int $pilotoId): array
     {
         $sql = "SELECT 
-                    s.id,
-                    s.productor_id_real,
-                    COALESCE(ui.nombre, u.usuario, s.productor_id_real) AS productor_nombre,
-                    s.superficie_ha,
-                    s.fecha_visita,
-                    s.hora_visita_desde,
-                    s.hora_visita_hasta,
-                    s.dir_localidad
+    s.id,
+    s.productor_id_real,
+    COALESCE(ui.nombre, u.usuario, s.productor_id_real) AS productor_nombre,
+    s.superficie_ha,
+    s.fecha_visita,
+    s.hora_visita_desde,
+    s.hora_visita_hasta,
+    s.dir_localidad,
+    s.estado,
+    s.agua_potable
                 FROM drones_solicitud s
                 LEFT JOIN usuarios u      ON u.id_real = s.productor_id_real
                 LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
@@ -36,19 +38,22 @@ class DronePilotDashboardModel
     public function getSolicitudDetalle(int $solicitudId, int $pilotoId): ?array
     {
         $sql = "SELECT 
-                    s.id,
-                    s.productor_id_real,
-                    s.fecha_visita,
-                    s.hora_visita_desde,
-                    s.hora_visita_hasta,
-                    s.dir_provincia,
-                    s.dir_localidad,
-                    s.dir_calle,
-                    s.dir_numero,
-                    s.ubicacion_lat,
-                    s.ubicacion_lng,
-                    s.estado,
-                    s.motivo_cancelacion
+    s.id,
+    s.productor_id_real,
+    s.superficie_ha,
+    s.agua_potable,
+    s.observaciones,
+    s.fecha_visita,
+    s.hora_visita_desde,
+    s.hora_visita_hasta,
+    s.dir_provincia,
+    s.dir_localidad,
+    s.dir_calle,
+    s.dir_numero,
+    s.ubicacion_lat,
+    s.ubicacion_lng,
+    s.estado,
+    s.motivo_cancelacion
                 FROM drones_solicitud s
                 WHERE s.id = :id AND s.piloto_id = :piloto_id
                 LIMIT 1";
@@ -82,7 +87,7 @@ class DronePilotDashboardModel
     /** Parámetros de vuelo */
     public function getParametrosBySolicitud(int $solicitudId): ?array
     {
-        $sql = "SELECT volumen_ha, velocidad_vuelo, alto_vuelo, ancho_pasada, tamano_gota, observaciones
+        $sql = "SELECT volumen_ha, velocidad_vuelo, alto_vuelo, ancho_pasada, tamano_gota, observaciones, observaciones_agua
                 FROM drones_solicitud_parametros
                 WHERE solicitud_id = :sid
                 LIMIT 1";
@@ -202,5 +207,103 @@ class DronePilotDashboardModel
         $sql = "UPDATE drones_solicitud SET estado = 'visita_realizada' WHERE id = :id";
         $st  = $this->pdo->prepare($sql);
         $st->execute([':id' => $solicitudId]);
+    }
+
+    /** Receta editable unificando info de stock (tiempo_carencia) según nueva BD */
+    public function getRecetaEditableBySolicitud(int $solicitudId): array
+    {
+        $sql = "SELECT 
+                r.id,
+                si.id AS solicitud_item_id,
+                COALESCE(si.nombre_producto, dps.nombre) AS nombre_producto,
+                COALESCE(r.principio_activo, dps.principio_activo) AS principio_activo,
+                dps.tiempo_carencia,
+                r.dosis,
+                r.cant_prod_usado,
+                r.fecha_vencimiento
+            FROM drones_solicitud_item_receta r
+            INNER JOIN drones_solicitud_item si ON si.id = r.solicitud_item_id
+            LEFT JOIN dron_productos_stock dps ON dps.id = si.producto_id
+            WHERE si.solicitud_id = :sid
+            ORDER BY r.orden_mezcla ASC, r.id ASC";
+        $st = $this->pdo->prepare($sql);
+        $st->execute([':sid' => $solicitudId]);
+        return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    /** Actualiza cant_prod_usado y fecha_vencimiento de múltiples filas */
+    public function actualizarRecetaValores(array $rows, string $actor = null): void
+    {
+        if (!$rows) return;
+        $this->pdo->beginTransaction();
+        $sql = "UPDATE drones_solicitud_item_receta 
+            SET cant_prod_usado = :cant, fecha_vencimiento = :fec, updated_by = :actor 
+            WHERE id = :id";
+        $st = $this->pdo->prepare($sql);
+        foreach ($rows as $r) {
+            $st->execute([
+                ':cant'  => $r['cant_prod_usado'] ?? null,
+                ':fec'   => $r['fecha_vencimiento'] ?? null,
+                ':actor' => $actor,
+                ':id'    => $r['id'] ?? 0
+            ]);
+        }
+        $this->pdo->commit();
+    }
+
+    /** Busca un producto de stock por nombre exacto (para vincular producto_id si existe) */
+    private function findProductoStockIdByNombre(string $nombre): ?int
+    {
+        $st = $this->pdo->prepare("SELECT id FROM dron_productos_stock WHERE nombre = :n LIMIT 1");
+        $st->execute([':n' => $nombre]);
+        $id = $st->fetchColumn();
+        return $id ? (int)$id : null;
+    }
+
+    /** Toma cualquier patología existente en la solicitud como fallback (para respetar FK) */
+    private function pickPatologiaIdParaSolicitud(int $solicitudId): ?int
+    {
+        $st = $this->pdo->prepare("SELECT patologia_id FROM drones_solicitud_item WHERE solicitud_id = :sid LIMIT 1");
+        $st->execute([':sid' => $solicitudId]);
+        $pid = $st->fetchColumn();
+        return $pid ? (int)$pid : null;
+    }
+
+    /** Agrega un producto (ítem + receta) a la solicitud (nuevo flujo) */
+    public function agregarProductoAReceta(array $data): void
+    {
+        $this->pdo->beginTransaction();
+
+        $productoId = $this->findProductoStockIdByNombre($data['nombre_producto']);
+        $patologiaId = $this->pickPatologiaIdParaSolicitud((int)$data['solicitud_id']) ?? 1; // ← usa una existente o 1 (ej. "Otros")
+
+        // Crear ítem
+        $sqlItem = "INSERT INTO drones_solicitud_item
+        (solicitud_id, patologia_id, fuente, producto_id, costo_hectarea_snapshot, total_producto_snapshot, nombre_producto, created_at)
+        VALUES (:sid, :pat, 'productor', :prod_id, NULL, NULL, :nom, NOW())";
+        $stI = $this->pdo->prepare($sqlItem);
+        $stI->execute([
+            ':sid'     => $data['solicitud_id'],
+            ':pat'     => $patologiaId,
+            ':prod_id' => $productoId,
+            ':nom'     => $data['nombre_producto']
+        ]);
+        $solicitudItemId = (int)$this->pdo->lastInsertId();
+
+        // Crear receta
+        $sqlRec = "INSERT INTO drones_solicitud_item_receta
+        (solicitud_item_id, principio_activo, dosis, cant_prod_usado, fecha_vencimiento, unidad, orden_mezcla, notas, created_by, created_at)
+        VALUES (:siid, :pa, :dosis, :cant, :fec, NULL, NULL, NULL, :actor, NOW())";
+        $stR = $this->pdo->prepare($sqlRec);
+        $stR->execute([
+            ':siid'  => $solicitudItemId,
+            ':pa'    => $data['principio_activo'] ?: null,
+            ':dosis' => $data['dosis'] ?? null,
+            ':cant'  => $data['cant_prod_usado'] ?? null,
+            ':fec'   => $data['fecha_vencimiento'] ?? null,
+            ':actor' => $data['created_by'] ?? null
+        ]);
+
+        $this->pdo->commit();
     }
 }
