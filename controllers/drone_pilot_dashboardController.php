@@ -110,6 +110,17 @@ try {
         jsonResponse(true, null, 'Producto agregado a la receta');
     }
 
+    if ($action === 'catalogo_productos') {
+        // Catálogo liviano para el datalist (solo los campos necesarios)
+        $sql = "SELECT id, nombre, principio_activo, tiempo_carencia
+                    FROM dron_productos_stock
+                    WHERE activo = 'si'
+                    ORDER BY nombre ASC
+                    LIMIT 500";
+        $st = $pdo->query($sql);
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        jsonResponse(true, $rows);
+    }
 
     if ($method === 'POST') {
         if (($action ?? '') === 'crear_reporte') {

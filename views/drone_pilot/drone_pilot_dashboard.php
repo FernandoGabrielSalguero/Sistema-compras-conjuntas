@@ -1285,13 +1285,12 @@ $sesionDebug = [
             try {
                 const dl = document.getElementById('cat-productos');
                 if (!dl) return;
-                // pequeño catálogo desde stock por nombre (solo una vez por vista)
-                // Reusar endpoint del mismo controller: simple listado por AJAX ad-hoc dentro del HTML para no crear archivo extra.
-                const res = await fetch(`../../controllers/generic_list.php?entity=dron_productos_stock&fields=id,nombre,principio_activo,tiempo_carencia`, {
+                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=catalogo_productos`, {
                     credentials: 'same-origin'
                 });
                 if (!res.ok) return;
-                const items = await res.json();
+                const js = await res.json();
+                const items = js.ok ? js.data : [];
                 dl.innerHTML = (items || []).map(i => `<option value="${i.nombre}"></option>`).join('');
             } catch (e) {
                 console.warn('catalogo productos', e);
