@@ -980,12 +980,6 @@ $sesionDebug = [
     <div class="input-icon input-icon-check"><input type="text" readonly value="${(s.agua_potable==='si'?'Sí':'No')}"/></div>
 </div>
             <div class="input-group">
-                <label>Estado</label>
-                <div>${estadoChip}</div>
-            </div>
-            <div class="input-group"><label>&nbsp;</label></div>
-
-            <div class="input-group">
                 <label>Provincia</label>
                 <div class="input-icon input-icon-location"><input type="text" readonly value="${s.dir_provincia ?? '-'}"/></div>
             </div>
@@ -1043,7 +1037,7 @@ $sesionDebug = [
             </div>
 <div class="input-group" style="grid-column: span 4;">
     <label>Observaciones</label>
-    <div class="text-box">${(s.observaciones ?? params.observaciones ?? '-')}</div>
+    <div class="text-box">${(params.observaciones ?? s.observaciones ?? '-')}</div>
 </div>
 <div class="input-group" style="grid-column: span 4;">
     <label>Observaciones del agua</label>
