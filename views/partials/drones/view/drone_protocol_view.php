@@ -554,58 +554,70 @@ declare(strict_types=1);
           useCORS: true,
           scrollX: 0,
           scrollY: -window.scrollY,
+          
           onclone: (clonedDoc) => {
-            // Mostrar contenido
-            const cont = clonedDoc.querySelector('#protocolo-contenido');
-            if (cont) cont.hidden = false;
+  // Mostrar contenido
+  const cont = clonedDoc.querySelector('#protocolo-contenido');
+  if (cont) cont.hidden = false;
 
-            // Compactar el layout del clon para que la imagen no tenga “aire”
-            const card = clonedDoc.querySelector('.protocolo-card');
-            if (card) {
-              card.style.boxShadow = 'none';
-              card.style.border = 'none';
-              card.style.borderRadius = '0';
-              card.style.margin = '0';
-              card.style.padding = '12px';
-            }
-            const content = clonedDoc.querySelector('.content');
-            if (content) {
-              content.style.padding = '0';
-              content.style.margin = '0';
-            }
-            const hdr = clonedDoc.querySelector('.protocolo-header');
-            if (hdr) hdr.style.minHeight = '72px';
+  // Compactar el layout del clon para que la imagen no tenga “aire”
+  const card = clonedDoc.querySelector('.protocolo-card');
+  if (card) {
+    card.style.boxShadow = 'none';
+    card.style.border = 'none';
+    card.style.borderRadius = '0';
+    card.style.margin = '0';
+    card.style.padding = '12px';
+  }
+  const content = clonedDoc.querySelector('.content');
+  if (content) {
+    content.style.padding = '0';
+    content.style.margin = '0';
+  }
+  const hdr = clonedDoc.querySelector('.protocolo-header');
+  if (hdr) hdr.style.minHeight = '72px';
 
-            // ====== Ajustes específicos para el PDF ======
-            // 1) Inyectar estilos para textareas y evitar cortes
-            const style = clonedDoc.createElement('style');
-            style.textContent = `
-    textarea[readonly]{
-      width:100%;
-      min-height:96px;   /* más alto en el PDF */
-      resize:none;
-      overflow:visible;  /* no esconder contenido */
-      white-space:pre-wrap;
-      line-height:1.35;
-    }
-    /* Forzar que las celdas no colapsen el alto por líneas largas */
+  // ====== AJUSTES PDF ======
+
+  // (A) Ocultar acciones (botón Descargar) sólo en el PDF
+  const footer = clonedDoc.querySelector('.protocolo-footer');
+  if (footer) footer.style.display = 'none';
+  const btn = clonedDoc.getElementById('btn-descargar');
+  if (btn) btn.style.display = 'none';
+
+  // (B) Reemplazar textareas por bloques para que html2canvas no recorte contenido
+  function textareaToBlock(id) {
+    const ta = clonedDoc.getElementById(id);
+    if (!ta) return;
+    const div = clonedDoc.createElement('div');
+    // Replica visual simple del input-group del framework
+    div.setAttribute('data-export-from', id);
+    div.style.padding = '10px';
+    div.style.border = '1px solid #e5e7eb';
+    div.style.borderRadius = '8px';
+    div.style.background = '#f8fafc';
+    div.style.whiteSpace = 'pre-wrap';
+    div.style.lineHeight = '1.35';
+    div.style.minHeight = '96px';
+    div.textContent = ta.value || '';
+    // Reemplazo en el mismo lugar
+    ta.parentNode.replaceChild(div, ta);
+  }
+  textareaToBlock('pp_obs');
+  textareaToBlock('pp_obs_agua');
+
+  // (C) Asegurar que la grilla permita crecer verticalmente sin recortes
+  const style = clonedDoc.createElement('style');
+  style.textContent = `
     .data-table td, .data-table th { vertical-align: top; }
+    .grid-3, .grid-2, .grid-4 { align-items: start; }
   `;
-            clonedDoc.head.appendChild(style);
+  clonedDoc.head.appendChild(style);
 
-            // 2) Auto–resize de textareas en el CLON (lo del DOM real no afecta al clon)
-            const autoGrow = (ta) => {
-              if (!ta) return;
-              ta.style.height = 'auto';
-              ta.style.height = ta.scrollHeight + 'px';
-            };
-            autoGrow(clonedDoc.getElementById('pp_obs'));
-            autoGrow(clonedDoc.getElementById('pp_obs_agua'));
+  // (D) No hacemos nada con 'pp_hectareas' salvo asegurar presencia
+  clonedDoc.getElementById('pp_hectareas');
+}
 
-            // 3) Confirmar presencia de nuevos campos (solo por seguridad visual)
-            //    No hace nada si no existen; si existen, no se tocan estilos extra.
-            clonedDoc.getElementById('pp_hectareas'); // Hectareas a pulverizar
-          }
 
         });
 
