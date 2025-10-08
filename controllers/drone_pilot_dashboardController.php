@@ -7,14 +7,10 @@ require_once __DIR__ . '/../middleware/authMiddleware.php';
 require_once __DIR__ . '/../models/drone_pilot_dashboardModel.php';
 
 header('Content-Type: application/json; charset=utf-8');
-
 checkAccess('piloto_drone');
 
 $usuarioId = $_SESSION['usuario_id'] ?? ($_SESSION['id'] ?? null);
-
-$model  = new DronePilotDashboardModel($pdo);
-$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-$action = $_GET['action'] ?? $_POST['action'] ?? null;
+if (!$usuarioId) jsonResponse(false, null, 'Sesión inválida: faltan credenciales (usuario_id).', 401);
 
 function jsonResponse($ok, $data = null, $message = null, $code = 200)
 {
@@ -23,12 +19,19 @@ function jsonResponse($ok, $data = null, $message = null, $code = 200)
     exit;
 }
 
-if (!$usuarioId) jsonResponse(false, null, 'Sesión inválida: faltan credenciales (usuario_id).', 401);
+$model  = new DronePilotDashboardModel($pdo);
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$action = $_GET['action'] ?? $_POST['action'] ?? null;
 
 try {
+
+    /* ------------------- GET ------------------- */
     if ($method === 'GET') {
+
         if ($action === 'mis_solicitudes') {
-            if (($_SESSION['rol'] ?? null) !== 'piloto_drone') jsonResponse(false, null, 'Acceso denegado para este recurso.', 403);
+            if (($_SESSION['rol'] ?? null) !== 'piloto_drone') {
+                jsonResponse(false, null, 'Acceso denegado para este recurso.', 403);
+            }
             $solicitudes = $model->getSolicitudesByPilotoId((int)$usuarioId);
             jsonResponse(true, $solicitudes);
         }
@@ -44,91 +47,76 @@ try {
         }
 
         if ($action === 'reporte_solicitud') {
-            $id = (int)($_GET['id'] ?? 0); // id de la solicitud
+            $id = (int)($_GET['id'] ?? 0);
             if ($id <= 0) jsonResponse(false, null, 'ID inválido.', 400);
-
-            // Validar pertenencia de la solicitud al piloto
             $sol = $model->getSolicitudDetalle($id, (int)$usuarioId);
             if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
-
             $rep = $model->getReporteBySolicitud($id);
-            $media = [];
-            if ($rep) {
-                $media = $model->getMediaByReporte((int)$rep['id']);
-            }
-
+            $media = $rep ? $model->getMediaByReporte((int)$rep['id']) : [];
             jsonResponse(true, ['reporte' => $rep, 'media' => $media]);
+        }
+
+        if ($action === 'receta_editable') {
+            $sid = (int)($_GET['id'] ?? 0);
+            if ($sid <= 0) jsonResponse(false, null, 'ID inválido', 400);
+            $sol = $model->getSolicitudDetalle($sid, (int)$usuarioId);
+            if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
+            $recetas = $model->getRecetaEditableBySolicitud($sid);
+            jsonResponse(true, $recetas);
+        }
+
+        if ($action === 'catalogo_productos') {
+            $sql = "SELECT id, nombre, principio_activo, tiempo_carencia
+                    FROM dron_productos_stock
+                    WHERE activo = 'si'
+                    ORDER BY nombre ASC
+                    LIMIT 500";
+            $st = $pdo->query($sql);
+            $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+            jsonResponse(true, $rows);
         }
 
         jsonResponse(false, null, 'Acción no soportada.', 400);
     }
 
-    if ($method === 'GET' && $action === 'receta_editable') {
-        $sid = (int)($_GET['id'] ?? 0);
-        if ($sid <= 0) jsonResponse(false, null, 'ID inválido', 400);
-
-        // Validar pertenencia
-        $sol = $model->getSolicitudDetalle($sid, (int)$usuarioId);
-        if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
-
-        $recetas = $model->getRecetaEditableBySolicitud($sid);
-        jsonResponse(true, $recetas);
-    }
-
-    if ($method === 'POST' && $action === 'actualizar_receta') {
-        $sid = (int)($_POST['solicitud_id'] ?? 0);
-        if ($sid <= 0) jsonResponse(false, null, 'Solicitud inválida.', 400);
-        // Validar pertenencia
-        $sol = $model->getSolicitudDetalle($sid, (int)$usuarioId);
-        if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
-
-        $rows = json_decode($_POST['recetas_json'] ?? '[]', true) ?: [];
-        $model->actualizarRecetaValores($rows, $_SESSION['nombre'] ?? 'piloto');
-        jsonResponse(true, null, 'Receta actualizada');
-    }
-
-    if ($method === 'POST' && $action === 'agregar_producto_receta') {
-        $sid = (int)($_POST['solicitud_id'] ?? 0);
-        if ($sid <= 0) jsonResponse(false, null, 'Solicitud inválida.', 400);
-
-        // Validar pertenencia
-        $sol = $model->getSolicitudDetalle($sid, (int)$usuarioId);
-        if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
-
-        $data = [
-            'solicitud_id'      => $sid,
-            'nombre_producto'   => trim($_POST['nombre_producto'] ?? ''),
-            'principio_activo'  => trim($_POST['principio_activo'] ?? ''),
-            'dosis'             => $_POST['dosis'] ?? null,
-            'cant_prod_usado'   => $_POST['cant_prod_usado'] ?? null,
-            'fecha_vencimiento' => $_POST['fecha_vencimiento'] ?? null,
-            'created_by'        => $_SESSION['nombre'] ?? 'piloto',
-        ];
-        if ($data['nombre_producto'] === '') jsonResponse(false, null, 'Falta nombre de producto', 400);
-
-        $model->agregarProductoAReceta($data);
-        jsonResponse(true, null, 'Producto agregado a la receta');
-    }
-
-    if ($action === 'catalogo_productos') {
-        // Catálogo liviano para el datalist (solo los campos necesarios)
-        $sql = "SELECT id, nombre, principio_activo, tiempo_carencia
-                    FROM dron_productos_stock
-                    WHERE activo = 'si'
-                    ORDER BY nombre ASC
-                    LIMIT 500";
-        $st = $pdo->query($sql);
-        $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
-        jsonResponse(true, $rows);
-    }
-
+    /* ------------------- POST ------------------- */
     if ($method === 'POST') {
-        if (($action ?? '') === 'crear_reporte') {
-            // Validación básica
+
+        if ($action === 'actualizar_receta') {
             $sid = (int)($_POST['solicitud_id'] ?? 0);
             if ($sid <= 0) jsonResponse(false, null, 'Solicitud inválida.', 400);
+            $sol = $model->getSolicitudDetalle($sid, (int)$usuarioId);
+            if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
 
-            // Asegurar que la solicitud pertenece al piloto
+            $rows = json_decode($_POST['recetas_json'] ?? '[]', true) ?: [];
+            $model->actualizarRecetaValores($rows, $_SESSION['nombre'] ?? 'piloto');
+            jsonResponse(true, null, 'Receta actualizada');
+        }
+
+        if ($action === 'agregar_producto_receta') {
+            $sid = (int)($_POST['solicitud_id'] ?? 0);
+            if ($sid <= 0) jsonResponse(false, null, 'Solicitud inválida.', 400);
+            $sol = $model->getSolicitudDetalle($sid, (int)$usuarioId);
+            if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
+
+            $data = [
+                'solicitud_id'      => $sid,
+                'nombre_producto'   => trim($_POST['nombre_producto'] ?? ''),
+                'principio_activo'  => trim($_POST['principio_activo'] ?? ''),
+                'dosis'             => $_POST['dosis'] ?? null,
+                'cant_prod_usado'   => $_POST['cant_prod_usado'] ?? null,
+                'fecha_vencimiento' => $_POST['fecha_vencimiento'] ?? null,
+                'created_by'        => $_SESSION['nombre'] ?? 'piloto',
+            ];
+            if ($data['nombre_producto'] === '') jsonResponse(false, null, 'Falta nombre de producto', 400);
+
+            $model->agregarProductoAReceta($data);
+            jsonResponse(true, null, 'Producto agregado a la receta');
+        }
+
+        if ($action === 'crear_reporte') {
+            $sid = (int)($_POST['solicitud_id'] ?? 0);
+            if ($sid <= 0) jsonResponse(false, null, 'Solicitud inválida.', 400);
             $sol = $model->getSolicitudDetalle($sid, (int)$usuarioId);
             if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
 
@@ -154,18 +142,15 @@ try {
             $pdo->beginTransaction();
             $reporteId = $model->crearReporte($payload);
 
-            // Subir fotos
             $baseDir = __DIR__ . '/../uploads/ReporteDrones/' . $sid;
             if (!is_dir($baseDir)) @mkdir($baseDir, 0775, true);
 
             if (!empty($_FILES['fotos']['name'][0])) {
                 $count = min(count($_FILES['fotos']['name']), 10);
                 for ($i = 0; $i < $count; $i++) {
-                    $name = $_FILES['fotos']['name'][$i];
                     $tmp  = $_FILES['fotos']['tmp_name'][$i];
                     $err  = $_FILES['fotos']['error'][$i];
                     if ($err !== UPLOAD_ERR_OK) continue;
-
                     $mime = mime_content_type($tmp);
                     if (!in_array($mime, ['image/jpeg', 'image/png', 'image/webp'])) continue;
 
@@ -184,41 +169,30 @@ try {
                 }
             }
 
-            // Firma cliente base64
-            $firmaCliente64 = $_POST['firma_cliente_base64'] ?? '';
-            if ($firmaCliente64 && str_starts_with($firmaCliente64, 'data:image/png;base64,')) {
-                $data = base64_decode(substr($firmaCliente64, strlen('data:image/png;base64,')));
-                $fname = 'firma_cliente_' . $reporteId . '_' . bin2hex(random_bytes(4)) . '.png';
-                $dest  = $baseDir . '/' . $fname;
-                file_put_contents($dest, $data);
-                $rutaPublica = 'uploads/ReporteDrones/' . $sid . '/' . $fname;
-                $model->guardarMedia($reporteId, 'firma_cliente', $rutaPublica);
+            // Firmas
+            foreach (['cliente', 'piloto'] as $tipo) {
+                $campo = "firma_{$tipo}_base64";
+                $base64 = $_POST[$campo] ?? '';
+                if ($base64 && str_starts_with($base64, 'data:image/png;base64,')) {
+                    $data = base64_decode(substr($base64, strlen('data:image/png;base64,')));
+                    $fname = "firma_{$tipo}_" . $reporteId . '_' . bin2hex(random_bytes(4)) . '.png';
+                    $dest  = $baseDir . '/' . $fname;
+                    file_put_contents($dest, $data);
+                    $rutaPublica = 'uploads/ReporteDrones/' . $sid . '/' . $fname;
+                    $model->guardarMedia($reporteId, "firma_{$tipo}", $rutaPublica);
+                }
             }
 
-            // Firma piloto base64
-            $firmaPiloto64 = $_POST['firma_piloto_base64'] ?? '';
-            if ($firmaPiloto64 && str_starts_with($firmaPiloto64, 'data:image/png;base64,')) {
-                $data = base64_decode(substr($firmaPiloto64, strlen('data:image/png;base64,')));
-                $fname = 'firma_piloto_' . $reporteId . '_' . bin2hex(random_bytes(4)) . '.png';
-                $dest  = $baseDir . '/' . $fname;
-                file_put_contents($dest, $data);
-                $rutaPublica = 'uploads/ReporteDrones/' . $sid . '/' . $fname;
-                $model->guardarMedia($reporteId, 'firma_piloto', $rutaPublica);
-            }
-
-
-            // Cambiar estado de la solicitud a visita_realizada
             $model->marcarVisitaRealizada($sid);
-
             $pdo->commit();
             jsonResponse(true, ['reporte_id' => $reporteId], 'Reporte creado');
         }
-
 
         jsonResponse(false, null, 'Acción no soportada.', 400);
     }
 
     jsonResponse(false, null, 'Método HTTP no permitido.', 405);
+
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) $pdo->rollBack();
     jsonResponse(false, null, 'Error interno: ' . $e->getMessage(), 500);

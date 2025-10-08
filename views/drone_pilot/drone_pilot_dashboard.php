@@ -801,8 +801,8 @@ $sesionDebug = [
             document.getElementById('reporte_solicitud_id').value = id;
 
             // Prefill básico desde grilla/sesión
-            const fila = $tbody.querySelector(`tr[data-id="${id}"]`);
-            const nomCliente = fila?.children?.[1]?.textContent?.trim() || '';
+            const card = document.querySelector(`.card-solicitud[data-id="${id}"]`);
+            const nomCliente = card?.querySelector('h4')?.textContent?.trim() || '';
             setIfExists('nom_cliente', nomCliente);
             setIfExists('nom_piloto', <?php echo json_encode($nombre); ?>);
 
@@ -1297,6 +1297,12 @@ $sesionDebug = [
             }
         }
         document.addEventListener('DOMContentLoaded', cargarCatalogoProductos);
+
+        // Fallback por si no existe aún la tarjeta (evita TypeError)
+        function getNombreClienteFromUI(id) {
+            const card = document.querySelector(`.card-solicitud[data-id="${id}"]`);
+            return card?.querySelector('h4')?.textContent?.trim() || '';
+        }
 
         // Alta de producto a la receta
         document.getElementById('btn-add-producto')?.addEventListener('click', async () => {
