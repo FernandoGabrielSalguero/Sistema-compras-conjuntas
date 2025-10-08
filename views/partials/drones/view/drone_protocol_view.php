@@ -554,69 +554,69 @@ declare(strict_types=1);
           useCORS: true,
           scrollX: 0,
           scrollY: -window.scrollY,
-          
+
           onclone: (clonedDoc) => {
-  // Mostrar contenido
-  const cont = clonedDoc.querySelector('#protocolo-contenido');
-  if (cont) cont.hidden = false;
+            // Mostrar contenido
+            const cont = clonedDoc.querySelector('#protocolo-contenido');
+            if (cont) cont.hidden = false;
 
-  // Compactar el layout del clon para que la imagen no tenga “aire”
-  const card = clonedDoc.querySelector('.protocolo-card');
-  if (card) {
-    card.style.boxShadow = 'none';
-    card.style.border = 'none';
-    card.style.borderRadius = '0';
-    card.style.margin = '0';
-    card.style.padding = '12px';
-  }
-  const content = clonedDoc.querySelector('.content');
-  if (content) {
-    content.style.padding = '0';
-    content.style.margin = '0';
-  }
-  const hdr = clonedDoc.querySelector('.protocolo-header');
-  if (hdr) hdr.style.minHeight = '72px';
+            // Compactar el layout del clon para que la imagen no tenga “aire”
+            const card = clonedDoc.querySelector('.protocolo-card');
+            if (card) {
+              card.style.boxShadow = 'none';
+              card.style.border = 'none';
+              card.style.borderRadius = '0';
+              card.style.margin = '0';
+              card.style.padding = '12px';
+            }
+            const content = clonedDoc.querySelector('.content');
+            if (content) {
+              content.style.padding = '0';
+              content.style.margin = '0';
+            }
+            const hdr = clonedDoc.querySelector('.protocolo-header');
+            if (hdr) hdr.style.minHeight = '72px';
 
-  // ====== AJUSTES PDF ======
+            // ====== AJUSTES PDF ======
 
-  // (A) Ocultar acciones (botón Descargar) sólo en el PDF
-  const footer = clonedDoc.querySelector('.protocolo-footer');
-  if (footer) footer.style.display = 'none';
-  const btn = clonedDoc.getElementById('btn-descargar');
-  if (btn) btn.style.display = 'none';
+            // (A) Ocultar acciones (botón Descargar) sólo en el PDF
+            const footer = clonedDoc.querySelector('.protocolo-footer');
+            if (footer) footer.style.display = 'none';
+            const btn = clonedDoc.getElementById('btn-descargar');
+            if (btn) btn.style.display = 'none';
 
-  // (B) Reemplazar textareas por bloques para que html2canvas no recorte contenido
-  function textareaToBlock(id) {
-    const ta = clonedDoc.getElementById(id);
-    if (!ta) return;
-    const div = clonedDoc.createElement('div');
-    // Replica visual simple del input-group del framework
-    div.setAttribute('data-export-from', id);
-    div.style.padding = '10px';
-    div.style.border = '1px solid #e5e7eb';
-    div.style.borderRadius = '8px';
-    div.style.background = '#f8fafc';
-    div.style.whiteSpace = 'pre-wrap';
-    div.style.lineHeight = '1.35';
-    div.style.minHeight = '96px';
-    div.textContent = ta.value || '';
-    // Reemplazo en el mismo lugar
-    ta.parentNode.replaceChild(div, ta);
-  }
-  textareaToBlock('pp_obs');
-  textareaToBlock('pp_obs_agua');
+            // (B) Reemplazar textareas por bloques para que html2canvas no recorte contenido
+            function textareaToBlock(id) {
+              const ta = clonedDoc.getElementById(id);
+              if (!ta) return;
+              const div = clonedDoc.createElement('div');
+              // Replica visual simple del input-group del framework
+              div.setAttribute('data-export-from', id);
+              div.style.padding = '10px';
+              div.style.border = '1px solid #e5e7eb';
+              div.style.borderRadius = '8px';
+              div.style.background = '#f8fafc';
+              div.style.whiteSpace = 'pre-wrap';
+              div.style.lineHeight = '1.35';
+              div.style.minHeight = '96px';
+              div.textContent = ta.value || '';
+              // Reemplazo en el mismo lugar
+              ta.parentNode.replaceChild(div, ta);
+            }
+            textareaToBlock('pp_obs');
+            textareaToBlock('pp_obs_agua');
 
-  // (C) Asegurar que la grilla permita crecer verticalmente sin recortes
-  const style = clonedDoc.createElement('style');
-  style.textContent = `
+            // (C) Asegurar que la grilla permita crecer verticalmente sin recortes
+            const style = clonedDoc.createElement('style');
+            style.textContent = `
     .data-table td, .data-table th { vertical-align: top; }
     .grid-3, .grid-2, .grid-4 { align-items: start; }
   `;
-  clonedDoc.head.appendChild(style);
+            clonedDoc.head.appendChild(style);
 
-  // (D) No hacemos nada con 'pp_hectareas' salvo asegurar presencia
-  clonedDoc.getElementById('pp_hectareas');
-}
+            // (D) No hacemos nada con 'pp_hectareas' salvo asegurar presencia
+            clonedDoc.getElementById('pp_hectareas');
+          }
 
 
         });
@@ -656,7 +656,38 @@ declare(strict_types=1);
         const x = (pageW - w) / 2;
         const y = margin;
 
-        pdf.addImage(imgData, 'JPEG', x, y, w, h, '', 'FAST');
+        // Si entra en una página, normal:
+        if (h <= maxH) {
+          pdf.addImage(imgData, 'JPEG', x, y, w, h, '', 'FAST');
+        } else {
+          // Slicing vertical del canvas en varias páginas
+          const pageCanvas = document.createElement('canvas');
+          const pageCtx = pageCanvas.getContext('2d');
+
+          // Escala px->mm usada para ajustar el alto de cada porción
+          const scale = w / (canvas.width * 0.264583); // (mm renderizados / mm reales del canvas)
+          const pagePixelHeight = Math.floor((maxH / scale) / 0.264583); // px por página visibles
+
+          let sY = 0;
+          while (sY < canvas.height) {
+            const sliceH = Math.min(pagePixelHeight, canvas.height - sY);
+            pageCanvas.width = canvas.width;
+            pageCanvas.height = sliceH;
+
+            pageCtx.clearRect(0, 0, pageCanvas.width, pageCanvas.height);
+            pageCtx.drawImage(canvas, 0, sY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+
+            const sliceData = pageCanvas.toDataURL('image/jpeg', 0.98);
+            const sliceHmm = sliceH * 0.264583; // px -> mm
+            const sliceHmmScaled = sliceHmm * scale; // mm en el PDF con la misma escala
+
+            // Nueva página salvo en la primera iteración
+            if (sY > 0) pdf.addPage();
+
+            pdf.addImage(sliceData, 'JPEG', x, y, w, sliceHmmScaled, '', 'FAST');
+            sY += sliceH;
+          }
+        }
 
         // Tomamos productor (usuario) y fecha de la visita desde inputs
         const productor = (document.getElementById('pv_usuario')?.value || 'productor').trim();
