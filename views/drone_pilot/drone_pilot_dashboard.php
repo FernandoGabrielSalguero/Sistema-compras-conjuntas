@@ -57,7 +57,7 @@ $sesionDebug = [
    Modales responsivos SVE
    ========================= */
 
-/* Overlay: centrado, con paddings seguros y scroll si el contenido supera la altura */
+/* Overlay del modal */
 .modal.modal-80{
   display:flex;
   align-items:center;
@@ -68,20 +68,19 @@ $sesionDebug = [
     var(--modal-pad)
     calc(var(--modal-pad) + env(safe-area-inset-bottom))
     var(--modal-pad) !important;
-  overflow:auto; /* si el contenido excede, scrollea el overlay */
+  overflow:auto; /* si algo excede, scrollea el overlay */
 }
 
-/* Caja del modal */
+/* Contenedor visual del modal */
 .modal.modal-80 .modal-content{
   width:min(100%, 980px);
-  max-width: min(100vw, 980px);
-  height:auto;
+  max-width:min(100vw,980px);
   max-height: calc(100dvh - (var(--modal-pad)*2) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-  box-sizing:border-box;
   display:flex;
   flex-direction:column;
   gap:.75rem;
-  overflow:hidden;      /* evita scrollbars dobles */
+  box-sizing:border-box;
+  overflow:hidden;        /* evita scrollbars dobles */
   padding:1.25rem;
   border-radius:16px;
 }
@@ -94,23 +93,31 @@ $sesionDebug = [
   text-align:center;
 }
 
-/* Cuerpo scrollable vertical */
-.modal.modal-80 .modal-body{
-  flex:1;
+/* El form envuelve al body en el modal de Reporte: lo volvemos flex para que el body pueda scrollear */
+.modal.modal-80 .modal-content form{
+  display:flex;
+  flex-direction:column;
   min-height:0;
-  overflow:auto;
+  flex:1 1 auto;
+}
+
+/* Cuerpo scrollable (detalle y reporte) */
+.modal.modal-80 .modal-body{
+  flex:1 1 auto;
+  min-height:0;                 /* imprescindible para permitir scroll */
+  overflow:auto;                /* vertical por defecto */
   -webkit-overflow-scrolling:touch;
   padding-right:.25rem;
   overscroll-behavior:contain;
 }
 
-/* Footer fijo dentro del modal */
+/* Footer pegajoso dentro del modal */
 .modal.modal-80 .modal-footer{
   position:sticky;
   bottom:0;
   display:flex;
-  gap:.5rem;
   justify-content:flex-end;
+  gap:.5rem;
   padding-top:.75rem;
   border-top:1px solid rgba(0,0,0,.08);
   background:inherit;
@@ -121,29 +128,41 @@ $sesionDebug = [
    Formularios en cascada
    ========================= */
 
-/* La grilla del formulario del modal siempre es de 1 columna (cascada). */
-.modal.modal-80 .card-grid{ min-width:0; }
+/* La grilla del formulario dentro de los modales: SIEMPRE 1 columna */
+.modal.modal-80 .card-grid{ min-width:0; } /* evita min-content overflow */
 .modal.modal-80 .card-grid.grid-4{
   display:grid;
-  grid-template-columns: 1fr !important;  /* 👈 1 sola columna */
+  grid-template-columns: 1fr !important;
   gap:.75rem;
 }
 
-/* Cualquier .input-group que se hubiese expandido a varias columnas, vuelve a 1 */
+/* Todos los grupos vuelven a una sola columna aunque tengan span */
 .modal.modal-80 .card-grid.grid-4 > .input-group{
   grid-column: span 1 !important;
+  min-width:0;                   /* previene overflow de hijos */
+  display:flex;
+  flex-direction:column;         /* etiqueta arriba, control abajo */
 }
 
-/* Inputs al 100% */
+/* Etiquetas arriba y alineadas a la izquierda */
+.modal.modal-80 .input-group > label{
+  margin:0 0 .35rem 0;
+  line-height:1.2;
+  text-align:left;
+  white-space:normal;
+}
+
+/* Contenedores de control y controles al 100% */
+.modal.modal-80 .input-icon,
 .modal.modal-80 .input-icon input,
 .modal.modal-80 .input-icon select,
 .modal.modal-80 .input-icon textarea{
   width:100%;
   max-width:100%;
+  box-sizing:border-box;
 }
 
 /* Evita desbordes por textos largos */
-.modal.modal-80 .input-group label,
 .modal.modal-80 .input-group .text-box,
 .modal.modal-80 .input-icon{ overflow:hidden; text-overflow:ellipsis; }
 .modal.modal-80 .input-icon input[readonly]{ overflow:hidden; text-overflow:ellipsis; }
@@ -153,15 +172,15 @@ $sesionDebug = [
    ========================= */
 .tabla-wrapper{
   width:100%;
-  overflow-x:auto;                      /* 👉 scroll horizontal del contenedor */
+  overflow-x:auto;                 /* 👉 scroll horizontal del contenedor */
   -webkit-overflow-scrolling:touch;
 }
 .tabla-wrapper > table{
-  min-width:720px;                      /* fuerza scroll en pantallas pequeñas */
+  min-width:720px;                 /* fuerza scroll en pantallas pequeñas */
   width:100%;
 }
 @media (max-width:375px){
-  .tabla-wrapper > table{ min-width:600px; } /* mejor usabilidad en móviles XS */
+  .tabla-wrapper > table{ min-width:600px; }
 }
 
 /* =========================
@@ -201,7 +220,7 @@ $sesionDebug = [
 .preview-grid .badge-tipo{ font-size:.7rem; padding:.1rem .35rem; border:1px solid rgba(0,0,0,.1); border-radius:999px; }
 
 /* =========================
-   Cards de solicitudes (sin cambios visuales)
+   Cards de solicitudes (sin cambios funcionales)
    ========================= */
 .cards-grid{
   display:grid;
@@ -227,9 +246,10 @@ $sesionDebug = [
 .chip.aprobada_coop{ background:#d1fae5; color:#064e3b }
 .card-footer{ display:flex; justify-content:space-between; gap:.5rem; margin-top:.5rem }
 
-/* Utilidades para móviles */
+/* Utilidades móviles */
 .modal.modal-80, .modal.modal-80 .modal-body{ -webkit-tap-highlight-color:transparent; }
 </style>
+
 
 
 </head>
