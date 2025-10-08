@@ -559,9 +559,16 @@ $__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
                     </div>
 
                     <div class="input-group">
-                        <label for="param_observaciones">Observaciones</label>
+                        <label for="param_observaciones">Observaciones (generales)</label>
                         <div class="input-icon input-icon-edit">
                             <input type="text" id="param_observaciones" name="param_observaciones" placeholder="Notas de parámetros de vuelo" />
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="param_observaciones_agua">Observaciones agua</label>
+                        <div class="input-icon input-icon-edit">
+                            <input type="text" id="param_observaciones_agua" name="param_observaciones_agua" placeholder="Notas específicas sobre el agua" />
                         </div>
                     </div>
                 </div>
@@ -1171,6 +1178,7 @@ $__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
             setV('ancho_pasada', fmtNumInput(p.ancho_pasada));
             setV('tamano_gota', p.tamano_gota ?? '');
             setV('param_observaciones', p.observaciones ?? '');
+            setV('param_observaciones_agua', p.observaciones_agua ?? '');
 
             // Asegurar que Base ha copie la Superficie si no vino seteada
             const sup = parseNum(s.superficie_ha);
@@ -1453,7 +1461,8 @@ $__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
                         alto_vuelo: parseNum(getV('alto_vuelo')),
                         ancho_pasada: parseNum(getV('ancho_pasada')),
                         tamano_gota: getV('tamano_gota'),
-                        observaciones: getV('param_observaciones')
+                        observaciones: getV('param_observaciones'),
+                        observaciones_agua: getV('param_observaciones_agua')
                     };
                     const hasAny = [obj.volumen_ha, obj.velocidad_vuelo, obj.alto_vuelo, obj.ancho_pasada].some(v => v !== null) ||
                         (obj.tamano_gota ?? '').toString().trim() !== '' ||

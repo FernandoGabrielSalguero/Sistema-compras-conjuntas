@@ -419,6 +419,7 @@ final class DroneDrawerListadoModel
                     $parametros['ancho_pasada']     ?? null,
                     $parametros['tamano_gota']      ?? null,
                     $parametros['observaciones']    ?? null,
+                    $parametros['observaciones_agua'] ?? null,
                 ];
                 $hasAny = false;
                 foreach ($vals as $v) {
@@ -435,8 +436,8 @@ final class DroneDrawerListadoModel
 
                     $this->pdo->prepare("
             INSERT INTO drones_solicitud_parametros
-            (solicitud_id, volumen_ha, velocidad_vuelo, alto_vuelo, ancho_pasada, tamano_gota, observaciones, created_at)
-            VALUES (:sid, :vol, :vel, :alto, :ancho, :gota, :obs, NOW())
+(solicitud_id, volumen_ha, velocidad_vuelo, alto_vuelo, ancho_pasada, tamano_gota, observaciones, observaciones_agua, created_at)
+VALUES (:sid, :vol, :vel, :alto, :ancho, :gota, :obs, :obs_agua, NOW())
         ")->execute([
                         ':sid'   => $id,
                         ':vol'   => self::dec($parametros['volumen_ha'] ?? null),
@@ -445,6 +446,7 @@ final class DroneDrawerListadoModel
                         ':ancho' => self::dec($parametros['ancho_pasada'] ?? null),
                         ':gota'  => self::n($parametros['tamano_gota'] ?? null),
                         ':obs'   => self::n($parametros['observaciones'] ?? null),
+                        ':obs_agua' => self::n($parametros['observaciones_agua'] ?? null),
                     ]);
                 }
                 // Si $hasAny === false: no tocamos la tabla; conserva lo existente.
