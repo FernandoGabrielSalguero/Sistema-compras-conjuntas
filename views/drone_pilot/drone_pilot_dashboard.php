@@ -52,203 +52,303 @@ $sesionDebug = [
     <!-- CDN firma con dedo -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" defer></script>
 
-<style>
-/* =========================
+    <style>
+        /* =========================
    Modales responsivos SVE
    ========================= */
 
-/* Overlay del modal */
-.modal.modal-80{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  --modal-pad: clamp(8px, 2.2vw, 20px);
-  padding:
-    calc(var(--modal-pad) + env(safe-area-inset-top))
-    var(--modal-pad)
-    calc(var(--modal-pad) + env(safe-area-inset-bottom))
-    var(--modal-pad) !important;
-  overflow:auto; /* si algo excede, scrollea el overlay */
-}
+        /* Overlay del modal */
+        .modal.modal-80 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            --modal-pad: clamp(8px, 2.2vw, 20px);
+            padding:
+                calc(var(--modal-pad) + env(safe-area-inset-top)) var(--modal-pad) calc(var(--modal-pad) + env(safe-area-inset-bottom)) var(--modal-pad) !important;
+            overflow: auto;
+            /* si algo excede, scrollea el overlay */
+        }
 
-/* Contenedor visual del modal */
-.modal.modal-80 .modal-content{
-  width:min(100%, 980px);
-  max-width:min(100vw,980px);
-  max-height: calc(100dvh - (var(--modal-pad)*2) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-  display:flex;
-  flex-direction:column;
-  gap:.75rem;
-  box-sizing:border-box;
-  overflow:hidden;        /* evita scrollbars dobles */
-  padding:1.25rem;
-  border-radius:16px;
-}
+        /* Contenedor visual del modal */
+        .modal.modal-80 .modal-content {
+            width: min(100%, 980px);
+            max-width: min(100vw, 980px);
+            max-height: calc(100dvh - (var(--modal-pad)*2) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            display: flex;
+            flex-direction: column;
+            gap: .75rem;
+            box-sizing: border-box;
+            overflow: hidden;
+            /* evita scrollbars dobles */
+            padding: 1.25rem;
+            border-radius: 16px;
+        }
 
-/* Título */
-.modal.modal-80 h3{
-  margin:0;
-  line-height:1.25;
-  flex-shrink:0;
-  text-align:center;
-}
+        /* Título */
+        .modal.modal-80 h3 {
+            margin: 0;
+            line-height: 1.25;
+            flex-shrink: 0;
+            text-align: center;
+        }
 
-/* El form envuelve al body en el modal de Reporte: lo volvemos flex para que el body pueda scrollear */
-.modal.modal-80 .modal-content form{
-  display:flex;
-  flex-direction:column;
-  min-height:0;
-  flex:1 1 auto;
-}
+        /* El form envuelve al body en el modal de Reporte: lo volvemos flex para que el body pueda scrollear */
+        .modal.modal-80 .modal-content form {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            flex: 1 1 auto;
+        }
 
-/* Cuerpo scrollable (detalle y reporte) */
-.modal.modal-80 .modal-body{
-  flex:1 1 auto;
-  min-height:0;                 /* imprescindible para permitir scroll */
-  overflow:auto;                /* vertical por defecto */
-  -webkit-overflow-scrolling:touch;
-  padding-right:.25rem;
-  overscroll-behavior:contain;
-}
+        /* Cuerpo scrollable (detalle y reporte) */
+        .modal.modal-80 .modal-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            /* imprescindible para permitir scroll */
+            overflow: auto;
+            /* vertical por defecto */
+            -webkit-overflow-scrolling: touch;
+            padding-right: .25rem;
+            overscroll-behavior: contain;
+        }
 
-/* Footer pegajoso dentro del modal */
-.modal.modal-80 .modal-footer{
-  position:sticky;
-  bottom:0;
-  display:flex;
-  justify-content:flex-end;
-  gap:.5rem;
-  padding-top:.75rem;
-  border-top:1px solid rgba(0,0,0,.08);
-  background:inherit;
-  flex-shrink:0;
-}
+        /* Footer pegajoso dentro del modal */
+        .modal.modal-80 .modal-footer {
+            position: sticky;
+            bottom: 0;
+            display: flex;
+            justify-content: flex-end;
+            gap: .5rem;
+            padding-top: .75rem;
+            border-top: 1px solid rgba(0, 0, 0, .08);
+            background: inherit;
+            flex-shrink: 0;
+        }
 
-/* =========================
-   Formularios en cascada
+        /* =========================
+   REGLAS GENERALES (ambos modales)
+   ========================= */
+        .modal.modal-80 .card-grid {
+            min-width: 0;
+        }
+
+        /* evita min-content overflow */
+
+        .modal.modal-80 .input-icon,
+        .modal.modal-80 .input-icon input,
+        .modal.modal-80 .input-icon select,
+        .modal.modal-80 .input-icon textarea {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .modal.modal-80 .input-group .text-box,
+        .modal.modal-80 .input-icon {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .modal.modal-80 .input-icon input[readonly] {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* =========================
+   FORZAR “CASCADA” SOLO EN EL MODAL DE REPORTE
+   (aumentamos especificidad para ganar a framework.css)
    ========================= */
 
-/* La grilla del formulario dentro de los modales: SIEMPRE 1 columna */
-.modal.modal-80 .card-grid{ min-width:0; } /* evita min-content overflow */
-.modal.modal-80 .card-grid.grid-4{
-  display:grid;
-  grid-template-columns: 1fr !important;
-  gap:.75rem;
-}
+        /* 1) Toda grilla .card-grid.grid-4 dentro del modal de reporte pasa a UNA columna */
+        #modal-reporte .card-grid.grid-4 {
+            display: grid;
+            grid-template-columns: 1fr !important;
+            /* 👈 fuerza 1 columna */
+            gap: .75rem;
+        }
 
-/* Todos los grupos vuelven a una sola columna aunque tengan span */
-.modal.modal-80 .card-grid.grid-4 > .input-group{
-  grid-column: span 1 !important;
-  min-width:0;                   /* previene overflow de hijos */
-  display:flex;
-  flex-direction:column;         /* etiqueta arriba, control abajo */
-}
+        /* 2) Si dentro hay tarjetas secundarias con su propia grid-4, también 1 columna */
+        #modal-reporte .card .card-grid.grid-4 {
+            grid-template-columns: 1fr !important;
+        }
 
-/* Etiquetas arriba y alineadas a la izquierda */
-.modal.modal-80 .input-group > label{
-  margin:0 0 .35rem 0;
-  line-height:1.2;
-  text-align:left;
-  white-space:normal;
-}
+        /* 3) Cualquier input-group que hubiese quedado con spans los neutralizamos */
+        #modal-reporte .card-grid.grid-4>.input-group {
+            grid-column: span 1 !important;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            /* etiqueta arriba, control abajo */
+        }
 
-/* Contenedores de control y controles al 100% */
-.modal.modal-80 .input-icon,
-.modal.modal-80 .input-icon input,
-.modal.modal-80 .input-icon select,
-.modal.modal-80 .input-icon textarea{
-  width:100%;
-  max-width:100%;
-  box-sizing:border-box;
-}
+        /* 4) Etiquetas alineadas a la izquierda (el framework las ponía a la derecha) */
+        #modal-reporte .input-group>label {
+            display: block;
+            margin: 0 0 .35rem 0;
+            line-height: 1.2;
+            text-align: left !important;
+            white-space: normal;
+        }
 
-/* Evita desbordes por textos largos */
-.modal.modal-80 .input-group .text-box,
-.modal.modal-80 .input-icon{ overflow:hidden; text-overflow:ellipsis; }
-.modal.modal-80 .input-icon input[readonly]{ overflow:hidden; text-overflow:ellipsis; }
+        /* 5) Evitar columnas “fantasma” por tamaños mínimos */
+        #modal-reporte .input-group,
+        #modal-reporte .input-icon {
+            min-width: 0;
+        }
 
-/* =========================
+        /* =========================
    Tablas con scroll horizontal propio
    ========================= */
-.tabla-wrapper{
-  width:100%;
-  overflow-x:auto;                 /* 👉 scroll horizontal del contenedor */
-  -webkit-overflow-scrolling:touch;
-}
-.tabla-wrapper > table{
-  min-width:720px;                 /* fuerza scroll en pantallas pequeñas */
-  width:100%;
-}
-@media (max-width:375px){
-  .tabla-wrapper > table{ min-width:600px; }
-}
+        .tabla-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            /* 👉 scroll horizontal del contenedor */
+            -webkit-overflow-scrolling: touch;
+        }
 
-/* =========================
+        .tabla-wrapper>table {
+            min-width: 720px;
+            /* fuerza scroll en pantallas pequeñas */
+            width: 100%;
+        }
+
+        @media (max-width:375px) {
+            .tabla-wrapper>table {
+                min-width: 600px;
+            }
+        }
+
+        /* =========================
    Firmas / canvas
    ========================= */
-.modal.modal-80 canvas{
-  display:block;
-  width:100%;
-  height: clamp(140px, 24vh, 220px);
-  max-height:220px;
-  border:1px solid #ddd;
-  border-radius:12px;
-}
+        .modal.modal-80 canvas {
+            display: block;
+            width: 100%;
+            height: clamp(140px, 24vh, 220px);
+            max-height: 220px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+        }
 
-/* =========================
+        /* =========================
    Previsualizaciones de imágenes
    ========================= */
-.preview-grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px,1fr));
-  gap:.5rem;
-  margin-top:.5rem;
-}
-.preview-item{
-  border:1px solid rgba(0,0,0,.08);
-  border-radius:12px;
-  padding:.25rem;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:.25rem;
-  background:#fff;
-}
-.preview-item img{ width:100%; height:90px; object-fit:cover; border-radius:8px; }
-.preview-item .meta{ font-size:.75rem; color:#666; text-align:center; word-break:break-all; }
-.preview-title{ font-size:.9rem; font-weight:600; color:#444; margin-top:.25rem; }
-.preview-grid .badge-tipo{ font-size:.7rem; padding:.1rem .35rem; border:1px solid rgba(0,0,0,.1); border-radius:999px; }
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: .5rem;
+            margin-top: .5rem;
+        }
 
-/* =========================
+        .preview-item {
+            border: 1px solid rgba(0, 0, 0, .08);
+            border-radius: 12px;
+            padding: .25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .25rem;
+            background: #fff;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .preview-item .meta {
+            font-size: .75rem;
+            color: #666;
+            text-align: center;
+            word-break: break-all;
+        }
+
+        .preview-title {
+            font-size: .9rem;
+            font-weight: 600;
+            color: #444;
+            margin-top: .25rem;
+        }
+
+        .preview-grid .badge-tipo {
+            font-size: .7rem;
+            padding: .1rem .35rem;
+            border: 1px solid rgba(0, 0, 0, .1);
+            border-radius: 999px;
+        }
+
+        /* =========================
    Cards de solicitudes (sin cambios funcionales)
    ========================= */
-.cards-grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap:1rem;
-}
-@media (max-width:640px){ .cards-grid{ grid-template-columns:1fr; } }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
 
-.card-solicitud{
-  background:#fff;
-  border-radius:16px;
-  box-shadow:0 2px 8px rgba(0,0,0,.08);
-  padding:1rem;
-  display:flex;
-  flex-direction:column;
-  gap:.5rem;
-}
-.card-solicitud .chip{ display:inline-block; border-radius:999px; padding:.125rem .5rem; font-size:.75rem }
-.chip.ingresada{ background:#fde68a; color:#92400e }
-.chip.visita_realizada{ background:#a7f3d0; color:#065f46 }
-.chip.cancelada{ background:#fecaca; color:#991b1b }
-.chip.completada{ background:#bfdbfe; color:#1e40af }
-.chip.aprobada_coop{ background:#d1fae5; color:#064e3b }
-.card-footer{ display:flex; justify-content:space-between; gap:.5rem; margin-top:.5rem }
+        @media (max-width:640px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
 
-/* Utilidades móviles */
-.modal.modal-80, .modal.modal-80 .modal-body{ -webkit-tap-highlight-color:transparent; }
-</style>
+        .card-solicitud {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+        }
+
+        .card-solicitud .chip {
+            display: inline-block;
+            border-radius: 999px;
+            padding: .125rem .5rem;
+            font-size: .75rem
+        }
+
+        .chip.ingresada {
+            background: #fde68a;
+            color: #92400e
+        }
+
+        .chip.visita_realizada {
+            background: #a7f3d0;
+            color: #065f46
+        }
+
+        .chip.cancelada {
+            background: #fecaca;
+            color: #991b1b
+        }
+
+        .chip.completada {
+            background: #bfdbfe;
+            color: #1e40af
+        }
+
+        .chip.aprobada_coop {
+            background: #d1fae5;
+            color: #064e3b
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: .5rem;
+            margin-top: .5rem
+        }
+
+        /* Utilidades móviles */
+        .modal.modal-80,
+        .modal.modal-80 .modal-body {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
 
 
 
