@@ -103,12 +103,13 @@ try {
             $detalle = $str($body['detalle'] ?? $_POST['detalle'] ?? null);
             $principio = $str($body['principio_activo'] ?? $_POST['principio_activo'] ?? null);
             $cantidad = $int($body['cantidad_deposito'] ?? $_POST['cantidad_deposito'] ?? 0);
+            $tiempo = $str($body['tiempo_carencia'] ?? $_POST['tiempo_carencia'] ?? null);
             $costo = $dec($body['costo_hectarea'] ?? $_POST['costo_hectarea'] ?? 0);
             $activo = $yn($body['activo'] ?? $_POST['activo'] ?? 'si');
             $pat = $arrInt($body['patologias'] ?? $_POST['patologias'] ?? []);
             if (count($pat) > 6) $pat = array_slice($pat, 0, 6);
 
-            $id = $model->createProduct($nombre, $detalle, $principio, $cantidad, $pat, $costo, $activo);
+            $id = $model->createProduct($nombre, $detalle, $principio, $cantidad, $pat, $costo, $activo, $tiempo);
             json_out(true, ['id' => $id]);
             break;
 
@@ -121,12 +122,13 @@ try {
             $detalle = $str($body['detalle'] ?? $_POST['detalle'] ?? null);
             $principio = $str($body['principio_activo'] ?? $_POST['principio_activo'] ?? null);
             $cantidad = $int($body['cantidad_deposito'] ?? $_POST['cantidad_deposito'] ?? 0);
+            $tiempo = $str($body['tiempo_carencia'] ?? $_POST['tiempo_carencia'] ?? null);
             $costo = $dec($body['costo_hectarea'] ?? $_POST['costo_hectarea'] ?? 0);
             $activo = $yn($body['activo'] ?? $_POST['activo'] ?? 'si');
             $pat = $arrInt($body['patologias'] ?? $_POST['patologias'] ?? []);
             if (count($pat) > 6) $pat = array_slice($pat, 0, 6);
 
-            $ok = $model->updateProduct($id, $nombre, $detalle, $principio, $cantidad, $pat, $costo, $activo);
+            $ok = $model->updateProduct($id, $nombre, $detalle, $principio, $cantidad, $pat, $costo, $activo, $tiempo);
             json_out(true, ['updated' => $ok]);
             break;
 

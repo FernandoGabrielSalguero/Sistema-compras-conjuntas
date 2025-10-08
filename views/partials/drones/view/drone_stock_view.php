@@ -44,6 +44,13 @@
         </div>
 
         <div class="input-group">
+          <label for="tiempo_carencia">Tiempo de carencia</label>
+          <div class="input-icon input-icon-name">
+            <input type="text" id="tiempo_carencia" name="tiempo_carencia" placeholder="Ej: 7 días" />
+          </div>
+        </div>
+
+        <div class="input-group">
           <label for="activo">Activo</label>
           <label class="switch">
             <input type="checkbox" id="activo" name="activo" checked />
@@ -118,6 +125,7 @@
             <th>Principio activo</th>
             <th>Stock</th>
             <th>Costo/ha</th>
+            <th>Carencia</th>
             <th>Patologías</th>
             <th>Estado</th>
             <th>Acciones</th>
@@ -238,12 +246,13 @@
         const estadoBadge = `<span class="badge ${activo ? 'success' : 'warning'}">${activo ? 'Activo' : 'Inactivo'}</span>`;
         const costo = (typeof it.costo_hectarea !== 'undefined') ? Number(it.costo_hectarea).toFixed(2) : '0.00';
         return `
-        <tr data-id="${it.id}" data-pat-ids="${patIds}" data-activo="${activo ? 'si' : 'no'}" data-costo="${costo}">
+        <tr data-id="${it.id}" data-pat-ids="${patIds}" data-activo="${activo ? 'si' : 'no'}" data-costo="${costo}" data-tc="${it.tiempo_carencia ? String(it.tiempo_carencia) : ''}">
           <td>${idx + 1}</td>
           <td>${it.nombre}</td>
           <td>${it.principio_activo || '-'}</td>
           <td>${it.cantidad_deposito}</td>
           <td>${costo}</td>
+          <td>${it.tiempo_carencia || '-'}</td>
           <td>${badges || '-'}</td>
           <td>${estadoBadge}</td>
           <td>
@@ -273,6 +282,7 @@
       $('#principio_activo').value = '';
       $('#cantidad_deposito').value = '';
       $('#costo_hectarea').value = '';
+      $('#tiempo_carencia').value = '';
       $('#activo').checked = true;
       $('#detalle').value = '';
       $$('#producto-form select[name="patologias[]"]').forEach(s => {
@@ -289,6 +299,7 @@
       $('#cantidad_deposito').value = tr.children[3].textContent;
       $('#costo_hectarea').value = tr.getAttribute('data-costo') || tr.children[4].textContent || '0.00';
       $('#activo').checked = (tr.getAttribute('data-activo') === 'si');
+      $('#tiempo_carencia').value = tr.getAttribute('data-tc') || '';
 
       const ids = (tr.getAttribute('data-pat-ids') || '').split(',').filter(Boolean);
       const selects = $$('#producto-form select[name="patologias[]"]');
@@ -310,6 +321,7 @@
         detalle: $('#detalle').value.trim(),
         principio_activo: $('#principio_activo').value.trim(),
         cantidad_deposito: parseInt($('#cantidad_deposito').value, 10) || 0,
+        tiempo_carencia: $('#tiempo_carencia').value.trim(),
         // Normaliza decimales: soporta "1200", "1200.50", "1.200,50"
         costo_hectarea: (function(v) {
           v = String(v ?? '').trim();

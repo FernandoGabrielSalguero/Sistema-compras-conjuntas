@@ -18,6 +18,7 @@ final class DroneStockModel
                 p.principio_activo,
                 p.cantidad_deposito,
                 p.costo_hectarea,
+                p.tiempo_carencia,
                 p.activo,
                 COALESCE(GROUP_CONCAT(DISTINCT dsp.patologia_id ORDER BY dsp.patologia_id SEPARATOR ','), '') AS pat_ids,
                 COALESCE(GROUP_CONCAT(DISTINCT dp.nombre ORDER BY dp.nombre SEPARATOR '||'), '') AS pat_names
@@ -37,6 +38,7 @@ final class DroneStockModel
                 'principio_activo' => $r['principio_activo'],
                 'cantidad_deposito' => (int)$r['cantidad_deposito'],
                 'costo_hectarea' => isset($r['costo_hectarea']) ? (float)$r['costo_hectarea'] : 0.0,
+                'tiempo_carencia' => $r['tiempo_carencia'] ?? null,
                 'activo' => $r['activo'] ?? 'si',
                 'patologias_ids' => $r['pat_ids'] !== '' ? array_map('intval', explode(',', $r['pat_ids'])) : [],
                 'patologias_nombres' => $r['pat_names'] !== '' ? explode('||', $r['pat_names']) : [],
@@ -54,14 +56,14 @@ final class DroneStockModel
     }
 
     /** Crea producto + relaciones (max 6) */
-    public function createProduct(string $nombre, ?string $detalle, ?string $principio, int $cantidad, array $patIds, float $costo, string $activo): int
+    public function createProduct(string $nombre, ?string $detalle, ?string $principio, int $cantidad, array $patIds, float $costo, string $activo, ?string $tiempo_carencia): int
     {
         $this->pdo->beginTransaction();
         try {
-            $sql = "INSERT INTO dron_productos_stock (nombre, detalle, principio_activo, cantidad_deposito, costo_hectarea, activo)
-                    VALUES (?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO dron_productos_stock (nombre, detalle, principio_activo, cantidad_deposito, costo_hectarea, activo, tiempo_carencia)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
             $st = $this->pdo->prepare($sql);
-            $st->execute([$nombre, $detalle, $principio, $cantidad, $costo, $activo]);
+            $st->execute([$nombre, $detalle, $principio, $cantidad, $costo, $activo, $tiempo_carencia]);
             $id = (int)$this->pdo->lastInsertId();
 
             $this->upsertPatologias($id, $patIds);
@@ -75,15 +77,15 @@ final class DroneStockModel
 
 
     /** Actualiza producto + relaciones (max 6) */
-    public function updateProduct(int $id, string $nombre, ?string $detalle, ?string $principio, int $cantidad, array $patIds, float $costo, string $activo): bool
+    public function updateProduct(int $id, string $nombre, ?string $detalle, ?string $principio, int $cantidad, array $patIds, float $costo, string $activo, ?string $tiempo_carencia): bool
     {
         $this->pdo->beginTransaction();
         try {
             $sql = "UPDATE dron_productos_stock
-                       SET nombre = ?, detalle = ?, principio_activo = ?, cantidad_deposito = ?, costo_hectarea = ?, activo = ?
+                       SET nombre = ?, detalle = ?, principio_activo = ?, cantidad_deposito = ?, costo_hectarea = ?, activo = ?, tiempo_carencia = ?
                      WHERE id = ?";
             $st = $this->pdo->prepare($sql);
-            $st->execute([$nombre, $detalle, $principio, $cantidad, $costo, $activo, $id]);
+            $st->execute([$nombre, $detalle, $principio, $cantidad, $costo, $activo, $tiempo_carencia, $id]);
 
             $this->upsertPatologias($id, $patIds);
             $this->pdo->commit();
