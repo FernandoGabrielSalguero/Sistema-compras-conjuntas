@@ -329,7 +329,7 @@ $sesionDebug = [
                 </div>
 
                 <!-- Mis solicitudes (tabla estándar) -->
-                <div class="card tabla-card" id="card-solicitudes" style="background-color: #f3f0ff;">
+                <div class="card tabla-card" id="card-solicitudes" style="background-color: #f9f0ffff;">
                     <div class="flex items-center justify-between">
                         <h2>Mis solicitudes asignadas</h2>
                     </div>
