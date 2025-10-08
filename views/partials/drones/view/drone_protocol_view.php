@@ -422,6 +422,12 @@ declare(strict_types=1);
     padding-top: .45rem;
     padding-bottom: .45rem;
   }
+
+  /* Mejora opcional del alto mínimo en pantalla (sin afectar diseño) */
+  #pp_obs[readonly],
+  #pp_obs_agua[readonly] {
+    min-height: 80px;
+  }
 </style>
 
 <script>
@@ -569,7 +575,38 @@ declare(strict_types=1);
             }
             const hdr = clonedDoc.querySelector('.protocolo-header');
             if (hdr) hdr.style.minHeight = '72px';
+
+            // ====== Ajustes específicos para el PDF ======
+            // 1) Inyectar estilos para textareas y evitar cortes
+            const style = clonedDoc.createElement('style');
+            style.textContent = `
+    textarea[readonly]{
+      width:100%;
+      min-height:96px;   /* más alto en el PDF */
+      resize:none;
+      overflow:visible;  /* no esconder contenido */
+      white-space:pre-wrap;
+      line-height:1.35;
+    }
+    /* Forzar que las celdas no colapsen el alto por líneas largas */
+    .data-table td, .data-table th { vertical-align: top; }
+  `;
+            clonedDoc.head.appendChild(style);
+
+            // 2) Auto–resize de textareas en el CLON (lo del DOM real no afecta al clon)
+            const autoGrow = (ta) => {
+              if (!ta) return;
+              ta.style.height = 'auto';
+              ta.style.height = ta.scrollHeight + 'px';
+            };
+            autoGrow(clonedDoc.getElementById('pp_obs'));
+            autoGrow(clonedDoc.getElementById('pp_obs_agua'));
+
+            // 3) Confirmar presencia de nuevos campos (solo por seguridad visual)
+            //    No hace nada si no existen; si existen, no se tocan estilos extra.
+            clonedDoc.getElementById('pp_hectareas'); // Hectareas a pulverizar
           }
+
         });
 
 
