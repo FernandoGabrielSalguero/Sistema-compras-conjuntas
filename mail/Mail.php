@@ -33,7 +33,7 @@ final class Maill
     }
 
     /**
-     * Envía correo “Pedido creado”.
+     * Envía correo “Pedido creado de compra conjuntas”.
      * $data = [
      *   'cooperativa_nombre' => string,
      *   'cooperativa_correo' => string|null,

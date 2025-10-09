@@ -49,6 +49,12 @@ $sesionDebug = [
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
+        <!-- Offline/PWA (defer para cargar antes de tus scripts inline del body) -->
+    <script src="/assets/js/offlineDb.js" defer></script>
+    <script src="/assets/js/syncEngine.js" defer></script>
+    <script src="/assets/js/offlineApi.js" defer></script>
+    <script src="/assets/js/connectivity.js" defer></script>
+
     <!-- CDN firma con dedo -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" defer></script>
 
@@ -483,12 +489,15 @@ $sesionDebug = [
         <div class="main">
 
             <!-- 🟪 NAVBAR -->
-            <header class="navbar">
-                <button class="btn-icon" onclick="toggleSidebar()">
-                    <span class="material-icons">menu</span>
-                </button>
-                <div class="navbar-title">Inicio</div>
-            </header>
+<header class="navbar">
+    <button class="btn-icon" onclick="toggleSidebar()">
+        <span class="material-icons">menu</span>
+    </button>
+    <div class="navbar-title">Inicio
+        <span id="badge-offline" class="badge danger" style="margin-left:.5rem;display:none;">Offline</span>
+        <span id="badge-sync" class="badge info" style="margin-left:.5rem;display:none;">Sincronizando…</span>
+    </div>
+</header>
 
             <!-- 📦 CONTENIDO -->
             <section class="content">
@@ -496,7 +505,7 @@ $sesionDebug = [
                 <!-- Bienvenida -->
                 <div class="card">
                     <h2>Hola</h2>
-                    <p>Te presentamos el tablero Power BI. Vas a poder consultar todas las metricas desde esta página</p>
+                    <p>Te presentamos la nueva plataforma para administrar las visitas asignadas a vos. Vas a poder ver los detalles y generar el Registro Fitosanitario</p>
                 </div>
 
                 <!-- Mis solicitudes (tabla estándar) -->
@@ -769,6 +778,15 @@ $sesionDebug = [
 
         </div>
     </div>
+
+    <!-- Registro del Service Worker (aislado del resto de la lógica) -->
+    <script>
+        (function registerSW() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(console.warn);
+            }
+        })();
+    </script>
 
     <script>
         // --- Lógica: fetch + render a tabla
@@ -1515,9 +1533,5 @@ $sesionDebug = [
             }
         });
     </script>
-
-    </script>
-
 </body>
-
 </html>
