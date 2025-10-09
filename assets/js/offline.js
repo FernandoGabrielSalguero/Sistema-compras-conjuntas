@@ -156,7 +156,7 @@
         // Inject checkbox UI debajo del password
         const label = document.createElement('label');
         label.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:8px;';
-        label.innerHTML = '<input type="checkbox" id="sve-remember-offline" /> <span>Habilitar acceso sin conexión</span>';
+        label.innerHTML = '<input type="checkbox" id="sve-remember-offline" /> <span>Recordar usuario y contraseña</span>';
         const pwdContainer = passEl.closest('.password-container') || passEl.parentElement || form;
         (pwdContainer.nextElementSibling)
             ? pwdContainer.parentElement.insertBefore(label, pwdContainer.nextElementSibling)
