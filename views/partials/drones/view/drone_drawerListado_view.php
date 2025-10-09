@@ -10,8 +10,6 @@ $__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
     console.log("SESSION ROLE:", "<?php echo htmlspecialchars($__SV_ROLE__, ENT_QUOTES, 'UTF-8'); ?>");
 </script>
 
-?>
-
 <head>
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
