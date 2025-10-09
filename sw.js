@@ -42,8 +42,12 @@ self.addEventListener('fetch', (event) => {
     const req = event.request;
     const url = new URL(req.url);
     const isGET = req.method === 'GET';
-    const isSameOrigin = url.origin === location.origin;
-    // No interceptar el CDN (evita CORS). Solo same-origin JSON/controladores.
+    const isSameOrigin = url.origin === self.location.origin;
+
+    const accept = req.headers.get('accept') || '';
+    const isJsonAccept = accept.includes('application/json');
+
+    // Interceptamos solo same-origin JSON y endpoints de controladores/API
     if (isGET && (isControllerUrl(req.url) || (isSameOrigin && isJsonAccept))) {
         event.respondWith(staleWhileRevalidate(req));
     }

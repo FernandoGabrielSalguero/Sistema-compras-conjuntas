@@ -445,10 +445,44 @@ $sesionDebug = [
     </style>
 
 
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#0f172a">
+    <style>
+        .badge {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            right: 12px;
+            padding: 6px 10px;
+            border-radius: 10px;
+            font: 12px/1.2 system-ui
+        }
 
+        #badge-offline {
+            bottom: 12px;
+            background: #991b1b;
+            color: #fff
+        }
+
+        #badge-sync {
+            bottom: 44px;
+            background: #1e3a8a;
+            color: #fff
+        }
+    </style>
+
+    <!-- Capa offline (orden importa: DB -> Sync -> Connectivity -> Fetch patch) -->
+    <script src="/assets/js/offlineDb.js"></script>
+    <script src="/assets/js/syncEngine.js"></script>
+    <script src="/assets/js/connectivity.js"></script>
+    <script src="/assets/js/offlineApi.js"></script>
 </head>
 
+
 <body>
+    <!-- Badges de estado -->
+    <span id="badge-offline" class="badge">Modo offline</span>
+    <span id="badge-sync" class="badge">Sincronizando…</span>
 
     <!-- 🔲 CONTENEDOR PRINCIPAL -->
     <div class="layout">
@@ -1518,6 +1552,109 @@ $sesionDebug = [
 
     </script>
 
+    <script>
+        // Registro del Service Worker (solo si el navegador lo soporta)
+        (async () => {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const reg = await navigator.serviceWorker.register('/sw.js', {
+                        scope: '/'
+                    });
+                    // Opcional: forzar actualización en segundo plano
+                    reg.update?.();
+                } catch (e) {
+                    console.error('SW registro falló', e);
+                }
+            }
+        })();
+
+        // (Opcional) Adaptador mínimo si tu código usa jQuery.ajax para controladores:
+        if (window.jQuery && !jQuery.__ajaxPatched) {
+            const $ = jQuery;
+            const origAjax = $.ajax.bind($);
+            $.ajax = function(opts) {
+                // Solo interceptamos llamadas same-origin a controladores/api
+                const url = (opts && opts.url) || '';
+                const sameOrigin = (() => {
+                    try {
+                        return new URL(url, location.origin).origin === location.origin;
+                    } catch {
+                        return false;
+                    }
+                })();
+                const isController = (() => {
+                    try {
+                        const p = new URL(url, location.origin).pathname;
+                        return sameOrigin && (p.startsWith('/controllers/') || p.includes('/api/') || /_controller\.php$/i.test(p) || /Controller\.php$/i.test(p));
+                    } catch {
+                        return false;
+                    }
+                })();
+                if (!isController) return origAjax(opts);
+
+                const method = (opts.type || opts.method || 'GET').toUpperCase();
+                const headers = opts.headers || {};
+                const init = {
+                    method,
+                    headers,
+                    credentials: 'same-origin'
+                };
+
+                if (opts.data) {
+                    if (opts.processData === false || opts.data instanceof FormData) {
+                        init.body = opts.data instanceof FormData ? opts.data : undefined;
+                    } else {
+                        const params = new URLSearchParams();
+                        Object.entries(opts.data).forEach(([k, v]) => params.append(k, v));
+                        if (method === 'GET') {
+                            const u = new URL(url, location.origin);
+                            params.forEach((v, k) => u.searchParams.set(k, v));
+                            return $.ajax({
+                                ...opts,
+                                url: u.toString(),
+                                data: undefined
+                            });
+                        } else {
+                            headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
+                            init.body = params;
+                        }
+                    }
+                }
+
+                return new Promise((resolve, reject) => {
+                    fetch(url, init).then(async (r) => {
+                        const dataType = (opts.dataType || '').toLowerCase();
+                        const payload = dataType === 'text' ? await r.text() : await r.json().catch(() => ({}));
+                        const jqXHR = {
+                            status: r.status,
+                            responseJSON: payload,
+                            responseText: typeof payload === 'string' ? payload : JSON.stringify(payload)
+                        };
+                        if (r.ok) {
+                            opts.success && opts.success(payload, 'success', jqXHR);
+                            resolve(payload);
+                        } else {
+                            opts.error && opts.error(jqXHR, 'error', r.statusText);
+                            reject(jqXHR);
+                        }
+                        opts.complete && opts.complete(jqXHR, r.ok ? 'success' : 'error');
+                    }).catch((e) => {
+                        // Offline: el fetch parcheado encola POST/PUT/DELETE y responde 200 con “Pendiente…”
+                        opts.error && opts.error({
+                            status: 0,
+                            responseText: String(e)
+                        }, 'error', 'offline');
+                        opts.complete && opts.complete({
+                            status: 0
+                        }, 'error');
+                        reject(e);
+                    });
+                });
+            };
+            jQuery.__ajaxPatched = true;
+        }
+    </script>
 </body>
+
 
 </html>
