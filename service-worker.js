@@ -10,7 +10,7 @@ const PRECACHE_URLS = [
     '/views/drone_pilot/drone_pilot_dashboard.php',
     '/assets/js/offline.js',
     '/assets/js/sve_operativo.js',
-    '/views/spinner-global.js',
+    '/views/partials/spinner-global.js',
     '/assets/png/logo_con_color_original.png',
     'https://www.fernandosalguero.com/index.html',
     'https://www.fernandosalguero.com/cdn/assets/css/framework.css',

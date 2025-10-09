@@ -118,24 +118,50 @@
         const forms = Array.from(document.getElementsByTagName('form'));
 
         function findLoginForm() {
+            const userSelectors = [
+                'input[name*=user]',
+                'input[name*=correo]',
+                'input[name*=email]',
+                'input[id*=user]',
+                'input[id*=correo]',
+                // compatibilidad SVE actual:
+                'input[name*=usuario]',
+                'input[id*=usuario]'
+            ].join(',');
+
+            const passSelectors = [
+                'input[type=password]',
+                'input[name*=pass]',
+                'input[name*=clave]',
+                'input[id*=pass]',
+                // compatibilidad SVE actual:
+                'input[name*=contrasena]',
+                'input[id*=contrasena]'
+            ].join(',');
+
             for (const f of forms) {
-                const userEl = f.querySelector('input[name*=user],input[name*=correo],input[name*=email],input[id*=user],input[id*=correo]');
-                const passEl = f.querySelector('input[type=password],input[name*=pass],input[name*=clave],input[id*=pass]');
+                const userEl = f.querySelector(userSelectors);
+                const passEl = f.querySelector(passSelectors);
                 if (userEl && passEl) return { form: f, userEl, passEl };
             }
             return null;
         }
+
 
         const found = findLoginForm();
         if (!found) return;
 
         const { form, userEl, passEl } = found;
 
-        // Inject checkbox UI
+        // Inject checkbox UI debajo del password
         const label = document.createElement('label');
         label.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:8px;';
         label.innerHTML = '<input type="checkbox" id="sve-remember-offline" /> <span>Habilitar acceso sin conexión</span>';
-        form.appendChild(label);
+        const pwdContainer = passEl.closest('.password-container') || passEl.parentElement || form;
+        (pwdContainer.nextElementSibling)
+            ? pwdContainer.parentElement.insertBefore(label, pwdContainer.nextElementSibling)
+            : form.appendChild(label);
+
 
         form.addEventListener('submit', async (e) => {
             const username = (userEl.value || '').trim();
