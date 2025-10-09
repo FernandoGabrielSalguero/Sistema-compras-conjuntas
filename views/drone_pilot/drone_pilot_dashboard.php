@@ -42,8 +42,18 @@ $sesionDebug = [
     <title>SVE</title>
 
     <!-- Manifest PWA -->
-    <link rel="manifest" href="/assets/js/manifest.webmanifest" crossorigin="use-credentials">
-    <meta name="theme-color" content="#5b21b6">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <script>
+        // Registro del Service Worker (idempotente)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(e => console.error('[SW register]', e));
+        }
+    </script>
+    <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
+    <script src="/assets/js/offlineDb.js"></script>
+    <script src="/assets/js/offlineApi.js"></script>
+    <script src="/assets/js/syncEngine.js"></script>
+    <script src="/assets/js/connectivity.js"></script>
 
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
@@ -52,12 +62,6 @@ $sesionDebug = [
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
-
-    <!-- Offline/PWA (versión con cache-bust para asegurar última versión) -->
-    <script src="/assets/js/offlineDb.js?v=2" defer></script>
-    <script src="/assets/js/syncEngine.js?v=2" defer></script>
-    <script src="/assets/js/offlineApi.js?v=2" defer></script>
-    <script src="/assets/js/connectivity.js?v=2" defer></script>
 
     <!-- CDN firma con dedo -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" defer></script>
