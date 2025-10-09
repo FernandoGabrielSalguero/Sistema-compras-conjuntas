@@ -7,21 +7,22 @@
         catch { return false; }
     }
 
-    // Detecta endpoints del backend aunque no estén en /controllers/
+    // Detecta endpoints del backend: controladores de /controllers y también de /views/**/controller/*
     function isController(url) {
         if (!isSameOrigin(url)) return false;
         try {
-            const u = new URL(url, location.origin);
-            const p = u.pathname;
-            // /controllers/*  |  */api/*  |  *Controller.php  |  *Api.php
-            return p.startsWith('/controllers/')
-                || p.includes('/api/')
-                || p.endsWith('Controller.php')
-                || p.endsWith('Api.php');
-        } catch {
-            return false;
-        }
+            const p = new URL(url, location.origin).pathname;
+            return (
+                p.startsWith('/controllers/') ||
+                p.includes('/api/') ||
+                p.endsWith('Controller.php') ||
+                p.endsWith('Api.php') ||
+                /\/views\/[^/]+\/partials?\/.*\/controller\/.*_controller\.php$/i.test(p) ||
+                p.endsWith('_controller.php') // p.ej. drone_list_controller.php
+            );
+        } catch { return false; }
     }
+
 
     async function serializeBody(body) {
         if (!body) return { bodyType: null };
@@ -89,7 +90,7 @@
             const cached = await cacheGet(url);
             if (cached) {
                 // Revalida en segundo plano
-                net.catch(() => {});
+                net.catch(() => { });
                 console.debug('[offlineApi] GET desde cache', url);
                 return cached;
             }
@@ -110,7 +111,7 @@
                 const hdrs = init.headers || req.headers || [];
                 hdrs.forEach?.((v, k) => { headers[k] = v; });
                 if (hdrs instanceof Headers) hdrs.forEach((v, k) => { headers[k] = v; });
-            } catch {}
+            } catch { }
 
             if (navigator.onLine) {
                 try {

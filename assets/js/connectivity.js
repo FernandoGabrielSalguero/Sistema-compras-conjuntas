@@ -6,7 +6,7 @@
         if (badge) badge.style.display = navigator.onLine ? 'none' : 'inline-block';
     }
 
-    window.addEventListener('online', () => { updateBadge(); window.SyncEngine?.processOutbox(); });
+    window.addEventListener('online', () => { updateBadge(); try { window.SyncEngine?.processOutbox(); } catch (e) { console.error(e); } });
     window.addEventListener('offline', () => { updateBadge(); });
 
     // Logging de errores para no “comernos” fallos silenciosos

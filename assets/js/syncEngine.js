@@ -28,7 +28,7 @@
         const badge = document.getElementById('badge-sync');
         if (badge) badge.style.display = 'inline-block';
         try {
-            const all = await window.OfflineDB.outboxAll().catch(() => []);
+            const all = (await window.OfflineDB.outboxAll().catch(() => [])) || [];
             const list = Array.isArray(all) ? all : [];
             for (const entry of list) {
                 try {

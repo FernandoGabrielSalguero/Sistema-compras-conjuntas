@@ -34,7 +34,10 @@
             Promise.resolve(fn(store)).then((res) => {
                 tx.oncomplete = () => resolve(res);
                 tx.onerror = () => reject(tx.error);
-            }).catch(reject);
+            }).catch((e) => {
+                try { tx.abort(); } catch (_) { }
+                reject(e);
+            });
         });
     }
 

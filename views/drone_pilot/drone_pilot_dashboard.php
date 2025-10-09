@@ -41,24 +41,33 @@ $sesionDebug = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE</title>
 
-    <!-- Manifest PWA -->
-    <link rel="manifest" href="/manifest.webmanifest">
-    <script>
-        // Registro del Service Worker (idempotente)
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').catch(e => console.error('[SW register]', e));
-        }
-    </script>
-    <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
-    <script src="/assets/js/offlineDb.js"></script>
-    <script src="/assets/js/offlineApi.js"></script>
-    <script src="/assets/js/syncEngine.js"></script>
-    <script src="/assets/js/connectivity.js"></script>
+  <link rel="manifest" href="/assets/js/manifest.webmanifest">
 
+<script>
+  // Evita doble carga si el layout base ya lo incluye
+  (function(){
+    var el = document.getElementById('fs-framework');
+    if (el && el.dataset.loaded === "1") { el.remove(); }
+    else if (el) { el.dataset.loaded = "1"; }
+  })();
+
+  // Registro del Service Worker (idempotente)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(e => console.error('[SW register]', e));
+  }
+</script>
+
+<!-- Orden: DB -> API -> Sync -> Conectividad -->
+<script src="/assets/js/offlineDb.js"></script>
+<script src="/assets/js/offlineApi.js"></script>
+<script src="/assets/js/syncEngine.js"></script>
+<script src="/assets/js/connectivity.js"></script>
+
+    
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-
+    
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>

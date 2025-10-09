@@ -2,8 +2,7 @@ const PRECACHE = 'sve-precache-v1';
 const RUNTIME = 'sve-runtime-v1';
 
 const CORE = [
-    '/',
-    '/index.php',
+    '/', '/index.php',
     '/views/drone_pilot/drone_pilot_dashboard.php',
     '/assets/js/offlineDb.js',
     '/assets/js/offlineApi.js',
@@ -15,10 +14,12 @@ const CORE = [
 self.addEventListener('install', (event) => {
     event.waitUntil((async () => {
         const cache = await caches.open(PRECACHE);
-        await cache.addAll(CORE);
+        try { await cache.addAll(CORE); }
+        catch (e) { /* no abortar la instalación por un 404 puntual */ }
         await self.skipWaiting();
     })());
 });
+
 
 self.addEventListener('activate', (event) => {
     event.waitUntil(
@@ -33,7 +34,7 @@ function isControllerUrl(u) {
         const url = new URL(u, self.location.origin);
         const p = url.pathname;
         return url.origin === self.location.origin &&
-               (p.startsWith('/controllers/') || p.includes('/api/') || p.endsWith('Controller.php') || p.endsWith('Api.php'));
+            (p.startsWith('/controllers/') || p.includes('/api/') || p.endsWith('Controller.php') || p.endsWith('Api.php'));
     } catch { return false; }
 }
 
@@ -42,11 +43,8 @@ self.addEventListener('fetch', (event) => {
     const url = new URL(req.url);
     const isGET = req.method === 'GET';
     const isSameOrigin = url.origin === location.origin;
-    const isStaticCdn = url.href.startsWith('https://www.fernandosalguero.com/cdn/');
-    const isJsonAccept = (req.headers.get('accept') || '').includes('application/json');
-
-    // Controladores GET o JSON same-origin => SWR
-    if (isStaticCdn || (isGET && (isControllerUrl(req.url) || (isSameOrigin && isJsonAccept)))) {
+    // No interceptar el CDN (evita CORS). Solo same-origin JSON/controladores.
+    if (isGET && (isControllerUrl(req.url) || (isSameOrigin && isJsonAccept))) {
         event.respondWith(staleWhileRevalidate(req));
     }
 });
@@ -56,7 +54,7 @@ async function staleWhileRevalidate(request) {
     const cached = await cache.match(request);
     const networkFetch = fetch(request).then(resp => {
         if (resp && resp.ok && (resp.type === 'basic' || resp.type === 'cors')) {
-            cache.put(request, resp.clone()).catch(() => {});
+            cache.put(request, resp.clone()).catch(() => { });
         }
         return resp;
     }).catch((e) => {

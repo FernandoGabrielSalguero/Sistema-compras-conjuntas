@@ -1,17 +1,10 @@
 {
-    "name": "SVE - Pulverización Drone",
-    "short_name": "SVE Drones",
-    "start_url": "/views/drone_pilot/drone_pilot_dashboard.php",
+    "name": "SVE",
+    "short_name": "SVE",
+    "start_url": "/index.php",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#5b21b6",
     "scope": "/",
-    "icons": [
-        {
-            "src": "/assets/png/logo_con_color_original.png",
-            "sizes": "256x256",
-            "type": "image/png"
-        }
-    ]
-    
+    "icons": [],
+    "background_color": "#ffffff",
+    "theme_color": "#5b21b6"
 }
