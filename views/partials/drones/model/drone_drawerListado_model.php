@@ -104,10 +104,13 @@ final class DroneDrawerListadoModel
             $prod = $st->fetch() ?: null;
 
             if ($prod) {
-                $st2 = $this->pdo->prepare("
-                SELECT rpc.*, u.usuario AS cooperativa_usuario 
+                 $st2 = $this->pdo->prepare("
+                SELECT rpc.*, 
+                       u.usuario AS cooperativa_usuario,
+                       ui2.correo AS cooperativa_correo
                 FROM rel_productor_coop rpc
-                LEFT JOIN usuarios u ON u.id_real = rpc.cooperativa_id_real
+                LEFT JOIN usuarios u   ON u.id_real = rpc.cooperativa_id_real
+                LEFT JOIN usuarios_info ui2 ON ui2.usuario_id = u.id
                 WHERE rpc.productor_id_real = :idr
             ");
                 $st2->execute([':idr' => $sol['productor_id_real']]);
