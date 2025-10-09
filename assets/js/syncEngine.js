@@ -29,7 +29,8 @@
         if (badge) badge.style.display = 'inline-block';
         try {
             const all = await window.OfflineDB.outboxAll().catch(() => []);
-            for (const entry of (all || [])) {
+            const list = Array.isArray(all) ? all : [];
+            for (const entry of list) {
                 try {
                     const result = await sendEntry(entry);
                     // Si el backend devuelve ids útiles (p.ej. reporte_id), podríamos actualizar caches aquí.

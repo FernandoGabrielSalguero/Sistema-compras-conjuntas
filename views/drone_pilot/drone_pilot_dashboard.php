@@ -41,6 +41,10 @@ $sesionDebug = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE</title>
 
+    <!-- Manifest PWA -->
+    <link rel="manifest" href="/assets/js/manifest.webmanifest" crossorigin="use-credentials">
+    <meta name="theme-color" content="#5b21b6">
+
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -49,11 +53,11 @@ $sesionDebug = [
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
-        <!-- Offline/PWA (defer para cargar antes de tus scripts inline del body) -->
-    <script src="/assets/js/offlineDb.js" defer></script>
-    <script src="/assets/js/syncEngine.js" defer></script>
-    <script src="/assets/js/offlineApi.js" defer></script>
-    <script src="/assets/js/connectivity.js" defer></script>
+    <!-- Offline/PWA (versión con cache-bust para asegurar última versión) -->
+    <script src="/assets/js/offlineDb.js?v=2" defer></script>
+    <script src="/assets/js/syncEngine.js?v=2" defer></script>
+    <script src="/assets/js/offlineApi.js?v=2" defer></script>
+    <script src="/assets/js/connectivity.js?v=2" defer></script>
 
     <!-- CDN firma con dedo -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" defer></script>
@@ -489,15 +493,15 @@ $sesionDebug = [
         <div class="main">
 
             <!-- 🟪 NAVBAR -->
-<header class="navbar">
-    <button class="btn-icon" onclick="toggleSidebar()">
-        <span class="material-icons">menu</span>
-    </button>
-    <div class="navbar-title">Inicio
-        <span id="badge-offline" class="badge danger" style="margin-left:.5rem;display:none;">Offline</span>
-        <span id="badge-sync" class="badge info" style="margin-left:.5rem;display:none;">Sincronizando…</span>
-    </div>
-</header>
+            <header class="navbar">
+                <button class="btn-icon" onclick="toggleSidebar()">
+                    <span class="material-icons">menu</span>
+                </button>
+                <div class="navbar-title">Inicio
+                    <span id="badge-offline" class="badge danger" style="margin-left:.5rem;display:none;">Offline</span>
+                    <span id="badge-sync" class="badge info" style="margin-left:.5rem;display:none;">Sincronizando…</span>
+                </div>
+            </header>
 
             <!-- 📦 CONTENIDO -->
             <section class="content">
@@ -785,7 +789,9 @@ $sesionDebug = [
             if (!('serviceWorker' in navigator)) return;
             // Fuerza raíz del dominio y agrega versión para bust de cache
             const swUrl = `${location.origin}/sw.js?v=1`;
-            navigator.serviceWorker.register(swUrl, { scope: '/' })
+            navigator.serviceWorker.register(swUrl, {
+                    scope: '/'
+                })
                 .catch(err => console.warn('SW register error:', err));
         })();
     </script>
@@ -1290,22 +1296,29 @@ $sesionDebug = [
     </div>`).join('');
         }
         // Cargar solicitudes usando cardsSkeleton()
-async function cargarSolicitudes() {
-    try {
-        cardsSkeleton(3);
-        const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
-            credentials: 'same-origin'
-        });
-        const txt = await res.text(); // ← siempre hay cuerpo
-        let payload;
-        try { payload = JSON.parse(txt || '{}'); } catch { payload = { ok:false, data: [] }; }
-        if (!res.ok && !payload?.data) throw new Error('HTTP ' + res.status);
-        renderCards(payload.data || []);
-    } catch (e) {
-        console.error(e);
-        document.getElementById('cards-solicitudes').innerHTML = `<div class="alert danger"><span class="material-icons">error</span>Error al cargar</div>`;
-    }
-}
+        async function cargarSolicitudes() {
+            try {
+                cardsSkeleton(3);
+                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
+                    credentials: 'same-origin'
+                });
+                const txt = await res.text(); // ← siempre hay cuerpo
+                let payload;
+                try {
+                    payload = JSON.parse(txt || '{}');
+                } catch {
+                    payload = {
+                        ok: false,
+                        data: []
+                    };
+                }
+                if (!res.ok && !payload?.data) throw new Error('HTTP ' + res.status);
+                renderCards(payload.data || []);
+            } catch (e) {
+                console.error(e);
+                document.getElementById('cards-solicitudes').innerHTML = `<div class="alert danger"><span class="material-icons">error</span>Error al cargar</div>`;
+            }
+        }
         // Delegación de clicks en cards
         document.getElementById('cards-solicitudes')?.addEventListener('click', (e) => {
             const btn = e.target.closest('button[data-action]');
@@ -1394,22 +1407,29 @@ async function cargarSolicitudes() {
         });
 
         // Cargar catálogo liviano para datalist (por nombre)
-async function cargarCatalogoProductos() {
-    try {
-        const dl = document.getElementById('cat-productos');
-        if (!dl) return;
-        const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=catalogo_productos`, {
-            credentials: 'same-origin'
-        });
-        const txt = await res.text();
-        let js;
-        try { js = JSON.parse(txt || '{}'); } catch { js = { ok:false, data: [] }; }
-        const items = js.ok ? (js.data || []) : [];
-        dl.innerHTML = items.map(i => `<option value="${i.nombre}"></option>`).join('');
-    } catch (e) {
-        console.warn('catalogo productos', e);
-    }
-}
+        async function cargarCatalogoProductos() {
+            try {
+                const dl = document.getElementById('cat-productos');
+                if (!dl) return;
+                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=catalogo_productos`, {
+                    credentials: 'same-origin'
+                });
+                const txt = await res.text();
+                let js;
+                try {
+                    js = JSON.parse(txt || '{}');
+                } catch {
+                    js = {
+                        ok: false,
+                        data: []
+                    };
+                }
+                const items = js.ok ? (js.data || []) : [];
+                dl.innerHTML = items.map(i => `<option value="${i.nombre}"></option>`).join('');
+            } catch (e) {
+                console.warn('catalogo productos', e);
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', cargarCatalogoProductos);
 
@@ -1466,4 +1486,5 @@ async function cargarCatalogoProductos() {
         });
     </script>
 </body>
+
 </html>

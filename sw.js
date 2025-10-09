@@ -10,15 +10,17 @@ const CORE = [
     '/assets/js/offlineApi.js',
     '/assets/js/syncEngine.js',
     '/assets/js/connectivity.js',
-    '/assets/png/logo_con_color_original.png',
-    'https://www.fernandosalguero.com/cdn/assets/css/framework.css',
-    'https://www.fernandosalguero.com/cdn/assets/javascript/framework.js'
+    '/assets/png/logo_con_color_original.png'
 ];
 
+
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(PRECACHE).then((cache) => cache.addAll(CORE)).then(self.skipWaiting())
-    );
+    event.waitUntil((async () => {
+        const cache = await caches.open(PRECACHE);
+        // Solo same-origin en precache
+        await cache.addAll(CORE);
+        await self.skipWaiting();
+    })());
 });
 
 self.addEventListener('activate', (event) => {
