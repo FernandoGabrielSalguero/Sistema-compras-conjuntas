@@ -444,8 +444,15 @@ $sesionDebug = [
         }
     </style>
 
-
-
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0ea5e9">
+<link rel="preconnect" href="https://www.fernandosalguero.com" crossorigin>
+<script>
+  window.SVE_CDN = {
+    css: "https://www.fernandosalguero.com/cdn/assets/css/framework.css",
+    js:  "https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"
+  };
+</script>
 </head>
 
 <body>
@@ -1518,6 +1525,7 @@ $sesionDebug = [
 
     </script>
 
+<script src="/assets/js/offline.js"></script>
 </body>
 
 </html>
