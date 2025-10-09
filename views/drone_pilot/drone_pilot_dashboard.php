@@ -41,33 +41,10 @@ $sesionDebug = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE</title>
 
-  <link rel="manifest" href="/assets/js/manifest.webmanifest">
-
-<script>
-  // Evita doble carga si el layout base ya lo incluye
-  (function(){
-    var el = document.getElementById('fs-framework');
-    if (el && el.dataset.loaded === "1") { el.remove(); }
-    else if (el) { el.dataset.loaded = "1"; }
-  })();
-
-  // Registro del Service Worker (idempotente)
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(e => console.error('[SW register]', e));
-  }
-</script>
-
-<!-- Orden: DB -> API -> Sync -> Conectividad -->
-<script src="/assets/js/offlineDb.js"></script>
-<script src="/assets/js/offlineApi.js"></script>
-<script src="/assets/js/syncEngine.js"></script>
-<script src="/assets/js/connectivity.js"></script>
-
-    
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    
+
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
@@ -510,10 +487,7 @@ $sesionDebug = [
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="navbar-title">Inicio
-                    <span id="badge-offline" class="badge danger" style="margin-left:.5rem;display:none;">Offline</span>
-                    <span id="badge-sync" class="badge info" style="margin-left:.5rem;display:none;">Sincronizando…</span>
-                </div>
+                <div class="navbar-title">Inicio</div>
             </header>
 
             <!-- 📦 CONTENIDO -->
@@ -796,20 +770,81 @@ $sesionDebug = [
         </div>
     </div>
 
-    <!-- Registro del Service Worker (asegurar ruta raíz) -->
     <script>
-        (function registerSW() {
-            if (!('serviceWorker' in navigator)) return;
-            // Fuerza raíz del dominio y agrega versión para bust de cache
-            const swUrl = `${location.origin}/sw.js?v=1`;
-            navigator.serviceWorker.register(swUrl, {
-                    scope: '/'
-                })
-                .catch(err => console.warn('SW register error:', err));
-        })();
-    </script>
+        // --- Lógica: fetch + render a tabla
+        const $tbody = document.getElementById('tbody-solicitudes');
 
-    <script>
+        function rowSkeleton(n = 3) {
+            $tbody.innerHTML = '';
+            for (let i = 0; i < n; i++) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                <td colspan="7">
+                    <div class="skeleton h-4 w-full"></div>
+                </td>`;
+                $tbody.appendChild(tr);
+            }
+        }
+
+        function renderRows(items) {
+            if (!Array.isArray(items) || items.length === 0) {
+                $tbody.innerHTML = `
+            <tr>
+                <td colspan="8">
+                    <div class="alert info">
+                        <span class="material-icons">info</span>
+                        No se encontraron solicitudes asignadas a tu usuario.
+                    </div>
+                </td>
+            </tr>`;
+                return;
+            }
+            $tbody.innerHTML = items.map(s => `
+        <tr data-id="${s.id}">
+            <td>${s.id}</td>
+            <td>${s.productor_nombre ?? '-'}</td>
+            <td>${s.fecha_visita ?? '-'}</td>
+            <td>${s.hora_visita_desde ?? '-'}</td>
+            <td>${s.hora_visita_hasta ?? '-'}</td>
+            <td>${s.superficie_ha ?? '-'}</td>
+            <td>${s.dir_localidad ?? '-'}</td>
+            <td>
+                <button class="btn-icon" title="Ver detalle" data-action="ver" data-id="${s.id}">
+                    <span class="material-icons">visibility</span>
+                </button>
+                <button class="btn-icon" title="Cargar reporte" data-action="reporte" data-id="${s.id}">
+                    <span class="material-icons">description</span>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+        }
+
+        async function cargarSolicitudes() {
+            try {
+                rowSkeleton(3);
+                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
+                    credentials: 'same-origin'
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const payload = await res.json();
+                renderRows(payload.data || []);
+            } catch (e) {
+                console.error(e);
+                $tbody.innerHTML = `
+                <tr>
+                    <td colspan="7">
+                        <div class="alert danger">
+                            <span class="material-icons">error</span>
+                            Ocurrió un error al obtener las solicitudes. Intenta nuevamente.
+                        </div>
+                    </td>
+                </tr>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarSolicitudes);
+
         // listeners, detalle, reporte, firma
         let signatureCliente, signaturePiloto;
 
@@ -1315,17 +1350,8 @@ $sesionDebug = [
                 const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
                     credentials: 'same-origin'
                 });
-                const txt = await res.text(); // ← siempre hay cuerpo
-                let payload;
-                try {
-                    payload = JSON.parse(txt || '{}');
-                } catch {
-                    payload = {
-                        ok: false,
-                        data: []
-                    };
-                }
-                if (!res.ok && !payload?.data) throw new Error('HTTP ' + res.status);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const payload = await res.json();
                 renderCards(payload.data || []);
             } catch (e) {
                 console.error(e);
@@ -1427,23 +1453,14 @@ $sesionDebug = [
                 const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=catalogo_productos`, {
                     credentials: 'same-origin'
                 });
-                const txt = await res.text();
-                let js;
-                try {
-                    js = JSON.parse(txt || '{}');
-                } catch {
-                    js = {
-                        ok: false,
-                        data: []
-                    };
-                }
-                const items = js.ok ? (js.data || []) : [];
-                dl.innerHTML = items.map(i => `<option value="${i.nombre}"></option>`).join('');
+                if (!res.ok) return;
+                const js = await res.json();
+                const items = js.ok ? js.data : [];
+                dl.innerHTML = (items || []).map(i => `<option value="${i.nombre}"></option>`).join('');
             } catch (e) {
                 console.warn('catalogo productos', e);
             }
         }
-
         document.addEventListener('DOMContentLoaded', cargarCatalogoProductos);
 
         // Fallback por si no existe aún la tarjeta (evita TypeError)
@@ -1498,6 +1515,9 @@ $sesionDebug = [
             }
         });
     </script>
+
+    </script>
+
 </body>
 
 </html>
