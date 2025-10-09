@@ -1,9 +1,7 @@
 // sw.js - PWA básico para SVE (precaching + runtime)
-// Cache names
 const PRECACHE = 'sve-precache-v1';
 const RUNTIME = 'sve-runtime-v1';
 
-// Archivos núcleo (shell). Ajusta rutas si cambias la estructura.
 const CORE = [
     '/',
     '/index.php',
@@ -31,13 +29,10 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Runtime caching: estáticos del CDN y GET a controladores.
-// Para POST/PUT la lógica offline está en offlineApi (cola en IndexedDB).
 self.addEventListener('fetch', (event) => {
     const req = event.request;
     const url = new URL(req.url);
 
-    // Sólo GET elegibles
     const isGET = req.method === 'GET';
     const isSameOrigin = url.origin === location.origin;
     const isStaticCdn = url.href.startsWith('https://www.fernandosalguero.com/cdn/');
@@ -52,12 +47,14 @@ async function staleWhileRevalidate(request) {
     const cache = await caches.open(RUNTIME);
     const cached = await cache.match(request);
     const networkFetch = fetch(request).then(resp => {
-        // Clonamos y guardamos si es válido
         if (resp && resp.status === 200 && (resp.type === 'basic' || resp.type === 'cors')) {
             cache.put(request, resp.clone()).catch(() => { });
         }
         return resp;
     }).catch(() => null);
 
-    return cached || networkFetch || new Response('', { status: 504 });
+    return cached || networkFetch || new Response(
+        JSON.stringify({ ok: false, message: 'offline', data: [] }),
+        { status: 504, headers: { 'Content-Type': 'application/json' } }
+    );
 }

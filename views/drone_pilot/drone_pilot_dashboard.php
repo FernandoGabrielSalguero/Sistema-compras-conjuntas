@@ -779,90 +779,18 @@ $sesionDebug = [
         </div>
     </div>
 
-    <!-- Registro del Service Worker (aislado del resto de la lógica) -->
+    <!-- Registro del Service Worker (asegurar ruta raíz) -->
     <script>
         (function registerSW() {
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(console.warn);
-            }
+            if (!('serviceWorker' in navigator)) return;
+            // Fuerza raíz del dominio y agrega versión para bust de cache
+            const swUrl = `${location.origin}/sw.js?v=1`;
+            navigator.serviceWorker.register(swUrl, { scope: '/' })
+                .catch(err => console.warn('SW register error:', err));
         })();
     </script>
 
     <script>
-        // --- Lógica: fetch + render a tabla
-        const $tbody = document.getElementById('tbody-solicitudes');
-
-        function rowSkeleton(n = 3) {
-            $tbody.innerHTML = '';
-            for (let i = 0; i < n; i++) {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                <td colspan="7">
-                    <div class="skeleton h-4 w-full"></div>
-                </td>`;
-                $tbody.appendChild(tr);
-            }
-        }
-
-        function renderRows(items) {
-            if (!Array.isArray(items) || items.length === 0) {
-                $tbody.innerHTML = `
-            <tr>
-                <td colspan="8">
-                    <div class="alert info">
-                        <span class="material-icons">info</span>
-                        No se encontraron solicitudes asignadas a tu usuario.
-                    </div>
-                </td>
-            </tr>`;
-                return;
-            }
-            $tbody.innerHTML = items.map(s => `
-        <tr data-id="${s.id}">
-            <td>${s.id}</td>
-            <td>${s.productor_nombre ?? '-'}</td>
-            <td>${s.fecha_visita ?? '-'}</td>
-            <td>${s.hora_visita_desde ?? '-'}</td>
-            <td>${s.hora_visita_hasta ?? '-'}</td>
-            <td>${s.superficie_ha ?? '-'}</td>
-            <td>${s.dir_localidad ?? '-'}</td>
-            <td>
-                <button class="btn-icon" title="Ver detalle" data-action="ver" data-id="${s.id}">
-                    <span class="material-icons">visibility</span>
-                </button>
-                <button class="btn-icon" title="Cargar reporte" data-action="reporte" data-id="${s.id}">
-                    <span class="material-icons">description</span>
-                </button>
-            </td>
-        </tr>
-    `).join('');
-        }
-
-        async function cargarSolicitudes() {
-            try {
-                rowSkeleton(3);
-                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
-                    credentials: 'same-origin'
-                });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const payload = await res.json();
-                renderRows(payload.data || []);
-            } catch (e) {
-                console.error(e);
-                $tbody.innerHTML = `
-                <tr>
-                    <td colspan="7">
-                        <div class="alert danger">
-                            <span class="material-icons">error</span>
-                            Ocurrió un error al obtener las solicitudes. Intenta nuevamente.
-                        </div>
-                    </td>
-                </tr>`;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', cargarSolicitudes);
-
         // listeners, detalle, reporte, firma
         let signatureCliente, signaturePiloto;
 
@@ -1362,20 +1290,22 @@ $sesionDebug = [
     </div>`).join('');
         }
         // Cargar solicitudes usando cardsSkeleton()
-        async function cargarSolicitudes() {
-            try {
-                cardsSkeleton(3);
-                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
-                    credentials: 'same-origin'
-                });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const payload = await res.json();
-                renderCards(payload.data || []);
-            } catch (e) {
-                console.error(e);
-                document.getElementById('cards-solicitudes').innerHTML = `<div class="alert danger"><span class="material-icons">error</span>Error al cargar</div>`;
-            }
-        }
+async function cargarSolicitudes() {
+    try {
+        cardsSkeleton(3);
+        const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
+            credentials: 'same-origin'
+        });
+        const txt = await res.text(); // ← siempre hay cuerpo
+        let payload;
+        try { payload = JSON.parse(txt || '{}'); } catch { payload = { ok:false, data: [] }; }
+        if (!res.ok && !payload?.data) throw new Error('HTTP ' + res.status);
+        renderCards(payload.data || []);
+    } catch (e) {
+        console.error(e);
+        document.getElementById('cards-solicitudes').innerHTML = `<div class="alert danger"><span class="material-icons">error</span>Error al cargar</div>`;
+    }
+}
         // Delegación de clicks en cards
         document.getElementById('cards-solicitudes')?.addEventListener('click', (e) => {
             const btn = e.target.closest('button[data-action]');
@@ -1464,21 +1394,23 @@ $sesionDebug = [
         });
 
         // Cargar catálogo liviano para datalist (por nombre)
-        async function cargarCatalogoProductos() {
-            try {
-                const dl = document.getElementById('cat-productos');
-                if (!dl) return;
-                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=catalogo_productos`, {
-                    credentials: 'same-origin'
-                });
-                if (!res.ok) return;
-                const js = await res.json();
-                const items = js.ok ? js.data : [];
-                dl.innerHTML = (items || []).map(i => `<option value="${i.nombre}"></option>`).join('');
-            } catch (e) {
-                console.warn('catalogo productos', e);
-            }
-        }
+async function cargarCatalogoProductos() {
+    try {
+        const dl = document.getElementById('cat-productos');
+        if (!dl) return;
+        const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=catalogo_productos`, {
+            credentials: 'same-origin'
+        });
+        const txt = await res.text();
+        let js;
+        try { js = JSON.parse(txt || '{}'); } catch { js = { ok:false, data: [] }; }
+        const items = js.ok ? (js.data || []) : [];
+        dl.innerHTML = items.map(i => `<option value="${i.nombre}"></option>`).join('');
+    } catch (e) {
+        console.warn('catalogo productos', e);
+    }
+}
+
         document.addEventListener('DOMContentLoaded', cargarCatalogoProductos);
 
         // Fallback por si no existe aún la tarjeta (evita TypeError)

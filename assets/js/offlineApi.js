@@ -70,7 +70,8 @@
             }
             // Sin cache: esperamos a la red o devolvemos 504 si falla
             const n = await net;
-            return n || new Response(JSON.stringify({ ok: false, message: 'Sin conexión y sin cache' }), { status: 504 });
+            return n || new Response(JSON.stringify({ ok: false, message: 'Sin conexión y sin cache', data: [] }), { status: 504, headers: { 'Content-Type': 'application/json' } });
+
         }
 
         // POST/PUT: si offline o falla la red => encolamos en outbox

@@ -28,8 +28,8 @@
         const badge = document.getElementById('badge-sync');
         if (badge) badge.style.display = 'inline-block';
         try {
-            const all = await window.OfflineDB.outboxAll();
-            for (const entry of all) {
+            const all = await window.OfflineDB.outboxAll().catch(() => []);
+            for (const entry of (all || [])) {
                 try {
                     const result = await sendEntry(entry);
                     // Si el backend devuelve ids útiles (p.ej. reporte_id), podríamos actualizar caches aquí.
