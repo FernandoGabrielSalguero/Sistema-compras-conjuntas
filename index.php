@@ -116,6 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="es">
 
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión</title>
@@ -216,18 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             user-select: none;
         }
     </style>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0ea5e9">
-<link rel="preconnect" href="https://www.fernandosalguero.com" crossorigin>
-<script>
-  // Rutas de tu CDN para que el SW y el bootstrap las pre-cachen
-  window.SVE_CDN = {
-    css: "https://www.fernandosalguero.com/cdn/assets/css/framework.css",
-    js:  "https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"
-  };
-</script>
 </head>
-
 
 <body>
     <div class="login-container">
@@ -283,8 +273,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Spinner Global -->
     <script src="views/partials/spinner-global.js"></script>
-<script src="/assets/js/offline.js"></script>
 </body>
-
 
 </html>

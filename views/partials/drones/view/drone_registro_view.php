@@ -1,7 +1,7 @@
 <?php // views/partials/drones/view/drone_calendar_view.php ?>
 <div class="content">
   <div class="card" style="background-color:#5b21b6;">
-    <h3 style="color:white;">Módulo: Calendario</h3>
+    <h3 style="color:white;">Módulo: Registro Fito Sanitario</h3>
     <p style="color:white;margin:0;">Plantilla mínima lista para empezar.</p>
   </div>
 
