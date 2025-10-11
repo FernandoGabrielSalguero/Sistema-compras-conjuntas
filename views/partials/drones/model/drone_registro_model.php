@@ -7,62 +7,91 @@ class DroneRegistroModel
     public $pdo;
 
     /**
-     * Listado compacto para tarjetas.
-     * Filtro opcional por texto (productor/localidad) y estado.
+     * Listado para tarjetas: solo 'completada' y segmentado por rol.
+     * $ctx = ['rol' => ..., 'id_real' => ...]
      */
-    public function getSolicitudesList(?string $q = null, ?string $estado = null): array {
-        $sql = "
+    public function getSolicitudesList(?string $q, array $ctx): array {
+        $base = "
             SELECT 
               s.id,
               s.fecha_visita,
-              s.hora_visita_desde AS hora_desde,
-              s.hora_visita_hasta AS hora_hasta,
-              s.dir_localidad,
-              s.dir_provincia,
-              s.superficie_ha,
-              s.agua_potable,
-              s.estado,
               COALESCE(s.ses_nombre, ui.nombre) AS productor
             FROM drones_solicitud s
-            LEFT JOIN usuarios u      ON u.id_real = s.productor_id_real
-            LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
-            WHERE 1=1
+            LEFT JOIN usuarios u        ON u.id_real = s.productor_id_real
+            LEFT JOIN usuarios_info ui  ON ui.usuario_id = u.id
+            LEFT JOIN cooperativas_rangos cr ON cr.nombre_cooperativa = s.coop_descuento_nombre
+            LEFT JOIN rel_coop_ingeniero rci ON rci.cooperativa_id_real = cr.cooperativa_id_real
+            WHERE s.estado = 'completada'
         ";
         $params = [];
+
+        // Filtro por rol
+        $rol = $ctx['rol'] ?? '';
+        $idReal = $ctx['id_real'] ?? '';
+        if ($rol === 'productor') {
+            $base .= " AND s.productor_id_real = :id_real ";
+            $params[':id_real'] = $idReal;
+        } elseif ($rol === 'cooperativa') {
+            // La cooperativa ve lo asociado a su nombre → mapeado a id_real via cooperativas_rangos
+            $base .= " AND cr.cooperativa_id_real = :id_real ";
+            $params[':id_real'] = $idReal;
+        } elseif ($rol === 'ingeniero') {
+            // Ingeniero asociado a esa cooperativa
+            $base .= " AND rci.ingeniero_id_real = :id_real ";
+            $params[':id_real'] = $idReal;
+        } elseif ($rol === 'sve') {
+            // SVE ve todo (no agrega filtro)
+        } else {
+            // Cualquier otro rol no autorizado → 0 resultados
+            return [];
+        }
+
         if ($q) {
-            $sql .= " AND (COALESCE(s.ses_nombre, ui.nombre) LIKE :q OR s.dir_localidad LIKE :q) ";
+            $base .= " AND (COALESCE(s.ses_nombre, ui.nombre) LIKE :q OR s.dir_localidad LIKE :q) ";
             $params[':q'] = "%$q%";
         }
-        if ($estado) {
-            $sql .= " AND s.estado = :estado ";
-            $params[':estado'] = $estado;
-        }
-        $sql .= " ORDER BY s.fecha_visita DESC, s.id DESC LIMIT 200";
-        $st = $this->pdo->prepare($sql);
+
+        $base .= " ORDER BY s.fecha_visita DESC, s.id DESC LIMIT 200";
+        $st = $this->pdo->prepare($base);
         $st->execute($params);
         return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
     /**
-     * Detalle completo para el Registro Fitosanitario.
+     * Detalle completo con autorización por rol.
+     * $ctx = ['rol'=>..., 'id_real'=>...]
      */
-    public function getRegistroDetalle(int $id): array {
-        // Solicitud base
+    public function getRegistroDetalle(int $id, array $ctx): array {
+        // Traemos la solicitud y además datos para verificar permisos por rol
         $st = $this->pdo->prepare("
             SELECT s.*,
-                   COALESCE(s.ses_nombre, ui.nombre)   AS productor_nombre,
-                   ui.telefono                         AS productor_telefono
+                   COALESCE(s.ses_nombre, ui.nombre) AS productor_nombre,
+                   ui.telefono AS productor_telefono,
+                   cr.cooperativa_id_real           AS coop_id_real,
+                   rci.ingeniero_id_real            AS ing_id_real
             FROM drones_solicitud s
-            LEFT JOIN usuarios u       ON u.id_real = s.productor_id_real
-            LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
-            WHERE s.id = :id
+            LEFT JOIN usuarios u        ON u.id_real = s.productor_id_real
+            LEFT JOIN usuarios_info ui  ON ui.usuario_id = u.id
+            LEFT JOIN cooperativas_rangos cr ON cr.nombre_cooperativa = s.coop_descuento_nombre
+            LEFT JOIN rel_coop_ingeniero rci ON rci.cooperativa_id_real = cr.cooperativa_id_real
+            WHERE s.id = :id AND s.estado = 'completada'
             LIMIT 1
         ");
         $st->execute([':id'=>$id]);
         $sol = $st->fetch(PDO::FETCH_ASSOC);
         if (!$sol) return [];
 
-        // Último reporte cargado (si existe)
+        // Autorización por rol
+        $rol = $ctx['rol'] ?? '';
+        $idReal = $ctx['id_real'] ?? '';
+        $autorizado = false;
+        if ($rol === 'sve') $autorizado = true;
+        if ($rol === 'productor'  && $sol['productor_id_real'] === $idReal) $autorizado = true;
+        if ($rol === 'cooperativa'&& $sol['coop_id_real'] === $idReal)       $autorizado = true;
+        if ($rol === 'ingeniero'  && $sol['ing_id_real'] === $idReal)        $autorizado = true;
+        if (!$autorizado) return []; // no exponer datos
+
+        // Reporte (último)
         $st = $this->pdo->prepare("SELECT * FROM drones_solicitud_Reporte WHERE solicitud_id = :id ORDER BY id DESC LIMIT 1");
         $st->execute([':id'=>$id]);
         $reporte = $st->fetch(PDO::FETCH_ASSOC) ?: null;
@@ -82,11 +111,9 @@ class DroneRegistroModel
               r.dosis,
               r.cant_prod_usado,
               r.unidad,
-              r.fecha_vencimiento,
-              NULL AS fecha,
-              NULL AS cuadro_cuartel
+              r.fecha_vencimiento
             FROM drones_solicitud_item i
-            LEFT JOIN dron_productos_stock dps      ON dps.id = i.producto_id
+            LEFT JOIN dron_productos_stock dps       ON dps.id = i.producto_id
             LEFT JOIN drones_solicitud_item_receta r ON r.solicitud_item_id = i.id
             WHERE i.solicitud_id = :id
             ORDER BY i.id ASC
