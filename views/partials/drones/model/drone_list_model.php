@@ -80,11 +80,11 @@ final class DroneListModel
         $pred = AuthzVista::sqlVisibleProductores('s.productor_id_real', $ctx, $params);
         $where[] = $pred;
 
-if (!empty($f['q'])) {
-    // ui.nombre = nombre del productor desde usuarios_info
-    $where[]      = "(s.ses_usuario LIKE :q OR ui.nombre LIKE :q OR u.usuario LIKE :q OR s.productor_id_real LIKE :q)";
-    $params[':q'] = '%' . $f['q'] . '%';
-}
+        if (!empty($f['q'])) {
+            // ui.nombre = nombre del productor desde usuarios_info
+            $where[]      = "(s.ses_usuario LIKE :q OR ui.nombre LIKE :q OR u.usuario LIKE :q OR s.productor_id_real LIKE :q)";
+            $params[':q'] = '%' . $f['q'] . '%';
+        }
         if (!empty($f['ses_usuario'])) {
             $where[] = "s.ses_usuario LIKE :ses_usuario";
             $params[':ses_usuario'] = '%' . $f['ses_usuario'] . '%';
@@ -172,11 +172,11 @@ if (!empty($f['q'])) {
         $pred = AuthzVista::sqlVisibleProductores('s.productor_id_real', $ctx, $params);
         $where[] = $pred;
 
-if (!empty($f['q'])) {
-    // ui.nombre = nombre del productor desde usuarios_info
-    $where[]      = "(s.ses_usuario LIKE :q OR ui.nombre LIKE :q OR u.usuario LIKE :q OR s.productor_id_real LIKE :q)";
-    $params[':q'] = '%' . $f['q'] . '%';
-}
+        if (!empty($f['q'])) {
+            // ui.nombre = nombre del productor desde usuarios_info
+            $where[]      = "(s.ses_usuario LIKE :q OR ui.nombre LIKE :q OR u.usuario LIKE :q OR s.productor_id_real LIKE :q)";
+            $params[':q'] = '%' . $f['q'] . '%';
+        }
         if (!empty($f['ses_usuario'])) {
             $where[] = "s.ses_usuario LIKE :ses_usuario";
             $params[':ses_usuario'] = '%' . $f['ses_usuario'] . '%';
@@ -279,5 +279,80 @@ ORDER BY s.created_at DESC, s.id DESC, si.id ASC
         $rows = $st->fetchAll() ?: [];
 
         return ['items' => $rows, 'total' => count($rows)];
+    }
+
+    /**
+     * Devuelve JSON profundo de una solicitud y TODAS las tablas relacionadas.
+     * Respeta visibilidad por rol usando AuthzVista igual que en delete/list.
+     * @param int $id
+     * @param array $ctx ['rol'=>string,'id_real'=>string]
+     * @return array
+     * @throws Throwable
+     */
+    public function obtenerSolicitudDeep(int $id, array $ctx = []): array
+    {
+        if ($id <= 0) {
+            return [];
+        }
+
+        $params = [':id' => $id];
+        $pred   = AuthzVista::sqlVisibleProductores('s.productor_id_real', $ctx, $params);
+
+        // 1) solicitud (control de visibilidad)
+        $sqlSolicitud = "SELECT *
+                         FROM drones_solicitud s
+                         WHERE s.id = :id AND {$pred}
+                         LIMIT 1";
+        $stSol = $this->pdo->prepare($sqlSolicitud);
+        foreach ($params as $k => $v) {
+            $stSol->bindValue($k, $v, is_int($v) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stSol->execute();
+        $solicitud = $stSol->fetch();
+        if (!$solicitud) {
+            return []; // no visible o no existe
+        }
+
+        // 2) tablas relacionadas por solicitud_id
+        $bindId = function (PDOStatement $st) use ($id) {
+            $st->bindValue(':id', $id, PDO::PARAM_INT);
+            $st->execute();
+            return $st->fetchAll() ?: [];
+        };
+
+        $qCostos      = $this->pdo->prepare("SELECT * FROM drones_solicitud_costos WHERE solicitud_id = :id");
+        $qItems       = $this->pdo->prepare("SELECT * FROM drones_solicitud_item WHERE solicitud_id = :id ORDER BY id ASC");
+        $qItemReceta  = $this->pdo->prepare("
+            SELECT r.* 
+            FROM drones_solicitud_item_receta r
+            JOIN drones_solicitud_item i ON i.id = r.solicitud_item_id
+            WHERE i.solicitud_id = :id
+            ORDER BY r.id ASC
+        ");
+        $qMotivo      = $this->pdo->prepare("SELECT * FROM drones_solicitud_motivo WHERE solicitud_id = :id");
+        $qRango       = $this->pdo->prepare("SELECT * FROM drones_solicitud_rango WHERE solicitud_id = :id");
+        $qParametros  = $this->pdo->prepare("SELECT * FROM drones_solicitud_parametros WHERE solicitud_id = :id");
+        $qReporte     = $this->pdo->prepare("SELECT * FROM drones_solicitud_Reporte WHERE solicitud_id = :id");
+        $qRepMedia    = $this->pdo->prepare("
+            SELECT m.* 
+            FROM drones_solicitud_reporte_media m
+            JOIN drones_solicitud_Reporte r ON r.id = m.reporte_id
+            WHERE r.solicitud_id = :id
+            ORDER BY m.id ASC
+        ");
+        $qEventos     = $this->pdo->prepare("SELECT * FROM drones_solicitud_evento WHERE solicitud_id = :id ORDER BY id ASC");
+
+        return [
+            'solicitud'         => $solicitud,
+            'costos'            => $bindId($qCostos),
+            'items'             => $bindId($qItems),
+            'items_recetas'     => $bindId($qItemReceta),
+            'motivo'            => $bindId($qMotivo),
+            'rango'             => $bindId($qRango),
+            'parametros'        => $bindId($qParametros),
+            'reporte'           => $bindId($qReporte),
+            'reporte_media'     => $bindId($qRepMedia),
+            'eventos'           => $bindId($qEventos),
+        ];
     }
 }

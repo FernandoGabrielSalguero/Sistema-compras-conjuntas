@@ -53,6 +53,25 @@ try {
         exit;
     }
 
+    // ===== NUEVO: JSON profundo de la solicitud =====
+    if ($action === 'solicitud_json') {
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if ($id <= 0) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'ID inválido'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        $deep = $model->obtenerSolicitudDeep($id, $ctx);
+        if (!$deep) {
+            http_response_code(404);
+            echo json_encode(['ok' => false, 'error' => 'Solicitud no encontrada'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        echo json_encode(['ok' => true, 'data' => $deep], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+
     if ($action === 'delete_solicitud') {
         if (strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
             http_response_code(405);
@@ -87,17 +106,17 @@ try {
             exit;
         }
 
-// Solo SVE
-if (strtolower((string)$ctx['rol']) !== 'sve') {
-    http_response_code(403);
-    echo json_encode(['ok' => false, 'error' => 'No autorizado'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
+        // Solo SVE
+        if (strtolower((string)$ctx['rol']) !== 'sve') {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => 'No autorizado'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
 
-// Opcionalmente “prepararnos” para lotes grandes en export:
-// (no cambia la salida; ayuda a evitar timeouts en entornos restringidos)
-@set_time_limit(0);
-@ini_set('memory_limit', '1024M');
+        // Opcionalmente “prepararnos” para lotes grandes en export:
+        // (no cambia la salida; ayuda a evitar timeouts en entornos restringidos)
+        @set_time_limit(0);
+        @ini_set('memory_limit', '1024M');
 
         $body    = read_json_body();
         $filtros = isset($body['filtros']) && is_array($body['filtros']) ? $body['filtros'] : [];
@@ -115,7 +134,7 @@ if (strtolower((string)$ctx['rol']) !== 'sve') {
         exit;
     }
 
-    
+
     http_response_code(400);
     echo json_encode(['ok' => false, 'error' => 'Acción no soportada'], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {

@@ -1,5 +1,6 @@
 <?php
 include __DIR__ . '/drone_drawerListado_view.php';
+include __DIR__ . '/drone_modal_fito_json.php';
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
@@ -182,7 +183,21 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
     #cards {
         min-height: 80px;
     }
+
+    /* ===== Reglas nuevas ===== */
+    .hidden { display: none !important; }
+
+    /* Ocultar "Detalle" cuando la tarjeta está completada (solo CSS) */
+    .product-card[data-estado="completada"] .btn-detalle {
+        display: none !important;
+    }
+
+    /* Mostrar botón "Registro Fitosanitario" solo si completada */
+    .product-card[data-estado="completada"] .btn-fito {
+        display: inline-flex !important;
+    }
 </style>
+
 
 <script>
     const DRONE_API = '../partials/drones/controller/drone_list_controller.php';
@@ -291,17 +306,21 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             }
         }
 
-        function renderCards(items) {
-            els.cards.innerHTML = '';
-            items.forEach(it => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
+        // Render de cartas
+function renderCards(items) {
+    els.cards.innerHTML = '';
+    items.forEach(it => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        // atributo de estado para reglas CSS
+        const estado = (it.estado || '').toLowerCase();
+        card.setAttribute('data-estado', estado);
+
+        card.innerHTML = `
             <div class="product-header">
                 <h4>${esc(it.productor_nombre || it.ses_usuario || 'Sin dato')}</h4>
                 <p>Pedido número: ${esc(it.id ?? '')}</p>
-                                <button type="button" class="btn-icon btn-delete" title="Eliminar solicitud" aria-label="Eliminar solicitud ${esc(it.id ?? '')}" data-id="${esc(it.id ?? '')}">
-                    <!-- Trash SVG, sin dependencias -->
+                <button type="button" class="btn-icon btn-delete" title="Eliminar solicitud" aria-label="Eliminar solicitud ${esc(it.id ?? '')}" data-id="${esc(it.id ?? '')}">
                     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                         <path d="M9 3h6a1 1 0 0 1 1 1v1h4v2h-1v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7H3V5h4V4a1 1 0 0 1 1-1Zm1 2v0h4V5h-4Zm-3 4v11h10V9H7Zm3 2h2v7H10v-7Zm4 0h2v7h-2v-7Z"/>
                     </svg>
@@ -309,13 +328,13 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             </div>
             <div class="product-body">
                 <div class="user-info">
-<div>
-    <strong>Piloto: ${esc(it.piloto || 'Sin piloto asignado')}</strong>
-    <div class="role">
-        Fecha visita: ${esc(it.fecha_visita || '')}
-        ${it.hora_visita ? `(${esc(it.hora_visita)})` : ''}
-    </div>
-</div>
+                    <div>
+                        <strong>Piloto: ${esc(it.piloto || 'Sin piloto asignado')}</strong>
+                        <div class="role">
+                            Fecha visita: ${esc(it.fecha_visita || '')}
+                            ${it.hora_visita ? `(${esc(it.hora_visita)})` : ''}
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mini-block">
@@ -330,7 +349,6 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                         : `<p class="price">$${fmtNum(it.costo_total)}</p>` }
                 </div>
 
-
                 <hr />
 
                 <div class="product-footer">
@@ -341,38 +359,55 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                     <button type="button" class="btn btn-info btn-detalle" data-id="${esc(it.id ?? '')}" aria-label="Ver detalle de pedido ${esc(it.id ?? '')}">
                         Detalle
                     </button>
+                    <button type="button" class="btn btn-success btn-fito hidden" data-id="${esc(it.id ?? '')}" aria-label="Ver Registro Fitosanitario de pedido ${esc(it.id ?? '')}">
+                        Registro Fitosanitario
+                    </button>
                 </div>
             </div>
         `;
-                els.cards.appendChild(card);
-            });
-
-            // bind botones Detalle
-            // bind botones Detalle
-            els.cards.querySelectorAll('.btn-detalle').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const id = btn.getAttribute('data-id');
-                    if (!id) return;
-                    if (window.DroneDrawerListado && typeof window.DroneDrawerListado.open === 'function') {
-                        window.DroneDrawerListado.open({
-                            id: Number(id)
-                        });
-                    } else {
-                        console.error('DroneDrawerListado no está disponible');
-                    }
-                });
-            });
-
-            // bind botón eliminar (abre modal)
-            els.cards.querySelectorAll('.btn-delete').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const id = btn.getAttribute('data-id');
-                    if (!id) return;
-                    openDeleteModal(Number(id), btn.closest('.product-card'));
-                });
-            });
+        // habilitar botón "Registro Fitosanitario" solo si está completada
+        if (estado === 'completada') {
+            const btnFito = card.querySelector('.btn-fito');
+            if (btnFito) btnFito.classList.remove('hidden');
         }
+        els.cards.appendChild(card);
+    });
 
+    // bind botón Detalle (drawer)
+    els.cards.querySelectorAll('.btn-detalle').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            if (!id) return;
+            if (window.DroneDrawerListado && typeof window.DroneDrawerListado.open === 'function') {
+                window.DroneDrawerListado.open({ id: Number(id) });
+            } else {
+                console.error('DroneDrawerListado no está disponible');
+            }
+        });
+    });
+
+    // bind botón Registro Fitosanitario (modal JSON)
+    els.cards.querySelectorAll('.btn-fito').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            if (!id) return;
+            if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
+                window.FitoJSONModal.open(Number(id));
+            } else {
+                console.error('FitoJSONModal no está disponible');
+            }
+        });
+    });
+
+    // bind botón eliminar (abre modal)
+    els.cards.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            if (!id) return;
+            openDeleteModal(Number(id), btn.closest('.product-card'));
+        });
+    });
+}
 
         // ----- Modal eliminar -----
         const modal = document.getElementById('modal-delete');
