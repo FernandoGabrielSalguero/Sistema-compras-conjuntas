@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 
 // Iniciar sesión y configurar parámetros de seguridad
 require_once '../../middleware/authMiddleware.php';
-include_once __DIR__ . '/../partials/drones/view/drone_modal_fitosanitario.php';
+
 
 checkAccess('piloto_drone');
 
@@ -27,6 +27,10 @@ $sesionDebug = [
     'rol' => $_SESSION['rol'] ?? null
 ];
 ?>
+
+
+<?php include_once __DIR__ . '/../partials/drones/view/drone_modal_fito_json.php'; ?>
+
 <script>
     // Log de sesión solo en consola
     console.log('SESSION PILOTO', <?php echo json_encode($sesionDebug, JSON_UNESCAPED_UNICODE); ?>);
