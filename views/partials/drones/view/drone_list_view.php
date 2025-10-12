@@ -185,7 +185,9 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
     }
 
     /* ===== Reglas nuevas ===== */
-    .hidden { display: none !important; }
+    .hidden {
+        display: none !important;
+    }
 
     /* Ocultar "Detalle" cuando la tarjeta está completada (solo CSS) */
     .product-card[data-estado="completada"] .btn-detalle {
@@ -195,6 +197,33 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
     /* Mostrar botón "Registro Fitosanitario" solo si completada */
     .product-card[data-estado="completada"] .btn-fito {
         display: inline-flex !important;
+    }
+
+    @media print {
+
+        /* Ocultar todo excepto el contenido del modal formateado */
+        body * {
+            visibility: hidden;
+        }
+
+        #modal-fito-json,
+        #modal-fito-json * {
+            visibility: visible;
+        }
+
+        #modal-fito-json .modal-content {
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        #modal-fito-json .form-buttons,
+        #modal-fito-json .tabs {
+            display: none !important;
+        }
+
+        #modal-fito-json {
+            position: static !important;
+        }
     }
 </style>
 
@@ -307,16 +336,16 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         }
 
         // Render de cartas
-function renderCards(items) {
-    els.cards.innerHTML = '';
-    items.forEach(it => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        // atributo de estado para reglas CSS
-        const estado = (it.estado || '').toLowerCase();
-        card.setAttribute('data-estado', estado);
+        function renderCards(items) {
+            els.cards.innerHTML = '';
+            items.forEach(it => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                // atributo de estado para reglas CSS
+                const estado = (it.estado || '').toLowerCase();
+                card.setAttribute('data-estado', estado);
 
-        card.innerHTML = `
+                card.innerHTML = `
             <div class="product-header">
                 <h4>${esc(it.productor_nombre || it.ses_usuario || 'Sin dato')}</h4>
                 <p>Pedido número: ${esc(it.id ?? '')}</p>
@@ -365,49 +394,51 @@ function renderCards(items) {
                 </div>
             </div>
         `;
-        // habilitar botón "Registro Fitosanitario" solo si está completada
-        if (estado === 'completada') {
-            const btnFito = card.querySelector('.btn-fito');
-            if (btnFito) btnFito.classList.remove('hidden');
+                // habilitar botón "Registro Fitosanitario" solo si está completada
+                if (estado === 'completada') {
+                    const btnFito = card.querySelector('.btn-fito');
+                    if (btnFito) btnFito.classList.remove('hidden');
+                }
+                els.cards.appendChild(card);
+            });
+
+            // bind botón Detalle (drawer)
+            els.cards.querySelectorAll('.btn-detalle').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.getAttribute('data-id');
+                    if (!id) return;
+                    if (window.DroneDrawerListado && typeof window.DroneDrawerListado.open === 'function') {
+                        window.DroneDrawerListado.open({
+                            id: Number(id)
+                        });
+                    } else {
+                        console.error('DroneDrawerListado no está disponible');
+                    }
+                });
+            });
+
+            // bind botón Registro Fitosanitario (modal JSON)
+            els.cards.querySelectorAll('.btn-fito').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.getAttribute('data-id');
+                    if (!id) return;
+                    if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
+                        window.FitoJSONModal.open(Number(id));
+                    } else {
+                        console.error('FitoJSONModal no está disponible');
+                    }
+                });
+            });
+
+            // bind botón eliminar (abre modal)
+            els.cards.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.getAttribute('data-id');
+                    if (!id) return;
+                    openDeleteModal(Number(id), btn.closest('.product-card'));
+                });
+            });
         }
-        els.cards.appendChild(card);
-    });
-
-    // bind botón Detalle (drawer)
-    els.cards.querySelectorAll('.btn-detalle').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.getAttribute('data-id');
-            if (!id) return;
-            if (window.DroneDrawerListado && typeof window.DroneDrawerListado.open === 'function') {
-                window.DroneDrawerListado.open({ id: Number(id) });
-            } else {
-                console.error('DroneDrawerListado no está disponible');
-            }
-        });
-    });
-
-    // bind botón Registro Fitosanitario (modal JSON)
-    els.cards.querySelectorAll('.btn-fito').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.getAttribute('data-id');
-            if (!id) return;
-            if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
-                window.FitoJSONModal.open(Number(id));
-            } else {
-                console.error('FitoJSONModal no está disponible');
-            }
-        });
-    });
-
-    // bind botón eliminar (abre modal)
-    els.cards.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.getAttribute('data-id');
-            if (!id) return;
-            openDeleteModal(Number(id), btn.closest('.product-card'));
-        });
-    });
-}
 
         // ----- Modal eliminar -----
         const modal = document.getElementById('modal-delete');
@@ -537,7 +568,7 @@ function renderCards(items) {
                     return;
                 }
 
-                                // 1) Whitelist + orden exacto de columnas requeridas
+                // 1) Whitelist + orden exacto de columnas requeridas
                 const keys = [
                     's_agua_potable',
                     's_area_despegue',
@@ -592,7 +623,9 @@ function renderCards(items) {
                 });
 
                 // 3) Hoja y anchos
-                const ws = XLSX.utils.json_to_sheet(flatRows, { header: keys });
+                const ws = XLSX.utils.json_to_sheet(flatRows, {
+                    header: keys
+                });
 
 
                 const colWidths = keys.map(k => Math.min(60, Math.max(12, k.length + 2)));

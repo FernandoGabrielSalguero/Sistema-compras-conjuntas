@@ -289,6 +289,7 @@ ORDER BY s.created_at DESC, s.id DESC, si.id ASC
      * @return array
      * @throws Throwable
      */
+
     public function obtenerSolicitudDeep(int $id, array $ctx = []): array
     {
         if ($id <= 0) {
@@ -298,11 +299,13 @@ ORDER BY s.created_at DESC, s.id DESC, si.id ASC
         $params = [':id' => $id];
         $pred   = AuthzVista::sqlVisibleProductores('s.productor_id_real', $ctx, $params);
 
-        // 1) solicitud (control de visibilidad)
-        $sqlSolicitud = "SELECT *
-                         FROM drones_solicitud s
-                         WHERE s.id = :id AND {$pred}
-                         LIMIT 1";
+        // 1) solicitud (control de visibilidad) + nombre del cliente (usuarios.usuario)
+        $sqlSolicitud = "SELECT s.*,
+                            u.usuario AS productor_usuario
+                     FROM drones_solicitud s
+                     LEFT JOIN usuarios u ON u.id_real = s.productor_id_real
+                     WHERE s.id = :id AND {$pred}
+                     LIMIT 1";
         $stSol = $this->pdo->prepare($sqlSolicitud);
         foreach ($params as $k => $v) {
             $stSol->bindValue($k, $v, is_int($v) ? PDO::PARAM_INT : PDO::PARAM_STR);
