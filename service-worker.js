@@ -83,39 +83,49 @@ self.addEventListener('fetch', (event) => {
     if (!isHttp) return; // deja pasar a la red sin tocar caches
 
     // Estrategia: Stale-While-Revalidate
-    event.respondWith((async () => {
-        const cache = await caches.open(RUNTIME);
-        const cached = await caches.match(req);
+    self.addEventListener('fetch', (event) => {
+        const req = event.request;
+        if (req.method !== 'GET') return;
 
-        const fetchPromise = fetch(req).then((networkResp) => {
-            // Guardar también respuestas 'opaque' (p. ej., CDN cross-origin)
-            if (networkResp && (networkResp.status === 200 || networkResp.type === 'opaque')) {
-                try {
-                    // Evitar errores al cachear respuestas no-cors
-                    const cacheReq = (req.mode === 'no-cors')
-                        ? new Request(req.url, { mode: 'no-cors' })
-                        : req;
-                    cache.put(cacheReq, networkResp.clone());
-                } catch (e) { /* noop */ }
-            }
-            return networkResp;
-        }).catch(async () => {
-            if (cached) return cached;
-            if (req.mode === 'navigate') {
-                const fallback = await caches.match('/index.php');
-                if (fallback) return fallback;
-                return new Response(`<!doctype html>
+        // Ignorar esquemas no soportados (ej.: chrome-extension://)
+        const url = new URL(req.url);
+        const isHttp = (url.protocol === 'http:' || url.protocol === 'https:');
+        if (!isHttp) return;
+
+        // Estrategia: Stale-While-Revalidate
+        event.respondWith((async () => {
+            const cache = await caches.open(RUNTIME);
+            const cached = await caches.match(req);
+
+            const fetchPromise = fetch(req).then((networkResp) => {
+                if (networkResp && (networkResp.status === 200 || networkResp.type === 'opaque')) {
+                    try {
+                        const cacheReq = (req.mode === 'no-cors')
+                            ? new Request(req.url, { mode: 'no-cors' })
+                            : req;
+                        cache.put(cacheReq, networkResp.clone());
+                    } catch (e) { /* noop */ }
+                }
+                return networkResp;
+            }).catch(async () => {
+                if (cached) return cached;
+                if (req.mode === 'navigate') {
+                    const fallback = await caches.match('/index.php');
+                    if (fallback) return fallback;
+                    return new Response(`<!doctype html>
 <html lang="es"><meta charset="utf-8"><title>Sin conexión</title>
 <body style="font-family:system-ui;padding:1rem">
 <h1>Estás sin conexión</h1>
 <p>Intenta nuevamente cuando tengas internet. Si ya activaste el modo offline, vuelve atrás e intenta otra ruta cacheada.</p>
 </body></html>`, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
-            }
-            return new Response('', { status: 504, statusText: 'Offline' });
-        });
+                }
+                return new Response('', { status: 504, statusText: 'Offline' });
+            });
 
-        return cached || fetchPromise;
-    })());
+            return cached || fetchPromise;
+        })());
+    });
+
 });
 
 

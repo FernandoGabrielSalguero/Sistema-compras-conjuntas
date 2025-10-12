@@ -317,5 +317,37 @@
         prefetchCDN();
         renderResetButton(); // <— botón de reseteo
     });
+    // ====== SVE Reset (expuesto global) ======
+    window.SVE_ClearAll = async function () {
+        try {
+            // 1) borrar caches
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
+
+            // 2) storages
+            try { localStorage.removeItem('sve_offline_cred'); } catch (e) { }
+            try { localStorage.removeItem('sve_offline_session'); } catch (e) { }
+            try { sessionStorage.clear(); } catch (e) { }
+
+            // 3) indexedDB (best effort)
+            try {
+                if (indexedDB && indexedDB.databases) {
+                    const dbs = await indexedDB.databases();
+                    await Promise.all(dbs.map(db => db.name && indexedDB.deleteDatabase(db.name)));
+                }
+            } catch (e) { }
+
+            // 4) unregister SW
+            if ('serviceWorker' in navigator) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(regs.map(r => r.unregister()));
+            }
+            console.log('[SVE] Limpieza completa ejecutada');
+        } catch (e) {
+            console.warn('[SVE] Error limpiando', e);
+        }
+    };
+
+
 })();
 

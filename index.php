@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     header('Location: /');
                     break;
             }
-            exit; 
+            exit;
         } else {
             // Log ERROR (credenciales/permiso)
             $authLog->registrar([
@@ -273,6 +273,151 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Spinner Global -->
     <script src="views/partials/spinner-global.js"></script>
+
+    <!-- Botón reset offline (discreto) + modal -->
+    <style>
+        #sve-cache-reset-btn {
+            position: fixed;
+            right: 10px;
+            bottom: 10px;
+            width: 28px;
+            height: 28px;
+            border-radius: 9999px;
+            border: 0;
+            background: #6b7280;
+            color: #fff;
+            font-size: 16px;
+            opacity: .35;
+            cursor: pointer;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .2)
+        }
+
+        #sve-cache-reset-btn:hover {
+            opacity: .85
+        }
+
+        #sve-cache-reset-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            display: none;
+            z-index: 100000
+        }
+
+        #sve-cache-reset-modal {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            max-width: 360px;
+            width: 92%;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+            font-family: system-ui
+        }
+
+        #sve-cache-reset-modal .row {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end
+        }
+
+        #sve-cache-reset-modal .btn {
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer
+        }
+
+        #sve-cache-reset-modal .btn.cancel {
+            border: 1px solid #e5e7eb;
+            background: #fff
+        }
+
+        #sve-cache-reset-modal .btn.ok {
+            border: 0;
+            background: #7c3aed;
+            color: #fff
+        }
+    </style>
+
+    <button id="sve-cache-reset-btn" title="Restablecer versión offline" aria-label="Restablecer cache">↺</button>
+    <div id="sve-cache-reset-overlay">
+        <div id="sve-cache-reset-modal">
+            <h3 style="margin:0 0 8px;font-size:16px;">¿Restablecer la versión offline?</h3>
+            <p style="margin:0 0 12px;font-size:14px;line-height:1.4">
+                Esto <strong>borra caches</strong>, <strong>storage</strong> y <strong>desregistra</strong> el Service Worker. Se recargará la página.
+            </p>
+            <div class="row">
+                <button class="btn cancel" id="sve-cancel">Cancelar</button>
+                <button class="btn ok" id="sve-confirm">Sí, borrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fallback si offline.js no está presente
+        if (!window.SVE_ClearAll) {
+            window.SVE_ClearAll = async function() {
+                try {
+                    const keys = await caches.keys();
+                    await Promise.all(keys.map(k => caches.delete(k)));
+                    try {
+                        localStorage.removeItem('sve_offline_cred');
+                    } catch (e) {}
+                    try {
+                        localStorage.removeItem('sve_offline_session');
+                    } catch (e) {}
+                    try {
+                        sessionStorage.clear();
+                    } catch (e) {}
+                    try {
+                        if (indexedDB && indexedDB.databases) {
+                            const dbs = await indexedDB.databases();
+                            await Promise.all(dbs.map(db => db.name && indexedDB.deleteDatabase(db.name)));
+                        }
+                    } catch (e) {}
+                    if ('serviceWorker' in navigator) {
+                        const regs = await navigator.serviceWorker.getRegistrations();
+                        await Promise.all(regs.map(r => r.unregister()));
+                    }
+                    console.log('[SVE] Limpieza completa ejecutada');
+                } catch (e) {
+                    console.warn('[SVE] Error limpiando', e);
+                }
+            }
+        }
+        (function() {
+            const btn = document.getElementById('sve-cache-reset-btn');
+            const overlay = document.getElementById('sve-cache-reset-overlay');
+            const cancel = document.getElementById('sve-cancel');
+            const confirmBtn = document.getElementById('sve-confirm');
+
+            function openModal() {
+                overlay.style.display = 'block';
+            }
+
+            function closeModal() {
+                overlay.style.display = 'none';
+            }
+            btn.addEventListener('click', openModal);
+            overlay.addEventListener('click', e => {
+                if (e.target === overlay) closeModal();
+            });
+            cancel.addEventListener('click', closeModal);
+            confirmBtn.addEventListener('click', async () => {
+                closeModal();
+                await window.SVE_ClearAll();
+                location.reload();
+            });
+        })();
+    </script>
+
 </body>
 
 </html>
