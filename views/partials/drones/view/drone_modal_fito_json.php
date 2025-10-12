@@ -8,8 +8,8 @@
 
         <!-- Tabs -->
         <div class="tabs" style="display:flex; gap:8px; margin-bottom:12px;">
-            <button type="button" class="btn" id="tab-formato" aria-selected="true">Formato</button>
-            <button type="button" class="btn btn-secondary" id="tab-json" aria-selected="false">JSON</button>
+            <button type="button" class="btn btn-aceptar" id="tab-formato" aria-selected="true">Formato</button>
+            <button type="button" class="btn btn-aceptar" id="tab-json" aria-selected="false">JSON</button>
             <div style="flex:1"></div>
             <button type="button" class="btn btn-info" id="btn-imprimir">Imprimir</button>
         </div>
