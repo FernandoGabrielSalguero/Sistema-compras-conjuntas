@@ -229,11 +229,9 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         if (window.__SVE_FITO_JSON_INIT__) return;
         window.__SVE_FITO_JSON_INIT__ = true;
 
-        const DRONE_API_CANDIDATES = [
-            '/views/partials/drones/controller/drone_list_controller.php', // absoluta desde la raíz del sitio
-            '../partials/drones/controller/drone_list_controller.php', // relativa típica: /views/<vista>/
-            '../../views/partials/drones/controller/drone_list_controller.php' // por si se incluye desde subcarpetas más profundas
-        ];
+const DRONE_API_CANDIDATES = [
+  '/controllers/drone_pilot_dashboardController.php?action=fito_json'
+];
         const modal = document.getElementById('modal-fito-json');
 
         // Tabs
@@ -396,50 +394,27 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             document.getElementById('fito-firma-cliente').removeAttribute('src');
         }
 
-        // Intenta resolver el primer endpoint que responda 200 y JSON válido
         async function fetchDeepJSON(id) {
-            const qs = `action=solicitud_json&id=${encodeURIComponent(id)}`;
-            let lastErr;
+    let lastErr;
+    for (const base of DRONE_API_CANDIDATES) {
+        // El proxy ya fija el action, sólo pasamos el id
+        const url = `${base}&id=${encodeURIComponent(id)}`;
+        try {
+            const res = await fetch(url, { cache: 'no-store', credentials: 'same-origin' });
+            if (!res.ok) { lastErr = new Error(`HTTP ${res.status} en ${url}`); continue; }
 
-            for (const base of DRONE_API_CANDIDATES) {
-                const url = `${base}?${qs}`;
-                try {
-                    const res = await fetch(url, {
-                        cache: 'no-store',
-                        credentials: 'same-origin'
-                    });
+            let json;
+            try { json = await res.json(); } 
+            catch { lastErr = new Error(`Respuesta no-JSON en ${url}`); continue; }
 
-                    // Si el servidor respondió 404/500, probamos el siguiente candidato
-                    if (!res.ok) {
-                        lastErr = new Error(`HTTP ${res.status} en ${url}`);
-                        continue;
-                    }
+            if (json && json.ok) return json.data;
 
-                    // Intentamos parsear JSON; si falla, probamos el siguiente
-                    let json;
-                    try {
-                        json = await res.json();
-                    } catch (e) {
-                        lastErr = new Error(`Respuesta no-JSON en ${url}`);
-                        continue;
-                    }
-
-                    if (json && json.ok) {
-                        return json.data; // ✅ Resuelto
-                    }
-
-                    // El endpoint respondió pero la solicitud no existe/visible; detenemos aquí con error claro
-                    throw new Error(json?.error || 'Solicitud no encontrada');
-                } catch (e) {
-                    // Guardamos y seguimos probando otros candidatos
-                    lastErr = e;
-                }
-            }
-
-            // Si llegamos acá, ninguno de los candidatos funcionó
-            throw lastErr || new Error('No se pudo resolver el endpoint de Registro Fitosanitario');
-        }
-
+            // El proxy siempre devuelve {ok:false,error?:string}
+            throw new Error(json?.error || 'Solicitud no encontrada');
+        } catch (e) { lastErr = e; }
+    }
+    throw lastErr || new Error('No se pudo resolver el endpoint de Registro Fitosanitario');
+}
 
         async function open(id) {
             try {

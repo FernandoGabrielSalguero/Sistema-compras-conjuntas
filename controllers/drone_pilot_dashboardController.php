@@ -194,62 +194,64 @@ try {
     jsonResponse(false, null, 'Método HTTP no permitido.', 405);
 
     // === Proxy público para Registro Fitosanitario (deep JSON) ===
-    // GET /controllers/drone_pilot_dashboardController.php?action=fito_json&id=123
-    if (isset($_GET['action']) && $_GET['action'] === 'fito_json') {
-        header('Content-Type: application/json; charset=utf-8');
+// GET /controllers/drone_pilot_dashboardController.php?action=fito_json&id=123
+if (isset($_GET['action']) && $_GET['action'] === 'fito_json') {
+    header('Content-Type: application/json; charset=utf-8');
 
-        // Sanitizar ID
-        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-        if ($id <= 0) {
-            echo json_encode(['ok' => false, 'error' => 'ID inválido']);
-            exit;
-        }
-
-        // Ruta ABSOLUTA al controller interno original (no dependemos del cwd/http)
-        $internal = __DIR__ . '/../views/partials/drones/controller/drone_list_controller.php';
-        if (!file_exists($internal)) {
-            echo json_encode(['ok' => false, 'error' => 'Endpoint interno no disponible']);
-            exit;
-        }
-
-        // Preparamos parámetros para el controller interno
-        $backupGet = $_GET;
-        $_GET['action'] = 'solicitud_json';
-        $_GET['id'] = $id;
-
-        // Aislamos la salida del include
-        ob_start();
-        try {
-            include $internal; // debe imprimir un JSON
-            $out = ob_get_clean();
-        } catch (Throwable $e) {
-            ob_end_clean();
-            echo json_encode(['ok' => false, 'error' => 'Error interno: ' . $e->getMessage()]);
-            // Restauramos GET antes de salir
-            $_GET = $backupGet;
-            exit;
-        }
-
-        // Restauramos GET original
-        $_GET = $backupGet;
-
-        // Validamos que el include haya devuelto JSON válido
-        $decoded = json_decode($out, true);
-        if (!is_array($decoded)) {
-            echo json_encode(['ok' => false, 'error' => 'Respuesta inválida del endpoint interno']);
-            exit;
-        }
-
-        // Passthrough (normalizamos para que siempre tenga ok/data/error)
-        if (!array_key_exists('ok', $decoded)) {
-            // Si el interno no devuelve la convención, lo envolvemos
-            echo json_encode(['ok' => true, 'data' => $decoded]);
-            exit;
-        }
-
-        echo json_encode($decoded);
+    // Sanitizar ID
+    $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+    if ($id <= 0) {
+        echo json_encode(['ok' => false, 'error' => 'ID inválido']);
         exit;
     }
+
+    // Ruta ABSOLUTA al controller interno original (no dependemos del cwd/http)
+    $internal = __DIR__ . '/../views/partials/drones/controller/drone_list_controller.php';
+    if (!file_exists($internal)) {
+        echo json_encode(['ok' => false, 'error' => 'Endpoint interno no disponible']);
+        exit;
+    }
+
+    // Preparamos parámetros para el controller interno
+    $backupGet = $_GET;
+    $_GET['action'] = 'solicitud_json';
+    $_GET['id'] = $id;
+
+    // Aislamos la salida del include
+    ob_start();
+    try {
+        include $internal; // debe imprimir un JSON
+        $out = ob_get_clean();
+    } catch (Throwable $e) {
+        ob_end_clean();
+        echo json_encode(['ok' => false, 'error' => 'Error interno: ' . $e->getMessage()]);
+        // Restauramos GET antes de salir
+        $_GET = $backupGet;
+        exit;
+    }
+
+    // Restauramos GET original
+    $_GET = $backupGet;
+
+    // Validamos que el include haya devuelto JSON válido
+    $decoded = json_decode($out, true);
+    if (!is_array($decoded)) {
+        echo json_encode(['ok' => false, 'error' => 'Respuesta inválida del endpoint interno']);
+        exit;
+    }
+
+    // Passthrough (normalizamos para que siempre tenga ok/data/error)
+    if (!array_key_exists('ok', $decoded)) {
+        // Si el interno no devuelve la convención, lo envolvemos
+        echo json_encode(['ok' => true, 'data' => $decoded]);
+        exit;
+    }
+
+    echo json_encode($decoded);
+    exit;
+}
+
+
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) $pdo->rollBack();
     jsonResponse(false, null, 'Error interno: ' . $e->getMessage(), 500);
