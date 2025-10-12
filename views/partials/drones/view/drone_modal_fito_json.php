@@ -1,24 +1,25 @@
 <?php
-// if (session_status() !== PHP_SESSION_ACTIVE) {
-//     session_start();
-// }
-// $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sve';
-// $roleClass = $isSVE ? 'role-sve' : 'role-no-sve';
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+$isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sve';
 ?>
 
-<div id="modal-fito-json" class="modal hidden <?= $roleClass ?>" role="dialog" aria-modal="true" aria-labelledby="modal-fito-json-title" aria-describedby="modal-fito-json-desc">
+<div id="modal-fito-json" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-fito-json-title" aria-describedby="modal-fito-json-desc">
 
     <div class="modal-content" style="max-width: 1024px;">
         <h3 id="modal-fito-json-title">Registro Fitosanitario</h3>
         <p id="modal-fito-json-desc" class="sr-only">Vista consolidada de la solicitud y sus tablas relacionadas.</p>
 
-        <!-- Tabs -->
-        <div class="tabs" style="display:flex; gap:8px; margin-bottom:12px;">
-            <button type="button" class="btn btn-aceptar" id="tab-formato" aria-selected="true">Formato</button>
-            <button type="button" class="btn btn-aceptar" id="tab-json" aria-selected="false">JSON</button>
-            <div style="flex:1"></div>
-            <button type="button" class="btn btn-info" id="btn-imprimir">Imprimir</button>
-        </div>
+        <!-- Tabs (solo SVE) -->
+        <?php if ($isSVE): ?>
+            <div class="tabs" style="display:flex; gap:8px; margin-bottom:12px;">
+                <button type="button" class="btn btn-aceptar" id="tab-formato" aria-selected="true">Formato</button>
+                <button type="button" class="btn btn-aceptar" id="tab-json" aria-selected="false">JSON</button>
+                <div style="flex:1"></div>
+                <button type="button" class="btn btn-info" id="btn-imprimir">Imprimir</button>
+            </div>
+        <?php endif; ?>
 
         <!-- CONTENIDO FORMATEADO -->
         <div id="fito-formato" style="background:#fff; border-radius:14px; padding:16px;">
@@ -379,7 +380,7 @@
 
         function openModal() {
             modal.classList.remove('hidden');
-            tabFormato.focus();
+            if (tabFormato) tabFormato.focus();
         }
 
         function closeModal() {
@@ -419,22 +420,25 @@
             }
         }
 
-        // Tabs handlers
         function activate(tab) {
             if (tab === 'formato') {
                 paneFormato.classList.remove('hidden');
                 paneJSON.classList.add('hidden');
-                tabFormato.classList.remove('btn-secondary');
-                tabJSON.classList.add('btn-secondary');
+                if (tabFormato && tabJSON) {
+                    tabFormato.classList.remove('btn-secondary');
+                    tabJSON.classList.add('btn-secondary');
+                }
             } else {
                 paneFormato.classList.add('hidden');
                 paneJSON.classList.remove('hidden');
-                tabFormato.classList.add('btn-secondary');
-                tabJSON.classList.remove('btn-secondary');
+                if (tabFormato && tabJSON) {
+                    tabFormato.classList.add('btn-secondary');
+                    tabJSON.classList.remove('btn-secondary');
+                }
             }
         }
-        tabFormato.addEventListener('click', () => activate('formato'));
-        tabJSON.addEventListener('click', () => activate('json'));
+        if (tabFormato) tabFormato.addEventListener('click', () => activate('formato'));
+        if (tabJSON) tabJSON.addEventListener('click', () => activate('json'));
 
         // Copiar / Descargar JSON
         if (btnCp) btnCp.addEventListener('click', async () => {
@@ -531,14 +535,15 @@
         if (btnPDF) btnPDF.addEventListener('click', exportPDF);
 
 
-        // Imprimir
-        btnPrint.addEventListener('click', () => {
-            // Imprime solo el formato
-            const origHidden = paneJSON.classList.contains('hidden') ? 'jsonHidden' : '';
-            activate('formato');
-            window.print();
-            if (!origHidden) activate('json');
-        });
+        // Imprimir (si existe botón)
+        if (btnPrint) {
+            btnPrint.addEventListener('click', () => {
+                const wasJSONVisible = !paneJSON.classList.contains('hidden');
+                activate('formato');
+                window.print();
+                if (wasJSONVisible) activate('json');
+            });
+        }
 
         // Cerrar
         btnOk.addEventListener('click', closeModal);
@@ -546,6 +551,12 @@
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
+
+        // Asegurar que, si no hay tabs visibles, el formato quede activo por defecto
+        if (!tabFormato && paneFormato && paneJSON) {
+            paneFormato.classList.remove('hidden');
+            paneJSON.classList.add('hidden');
+        }
 
         // API global
         window.FitoJSONModal = {
