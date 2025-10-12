@@ -6,6 +6,7 @@ error_reporting(E_ALL);
 
 // Iniciar sesión y configurar parámetros de seguridad
 require_once '../../middleware/authMiddleware.php';
+include_once '../../views/partials/modal_fito_json.php';
 checkAccess('piloto_drone');
 
 // Datos del usuario en sesión
@@ -1359,7 +1360,7 @@ $sesionDebug = [
       <div class="card-footer">
         <button class="btn btn-info"     data-action="ver"     data-id="${s.id}">Detalle</button>
         <button class="btn btn-aceptar"  data-action="reporte" data-id="${s.id}">Generar reporte</button>
-        <button class="btn btn-secondary" data-action="fito"   data-id="${s.id}">Registro Fitosanitario</button>
+        <button class="btn btn-info" data-action="fito"   data-id="${s.id}">Registro Fitosanitario</button>
       </div>
     </div>
   `).join('');
