@@ -21,42 +21,29 @@ self.addEventListener('install', (event) => {
     self.skipWaiting();
     event.waitUntil((async () => {
         const cache = await caches.open(PRECACHE);
-
-        // helper: detectar si la URL es cross-origin
-        const isCrossOrigin = (url) => {
+        // Precargar SOLO http/https válidos
+        const safe = PRECACHE_URLS.filter(u => {
             try {
-                const u = new URL(url, self.location.origin);
-                return u.origin !== self.location.origin;
-            } catch (e) {
-                return false;
-            }
-        };
-
-        const tasks = PRECACHE_URLS.map(async (url) => {
-            try {
-                // Para cross-origin (CDN), pedimos en no-cors para aceptar respuesta opaque
-                if (isCrossOrigin(url)) {
-                    const resp = await fetch(url, { mode: 'no-cors', cache: 'no-cache' });
-                    // aunque sea opaque (status 0), se puede guardar
-                    await cache.put(new Request(url, { mode: 'no-cors' }), resp.clone());
-                } else {
-                    // same-origin: intentamos normal; si redirige o falla, reintento forzado
-                    let resp = await fetch(url, { cache: 'no-cache' });
-                    if (!resp || (resp.status !== 200 && resp.type !== 'opaque')) {
-                        // reintento "fallback" en no-cors por si hay headers estrictos
-                        resp = await fetch(url, { mode: 'no-cors', cache: 'no-cache' });
-                    }
-                    await cache.put(url, resp.clone());
-                }
-            } catch (err) {
-                // No abortamos la instalación por un ítem; sólo registramos
-                console.warn('[SW][PRECACHE] Falló', url, err && err.message ? err.message : err);
-            }
+                const p = new URL(u, self.location.origin);
+                return p.protocol === 'http:' || p.protocol === 'https:';
+            } catch { return false; }
         });
-
-        await Promise.allSettled(tasks);
+        await Promise.allSettled(safe.map(async (u) => {
+            try {
+                // Usar add con fallback a no-cors si es necesario
+                try {
+                    await cache.add(u);
+                } catch {
+                    const resp = await fetch(u, { mode: 'no-cors', cache: 'no-cache' });
+                    await cache.put(new Request(u, { mode: 'no-cors' }), resp.clone());
+                }
+            } catch (e) {
+                console.warn('[SW][PRECACHE] Falló', u, e?.message || e);
+            }
+        }));
     })());
 });
+
 
 
 self.addEventListener('activate', (event) => {
@@ -77,57 +64,50 @@ self.addEventListener('fetch', (event) => {
     const req = event.request;
     if (req.method !== 'GET') return;
 
-    // Ignorar esquemas no soportados (ej.: chrome-extension://)
     const url = new URL(req.url);
     const isHttp = (url.protocol === 'http:' || url.protocol === 'https:');
-    if (!isHttp) return; // deja pasar a la red sin tocar caches
+    if (!isHttp) return; // ignora chrome-extension://, data:, etc.
 
-    // Estrategia: Stale-While-Revalidate
-    self.addEventListener('fetch', (event) => {
-        const req = event.request;
-        if (req.method !== 'GET') return;
+    event.respondWith((async () => {
+        const cache = await caches.open(RUNTIME);
+        const cached = await caches.match(req);
 
-        // Ignorar esquemas no soportados (ej.: chrome-extension://)
-        const url = new URL(req.url);
-        const isHttp = (url.protocol === 'http:' || url.protocol === 'https:');
-        if (!isHttp) return;
-
-        // Estrategia: Stale-While-Revalidate
-        event.respondWith((async () => {
-            const cache = await caches.open(RUNTIME);
-            const cached = await caches.match(req);
-
-            const fetchPromise = fetch(req).then((networkResp) => {
-                if (networkResp && (networkResp.status === 200 || networkResp.type === 'opaque')) {
-                    try {
-                        const cacheReq = (req.mode === 'no-cors')
-                            ? new Request(req.url, { mode: 'no-cors' })
-                            : req;
-                        cache.put(cacheReq, networkResp.clone());
-                    } catch (e) { /* noop */ }
-                }
-                return networkResp;
-            }).catch(async () => {
-                if (cached) return cached;
-                if (req.mode === 'navigate') {
-                    const fallback = await caches.match('/index.php');
-                    if (fallback) return fallback;
-                    return new Response(`<!doctype html>
+        const fetchPromise = fetch(req).then((networkResp) => {
+            if (networkResp && (networkResp.status === 200 || networkResp.type === 'opaque')) {
+                try {
+                    const cacheReq = (req.mode === 'no-cors')
+                        ? new Request(req.url, { mode: 'no-cors' })
+                        : req;
+                    cache.put(cacheReq, networkResp.clone());
+                } catch (e) { /* noop */ }
+            }
+            return networkResp;
+        }).catch(async () => {
+            if (cached) return cached;
+            if (req.mode === 'navigate') {
+                const fallback = await caches.match('/index.php');
+                if (fallback) return fallback;
+                return new Response(`<!doctype html>
 <html lang="es"><meta charset="utf-8"><title>Sin conexión</title>
 <body style="font-family:system-ui;padding:1rem">
 <h1>Estás sin conexión</h1>
 <p>Intenta nuevamente cuando tengas internet. Si ya activaste el modo offline, vuelve atrás e intenta otra ruta cacheada.</p>
 </body></html>`, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
-                }
-                return new Response('', { status: 504, statusText: 'Offline' });
-            });
+            }
+            return new Response('', { status: 504, statusText: 'Offline' });
+        });
 
-            return cached || fetchPromise;
-        })());
-    });
-
+        return cached || fetchPromise;
+    })());
 });
 
+self.addEventListener('activate', (event) => {
+    const allow = new Set([PRECACHE, RUNTIME]);
+    event.waitUntil(
+        caches.keys().then(keys => Promise.all(keys.map(k => !allow.has(k) && caches.delete(k))))
+            .then(() => self.clients.claim())
+    );
+});
 
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {

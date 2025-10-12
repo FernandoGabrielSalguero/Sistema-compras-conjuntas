@@ -310,13 +310,13 @@
 
     // Boot
     window.addEventListener('load', registerSW);
-    window.addEventListener('DOMContentLoaded', () => {
-        ensureOfflineBanner();
-        enhanceLogin();
-        guardOfflineDashboard();
-        prefetchCDN();
-        renderResetButton(); // <— botón de reseteo
-    });
+window.addEventListener('DOMContentLoaded', () => {
+    ensureOfflineBanner();
+    enhanceLogin();
+    guardOfflineDashboard();
+    renderResetButton();
+});
+
     // ====== SVE Reset (expuesto global) ======
     window.SVE_ClearAll = async function () {
         try {

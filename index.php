@@ -240,8 +240,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" style="display:flex; gap:8px; align-items:center; justify-content:space-between">
                 <button type="submit">INGRESAR</button>
+                <button type="button" id="sve-cache-reset-inline" title="Restablecer versión offline" aria-label="Restablecer cache" style="width:36px;height:36px;min-width:36px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;display:inline-flex;align-items:center;justify-content:center">↺</button>
             </div>
 
         </form>
@@ -275,31 +276,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="views/partials/spinner-global.js"></script>
 
     <!-- Botón reset offline (discreto) + modal -->
+
+    <!-- Modal de confirmación para reset offline -->
     <style>
-        #sve-cache-reset-btn {
-            position: fixed;
-            right: 10px;
-            bottom: 10px;
-            width: 28px;
-            height: 28px;
-            border-radius: 9999px;
-            border: 0;
-            background: #6b7280;
-            color: #fff;
-            font-size: 16px;
-            opacity: .35;
-            cursor: pointer;
-            z-index: 99999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .2)
-        }
-
-        #sve-cache-reset-btn:hover {
-            opacity: .85
-        }
-
         #sve-cache-reset-overlay {
             position: fixed;
             inset: 0;
@@ -345,8 +324,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #fff
         }
     </style>
-
-    <button id="sve-cache-reset-btn" title="Restablecer versión offline" aria-label="Restablecer cache">↺</button>
     <div id="sve-cache-reset-overlay">
         <div id="sve-cache-reset-modal">
             <h3 style="margin:0 0 8px;font-size:16px;">¿Restablecer la versión offline?</h3>
@@ -392,8 +369,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         }
+
         (function() {
-            const btn = document.getElementById('sve-cache-reset-btn');
+            const btn = document.getElementById('sve-cache-reset-inline');
             const overlay = document.getElementById('sve-cache-reset-overlay');
             const cancel = document.getElementById('sve-cancel');
             const confirmBtn = document.getElementById('sve-confirm');
@@ -405,7 +383,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             function closeModal() {
                 overlay.style.display = 'none';
             }
-            btn.addEventListener('click', openModal);
+            if (btn) btn.addEventListener('click', openModal);
             overlay.addEventListener('click', e => {
                 if (e.target === overlay) closeModal();
             });
