@@ -1,9 +1,9 @@
 <?php
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-$isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sve';
-$roleClass = $isSVE ? 'role-sve' : 'role-no-sve';
+// if (session_status() !== PHP_SESSION_ACTIVE) {
+//     session_start();
+// }
+// $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sve';
+// $roleClass = $isSVE ? 'role-sve' : 'role-no-sve';
 ?>
 
 <div id="modal-fito-json" class="modal hidden <?= $roleClass ?>" role="dialog" aria-modal="true" aria-labelledby="modal-fito-json-title" aria-describedby="modal-fito-json-desc">
