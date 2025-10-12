@@ -359,7 +359,7 @@ function renderCards(items) {
                     <button type="button" class="btn btn-info btn-detalle" data-id="${esc(it.id ?? '')}" aria-label="Ver detalle de pedido ${esc(it.id ?? '')}">
                         Detalle
                     </button>
-                    <button type="button" class="btn btn-success btn-fito hidden" data-id="${esc(it.id ?? '')}" aria-label="Ver Registro Fitosanitario de pedido ${esc(it.id ?? '')}">
+                    <button type="button" class="btn btn-info btn-fito hidden" data-id="${esc(it.id ?? '')}" aria-label="Ver Registro Fitosanitario de pedido ${esc(it.id ?? '')}">
                         Registro Fitosanitario
                     </button>
                 </div>
