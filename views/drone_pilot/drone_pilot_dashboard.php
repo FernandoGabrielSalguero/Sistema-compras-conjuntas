@@ -442,6 +442,22 @@ $sesionDebug = [
             border: 1px solid #ddd;
             border-radius: 12px;
         }
+
+        /* Por defecto, oculto el botón del Registro Fitosanitario */
+        .card-solicitud [data-action="fito"] {
+            display: none;
+        }
+
+        /* Si la solicitud está completada: oculto Detalle y Generar reporte */
+        .card-solicitud[data-estado="completada"] [data-action="ver"],
+        .card-solicitud[data-estado="completada"] [data-action="reporte"] {
+            display: none !important;
+        }
+
+        /* …y muestro el botón Registro Fitosanitario */
+        .card-solicitud[data-estado="completada"] [data-action="fito"] {
+            display: inline-flex !important;
+        }
     </style>
 
 
@@ -1326,10 +1342,12 @@ $sesionDebug = [
                 c.innerHTML = `<div class="alert info"><span class="material-icons">info</span> No se encontraron solicitudes.</div>`;
                 return;
             }
+
             c.innerHTML = items.map(s => `
-    <div class="card-solicitud" data-id="${s.id}">
+    <div class="card-solicitud" data-id="${s.id}" data-estado="${s.estado ?? ''}">
       <div class="flex items-center justify-between">
         <h4 style="margin:0">${s.productor_nombre ?? '-'}</h4>
+        <span class="chip ${s.estado ?? ''}">${s.estado ?? ''}</span>
       </div>
       <div><small>Pedido N° <b>${s.id}</b></small></div>
       <div><b>Fecha visita:</b> ${s.fecha_visita ?? '-'}</div>
@@ -1337,12 +1355,16 @@ $sesionDebug = [
       <div><b>Localidad:</b> ${s.dir_localidad ?? '-'}</div>
       <div><b>Superficie:</b> ${s.superficie_ha ?? '-'} ha</div>
       <div><b>Hay agua en el lugar:</b> ${(s.agua_potable==='si'?'Sí':'No')}</div>
+
       <div class="card-footer">
-        <button class="btn btn-info" data-action="ver" data-id="${s.id}">Detalle</button>
-        <button class="btn btn-aceptar" data-action="reporte" data-id="${s.id}">Generar reporte</button>
+        <button class="btn btn-info"     data-action="ver"     data-id="${s.id}">Detalle</button>
+        <button class="btn btn-aceptar"  data-action="reporte" data-id="${s.id}">Generar reporte</button>
+        <button class="btn btn-secondary" data-action="fito"   data-id="${s.id}">Registro Fitosanitario</button>
       </div>
-    </div>`).join('');
+    </div>
+  `).join('');
         }
+
         // Cargar solicitudes usando cardsSkeleton()
         async function cargarSolicitudes() {
             try {
@@ -1363,8 +1385,19 @@ $sesionDebug = [
             const btn = e.target.closest('button[data-action]');
             if (!btn) return;
             const id = btn.dataset.id;
+
             if (btn.dataset.action === 'ver') verDetalle(id);
             if (btn.dataset.action === 'reporte') abrirReporte(id);
+
+            if (btn.dataset.action === 'fito') {
+                // Abre el modal del Registro Fitosanitario
+                if (window.FitoJSONModal?.open) {
+                    window.FitoJSONModal.open(id);
+                } else {
+                    // Fallback para evitar errores si aún no está cargado el módulo
+                    showAlert?.('info', 'El visor de Registro Fitosanitario no está disponible en esta vista.');
+                }
+            }
         });
 
         // Construye filas con inputs editables
