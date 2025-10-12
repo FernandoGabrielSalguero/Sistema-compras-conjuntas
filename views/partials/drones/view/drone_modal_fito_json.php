@@ -229,7 +229,11 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         if (window.__SVE_FITO_JSON_INIT__) return;
         window.__SVE_FITO_JSON_INIT__ = true;
 
-        const DRONE_API = '../partials/drones/controller/drone_list_controller.php';
+        const DRONE_API_CANDIDATES = [
+            '/views/partials/drones/controller/drone_list_controller.php', // absoluta desde la raíz del sitio
+            '../partials/drones/controller/drone_list_controller.php', // relativa típica: /views/<vista>/
+            '../../views/partials/drones/controller/drone_list_controller.php' // por si se incluye desde subcarpetas más profundas
+        ];
         const modal = document.getElementById('modal-fito-json');
 
         // Tabs
@@ -392,15 +396,50 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             document.getElementById('fito-firma-cliente').removeAttribute('src');
         }
 
+        // Intenta resolver el primer endpoint que responda 200 y JSON válido
         async function fetchDeepJSON(id) {
-            const url = `${DRONE_API}?action=solicitud_json&id=${encodeURIComponent(id)}`;
-            const res = await fetch(url, {
-                cache: 'no-store'
-            });
-            const json = await res.json();
-            if (!json.ok) throw new Error(json.error || 'Error');
-            return json.data;
+            const qs = `action=solicitud_json&id=${encodeURIComponent(id)}`;
+            let lastErr;
+
+            for (const base of DRONE_API_CANDIDATES) {
+                const url = `${base}?${qs}`;
+                try {
+                    const res = await fetch(url, {
+                        cache: 'no-store',
+                        credentials: 'same-origin'
+                    });
+
+                    // Si el servidor respondió 404/500, probamos el siguiente candidato
+                    if (!res.ok) {
+                        lastErr = new Error(`HTTP ${res.status} en ${url}`);
+                        continue;
+                    }
+
+                    // Intentamos parsear JSON; si falla, probamos el siguiente
+                    let json;
+                    try {
+                        json = await res.json();
+                    } catch (e) {
+                        lastErr = new Error(`Respuesta no-JSON en ${url}`);
+                        continue;
+                    }
+
+                    if (json && json.ok) {
+                        return json.data; // ✅ Resuelto
+                    }
+
+                    // El endpoint respondió pero la solicitud no existe/visible; detenemos aquí con error claro
+                    throw new Error(json?.error || 'Solicitud no encontrada');
+                } catch (e) {
+                    // Guardamos y seguimos probando otros candidatos
+                    lastErr = e;
+                }
+            }
+
+            // Si llegamos acá, ninguno de los candidatos funcionó
+            throw lastErr || new Error('No se pudo resolver el endpoint de Registro Fitosanitario');
         }
+
 
         async function open(id) {
             try {
@@ -414,9 +453,17 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             } catch (e) {
                 console.error(e);
                 pre.textContent = 'No se pudo cargar el JSON del registro.';
-                if (typeof window.showAlert === 'function') {
-                    window.showAlert('error', 'No se pudo cargar el Registro Fitosanitario.');
-                }
+                notifyError(e?.message || 'No se pudo cargar el Registro Fitosanitario.');
+            }
+        }
+
+        // Utilidad para mostrar errores consistentes (si showAlert existe lo usa)
+        function notifyError(msg) {
+            if (typeof window.showAlert === 'function') {
+                window.showAlert('error', msg);
+            } else {
+                console.error(msg);
+                alert(msg);
             }
         }
 
