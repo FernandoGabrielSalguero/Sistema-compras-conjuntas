@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 
 // Iniciar sesión y configurar parámetros de seguridad
 require_once '../../middleware/authMiddleware.php';
-include_once '../views/partials/modal_fito_json.php';
+include_once __DIR__ . '/../partials/drones/view/drone_modal_fitosanitario.php';
 
 checkAccess('piloto_drone');
 
