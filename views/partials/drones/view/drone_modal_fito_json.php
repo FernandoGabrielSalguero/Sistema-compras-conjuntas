@@ -229,8 +229,10 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         if (window.__SVE_FITO_JSON_INIT__) return;
         window.__SVE_FITO_JSON_INIT__ = true;
 
-const DRONE_API_CANDIDATES = [
-  '/controllers/drone_pilot_dashboardController.php?action=fito_json'
+       const DRONE_API_CANDIDATES = [
+  '/views/partials/drones/controller/drone_list_controller.php',     // absoluta desde la raíz del sitio
+  '../partials/drones/controller/drone_list_controller.php',         // relativa típica: /views/<vista>/
+  '../../views/partials/drones/controller/drone_list_controller.php' // por si se incluye desde subcarpetas más profundas
 ];
         const modal = document.getElementById('modal-fito-json');
 
@@ -395,26 +397,14 @@ const DRONE_API_CANDIDATES = [
         }
 
         async function fetchDeepJSON(id) {
-    let lastErr;
-    for (const base of DRONE_API_CANDIDATES) {
-        // El proxy ya fija el action, sólo pasamos el id
-        const url = `${base}&id=${encodeURIComponent(id)}`;
-        try {
-            const res = await fetch(url, { cache: 'no-store', credentials: 'same-origin' });
-            if (!res.ok) { lastErr = new Error(`HTTP ${res.status} en ${url}`); continue; }
-
-            let json;
-            try { json = await res.json(); } 
-            catch { lastErr = new Error(`Respuesta no-JSON en ${url}`); continue; }
-
-            if (json && json.ok) return json.data;
-
-            // El proxy siempre devuelve {ok:false,error?:string}
-            throw new Error(json?.error || 'Solicitud no encontrada');
-        } catch (e) { lastErr = e; }
-    }
-    throw lastErr || new Error('No se pudo resolver el endpoint de Registro Fitosanitario');
-}
+            const url = `${DRONE_API}?action=solicitud_json&id=${encodeURIComponent(id)}`;
+            const res = await fetch(url, {
+                cache: 'no-store'
+            });
+            const json = await res.json();
+            if (!json.ok) throw new Error(json.error || 'Error');
+            return json.data;
+        }
 
         async function open(id) {
             try {
@@ -428,17 +418,9 @@ const DRONE_API_CANDIDATES = [
             } catch (e) {
                 console.error(e);
                 pre.textContent = 'No se pudo cargar el JSON del registro.';
-                notifyError(e?.message || 'No se pudo cargar el Registro Fitosanitario.');
-            }
-        }
-
-        // Utilidad para mostrar errores consistentes (si showAlert existe lo usa)
-        function notifyError(msg) {
-            if (typeof window.showAlert === 'function') {
-                window.showAlert('error', msg);
-            } else {
-                console.error(msg);
-                alert(msg);
+                if (typeof window.showAlert === 'function') {
+                    window.showAlert('error', 'No se pudo cargar el Registro Fitosanitario.');
+                }
             }
         }
 
