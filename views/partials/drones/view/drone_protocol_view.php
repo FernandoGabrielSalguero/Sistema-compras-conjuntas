@@ -6,7 +6,7 @@ declare(strict_types=1);
 <link rel="preload" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css" as="style" onload="this.rel='stylesheet'">
 <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
 
-<!-- Exportar a PDF en una sola página -->
+<!-- Exportar a PDF-->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
