@@ -220,6 +220,94 @@
         } catch (e) { }
     }
 
+    // --- 7) Botón oculto para limpiar caché + storage + SW ---
+    function renderResetButton() {
+        // Mostrar solo en login
+        const isLogin =
+            window.location.pathname === '/' ||
+            window.location.pathname.endsWith('/index.php') ||
+            window.location.pathname.endsWith('/views/sve/sve_registro_login.php');
+
+        if (!isLogin) return;
+
+        // Botón sutil (esquina inferior derecha)
+        const btn = document.createElement('button');
+        btn.id = 'sve-cache-reset-btn';
+        btn.type = 'button';
+        btn.title = 'Restablecer versión offline';
+        btn.style.cssText = 'position:fixed;right:10px;bottom:10px;width:28px;height:28px;border-radius:9999px;border:0;background:#6b7280;color:#fff;font-size:16px;opacity:.35;cursor:pointer;z-index:99999;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.2)';
+        btn.setAttribute('aria-label', 'Restablecer cache');
+        btn.innerHTML = '↺';
+        btn.addEventListener('mouseenter', () => (btn.style.opacity = '.85'));
+        btn.addEventListener('mouseleave', () => (btn.style.opacity = '.35'));
+
+        // Modal de confirmación
+        const overlay = document.createElement('div');
+        overlay.id = 'sve-cache-reset-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:100000;';
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;max-width:360px;width:92%;border-radius:12px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-family:system-ui';
+        modal.innerHTML = `
+            <h3 style="margin:0 0 8px;font-size:16px;">¿Restablecer la versión offline?</h3>
+            <p style="margin:0 0 12px;font-size:14px;line-height:1.4">
+                Esto <strong>borra caches</strong>, <strong>storage</strong> y <strong>desregistra</strong> el Service Worker.
+                Se recargará la página.
+            </p>
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+                <button id="sve-cancel" style="padding:6px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer">Cancelar</button>
+                <button id="sve-confirm" style="padding:6px 10px;border-radius:8px;border:0;background:#7c3aed;color:#fff;cursor:pointer">Sí, borrar</button>
+            </div>`;
+        overlay.appendChild(modal);
+
+        function openModal() { overlay.style.display = 'block'; }
+        function closeModal() { overlay.style.display = 'none'; }
+
+        btn.addEventListener('click', openModal);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+        setTimeout(() => {
+            modal.querySelector('#sve-cancel').addEventListener('click', closeModal);
+            modal.querySelector('#sve-confirm').addEventListener('click', async () => {
+                closeModal();
+                await SVE_ClearAll();
+                location.reload();
+            });
+        });
+
+        document.body.appendChild(btn);
+        document.body.appendChild(overlay);
+    }
+
+    // Limpieza integral
+    async function SVE_ClearAll() {
+        try {
+            // 1) caches
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
+
+            // 2) local/session storage (solo claves SVE)
+            try { localStorage.removeItem('sve_offline_cred'); } catch (e) { }
+            try { localStorage.removeItem('sve_offline_session'); } catch (e) { }
+            try { sessionStorage.clear(); } catch (e) { }
+
+            // 3) IndexedDB (si el navegador lo permite)
+            try {
+                if (indexedDB && indexedDB.databases) {
+                    const dbs = await indexedDB.databases();
+                    await Promise.all(dbs.map(db => db.name && indexedDB.deleteDatabase(db.name)));
+                }
+            } catch (e) { /* opcional, no crítico */ }
+
+            // 4) unregister service workers
+            if ('serviceWorker' in navigator) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(regs.map(r => r.unregister()));
+            }
+            console.log('[SVE] Limpieza completa ejecutada');
+        } catch (e) {
+            console.warn('[SVE] Error limpiando', e);
+        }
+    }
+
     // Boot
     window.addEventListener('load', registerSW);
     window.addEventListener('DOMContentLoaded', () => {
@@ -227,5 +315,7 @@
         enhanceLogin();
         guardOfflineDashboard();
         prefetchCDN();
+        renderResetButton(); // <— botón de reseteo
     });
 })();
+

@@ -77,14 +77,26 @@ self.addEventListener('fetch', (event) => {
     const req = event.request;
     if (req.method !== 'GET') return;
 
+    // Ignorar esquemas no soportados (ej.: chrome-extension://)
+    const url = new URL(req.url);
+    const isHttp = (url.protocol === 'http:' || url.protocol === 'https:');
+    if (!isHttp) return; // deja pasar a la red sin tocar caches
+
     // Estrategia: Stale-While-Revalidate
     event.respondWith((async () => {
         const cache = await caches.open(RUNTIME);
         const cached = await caches.match(req);
+
         const fetchPromise = fetch(req).then((networkResp) => {
             // Guardar también respuestas 'opaque' (p. ej., CDN cross-origin)
             if (networkResp && (networkResp.status === 200 || networkResp.type === 'opaque')) {
-                try { cache.put(req, networkResp.clone()); } catch (e) { /* noop */ }
+                try {
+                    // Evitar errores al cachear respuestas no-cors
+                    const cacheReq = (req.mode === 'no-cors')
+                        ? new Request(req.url, { mode: 'no-cors' })
+                        : req;
+                    cache.put(cacheReq, networkResp.clone());
+                } catch (e) { /* noop */ }
             }
             return networkResp;
         }).catch(async () => {
@@ -105,6 +117,7 @@ self.addEventListener('fetch', (event) => {
         return cached || fetchPromise;
     })());
 });
+
 
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
