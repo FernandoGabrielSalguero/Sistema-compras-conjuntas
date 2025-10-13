@@ -1,4 +1,4 @@
-/*! SVE Offline bootstrap v1.0 - Minimal PWA + Login Offline (hashed) */
+/*! SVE Offline bootstrap v2.0 - PWA + Login Offline (hashed + sesión local) */
 (function () {
     'use strict';
 
@@ -7,18 +7,68 @@
         js: 'https://www.fernandosalguero.com/cdn/assets/javascript/framework.js',
     });
 
-    // 1) Service Worker registration
+    // ========= Helpers =========
+    const $ = (sel, root = document) => root.querySelector(sel);
+
+    function toBase64(arrayBuffer) {
+        const bytes = new Uint8Array(arrayBuffer);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+        return btoa(binary);
+    }
+    function genSalt(len = 16) {
+        const arr = new Uint8Array(len);
+        crypto.getRandomValues(arr);
+        return toBase64(arr.buffer);
+    }
+    async function hashCredential(username, password, saltB64) {
+        if (!window.crypto?.subtle) throw new Error('WebCrypto no soportado');
+        const enc = new TextEncoder();
+        const passKey = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveBits', 'deriveKey']);
+        const saltData = enc.encode('sve:' + username + ':' + saltB64);
+        const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: saltData, iterations: 120000, hash: 'SHA-256' }, passKey, 256);
+        return toBase64(bits);
+    }
+
+    async function saveOfflineCredential(username, password) {
+        const salt = genSalt();
+        const hash = await hashCredential(username, password, salt);
+        const payload = { username, salt, hash, createdAt: Date.now() };
+        localStorage.setItem('sve_offline_cred', JSON.stringify(payload));
+        return payload;
+    }
+    async function verifyOfflineCredential(username, password) {
+        const raw = localStorage.getItem('sve_offline_cred');
+        if (!raw) return false;
+        try {
+            const { username: storedUser, salt, hash } = JSON.parse(raw);
+            if (storedUser !== username) return false;
+            const candidate = await hashCredential(username, password, salt);
+            return candidate === hash;
+        } catch { return false; }
+    }
+    function createOfflineSession(username) {
+        localStorage.setItem('sve_offline_session', JSON.stringify({ user: username, ts: Date.now() }));
+    }
+    function hasOfflineSession() {
+        return !!localStorage.getItem('sve_offline_session');
+    }
+    function hasOfflineCred() {
+        return !!localStorage.getItem('sve_offline_cred');
+    }
+
+    // ========= Service Worker =========
     async function registerSW() {
         if (!('serviceWorker' in navigator)) return;
         try {
             const reg = await navigator.serviceWorker.register('/service-worker.js', { scope: '/' });
             if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
             reg.addEventListener('updatefound', () => {
-                const newSW = reg.installing;
-                if (!newSW) return;
-                newSW.addEventListener('statechange', () => {
-                    if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                        console.log('[SVE] Nueva versión disponible (cache actualizada).');
+                const sw = reg.installing;
+                if (!sw) return;
+                sw.addEventListener('statechange', () => {
+                    if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                        console.log('[SVE] Cache actualizada');
                     }
                 });
             });
@@ -28,362 +78,209 @@
         }
     }
 
-    // 2) Offline banner
+    // ========= Banner offline (simple) =========
     function ensureOfflineBanner() {
-        let banner = document.getElementById('sve-offline-banner');
+        let banner = $('#sve-offline-banner');
         if (!banner) {
             banner = document.createElement('div');
             banner.id = 'sve-offline-banner';
-            banner.style.cssText = 'position:fixed;z-index:99999;left:0;right:0;top:0;padding:8px 12px;text-align:center;font-weight:600;display:none;backdrop-filter:saturate(180%) blur(6px);';
-            banner.innerHTML = '<span>🔌 Estás sin conexión. Trabajando en modo offline.</span>';
-            banner.style.background = '#fee2e2';
-            banner.style.color = '#991b1b';
+            banner.style.cssText = 'position:fixed;z-index:99999;left:0;right:0;top:0;padding:8px 12px;text-align:center;font-weight:600;display:none;backdrop-filter:saturate(180%) blur(6px);background:#fee2e2;color:#991b1b';
+            banner.textContent = '🔌 Estás sin conexión. Trabajando en modo offline.';
             document.body.appendChild(banner);
         }
-        function update() {
-            banner.style.display = navigator.onLine ? 'none' : 'block';
-        }
+        const update = () => { banner.style.display = navigator.onLine ? 'none' : 'block'; };
         window.addEventListener('online', update);
         window.addEventListener('offline', update);
         update();
     }
 
-    // 3) Credentials store (hashed) using WebCrypto
-    function toBase64(arrayBuffer) {
-        const bytes = new Uint8Array(arrayBuffer);
-        let binary = '';
-        for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-        return btoa(binary);
-    }
-
-    function genSalt(len = 16) {
-        const arr = new Uint8Array(len);
-        crypto.getRandomValues(arr);
-        return toBase64(arr.buffer);
-    }
-
-    async function hashCredential(username, password, saltB64) {
-        if (!window.crypto || !window.crypto.subtle) throw new Error('WebCrypto no soportado');
-        const enc = new TextEncoder();
-        const passKey = await crypto.subtle.importKey(
-            'raw',
-            enc.encode(password),
-            { name: 'PBKDF2' },
-            false,
-            ['deriveBits', 'deriveKey']
-        );
-        const saltData = enc.encode('sve:' + username + ':' + saltB64);
-        const bits = await crypto.subtle.deriveBits(
-            {
-                name: 'PBKDF2',
-                salt: saltData,
-                iterations: 120000,
-                hash: 'SHA-256'
-            },
-            passKey,
-            256
-        );
-        return toBase64(bits);
-    }
-
-    async function saveOfflineCredential(username, password) {
-        const salt = genSalt();
-        const hash = await hashCredential(username, password, salt);
-        const payload = {
-            username,
-            salt,
-            hash,
-            createdAt: Date.now()
-        };
-        localStorage.setItem('sve_offline_cred', JSON.stringify(payload));
-        console.log('[SVE] Credencial offline guardada para', username);
-    }
-
-    async function verifyOfflineCredential(username, password) {
-        const raw = localStorage.getItem('sve_offline_cred');
-        if (!raw) return false;
-        try {
-            const { username: storedUser, salt, hash } = JSON.parse(raw);
-            if (storedUser !== username) return false;
-            const candidate = await hashCredential(username, password, salt);
-            return candidate === hash;
-        } catch (e) {
-            console.warn('[SVE] Error verificando credencial offline', e);
-            return false;
+    // ========= Login: fallback offline + botón "Activar Offline" =========
+    function findLoginForm() {
+        const userSelectors = [
+            'input[name*=user]', 'input[name*=correo]', 'input[name*=email]',
+            'input[id*=user]', 'input[id*=correo]', 'input[name*=usuario]', 'input[id*=usuario]'
+        ].join(',');
+        const passSelectors = [
+            'input[type=password]', 'input[name*=pass]', 'input[name*=clave]',
+            'input[id*=pass]', 'input[name*=contrasena]', 'input[id*=contrasena]'
+        ].join(',');
+        for (const f of Array.from(document.getElementsByTagName('form'))) {
+            const userEl = f.querySelector(userSelectors);
+            const passEl = f.querySelector(passSelectors);
+            if (userEl && passEl) return { form: f, userEl, passEl };
         }
+        return null;
     }
 
-    // 4) Login enhancement: remember for offline + offline auth fallback
     function enhanceLogin() {
-        const forms = Array.from(document.getElementsByTagName('form'));
-
-        function findLoginForm() {
-            const userSelectors = [
-                'input[name*=user]',
-                'input[name*=correo]',
-                'input[name*=email]',
-                'input[id*=user]',
-                'input[id*=correo]',
-                // compatibilidad SVE actual:
-                'input[name*=usuario]',
-                'input[id*=usuario]'
-            ].join(',');
-
-            const passSelectors = [
-                'input[type=password]',
-                'input[name*=pass]',
-                'input[name*=clave]',
-                'input[id*=pass]',
-                // compatibilidad SVE actual:
-                'input[name*=contrasena]',
-                'input[id*=contrasena]'
-            ].join(',');
-
-            for (const f of forms) {
-                const userEl = f.querySelector(userSelectors);
-                const passEl = f.querySelector(passSelectors);
-                if (userEl && passEl) return { form: f, userEl, passEl };
-            }
-            return null;
-        }
-
-
         const found = findLoginForm();
         if (!found) return;
-
         const { form, userEl, passEl } = found;
 
-        // Inject checkbox UI debajo del password
-        const label = document.createElement('label');
-        label.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:8px;';
-        // label.innerHTML = '<input type="checkbox" id="sve-remember-offline" /> <span>Recordar</span>'; habilitar esta línea
-        const pwdContainer = passEl.closest('.password-container') || passEl.parentElement || form;
-        (pwdContainer.nextElementSibling)
-            ? pwdContainer.parentElement.insertBefore(label, pwdContainer.nextElementSibling)
-            : form.appendChild(label);
-
-
+        // Fallback: permitir login sin conexión con hash guardado
         form.addEventListener('submit', async (e) => {
-            const username = (userEl.value || '').trim();
-            const password = (passEl.value || '');
-            const remember = /** @type {HTMLInputElement|null} */(document.getElementById('sve-remember-offline'))?.checked;
-
-            if (!navigator.onLine) {
-                e.preventDefault();
-                try {
-                    const ok = await verifyOfflineCredential(username, password);
-                    if (ok) {
-                        localStorage.setItem('sve_offline_session', JSON.stringify({ user: username, ts: Date.now() }));
-                        window.location.href = '/views/drone_pilot/drone_pilot_dashboard.php?offline=1';
-                    } else {
-                        alert('No se pudo validar offline. Realiza al menos un inicio de sesión conectado para habilitar el acceso sin conexión.');
-                    }
-                } catch (err) {
-                    alert('Tu navegador no soporta el cifrado necesario para el modo offline.');
-                }
-                return;
-            }
-
-            // Online: si pide recordar, guardamos hash antes de enviar (no interfiere con el submit)
-            if (remember) {
-                try { await saveOfflineCredential(username, password); } catch (e) { console.warn('[SVE] No se pudo guardar credencial offline', e); }
+            if (navigator.onLine) return; // normal al backend
+            e.preventDefault();
+            const u = (userEl.value || '').trim();
+            const p = (passEl.value || '');
+            const ok = await verifyOfflineCredential(u, p);
+            if (ok) {
+                createOfflineSession(u);
+                window.location.href = '/views/drone_pilot/drone_pilot_dashboard.php?offline=1';
+            } else {
+                alert('No se pudo validar offline. Activa previamente el modo offline.');
             }
         });
+
+        // Botón "↺" ya lo creamos aparte; ahora agregamos "Activar offline"
+        renderLoginButtons({ form, userEl, passEl });
     }
 
-    // 5) Guard for protected offline page (drone dashboard)
-    function guardOfflineDashboard() {
-        const isDashboard = window.location.pathname.endsWith('/views/drone_pilot/drone_pilot_dashboard.php');
-        if (!isDashboard) return;
-        if (navigator.onLine) return;
+    function renderLoginButtons({ form, userEl, passEl }) {
+        // Determinar si estamos en login
+        const isLogin =
+            location.pathname === '/' ||
+            location.pathname.endsWith('/index.php') ||
+            location.pathname.endsWith('/views/sve/sve_registro_login.php');
+        if (!isLogin) return;
 
-        const session = localStorage.getItem('sve_offline_session');
-        if (!session) {
-            window.location.replace('/views/sve/sve_registro_login.php?need_offline=1');
+        // Contenedor flotante (mismo estilo del botón reset existente)
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'position:absolute;right:12px;bottom:12px;display:flex;gap:8px;';
+
+        // Botón Activar Offline
+        const btnOffline = document.createElement('button');
+        btnOffline.type = 'button';
+        btnOffline.id = 'sve-offline-enable';
+        btnOffline.title = 'Activar acceso sin conexión';
+        btnOffline.style.cssText = baseIconBtnCss('#6b7280'); // gris (inactivo)
+        btnOffline.textContent = '⚡';
+
+        const setActive = (on) => {
+            btnOffline.style.background = on ? '#16a34a' : '#6b7280';   // verde si activo
+            btnOffline.style.opacity = on ? '1' : '.85';
+            btnOffline.title = on ? 'Offline activado' : 'Activar acceso sin conexión';
+        };
+        setActive(hasOfflineCred() && hasOfflineSession());
+
+        btnOffline.addEventListener('click', async () => {
+            const u = (userEl.value || '').trim();
+            const p = (passEl.value || '');
+            if (!u || !p) {
+                alert('Ingresá usuario y contraseña para activar el modo offline.');
+                return;
+            }
+            try {
+                await saveOfflineCredential(u, p);
+                createOfflineSession(u);
+                localStorage.setItem('sve_offline_onboarded', JSON.stringify({ user: u, ts: Date.now() }));
+                setActive(true);
+            } catch (e) {
+                console.warn('[SVE] No se pudo activar el modo offline', e);
+                alert('No se pudo activar el modo offline en este navegador.');
+            }
+        });
+
+        // Botón Reset caché (↺)
+        const btnReset = document.createElement('button');
+        btnReset.type = 'button';
+        btnReset.id = 'sve-cache-reset-btn';
+        btnReset.title = 'Restablecer versión offline';
+        btnReset.style.cssText = baseIconBtnCss('#6b7280');
+        btnReset.textContent = '↺';
+        btnReset.addEventListener('click', openResetModal);
+
+        // Insertar en el DOM (absoluto respecto a la tarjeta; si no, al body)
+        (form.parentElement || document.body).style.position ||= 'relative';
+        wrap.appendChild(btnOffline);
+        wrap.appendChild(btnReset);
+        (form.parentElement || document.body).appendChild(wrap);
+    }
+
+    function baseIconBtnCss(bg) {
+        return [
+            'width:32px;height:32px;border-radius:9999px;border:0',
+            `background:${bg};color:#fff;font-size:16px`,
+            'opacity:.85;cursor:pointer;z-index:99999;display:flex;align-items:center;justify-content:center',
+            'box-shadow:0 2px 8px rgba(0,0,0,.2)'
+        ].join(';');
+    }
+
+    // ========= Guard para dashboard offline =========
+    function guardOfflineDashboard() {
+        const isDashboard = location.pathname.endsWith('/views/drone_pilot/drone_pilot_dashboard.php');
+        if (!isDashboard || navigator.onLine) return;
+        if (!hasOfflineSession()) {
+            location.replace('/views/sve/sve_registro_login.php?need_offline=1');
         }
     }
 
-    // 6) Preload CDN
+    // ========= Preload CDN y utilidades =========
     function prefetchCDN() {
         try {
             const linkCss = document.createElement('link');
-            linkCss.rel = 'preload';
-            linkCss.as = 'style';
-            linkCss.href = CDN.css;
-            document.head.appendChild(linkCss);
-
+            linkCss.rel = 'preload'; linkCss.as = 'style'; linkCss.href = CDN.css;
             const linkJs = document.createElement('link');
-            linkJs.rel = 'preload';
-            linkJs.as = 'script';
-            linkJs.href = CDN.js;
-            document.head.appendChild(linkJs);
-        } catch (e) { }
+            linkJs.rel = 'preload'; linkJs.as = 'script'; linkJs.href = CDN.js;
+            document.head.append(linkCss, linkJs);
+        } catch { }
     }
 
-    // --- 7) Botón oculto para limpiar caché + storage + SW ---
-    function renderResetButton() {
-        // Mostrar solo en login
-        const isLogin =
-            window.location.pathname === '/' ||
-            window.location.pathname.endsWith('/index.php') ||
-            window.location.pathname.endsWith('/views/sve/sve_registro_login.php');
-
-        if (!isLogin) return;
-
-        // Botón sutil (esquina inferior derecha)
-        const btn = document.createElement('button');
-        btn.id = 'sve-cache-reset-btn';
-        btn.type = 'button';
-        btn.title = 'Restablecer versión offline';
-        btn.style.cssText = 'position:fixed;right:10px;bottom:10px;width:28px;height:28px;border-radius:9999px;border:0;background:#6b7280;color:#fff;font-size:16px;opacity:.35;cursor:pointer;z-index:99999;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.2)';
-        btn.setAttribute('aria-label', 'Restablecer cache');
-        btn.innerHTML = '↺';
-        btn.addEventListener('mouseenter', () => (btn.style.opacity = '.85'));
-        btn.addEventListener('mouseleave', () => (btn.style.opacity = '.35'));
-
-        // Modal de confirmación
+    // ========= Reset modal/caches =========
+    function openResetModal() {
         const overlay = document.createElement('div');
-        overlay.id = 'sve-cache-reset-overlay';
-        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:100000;';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.35);display:block;z-index:100000;';
         const modal = document.createElement('div');
         modal.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;max-width:360px;width:92%;border-radius:12px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-family:system-ui';
         modal.innerHTML = `
-            <h3 style="margin:0 0 8px;font-size:16px;">¿Restablecer la versión offline?</h3>
-            <p style="margin:0 0 12px;font-size:14px;line-height:1.4">
-                Esto <strong>borra caches</strong>, <strong>storage</strong> y <strong>desregistra</strong> el Service Worker.
-                Se recargará la página.
-            </p>
-            <div style="display:flex;gap:8px;justify-content:flex-end">
-                <button id="sve-cancel" style="padding:6px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer">Cancelar</button>
-                <button id="sve-confirm" style="padding:6px 10px;border-radius:8px;border:0;background:#7c3aed;color:#fff;cursor:pointer">Sí, borrar</button>
-            </div>`;
+      <h3 style="margin:0 0 8px;font-size:16px;">¿Restablecer la versión offline?</h3>
+      <p style="margin:0 0 12px;font-size:14px;line-height:1.4">
+        Esto <strong>borra caches</strong>, <strong>storage</strong> y <strong>desregistra</strong> el Service Worker.
+        Se recargará la página.
+      </p>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button id="sve-cancel" style="padding:6px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer">Cancelar</button>
+        <button id="sve-confirm" style="padding:6px 10px;border-radius:8px;border:0;background:#7c3aed;color:#fff;cursor:pointer">Sí, borrar</button>
+      </div>`;
         overlay.appendChild(modal);
-
-        function openModal() { overlay.style.display = 'block'; }
-        function closeModal() { overlay.style.display = 'none'; }
-
-        btn.addEventListener('click', openModal);
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+        overlay.addEventListener('click', e => { if (e.target === overlay) document.body.removeChild(overlay); });
         setTimeout(() => {
-            modal.querySelector('#sve-cancel').addEventListener('click', closeModal);
-            modal.querySelector('#sve-confirm').addEventListener('click', async () => {
-                closeModal();
-                await SVE_ClearAll();
-                location.reload();
-            });
+            modal.querySelector('#sve-cancel').addEventListener('click', () => document.body.removeChild(overlay));
+            modal.querySelector('#sve-confirm').addEventListener('click', async () => { await SVE_ClearAll(); location.reload(); });
         });
-
-        document.body.appendChild(btn);
         document.body.appendChild(overlay);
     }
 
-    // Limpieza integral
-    async function SVE_ClearAll() {
+    // ========= Limpieza global expuesta =========
+    window.SVE_ClearAll = async function () {
         try {
-            // 1) caches
-            const keys = await caches.keys();
-            await Promise.all(keys.map(k => caches.delete(k)));
-
-            // 2) local/session storage (solo claves SVE)
-            try { localStorage.removeItem('sve_offline_cred'); } catch (e) { }
-            try { localStorage.removeItem('sve_offline_session'); } catch (e) { }
-            try { sessionStorage.clear(); } catch (e) { }
-
-            // 3) IndexedDB (si el navegador lo permite)
+            const keys = await caches.keys(); await Promise.all(keys.map(k => caches.delete(k)));
+            try { localStorage.removeItem('sve_offline_cred'); } catch { }
+            try { localStorage.removeItem('sve_offline_session'); } catch { }
+            try { sessionStorage.clear(); } catch { }
             try {
-                if (indexedDB && indexedDB.databases) {
+                if (indexedDB?.databases) {
                     const dbs = await indexedDB.databases();
                     await Promise.all(dbs.map(db => db.name && indexedDB.deleteDatabase(db.name)));
                 }
-            } catch (e) { /* opcional, no crítico */ }
-
-            // 4) unregister service workers
+            } catch { }
             if ('serviceWorker' in navigator) {
                 const regs = await navigator.serviceWorker.getRegistrations();
                 await Promise.all(regs.map(r => r.unregister()));
             }
             console.log('[SVE] Limpieza completa ejecutada');
-        } catch (e) {
-            console.warn('[SVE] Error limpiando', e);
-        }
-    }
+        } catch (e) { console.warn('[SVE] Error limpiando', e); }
+    };
 
-    // Boot
+    // ========= Boot =========
     window.addEventListener('load', registerSW);
     window.addEventListener('DOMContentLoaded', () => {
         ensureOfflineBanner();
         enhanceLogin();
         guardOfflineDashboard();
-        renderResetButton();
+        prefetchCDN();
     });
 
-    // ====== SVE Reset (expuesto global) ======
-    window.SVE_ClearAll = async function () {
-        try {
-            // 1) borrar caches
-            const keys = await caches.keys();
-            await Promise.all(keys.map(k => caches.delete(k)));
-
-            // 2) storages
-            try { localStorage.removeItem('sve_offline_cred'); } catch (e) { }
-            try { localStorage.removeItem('sve_offline_session'); } catch (e) { }
-            try { sessionStorage.clear(); } catch (e) { }
-
-            // 3) indexedDB (best effort)
-            try {
-                if (indexedDB && indexedDB.databases) {
-                    const dbs = await indexedDB.databases();
-                    await Promise.all(dbs.map(db => db.name && indexedDB.deleteDatabase(db.name)));
-                }
-            } catch (e) { }
-
-            // 4) unregister SW
-            if ('serviceWorker' in navigator) {
-                const regs = await navigator.serviceWorker.getRegistrations();
-                await Promise.all(regs.map(r => r.unregister()));
-            }
-            console.log('[SVE] Limpieza completa ejecutada');
-        } catch (e) {
-            console.warn('[SVE] Error limpiando', e);
-        }
-    };
-
-    // === API pública para activar offline desde cualquier vista (dashboard, etc.) ===
-    if (!window.SVE_SaveOfflineCredential) {
-        window.SVE_SaveOfflineCredential = async function (username, password) {
-            try {
-                if (!username || !password) throw new Error('Faltan credenciales');
-                // usa la función interna ya definida arriba
-                await saveOfflineCredential(username, password);
-                localStorage.setItem('sve_offline_onboarded', JSON.stringify({ user: username, ts: Date.now() }));
-                console.log('[SVE] Credencial offline activada para', username);
-                return { ok: true };
-            } catch (e) {
-                console.warn('[SVE] No se pudo activar el modo offline', e);
-                return { ok: false, message: e?.message || 'Error activando offline' };
-            }
-        };
-    }
-
-
-    // === API pública para activar offline desde cualquier vista ===
-    if (!window.SVE_SaveOfflineCredential) {
-        window.SVE_SaveOfflineCredential = async function (username, password) {
-            try {
-                if (!username || !password) throw new Error('Faltan credenciales');
-                await saveOfflineCredential(username, password);
-                localStorage.setItem('sve_offline_onboarded', JSON.stringify({ user: username, ts: Date.now() }));
-                return { ok: true };
-            } catch (e) {
-                console.warn('[SVE] No se pudo activar el modo offline', e);
-                return { ok: false, message: e?.message || 'Error activando offline' };
-            }
-        };
-    }
-
-// Trazas mínimas para diagnóstico
-setTimeout(() => {
-  console.log('[SVE] offline.js listo. API:', typeof window.SVE_SaveOfflineCredential);
-}, 0);
+    // Trazas mínimas
+    setTimeout(() => console.log('[SVE] offline.js listo'), 0);
 })();
-
