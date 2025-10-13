@@ -1,4 +1,3 @@
-/*! SVE Offline bootstrap v2.1 - PWA + Login Offline (hashed + sesión local) */
 (function () {
   'use strict';
 
@@ -85,140 +84,90 @@
     update();
   }
 
-  // ===== Login (fallback offline + botón Activar) ===========================
-  function findLoginForm() {
-    const userSelectors = [
-      'input[name*=user]','input[name*=correo]','input[name*=email]',
-      'input[id*=user]','input[id*=correo]','input[name*=usuario]','input[id*=usuario]'
-    ].join(',');
-    const passSelectors = [
-      'input[type=password]','input[name*=pass]','input[name*=clave]',
-      'input[id*=pass]','input[name*=contrasena]','input[id*=contrasena]'
-    ].join(',');
-    for (const f of Array.from(document.getElementsByTagName('form'))) {
-      const userEl = f.querySelector(userSelectors);
-      const passEl = f.querySelector(passSelectors);
-      if (userEl && passEl) return { form: f, userEl, passEl };
+  // ===== SELECTORES de campos de login (los mismos que ya usábamos) =====
+function findLoginForm() {
+  const userSelectors = [
+    'input[name*=user]','input[name*=correo]','input[name*=email]',
+    'input[id*=user]','input[id*=correo]','input[name*=usuario]','input[id*=usuario]'
+  ].join(',');
+  const passSelectors = [
+    'input[type=password]','input[name*=pass]','input[name*=clave]',
+    'input[id*=pass]','input[name*=contrasena]','input[id*=contrasena]'
+  ].join(',');
+  for (const f of Array.from(document.getElementsByTagName('form'))) {
+    const userEl = f.querySelector(userSelectors);
+    const passEl = f.querySelector(passSelectors);
+    if (userEl && passEl) return { form: f, userEl, passEl };
+  }
+  return null;
+}
+
+// ===== Fallback de submit sin conexión (déjalo igual si ya lo tenés) =====
+function enhanceLogin() {
+  const found = findLoginForm();
+  if (!found) return;
+  const { form, userEl, passEl } = found;
+
+  // Si no hay red, valida contra hash guardado y entra al dashboard
+  form.addEventListener('submit', async (e) => {
+    if (navigator.onLine) return; // online => back-end
+    e.preventDefault();
+    const u = (userEl.value || '').trim();
+    const p = (passEl.value || '');
+    const ok = await verifyOfflineCredential(u, p);
+    if (ok) {
+      localStorage.setItem('sve_offline_session', JSON.stringify({ user: u, ts: Date.now() }));
+      window.location.href = '/views/drone_pilot/drone_pilot_dashboard.php?offline=1';
+    } else {
+      alert('No se pudo validar offline. Activá el modo offline primero (⚡).');
     }
-    return null;
-  }
+  });
+}
 
-  function enhanceLogin() {
-    const found = findLoginForm();
-    if (!found) return;
-    const { form, userEl, passEl } = found;
+// ===== Vincular botones inline: #sve-offline-enable-inline y #sve-cache-reset-inline =====
+function bindInlineButtons() {
+  const enableBtn = document.getElementById('sve-offline-enable-inline');
+  const resetBtn  = document.getElementById('sve-cache-reset-inline');
 
-    // 1) Fallback: submit sin red => validación local
-    form.addEventListener('submit', async (e) => {
-      if (navigator.onLine) return;
-      e.preventDefault();
+  // Estilos activos/inactivos para el ⚡
+  const setActive = (on) => {
+    if (!enableBtn) return;
+    enableBtn.style.background = on ? '#16a34a' : '#6b7280'; // verde/gris
+    enableBtn.style.color = '#fff';
+    enableBtn.title = on ? 'Offline activado' : 'Activar acceso sin conexión';
+  };
+  setActive(!!localStorage.getItem('sve_offline_cred') && !!localStorage.getItem('sve_offline_session'));
+
+  // Click en ⚡ => guarda hash + crea sesión
+  if (enableBtn) {
+    enableBtn.addEventListener('click', async () => {
+      const found = findLoginForm();
+      if (!found) { alert('No se encontró el formulario de login.'); return; }
+      const { userEl, passEl } = found;
       const u = (userEl.value || '').trim();
       const p = (passEl.value || '');
-      const ok = await verifyOfflineCredential(u, p);
-      if (ok) {
-        createOfflineSession(u);
-        window.location.href = '/views/drone_pilot/drone_pilot_dashboard.php?offline=1';
-      } else {
-        alert('No se pudo validar offline. Activá el modo offline primero (⚡).');
-      }
-    });
+      if (!u || !p) { alert('Ingresá usuario y contraseña para activar el modo offline.'); return; }
 
-    // 2) UI: Botones “⚡ activar offline” y “↺ reset”
-    renderLoginButtons({ form, userEl, passEl });
-  }
-
-  function renderLoginButtons({ form, userEl, passEl }) {
-    const isLogin =
-      location.pathname === '/' ||
-      location.pathname.endsWith('/index.php') ||
-      location.pathname.endsWith('/views/sve/sve_registro_login.php');
-    if (!isLogin) return;
-
-    // a) buscar botón submit para anclar
-    const submitBtn = form.querySelector('button[type=submit], input[type=submit]');
-    // b) buscar si ya existe un botón reset previo
-    const existingReset = $('#sve-cache-reset-btn');
-
-    // Crear botón ⚡
-    const btnOffline = document.createElement('button');
-    btnOffline.type = 'button';
-    btnOffline.id   = 'sve-offline-enable';
-    btnOffline.textContent = '⚡';
-    styleIconBtn(btnOffline);
-
-    const setActive = (on) => {
-      btnOffline.style.background = on ? '#16a34a' : '#6b7280'; // verde activo
-      btnOffline.title = on ? 'Offline activado' : 'Activar acceso sin conexión';
-      btnOffline.style.opacity = on ? '1' : '.9';
-    };
-    setActive(hasOfflineCred() && hasOfflineSession());
-
-    btnOffline.addEventListener('click', async () => {
-      const u = (userEl.value || '').trim();
-      const p = (passEl.value || '');
-      if (!u || !p) {
-        alert('Ingresá usuario y contraseña para activar el modo offline.');
-        return;
-      }
       try {
         await saveOfflineCredential(u, p);
-        createOfflineSession(u);
+        localStorage.setItem('sve_offline_session', JSON.stringify({ user: u, ts: Date.now() }));
         localStorage.setItem('sve_offline_onboarded', JSON.stringify({ user: u, ts: Date.now() }));
-        console.log('[SVE] Credencial offline activada para', u);
         setActive(true);
+        console.log('[SVE] Credencial offline activada para', u);
       } catch (e) {
         console.warn('[SVE] No se pudo activar el modo offline', e);
         alert('No se pudo activar el modo offline en este navegador.');
       }
     });
-
-    // Colocación: junto al reset si existe, si no, al lado del submit
-    if (existingReset && existingReset.parentElement) {
-      existingReset.parentElement.insertBefore(btnOffline, existingReset);
-    } else if (submitBtn && submitBtn.parentElement) {
-      submitBtn.parentElement.style.display = 'flex';
-      submitBtn.parentElement.style.gap = '8px';
-      submitBtn.parentElement.appendChild(btnOffline);
-      // si no hay reset, agrego uno pequeño también
-      const btnReset = document.createElement('button');
-      btnReset.type = 'button';
-      btnReset.id   = 'sve-cache-reset-btn';
-      btnReset.textContent = '↺';
-      styleIconBtn(btnReset);
-      btnReset.title = 'Restablecer versión offline';
-      btnReset.addEventListener('click', async () => { await SVE_ClearAll(); location.reload(); });
-      submitBtn.parentElement.appendChild(btnReset);
-    } else {
-      // fallback absoluto si el DOM es raro
-      const wrap = document.createElement('div');
-      wrap.style.cssText = 'position:fixed;right:12px;bottom:12px;display:flex;gap:8px;z-index:99999';
-      wrap.appendChild(btnOffline);
-      document.body.appendChild(wrap);
-    }
   }
 
-  function styleIconBtn(btn) {
-    btn.style.cssText = [
-      'width:32px;height:32px;border-radius:9999px;border:0',
-      'background:#6b7280;color:#fff;font-size:16px',
-      'cursor:pointer;display:inline-flex;align-items:center;justify-content:center',
-      'box-shadow:0 2px 8px rgba(0,0,0,.2)'
-    ].join(';');
-  }
-
-  // ===== Guard para dashboard offline ======================================
-  function guardOfflineDashboard() {
-    const isDashboard = location.pathname.endsWith('/views/drone_pilot/drone_pilot_dashboard.php');
-    if (!isDashboard || navigator.onLine) return;
-    if (!hasOfflineSession()) {
-      location.replace('/views/sve/sve_registro_login.php?need_offline=1');
-    }
-  }
-
-  // ===== Reset global expuesto (sin modal, sin dashboard) ===================
-  window.SVE_ClearAll = async function () {
-    try {
-      const keys = await caches.keys(); await Promise.all(keys.map(k => caches.delete(k)));
+  // Click en ↺ => limpiar todo y recargar
+  if (resetBtn) {
+    resetBtn.addEventListener('click', async () => {
+      try {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      } catch {}
       try { localStorage.removeItem('sve_offline_cred'); } catch {}
       try { localStorage.removeItem('sve_offline_session'); } catch {}
       try { sessionStorage.clear(); } catch {}
@@ -232,17 +181,46 @@
         const regs = await navigator.serviceWorker.getRegistrations();
         await Promise.all(regs.map(r => r.unregister()));
       }
-      console.log('[SVE] Limpieza completa ejecutada');
-    } catch (e) { console.warn('[SVE] Error limpiando', e); }
-  };
+      location.reload();
+    });
+  }
+}
 
-  // ===== Boot ===============================================================
-  window.addEventListener('load', registerSW);
-  window.addEventListener('DOMContentLoaded', () => {
-    ensureOfflineBanner();
-    enhanceLogin();
-    guardOfflineDashboard();
-  });
+// ===== Guard para dashboard offline (déjalo si ya estaba) =====
+function guardOfflineDashboard() {
+  const isDashboard = location.pathname.endsWith('/views/drone_pilot/drone_pilot_dashboard.php');
+  if (!isDashboard || navigator.onLine) return;
+  if (!localStorage.getItem('sve_offline_session')) {
+    location.replace('/views/sve/sve_registro_login.php?need_offline=1');
+  }
+}
 
+// ===== Boot (agregamos bindInlineButtons) =====
+window.addEventListener('DOMContentLoaded', () => {
+  enhanceLogin();
+  bindInlineButtons();
+  guardOfflineDashboard();
+});
+window.addEventListener('load', () => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+      .then(reg => { if (reg.waiting) reg.waiting.postMessage({ type:'SKIP_WAITING' }); })
+      .catch(e => console.warn('[SVE] SW error', e));
+  }
+  // Banner offline opcional…
+  const banner = document.getElementById('sve-offline-banner');
+  if (!banner) {
+    const b = document.createElement('div');
+    b.id = 'sve-offline-banner';
+    b.style.cssText = 'position:fixed;z-index:99999;left:0;right:0;top:0;padding:8px 12px;text-align:center;font-weight:600;display:none;backdrop-filter:saturate(180%) blur(6px);background:#fee2e2;color:#991b1b';
+    b.textContent = '🔌 Estás sin conexión. Trabajando en modo offline.';
+    document.body.appendChild(b);
+    const update = () => { b.style.display = navigator.onLine ? 'none' : 'block'; };
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    update();
+  }
   setTimeout(() => console.log('[SVE] offline.js listo'), 0);
-})();
+});
+  
+}());

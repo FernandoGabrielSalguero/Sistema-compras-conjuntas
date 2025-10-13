@@ -242,7 +242,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group" style="display:flex; gap:8px; align-items:center; justify-content:space-between">
                 <button type="submit">INGRESAR</button>
-                <button type="button" id="sve-cache-reset-inline" title="Restablecer versión offline" aria-label="Restablecer cache" style="width:36px;height:36px;min-width:36px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;display:inline-flex;align-items:center;justify-content:center">↺</button>
+
+                <!-- ⚡ Activar modo offline -->
+                <button type="button" id="sve-offline-enable-inline"
+                    title="Activar acceso sin conexión"
+                    aria-label="Activar acceso sin conexión"
+                    style="width:36px;height:36px;min-width:36px;border-radius:8px;border:1px solid #e5e7eb;background:#6b7280;color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer">
+                    ⚡
+                </button>
+
+                <!-- ↺ Reset offline (ya existente) -->
+                <button type="button" id="sve-cache-reset-inline"
+                    title="Restablecer versión offline" aria-label="Restablecer cache"
+                    style="width:36px;height:36px;min-width:36px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;display:inline-flex;align-items:center;justify-content:center">
+                    ↺
+                </button>
             </div>
 
         </form>
