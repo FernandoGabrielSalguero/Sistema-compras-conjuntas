@@ -1,5 +1,5 @@
-/*! SVE Service Worker v2.0 - cache-first + SWR + offline fallback */
-const CACHE_VERSION = 'v2';
+/*! SVE Service Worker v3.0 - cache-first + SWR + offline fallback (hardened) */
+const CACHE_VERSION = 'v3';
 const PRECACHE = 'sve-precache-' + CACHE_VERSION;
 const RUNTIME  = 'sve-runtime-'  + CACHE_VERSION;
 
@@ -31,7 +31,7 @@ self.addEventListener('install', (event) => {
           const resp = await fetch(u, { mode: 'no-cors', cache: 'no-cache' });
           await cache.put(new Request(u, { mode: 'no-cors' }), resp.clone());
         }
-      } catch (e) { console.warn('[SW][PRECACHE] Falló', u, e?.message || e); }
+      } catch (e) { /* best-effort */ }
     }));
   })());
 });
@@ -48,18 +48,23 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
 
-  const url = new URL(req.url);
+  let url;
+  try { url = new URL(req.url); } catch { return; }
+  // Ignorar todo lo que no sea http/https (incluye chrome-extension:, data:, etc.)
   if (!(url.protocol === 'http:' || url.protocol === 'https:')) return;
 
   event.respondWith((async () => {
     const cached = await caches.match(req);
+
     const fetchPromise = fetch(req).then(async (networkResp) => {
+      // Evitar cachear si por alguna razón el request no es http/https
+      if (!/^https?:/i.test(req.url)) return networkResp;
       if (networkResp && (networkResp.status === 200 || networkResp.type === 'opaque')) {
         try {
           const cache = await caches.open(RUNTIME);
           const cacheReq = (req.mode === 'no-cors') ? new Request(req.url, { mode: 'no-cors' }) : req;
-          cache.put(cacheReq, networkResp.clone());
-        } catch {}
+          await cache.put(cacheReq, networkResp.clone());
+        } catch { /* no-op */ }
       }
       return networkResp;
     }).catch(async () => {
