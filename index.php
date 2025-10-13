@@ -324,18 +324,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #fff
         }
     </style>
-    <div id="sve-cache-reset-overlay">
+    <!-- <div id="sve-cache-reset-overlay">
         <div id="sve-cache-reset-modal">
             <h3 style="margin:0 0 8px;font-size:16px;">¿Restablecer la versión offline?</h3>
             <p style="margin:0 0 12px;font-size:14px;line-height:1.4">
                 Esto <strong>borra caches</strong>, <strong>storage</strong> y <strong>desregistra</strong> el Service Worker. Se recargará la página.
             </p>
             <div class="row">
-                <button class="btn cancel" id="sve-cancel">Cancelar</button>
-                <button class="btn ok" id="sve-confirm">Sí, borrar</button>
+                <button class="btn btn-cancelar" id="sve-cancel">Cancelar</button>
+                <button class="btn btn-aceptar" id="sve-confirm">Sí, borrar</button>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <script>
         // Fallback si offline.js no está presente
