@@ -596,54 +596,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
 
             // ---------- Estado "offline activo" en UI ----------
+            // Solo actualiza UI (texto/aria/badge). NO toca data-active aquí
+            // para evitar loops con el MutationObserver.
             function reflectActiveState(on) {
                 enableItem.textContent = on ?
                     '⚡ Acceso sin conección activado' :
                     '⚡ Activar acceso sin conexión';
 
+                enableItem.setAttribute('aria-pressed', on ? 'true' : 'false');
                 if (on) {
-                    enableItem.setAttribute('data-active', '1');
-                    enableItem.setAttribute('aria-pressed', 'true');
                     trigger.setAttribute('data-offline', '1');
                 } else {
-                    enableItem.removeAttribute('data-active');
-                    enableItem.setAttribute('aria-pressed', 'false');
                     trigger.removeAttribute('data-offline');
                 }
             }
 
-            // Valor inicial desde localStorage
-            reflectActiveState(!!localStorage.getItem('sve_offline_cred'));
+            // Valor inicial desde localStorage (por defecto: desactivado)
+            const initialOn = !!localStorage.getItem('sve_offline_cred');
+            reflectActiveState(initialOn);
 
             // Toggle manual desde el item del menú (fallback si no está offline.js)
             enableItem.addEventListener('click', (e) => {
-                // Evita que el handler del menú intercepte antes de togglear
                 e.preventDefault();
                 e.stopPropagation();
 
                 const isActive = enableItem.getAttribute('data-active') === '1' || !!localStorage.getItem('sve_offline_cred');
 
                 if (isActive) {
-                    // Desactivar offline
+                    // Desactivar offline (no persistido)
                     try {
                         localStorage.removeItem('sve_offline_cred');
                     } catch {}
-                    enableItem.removeAttribute('data-active');
+                    enableItem.removeAttribute('data-active'); // atributo solo para observadores externos
                     reflectActiveState(false);
                 } else {
-                    // Activar offline
+                    // Activar offline (persistido)
                     try {
                         localStorage.setItem('sve_offline_cred', '1');
                     } catch {}
-                    enableItem.setAttribute('data-active', '1');
+                    enableItem.setAttribute('data-active', '1'); // atributo solo para observadores externos
                     reflectActiveState(true);
                 }
+
+                // Cerrar el menú al seleccionar la opción
+                if (typeof closeMenu === 'function') closeMenu();
             });
 
-            // Si offline.js modifica data-active, reflejar cambio
+            // Si offline.js modifica data-active, reflejar cambio sin reescribir data-active,
+            // así evitamos loops de observer.
             const obs = new MutationObserver(() => {
                 const on = enableItem.getAttribute('data-active') === '1';
-                // Sincroniza también con localStorage si difiere
+
+                // Solo sincroniza persistencia; no toca el atributo observado.
                 const lsOn = !!localStorage.getItem('sve_offline_cred');
                 if (on && !lsOn) {
                     try {
@@ -655,13 +659,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         localStorage.removeItem('sve_offline_cred');
                     } catch {}
                 }
+
+                // Actualiza únicamente la UI
                 reflectActiveState(on);
             });
             obs.observe(enableItem, {
                 attributes: true,
                 attributeFilter: ['data-active']
             });
+
         })();
+
+        // Defensa adicional: al activar/desactivar desde este script, no vuelvas a modificar
+        // 'data-active' si ya está en el estado correcto.
+        function setDataActiveSafely(on) {
+            const current = enableItem.getAttribute('data-active') === '1';
+            if (on !== current) {
+                if (on) enableItem.setAttribute('data-active', '1');
+                else enableItem.removeAttribute('data-active');
+            }
+        }
 
         // =========================================================
         // (Opcional para debug): imprimir sesión/cierre en consola
