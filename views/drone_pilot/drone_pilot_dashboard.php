@@ -1647,7 +1647,6 @@ $sesionDebug = [
 
     <script>
         (function() {
-            // Usuario actual desde la sesión PHP
             const CURRENT_USER = <?php echo json_encode($_SESSION['usuario'] ?? null); ?>;
 
             function needsOnboarding(user) {
@@ -1657,14 +1656,13 @@ $sesionDebug = [
                     const {
                         username
                     } = JSON.parse(raw);
-                    return username !== user; // si la credencial es de otro usuario, volver a ofrecer
+                    return username !== user;
                 } catch {
                     return true;
                 }
             }
 
             function warmupRuntimeCache() {
-                // Dispara lecturas clave para que el SW las cachee en runtime
                 try {
                     fetch('../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes', {
                         credentials: 'same-origin'
@@ -1688,24 +1686,36 @@ $sesionDebug = [
                 document.getElementById('sve-offline-activate-overlay').style.display = 'none';
             }
 
+            // Espera hasta 2s a que offline.js exponga la API
+            function waitForApi(timeoutMs = 2000) {
+                return new Promise((resolve, reject) => {
+                    const start = Date.now();
+                    (function tick() {
+                        if (window.SVE_SaveOfflineCredential) return resolve(true);
+                        if (Date.now() - start > timeoutMs) return resolve(false);
+                        setTimeout(tick, 50);
+                    })();
+                });
+            }
+
             document.getElementById('sve-offline-cancel').addEventListener('click', closeModal);
             document.getElementById('sve-offline-accept').addEventListener('click', async () => {
                 const pass = document.getElementById('sve-offline-pass').value || '';
                 if (!pass) return alert('Ingresá tu contraseña para activar el modo offline.');
-                if (!window.SVE_SaveOfflineCredential) {
+
+                const ready = await waitForApi();
+                if (!ready || !window.SVE_SaveOfflineCredential) {
                     alert('Módulo offline no disponible.');
                     return;
                 }
-                // Guardar credencial offline localmente (no se envía al servidor)
+
                 const res = await window.SVE_SaveOfflineCredential(CURRENT_USER, pass);
                 if (!res.ok) {
                     alert(res.message || 'No se pudo activar el modo offline.');
                     return;
                 }
                 closeModal();
-                // Precarga liviana
                 warmupRuntimeCache();
-                // Feedback simple
                 try {
                     window.showAlert?.('success', 'Modo offline activado.');
                 } catch (e) {
@@ -1713,17 +1723,17 @@ $sesionDebug = [
                 }
             });
 
-            // Mostrar modal solo a piloto, primera vez (o si cambió de usuario)
-            document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('DOMContentLoaded', async () => {
                 const rol = <?php echo json_encode($_SESSION['rol'] ?? null); ?>;
                 if (rol === 'piloto_drone' && CURRENT_USER && needsOnboarding(CURRENT_USER)) {
-                    // Esperamos a que offline.js (defer) y SW estén listos
-                    if (document.readyState === 'complete') openModal();
-                    else setTimeout(openModal, 300);
+                    // Asegurar que offline.js (defer) haya definido la API antes de mostrar
+                    await waitForApi();
+                    openModal();
                 }
             });
         })();
     </script>
+
 
 </body>
 

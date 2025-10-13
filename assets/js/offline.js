@@ -348,6 +348,24 @@
         }
     };
 
+    // === API pública para activar offline desde cualquier vista (dashboard, etc.) ===
+    if (!window.SVE_SaveOfflineCredential) {
+        window.SVE_SaveOfflineCredential = async function (username, password) {
+            try {
+                if (!username || !password) throw new Error('Faltan credenciales');
+                // usa la función interna ya definida arriba
+                await saveOfflineCredential(username, password);
+                localStorage.setItem('sve_offline_onboarded', JSON.stringify({ user: username, ts: Date.now() }));
+                console.log('[SVE] Credencial offline activada para', username);
+                return { ok: true };
+            } catch (e) {
+                console.warn('[SVE] No se pudo activar el modo offline', e);
+                return { ok: false, message: e?.message || 'Error activando offline' };
+            }
+        };
+    }
+
+
     // === API pública para activar offline desde cualquier vista ===
     if (!window.SVE_SaveOfflineCredential) {
         window.SVE_SaveOfflineCredential = async function (username, password) {
@@ -363,6 +381,9 @@
         };
     }
 
-
+// Trazas mínimas para diagnóstico
+setTimeout(() => {
+  console.log('[SVE] offline.js listo. API:', typeof window.SVE_SaveOfflineCredential);
+}, 0);
 })();
 
