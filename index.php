@@ -663,24 +663,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         })();
 
-        /* Registro opcional de Service Worker al activar offline (si existe sw.js) */
-        (function() {
-            if (!('serviceWorker' in navigator)) return;
-            const enableItem = document.getElementById('sve-offline-enable-inline');
-            if (!enableItem) return;
-
-            enableItem.addEventListener('click', async () => {
-                const active = enableItem.getAttribute('data-active') === '1';
-                if (active) {
-                    try {
-                        await navigator.serviceWorker.register('/sw.js');
-                    } catch (e) {
-                        console.warn('[SVE] No se pudo registrar sw.js (opcional).', e);
-                    }
-                }
-            });
-        })();
-
         // =========================================================
         // (Opcional para debug): imprimir sesión/cierre en consola
         // =========================================================
