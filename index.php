@@ -124,7 +124,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -148,12 +147,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             --sve-gray-700: #374151;
             --sve-success: #22c55e;
         }
-
-        html,
-        body {
+        html, body {
             height: 100%;
         }
-
         body {
             font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
             background-color: var(--sve-gray-50);
@@ -161,16 +157,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: grid;
             place-items: center;
         }
-
         .login-container {
             position: relative;
             background: #fff;
             padding: 28px;
             border-radius: 12px;
-            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.08);
             width: min(100%, 420px);
         }
-
         .login-container h1 {
             margin: 0 0 18px;
             text-align: center;
@@ -178,38 +172,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 22px;
             font-weight: 700;
         }
-
-        .form-group {
-            margin-bottom: 14px;
-        }
-
+        .form-group { margin-bottom: 14px; }
         .form-group label {
             display: block;
             margin: 0 0 6px;
             color: #555;
             font-size: 14px;
         }
-
-        .input,
-        .button {
+        .input, .button {
             width: 100%;
             padding: 10px 12px;
             border-radius: 8px;
             box-sizing: border-box;
             font-size: 14px;
         }
-
         .input {
             border: 1px solid var(--sve-gray-200);
             background: #fff;
         }
-
         .input:focus {
             border-color: var(--sve-primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(103, 58, 183, 0.12);
+            box-shadow: 0 0 0 3px rgba(103,58,183,0.12);
         }
-
         .button {
             border: 0;
             background: var(--sve-primary);
@@ -217,15 +202,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             cursor: pointer;
             transition: transform .02s ease, box-shadow .2s ease, background-color .2s ease;
         }
-
-        .button:hover {
-            background: var(--sve-primary-600);
-        }
-
-        .button:active {
-            transform: translateY(1px);
-        }
-
+        .button:hover { background: var(--sve-primary-600); }
+        .button:active { transform: translateY(1px); }
         .error {
             color: #b91c1c;
             margin-bottom: 10px;
@@ -239,11 +217,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             align-items: center;
         }
-
         .password-container .input {
             padding-right: 44px;
         }
-
         .toggle-password {
             position: absolute;
             right: 10px;
@@ -261,7 +237,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             top: 10px;
             right: 10px;
         }
-
         .sve-menu-trigger {
             width: 36px;
             height: 36px;
@@ -277,7 +252,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 20px;
             line-height: 1;
         }
-
         .sve-menu-trigger[data-offline="1"]::after {
             content: "";
             position: absolute;
@@ -289,7 +263,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: var(--sve-success);
             box-shadow: 0 0 0 2px #fff;
         }
-
         .sve-menu {
             position: absolute;
             right: 0;
@@ -303,11 +276,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: none;
             z-index: 10;
         }
-
-        .sve-menu.open {
-            display: block;
-        }
-
+        .sve-menu.open { display: block; }
         .sve-menu-item {
             width: 100%;
             text-align: left;
@@ -319,10 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             cursor: pointer;
             font-size: 14px;
         }
-
-        .sve-menu-item:hover {
-            background: var(--sve-gray-100);
-        }
+        .sve-menu-item:hover { background: var(--sve-gray-100); }
 
         /* Estado activo visual para el item de offline */
         #sve-offline-enable-inline[data-active="1"],
@@ -334,52 +300,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         /* Modal de reset offline */
         #sve-cache-reset-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, .35);
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,.35);
             display: none;
             z-index: 100000;
         }
-
         #sve-cache-reset-modal {
             position: absolute;
-            left: 50%;
-            top: 50%;
+            left: 50%; top: 50%;
             transform: translate(-50%, -50%);
             background: #fff;
-            max-width: 360px;
-            width: 92%;
+            max-width: 360px; width: 92%;
             border-radius: 12px;
             padding: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+            box-shadow: 0 10px 30px rgba(0,0,0,.25);
             font-family: system-ui;
         }
-
         #sve-cache-reset-modal .row {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
+            display: flex; gap: 8px; justify-content: flex-end;
         }
-
         #sve-cache-reset-modal .btn {
-            padding: 6px 10px;
-            border-radius: 8px;
-            cursor: pointer;
+            padding: 6px 10px; border-radius: 8px; cursor: pointer;
         }
-
         #sve-cache-reset-modal .btn.cancel {
-            border: 1px solid var(--sve-gray-200);
-            background: #fff;
+            border: 1px solid var(--sve-gray-200); background: #fff;
         }
-
         #sve-cache-reset-modal .btn.ok {
-            border: 0;
-            background: var(--sve-primary);
-            color: #fff;
+            border: 0; background: var(--sve-primary); color: #fff;
         }
     </style>
 </head>
-
 <body>
     <div class="login-container">
         <!-- Menú de opciones (3 puntos) -->
@@ -445,7 +395,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Utilidades de limpieza offline (fallback si offline.js no está)
         // =========================================================
         if (!window.SVE_ClearAll) {
-            window.SVE_ClearAll = async function() {
+            window.SVE_ClearAll = async function () {
                 try {
                     // Caches
                     if (window.caches?.keys) {
@@ -453,15 +403,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         await Promise.all(keys.map(k => caches.delete(k)));
                     }
                     // Storages propios
-                    try {
-                        localStorage.removeItem('sve_offline_cred');
-                    } catch {}
-                    try {
-                        localStorage.removeItem('sve_offline_session');
-                    } catch {}
-                    try {
-                        sessionStorage.clear();
-                    } catch {}
+                    try { localStorage.removeItem('sve_offline_cred'); } catch {}
+                    try { localStorage.removeItem('sve_offline_session'); } catch {}
+                    try { sessionStorage.clear(); } catch {}
                     // IndexedDB
                     try {
                         if (indexedDB && indexedDB.databases) {
@@ -484,9 +428,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // =========================================================
         // Módulo: Toggle de contraseña (accesible)
         // =========================================================
-        (function() {
+        (function () {
             const toggle = document.getElementById('toggle-password');
-            const field = document.getElementById('contrasena');
+            const field  = document.getElementById('contrasena');
             if (!toggle || !field) return;
 
             function setState(show) {
@@ -503,10 +447,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // =========================================================
         // Módulo: Modal de reset offline
         // =========================================================
-        (function() {
-            const btn = document.getElementById('sve-cache-reset-inline');
+        (function () {
+            const btn     = document.getElementById('sve-cache-reset-inline');
             const overlay = document.getElementById('sve-cache-reset-overlay');
-            const cancel = document.getElementById('sve-cancel');
+            const cancel  = document.getElementById('sve-cancel');
             const confirm = document.getElementById('sve-confirm');
 
             if (!btn || !overlay || !cancel || !confirm) return;
@@ -515,16 +459,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 overlay.style.display = 'block';
                 overlay.setAttribute('aria-hidden', 'false');
             }
-
             function closeModal() {
                 overlay.style.display = 'none';
                 overlay.setAttribute('aria-hidden', 'true');
             }
 
             btn.addEventListener('click', openModal);
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) closeModal();
-            });
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
             cancel.addEventListener('click', closeModal);
             confirm.addEventListener('click', async () => {
                 closeModal();
@@ -541,17 +482,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         //   - Indicador verde en el trigger si activo.
         //   - Manejo de foco/esc para accesibilidad.
         // =========================================================
-        // =========================================================
-        // Módulo: Menú "3 puntos" + estado Offline
-        // - Toggle real del modo offline:
-        //   * Persiste en localStorage: 'sve_offline_cred'
-        //   * Setea/remueve data-active en el botón
-        //   * Actualiza texto y badge del trigger
-        // - Compatible con offline.js vía MutationObserver.
-        // =========================================================
-        (function() {
-            const trigger = document.getElementById('sve-menu-trigger');
-            const menu = document.getElementById('sve-menu');
+        (function () {
+            const trigger    = document.getElementById('sve-menu-trigger');
+            const menu       = document.getElementById('sve-menu');
             const enableItem = document.getElementById('sve-offline-enable-inline');
 
             if (!trigger || !menu || !enableItem) return;
@@ -564,42 +497,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 const firstItem = menu.querySelector('.sve-menu-item');
                 if (firstItem) firstItem.focus();
             }
-
             function closeMenu() {
+                // devolver foco si estaba adentro
                 if (menu.contains(document.activeElement)) trigger.focus();
                 menu.classList.remove('open');
                 trigger.setAttribute('aria-expanded', 'false');
                 menu.setAttribute('aria-hidden', 'true');
                 menu.setAttribute('inert', '');
             }
+            function toggleMenu() { menu.classList.contains('open') ? closeMenu() : openMenu(); }
 
-            function toggleMenu() {
-                menu.classList.contains('open') ? closeMenu() : openMenu();
-            }
-
-            trigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleMenu();
-            });
+            trigger.addEventListener('click', (e) => { e.stopPropagation(); toggleMenu(); });
             document.addEventListener('click', (e) => {
                 if (!menu.contains(e.target) && e.target !== trigger) closeMenu();
             });
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') closeMenu();
-            });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
             menu.addEventListener('click', (e) => {
                 const item = e.target.closest('.sve-menu-item');
-                if (item) {
-                    item.blur();
-                    closeMenu();
-                }
+                if (item) { item.blur(); closeMenu(); }
             });
 
-            // ---------- Estado "offline activo" en UI ----------
+            // ----- Estado "offline activo" en UI -----
+            // Fuente de verdad (persistencia simple): localStorage.sve_offline_cred
             function reflectActiveState(on) {
-                enableItem.textContent = on ?
-                    '⚡ Acceso sin conección activado' :
-                    '⚡ Activar acceso sin conexión';
+                // Pedido literal (texto activo):
+                // "⚡ Acceso sin conección activado"
+                enableItem.textContent = on
+                    ? '⚡ Acceso sin conección activado'
+                    : '⚡ Activar acceso sin conexión';
 
                 if (on) {
                     enableItem.setAttribute('data-active', '1');
@@ -612,96 +537,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            // Valor inicial desde localStorage
+            // Estado inicial al cargar
             reflectActiveState(!!localStorage.getItem('sve_offline_cred'));
 
-            // Toggle manual desde el item del menú (fallback si no está offline.js)
-            enableItem.addEventListener('click', (e) => {
-                // Evita que el handler del menú intercepte antes de togglear
-                e.preventDefault();
-                e.stopPropagation();
-
-                const isActive = enableItem.getAttribute('data-active') === '1' || !!localStorage.getItem('sve_offline_cred');
-
-                if (isActive) {
-                    // Desactivar offline
-                    try {
-                        localStorage.removeItem('sve_offline_cred');
-                    } catch {}
-                    enableItem.removeAttribute('data-active');
-                    reflectActiveState(false);
-                } else {
-                    // Activar offline
-                    try {
-                        localStorage.setItem('sve_offline_cred', '1');
-                    } catch {}
-                    enableItem.setAttribute('data-active', '1');
-                    reflectActiveState(true);
-                }
-            });
-
-            // Si offline.js modifica data-active, reflejar cambio
+            // Si offline.js modifica data-active en el botón, reflejar cambio
             const obs = new MutationObserver(() => {
                 const on = enableItem.getAttribute('data-active') === '1';
-                // Sincroniza también con localStorage si difiere
-                const lsOn = !!localStorage.getItem('sve_offline_cred');
-                if (on && !lsOn) {
-                    try {
-                        localStorage.setItem('sve_offline_cred', '1');
-                    } catch {}
-                }
-                if (!on && lsOn) {
-                    try {
-                        localStorage.removeItem('sve_offline_cred');
-                    } catch {}
-                }
                 reflectActiveState(on);
             });
-            obs.observe(enableItem, {
-                attributes: true,
-                attributeFilter: ['data-active']
-            });
-        })();
-
-        /* Registro opcional de Service Worker al activar offline (si existe sw.js) */
-        (function() {
-            if (!('serviceWorker' in navigator)) return;
-            const enableItem = document.getElementById('sve-offline-enable-inline');
-            if (!enableItem) return;
-
-            enableItem.addEventListener('click', async () => {
-                const active = enableItem.getAttribute('data-active') === '1';
-                if (active) {
-                    try {
-                        await navigator.serviceWorker.register('/sw.js');
-                    } catch (e) {
-                        console.warn('[SVE] No se pudo registrar sw.js (opcional).', e);
-                    }
-                }
-            });
+            obs.observe(enableItem, { attributes: true, attributeFilter: ['data-active'] });
         })();
 
         // =========================================================
         // (Opcional para debug): imprimir sesión/cierre en consola
         // =========================================================
         <?php if (!empty($_SESSION)): ?>
-                (function() {
-                    try {
-                        const sessionData = <?= json_encode($_SESSION, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-                        console.log('[SVE] Datos de sesión:', sessionData);
-                    } catch {}
-                })();
+        (function () {
+            try {
+                const sessionData = <?= json_encode($_SESSION, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+                console.log('[SVE] Datos de sesión:', sessionData);
+            } catch {}
+        })();
         <?php endif; ?>
 
         <?php if (!empty($cierre_info)): ?>
-                (function() {
-                    try {
-                        const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-                        console.log('[SVE] Cierre operativos:', cierreData);
-                    } catch {}
-                })();
+        (function () {
+            try {
+                const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+                console.log('[SVE] Cierre operativos:', cierreData);
+            } catch {}
+        })();
         <?php endif; ?>
     </script>
 </body>
-
 </html>
