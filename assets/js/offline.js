@@ -353,8 +353,7 @@
         window.SVE_SaveOfflineCredential = async function (username, password) {
             try {
                 if (!username || !password) throw new Error('Faltan credenciales');
-                await saveOfflineCredential(username, password); // reutiliza la interna
-                // Marca de onboarding completado (por usuario)
+                await saveOfflineCredential(username, password);
                 localStorage.setItem('sve_offline_onboarded', JSON.stringify({ user: username, ts: Date.now() }));
                 return { ok: true };
             } catch (e) {
@@ -363,6 +362,7 @@
             }
         };
     }
+
 
 })();
 

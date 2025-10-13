@@ -1558,8 +1558,6 @@ $sesionDebug = [
         });
     </script>
 
-    </script>
-
     <!-- Modal: Activar modo offline para piloto -->
     <style>
         #sve-offline-activate-overlay {
@@ -1636,13 +1634,13 @@ $sesionDebug = [
     <div id="sve-offline-activate-overlay" role="dialog" aria-modal="true" aria-labelledby="sve-offline-ttl">
         <div id="sve-offline-activate">
             <h3 id="sve-offline-ttl">¿Activar la versión offline?</h3>
-            <p>Guardaremos <b>una credencial local</b> para que puedas ingresar sin internet y precargaremos recursos mínimos del módulo. Tu contraseña <b>no</b> se envía al servidor; se deriva un hash local.</p>
+            <p>Guardaremos <b>una credencial local</b> para que puedas ingresar sin internet y precargaremos recursos mínimos del módulo.</p>
             <label style="display:block;margin:8px 0 6px;">Confirmá tu contraseña</label>
             <input id="sve-offline-pass" type="password" class="input" placeholder="Contraseña">
             <div class="help">Se usa una sola vez para generar el hash (PBKDF2-SHA256).</div>
             <div class="row">
-                <button class="btn cancel" id="sve-offline-cancel">Ahora no</button>
-                <button class="btn ok" id="sve-offline-accept">Activar</button>
+                <button class="btn btn-cancelar" id="sve-offline-cancel">Ahora no</button>
+                <button class="btn btn-aceptar" id="sve-offline-accept">Activar</button>
             </div>
         </div>
     </div>
