@@ -379,7 +379,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 Esto <strong>borra caches</strong>, <strong>storage</strong> y <strong>desregistra</strong> el Service Worker. Se recargará la página.
             </p>
             <div class="row">
-                <button class="btn cancel" id="sve-cancel">Cancelar</button>
+                <button class="btn btn-cancelar" id="sve-cancel">Cancelar</button>
                 <button class="btn ok" id="sve-confirm">Sí, borrar</button>
             </div>
         </div>
