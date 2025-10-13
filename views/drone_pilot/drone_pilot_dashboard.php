@@ -55,6 +55,9 @@ $sesionDebug = [
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
+    <!-- Offline bootstrap (SW + PBKDF2 + API pública) -->
+    <script src="/assets/js/offline.js" defer></script>
+
     <!-- CDN firma con dedo -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" defer></script>
 
@@ -1555,6 +1558,173 @@ $sesionDebug = [
         });
     </script>
 
+    </script>
+
+    <!-- Modal: Activar modo offline para piloto -->
+    <style>
+        #sve-offline-activate-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            display: none;
+            z-index: 100000
+        }
+
+        #sve-offline-activate {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            max-width: 420px;
+            width: 92%;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+            font-family: system-ui
+        }
+
+        #sve-offline-activate h3 {
+            margin: 0 0 8px;
+            font-size: 18px
+        }
+
+        #sve-offline-activate p {
+            margin: 0 0 12px;
+            font-size: 14px;
+            line-height: 1.45
+        }
+
+        #sve-offline-activate .row {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 12px
+        }
+
+        #sve-offline-activate .btn {
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer
+        }
+
+        #sve-offline-activate .btn.cancel {
+            border: 1px solid #e5e7eb;
+            background: #fff
+        }
+
+        #sve-offline-activate .btn.ok {
+            border: 0;
+            background: #7c3aed;
+            color: #fff
+        }
+
+        #sve-offline-activate .input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box
+        }
+
+        #sve-offline-activate .help {
+            font-size: 12px;
+            color: #666;
+            margin-top: 6px
+        }
+    </style>
+    <div id="sve-offline-activate-overlay" role="dialog" aria-modal="true" aria-labelledby="sve-offline-ttl">
+        <div id="sve-offline-activate">
+            <h3 id="sve-offline-ttl">¿Activar la versión offline?</h3>
+            <p>Guardaremos <b>una credencial local</b> para que puedas ingresar sin internet y precargaremos recursos mínimos del módulo. Tu contraseña <b>no</b> se envía al servidor; se deriva un hash local.</p>
+            <label style="display:block;margin:8px 0 6px;">Confirmá tu contraseña</label>
+            <input id="sve-offline-pass" type="password" class="input" placeholder="Contraseña">
+            <div class="help">Se usa una sola vez para generar el hash (PBKDF2-SHA256).</div>
+            <div class="row">
+                <button class="btn cancel" id="sve-offline-cancel">Ahora no</button>
+                <button class="btn ok" id="sve-offline-accept">Activar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // Usuario actual desde la sesión PHP
+            const CURRENT_USER = <?php echo json_encode($_SESSION['usuario'] ?? null); ?>;
+
+            function needsOnboarding(user) {
+                try {
+                    const raw = localStorage.getItem('sve_offline_cred');
+                    if (!raw) return true;
+                    const {
+                        username
+                    } = JSON.parse(raw);
+                    return username !== user; // si la credencial es de otro usuario, volver a ofrecer
+                } catch {
+                    return true;
+                }
+            }
+
+            function warmupRuntimeCache() {
+                // Dispara lecturas clave para que el SW las cachee en runtime
+                try {
+                    fetch('../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes', {
+                        credentials: 'same-origin'
+                    }).catch(() => {});
+                    fetch('https://www.fernandosalguero.com/cdn/assets/css/framework.css', {
+                        mode: 'no-cors'
+                    }).catch(() => {});
+                    fetch('https://www.fernandosalguero.com/cdn/assets/javascript/framework.js', {
+                        mode: 'no-cors'
+                    }).catch(() => {});
+                } catch (e) {}
+            }
+
+            function openModal() {
+                document.getElementById('sve-offline-activate-overlay').style.display = 'block';
+                document.getElementById('sve-offline-pass').value = '';
+                setTimeout(() => document.getElementById('sve-offline-pass').focus(), 0);
+            }
+
+            function closeModal() {
+                document.getElementById('sve-offline-activate-overlay').style.display = 'none';
+            }
+
+            document.getElementById('sve-offline-cancel').addEventListener('click', closeModal);
+            document.getElementById('sve-offline-accept').addEventListener('click', async () => {
+                const pass = document.getElementById('sve-offline-pass').value || '';
+                if (!pass) return alert('Ingresá tu contraseña para activar el modo offline.');
+                if (!window.SVE_SaveOfflineCredential) {
+                    alert('Módulo offline no disponible.');
+                    return;
+                }
+                // Guardar credencial offline localmente (no se envía al servidor)
+                const res = await window.SVE_SaveOfflineCredential(CURRENT_USER, pass);
+                if (!res.ok) {
+                    alert(res.message || 'No se pudo activar el modo offline.');
+                    return;
+                }
+                closeModal();
+                // Precarga liviana
+                warmupRuntimeCache();
+                // Feedback simple
+                try {
+                    window.showAlert?.('success', 'Modo offline activado.');
+                } catch (e) {
+                    console.log('[SVE] Offline activado.');
+                }
+            });
+
+            // Mostrar modal solo a piloto, primera vez (o si cambió de usuario)
+            document.addEventListener('DOMContentLoaded', () => {
+                const rol = <?php echo json_encode($_SESSION['rol'] ?? null); ?>;
+                if (rol === 'piloto_drone' && CURRENT_USER && needsOnboarding(CURRENT_USER)) {
+                    // Esperamos a que offline.js (defer) y SW estén listos
+                    if (document.readyState === 'complete') openModal();
+                    else setTimeout(openModal, 300);
+                }
+            });
+        })();
     </script>
 
 </body>

@@ -310,12 +310,12 @@
 
     // Boot
     window.addEventListener('load', registerSW);
-window.addEventListener('DOMContentLoaded', () => {
-    ensureOfflineBanner();
-    enhanceLogin();
-    guardOfflineDashboard();
-    renderResetButton();
-});
+    window.addEventListener('DOMContentLoaded', () => {
+        ensureOfflineBanner();
+        enhanceLogin();
+        guardOfflineDashboard();
+        renderResetButton();
+    });
 
     // ====== SVE Reset (expuesto global) ======
     window.SVE_ClearAll = async function () {
@@ -348,6 +348,21 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // === API pública para activar offline desde cualquier vista ===
+    if (!window.SVE_SaveOfflineCredential) {
+        window.SVE_SaveOfflineCredential = async function (username, password) {
+            try {
+                if (!username || !password) throw new Error('Faltan credenciales');
+                await saveOfflineCredential(username, password); // reutiliza la interna
+                // Marca de onboarding completado (por usuario)
+                localStorage.setItem('sve_offline_onboarded', JSON.stringify({ user: username, ts: Date.now() }));
+                return { ok: true };
+            } catch (e) {
+                console.warn('[SVE] No se pudo activar el modo offline', e);
+                return { ok: false, message: e?.message || 'Error activando offline' };
+            }
+        };
+    }
 
 })();
 
