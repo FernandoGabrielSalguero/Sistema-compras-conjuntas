@@ -295,6 +295,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #fff !important;
             border-color: #22c55e !important;
         }
+
+        /* Indicador en el botón de 3 puntos cuando el modo offline está activo */
+        .sve-menu-trigger[data-offline="1"] {
+            position: relative;
+        }
+
+        .sve-menu-trigger[data-offline="1"]::after {
+            content: "";
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 8px;
+            height: 8px;
+            border-radius: 9999px;
+            background: #22c55e;
+            /* verde */
+            box-shadow: 0 0 0 2px #fff;
+            /* borde blanco para contraste */
+        }
     </style>
 </head>
 
@@ -305,7 +324,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="button" class="sve-menu-trigger" id="sve-menu-trigger" aria-haspopup="true" aria-expanded="false" title="Más opciones">
                 ⋮
             </button>
-            <div class="sve-menu" id="sve-menu" role="menu" aria-hidden="true">
+            <div class="sve-menu" id="sve-menu" role="menu" aria-hidden="true" inert>
                 <button type="button" role="menuitem" id="sve-offline-enable-inline" title="Activar acceso sin conexión" aria-label="Activar acceso sin conexión" class="sve-menu-item">
                     ⚡ Activar acceso sin conexión
                 </button>
@@ -492,17 +511,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         (function() {
             const trigger = document.getElementById('sve-menu-trigger');
             const menu = document.getElementById('sve-menu');
+            const enableItem = document.getElementById('sve-offline-enable-inline');
 
             function openMenu() {
+                if (!menu || !trigger) return;
+                // habilitar interacción
                 menu.classList.add('open');
                 trigger.setAttribute('aria-expanded', 'true');
                 menu.setAttribute('aria-hidden', 'false');
+                menu.removeAttribute('inert');
+                // mover foco al primer item del menú
+                const firstItem = menu.querySelector('.sve-menu-item');
+                if (firstItem) firstItem.focus();
             }
 
             function closeMenu() {
+                if (!menu || !trigger) return;
+                // si el foco está dentro del menú, devuélvelo al trigger ANTES de esconderlo
+                if (menu.contains(document.activeElement)) {
+                    trigger.focus();
+                }
+                // deshabilitar interacción y ocultar
                 menu.classList.remove('open');
                 trigger.setAttribute('aria-expanded', 'false');
                 menu.setAttribute('aria-hidden', 'true');
+                menu.setAttribute('inert', '');
             }
 
             function toggleMenu() {
@@ -515,31 +548,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     e.stopPropagation();
                     toggleMenu();
                 });
+
                 // Cerrar al hacer click fuera
                 document.addEventListener('click', (e) => {
                     if (!menu.contains(e.target) && e.target !== trigger) closeMenu();
                 });
+
                 // Cerrar con ESC
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape') closeMenu();
                 });
-                // Cerrar al seleccionar una opción del menú
+
+                // Cerrar al seleccionar una opción del menú (pero primero quita foco del item)
                 menu.addEventListener('click', (e) => {
                     const item = e.target.closest('.sve-menu-item');
-                    if (item) closeMenu();
+                    if (item) {
+                        item.blur();
+                        closeMenu();
+                    }
                 });
             }
-            // Reflejar texto si ya estaba activo al cargar
-            const enableItem = document.getElementById('sve-offline-enable-inline');
-            if (enableItem && localStorage.getItem('sve_offline_cred')) {
-                enableItem.textContent = '⚡ Offline activado';
+
+            // 1) Si ya estaba activado, reflejar texto e indicador del trigger al cargar
+            function reflectActiveState(on) {
+                if (enableItem) {
+                    enableItem.textContent = on ? '⚡ Offline activado' : '⚡ Activar acceso sin conexión';
+                    if (on) {
+                        enableItem.setAttribute('data-active', '1');
+                        enableItem.setAttribute('aria-pressed', 'true');
+                    } else {
+                        enableItem.removeAttribute('data-active');
+                        enableItem.setAttribute('aria-pressed', 'false');
+                    }
+                }
+                if (trigger) {
+                    if (on) trigger.setAttribute('data-offline', '1');
+                    else trigger.removeAttribute('data-offline');
+                }
             }
-            // Cuando offline.js lo active, podemos observar el atributo para cambiar el texto
+
+            reflectActiveState(!!localStorage.getItem('sve_offline_cred'));
+
+            // 2) Cuando offline.js lo active, observar el cambio de atributo del botón
             if (enableItem) {
                 const obs = new MutationObserver(() => {
-                    if (enableItem.getAttribute('data-active') === '1') {
-                        enableItem.textContent = '⚡ Offline activado';
-                    }
+                    const on = enableItem.getAttribute('data-active') === '1';
+                    reflectActiveState(on);
                 });
                 obs.observe(enableItem, {
                     attributes: true,
@@ -548,7 +602,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         })();
     </script>
-
 
 </body>
 
