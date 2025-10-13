@@ -216,6 +216,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             cursor: pointer;
             user-select: none;
         }
+
+          /* Botón inline (⚡) activo = verde */
+  #sve-offline-enable-inline[data-active="1"],
+  #sve-offline-enable-inline[aria-pressed="true"]{
+    background:#22c55e !important; /* verde */
+    color:#fff !important;
+    border-color:#22c55e !important;
+  }
     </style>
 </head>
 
