@@ -217,18 +217,103 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             user-select: none;
         }
 
-          /* Botón inline (⚡) activo = verde */
-  #sve-offline-enable-inline[data-active="1"],
-  #sve-offline-enable-inline[aria-pressed="true"]{
-    background:#22c55e !important; /* verde */
-    color:#fff !important;
-    border-color:#22c55e !important;
-  }
+        /* Botón inline (⚡) activo = verde */
+        #sve-offline-enable-inline[data-active="1"],
+        #sve-offline-enable-inline[aria-pressed="true"] {
+            background: #22c55e !important;
+            /* verde */
+            color: #fff !important;
+            border-color: #22c55e !important;
+        }
+
+        /* ===== Menú 3 puntos (esquina superior derecha) ===== */
+        .login-container {
+            position: relative;
+        }
+
+        .sve-topmenu {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .sve-menu-trigger {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            color: #6b7280;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        .sve-menu {
+            position: absolute;
+            right: 0;
+            margin-top: 6px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+            min-width: 260px;
+            padding: 6px;
+            display: none;
+            z-index: 10;
+        }
+
+        .sve-menu.open {
+            display: block;
+        }
+
+        .sve-menu-item {
+            width: 100%;
+            text-align: left;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 0;
+            background: #fff;
+            color: #111827;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .sve-menu-item:hover {
+            background: #f3f4f6;
+        }
+
+        /* Botón inline (⚡) activo = verde (se aplica también a este item del menú) */
+        #sve-offline-enable-inline[data-active="1"],
+        #sve-offline-enable-inline[aria-pressed="true"] {
+            background: #22c55e !important;
+            /* verde */
+            color: #fff !important;
+            border-color: #22c55e !important;
+        }
     </style>
 </head>
 
 <body>
     <div class="login-container">
+        <!-- Menú de opciones (3 puntos) -->
+        <div class="sve-topmenu">
+            <button type="button" class="sve-menu-trigger" id="sve-menu-trigger" aria-haspopup="true" aria-expanded="false" title="Más opciones">
+                ⋮
+            </button>
+            <div class="sve-menu" id="sve-menu" role="menu" aria-hidden="true">
+                <button type="button" role="menuitem" id="sve-offline-enable-inline" title="Activar acceso sin conexión" aria-label="Activar acceso sin conexión" class="sve-menu-item">
+                    ⚡ Activar acceso sin conexión
+                </button>
+                <button type="button" role="menuitem" id="sve-cache-reset-inline" title="Restablecer versión offline" aria-label="Restablecer versión offline" class="sve-menu-item">
+                    ↺ Restablecer versión offline
+                </button>
+            </div>
+        </div>
         <h1>Iniciar Sesión</h1>
         <?php if ($error): ?>
             <div class="error"><?= $error ?></div>
@@ -250,21 +335,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group" style="display:flex; gap:8px; align-items:center; justify-content:space-between">
                 <button type="submit">INGRESAR</button>
-
-                <!-- ⚡ Activar modo offline -->
-                <button type="button" id="sve-offline-enable-inline"
-                    title="Activar acceso sin conexión"
-                    aria-label="Activar acceso sin conexión"
-                    style="width:36px;height:36px;min-width:36px;border-radius:8px;border:1px solid #e5e7eb;background:#6b7280;color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer">
-                    ⚡
-                </button>
-
-                <!-- ↺ Reset offline (ya existente) -->
-                <button type="button" id="sve-cache-reset-inline"
-                    title="Restablecer versión offline" aria-label="Restablecer cache"
-                    style="width:36px;height:36px;min-width:36px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;display:inline-flex;align-items:center;justify-content:center">
-                    ↺
-                </button>
             </div>
 
         </form>
@@ -417,6 +487,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         })();
     </script>
+
+    <script>
+        (function() {
+            const trigger = document.getElementById('sve-menu-trigger');
+            const menu = document.getElementById('sve-menu');
+
+            function openMenu() {
+                menu.classList.add('open');
+                trigger.setAttribute('aria-expanded', 'true');
+                menu.setAttribute('aria-hidden', 'false');
+            }
+
+            function closeMenu() {
+                menu.classList.remove('open');
+                trigger.setAttribute('aria-expanded', 'false');
+                menu.setAttribute('aria-hidden', 'true');
+            }
+
+            function toggleMenu() {
+                if (menu.classList.contains('open')) closeMenu();
+                else openMenu();
+            }
+
+            if (trigger && menu) {
+                trigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleMenu();
+                });
+                // Cerrar al hacer click fuera
+                document.addEventListener('click', (e) => {
+                    if (!menu.contains(e.target) && e.target !== trigger) closeMenu();
+                });
+                // Cerrar con ESC
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') closeMenu();
+                });
+                // Cerrar al seleccionar una opción del menú
+                menu.addEventListener('click', (e) => {
+                    const item = e.target.closest('.sve-menu-item');
+                    if (item) closeMenu();
+                });
+            }
+            // Reflejar texto si ya estaba activo al cargar
+            const enableItem = document.getElementById('sve-offline-enable-inline');
+            if (enableItem && localStorage.getItem('sve_offline_cred')) {
+                enableItem.textContent = '⚡ Offline activado';
+            }
+            // Cuando offline.js lo active, podemos observar el atributo para cambiar el texto
+            if (enableItem) {
+                const obs = new MutationObserver(() => {
+                    if (enableItem.getAttribute('data-active') === '1') {
+                        enableItem.textContent = '⚡ Offline activado';
+                    }
+                });
+                obs.observe(enableItem, {
+                    attributes: true,
+                    attributeFilter: ['data-active']
+                });
+            }
+        })();
+    </script>
+
 
 </body>
 
