@@ -201,13 +201,13 @@ class DronePilotDashboardModel
         $st->execute([':rid' => $reporteId, ':tipo' => $tipo, ':ruta' => $ruta]);
     }
 
-/** Marca la solicitud como completada */
-public function marcarCompletada(int $solicitudId): void
-{
-    $sql = "UPDATE drones_solicitud SET estado = 'completada' WHERE id = :id";
-    $st  = $this->pdo->prepare($sql);
-    $st->execute([':id' => $solicitudId]);
-}
+    /** Marca la solicitud como completada */
+    public function marcarCompletada(int $solicitudId): void
+    {
+        $sql = "UPDATE drones_solicitud SET estado = 'completada' WHERE id = :id";
+        $st  = $this->pdo->prepare($sql);
+        $st->execute([':id' => $solicitudId]);
+    }
 
     /** Receta editable unificando info de stock (tiempo_carencia) según nueva BD */
     public function getRecetaEditableBySolicitud(int $solicitudId): array
@@ -232,7 +232,7 @@ public function marcarCompletada(int $solicitudId): void
     }
 
     /** Actualiza cant_prod_usado y fecha_vencimiento de múltiples filas */
-    public function actualizarRecetaValores(array $rows, string $actor = null): void
+    public function actualizarRecetaValores(array $rows, ?string $actor = null): void
     {
         if (!$rows) return;
         $this->pdo->beginTransaction();

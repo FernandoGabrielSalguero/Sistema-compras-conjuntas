@@ -28,9 +28,6 @@ $sesionDebug = [
 ];
 ?>
 
-
-<?php include_once __DIR__ . '/../partials/drones/view/drone_modal_fito_json.php'; ?>
-
 <script>
     // Log de sesión solo en consola
     console.log('SESSION PILOTO', <?php echo json_encode($sesionDebug, JSON_UNESCAPED_UNICODE); ?>);
@@ -450,22 +447,6 @@ $sesionDebug = [
             max-height: 240px;
             border: 1px solid #ddd;
             border-radius: 12px;
-        }
-
-        /* Por defecto, oculto el botón del Registro Fitosanitario */
-        .card-solicitud [data-action="fito"] {
-            display: none;
-        }
-
-        /* Si la solicitud está completada: oculto Detalle y Generar reporte */
-        .card-solicitud[data-estado="completada"] [data-action="ver"],
-        .card-solicitud[data-estado="completada"] [data-action="reporte"] {
-            display: none !important;
-        }
-
-        /* …y muestro el botón Registro Fitosanitario */
-        .card-solicitud[data-estado="completada"] [data-action="fito"] {
-            display: inline-flex !important;
         }
     </style>
 
@@ -1368,7 +1349,6 @@ $sesionDebug = [
       <div class="card-footer">
         <button class="btn btn-info"     data-action="ver"     data-id="${s.id}">Detalle</button>
         <button class="btn btn-aceptar"  data-action="reporte" data-id="${s.id}">Generar reporte</button>
-        <button class="btn btn-info" data-action="fito"   data-id="${s.id}">Registro Fitosanitario</button>
       </div>
     </div>
   `).join('');
@@ -1389,6 +1369,7 @@ $sesionDebug = [
                 document.getElementById('cards-solicitudes').innerHTML = `<div class="alert danger"><span class="material-icons">error</span>Error al cargar</div>`;
             }
         }
+
         // Delegación de clicks en cards
         document.getElementById('cards-solicitudes')?.addEventListener('click', (e) => {
             const btn = e.target.closest('button[data-action]');
@@ -1397,16 +1378,6 @@ $sesionDebug = [
 
             if (btn.dataset.action === 'ver') verDetalle(id);
             if (btn.dataset.action === 'reporte') abrirReporte(id);
-
-            if (btn.dataset.action === 'fito') {
-                // Abre el modal del Registro Fitosanitario
-                if (window.FitoJSONModal?.open) {
-                    window.FitoJSONModal.open(id);
-                } else {
-                    // Fallback para evitar errores si aún no está cargado el módulo
-                    showAlert?.('info', 'El visor de Registro Fitosanitario no está disponible en esta vista.');
-                }
-            }
         });
 
         // Construye filas con inputs editables
