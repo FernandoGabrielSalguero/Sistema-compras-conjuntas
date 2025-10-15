@@ -321,7 +321,7 @@ declare(strict_types=1);
     overflow: hidden;
     white-space: pre-wrap;
     line-height: 1.35;
-  } 
+  }
 
   /* Evitar FOUC del contenido dinámico */
   #protocolo-contenido[hidden] {
@@ -568,6 +568,9 @@ declare(strict_types=1);
           return;
         }
 
+        // helper opcional si más adelante querés reutilizar
+        const A4_PX_WIDTH = 794; // 210mm a ~96dpi
+
         const canvas = await html2canvas(sectionEl, {
           backgroundColor: '#ffffff',
           scale: 2,
@@ -584,7 +587,7 @@ declare(strict_types=1);
             1800
           ),
 
-                    onclone: (clonedDoc) => {
+          onclone: (clonedDoc) => {
             // Mostrar contenido
             const cont = clonedDoc.querySelector('#protocolo-contenido');
             if (cont) cont.hidden = false;
