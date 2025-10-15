@@ -706,6 +706,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </html>
 
 <!-- Auditoría UI (opcional) -->
-<link rel="preload" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css" as="style" onload="this.rel='stylesheet'">
-<script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
 <script defer src="/assets/js/activity_logger.js"></script>
