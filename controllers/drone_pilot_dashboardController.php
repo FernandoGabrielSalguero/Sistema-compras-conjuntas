@@ -151,6 +151,7 @@ try {
                     $tmp  = $_FILES['fotos']['tmp_name'][$i];
                     $err  = $_FILES['fotos']['error'][$i];
                     if ($err !== UPLOAD_ERR_OK) continue;
+
                     $mime = mime_content_type($tmp);
                     if (!in_array($mime, ['image/jpeg', 'image/png', 'image/webp'])) continue;
 
@@ -160,26 +161,43 @@ try {
                         'image/webp' => 'webp',
                         default      => 'bin'
                     };
-                    $fname = 'foto_' . $reporteId . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+
+                    // Hash por contenido para evitar duplicados (mismo archivo no se sube dos veces)
+                    $hash = md5_file($tmp);
+                    $fname = "foto_{$hash}.{$ext}";
                     $dest  = $baseDir . '/' . $fname;
+                    $rutaPublica = 'uploads/ReporteDrones/' . $sid . '/' . $fname;
+
+                    // Si ya existe el archivo o ya hay un registro con esa ruta, no lo repetimos
+                    if (is_file($dest) || $model->mediaExists($reporteId, $rutaPublica)) {
+                        continue;
+                    }
+
                     if (move_uploaded_file($tmp, $dest)) {
-                        $rutaPublica = 'uploads/ReporteDrones/' . $sid . '/' . $fname;
                         $model->guardarMedia($reporteId, 'foto', $rutaPublica);
                     }
                 }
             }
 
-            // Firmas
+            // Firmas (una por tipo). Si llega una nueva, reemplaza la anterior.
+            // Además, evitamos reinsertar exactamente la misma firma (hash idéntico).
             foreach (['cliente', 'piloto'] as $tipo) {
                 $campo = "firma_{$tipo}_base64";
                 $base64 = $_POST[$campo] ?? '';
                 if ($base64 && str_starts_with($base64, 'data:image/png;base64,')) {
                     $data = base64_decode(substr($base64, strlen('data:image/png;base64,')));
-                    $fname = "firma_{$tipo}_" . $reporteId . '_' . bin2hex(random_bytes(4)) . '.png';
+                    $hash = md5($data);
+                    $fname = "firma_{$tipo}_{$hash}.png";
                     $dest  = $baseDir . '/' . $fname;
-                    file_put_contents($dest, $data);
                     $rutaPublica = 'uploads/ReporteDrones/' . $sid . '/' . $fname;
-                    $model->guardarMedia($reporteId, "firma_{$tipo}", $rutaPublica);
+
+                    // Si ya existe exacta, no duplicamos; si no, borramos la firma previa de ese tipo y guardamos la nueva
+                    if (!is_file($dest) && !$model->mediaExists($reporteId, $rutaPublica)) {
+                        // Limpia firmas previas de ese tipo para este reporte
+                        $model->deleteMediaByTipo($reporteId, "firma_{$tipo}");
+                        file_put_contents($dest, $data);
+                        $model->guardarMedia($reporteId, "firma_{$tipo}", $rutaPublica);
+                    }
                 }
             }
 
@@ -192,7 +210,6 @@ try {
     }
 
     jsonResponse(false, null, 'Método HTTP no permitido.', 405);
-
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) $pdo->rollBack();
     jsonResponse(false, null, 'Error interno: ' . $e->getMessage(), 500);

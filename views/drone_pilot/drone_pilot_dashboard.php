@@ -1127,13 +1127,29 @@ $sesionDebug = [
                 return;
             }
 
+            // Solo tipos válidos
             const valid = files.filter(f => /image\/(jpeg|png|webp)/.test(f.type));
             if (valid.length !== files.length) {
                 showAlert?.('info', 'Algunos archivos no son imágenes válidas (JPG/PNG/WEBP) y se omitieron.');
             }
 
-            let finalFiles = valid.slice(0, 10);
-            if (valid.length > 10) {
+            // Deduplicar por (nombre + tamaño + lastModified) en la selección actual
+            const seen = new Set();
+            const unique = [];
+            for (const f of valid) {
+                const key = `${f.name}::${f.size}::${f.lastModified}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    unique.push(f);
+                }
+            }
+            if (unique.length !== valid.length) {
+                showAlert?.('info', 'Se omitieron imágenes duplicadas en la selección.');
+            }
+
+            // Límite 10
+            const finalFiles = unique.slice(0, 10);
+            if (unique.length > 10) {
                 showAlert?.('info', 'Solo se permiten 10 fotos. Se tomarán las primeras 10.');
             }
 
@@ -1152,6 +1168,20 @@ $sesionDebug = [
                 length: n
             }).map(() => `<div class="card-solicitud"><div class="skeleton h-4 w-full"></div><div class="skeleton h-4 w-3/4"></div></div>`).join('');
         }
+        // Normaliza a YYYY-MM-DD (acepta DD/MM/YYYY)
+        function normDate(d) {
+            if (!d) return 'Sin fecha';
+            if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+            const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(d);
+            return m ? `${m[3]}-${m[2]}-${m[1]}` : d;
+        }
+
+        // Título legible (YYYY-MM-DD -> DD/MM/YYYY)
+        function niceDate(d) {
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d);
+            return m ? `${m[3]}/${m[2]}/${m[1]}` : d;
+        }
+
         async function renderCards(items) {
             const c = document.getElementById('cards-solicitudes');
             if (!Array.isArray(items) || !items.length) {
@@ -1159,25 +1189,49 @@ $sesionDebug = [
                 return;
             }
 
-            c.innerHTML = items.map(s => `
-    <div class="card-solicitud" data-id="${s.id}" data-estado="${s.estado ?? ''}">
-      <div class="flex items-center justify-between">
-        <h4 style="margin:0">${s.productor_nombre ?? '-'}</h4>
-        <span class="chip ${s.estado ?? ''}">${s.estado ?? ''}</span>
-      </div>
-      <div><small>Pedido N° <b>${s.id}</b></small></div>
-      <div><b>Fecha visita:</b> ${s.fecha_visita ?? '-'}</div>
-      <div><b>Horario:</b> ${(s.hora_visita_desde ?? '-')+' - '+(s.hora_visita_hasta ?? '-')}</div>
-      <div><b>Localidad:</b> ${s.dir_localidad ?? '-'}</div>
-      <div><b>Superficie:</b> ${s.superficie_ha ?? '-'} ha</div>
-      <div><b>Hay agua en el lugar:</b> ${(s.agua_potable==='si'?'Sí':'No')}</div>
+            // Agrupar por fecha_visita
+            const groups = items.reduce((acc, s) => {
+                const key = normDate(s.fecha_visita || 'Sin fecha');
+                (acc[key] ||= []).push(s);
+                return acc;
+            }, {});
 
-      <div class="card-footer">
-        <button class="btn btn-info"     data-action="ver"     data-id="${s.id}">Detalle</button>
-        <button class="btn btn-aceptar"  data-action="reporte" data-id="${s.id}">Generar reporte</button>
+            // Ordenar días ascendente, “Sin fecha” al final
+            const orderedDays = Object.keys(groups).sort((a, b) => {
+                if (a === 'Sin fecha') return 1;
+                if (b === 'Sin fecha') return -1;
+                return a.localeCompare(b);
+            });
+
+            // Render
+            c.innerHTML = orderedDays.map(day => {
+                const cards = groups[day].map(s => `
+      <div class="card-solicitud" data-id="${s.id}" data-estado="${s.estado ?? ''}">
+        <div class="flex items-center justify-between">
+          <h4 style="margin:0">${s.productor_nombre ?? '-'}</h4>
+          <span class="chip ${s.estado ?? ''}">${s.estado ?? ''}</span>
+        </div>
+        <div><small>Pedido N° <b>${s.id}</b></small></div>
+        <div><b>Fecha visita:</b> ${s.fecha_visita ?? '-'}</div>
+        <div><b>Horario:</b> ${(s.hora_visita_desde ?? '-')+' - '+(s.hora_visita_hasta ?? '-')}</div>
+        <div><b>Localidad:</b> ${s.dir_localidad ?? '-'}</div>
+        <div><b>Superficie:</b> ${s.superficie_ha ?? '-'} ha</div>
+        <div><b>Hay agua en el lugar:</b> ${(s.agua_potable==='si'?'Sí':'No')}</div>
+
+        <div class="card-footer">
+          <button class="btn btn-info"     data-action="ver"     data-id="${s.id}">Detalle</button>
+          <button class="btn btn-aceptar"  data-action="reporte" data-id="${s.id}">Generar reporte</button>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `).join('');
+
+                return `
+      <div class="card" style="margin-bottom:1rem;">
+        <h3 style="margin:0 0 .5rem 0;">${day === 'Sin fecha' ? 'Sin fecha asignada' : niceDate(day)}</h3>
+        <div class="cards-grid">${cards}</div>
+      </div>
+    `;
+            }).join('');
         }
 
         // Cargar solicitudes usando cardsSkeleton()
@@ -1229,9 +1283,17 @@ $sesionDebug = [
             form.dataset.sid = String(solicitudId);
         }
 
-        // Al enviar el reporte, primero persistimos edición de receta
+        // El bloque "➕ Agregar producto" es 100% opcional: no tiene atributos name ni required,
+        // por lo que NO se envía con el form si el usuario no presiona "Agregar".
+
+        // Evita doble submit (bloquea mientras procesa)
+        let submitting = false;
+
         document.getElementById('form-reporte')?.addEventListener('submit', async (ev) => {
             ev.preventDefault();
+            if (submitting) return;
+            submitting = true;
+
             const sid = ev.currentTarget.dataset.sid;
             if (sid) {
                 const rows = Array.from(document.querySelectorAll('#tbody-receta tr')).map(tr => {
@@ -1281,6 +1343,8 @@ $sesionDebug = [
             } catch (err) {
                 console.error(err);
                 showAlert?.('error', 'No se pudo guardar el reporte.');
+            } finally {
+                submitting = false;
             }
         });
 
@@ -1349,9 +1413,9 @@ $sesionDebug = [
         });
 
         // Cargar tarjetas al iniciar
-document.addEventListener('DOMContentLoaded', () => {
-  cargarSolicitudes();
-});
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarSolicitudes();
+        });
     </script>
 
 </body>

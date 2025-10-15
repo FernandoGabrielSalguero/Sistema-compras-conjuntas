@@ -306,4 +306,20 @@ class DronePilotDashboardModel
 
         $this->pdo->commit();
     }
+    /** Verifica si ya existe una media con la misma ruta para este reporte */
+    public function mediaExists(int $reporteId, string $ruta): bool
+    {
+        $sql = "SELECT 1 FROM drones_solicitud_reporte_media WHERE reporte_id = :rid AND ruta = :ruta LIMIT 1";
+        $st  = $this->pdo->prepare($sql);
+        $st->execute([':rid' => $reporteId, ':ruta' => $ruta]);
+        return (bool)$st->fetchColumn();
+    }
+
+    /** Elimina media por tipo para un reporte (útil para mantener una sola firma por tipo) */
+    public function deleteMediaByTipo(int $reporteId, string $tipo): void
+    {
+        $sql = "DELETE FROM drones_solicitud_reporte_media WHERE reporte_id = :rid AND tipo = :tipo";
+        $st  = $this->pdo->prepare($sql);
+        $st->execute([':rid' => $reporteId, ':tipo' => $tipo]);
+    }
 }
