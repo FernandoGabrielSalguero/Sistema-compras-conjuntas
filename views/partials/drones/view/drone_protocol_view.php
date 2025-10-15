@@ -306,8 +306,15 @@ declare(strict_types=1);
     }
   }
 
-  [readonly] {
-    background: #f8fafc
+  /* Inputs readonly con fondo suave */
+  input[readonly],
+  select[readonly] {
+    background: #f8fafc;
+  }
+
+  /* Textareas readonly SIN fondo: el contenedor ya estiliza */
+  textarea[readonly] {
+    background: transparent !important;
   }
 
   /* Textareas de solo lectura auto-ajustables y con quiebre de línea */
@@ -428,6 +435,25 @@ declare(strict_types=1);
   #pp_obs_agua[readonly] {
     min-height: 80px;
   }
+
+  /* Export-only (cuando html2canvas clona el DOM) – asegurar desktop layout */
+  @media print {
+    .protocol-grid {
+      grid-template-columns: 1fr 2fr !important;
+    }
+
+    .grid-2 {
+      grid-template-columns: 1fr 1fr !important;
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, 1fr) !important;
+    }
+
+    .grid-4 {
+      grid-template-columns: repeat(4, 1fr) !important;
+    }
+  }
 </style>
 
 <script>
@@ -546,14 +572,21 @@ declare(strict_types=1);
           return;
         }
 
-        // Forzar visibilidad de la sección en el CLON interno que crea html2canvas
-        // (No pasamos un nodo clonado nuestro para evitar el error del "cloned iframe")
         const canvas = await html2canvas(sectionEl, {
           backgroundColor: '#ffffff',
           scale: 2,
           useCORS: true,
           scrollX: 0,
           scrollY: -window.scrollY,
+
+          // ✅ Fuerza layout de escritorio para evitar que la grilla “salte”
+          // en pantallas chicas y que se corten tablas.
+          windowWidth: 1400,
+          windowHeight: Math.max(
+            document.body.scrollHeight,
+            sectionEl.scrollHeight,
+            1800
+          ),
 
           onclone: (clonedDoc) => {
             // Mostrar contenido
@@ -586,41 +619,40 @@ declare(strict_types=1);
             if (btn) btn.style.display = 'none';
 
             // (B) Reemplazar textareas por bloques para que html2canvas no recorte contenido
+            //     y SIN fondo/padding/bordes (ya los aporta el contenedor).
             function textareaToBlock(id) {
               const ta = clonedDoc.getElementById(id);
               if (!ta) return;
               const div = clonedDoc.createElement('div');
-              // Replica visual simple del input-group del framework
               div.setAttribute('data-export-from', id);
-              div.style.padding = '10px';
-              div.style.border = '1px solid #e5e7eb';
-              div.style.borderRadius = '8px';
-              div.style.background = '#f8fafc';
               div.style.whiteSpace = 'pre-wrap';
               div.style.lineHeight = '1.35';
               div.style.minHeight = '96px';
+              div.style.width = '100%';
+              div.style.background = 'transparent';
               div.textContent = ta.value || '';
-              // Reemplazo en el mismo lugar
               ta.parentNode.replaceChild(div, ta);
             }
             textareaToBlock('pp_obs');
             textareaToBlock('pp_obs_agua');
 
-            // (C) Asegurar que la grilla permita crecer verticalmente sin recortes
+            // (C) Forzar columnas “desktop” aunque el viewport real sea chico
             const style = clonedDoc.createElement('style');
             style.textContent = `
-    .data-table td, .data-table th { vertical-align: top; }
-    .grid-3, .grid-2, .grid-4 { align-items: start; }
-  `;
+              .protocol-grid { grid-template-columns: 1fr 2fr !important; }
+              .grid-2 { grid-template-columns: 1fr 1fr !important; }
+              .grid-3 { grid-template-columns: repeat(3, 1fr) !important; }
+              .grid-4 { grid-template-columns: repeat(4, 1fr) !important; }
+              .data-table td, .data-table th { vertical-align: top; }
+              .grid-3, .grid-2, .grid-4 { align-items: start; }
+            `;
             clonedDoc.head.appendChild(style);
 
             // (D) No hacemos nada con 'pp_hectareas' salvo asegurar presencia
             clonedDoc.getElementById('pp_hectareas');
           }
 
-
         });
-
 
         // Imagen del canvas
         const imgData = canvas.toDataURL('image/jpeg', 0.98);
@@ -796,14 +828,8 @@ declare(strict_types=1);
       setVal('pv_lng', d.ubicacion_lng || '');
       setVal('pv_usuario', d.ses_usuario || '');
 
-      // Habilitar/Deshabilitar botón Maps
+      // Habilitar/Deshabilitar botón Maps acorde a coords
       updateMapsButton(d.ubicacion_lat, d.ubicacion_lng);
-
-      // Estado inicial botón Maps
-      if (btnMaps) {
-        btnMaps.disabled = true;
-        btnMaps.setAttribute('aria-disabled', 'true');
-      }
 
       // Items + receta (ordenado por prioridad: orden_mezcla ASC) y sin columna "#"
       const tbody = document.getElementById('tabla-items');
