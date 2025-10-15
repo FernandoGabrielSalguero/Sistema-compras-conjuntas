@@ -1347,6 +1347,11 @@ $sesionDebug = [
                 showAlert?.('error', js?.message || 'No se pudo agregar.');
             }
         });
+
+        // Cargar tarjetas al iniciar
+document.addEventListener('DOMContentLoaded', () => {
+  cargarSolicitudes();
+});
     </script>
 
 </body>
