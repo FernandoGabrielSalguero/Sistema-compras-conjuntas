@@ -42,3 +42,17 @@ ErrorDocument 404 /404.html
 # ✅ Ruta limpia para publicaciones públicas (sin .php)
 RewriteEngine On
 RewriteRule ^publicaciones$ views/partials/Publicaciones/publicaciones.php [L]
+
+# === Bootstrap global de errores PHP (sin tocar cada página) ===
+# --- Variante A (document root relativo) ---
+# Funciona en muchos hostings donde el docroot = carpeta actual.
+# Si no te toma, usá la Variante B.
+php_value auto_prepend_file "/core/bootstrap/error_handlers.php"
+
+# --- Variante B (ruta absoluta del filesystem) ---
+# Si la A no funciona, comentala y descomentá esta con tu ruta real.
+# Ejemplo típico cPanel:
+# php_value auto_prepend_file "/home/u952574624/public_html/core/bootstrap/error_handlers.php"
+
+# Asegurar UTF-8 (opcional, recomendado)
+php_value default_charset "UTF-8"

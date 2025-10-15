@@ -8,6 +8,7 @@ declare(strict_types=1);
  */
 
 require_once __DIR__ . '/../../config.php';
+$__pdoRef = isset($pdo) && $pdo instanceof PDO ? $pdo : null; 
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     @session_start();
@@ -48,7 +49,8 @@ function core_req_ctx(): array {
 
 function core_json_sanitize(mixed $data): string {
     $maskKeys = ['password','pass','contrasena','token','authorization','auth','secret'];
-    $filter = function($arr) use ($maskKeys) {
+    $filter = null;
+    $filter = function($arr) use (&$filter, $maskKeys) {
         if (!is_array($arr)) return $arr;
         foreach ($arr as $k => &$v) {
             if (is_array($v)) { $v = $filter($v); continue; }
@@ -64,14 +66,15 @@ function core_json_sanitize(mixed $data): string {
     }
 }
 
-function core_log_write(PDO $pdo, array $payload): void {
-    // 1) Archivo rotativo (fallback)
+
+function core_log_write(?PDO $pdo, array $payload): void {
     $dir = __DIR__ . '/../../logs';
     if (!is_dir($dir)) { @mkdir($dir, 0775, true); }
     $line = '['.date('c').'] '.($payload['level'] ?? 'ERROR').' '.$payload['message'].' | ctx='.json_encode($payload, JSON_UNESCAPED_UNICODE).PHP_EOL;
     @file_put_contents($dir.'/app.log', $line, FILE_APPEND);
 
-    // 2) DB (no propagar errores)
+    if (!$pdo) { return; } // si no hay PDO, sólo archivo
+
     try {
         $sql = "INSERT INTO app_error_log
             (ts, level, request_id, usuario_id, rol, id_real, url, method, ip, user_agent, referer, message, file, line, trace, context_json, get_json, post_json)
@@ -96,9 +99,7 @@ function core_log_write(PDO $pdo, array $payload): void {
             ':get_json'    => $payload['get_json'] ?? '{}',
             ':post_json'   => $payload['post_json'] ?? '{}',
         ]);
-    } catch (\Throwable) {
-        // swallow
-    }
+    } catch (\Throwable) { /* swallow */ }
 }
 
 /** ------- Handlers ------- */
