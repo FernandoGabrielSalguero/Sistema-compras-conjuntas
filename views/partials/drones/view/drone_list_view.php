@@ -20,7 +20,7 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 <div class="content">
 
     <div class="card" style="background-color:#5b21b6;">
-        <div class="product-header">
+        <div class="product-header" style="background-color: #5b21b6;">
             <h3 style="color:white;">Buscar proyecto de vuelo</h3>
             <?php if ($isSVE): ?>
                 <button type="button" id="btn-export-excel" class="btn-icon" title="Descargar Excel" style="background-color: white;" aria-label="Descargar Excel">
