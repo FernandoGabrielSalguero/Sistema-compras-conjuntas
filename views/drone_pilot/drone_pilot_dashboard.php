@@ -52,9 +52,6 @@ $sesionDebug = [
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
-    <!-- Offline bootstrap (SW + PBKDF2 + API pública) -->
-    <script src="/assets/js/offline.js" defer></script>
-
     <!-- CDN firma con dedo -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" defer></script>
 
