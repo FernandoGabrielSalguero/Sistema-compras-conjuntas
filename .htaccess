@@ -42,3 +42,12 @@ ErrorDocument 404 /404.html
 # ✅ Ruta limpia para publicaciones públicas (sin .php)
 RewriteEngine On
 RewriteRule ^publicaciones$ views/partials/Publicaciones/publicaciones.php [L]
+
+
+# --- Auditoría global de requests/errores ---
+# Inyecta el bootstrap ANTES de cualquier PHP sin tocar los módulos
+php_value auto_prepend_file core/bootstrap/request_logger.php
+
+# Opcional: endurecer tamaños para evitar desbordes de log por payloads enormes
+php_value post_max_size 32M
+php_value upload_max_filesize 32M
