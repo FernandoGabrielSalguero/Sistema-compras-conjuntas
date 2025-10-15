@@ -160,7 +160,6 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
               <button class="tab-button" data-target="#panel-formulario">Nuevo servicio</button>
               <button class="tab-button" data-target="#panel-protocolo">Protocolo</button>
               <button class="tab-button" data-target="#panel-calendario">Calendario</button>
-              <button class="tab-button" data-target="#panel-registro">Registro fito sanitario</button>
               <button class="tab-button" data-target="#panel-stock">Stock</button>
               <button class="tab-button" data-target="#panel-variables">Variables</button>
               <!-- Botón de actualización on-demand -->
@@ -216,18 +215,6 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
               require $viewFile;
             } else {
               echo '<p>No se encontró la vista <code>drone_calendar_view.php</code>.</p>';
-            }
-            ?>
-          </div>
-
-          <!-- Panel: Registro -->
-          <div class="tab-panel" id="panel-registro">
-            <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_registro_view.php';
-            if (is_file($viewFile)) {
-              require $viewFile;
-            } else {
-              echo '<p>No se encontró la vista <code>drone_registro_view.php</code>.</p>';
             }
             ?>
           </div>
