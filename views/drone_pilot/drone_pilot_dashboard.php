@@ -444,7 +444,6 @@ $sesionDebug = [
                 <div class="card">
                     <h2>Hola</h2>
                     <p>Te presentamos la nueva plataforma para administrar las visitas asignadas a vos. Vas a poder ver los detalles y generar el Registro Fitosanitario.</p>
-                    <p>Te presentamos la nueva plataforma para administrar las visitas asignadas a vos. Vas a poder ver los detalles y generar el Registro Fitosanitario.</p>
                 </div>
 
                 <!-- Mis solicitudes (tabla estándar) -->
