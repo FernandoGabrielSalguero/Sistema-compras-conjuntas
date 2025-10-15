@@ -384,15 +384,29 @@ $sesionDebug = [
             }
         }
 
-        /* Canvas de firmas full width y alto cómodo */
-        #modal-reporte canvas {
-            display: block;
-            width: 100%;
-            height: clamp(160px, 26vh, 240px);
-            max-height: 240px;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-        }
+/* Canvas de firmas full width y alto cómodo */
+#modal-reporte canvas {
+    display: block;
+    width: 100%;
+    height: clamp(160px, 26vh, 240px);
+    max-height: 240px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+}
+
+.days-grid {
+    display: grid;
+    /* columnas anchas en desktop: ajustá el minmax si querés aún más ancho */
+    grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+    gap: 1.25rem;
+}
+
+/* Las cards internas de un día (solicitudes) ya usan .cards-grid (280px min) */
+@media (max-width: 1024px) {
+    .days-grid {
+        grid-template-columns: 1fr; /* mobile: 1 columna (como te gustó) */
+    }
+}
     </style>
 </head>
 
@@ -452,8 +466,8 @@ $sesionDebug = [
                         <h2 style="color: white;">Mis solicitudes asignadas</h2>
                     </div>
                     <br>
-                    <!-- 🔄 Cards en lugar de tabla -->
-                    <div id="cards-solicitudes" class="cards-grid"></div>
+                    <!-- 🔄 Cards de solicitudes -->
+                    <div id="cards-solicitudes" class="days-grid"></div>
                 </div>
 
                 <!-- Modal Detalle de la solicitud -->
