@@ -315,17 +315,13 @@ declare(strict_types=1);
   /* Textareas readonly SIN fondo: el contenedor ya estiliza */
   textarea[readonly] {
     background: transparent !important;
-  }
-
-  /* Textareas de solo lectura auto-ajustables y con quiebre de línea */
-  textarea[readonly] {
     width: 100%;
     min-height: 64px;
     resize: none;
     overflow: hidden;
     white-space: pre-wrap;
     line-height: 1.35;
-  }
+  } 
 
   /* Evitar FOUC del contenido dinámico */
   #protocolo-contenido[hidden] {
@@ -588,12 +584,26 @@ declare(strict_types=1);
             1800
           ),
 
-          onclone: (clonedDoc) => {
+                    onclone: (clonedDoc) => {
             // Mostrar contenido
             const cont = clonedDoc.querySelector('#protocolo-contenido');
             if (cont) cont.hidden = false;
 
-            // Compactar el layout del clon para que la imagen no tenga “aire”
+            // ===== Forzar lienzo A4 (ancho) =====
+            // 210mm ≈ 794px @96dpi. Forzamos ese ancho para que TODO
+            // el contenido se adapte al ancho de página sin cortar.
+            const A4_PX = 794;
+
+            const content = clonedDoc.querySelector('.content');
+            if (content) {
+              content.style.padding = '0';
+              content.style.margin = '0 auto';
+              content.style.width = A4_PX + 'px';
+              content.style.maxWidth = A4_PX + 'px';
+              content.style.boxSizing = 'border-box';
+              content.style.overflow = 'visible';
+            }
+
             const card = clonedDoc.querySelector('.protocolo-card');
             if (card) {
               card.style.boxShadow = 'none';
@@ -601,25 +611,22 @@ declare(strict_types=1);
               card.style.borderRadius = '0';
               card.style.margin = '0';
               card.style.padding = '12px';
+              card.style.width = '100%';
+              card.style.maxWidth = A4_PX + 'px';
+              card.style.boxSizing = 'border-box';
+              card.style.overflow = 'visible';
             }
-            const content = clonedDoc.querySelector('.content');
-            if (content) {
-              content.style.padding = '0';
-              content.style.margin = '0';
-            }
+
             const hdr = clonedDoc.querySelector('.protocolo-header');
             if (hdr) hdr.style.minHeight = '72px';
 
-            // ====== AJUSTES PDF ======
-
-            // (A) Ocultar acciones (botón Descargar) sólo en el PDF
+            // Ocultar acciones (botón Descargar) sólo en el PDF
             const footer = clonedDoc.querySelector('.protocolo-footer');
             if (footer) footer.style.display = 'none';
             const btn = clonedDoc.getElementById('btn-descargar');
             if (btn) btn.style.display = 'none';
 
-            // (B) Reemplazar textareas por bloques para que html2canvas no recorte contenido
-            //     y SIN fondo/padding/bordes (ya los aporta el contenedor).
+            // Reemplazar textareas por bloques (sin fondo)
             function textareaToBlock(id) {
               const ta = clonedDoc.getElementById(id);
               if (!ta) return;
@@ -636,21 +643,25 @@ declare(strict_types=1);
             textareaToBlock('pp_obs');
             textareaToBlock('pp_obs_agua');
 
-            // (C) Forzar columnas “desktop” aunque el viewport real sea chico
+            // Reglas de exportación: desktop + tablas al 100% sin overflow
             const style = clonedDoc.createElement('style');
             style.textContent = `
               .protocol-grid { grid-template-columns: 1fr 2fr !important; }
               .grid-2 { grid-template-columns: 1fr 1fr !important; }
               .grid-3 { grid-template-columns: repeat(3, 1fr) !important; }
               .grid-4 { grid-template-columns: repeat(4, 1fr) !important; }
-              .data-table td, .data-table th { vertical-align: top; }
-              .grid-3, .grid-2, .grid-4 { align-items: start; }
+              .grid-2, .grid-3, .grid-4 { align-items: start; }
+              .tabla-wrapper { overflow: visible !important; }
+              table { table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important; }
+              th, td { word-break: break-word !important; }
+              img { max-width: 100% !important; height: auto !important; }
             `;
             clonedDoc.head.appendChild(style);
 
-            // (D) No hacemos nada con 'pp_hectareas' salvo asegurar presencia
+            // Asegurar presencia de 'pp_hectareas'
             clonedDoc.getElementById('pp_hectareas');
           }
+
 
         });
 
@@ -674,15 +685,16 @@ declare(strict_types=1);
         const maxW = pageW - margin * 2;
         const maxH = pageH - margin * 2;
 
-        // px -> mm
+        // px -> mm (A4 width enforce: llenamos SIEMPRE el ancho imprimible)
         const px2mm = 0.264583;
         const imgWmm = canvas.width * px2mm;
         const imgHmm = canvas.height * px2mm;
 
-        // Encajar por el lado LIMITANTE (usa todo el ancho o todo el alto) 
-        const ratio = Math.min(maxW / imgWmm, maxH / imgHmm);
-        const w = imgWmm * ratio;
+        // Escalar POR ANCHO para que el contenido ocupe 100% del ancho útil
+        const ratio = maxW / imgWmm;
+        const w = maxW;
         const h = imgHmm * ratio;
+
 
         // Centrado horizontal y alineado ARRIBA con pequeño margen
         const x = (pageW - w) / 2;
