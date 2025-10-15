@@ -572,35 +572,35 @@ $sesionDebug = [
                                     <div class="input-group">
                                         <label for="sup_pulverizada">Sup. pulverizada (ha)</label>
                                         <div class="input-icon input-icon-number">
-                                            <input type="number" step="0.01" id="sup_pulverizada" name="sup_pulverizada" placeholder="…" />
+                                            <input type="number" step="any" inputmode="decimal" id="sup_pulverizada" name="sup_pulverizada" placeholder="…" />
                                         </div>
                                     </div>
 
                                     <div class="input-group">
                                         <label for="vol_aplicado">Volumen aplicado (L)</label>
                                         <div class="input-icon input-icon-number">
-                                            <input type="number" step="0.01" id="vol_aplicado" name="vol_aplicado" placeholder="…" />
+                                            <input type="number" step="any" inputmode="decimal" id="vol_aplicado" name="vol_aplicado" placeholder="…" />
                                         </div>
                                     </div>
 
                                     <div class="input-group">
                                         <label for="vel_viento">Velocidad del viento (km/h)</label>
                                         <div class="input-icon input-icon-number">
-                                            <input type="number" step="0.1" id="vel_viento" name="vel_viento" placeholder="…" />
+                                            <input type="number" step="any" inputmode="decimal" id="vel_viento" name="vel_viento" placeholder="…" />
                                         </div>
                                     </div>
 
                                     <div class="input-group">
                                         <label for="temperatura">Temperatura (°C)</label>
                                         <div class="input-icon input-icon-number">
-                                            <input type="number" step="0.1" id="temperatura" name="temperatura" placeholder="…" />
+                                            <input type="number" step="any" inputmode="decimal" id="temperatura" name="temperatura" placeholder="…" />
                                         </div>
                                     </div>
 
                                     <div class="input-group">
                                         <label for="humedad_relativa">Humedad relativa (%)</label>
                                         <div class="input-icon input-icon-number">
-                                            <input type="number" step="0.1" id="humedad_relativa" name="humedad_relativa" placeholder="…" />
+                                            <input type="number" step="any" inputmode="decimal" id="humedad_relativa" name="humedad_relativa" placeholder="…" />
                                         </div>
                                     </div>
 
@@ -1303,9 +1303,6 @@ $sesionDebug = [
             form.dataset.sid = String(solicitudId);
         }
 
-        // El bloque "➕ Agregar producto" es 100% opcional: no tiene atributos name ni required,
-        // por lo que NO se envía con el form si el usuario no presiona "Agregar".
-
         // Evita doble submit (bloquea mientras procesa)
         let submitting = false;
 
@@ -1436,6 +1433,75 @@ $sesionDebug = [
         document.addEventListener('DOMContentLoaded', () => {
             cargarSolicitudes();
         });
+
+        function setupNumericInputs() {
+            const sel = '#form-reporte input[type="number"], #form-reporte input[data-decimal]';
+            const inputs = document.querySelectorAll(sel);
+
+            inputs.forEach((el) => {
+                // Si algún framework les mete máscaras/patrones, neutralizamos:
+                el.removeAttribute('pattern');
+                el.removeAttribute('maxlength');
+
+                // Permitir cualquier paso; el control de 2 decimales lo hacemos nosotros.
+                el.setAttribute('step', 'any');
+
+                // Teclado numérico con decimales en mobile
+                el.setAttribute('inputmode', 'decimal');
+
+                // Limpieza y límite de 2 decimales durante la escritura
+                el.addEventListener('input', (e) => {
+                    let v = e.target.value;
+
+                    // Cambiamos coma a punto
+                    v = v.replace(',', '.');
+
+                    // Quitamos caracteres no numéricos (dejamos 1 punto)
+                    // 1) filtramos todo lo que no sea dígito o punto
+                    v = v.replace(/[^\d.]/g, '');
+                    // 2) si hay más de un punto, dejamos el primero
+                    const parts = v.split('.');
+                    if (parts.length > 2) {
+                        v = parts[0] + '.' + parts.slice(1).join('').replace(/\./g, '');
+                    }
+
+                    // Limitamos a 2 decimales (si los hay)
+                    const m = /^(\d+)(?:\.(\d{0,2}))?$/.exec(v);
+                    if (m) {
+                        v = m[1] + (m[2] !== undefined ? '.' + m[2] : '');
+                    } else {
+                        // casos como ".", "00.", etc.
+                        if (v === '.' || v === '') {
+                            v = '';
+                        } else {
+                            // Podamos cualquier exceso de decimales
+                            const fix = /^(\d+)(?:\.(\d{0,}))?$/.exec(v);
+                            if (fix) v = fix[1] + (fix[2] ? '.' + fix[2].slice(0, 2) : '');
+                        }
+                    }
+
+                    e.target.value = v;
+                });
+
+                // Al perder foco, quitamos punto final suelto (ej: "12.")
+                el.addEventListener('blur', (e) => {
+                    let v = e.target.value.trim();
+                    if (v === '.') v = '';
+                    if (/^\d+\.$/.test(v)) v = v.slice(0, -1);
+                    e.target.value = v;
+                });
+            });
+        }
+
+        function clamp2(v) {
+            if (v === '' || v == null) return '';
+            const n = Number(String(v).replace(',', '.'));
+            if (isNaN(n)) return '';
+            return Number.isInteger(n) ? String(n) : n.toFixed(2);
+        }
+
+        // Activa la normalización en cuanto cargue el DOM
+        document.addEventListener('DOMContentLoaded', setupNumericInputs);
     </script>
 
 </body>
