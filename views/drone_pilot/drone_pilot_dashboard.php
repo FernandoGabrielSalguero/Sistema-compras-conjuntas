@@ -653,31 +653,31 @@ $sesionDebug = [
                                             <div class="input-group">
                                                 <label>Nombre (catálogo o manual)</label>
                                                 <div class="input-icon input-icon-name">
-                                                    <input list="cat-productos" id="add_nombre_producto" placeholder="Nombre del producto">
+                                                    <input list="cat-productos" id="add_nombre_producto" form="none" placeholder="Nombre del producto">
                                                 </div>
                                             </div>
                                             <div class="input-group">
                                                 <label>Principio activo</label>
                                                 <div class="input-icon input-icon-name">
-                                                    <input id="add_principio_activo" placeholder="…" />
+                                                    <input id="add_principio_activo" form="none" placeholder="…">
                                                 </div>
                                             </div>
                                             <div class="input-group">
                                                 <label>Dosis</label>
                                                 <div class="input-icon input-icon-number">
-                                                    <input type="number" step="0.01" id="add_dosis" placeholder="…" />
+                                                    <input type="number" step="0.01" id="add_dosis" form="none" placeholder="…">
                                                 </div>
                                             </div>
                                             <div class="input-group">
                                                 <label>Cant. usada</label>
                                                 <div class="input-icon input-icon-number">
-                                                    <input type="number" step="0.01" id="add_cant_usada" placeholder="…" />
+                                                    <input type="number" step="0.01" id="add_cant_usada" form="none" placeholder="…">
                                                 </div>
                                             </div>
                                             <div class="input-group">
                                                 <label>Fecha vencimiento</label>
                                                 <div class="input-icon input-icon-calendar">
-                                                    <input type="date" id="add_fecha_vto" />
+                                                    <input type="date" id="add_fecha_vto" form="none">
                                                 </div>
                                             </div>
                                             <div class="input-group" style="align-self:end;">
