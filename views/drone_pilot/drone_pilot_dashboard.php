@@ -59,10 +59,6 @@ $sesionDebug = [
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" defer></script>
 
     <style>
-        /* =========================
-   Modales responsivos SVE
-   ========================= */
-
         /* Overlay del modal */
         .modal.modal-80 {
             display: flex;
@@ -131,9 +127,6 @@ $sesionDebug = [
             flex-shrink: 0;
         }
 
-        /* =========================
-   REGLAS GENERALES (ambos modales)
-   ========================= */
         .modal.modal-80 .card-grid {
             min-width: 0;
         }
@@ -159,11 +152,6 @@ $sesionDebug = [
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
-        /* =========================
-   FORZAR “CASCADA” SOLO EN EL MODAL DE REPORTE
-   (aumentamos especificidad para ganar a framework.css)
-   ========================= */
 
         /* 1) Toda grilla .card-grid.grid-4 dentro del modal de reporte pasa a UNA columna */
         #modal-reporte .card-grid.grid-4 {
@@ -202,9 +190,6 @@ $sesionDebug = [
             min-width: 0;
         }
 
-        /* =========================
-   Tablas con scroll horizontal propio
-   ========================= */
         .tabla-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -224,21 +209,6 @@ $sesionDebug = [
             }
         }
 
-        /* =========================
-   Firmas / canvas
-   ========================= */
-        .modal.modal-80 canvas {
-            display: block;
-            width: 100%;
-            height: clamp(140px, 24vh, 220px);
-            max-height: 220px;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-        }
-
-        /* =========================
-   Previsualizaciones de imágenes
-   ========================= */
         .preview-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -285,9 +255,6 @@ $sesionDebug = [
             border-radius: 999px;
         }
 
-        /* =========================
-   Cards de solicitudes (sin cambios funcionales)
-   ========================= */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -355,9 +322,6 @@ $sesionDebug = [
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* =========================
-   Mobile-first para modales SVE
-   ========================= */
         @media (max-width: 1024px) {
 
             /* Una columna en ambos modales */
@@ -423,22 +387,6 @@ $sesionDebug = [
             }
         }
 
-        /* Evitar inputs “más anchos que 100%” en los modales */
-        .modal.modal-80 .input-icon,
-        .modal.modal-80 .input-icon input,
-        .modal.modal-80 .input-icon select,
-        .modal.modal-80 .input-icon textarea {
-            width: 100%;
-            max-width: 100%;
-            box-sizing: border-box;
-        }
-
-        /* Que el body del modal siempre scrollee verticalmente */
-        .modal.modal-80 .modal-body {
-            overflow-y: auto;
-            min-height: 0;
-        }
-
         /* Canvas de firmas full width y alto cómodo */
         #modal-reporte canvas {
             display: block;
@@ -449,13 +397,9 @@ $sesionDebug = [
             border-radius: 12px;
         }
     </style>
-
-
-
 </head>
 
 <body>
-
     <!-- 🔲 CONTENEDOR PRINCIPAL -->
     <div class="layout">
 
@@ -502,7 +446,7 @@ $sesionDebug = [
                 <!-- Bienvenida -->
                 <div class="card">
                     <h2>Hola</h2>
-                    <p>Te presentamos la nueva plataforma para administrar las visitas asignadas a vos. Vas a poder ver los detalles y generar el Registro Fitosanitario</p>
+                    <p>Te presentamos la nueva plataforma para administrar las visitas asignadas a vos. Vas a poder ver los detalles y generar el Registro Fitosanitario.</p>
                 </div>
 
                 <!-- Mis solicitudes (tabla estándar) -->
@@ -777,80 +721,6 @@ $sesionDebug = [
     </div>
 
     <script>
-        // --- Lógica: fetch + render a tabla
-        const $tbody = document.getElementById('tbody-solicitudes');
-
-        function rowSkeleton(n = 3) {
-            $tbody.innerHTML = '';
-            for (let i = 0; i < n; i++) {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                <td colspan="7">
-                    <div class="skeleton h-4 w-full"></div>
-                </td>`;
-                $tbody.appendChild(tr);
-            }
-        }
-
-        function renderRows(items) {
-            if (!Array.isArray(items) || items.length === 0) {
-                $tbody.innerHTML = `
-            <tr>
-                <td colspan="8">
-                    <div class="alert info">
-                        <span class="material-icons">info</span>
-                        No se encontraron solicitudes asignadas a tu usuario.
-                    </div>
-                </td>
-            </tr>`;
-                return;
-            }
-            $tbody.innerHTML = items.map(s => `
-        <tr data-id="${s.id}">
-            <td>${s.id}</td>
-            <td>${s.productor_nombre ?? '-'}</td>
-            <td>${s.fecha_visita ?? '-'}</td>
-            <td>${s.hora_visita_desde ?? '-'}</td>
-            <td>${s.hora_visita_hasta ?? '-'}</td>
-            <td>${s.superficie_ha ?? '-'}</td>
-            <td>${s.dir_localidad ?? '-'}</td>
-            <td>
-                <button class="btn-icon" title="Ver detalle" data-action="ver" data-id="${s.id}">
-                    <span class="material-icons">visibility</span>
-                </button>
-                <button class="btn-icon" title="Cargar reporte" data-action="reporte" data-id="${s.id}">
-                    <span class="material-icons">description</span>
-                </button>
-            </td>
-        </tr>
-    `).join('');
-        }
-
-        async function cargarSolicitudes() {
-            try {
-                rowSkeleton(3);
-                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
-                    credentials: 'same-origin'
-                });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const payload = await res.json();
-                renderRows(payload.data || []);
-            } catch (e) {
-                console.error(e);
-                $tbody.innerHTML = `
-                <tr>
-                    <td colspan="7">
-                        <div class="alert danger">
-                            <span class="material-icons">error</span>
-                            Ocurrió un error al obtener las solicitudes. Intenta nuevamente.
-                        </div>
-                    </td>
-                </tr>`;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', cargarSolicitudes);
-
         // listeners, detalle, reporte, firma
         let signatureCliente, signaturePiloto;
 
@@ -1041,16 +911,6 @@ $sesionDebug = [
 
             openModalReporte();
         }
-
-
-        // Delegación solo para botones con data-action
-        document.getElementById('tbody-solicitudes')?.addEventListener('click', (e) => {
-            const btn = e.target.closest('button[data-action]');
-            if (!btn) return; // ignora clicks en la fila
-            const id = btn.dataset.id;
-            if (btn.dataset.action === 'ver') verDetalle(id);
-            if (btn.dataset.action === 'reporte') abrirReporte(id);
-        });
 
         function initSignatures() {
             const makePad = (idCanvas, clearBtnId) => {
@@ -1288,37 +1148,6 @@ $sesionDebug = [
             renderPreviews(finalFiles);
         });
 
-
-        document.getElementById('form-reporte')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            try {
-                const fotos = document.getElementById('fotos');
-                if (fotos.files.length > 10) {
-                    showAlert?.('info', 'Máximo 10 fotos.');
-                    return;
-                }
-                // firmas
-                const firmaCliente = signatureCliente && !signatureCliente.isEmpty() ? signatureCliente.toDataURL('image/png') : '';
-                const firmaPiloto = signaturePiloto && !signaturePiloto.isEmpty() ? signaturePiloto.toDataURL('image/png') : '';
-                document.getElementById('firma_cliente_base64').value = firmaCliente;
-                document.getElementById('firma_piloto_base64').value = firmaPiloto;
-
-                const formData = new FormData(e.target);
-                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php`, {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'same-origin'
-                });
-                const payload = await res.json();
-                if (!res.ok || !payload.ok) throw new Error(payload.message || 'Error API');
-                showAlert?.('success', 'Reporte guardado correctamente.');
-                closeModalReporte();
-            } catch (err) {
-                console.error(err);
-                showAlert?.('error', 'No se pudo guardar el reporte.');
-            }
-        });
-
         // skeleton para cards
         function cardsSkeleton(n = 3) {
             const c = document.getElementById('cards-solicitudes');
@@ -1475,12 +1304,6 @@ $sesionDebug = [
             }
         }
         document.addEventListener('DOMContentLoaded', cargarCatalogoProductos);
-
-        // Fallback por si no existe aún la tarjeta (evita TypeError)
-        function getNombreClienteFromUI(id) {
-            const card = document.querySelector(`.card-solicitud[data-id="${id}"]`);
-            return card?.querySelector('h4')?.textContent?.trim() || '';
-        }
 
         // Alta de producto a la receta
         document.getElementById('btn-add-producto')?.addEventListener('click', async () => {
