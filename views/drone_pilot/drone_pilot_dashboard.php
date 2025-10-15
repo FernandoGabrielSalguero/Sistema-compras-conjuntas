@@ -265,9 +265,9 @@ $sesionDebug = [
         }
 
         .card-solicitud {
-            background: #fff;
+            background: #ffffffff;
             border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+            box-shadow: 0 2px 8px 6px rgba(0, 0, 0, .08);
             padding: 1rem;
             display: flex;
             flex-direction: column;
@@ -384,29 +384,35 @@ $sesionDebug = [
             }
         }
 
-/* Canvas de firmas full width y alto cómodo */
-#modal-reporte canvas {
-    display: block;
-    width: 100%;
-    height: clamp(160px, 26vh, 240px);
-    max-height: 240px;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-}
+        /* Canvas de firmas full width y alto cómodo */
+        #modal-reporte canvas {
+            display: block;
+            width: 100%;
+            height: clamp(160px, 26vh, 240px);
+            max-height: 240px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+        }
 
-.days-grid {
-    display: grid;
-    /* columnas anchas en desktop: ajustá el minmax si querés aún más ancho */
-    grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
-    gap: 1.25rem;
-}
+        .days-grid {
+            display: grid;
+            /* columnas anchas en desktop: ajustá el minmax si querés aún más ancho */
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+            gap: 1.25rem;
+        }
 
-/* Las cards internas de un día (solicitudes) ya usan .cards-grid (280px min) */
-@media (max-width: 1024px) {
-    .days-grid {
-        grid-template-columns: 1fr; /* mobile: 1 columna (como te gustó) */
-    }
-}
+        /* Las cards internas de un día (solicitudes) ya usan .cards-grid (280px min) */
+        @media (max-width: 1024px) {
+            .days-grid {
+                grid-template-columns: 1fr;
+                /* mobile: 1 columna (como te gustó) */
+            }
+        }
+
+        /* Espaciado del encabezado de cada día dentro de su card */
+        .days-grid>.card>h3 {
+            margin: 0 0 .75rem 0;
+        }
     </style>
 </head>
 
