@@ -74,14 +74,14 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         <div class="product-header">
             <h3 id="quick-filters-title">Filtros rápidos</h3>
         </div>
-
+<br>
         <div class="form-grid grid-4" role="group" aria-label="Filtrar por estado">
             <button type="button" class="chip" data-estado="" aria-pressed="true">Todas las solicitudes</button>
             <button type="button" class="chip" data-estado="ingresada" aria-pressed="false">Solicitudes ingresadas</button>
             <button type="button" class="chip" data-estado="completada" aria-pressed="false">Solicitudes completadas</button>
             <button type="button" class="chip" data-estado="cancelada" aria-pressed="false">Solicitudes canceladas</button>
         </div>
-
+<br>
         <div class="form-grid grid-4" role="group" aria-label="Filtrar por rango">
             <button type="button" class="chip" data-rango="" aria-pressed="true" id="chip-rango-todo">Todo</button>
             <div id="rango-chips-dynamic" class="chips-dynamic"></div>
