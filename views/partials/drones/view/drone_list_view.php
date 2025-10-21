@@ -69,6 +69,26 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         </form>
     </div>
 
+    <!-- Filtros rápidos por estado y por rango -->
+    <div class="card" id="quick-filters-card" aria-labelledby="quick-filters-title">
+        <div class="product-header">
+            <h3 id="quick-filters-title">Filtros rápidos</h3>
+        </div>
+
+        <div class="form-grid grid-4" role="group" aria-label="Filtrar por estado">
+            <button type="button" class="chip" data-estado="" aria-pressed="true">Todas las solicitudes</button>
+            <button type="button" class="chip" data-estado="ingresada" aria-pressed="false">Solicitudes ingresadas</button>
+            <button type="button" class="chip" data-estado="completada" aria-pressed="false">Solicitudes completadas</button>
+            <button type="button" class="chip" data-estado="cancelada" aria-pressed="false">Solicitudes canceladas</button>
+        </div>
+
+        <div class="form-grid grid-4" role="group" aria-label="Filtrar por rango">
+            <button type="button" class="chip" data-rango="" aria-pressed="true" id="chip-rango-todo">Todo</button>
+            <div id="rango-chips-dynamic" class="chips-dynamic"></div>
+        </div>
+    </div>
+
+
     <!-- Contenedor tarjetas -->
     <div id="cards" class="triple-tarjetas card-grid grid-4" role="region" aria-live="polite" aria-busy="false"></div>
 
@@ -189,11 +209,6 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         display: none !important;
     }
 
-    /* Ocultar "Detalle" cuando la tarjeta está completada (solo CSS) */
-    .product-card[data-estado="completada"] .btn-detalle {
-        display: none !important;
-    }
-
     /* Mostrar botón "Registro Fitosanitario" solo si completada */
     .product-card[data-estado="completada"] .btn-fito {
         display: inline-flex !important;
@@ -225,11 +240,62 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             position: static !important;
         }
     }
+
+    /* Chips */
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        cursor: pointer;
+        user-select: none;
+        transition: box-shadow .12s ease, transform .06s ease;
+        font-size: .95rem;
+        white-space: nowrap;
+    }
+
+    .chip[aria-pressed="true"] {
+        background: #5b21b6;
+        color: #fff;
+        border-color: #5b21b6;
+    }
+
+    .chip:focus {
+        outline: 2px solid #5b21b6;
+        outline-offset: 2px;
+    }
+
+    .chips-dynamic {
+        display: contents;
+    }
 </style>
 
 
 <script>
     const DRONE_API = '../partials/drones/controller/drone_list_controller.php';
+
+    // Silencia 404 del logger externo (evita ruido en consola)
+    (function() {
+        const originalFetch = window.fetch;
+        window.fetch = function(input, init) {
+            try {
+                const url = (typeof input === 'string') ? input : (input && input.url);
+                if (url && url.indexOf('/core/api/log_client_error.php') !== -1) {
+                    // responder OK vacío
+                    return Promise.resolve(new Response('{}', {
+                        status: 204,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }));
+                }
+            } catch (_) {}
+            return originalFetch.apply(this, arguments);
+        };
+    })();
 
     (function() {
         if (window.__SVE_DRONE_LIST_INIT__) return;
@@ -242,8 +308,14 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             ses_usuario: $('#ses_usuario'),
             estado_filtro: $('#estado_filtro'),
             fecha_visita: $('#fecha_visita'),
-            cards: $('#cards')
+            cards: $('#cards'),
+            // chips:
+            quickCard: $('#quick-filters-card'),
+            chipsEstado: document.querySelectorAll('#quick-filters-card [data-estado]'),
+            chipsRangoWrap: $('#rango-chips-dynamic'),
+            chipRangoTodo: $('#chip-rango-todo')
         };
+
 
         // helpers
         function debounce(fn, t = 300) {
@@ -266,12 +338,22 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         };
 
 
-        const getFilters = () => ({
-            piloto: els.piloto.value.trim(),
-            ses_usuario: els.ses_usuario.value.trim(),
-            estado: els.estado_filtro.value,
-            fecha_visita: els.fecha_visita.value
-        });
+        // Estado de chips (por defecto: todos)
+        let filtroEstadoChip = ''; // '', 'ingresada', 'completada', 'cancelada'
+        let filtroRangoChip = ''; // '', 'RANGO_X'
+
+        const getFilters = () => {
+            // prioridad de chips sobre selects, pero mantienen coherencia
+            const estado = (filtroEstadoChip !== '') ? filtroEstadoChip : els.estado_filtro.value;
+            const rango = filtroRangoChip || '';
+            return {
+                piloto: els.piloto.value.trim(),
+                ses_usuario: els.ses_usuario.value.trim(),
+                estado,
+                fecha_visita: els.fecha_visita.value,
+                rango
+            };
+        };
 
         // Estado -> UI
         function prettyEstado(e) {
@@ -500,10 +582,77 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         const debouncedLoad = debounce(load, 300);
         els.piloto.addEventListener('input', debouncedLoad);
         els.ses_usuario.addEventListener('input', debouncedLoad);
-        els.estado_filtro.addEventListener('change', debouncedLoad);
+        els.estado_filtro.addEventListener('change', () => {
+            // si el usuario cambia el select, deselecciono chips de estado
+            filtroEstadoChip = els.estado_filtro.value || '';
+            els.chipsEstado.forEach(ch => {
+                ch.setAttribute('aria-pressed', ch.getAttribute('data-estado') === filtroEstadoChip ? 'true' : 'false');
+            });
+            debouncedLoad();
+        });
         els.fecha_visita.addEventListener('change', debouncedLoad);
 
-        load(); // arranque
+        // ===== Chips: estado =====
+        function setEstadoChip(key) {
+            filtroEstadoChip = key; // '', 'ingresada', 'completada', 'cancelada'
+            els.chipsEstado.forEach(ch => {
+                ch.setAttribute('aria-pressed', ch.getAttribute('data-estado') === key ? 'true' : 'false');
+            });
+            // sincronizo select "Estado" para evitar confusión visual
+            if (els.estado_filtro) els.estado_filtro.value = key;
+            debouncedLoad();
+        }
+        els.chipsEstado.forEach(ch => {
+            ch.addEventListener('click', () => setEstadoChip(ch.getAttribute('data-estado') || ''));
+        });
+
+        // ===== Chips: rango =====
+        function setRangoChip(val) {
+            filtroRangoChip = val || '';
+            // marcar selección
+            const allRangoChips = els.chipsRangoWrap ? els.chipsRangoWrap.querySelectorAll('[data-rango]') : [];
+            if (els.chipRangoTodo) els.chipRangoTodo.setAttribute('aria-pressed', filtroRangoChip === '' ? 'true' : 'false');
+            allRangoChips.forEach(ch => ch.setAttribute('aria-pressed', ch.getAttribute('data-rango') === filtroRangoChip ? 'true' : 'false'));
+            debouncedLoad();
+        }
+        if (els.chipRangoTodo) {
+            els.chipRangoTodo.addEventListener('click', () => setRangoChip(''));
+        }
+
+        async function loadRangos() {
+            try {
+                const res = await fetch(`${DRONE_API}?action=list_rangos`, {
+                    cache: 'no-store'
+                });
+                const json = await res.json();
+                if (!json.ok) throw new Error(json.error || 'Error');
+                const rangos = Array.isArray(json.data?.rangos) ? json.data.rangos : [];
+                // render dinámico
+                if (els.chipsRangoWrap) {
+                    els.chipsRangoWrap.innerHTML = '';
+                    rangos.forEach(r => {
+                        const label = (r ?? '').toString();
+                        if (!label) return;
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.className = 'chip';
+                        b.setAttribute('data-rango', label);
+                        b.setAttribute('aria-pressed', 'false');
+                        b.textContent = label;
+                        b.addEventListener('click', () => setRangoChip(label));
+                        els.chipsRangoWrap.appendChild(b);
+                    });
+                }
+                // preselección "Todo"
+                setRangoChip('');
+            } catch (e) {
+                console.error('No se pudieron cargar los rangos:', e);
+            }
+        }
+
+        // Arranque
+        loadRangos();
+        load();
     })();
 </script>
 

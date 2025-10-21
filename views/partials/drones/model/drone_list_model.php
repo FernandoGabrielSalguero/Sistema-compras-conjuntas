@@ -81,7 +81,6 @@ final class DroneListModel
         $where[] = $pred;
 
         if (!empty($f['q'])) {
-            // ui.nombre = nombre del productor desde usuarios_info
             $where[]      = "(s.ses_usuario LIKE :q OR ui.nombre LIKE :q OR u.usuario LIKE :q OR s.productor_id_real LIKE :q)";
             $params[':q'] = '%' . $f['q'] . '%';
         }
@@ -100,6 +99,11 @@ final class DroneListModel
         if (!empty($f['fecha_visita'])) {
             $where[] = "s.fecha_visita = :fecha_visita";
             $params[':fecha_visita'] = $f['fecha_visita'];
+        }
+        // Filtro por rango sin duplicar filas: EXISTS contra tabla secundaría
+        if (!empty($f['rango'])) {
+            $where[] = "EXISTS (SELECT 1 FROM drones_solicitud_rango sr WHERE sr.solicitud_id = s.id AND sr.rango = :rango)";
+            $params[':rango'] = $f['rango'];
         }
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -134,7 +138,6 @@ final class DroneListModel
     FROM drones_solicitud s
     LEFT JOIN drones_solicitud_costos c ON c.solicitud_id = s.id
 
-
     /* Productor */
     LEFT JOIN usuarios u   ON u.id_real = s.productor_id_real
     LEFT JOIN usuarios_info ui  ON ui.usuario_id = u.id
@@ -146,8 +149,6 @@ final class DroneListModel
     $whereSql
     ORDER BY s.created_at DESC, s.id DESC
 ";
-
-
         $st = $this->pdo->prepare($sql);
         foreach ($params as $k => $v) {
             $st->bindValue($k, $v, is_int($v) ? PDO::PARAM_INT : PDO::PARAM_STR);
@@ -357,5 +358,32 @@ ORDER BY s.created_at DESC, s.id DESC, si.id ASC
             'reporte_media'     => $bindId($qRepMedia),
             'eventos'           => $bindId($qEventos),
         ];
+    }
+
+    /**
+     * Lista los rangos disponibles (distintos) respetando visibilidad.
+     * Se usa para construir chips dinámicos.
+     * @param array $ctx
+     * @return array ['rangos'=>string[]]
+     */
+    public function listarRangos(array $ctx = []): array
+    {
+        $params = [];
+        $pred = AuthzVista::sqlVisibleProductores('s.productor_id_real', $ctx, $params);
+
+        $sql = "
+        SELECT DISTINCT sr.rango
+        FROM drones_solicitud_rango sr
+        JOIN drones_solicitud s ON s.id = sr.solicitud_id
+        WHERE {$pred} AND sr.rango IS NOT NULL AND sr.rango <> ''
+        ORDER BY sr.rango ASC
+    ";
+        $st = $this->pdo->prepare($sql);
+        foreach ($params as $k => $v) {
+            $st->bindValue($k, $v, is_int($v) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $st->execute();
+        $rows = $st->fetchAll(PDO::FETCH_COLUMN) ?: [];
+        return ['rangos' => $rows];
     }
 }

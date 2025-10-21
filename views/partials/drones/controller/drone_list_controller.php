@@ -47,8 +47,16 @@ try {
             'piloto'       => isset($_GET['piloto']) ? trim((string)$_GET['piloto']) : '',
             'estado'       => isset($_GET['estado']) ? trim((string)$_GET['estado']) : '',
             'fecha_visita' => isset($_GET['fecha_visita']) ? trim((string)$_GET['fecha_visita']) : '',
+            'rango'        => isset($_GET['rango']) ? trim((string)$_GET['rango']) : '',
         ];
         $data = $model->listarSolicitudes($filters, $ctx);
+        echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    // ===== Listado de rangos (para chips dinámicos) =====
+    if ($action === 'list_rangos') {
+        $data = $model->listarRangos($ctx);
         echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE);
         exit;
     }
