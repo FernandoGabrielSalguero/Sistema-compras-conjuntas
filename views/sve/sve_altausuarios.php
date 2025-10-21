@@ -181,7 +181,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <select id="rol" name="rol" required>
                                         <option value="sve">SVE</option>
                                         <option value="cooperativa">Cooperativa</option>
-                                        <option value="productor">Productor</option>
+                                        <option value="productor" selected>Productor</option>
                                         <option value="ingeniero">Ingeniero</option>
                                         <option value="piloto_drone">Piloto Drone</option>
                                     </select>
@@ -306,7 +306,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     </div>
                                 </div>
 
-                                <!-- Rol -->
                                 <!-- Rol -->
                                 <div class="input-group">
                                     <label for="edit_rol">Rol</label>
@@ -502,9 +501,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         document.addEventListener('DOMContentLoaded', () => {
             cargarUsuarios(); // 👈 carga al entrar
 
-            document.getElementById('buscarCuit').addEventListener('input', () => {
-                cargarUsuarios(); // 👈 filtra en tiempo real
-            });
+            const bc = document.getElementById('buscarCuit');
+            if (bc) bc.addEventListener('input', cargarUsuarios);
         });
 
 
@@ -762,8 +760,66 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
+    <!-- Modal informativo de selección de rol -->
+    <div id="modalConfirmRol" class="modal hidden">
+        <div class="modal-content tamaño_modal">
+            <h3>Confirmación de rol</h3>
+
+            <!-- Cerrar arriba a la derecha -->
+            <button class="btn-icon" onclick="cerrarModalConfirmRol()" style="position:absolute; top:10px; right:10px;">
+                <span class="material-icons">close</span>
+            </button>
+
+            <p>Seleccionaste el rol <strong id="rolConfirmLabel">SVE</strong>.</p>
+
+            <div class="form-buttons">
+                <button class="btn btn-aceptar" type="button" onclick="cerrarModalConfirmRol()">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
+    <script>
+        // --- Utilidades modal informativo de rol ---
+        function abrirModalConfirmRol(rolLabel) {
+            const m = document.getElementById('modalConfirmRol');
+            const lbl = document.getElementById('rolConfirmLabel');
+            if (lbl) lbl.textContent = (rolLabel || '').toUpperCase();
+            m.classList.remove('hidden');
+        }
+
+        function cerrarModalConfirmRol() {
+            document.getElementById('modalConfirmRol').classList.add('hidden');
+        }
+
+        // --- Listeners para selects de rol (alta y edición) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Forzar default "productor" en alta (además del selected en HTML por si hay autofill del navegador)
+            const selAlta = document.getElementById('rol');
+            if (selAlta && !selAlta.value) selAlta.value = 'productor';
+
+            // Mostrar modal al seleccionar SVE (alta)
+            if (selAlta) {
+                selAlta.addEventListener('change', (e) => {
+                    if ((e.target.value || '').toLowerCase() === 'sve') {
+                        abrirModalConfirmRol('SVE');
+                    }
+                });
+            }
+
+            // Mostrar modal al seleccionar SVE (edición)
+            const selEdit = document.getElementById('edit_rol');
+            if (selEdit) {
+                selEdit.addEventListener('change', (e) => {
+                    if ((e.target.value || '').toLowerCase() === 'sve') {
+                        abrirModalConfirmRol('SVE');
+                    }
+                });
+            }
+        });
+    </script>
+
 </body>
 
 </html>
