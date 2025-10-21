@@ -277,26 +277,6 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 <script>
     const DRONE_API = '../partials/drones/controller/drone_list_controller.php';
 
-    // Silencia 404 del logger externo (evita ruido en consola)
-    (function() {
-        const originalFetch = window.fetch;
-        window.fetch = function(input, init) {
-            try {
-                const url = (typeof input === 'string') ? input : (input && input.url);
-                if (url && url.indexOf('/core/api/log_client_error.php') !== -1) {
-                    // responder OK vacío
-                    return Promise.resolve(new Response('{}', {
-                        status: 204,
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    }));
-                }
-            } catch (_) {}
-            return originalFetch.apply(this, arguments);
-        };
-    })();
-
     (function() {
         if (window.__SVE_DRONE_LIST_INIT__) return;
         window.__SVE_DRONE_LIST_INIT__ = true;
