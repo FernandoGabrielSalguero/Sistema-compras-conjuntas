@@ -435,8 +435,8 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 
                 <div class="mini-block">
                     <div class="mini-title">Costo servicio</div>
-                    ${ (it.costo_total === null || it.costo_total === undefined || it.costo_total === '') 
-                        ? '<p class="price">—</p>' 
+                    ${ (it.costo_total === null || it.costo_total === undefined || it.costo_total === '')
+                        ? '<p class="price">—</p>'
                         : `<p class="price">$${fmtNum(it.costo_total)}</p>` }
                 </div>
 
@@ -692,42 +692,16 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                     return;
                 }
 
-                // 1) Whitelist + orden exacto de columnas requeridas
+                // orden de las columnas en el excel
                 const keys = [
-                    's_agua_potable',
-                    's_area_despegue',
-                    's_corriente_electrica',
+                    's_productor_nombre',
+                    's_superficie_ha',
+                    'sr_rango',
                     's_dir_calle',
                     's_dir_localidad',
                     's_dir_numero',
                     's_dir_provincia',
-                    's_en_finca',
-                    's_estado',
-                    's_fecha_visita',
                     's_forma_pago_id',
-                    's_hora_visita_desde',
-                    's_hora_visita_hasta',
-                    's_id',
-                    's_libre_obstaculos',
-                    's_linea_tension',
-                    's_motivo_cancelacion',
-                    's_observaciones',
-                    's_productor_id_real',
-                    's_productor_nombre',
-                    's_representante',
-                    's_ses_correo',
-                    's_ses_nombre',
-                    's_ses_rol',
-                    's_ses_telefono',
-                    's_ses_usuario',
-                    's_superficie_ha',
-                    's_zona_restringida',
-                    'c_base_ha',
-                    'c_base_total',
-                    'c_productos_total',
-                    'c_solicitud_id',
-                    'c_total',
-                    'si_costo_hectarea_snapshot',
                     'si_fuente',
                     'si_nombre_producto',
                     'si_patologia_nombre',
@@ -736,7 +710,33 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                     'si_solicitud_id',
                     'si_total_producto_snapshot',
                     'sm_patologia_nombre',
-                    'sr_rango'
+                    's_agua_potable',
+                    's_area_despegue',
+                    's_corriente_electrica',
+                    's_en_finca',
+                    's_libre_obstaculos',
+                    's_zona_restringida',
+                    's_linea_tension',
+                    's_representante',
+                    's_observaciones',
+                    's_ses_rol',
+                    's_estado',
+                    's_fecha_visita',
+                    's_hora_visita_desde',
+                    's_hora_visita_hasta',
+                    's_id',
+                    's_motivo_cancelacion',
+                    's_productor_id_real',
+                    's_ses_correo',
+                    's_ses_nombre',
+                    's_ses_telefono',
+                    's_ses_usuario',
+                    'c_base_ha',
+                    'c_base_total',
+                    'c_productos_total',
+                    'c_solicitud_id',
+                    'c_total',
+                    'si_costo_hectarea_snapshot'
                 ];
 
                 // 2) Normalizar filas SOLO con las columnas whitelist
