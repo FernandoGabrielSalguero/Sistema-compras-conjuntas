@@ -770,7 +770,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <span class="material-icons">close</span>
             </button>
 
-            <p>Seleccionaste el rol <strong id="rolConfirmLabel">SVE</strong>.</p>
+            <p>Estás seleccionando el rol SVE. Esto, habilita al usuario a poder ver todas las funcionalidades de la plataforma y le permite además modificarlas <strong id="rolConfirmLabel">SVE</strong>.</p>
 
             <div class="form-buttons">
                 <button class="btn btn-aceptar" type="button" onclick="cerrarModalConfirmRol()">Aceptar</button>
