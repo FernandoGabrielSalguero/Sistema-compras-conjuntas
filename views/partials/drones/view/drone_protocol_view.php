@@ -619,8 +619,8 @@ declare(strict_types=1);
         } = window.jspdf;
 
         // --- Parámetros base (forzar layout desktop, tamaño real A4) ---
-        const A4PX = 1240;               // ~90% del tamaño original en el PDF
-        const SCALE = 1.7;               // subo un poco para conservar nitidez
+        const A4PX = 1440;               // ~78% del tamaño original en el PDF
+const SCALE = 2.0;               // más nitidez por el mayor downscale
         const MARGIN_MM = 5; // margen más fino
         const WINDOW_W = 1600; // viewport ancho fijo (fuerza desktop)
         const WINDOW_H = Math.max(sectionEl.scrollHeight, 2200);
