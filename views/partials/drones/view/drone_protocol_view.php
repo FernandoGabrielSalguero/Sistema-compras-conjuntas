@@ -246,7 +246,10 @@ declare(strict_types=1);
         </div>
 
         <footer class="protocolo-footer" role="contentinfo" aria-label="Acciones del protocolo">
-          <div class="form-grid grid-1" style="justify-content:end;">
+          <div class="form-grid grid-2" style="justify-content:end; gap:.5rem;">
+            <button type="button" id="btn-modificar" class="btn btn-primary" aria-label="Habilitar edición de protocolo">
+              Modificar
+            </button>
             <button type="button" id="btn-descargar" class="btn btn-info" aria-label="Descargar protocolo como imagen">
               Descargar
             </button>
@@ -462,6 +465,7 @@ declare(strict_types=1);
     const contenido = $('#protocolo-contenido');
     const sectionEl = $('#protocolo-section');
     const btnDescargar = $('#btn-descargar');
+    const btnModificar = $('#btn-modificar');
     const btnMaps = $('#btn-maps');
 
     const inputs = {
@@ -469,8 +473,9 @@ declare(strict_types=1);
       estado: $('#filtro_estado')
     };
 
-    // Bind botón descargar (PDF 1 página)
+    // Bind acciones
     btnDescargar?.addEventListener('click', descargarComoPDFUnaPagina);
+    btnModificar?.addEventListener('click', onClickModificarGuardar);
 
 
     // Healthcheck inicial
@@ -830,6 +835,9 @@ declare(strict_types=1);
 
     function pintarDetalle(data) {
       contenido.hidden = false;
+      currentSolicitudId = data?.solicitud_id || data?.solicitud?.id || null;
+      // al cargar detalle, aseguramos modo lectura
+      setEditMode(false);
 
       // drones_solicitud (solo lectura)
       const d = data.solicitud;
@@ -843,12 +851,17 @@ declare(strict_types=1);
       setVal('pv_lng', d.ubicacion_lng || '');
       setVal('pv_usuario', d.ses_usuario || '');
 
+      // Guardar el id de la solicitud en data.solicitud_id para el flujo de edición
+      if (!data.solicitud_id && d && typeof d === 'object') {
+        data.solicitud_id = Number(data.id || 0) || null;
+      }
+
       // Habilitar/Deshabilitar botón Maps acorde a coords
       updateMapsButton(d.ubicacion_lat, d.ubicacion_lng);
 
-      // Items + receta (ordenado por prioridad: orden_mezcla ASC) y sin columna "#"
+      // Items + receta (ordenado por prioridad: orden_mezcla ASC) y con soporte de edición
       const tbody = document.getElementById('tabla-items');
-      /** @type {Array<{producto:string, principio:string, dosis:string, orden:number|string, notas:string}>} */
+      /** @type {Array<{receta_id:number|null, producto:string, principio:string, dosis_val:string|number, unidad:string, orden:number|string, notas:string}>} */
       const filas = [];
 
       if (Array.isArray(data.items) && data.items.length) {
@@ -858,9 +871,11 @@ declare(strict_types=1);
             it.receta.forEach((rc) => {
               const ordenVal = (rc.orden_mezcla === null || rc.orden_mezcla === undefined) ? 9999 : Number(rc.orden_mezcla);
               filas.push({
+                receta_id: Number(rc.id) || null,
                 producto,
                 principio: rc.principio_activo || '',
-                dosis: `${rc.dosis ?? ''} ${rc.unidad || ''}`.trim(),
+                dosis_val: (rc.dosis ?? ''),
+                unidad: (rc.unidad || ''),
                 orden: isNaN(ordenVal) ? 9999 : ordenVal,
                 notas: rc.notas || ''
               });
@@ -883,16 +898,36 @@ declare(strict_types=1);
       if (!filas.length) {
         tbody.innerHTML = '<tr><td colspan="5">Sin datos</td></tr>';
       } else {
-        tbody.innerHTML = filas.map(f => `
-    <tr>
-      <td>${f.producto}</td>
-      <td>${f.principio}</td>
-      <td>${f.dosis}</td>
-      <td>${(f.orden === 9999) ? '' : f.orden}</td>
-      <td>${f.notas}</td>
-    </tr>
-  `).join('');
+        tbody.innerHTML = filas.map((f, idx) => `
+          <tr data-row="${idx}">
+            <td>${f.producto}</td>
+            <td>${f.principio}</td>
+            <td>
+              <div class="input-icon input-icon-lab">
+                <input 
+                  type="number" step="0.001" inputmode="decimal"
+                  class="edit-receta" data-field="dosis" data-receta-id="${f.receta_id ?? ''}"
+                  value="${String(f.dosis_val ?? '').replace(/"/g,'&quot;')}" 
+                  readonly
+                />
+              </div>
+              <small class="muted">${f.unidad || ''}</small>
+            </td>
+            <td style="text-align:center;">
+              <input 
+                type="number" step="1" class="edit-receta" data-field="orden_mezcla" data-receta-id="${f.receta_id ?? ''}"
+                value="${(f.orden===9999 || Number.isNaN(Number(f.orden))) ? '' : f.orden}" 
+                readonly
+                style="max-width:90px;text-align:center;"
+              />
+            </td>
+            <td>
+              <textarea rows="1" class="edit-receta" data-field="notas" data-receta-id="${f.receta_id ?? ''}" readonly>${(f.notas||'')}</textarea>
+            </td>
+          </tr>
+        `).join('');
       }
+
 
       // parámetros
       const p = data.parametros || {};
@@ -907,5 +942,131 @@ declare(strict_types=1);
       // nuevo: observaciones de agua (parametros)
       setVal('pp_obs_agua', p.observaciones_agua || '');
     }
+
+    // ===== Edición =====
+    let editMode = false;
+    let currentSolicitudId = null;
+
+    function setEditMode(on) {
+      editMode = !!on;
+      const recInputs = document.querySelectorAll('.edit-receta');
+      recInputs.forEach(el => {
+        if (editMode) {
+          el.removeAttribute('readonly');
+        } else {
+          el.setAttribute('readonly', 'readonly');
+        }
+      });
+
+      // Habilitar/Deshabilitar campos de parámetros
+      const paramIds = ['pp_volumen', 'pp_velocidad', 'pp_alto', 'pp_ancho', 'pp_gota', 'pp_hectareas', 'pp_obs'];
+      paramIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (editMode) el.removeAttribute('readonly');
+        else el.setAttribute('readonly', 'readonly');
+      });
+
+      // UX: ajustar altura de textareas al habilitar/deshabilitar
+      document.querySelectorAll('textarea').forEach(ta => {
+        ta.style.height = 'auto';
+        ta.style.height = ta.scrollHeight + 'px';
+      });
+
+      // Botón
+      if (btnModificar) btnModificar.textContent = editMode ? 'Guardar' : 'Modificar';
+    }
+
+    function onClickModificarGuardar() {
+      if (!currentSolicitudId) {
+        showAlert('warning', 'Seleccioná un servicio antes de modificar.');
+        return;
+      }
+      if (!editMode) {
+        setEditMode(true);
+        showAlert('info', 'Edición habilitada. Modificá y luego presioná Guardar.');
+        return;
+      }
+      // Guardar
+      guardarCambios()
+        .then(() => {
+          setEditMode(false);
+          // recargar para normalizar datos
+          cargarDetalle(currentSolicitudId);
+        })
+        .catch(err => {
+          showAlert('error', err?.message || String(err));
+        });
+    }
+
+    async function guardarCambios() {
+      // 1) Recetas
+      const recetaRows = Array.from(document.querySelectorAll('.edit-receta'));
+      /** @type {{receta_id:number, dosis:string, orden_mezcla:string|number, notas:string}[]} */
+      const updatesMap = new Map();
+      recetaRows.forEach(el => {
+        const id = Number(el.getAttribute('data-receta-id') || '0');
+        const field = el.getAttribute('data-field');
+        if (!id || !field) return;
+        const o = updatesMap.get(id) || {
+          receta_id: id,
+          dosis: null,
+          orden_mezcla: null,
+          notas: null
+        };
+        if (field === 'dosis') o.dosis = el.value === '' ? null : el.value;
+        if (field === 'orden_mezcla') o.orden_mezcla = el.value === '' ? null : Number(el.value);
+        if (field === 'notas') o.notas = el.value === '' ? null : el.value;
+        updatesMap.set(id, o);
+      });
+      const recetasPayload = Array.from(updatesMap.values());
+
+      // 2) Parámetros
+      const p = {
+        volumen_ha: valOrNull('pp_volumen'),
+        velocidad_vuelo: valOrNull('pp_velocidad'),
+        alto_vuelo: valOrNull('pp_alto'),
+        ancho_pasada: valOrNull('pp_ancho'),
+        tamano_gota: valOrNull('pp_gota'),
+        observaciones: valOrNull('pp_obs'),
+        superficie_ha: valOrNull('pp_hectareas')
+      };
+
+      // Llamados
+      if (recetasPayload.length) {
+        const r1 = await fetch(API + '?action=update_recetas', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            recetas: recetasPayload
+          })
+        }).then(r => r.json());
+        if (!r1?.ok) throw new Error(r1?.error || 'No se pudieron actualizar las recetas');
+      }
+
+      const r2 = await fetch(API + '?action=update_parametros', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          solicitud_id: currentSolicitudId,
+          parametros: p
+        })
+      }).then(r => r.json());
+      if (!r2?.ok) throw new Error(r2?.error || 'No se pudieron actualizar los parámetros');
+
+      showAlert('success', 'Cambios guardados correctamente.');
+    }
+
+    function valOrNull(id) {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      const v = (el.value ?? '').toString().trim();
+      return v === '' ? null : v;
+    }
+
   })();
 </script>

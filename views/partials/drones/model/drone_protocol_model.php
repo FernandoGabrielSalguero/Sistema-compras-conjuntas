@@ -103,7 +103,7 @@ class DroneProtocolModel
         if ($ids) {
             $in = implode(',', array_fill(0, count($ids), '?'));
             $sqlR = "
-                SELECT solicitud_item_id, principio_activo, dosis, unidad, orden_mezcla, notas
+                SELECT id, solicitud_item_id, principio_activo, dosis, unidad, orden_mezcla, notas
                 FROM drones_solicitud_item_receta
                 WHERE solicitud_item_id IN ($in)
                 ORDER BY solicitud_item_id ASC, COALESCE(orden_mezcla, 9999) ASC, id ASC
@@ -112,8 +112,14 @@ class DroneProtocolModel
             $stR->execute($ids);
             while ($r = $stR->fetch(PDO::FETCH_ASSOC)) {
                 $sid = (int)$r['solicitud_item_id'];
-                unset($r['solicitud_item_id']);
-                $recetasPorItem[$sid][] = $r;
+                $recetasPorItem[$sid][] = [
+                    'id' => (int)$r['id'],
+                    'principio_activo' => $r['principio_activo'],
+                    'dosis' => $r['dosis'],
+                    'unidad' => $r['unidad'],
+                    'orden_mezcla' => $r['orden_mezcla'],
+                    'notas' => $r['notas'],
+                ];
             }
         }
 
@@ -135,5 +141,89 @@ class DroneProtocolModel
                 ];
             }, $items),
         ];
+    }
+
+    /**
+     * Actualiza en batch recetas (dosis, orden_mezcla, notas) por id.
+     * @param array<int, array{receta_id:int,dosis:?string,orden_mezcla:?int,notas:?string}> $rows
+     */
+    public function actualizarRecetas(array $rows): void
+    {
+        if (!$rows) return;
+        $this->pdo->beginTransaction();
+        try {
+            $sql = "UPDATE drones_solicitud_item_receta
+                    SET dosis = :dosis, orden_mezcla = :orden, notas = :notas, updated_at = NOW()
+                    WHERE id = :id";
+            $st = $this->pdo->prepare($sql);
+            foreach ($rows as $r) {
+                $st->execute([
+                    ':dosis' => $r['dosis'],
+                    ':orden' => $r['orden_mezcla'],
+                    ':notas' => $r['notas'],
+                    ':id'    => $r['receta_id'],
+                ]);
+            }
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Inserta o actualiza parámetros de vuelo para una solicitud.
+     * Si existe registro, actualiza el más reciente; si no, inserta.
+     * Retorna id del registro afectado.
+     * @param int $solicitudId
+     * @param array<string,mixed> $p
+     */
+    public function upsertParametros(int $solicitudId, array $p): int
+    {
+        // ¿Existe uno?
+        $st = $this->pdo->prepare("SELECT id FROM drones_solicitud_parametros WHERE solicitud_id = :sid ORDER BY id DESC LIMIT 1");
+        $st->execute([':sid' => $solicitudId]);
+        $row = $st->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $sql = "UPDATE drones_solicitud_parametros
+                    SET volumen_ha = :vol, velocidad_vuelo = :vel, alto_vuelo = :alto,
+                        ancho_pasada = :ancho, tamano_gota = :gota, observaciones = :obs, updated_at = NOW(),
+                        observaciones_agua = COALESCE(observaciones_agua, observaciones_agua)
+                    WHERE id = :id";
+            $u = $this->pdo->prepare($sql);
+            $u->execute([
+                ':vol'  => $p['volumen_ha'] ?? null,
+                ':vel'  => $p['velocidad_vuelo'] ?? null,
+                ':alto' => $p['alto_vuelo'] ?? null,
+                ':ancho' => $p['ancho_pasada'] ?? null,
+                ':gota' => $p['tamano_gota'] ?? null,
+                ':obs'  => $p['observaciones'] ?? null,
+                ':id'   => (int)$row['id'],
+            ]);
+            return (int)$row['id'];
+        }
+        $ins = $this->pdo->prepare("INSERT INTO drones_solicitud_parametros
+            (solicitud_id, volumen_ha, velocidad_vuelo, alto_vuelo, ancho_pasada, tamano_gota, observaciones, created_at)
+            VALUES (:sid, :vol, :vel, :alto, :ancho, :gota, :obs, NOW())");
+        $ins->execute([
+            ':sid'  => $solicitudId,
+            ':vol'  => $p['volumen_ha'] ?? null,
+            ':vel'  => $p['velocidad_vuelo'] ?? null,
+            ':alto' => $p['alto_vuelo'] ?? null,
+            ':ancho' => $p['ancho_pasada'] ?? null,
+            ':gota' => $p['tamano_gota'] ?? null,
+            ':obs'  => $p['observaciones'] ?? null,
+        ]);
+        /** @var int */
+        return (int)$this->pdo->lastInsertId();
+    }
+
+    /**
+     * Actualiza superficie (hectáreas) en drones_solicitud.
+     */
+    public function actualizarHectareas(int $solicitudId, $ha): void
+    {
+        $st = $this->pdo->prepare("UPDATE drones_solicitud SET superficie_ha = :ha, updated_at = NOW() WHERE id = :sid");
+        $st->execute([':ha' => $ha, ':sid' => $solicitudId]);
     }
 }
