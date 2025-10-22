@@ -168,44 +168,41 @@ declare(strict_types=1);
               <table class="data-table" aria-label="Productos y receta">
                 <thead>
                   <tr>
-                    <th style="min-width:160px;">Producto (editable)</th>
-                    <th style="min-width:160px;">Principio activo</th>
-                    <th style="min-width:120px;">Dosis</th>
-                    <th style="min-width:110px;">Unidad</th>
-                    <th style="min-width:110px; text-align:center;">Orden mezcla</th>
-                    <th style="min-width:220px;">Notas</th>
+                    <th>Producto</th>
+                    <th>Principio activo</th>
+                    <th>Dosis</th>
+                    <th>Orden mezcla</th>
+                    <th>Notas</th>
                   </tr>
                 </thead>
                 <tbody id="tabla-items">
                   <tr>
-                    <td colspan="6">Sin datos</td>
+                    <td colspan="5">Sin datos</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
 
-
           <div class="protocolo-bloque">
             <h3 style="color: #5b21b6;">Parametros de vuelo</h3>
-            <input type="hidden" id="pp_param_id" value="">
             <div class="grid-3">
               <div class="input-group">
                 <label for="pp_volumen">Volumen/ha</label>
                 <div class="input-icon input-icon-droplet">
-                  <input id="pp_volumen" inputmode="decimal" />
+                  <input id="pp_volumen" readonly>
                 </div>
               </div>
               <div class="input-group">
                 <label for="pp_velocidad">Velocidad vuelo</label>
                 <div class="input-icon input-icon-speed">
-                  <input id="pp_velocidad" inputmode="decimal" />
+                  <input id="pp_velocidad" readonly>
                 </div>
               </div>
               <div class="input-group">
                 <label for="pp_alto">Alto vuelo</label>
                 <div class="input-icon input-icon-arrow-up">
-                  <input id="pp_alto" inputmode="decimal" />
+                  <input id="pp_alto" readonly>
                 </div>
               </div>
             </div>
@@ -214,19 +211,19 @@ declare(strict_types=1);
               <div class="input-group">
                 <label for="pp_ancho">Ancho pasada</label>
                 <div class="input-icon input-icon-arrows">
-                  <input id="pp_ancho" inputmode="decimal" />
+                  <input id="pp_ancho" readonly>
                 </div>
               </div>
               <div class="input-group">
                 <label for="pp_gota">Tamaño de gota</label>
                 <div class="input-icon input-icon-droplet">
-                  <input id="pp_gota" />
+                  <input id="pp_gota" readonly>
                 </div>
               </div>
               <div class="input-group">
                 <label for="pp_hectareas">Hectareas a pulverizar</label>
                 <div class="input-icon input-icon-hashtag">
-                  <input id="pp_hectareas" inputmode="decimal" />
+                  <input id="pp_hectareas" readonly>
                 </div>
               </div>
             </div>
@@ -234,29 +231,27 @@ declare(strict_types=1);
             <div class="input-group">
               <label for="pp_obs">Observaciones</label>
               <div class="input-icon input-icon-note">
-                <textarea id="pp_obs" rows="2"></textarea>
+                <textarea id="pp_obs" rows="2" readonly></textarea>
               </div>
             </div>
 
             <div class="input-group">
               <label for="pp_obs_agua">Observaciones de agua</label>
               <div class="input-icon input-icon-note">
-                <textarea id="pp_obs_agua" rows="2"></textarea>
+                <textarea id="pp_obs_agua" rows="2" readonly></textarea>
               </div>
             </div>
 
           </div>
+        </div>
 
-          <footer class="protocolo-footer" role="contentinfo" aria-label="Acciones del protocolo">
-            <div class="form-grid grid-1" style="justify-content:end; gap:.5rem;">
-              <button type="button" id="btn-guardar" class="btn btn-aceptar" style="display:none;" aria-label="Guardar cambios">
-                Guardar cambios
-              </button>
-              <button type="button" id="btn-descargar" class="btn btn-info" aria-label="Descargar protocolo como imagen">
-                Descargar
-              </button>
-            </div>
-          </footer>
+        <footer class="protocolo-footer" role="contentinfo" aria-label="Acciones del protocolo">
+          <div class="form-grid grid-1" style="justify-content:end;">
+            <button type="button" id="btn-descargar" class="btn btn-info" aria-label="Descargar protocolo como imagen">
+              Descargar
+            </button>
+          </div>
+        </footer>
       </section>
     </div>
   </div>
@@ -317,8 +312,8 @@ declare(strict_types=1);
     background: #f8fafc;
   }
 
-  /* Textareas: estilo consistente (readonly o edit) */
-  textarea {
+  /* Textareas readonly SIN fondo: el contenedor ya estiliza */
+  textarea[readonly] {
     background: transparent !important;
     width: 100%;
     min-height: 64px;
@@ -455,21 +450,6 @@ declare(strict_types=1);
       grid-template-columns: repeat(4, 1fr) !important;
     }
   }
-
-  /* Celdas editables de receta */
-  .receta-input,
-  .receta-textarea {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .receta-input[type="number"] {
-    text-align: right;
-  }
-
-  .cell-center {
-    text-align: center;
-  }
 </style>
 
 <script>
@@ -482,7 +462,6 @@ declare(strict_types=1);
     const contenido = $('#protocolo-contenido');
     const sectionEl = $('#protocolo-section');
     const btnDescargar = $('#btn-descargar');
-    const btnGuardar = $('#btn-guardar');
     const btnMaps = $('#btn-maps');
 
     const inputs = {
@@ -490,34 +469,9 @@ declare(strict_types=1);
       estado: $('#filtro_estado')
     };
 
-    // ===== Estado local =====
-    let currentSolicitudId = null;
-    let currentParametrosId = null;
-    let isDirty = false;
-
-    // Helpers
-    function markDirty() {
-      if (!isDirty) {
-        isDirty = true;
-        if (btnGuardar) btnGuardar.style.display = 'inline-flex';
-      }
-    }
-
-    function clearDirty() {
-      isDirty = false;
-      if (btnGuardar) btnGuardar.style.display = 'none';
-    }
-
-    function onInputAutoResize(e) {
-      if (e && e.target && e.target.tagName === 'TEXTAREA') {
-        e.target.style.height = 'auto';
-        e.target.style.height = e.target.scrollHeight + 'px';
-      }
-    }
-
-    // Bind botones
+    // Bind botón descargar (PDF 1 página)
     btnDescargar?.addEventListener('click', descargarComoPDFUnaPagina);
-    btnGuardar?.addEventListener('click', guardarCambios);
+
 
     // Healthcheck inicial
     fetch(API + '?t=' + Date.now(), {
@@ -596,16 +550,17 @@ declare(strict_types=1);
         });
 
         tr.innerHTML = `
-          <td>${row.id}</td>
-          <td>${row.productor_nombre || ''}</td>
-          <td><span class="badge ${badgeClass(row.estado)}">${row.estado}</span></td>
-          <td>${row.fecha_visita || ''}</td>
-        `;
+        <td>${row.id}</td>
+        <td>${row.productor_nombre || ''}</td>
+        <td><span class="badge ${badgeClass(row.estado)}">${row.estado}</span></td>
+        <td>${row.fecha_visita || ''}</td>
+      `;
         tbodyServicios.appendChild(tr);
       });
     }
 
-    // ===== Exportar PDF (limpieza: removido A4_PX_WIDTH no utilizado) =====
+    // Funcion para descargar en PDF de una sola página 
+
     async function descargarComoPDFUnaPagina() {
       try {
         if (!sectionEl) {
@@ -613,23 +568,35 @@ declare(strict_types=1);
           return;
         }
 
+        // helper opcional si más adelante querés reutilizar
+        const A4_PX_WIDTH = 794; // 210mm a ~96dpi
+
         const canvas = await html2canvas(sectionEl, {
           backgroundColor: '#ffffff',
           scale: 2,
           useCORS: true,
           scrollX: 0,
           scrollY: -window.scrollY,
+
+          // ✅ Fuerza layout de escritorio para evitar que la grilla “salte”
+          // en pantallas chicas y que se corten tablas.
           windowWidth: 1400,
           windowHeight: Math.max(
             document.body.scrollHeight,
             sectionEl.scrollHeight,
             1800
           ),
+
           onclone: (clonedDoc) => {
+            // Mostrar contenido
             const cont = clonedDoc.querySelector('#protocolo-contenido');
             if (cont) cont.hidden = false;
 
+            // ===== Forzar lienzo A4 (ancho) =====
+            // 210mm ≈ 794px @96dpi. Forzamos ese ancho para que TODO
+            // el contenido se adapte al ancho de página sin cortar.
             const A4_PX = 794;
+
             const content = clonedDoc.querySelector('.content');
             if (content) {
               content.style.padding = '0';
@@ -656,11 +623,13 @@ declare(strict_types=1);
             const hdr = clonedDoc.querySelector('.protocolo-header');
             if (hdr) hdr.style.minHeight = '72px';
 
+            // Ocultar acciones (botón Descargar) sólo en el PDF
             const footer = clonedDoc.querySelector('.protocolo-footer');
             if (footer) footer.style.display = 'none';
             const btn = clonedDoc.getElementById('btn-descargar');
             if (btn) btn.style.display = 'none';
 
+            // Reemplazar textareas por bloques (sin fondo)
             function textareaToBlock(id) {
               const ta = clonedDoc.getElementById(id);
               if (!ta) return;
@@ -677,6 +646,7 @@ declare(strict_types=1);
             textareaToBlock('pp_obs');
             textareaToBlock('pp_obs_agua');
 
+            // Reglas de exportación: desktop + tablas al 100% sin overflow
             const style = clonedDoc.createElement('style');
             style.textContent = `
               .protocol-grid { grid-template-columns: 1fr 2fr !important; }
@@ -691,11 +661,17 @@ declare(strict_types=1);
             `;
             clonedDoc.head.appendChild(style);
 
+            // Asegurar presencia de 'pp_hectareas'
             clonedDoc.getElementById('pp_hectareas');
           }
+
+
         });
 
+        // Imagen del canvas
         const imgData = canvas.toDataURL('image/jpeg', 0.98);
+
+        // Crear PDF A4 y escalar para que entre en 1 página (mantener aspecto)
         const {
           jsPDF
         } = window.jspdf;
@@ -708,29 +684,36 @@ declare(strict_types=1);
         const pageW = pdf.internal.pageSize.getWidth();
         const pageH = pdf.internal.pageSize.getHeight();
 
-        const margin = 4;
+        const margin = 4; // mm (más pequeño para aprovechar la hoja)
         const maxW = pageW - margin * 2;
         const maxH = pageH - margin * 2;
 
+        // px -> mm (A4 width enforce: llenamos SIEMPRE el ancho imprimible)
         const px2mm = 0.264583;
         const imgWmm = canvas.width * px2mm;
         const imgHmm = canvas.height * px2mm;
 
+        // Escalar POR ANCHO para que el contenido ocupe 100% del ancho útil
         const ratio = maxW / imgWmm;
         const w = maxW;
         const h = imgHmm * ratio;
 
+
+        // Centrado horizontal y alineado ARRIBA con pequeño margen
         const x = (pageW - w) / 2;
         const y = margin;
 
+        // Si entra en una página, normal:
         if (h <= maxH) {
           pdf.addImage(imgData, 'JPEG', x, y, w, h, '', 'FAST');
         } else {
+          // Slicing vertical del canvas en varias páginas
           const pageCanvas = document.createElement('canvas');
           const pageCtx = pageCanvas.getContext('2d');
 
-          const scale = w / (canvas.width * 0.264583);
-          const pagePixelHeight = Math.floor((maxH / scale) / 0.264583);
+          // Escala px->mm usada para ajustar el alto de cada porción
+          const scale = w / (canvas.width * 0.264583); // (mm renderizados / mm reales del canvas)
+          const pagePixelHeight = Math.floor((maxH / scale) / 0.264583); // px por página visibles
 
           let sY = 0;
           while (sY < canvas.height) {
@@ -742,9 +725,10 @@ declare(strict_types=1);
             pageCtx.drawImage(canvas, 0, sY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
 
             const sliceData = pageCanvas.toDataURL('image/jpeg', 0.98);
-            const sliceHmm = sliceH * 0.264583;
-            const sliceHmmScaled = sliceHmm * scale;
+            const sliceHmm = sliceH * 0.264583; // px -> mm
+            const sliceHmmScaled = sliceHmm * scale; // mm en el PDF con la misma escala
 
+            // Nueva página salvo en la primera iteración
             if (sY > 0) pdf.addPage();
 
             pdf.addImage(sliceData, 'JPEG', x, y, w, sliceHmmScaled, '', 'FAST');
@@ -752,15 +736,22 @@ declare(strict_types=1);
           }
         }
 
+        // Tomamos productor (usuario) y fecha de la visita desde inputs
         const productor = (document.getElementById('pv_usuario')?.value || 'productor').trim();
         const fechaVisita = (document.getElementById('pv_fecha')?.value || 'fecha').trim();
 
+        // Sanitizar para que no tenga caracteres inválidos en el nombre
         function slugify(txt) {
-          return txt.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-            .replace(/[^a-zA-Z0-9_-]/g, "_");
+          return txt.normalize("NFD").replace(/[\u0300-\u036f]/g, "") // sin tildes
+            .replace(/[^a-zA-Z0-9_-]/g, "_"); // solo seguro
         }
 
-        const filename = `protocolo_${slugify(productor)}_${slugify(fechaVisita)}.pdf`;
+        const nombreProd = slugify(productor);
+        const fecha = slugify(fechaVisita);
+
+        // Armar nombre final
+        const filename = `protocolo_${nombreProd}_${fecha}.pdf`;
+
         pdf.save(filename);
         showAlert('success', 'PDF generado correctamente.');
       } catch (err) {
@@ -768,6 +759,7 @@ declare(strict_types=1);
         showAlert('error', 'No se pudo generar el PDF: ' + msg);
       }
     }
+
 
     function updateMapsButton(lat, lng) {
       if (!btnMaps) return;
@@ -793,23 +785,18 @@ declare(strict_types=1);
           return 'primary';
         case 'cancelada':
           return 'danger';
-        case 'visita_realizada':
-          return 'secondary';
         default:
           return 'warning';
       }
     }
 
     function seleccionar(id, tr) {
-      if (isDirty && !confirm('Hay cambios sin guardar. ¿Deseás descartarlos?')) return;
       [...tbodyServicios.querySelectorAll('tr')].forEach(x => x.classList.remove('is-active'));
       tr.classList.add('is-active');
-      clearDirty();
       cargarDetalle(id);
     }
 
     function cargarDetalle(id) {
-      currentSolicitudId = id;
       healthEl.textContent = 'Cargando protocolo #' + id + '…';
       const params = new URLSearchParams({
         action: 'detail',
@@ -825,7 +812,7 @@ declare(strict_types=1);
             return;
           }
           pintarDetalle(json.data);
-          healthEl.textContent = 'Estás viendo el protocolo de la solicitud ' + id;
+          healthEl.textContent = 'Estas viendo el protocolo de la solicitud número ' + id;
         })
         .catch(err => showAlert('error', err && err.message ? err.message : String(err)));
     }
@@ -834,20 +821,11 @@ declare(strict_types=1);
       const el = document.getElementById(id);
       if (!el) return;
       el.value = (v ?? '');
+      // Auto-ajuste de altura si es textarea
       if (el.tagName === 'TEXTAREA') {
         el.style.height = 'auto';
         el.style.height = el.scrollHeight + 'px';
       }
-    }
-
-    function attachDirtyHandlers(container) {
-      container.querySelectorAll('input, textarea, select').forEach(el => {
-        el.addEventListener('input', (e) => {
-          onInputAutoResize(e);
-          markDirty();
-        });
-        el.addEventListener('change', markDirty);
-      });
     }
 
     function pintarDetalle(data) {
@@ -864,210 +842,70 @@ declare(strict_types=1);
       setVal('pv_lat', d.ubicacion_lat || '');
       setVal('pv_lng', d.ubicacion_lng || '');
       setVal('pv_usuario', d.ses_usuario || '');
+
+      // Habilitar/Deshabilitar botón Maps acorde a coords
       updateMapsButton(d.ubicacion_lat, d.ubicacion_lng);
 
-      // parámetros (editable)
-      currentParametrosId = data.parametros?.id || null;
-      document.getElementById('pp_param_id').value = currentParametrosId || '';
-      const p = data.parametros || {};
-      setVal('pp_volumen', p.volumen_ha ?? '');
-      setVal('pp_velocidad', p.velocidad_vuelo ?? '');
-      setVal('pp_alto', p.alto_vuelo ?? '');
-      setVal('pp_ancho', p.ancho_pasada ?? '');
-      setVal('pp_gota', p.tamano_gota ?? '');
-      setVal('pp_hectareas', (data.solicitud?.superficie_ha ?? ''));
-      setVal('pp_obs', p.observaciones || '');
-      setVal('pp_obs_agua', p.observaciones_agua || '');
-
-      // Items + receta (editable)
+      // Items + receta (ordenado por prioridad: orden_mezcla ASC) y sin columna "#"
       const tbody = document.getElementById('tabla-items');
+      /** @type {Array<{producto:string, principio:string, dosis:string, orden:number|string, notas:string}>} */
       const filas = [];
 
       if (Array.isArray(data.items) && data.items.length) {
         data.items.forEach((it) => {
-          const itemId = it.id;
-          const nombreEditable = (it.nombre_producto ?? '');
-          const nombreResuelto = (it.nombre_producto_resuelto ?? '');
-          // Si nombre_producto es null, mostramos el resuelto como placeholder
-          const labelProducto = nombreEditable !== '' ? nombreEditable : nombreResuelto;
-
+          const producto = it.nombre_producto || '';
           if (it.receta && it.receta.length) {
             it.receta.forEach((rc) => {
-              const ordenVal = (rc.orden_mezcla === null || rc.orden_mezcla === undefined) ? '' : String(rc.orden_mezcla);
+              const ordenVal = (rc.orden_mezcla === null || rc.orden_mezcla === undefined) ? 9999 : Number(rc.orden_mezcla);
               filas.push({
-                item_id: itemId,
-                receta_id: rc.id,
-                producto: labelProducto,
-                producto_edit: nombreEditable, // el valor que editamos se guarda en items.nombre_producto
+                producto,
                 principio: rc.principio_activo || '',
-                dosis: (rc.dosis ?? ''),
-                unidad: (rc.unidad ?? ''),
-                orden: ordenVal,
+                dosis: `${rc.dosis ?? ''} ${rc.unidad || ''}`.trim(),
+                orden: isNaN(ordenVal) ? 9999 : ordenVal,
                 notas: rc.notas || ''
               });
             });
           } else {
-            // sin receta: fila “placeholder” editable de nombre de producto
             filas.push({
-              item_id: itemId,
-              receta_id: null,
-              producto: labelProducto,
-              producto_edit: nombreEditable,
+              producto,
               principio: '',
               dosis: '',
-              unidad: '',
-              orden: '',
+              orden: 9999,
               notas: 'Sin receta cargada'
             });
           }
         });
       }
 
-      // ordenar por orden_mezcla asc (vacíos al final)
-      filas.sort((a, b) => {
-        const ao = a.orden === '' ? 9999 : Number(a.orden);
-        const bo = b.orden === '' ? 9999 : Number(b.orden);
-        return ao - bo;
-      });
+      // ordenar por orden_mezcla asc (prioridad)
+      filas.sort((a, b) => (a.orden - b.orden));
 
       if (!filas.length) {
-        tbody.innerHTML = '<tr><td colspan="6">Sin datos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5">Sin datos</td></tr>';
       } else {
         tbody.innerHTML = filas.map(f => `
-          <tr data-item-id="${f.item_id}" ${f.receta_id ? `data-receta-id="${f.receta_id}"` : ''}>
-            <td>
-              <input class="receta-input" type="text" value="${escapeHtml(f.producto_edit || '')}" placeholder="${escapeHtml(f.producto)}" data-field="item_nombre_producto">
-            </td>
-            <td>
-              <input class="receta-input" type="text" value="${escapeHtml(f.principio)}" data-field="principio_activo" ${f.receta_id ? '' : 'disabled'}>
-            </td>
-            <td>
-              <input class="receta-input" type="number" step="0.001" value="${escapeAttr(f.dosis)}" data-field="dosis" ${f.receta_id ? '' : 'disabled'}>
-            </td>
-            <td>
-              <input class="receta-input" type="text" value="${escapeHtml(f.unidad)}" data-field="unidad" ${f.receta_id ? '' : 'disabled'}>
-            </td>
-            <td class="cell-center">
-              <input class="receta-input" style="text-align:center;" type="number" step="1" min="0" value="${escapeAttr(f.orden)}" data-field="orden_mezcla" ${f.receta_id ? '' : 'disabled'}>
-            </td>
-            <td>
-              <textarea class="receta-textarea" rows="1" data-field="notas" ${f.receta_id ? '' : 'disabled'}>${escapeHtml(f.notas)}</textarea>
-            </td>
-          </tr>
-        `).join('');
+    <tr>
+      <td>${f.producto}</td>
+      <td>${f.principio}</td>
+      <td>${f.dosis}</td>
+      <td>${(f.orden === 9999) ? '' : f.orden}</td>
+      <td>${f.notas}</td>
+    </tr>
+  `).join('');
       }
 
-      // bind dirty handlers
-      attachDirtyHandlers(contenido);
-      clearDirty();
-    }
-
-    // ===== Guardar cambios =====
-    function collectPayload() {
       // parámetros
-      const payload = {
-        solicitud_id: currentSolicitudId,
-        parametros_id: currentParametrosId || 0,
-        parametros: {
-          volumen_ha: val('#pp_volumen'),
-          velocidad_vuelo: val('#pp_velocidad'),
-          alto_vuelo: val('#pp_alto'),
-          ancho_pasada: val('#pp_ancho'),
-          tamano_gota: val('#pp_gota'),
-          observaciones: val('#pp_obs'),
-          observaciones_agua: val('#pp_obs_agua'),
-        },
-        recetas: [],
-        items: [],
-      };
-
-      // hectáreas pertenece a drones_solicitud.superficie_ha (solo lectura en esta pantalla)
-      // por eso no la enviamos como parte de parametros.
-
-      // recorrer filas de receta
-      document.querySelectorAll('#tabla-items tr[data-item-id]').forEach(tr => {
-        const itemId = Number(tr.getAttribute('data-item-id'));
-        const recetaIdAttr = tr.getAttribute('data-receta-id');
-        const itemNombre = tr.querySelector('input[data-field="item_nombre_producto"]')?.value ?? '';
-
-        // nombre de producto editable (en items)
-        payload.items.push({
-          id: itemId,
-          nombre_producto: itemNombre
-        });
-
-        if (recetaIdAttr) {
-          const recetaId = Number(recetaIdAttr);
-          const get = (sel) => tr.querySelector(`[data-field="${sel}"]`);
-          payload.recetas.push({
-            id: recetaId,
-            solicitud_item_id: itemId,
-            principio_activo: get('principio_activo')?.value ?? '',
-            dosis: (get('dosis')?.value ?? ''),
-            unidad: get('unidad')?.value ?? '',
-            orden_mezcla: (get('orden_mezcla')?.value ?? ''),
-            notas: get('notas')?.value ?? ''
-          });
-        }
-      });
-
-      // filtrar items duplicados por id (último gana)
-      const seen = new Map();
-      payload.items.forEach(it => seen.set(it.id, it));
-      payload.items = Array.from(seen.values());
-
-      return payload;
+      const p = data.parametros || {};
+      setVal('pp_volumen', p.volumen_ha ?? '');
+      setVal('pp_velocidad', p.velocidad_vuelo ?? '');
+      setVal('pp_alto', p.alto_vuelo ?? '');
+      setVal('pp_ancho', p.ancho_pasada ?? '');
+      setVal('pp_gota', p.tamano_gota ?? '');
+      // nuevo: hectáreas viene desde la solicitud (d)
+      setVal('pp_hectareas', (data.solicitud?.superficie_ha ?? ''));
+      setVal('pp_obs', p.observaciones || '');
+      // nuevo: observaciones de agua (parametros)
+      setVal('pp_obs_agua', p.observaciones_agua || '');
     }
-
-    function guardarCambios() {
-      if (!currentSolicitudId) {
-        showAlert('error', 'No hay solicitud seleccionada.');
-        return;
-      }
-      const body = collectPayload();
-
-      fetch(API + '?action=save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(body)
-        })
-        .then(r => r.json())
-        .then(json => {
-          if (!json.ok) {
-            showAlert('error', json.error || 'No se pudieron guardar los cambios.');
-            return;
-          }
-          currentParametrosId = json.parametros_id || currentParametrosId;
-          document.getElementById('pp_param_id').value = currentParametrosId || '';
-          clearDirty();
-          showAlert('success', 'Cambios guardados correctamente.');
-          // refrescar detalle para ver datos normalizados/orden
-          cargarDetalle(currentSolicitudId);
-        })
-        .catch(err => showAlert('error', err && err.message ? err.message : String(err)));
-    }
-
-    // utils
-    function val(sel) {
-      const el = document.querySelector(sel);
-      return el ? el.value : '';
-    }
-
-    function escapeHtml(s) {
-      return String(s ?? '').replace(/[&<>"']/g, m => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-      } [m]));
-    }
-
-    function escapeAttr(s) {
-      return escapeHtml(s);
-    }
-
   })();
 </script>
