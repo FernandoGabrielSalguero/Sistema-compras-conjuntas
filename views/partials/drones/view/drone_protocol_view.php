@@ -688,28 +688,26 @@ const SCALE = 2.0;               // más nitidez por el mayor downscale
   .grid-3{grid-template-columns:repeat(3,1fr)!important;}
   .grid-4{grid-template-columns:repeat(4,1fr)!important;}
   .tabla-wrapper{overflow:visible!important;}
-  h1,h2,h3,label,td,th,div,span,p,input,textarea{font-family:"Inter",Arial,sans-serif!important; color:#111!important; font-size:14px!important; line-height:1.4;}
-  h1{font-size:22px!important;}
-  h3{font-size:16px!important; margin-top:6px;}
-  
-  /* Inputs como bloques visibles */
-  .export-input{display:block; padding:8px 10px; border:1px solid #d1d5db; border-radius:8px;
-    line-height:1.2; background:#f9fafb; font-size:14px;}
-  .export-area{display:block; padding:10px; border:1px solid #d1d5db; border-radius:8px;
-    background:#fff; white-space:pre-wrap; line-height:1.35; font-size:14px;}
-  
-  /* Tabla productos */
-  table.data-table{table-layout:fixed!important; width:100%!important; border-collapse:collapse!important;}
-  table.data-table th, table.data-table td{border-bottom:1px solid #e5e7eb; padding:6px 4px; word-break:break-word;}
-  table.data-table th:nth-child(1){width:24%;}
-  table.data-table th:nth-child(2){width:22%;}
-  table.data-table th:nth-child(3){width:12%;}
-  table.data-table th:nth-child(4){width:10%; text-align:center;}
-  table.data-table th:nth-child(5){width:32%;}
-  table.data-table td:nth-child(5){white-space:normal; overflow-wrap:anywhere;}
-  
-  /* Compactar parámetros */
-  #bloque-parametros .export-input{padding:6px 8px; font-size:13px;}
+
+
+h1,h2,h3,label,td,th,div,span,p,input,textarea{font-family:"Inter",Arial,sans-serif!important; color:#111!important; font-size:13px!important; line-height:1.35;}
+h1{font-size:20px!important;}
+h3{font-size:14px!important; margin-top:6px;}
+
+.export-input{
+  display:block; padding:6px 8px; border:1px solid #d1d5db; border-radius:8px;
+  line-height:1.2; background:#f9fafb; font-size:13px;
+}
+.export-area{
+  display:block; padding:8px 9px; border:1px solid #d1d5db; border-radius:8px;
+  background:#fff; white-space:pre-wrap; line-height:1.32; font-size:13px; min-height:52px;
+}
+
+/* parámetros aún más compactos */
+#bloque-parametros .export-input{padding:5px 7px; font-size:12.5px;}
+
+
+
   #bloque-parametros h3{margin-top:12px;}
 `;
           doc.head.appendChild(style);
