@@ -452,7 +452,19 @@ declare(strict_types=1);
     .grid-4 {
       grid-template-columns: repeat(4, 1fr) !important;
     }
-  }
+}
+
+  /* === Ajustes visuales en pantalla para coincidir con export === */
+  .data-table { table-layout: fixed; }
+  .data-table th:nth-child(1){ width:22%; }
+  .data-table th:nth-child(2){ width:20%; }
+  .data-table th:nth-child(3){ width:13%; }
+  .data-table th:nth-child(4){ width:10%; text-align:center; }
+  .data-table th:nth-child(5){ width:35%; }
+  .data-table td{ word-break: break-word; vertical-align: top; }
+  .data-table td:nth-child(1),
+  .data-table td:nth-child(5){ white-space: normal; }
+
 </style>
 
 <script>
@@ -564,31 +576,46 @@ declare(strict_types=1);
       });
     }
 
-    // ===== PDF A4 full-width, multipágina, con HEADER en cada página
-    // Seccion de Parámetros de Vuelo forzada a la página 2
+    // ===== PDF A4 multipágina con HEADER repetido =====
+    // Fixes: 1) sin páginas en blanco, 2) inputs/textarea se renderizan como texto,
+    // 3) tabla con layout fijo y columnas proporcionales, 4) quiebres en "Producto" y "Notas".
     async function descargarComoPDFUnaPagina() {
       try {
-        if (!sectionEl) {
-          showAlert('error', 'No se encontró la sección a exportar.');
-          return;
-        }
-        if (contenido.hidden) {
-          showAlert('warning', 'Selecciona un protocolo para descargar.');
-          return;
-        }
+        if (!sectionEl) { showAlert('error','No se encontró la sección a exportar.'); return; }
+        if (contenido.hidden) { showAlert('warning','Selecciona un protocolo para descargar.'); return; }
 
-        const {
-          jsPDF
-        } = window.jspdf;
+        const { jsPDF } = window.jspdf;
 
-        // --- Parámetros de exportación (ajustables) ---
-        const A4PX = 794; // Ancho del DOM clonado (A4 ~96dpi)
-        const SCALE = 2; // Nitidez html2canvas
-        const MARGIN_MM = 6; // Márgenes PDF
-        const WINDOW_W = 1440; // Ancho de viewport del clon (fuerza layout desktop)
+        // --- Parámetros base ---
+        const A4PX = 794;                // ancho virtual del clon
+        const SCALE = 2;                 // nitidez canvas
+        const MARGIN_MM = 6;             // márgenes PDF
+        const WINDOW_W = 1366;           // viewport del clon (desktop)
         const WINDOW_H = Math.max(document.body.scrollHeight, sectionEl.scrollHeight, 2000);
 
-        // --- Estilos para el DOM clonado (ajustables) ---
+        // --- Helper: sustituir inputs/select/textarea por bloques de texto legibles ---
+        const replaceFormControlsWithText = (doc) => {
+          // text/number/select -> div.export-input
+          const toBlocks = doc.querySelectorAll('input, select');
+          toBlocks.forEach(el => {
+            // ocultar elementos decorativos de tu framework
+            const val = (el.value ?? el.textContent ?? '').toString();
+            const div = doc.createElement('div');
+            div.className = 'export-input';
+            div.textContent = val;
+            el.parentNode.replaceChild(div, el);
+          });
+
+          // textareas -> div.export-area (respeta saltos)
+          doc.querySelectorAll('textarea').forEach(ta => {
+            const div = doc.createElement('div');
+            div.className = 'export-area';
+            div.textContent = ta.value || ta.textContent || '';
+            ta.parentNode.replaceChild(div, ta);
+          });
+        };
+
+        // --- Estilos aplicados SOLO al clon ---
         const applyExportStyles = (doc) => {
           const content = doc.querySelector('.content');
           if (content) {
@@ -597,8 +624,9 @@ declare(strict_types=1);
             content.style.width = A4PX + 'px';
             content.style.maxWidth = A4PX + 'px';
             content.style.boxSizing = 'border-box';
-            content.style.overflow = 'visible';
+            content.style.background = '#fff';
           }
+
           const card = doc.querySelector('.protocolo-card');
           if (card) {
             card.style.boxShadow = 'none';
@@ -608,46 +636,57 @@ declare(strict_types=1);
             card.style.padding = '12px';
             card.style.width = '100%';
             card.style.maxWidth = A4PX + 'px';
-            card.style.boxSizing = 'border-box';
-            card.style.overflow = 'visible';
           }
-          // fuera del PDF
+
           const footer = doc.querySelector('.protocolo-footer');
           if (footer) footer.style.display = 'none';
 
-          // asegurar que el contenido esté visible (solo la parte interna, no el contenedor)
           const cont = doc.querySelector('#protocolo-contenido');
           if (cont) cont.hidden = false;
 
-          // textareas -> bloques (Permitiendo saltos de línea con pre-wrap)
-          doc.querySelectorAll('textarea').forEach(ta => {
-            const div = doc.createElement('div');
-            div.style.whiteSpace = 'pre-wrap';
-            div.style.lineHeight = '1.35';
-            div.style.minHeight = (parseInt(ta.getAttribute('rows') || '2', 10) * 18) + 'px';
-            div.textContent = ta.value || ta.textContent || '';
-            ta.parentNode.replaceChild(div, ta);
-          });
-
-          // Anchos de columnas (AJUSTADOS)
+          // Estilos específicos de exportación (tabla y “inputs”)
           const style = doc.createElement('style');
           style.textContent = `
-        .protocol-grid { grid-template-columns: 1fr 2fr !important; }
-        .grid-2 { grid-template-columns: 1fr 1fr !important; }
-        .grid-3 { grid-template-columns: repeat(3, 1fr) !important; }
-        .grid-4 { grid-template-columns: repeat(4, 1fr) !important; }
-        .tabla-wrapper { overflow: visible !important; }
-        table.data-table { table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important; }
-        /* AJUSTE DE ANCHO DE COLUMNAS DE PRODUCTOS: más espacio a Notas (5) y menos a Producto (1) y Principio Activo (2) */
-        table.data-table thead th:nth-child(1){width:20%} /* Producto: 26% -> 20% */
-        table.data-table thead th:nth-child(2){width:20%} /* Principio activo: 22% -> 20% */
-        table.data-table thead th:nth-child(3){width:15%} /* Dosis: 18% -> 15% */
-        table.data-table thead th:nth-child(4){width:10%} /* Orden mezcla: 14% -> 10% */
-        table.data-table thead th:nth-child(5){width:35%} /* Notas: 20% -> 35% */
-        th,td{word-break:break-word !important;}
-        img{max-width:100% !important; height:auto !important;}
-      `;
+            /* Forzar layout de escritorio en export */
+            .protocol-grid{grid-template-columns:1fr 2fr !important;}
+            .grid-2{grid-template-columns:1fr 1fr !important;}
+            .grid-3{grid-template-columns:repeat(3,1fr) !important;}
+            .grid-4{grid-template-columns:repeat(4,1fr) !important;}
+            .tabla-wrapper{overflow:visible !important;}
+
+            /* Pastillas homogéneas para valores exportados */
+            .export-input{
+              display:block; padding:8px 10px; border:1px solid #e5e7eb; border-radius:10px;
+              line-height:1.2; font-size:14px; background:#f8fafc; white-space:normal;
+            }
+            .export-area{
+              display:block; padding:10px; border:1px solid #e5e7eb; border-radius:10px;
+              line-height:1.35; font-size:14px; white-space:pre-wrap; background:#fff;
+              min-height:60px;
+            }
+
+            /* Tabla de Productos: columnas fijas y cortes de línea */
+            table.data-table{table-layout:fixed !important; width:100% !important; border-collapse:collapse !important;}
+            table.data-table thead th:nth-child(1){width:22%;}  /* Producto */
+            table.data-table thead th:nth-child(2){width:20%;}  /* Principio activo */
+            table.data-table thead th:nth-child(3){width:13%;}  /* Dosis */
+            table.data-table thead th:nth-child(4){width:10%; text-align:center;}  /* Orden */
+            table.data-table thead th:nth-child(5){width:35%;}  /* Notas */
+
+            table.data-table td, table.data-table th{word-break:break-word; vertical-align:top;}
+            table.data-table td:nth-child(1),
+            table.data-table td:nth-child(5){white-space:normal;}
+
+            /* Evitar superposición de Notas con Orden */
+            table.data-table td:nth-child(5){overflow-wrap:anywhere;}
+
+            /* Reducir aire visual en parámetros para consistencia */
+            #bloque-parametros .export-input{padding:6px 8px; font-size:13px;}
+          `;
           doc.head.appendChild(style);
+
+          // Reemplazar controles por bloques de texto legible
+          replaceFormControlsWithText(doc);
         };
 
         // --- Header reusable (se repite en cada hoja) ---
@@ -660,28 +699,23 @@ declare(strict_types=1);
         });
         const headerImg = headerCanvas.toDataURL('image/jpeg', 0.98);
 
-        // --- PDF y slicer (parámetros base) ---
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4'
-        });
+        // --- Crear PDF y preparar slicer ---
+        const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
         const pageW = pdf.internal.pageSize.getWidth();
         const pageH = pdf.internal.pageSize.getHeight();
-        const maxW = pageW - MARGIN_MM * 2;
-        const maxH = pageH - MARGIN_MM * 2;
+        const maxW = pageW - MARGIN_MM*2;
+        const maxH = pageH - MARGIN_MM*2;
         const headerHmm = (headerCanvas.height * maxW) / headerCanvas.width;
         const contentMaxH = Math.max(10, maxH - headerHmm - 2);
 
-        const addCanvasMultipage = (canvas, firstPage = true) => {
+        const addCanvasMultipage = (canvas, firstPage=true) => {
           const imgWpx = canvas.width;
           const imgHpx = canvas.height;
           const pagePixelHeight = Math.floor((contentMaxH * imgWpx) / maxW);
 
           const tmp = document.createElement('canvas');
           const ctx = tmp.getContext('2d');
-          let sY = 0,
-            isFirst = firstPage;
+          let sY = 0, isFirst = firstPage;
 
           while (sY < imgHpx) {
             const sliceH = Math.min(pagePixelHeight, imgHpx - sY);
@@ -691,77 +725,56 @@ declare(strict_types=1);
             ctx.drawImage(canvas, 0, sY, imgWpx, sliceH, 0, 0, imgWpx, sliceH);
             const sliceData = tmp.toDataURL('image/jpeg', 0.98);
 
-            if (!isFirst) pdf.addPage();
+            if (!isFirst) pdf.addPage(); // agrega página ANTES de cada slice (excepto la primera)
             pdf.addImage(headerImg, 'JPEG', MARGIN_MM, MARGIN_MM, maxW, headerHmm, '', 'FAST');
             pdf.addImage(sliceData, 'JPEG', MARGIN_MM, MARGIN_MM + headerHmm + 2, maxW, (sliceH * maxW) / imgWpx, '', 'FAST');
 
             isFirst = false;
             sY += sliceH;
           }
-          return isFirst; // devuelve si fue la primera (para saber si agregar página en el siguiente bloque)
         };
 
-        // --- PARTE 1: Contenido sin Parámetros de vuelo ---
+        // --- PARTE 1: todo excepto parámetros ---
         const canvasParte1 = await html2canvas(sectionEl, {
-          backgroundColor: '#ffffff',
-          scale: SCALE,
-          useCORS: true,
-          scrollX: 0,
-          scrollY: -window.scrollY,
-          windowWidth: WINDOW_W,
-          windowHeight: WINDOW_H,
-          onclone: (doc) => {
+          backgroundColor:'#ffffff', scale:SCALE, useCORS:true,
+          scrollX:0, scrollY:-window.scrollY,
+          windowWidth:WINDOW_W, windowHeight:WINDOW_H,
+          onclone:(doc)=>{
             applyExportStyles(doc);
-            const hdr = doc.querySelector('.protocolo-header');
-            if (hdr) hdr.style.display = 'none';
-            const paramsBlock = doc.getElementById('bloque-parametros');
-            if (paramsBlock) paramsBlock.style.display = 'none'; // <-- OCULTA PARÁMETROS
+            const hdr = doc.querySelector('.protocolo-header'); if (hdr) hdr.style.display='none';
+            const paramsBlock = doc.getElementById('bloque-parametros'); if (paramsBlock) paramsBlock.style.display='none';
           }
         });
 
-        // --- PARTE 2: SOLO Parámetros de vuelo (arranca SIEMPRE en nueva hoja) ---
+        // --- PARTE 2: solo parámetros (nueva hoja asegurada por addCanvasMultipage(false)) ---
         const canvasParte2 = await html2canvas(sectionEl, {
-          backgroundColor: '#ffffff',
-          scale: SCALE,
-          useCORS: true,
-          scrollX: 0,
-          scrollY: -window.scrollY,
-          windowWidth: WINDOW_W,
-          windowHeight: WINDOW_H,
-          onclone: (doc) => {
+          backgroundColor:'#ffffff', scale:SCALE, useCORS:true,
+          scrollX:0, scrollY:-window.scrollY,
+          windowWidth:WINDOW_W, windowHeight:WINDOW_H,
+          onclone:(doc)=>{
             applyExportStyles(doc);
-            const hdr = doc.querySelector('.protocolo-header');
-            if (hdr) hdr.style.display = 'none';
+            const hdr = doc.querySelector('.protocolo-header'); if (hdr) hdr.style.display='none';
             const paramsBlock = doc.getElementById('bloque-parametros');
-            // OCULTA TODOS LOS BLOQUES HERMANOS EXCEPTO PARÁMETROS
-            doc.querySelectorAll('#protocolo-contenido > .protocolo-bloque').forEach(b => {
-              if (b !== paramsBlock) b.style.display = 'none';
-            });
+            doc.querySelectorAll('#protocolo-contenido > .protocolo-bloque').forEach(b => { if (b !== paramsBlock) b.style.display='none'; });
           }
         });
 
-        // 1) Parte 1 (sin parámetros)
-        // El primer addCanvasMultipage siempre inicia en una página nueva.
-        addCanvasMultipage(canvasParte1);
-
-        // 2) Parte 2 (solo parámetros) -> siempre inicia en nueva hoja
-        pdf.addPage();
-        addCanvasMultipage(canvasParte2, false);
+        // Añadir secciones
+        addCanvasMultipage(canvasParte1);      // arranca en la 1ª página
+        addCanvasMultipage(canvasParte2, false); // fuerza nueva página sin insertar una vacía
 
         // Numeración
         const total = pdf.getNumberOfPages();
         pdf.setFontSize(9);
         for (let i = 1; i <= total; i++) {
           pdf.setPage(i);
-          pdf.text(`Página ${i} de ${total}`, pageW - MARGIN_MM, pageH - 3, {
-            align: 'right'
-          });
+          pdf.text(`Página ${i} de ${total}`, pageW - MARGIN_MM, pageH - 3, { align: 'right' });
         }
 
-        // Descarga
+        // Nombre archivo
         const productor = (document.getElementById('pv_usuario')?.value || 'productor').trim();
         const fechaVisita = (document.getElementById('pv_fecha')?.value || 'fecha').trim();
-        const slug = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+        const slug = (t)=>t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
         pdf.save(`protocolo_${slug(productor)}_${slug(fechaVisita)}.pdf`);
 
         showAlert('success', 'PDF generado correctamente.');
@@ -769,6 +782,7 @@ declare(strict_types=1);
         showAlert('error', 'No se pudo generar el PDF: ' + (err?.message || String(err)));
       }
     }
+
 
     function updateMapsButton(lat, lng) {
       if (!btnMaps) return;
