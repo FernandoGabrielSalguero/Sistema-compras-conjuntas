@@ -247,7 +247,7 @@ declare(strict_types=1);
 
         <footer class="protocolo-footer" role="contentinfo" aria-label="Acciones del protocolo">
           <div class="form-grid grid-2" style="justify-content:end; gap:.5rem;">
-            <button type="button" id="btn-modificar" class="btn btn-primary" aria-label="Habilitar edición de protocolo">
+            <button type="button" id="btn-modificar" class="btn btn-aceptar" aria-label="Habilitar edición de protocolo">
               Modificar
             </button>
             <button type="button" id="btn-descargar" class="btn btn-info" aria-label="Descargar protocolo como imagen">
