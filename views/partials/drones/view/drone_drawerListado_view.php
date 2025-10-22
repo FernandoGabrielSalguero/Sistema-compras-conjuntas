@@ -502,7 +502,7 @@ $__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
 
                 <!-- Receta -->
                 <div id="card-receta" class="card card--ops-hide">
-                    <h2 style="color:#5b21b6;">Receta</h2>
+                    <h2 style="color:#5b21b6;">Productos a utilizar</h2>
 
                     <table class="data-table" id="tabla-receta-combinada" aria-label="Receta">
                         <thead>
