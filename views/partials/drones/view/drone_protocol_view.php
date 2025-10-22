@@ -565,67 +565,65 @@ declare(strict_types=1);
     }
 
     // ===== PDF A4 full-width, multipágina, header en todas las páginas y salto antes de "Parámetros de vuelo" =====
-    async function descargarComoPDFUnaPagina() {
-      try {
-        if (!sectionEl) {
-          showAlert('error', 'No se encontró la sección a exportar.');
-          return;
-        }
-        const {
-          jsPDF
-        } = window.jspdf;
+// ===== PDF A4 full-width con HEADER en cada página
+// 1) Parte 1: TODO menos "Parámetros de vuelo"
+// 2) Parte 2: SOLO "Parámetros de vuelo" (arranca SIEMPRE en nueva hoja) =====
+async function descargarComoPDFUnaPagina() {
+  try {
+    if (!sectionEl) { showAlert('error','No se encontró la sección a exportar.'); return; }
+    const { jsPDF } = window.jspdf;
 
-        // === Parámetros de render/export ===
-        const A4PX = 794; // ancho A4 aprox a 96dpi en DOM clonado
-        const SCALE = 2; // nitidez de html2canvas
-        const MARGIN_MM = 6; // márgenes PDF
-        const WINDOW_W = 1440; // fuerza layout desktop en clon
-        const WINDOW_H = Math.max(document.body.scrollHeight, sectionEl.scrollHeight, 2000);
+    // --- Parámetros de exportación (ajustables) ---
+    const A4PX = 794;          // Ancho del DOM clonado (A4 ~96dpi)
+    const SCALE = 2;           // Nitidez html2canvas
+    const MARGIN_MM = 6;       // Márgenes PDF
+    const WINDOW_W = 1440;     // Ancho de viewport del clon (fuerza layout desktop)
+    const WINDOW_H = Math.max(document.body.scrollHeight, sectionEl.scrollHeight, 2000);
 
-        // === Función para aplicar estilos de exportación en el DOM clonado ===
-        const applyExportStyles = (doc) => {
-          const content = doc.querySelector('.content');
-          if (content) {
-            content.style.margin = '0 auto';
-            content.style.padding = '0';
-            content.style.width = A4PX + 'px';
-            content.style.maxWidth = A4PX + 'px';
-            content.style.boxSizing = 'border-box';
-            content.style.overflow = 'visible';
-          }
-          const card = doc.querySelector('.protocolo-card');
-          if (card) {
-            card.style.boxShadow = 'none';
-            card.style.border = 'none';
-            card.style.borderRadius = '0';
-            card.style.margin = '0';
-            card.style.padding = '12px';
-            card.style.width = '100%';
-            card.style.maxWidth = A4PX + 'px';
-            card.style.boxSizing = 'border-box';
-            card.style.overflow = 'visible';
-          }
-          // no exportar footer de botones
-          const footer = doc.querySelector('.protocolo-footer');
-          if (footer) footer.style.display = 'none';
+    // --- Estilos para el DOM clonado (ajustables) ---
+    const applyExportStyles = (doc) => {
+      const content = doc.querySelector('.content');
+      if (content) {
+        content.style.margin = '0 auto';
+        content.style.padding = '0';
+        content.style.width = A4PX + 'px';
+        content.style.maxWidth = A4PX + 'px';
+        content.style.boxSizing = 'border-box';
+        content.style.overflow = 'visible';
+      }
+      const card = doc.querySelector('.protocolo-card');
+      if (card) {
+        card.style.boxShadow = 'none';
+        card.style.border = 'none';
+        card.style.borderRadius = '0';
+        card.style.margin = '0';
+        card.style.padding = '12px';
+        card.style.width = '100%';
+        card.style.maxWidth = A4PX + 'px';
+        card.style.boxSizing = 'border-box';
+        card.style.overflow = 'visible';
+      }
+      // fuera del PDF
+      const footer = doc.querySelector('.protocolo-footer');
+      if (footer) footer.style.display = 'none';
 
-          // mostrar contenido (por si estaba hidden)
-          const cont = doc.querySelector('#protocolo-contenido');
-          if (cont) cont.hidden = false;
+      // asegurar que el contenido esté visible
+      const cont = doc.querySelector('#protocolo-contenido');
+      if (cont) cont.hidden = false;
 
-          // convertir textareas a bloques (evita cortes, respeta saltos)
-          doc.querySelectorAll('textarea').forEach(ta => {
-            const div = doc.createElement('div');
-            div.style.whiteSpace = 'pre-wrap';
-            div.style.lineHeight = '1.35';
-            div.style.minHeight = (parseInt(ta.getAttribute('rows') || '2', 10) * 18) + 'px';
-            div.textContent = ta.value || ta.textContent || '';
-            ta.parentNode.replaceChild(div, ta);
-          });
+      // textareas -> bloques
+      doc.querySelectorAll('textarea').forEach(ta => {
+        const div = doc.createElement('div');
+        div.style.whiteSpace = 'pre-wrap';
+        div.style.lineHeight = '1.35';
+        div.style.minHeight = (parseInt(ta.getAttribute('rows') || '2', 10) * 18) + 'px';
+        div.textContent = ta.value || ta.textContent || '';
+        ta.parentNode.replaceChild(div, ta);
+      });
 
-          // fijar layout de tablas para evitar “bailes”
-          const style = doc.createElement('style');
-          style.textContent = `
+      // Anchos de columnas (AJUSTABLES)
+      const style = doc.createElement('style');
+      style.textContent = `
         .protocol-grid { grid-template-columns: 1fr 2fr !important; }
         .grid-2 { grid-template-columns: 1fr 1fr !important; }
         .grid-3 { grid-template-columns: repeat(3, 1fr) !important; }
@@ -640,123 +638,100 @@ declare(strict_types=1);
         th,td{word-break:break-word !important;}
         img{max-width:100% !important; height:auto !important;}
       `;
-          doc.head.appendChild(style);
-        };
+      doc.head.appendChild(style);
+    };
 
-        // === 1) Pintamos el HEADER a parte (para repetirlo en cada página) ===
-        const headerNode = sectionEl.querySelector('.protocolo-header');
-        if (!headerNode) {
-          showAlert('error', 'No se encontró el header del protocolo.');
-          return;
-        }
-        const headerCanvas = await html2canvas(headerNode, {
-          backgroundColor: '#ffffff',
-          scale: SCALE,
-          useCORS: true,
-          onclone: applyExportStyles
-        });
-        const headerImg = headerCanvas.toDataURL('image/jpeg', 0.98);
+    // --- Header reusable (se repite en cada hoja) ---
+    const headerNode = sectionEl.querySelector('.protocolo-header');
+    const headerCanvas = await html2canvas(headerNode, {
+      backgroundColor:'#ffffff', scale:SCALE, useCORS:true, onclone:applyExportStyles
+    });
+    const headerImg = headerCanvas.toDataURL('image/jpeg', 0.98);
 
-        // === 2) Renderizamos TODA la sección (sin header ni footer) ===
-        const contentCanvas = await html2canvas(sectionEl, {
-          backgroundColor: '#ffffff',
-          scale: SCALE,
-          useCORS: true,
-          scrollX: 0,
-          scrollY: -window.scrollY,
-          windowWidth: WINDOW_W,
-          windowHeight: WINDOW_H,
-          onclone: (doc) => {
-            applyExportStyles(doc);
-            // ocultar header (lo agregamos nosotros por página)
-            const hdr = doc.querySelector('.protocolo-header');
-            if (hdr) hdr.style.display = 'none';
-          }
-        });
-
-        // === 3) Armado del PDF multipágina con header repetido ===
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4'
-        });
-        const pageW = pdf.internal.pageSize.getWidth();
-        const pageH = pdf.internal.pageSize.getHeight();
-        const maxW = pageW - MARGIN_MM * 2;
-        const maxH = pageH - MARGIN_MM * 2;
-
-        // alto del header (mm) manteniendo proporción
-        const headerHmm = (headerCanvas.height * maxW) / headerCanvas.width;
-        // alto útil por página para el contenido (debajo del header)
-        const contentMaxH = Math.max(10, maxH - headerHmm - 2);
-
-        // Cortador de canvas -> varias páginas
-        const addCanvasMultipage = (canvas) => {
-          const imgWpx = canvas.width;
-          const imgHpx = canvas.height;
-          const pagePixelHeight = Math.floor((contentMaxH * imgWpx) / maxW);
-
-          const tmp = document.createElement('canvas');
-          const ctx = tmp.getContext('2d');
-
-          let sY = 0;
-          let first = true;
-          while (sY < imgHpx) {
-            const sliceH = Math.min(pagePixelHeight, imgHpx - sY);
-            tmp.width = imgWpx;
-            tmp.height = sliceH;
-
-            ctx.clearRect(0, 0, tmp.width, tmp.height);
-            ctx.drawImage(canvas, 0, sY, imgWpx, sliceH, 0, 0, imgWpx, sliceH);
-
-            const sliceData = tmp.toDataURL('image/jpeg', 0.98);
-            if (!first) pdf.addPage();
-
-            // header en cada página
-            pdf.addImage(headerImg, 'JPEG', MARGIN_MM, MARGIN_MM, maxW, headerHmm, '', 'FAST');
-
-            // contenido debajo del header
-            pdf.addImage(
-              sliceData,
-              'JPEG',
-              MARGIN_MM,
-              MARGIN_MM + headerHmm + 2,
-              maxW,
-              (sliceH * maxW) / imgWpx,
-              '',
-              'FAST'
-            );
-
-            first = false;
-            sY += sliceH;
-          }
-        };
-
-        // Añadir TODA la sección
-        addCanvasMultipage(contentCanvas);
-
-        // === 4) Numeración de páginas ===
-        const total = pdf.getNumberOfPages();
-        pdf.setFontSize(9);
-        for (let i = 1; i <= total; i++) {
-          pdf.setPage(i);
-          pdf.text(`Página ${i} de ${total}`, pageW - MARGIN_MM, pageH - 3, {
-            align: 'right'
-          });
-        }
-
-        // === 5) Descarga con nombre amigable ===
-        const productor = (document.getElementById('pv_usuario')?.value || 'productor').trim();
-        const fechaVisita = (document.getElementById('pv_fecha')?.value || 'fecha').trim();
-        const slug = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9_-]/g, '_');
-        pdf.save(`protocolo_${slug(productor)}_${slug(fechaVisita)}.pdf`);
-
-        showAlert('success', 'PDF generado correctamente.');
-      } catch (err) {
-        showAlert('error', 'No se pudo generar el PDF: ' + (err?.message || String(err)));
+    // --- PARTE 1: toda la sección sin header y SIN parámetros ---
+    const canvasParte1 = await html2canvas(sectionEl, {
+      backgroundColor:'#ffffff', scale:SCALE, useCORS:true,
+      scrollX:0, scrollY:-window.scrollY, windowWidth:WINDOW_W, windowHeight:WINDOW_H,
+      onclone:(doc)=>{
+        applyExportStyles(doc);
+        const hdr = doc.querySelector('.protocolo-header');
+        if (hdr) hdr.style.display = 'none';
+        const paramsBlock = doc.getElementById('bloque-parametros');
+        if (paramsBlock) paramsBlock.style.display = 'none'; // <-- fuerza salto antes de parámetros
       }
-    }
+    });
 
+    // --- PARTE 2: SOLO parámetros (arranca en nueva hoja siempre) ---
+    const canvasParte2 = await html2canvas(sectionEl, {
+      backgroundColor:'#ffffff', scale:SCALE, useCORS:true,
+      scrollX:0, scrollY:-window.scrollY, windowWidth:WINDOW_W, windowHeight:WINDOW_H,
+      onclone:(doc)=>{
+        applyExportStyles(doc);
+        const hdr = doc.querySelector('.protocolo-header');
+        if (hdr) hdr.style.display = 'none';
+        const paramsBlock = doc.getElementById('bloque-parametros');
+        // oculto todos los bloques hermanos excepto parámetros
+        doc.querySelectorAll('#protocolo-contenido > .protocolo-bloque').forEach(b=>{
+          if (b !== paramsBlock) b.style.display = 'none';
+        });
+      }
+    });
+
+    // --- PDF y slicer ---
+    const pdf = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const maxW = pageW - MARGIN_MM*2;
+    const maxH = pageH - MARGIN_MM*2;
+    const headerHmm = (headerCanvas.height * maxW) / headerCanvas.width;
+    const contentMaxH = Math.max(10, maxH - headerHmm - 2);
+
+    const addCanvasMultipage = (canvas) => {
+      const imgWpx = canvas.width;
+      const imgHpx = canvas.height;
+      const pagePixelHeight = Math.floor((contentMaxH * imgWpx) / maxW);
+
+      const tmp = document.createElement('canvas');
+      const ctx = tmp.getContext('2d');
+      let sY = 0, first = true;
+
+      while (sY < imgHpx) {
+        const sliceH = Math.min(pagePixelHeight, imgHpx - sY);
+        tmp.width = imgWpx; tmp.height = sliceH;
+        ctx.clearRect(0, 0, tmp.width, tmp.height);
+        ctx.drawImage(canvas, 0, sY, imgWpx, sliceH, 0, 0, imgWpx, sliceH);
+        const sliceData = tmp.toDataURL('image/jpeg', 0.98);
+
+        if (!first) pdf.addPage();
+        pdf.addImage(headerImg, 'JPEG', MARGIN_MM, MARGIN_MM, maxW, headerHmm, '', 'FAST');
+        pdf.addImage(sliceData, 'JPEG', MARGIN_MM, MARGIN_MM + headerHmm + 2, maxW, (sliceH * maxW) / imgWpx, '', 'FAST');
+
+        first = false;
+        sY += sliceH;
+      }
+    };
+
+    // 1) Parte 1 (sin parámetros)
+    addCanvasMultipage(canvasParte1);
+    // 2) Parte 2 (solo parámetros) -> siempre inicia en nueva hoja
+    addCanvasMultipage(canvasParte2);
+
+    // Numeración
+    const total = pdf.getNumberOfPages();
+    pdf.setFontSize(9);
+    for (let i=1;i<=total;i++){ pdf.setPage(i); pdf.text(`Página ${i} de ${total}`, pageW - MARGIN_MM, pageH - 3, {align:'right'}); }
+
+    // Descarga
+    const productor = (document.getElementById('pv_usuario')?.value || 'productor').trim();
+    const fechaVisita = (document.getElementById('pv_fecha')?.value || 'fecha').trim();
+    const slug = (t)=>t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
+    pdf.save(`protocolo_${slug(productor)}_${slug(fechaVisita)}.pdf`);
+
+    showAlert('success','PDF generado correctamente.');
+  } catch (err) {
+    showAlert('error','No se pudo generar el PDF: ' + (err?.message || String(err)));
+  }
+}
 
     function updateMapsButton(lat, lng) {
       if (!btnMaps) return;
