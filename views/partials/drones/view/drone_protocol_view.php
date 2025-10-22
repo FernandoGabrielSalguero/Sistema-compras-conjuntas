@@ -564,13 +564,12 @@ declare(strict_types=1);
       });
     }
 
-    // ===== PDF A4 full-width, multipágina, header en todas las páginas y salto antes de "Parámetros de vuelo" =====
-// ===== PDF A4 full-width con HEADER en cada página
-// 1) Parte 1: TODO menos "Parámetros de vuelo"
-// 2) Parte 2: SOLO "Parámetros de vuelo" (arranca SIEMPRE en nueva hoja) =====
+// ===== PDF A4 full-width, multipágina, con HEADER en cada página
 async function descargarComoPDFUnaPagina() {
   try {
     if (!sectionEl) { showAlert('error','No se encontró la sección a exportar.'); return; }
+    if (contenido.hidden) { showAlert('warning','Selecciona un protocolo para descargar.'); return; }
+
     const { jsPDF } = window.jspdf;
 
     // --- Parámetros de exportación (ajustables) ---
@@ -607,7 +606,7 @@ async function descargarComoPDFUnaPagina() {
       const footer = doc.querySelector('.protocolo-footer');
       if (footer) footer.style.display = 'none';
 
-      // asegurar que el contenido esté visible
+      // asegurar que el contenido esté visible (solo la parte interna, no el contenedor)
       const cont = doc.querySelector('#protocolo-contenido');
       if (cont) cont.hidden = false;
 
@@ -648,32 +647,14 @@ async function descargarComoPDFUnaPagina() {
     });
     const headerImg = headerCanvas.toDataURL('image/jpeg', 0.98);
 
-    // --- PARTE 1: toda la sección sin header y SIN parámetros ---
-    const canvasParte1 = await html2canvas(sectionEl, {
+    // --- Contenido completo: toda la sección SIN el header ---
+    const contentCanvas = await html2canvas(sectionEl, {
       backgroundColor:'#ffffff', scale:SCALE, useCORS:true,
       scrollX:0, scrollY:-window.scrollY, windowWidth:WINDOW_W, windowHeight:WINDOW_H,
       onclone:(doc)=>{
         applyExportStyles(doc);
         const hdr = doc.querySelector('.protocolo-header');
-        if (hdr) hdr.style.display = 'none';
-        const paramsBlock = doc.getElementById('bloque-parametros');
-        if (paramsBlock) paramsBlock.style.display = 'none'; // <-- fuerza salto antes de parámetros
-      }
-    });
-
-    // --- PARTE 2: SOLO parámetros (arranca en nueva hoja siempre) ---
-    const canvasParte2 = await html2canvas(sectionEl, {
-      backgroundColor:'#ffffff', scale:SCALE, useCORS:true,
-      scrollX:0, scrollY:-window.scrollY, windowWidth:WINDOW_W, windowHeight:WINDOW_H,
-      onclone:(doc)=>{
-        applyExportStyles(doc);
-        const hdr = doc.querySelector('.protocolo-header');
-        if (hdr) hdr.style.display = 'none';
-        const paramsBlock = doc.getElementById('bloque-parametros');
-        // oculto todos los bloques hermanos excepto parámetros
-        doc.querySelectorAll('#protocolo-contenido > .protocolo-bloque').forEach(b=>{
-          if (b !== paramsBlock) b.style.display = 'none';
-        });
+        if (hdr) hdr.style.display = 'none'; // oculto el header para capturar solo el contenido
       }
     });
 
@@ -684,11 +665,12 @@ async function descargarComoPDFUnaPagina() {
     const maxW = pageW - MARGIN_MM*2;
     const maxH = pageH - MARGIN_MM*2;
     const headerHmm = (headerCanvas.height * maxW) / headerCanvas.width;
-    const contentMaxH = Math.max(10, maxH - headerHmm - 2);
+    const contentMaxH = Math.max(10, maxH - headerHmm - 2); // Alto máximo del contenido en la página
 
     const addCanvasMultipage = (canvas) => {
       const imgWpx = canvas.width;
       const imgHpx = canvas.height;
+      // Altura en píxeles que cabe en la sección de contenido de la página PDF
       const pagePixelHeight = Math.floor((contentMaxH * imgWpx) / maxW);
 
       const tmp = document.createElement('canvas');
@@ -703,7 +685,9 @@ async function descargarComoPDFUnaPagina() {
         const sliceData = tmp.toDataURL('image/jpeg', 0.98);
 
         if (!first) pdf.addPage();
+        // Dibujo el header en cada página
         pdf.addImage(headerImg, 'JPEG', MARGIN_MM, MARGIN_MM, maxW, headerHmm, '', 'FAST');
+        // Dibujo la porción de contenido
         pdf.addImage(sliceData, 'JPEG', MARGIN_MM, MARGIN_MM + headerHmm + 2, maxW, (sliceH * maxW) / imgWpx, '', 'FAST');
 
         first = false;
@@ -711,10 +695,8 @@ async function descargarComoPDFUnaPagina() {
       }
     };
 
-    // 1) Parte 1 (sin parámetros)
-    addCanvasMultipage(canvasParte1);
-    // 2) Parte 2 (solo parámetros) -> siempre inicia en nueva hoja
-    addCanvasMultipage(canvasParte2);
+    // Agregar todo el contenido, permitiendo la paginación automática
+    addCanvasMultipage(contentCanvas);
 
     // Numeración
     const total = pdf.getNumberOfPages();
