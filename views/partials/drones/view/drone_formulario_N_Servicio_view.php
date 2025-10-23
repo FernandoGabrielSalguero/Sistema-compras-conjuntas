@@ -257,14 +257,6 @@
           </div>
         </div>
 
-        <!-- Correos a enviar (solo lectura) -->
-        <div class="input-group full-span">
-          <label for="correos_a_enviar">Correos a enviar</label>
-          <div class="input-icon input-icon-mail">
-            <input type="text" id="correos_a_enviar" name="correos_a_enviar" readonly />
-          </div>
-        </div>
-
         <!-- ===== Productos disponibles (chips) ===== -->
         <div class="card full-span costos-full" id="card-productos" aria-live="polite" hidden>
           <h2>Productos disponibles para tratar patología</h2>
@@ -326,6 +318,13 @@
     <h3>Confirmar solicitud</h3>
     <div id="resumen-detalle" class="card" style="max-height:40vh; overflow:auto;">
       <p>Estás por solicitar el servicio de pulverización con drones. Esta acción solo puede cancelarse por el administrador.</p>
+
+      <!-- Correos a enviar en el modal -->
+      <div id="correos-a-enviar" class="card" style="background:#f9fafb;margin-top:.5rem;">
+        <h4 style="margin:.5rem 0 .25rem 0;">Correos a enviar</h4>
+        <div><strong>Productor:</strong> —</div>
+        <div><strong>Cooperativa:</strong> —</div>
+      </div>
     </div>
     <div class="form-buttons">
       <button class="btn btn-aceptar" id="btn-confirmar">Confirmar y guardar</button>
@@ -333,6 +332,7 @@
     </div>
   </div>
 </div>
+
 
 <style>
   /* Fuerza ocultamiento para elementos con atributo hidden */
@@ -559,7 +559,7 @@
       };
     };
 
-// ===== Correos (productor/cooperativa) =====
+    // ===== Correos (productor/cooperativa) =====
     async function getCorreoByIdReal(idReal) {
       if (!idReal) return null;
       try {
@@ -570,6 +570,31 @@
       } catch (e) {
         console.error('[CORREO] Error obteniendo correo de', idReal, e);
         return null;
+      }
+    }
+
+    async function refreshCorreos() {
+      const productorId = (hidPersona.value || '').trim();
+      const coopId = (selCoop.value || '').trim();
+
+      const [correoProd, correoCoop] = await Promise.all([
+        getCorreoByIdReal(productorId),
+        getCorreoByIdReal(coopId)
+      ]);
+
+      // Logs requeridos
+      console.log('Correo productor:', correoProd ?? 'null');
+      console.log('Correo cooperativa:', correoCoop ?? 'null');
+
+      // Renderizar en el modal
+      if (modalCorreos) {
+        const valProd = correoProd ?? 'null';
+        const valCoop = correoCoop ?? 'null';
+        modalCorreos.innerHTML = `
+          <h4 style="margin:.5rem 0 .25rem 0;">Correos a enviar</h4>
+          <div><strong>Productor:</strong> ${valProd}</div>
+          <div><strong>Cooperativa:</strong> ${valCoop}</div>
+        `;
       }
     }
 
@@ -655,7 +680,7 @@
     const inpCalle = $('#form_nuevo_servicio_calle');
     const inpNum = $('#form_nuevo_servicio_numero');
     const inpObs = $('#form_nuevo_servicio_observaciones');
-    const inpCorreos = $('#correos_a_enviar');
+    const modalCorreos = $('#correos-a-enviar');
 
     // ===== Estado =====
     let costoBaseHa = 0;
@@ -1136,6 +1161,8 @@
     btnSolicitar.addEventListener('click', (e) => {
       e.preventDefault();
       if (!validateBeforeModal()) return;
+      // Actualizar correos antes de abrir el modal
+      refreshCorreos();
       modal.classList.remove('hidden');
       modal.setAttribute('aria-hidden', 'false');
     });
