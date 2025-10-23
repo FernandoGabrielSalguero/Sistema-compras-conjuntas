@@ -598,28 +598,6 @@
       }
     }
 
-
-    async function refreshCorreos() {
-      const productorId = (hidPersona.value || '').trim();
-      const coopId = (selCoop.value || '').trim();
-
-      const [correoProd, correoCoop] = await Promise.all([
-        getCorreoByIdReal(productorId),
-        getCorreoByIdReal(coopId)
-      ]);
-
-      // Logs requeridos
-      console.log('Correo productor:', correoProd ?? 'null');
-      console.log('Correo cooperativa:', correoCoop ?? 'null');
-
-      // Mostrar en el campo "Correos a enviar"
-      if (inpCorreos) {
-        const valProd = correoProd ?? 'null';
-        const valCoop = correoCoop ?? 'null';
-        inpCorreos.value = `Productor: ${valProd} / Cooperativa: ${valCoop}`;
-      }
-    }
-
     const fetchJson = async (url) => {
       const r = await fetch(url, {
         credentials: 'same-origin'
