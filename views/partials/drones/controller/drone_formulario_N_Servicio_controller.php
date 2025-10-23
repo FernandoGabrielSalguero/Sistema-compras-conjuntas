@@ -68,7 +68,9 @@ try {
                 break;
             case 'correo_por_id_real':
                 $idReal = trim((string)($_GET['id_real'] ?? ''));
-                $resp($model->correoInfoByIdReal($idReal)); // devuelve string o null como data
+                // IMPORTANTE: $resp tipa el primer parámetro como array. Envolvemos en ['correo'=>...]
+                $correo = $model->correoInfoByIdReal($idReal); // string|null
+                $resp(['correo' => $correo]);
                 break;
             default:
                 $resp(['message' => 'pong']);

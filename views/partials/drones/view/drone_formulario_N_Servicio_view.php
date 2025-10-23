@@ -559,12 +559,13 @@
       };
     };
 
-        // ===== Correos (productor/cooperativa) =====
+// ===== Correos (productor/cooperativa) =====
     async function getCorreoByIdReal(idReal) {
       if (!idReal) return null;
       try {
-        const correo = await fetchJson(`${CTRL_URL}?action=correo_por_id_real&id_real=${encodeURIComponent(idReal)}`);
-        // Normalizamos: si viene vacío => null
+        const data = await fetchJson(`${CTRL_URL}?action=correo_por_id_real&id_real=${encodeURIComponent(idReal)}`);
+        // El controller retorna { ok:true, data:{ correo: string|null } }
+        const correo = (data && typeof data === 'object') ? data.correo : null;
         return (correo && String(correo).trim() !== '') ? String(correo).trim() : null;
       } catch (e) {
         console.error('[CORREO] Error obteniendo correo de', idReal, e);

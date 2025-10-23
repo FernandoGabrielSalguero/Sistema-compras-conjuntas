@@ -396,7 +396,6 @@ class DroneFormularioNservicioModel
             return null;
         }
 
-        // Obtenemos el id interno y luego el correo en usuarios_info
         $sql = "SELECT ui.correo
                   FROM usuarios u
              LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
