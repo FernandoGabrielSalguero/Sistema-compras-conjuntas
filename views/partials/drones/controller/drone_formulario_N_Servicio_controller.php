@@ -66,6 +66,10 @@ try {
             case 'rangos':
                 $resp($model->rangos());
                 break;
+            case 'correo_por_id_real':
+                $idReal = trim((string)($_GET['id_real'] ?? ''));
+                $resp($model->correoInfoByIdReal($idReal)); // devuelve string o null como data
+                break;
             default:
                 $resp(['message' => 'pong']);
                 break;

@@ -360,4 +360,58 @@ class DroneFormularioNservicioModel
         $n = $st->fetchColumn();
         return $n ? (string)$n : '';
     }
+
+        /** Devuelve email del usuario por id_real (tolera diferentes nombres de campo) */
+    public function emailByIdReal(string $idReal): ?string
+    {
+        if ($idReal === '') return null;
+        $sql = "SELECT COALESCE(NULLIF(TRIM(email),''), NULLIF(TRIM(correo),''), NULLIF(TRIM(mail),'')) AS email
+                  FROM usuarios
+                 WHERE id_real = ?
+                 LIMIT 1";
+        $st = $this->pdo->prepare($sql);
+        $st->execute([$idReal]);
+        $mail = $st->fetchColumn();
+        return $mail ? (string)$mail : null;
+    }
+
+    /** Obtiene el nombre visible del usuario (para el HTML del correo) */
+    public function nombreByIdReal(string $idReal): ?string
+    {
+        if ($idReal === '') return null;
+        $sql = "SELECT usuario FROM usuarios WHERE id_real = ? LIMIT 1";
+        $st  = $this->pdo->prepare($sql);
+        $st->execute([$idReal]);
+        $v = $st->fetchColumn();
+        return $v ? (string)$v : null;
+    }
+
+        /**
+     * Devuelve el correo desde usuarios_info.correo por id_real de usuarios.
+     * Si no existe o está vacío, retorna null.
+     */
+    public function correoInfoByIdReal(string $idReal): ?string
+    {
+        if ($idReal === '') {
+            return null;
+        }
+
+        // Obtenemos el id interno y luego el correo en usuarios_info
+        $sql = "SELECT ui.correo
+                  FROM usuarios u
+             LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+                 WHERE u.id_real = ?
+                 LIMIT 1";
+        $st = $this->pdo->prepare($sql);
+        $st->execute([$idReal]);
+        $correo = $st->fetchColumn();
+
+        if ($correo === false) {
+            return null;
+        }
+
+        $correo = trim((string)$correo);
+        return ($correo !== '') ? $correo : null;
+    }
+
 }

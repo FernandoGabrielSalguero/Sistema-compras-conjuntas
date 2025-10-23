@@ -257,6 +257,14 @@
           </div>
         </div>
 
+        <!-- Correos a enviar (solo lectura) -->
+        <div class="input-group full-span">
+          <label for="correos_a_enviar">Correos a enviar</label>
+          <div class="input-icon input-icon-mail">
+            <input type="text" id="correos_a_enviar" name="correos_a_enviar" readonly />
+          </div>
+        </div>
+
         <!-- ===== Productos disponibles (chips) ===== -->
         <div class="card full-span costos-full" id="card-productos" aria-live="polite" hidden>
           <h2>Productos disponibles para tratar patología</h2>
@@ -551,6 +559,40 @@
       };
     };
 
+        // ===== Correos (productor/cooperativa) =====
+    async function getCorreoByIdReal(idReal) {
+      if (!idReal) return null;
+      try {
+        const correo = await fetchJson(`${CTRL_URL}?action=correo_por_id_real&id_real=${encodeURIComponent(idReal)}`);
+        // Normalizamos: si viene vacío => null
+        return (correo && String(correo).trim() !== '') ? String(correo).trim() : null;
+      } catch (e) {
+        console.error('[CORREO] Error obteniendo correo de', idReal, e);
+        return null;
+      }
+    }
+
+    async function refreshCorreos() {
+      const productorId = (hidPersona.value || '').trim();
+      const coopId = (selCoop.value || '').trim();
+
+      const [correoProd, correoCoop] = await Promise.all([
+        getCorreoByIdReal(productorId),
+        getCorreoByIdReal(coopId)
+      ]);
+
+      // Logs requeridos
+      console.log('Correo productor:', correoProd ?? 'null');
+      console.log('Correo cooperativa:', correoCoop ?? 'null');
+
+      // Mostrar en el campo "Correos a enviar"
+      if (inpCorreos) {
+        const valProd = correoProd ?? 'null';
+        const valCoop = correoCoop ?? 'null';
+        inpCorreos.value = `Productor: ${valProd} / Cooperativa: ${valCoop}`;
+      }
+    }
+
     const fetchJson = async (url) => {
       const r = await fetch(url, {
         credentials: 'same-origin'
@@ -612,6 +654,7 @@
     const inpCalle = $('#form_nuevo_servicio_calle');
     const inpNum = $('#form_nuevo_servicio_numero');
     const inpObs = $('#form_nuevo_servicio_observaciones');
+    const inpCorreos = $('#correos_a_enviar');
 
     // ===== Estado =====
     let costoBaseHa = 0;
@@ -658,6 +701,7 @@
         hidPersona.value = it.value;
         listPersona.hidden = true;
         inpPersona.setAttribute('aria-expanded', 'false');
+        refreshCorreos();
       };
       const search = debounce(async () => {
         const q = inpPersona.value.trim();
@@ -736,7 +780,8 @@
       }
     }
     selPago.addEventListener('change', () => grupoCooperativaShow(parseInt(selPago.value || '0', 10) === 6));
-
+    // Actualiza correos cuando cambia la cooperativa seleccionada
+    selCoop.addEventListener('change', refreshCorreos);
 
     // ===== Productos por patología (chips) =====
     const ProductosState = {
@@ -848,10 +893,6 @@
       console.log('[PRODUCTOS][ARRAY]', productos);
       recalcCostos();
     }
-
-
-
-
 
     // ===== Costos =====
     const num = (n) => Number.isFinite(Number(n)) ? Number(n) : 0;
@@ -1120,6 +1161,7 @@
         selQuincena.value = '';
         setSelectedMotivos([]);
         recalcCostos();
+        if (inpCorreos) inpCorreos.value = '';
       } catch (err) {
         console.log(err);
         showAlert('error', `Error: ${err.message}`);
@@ -1194,6 +1236,8 @@
       grupoCooperativaShow(false);
       await loadProductosChips([]);
       recalcCostos();
+      // Inicializa visualización de correos (puede mostrar null/null hasta seleccionar)
+      await refreshCorreos();
     })();
 
   })();
