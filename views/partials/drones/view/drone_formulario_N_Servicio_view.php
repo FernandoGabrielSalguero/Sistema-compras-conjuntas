@@ -573,7 +573,7 @@
       }
     }
 
-    async function refreshCorreos() {
+        async function refreshCorreos() {
       const productorId = (hidPersona.value || '').trim();
       const coopId = (selCoop.value || '').trim();
 
@@ -597,6 +597,7 @@
         `;
       }
     }
+
 
     async function refreshCorreos() {
       const productorId = (hidPersona.value || '').trim();
@@ -1182,14 +1183,22 @@
         const payload = buildPayload(); // se asume función existente en tu base
         const data = await postJson(CTRL_URL, payload);
         const newId = (data && typeof data.id !== 'undefined') ? String(data.id) : '—';
-        showAlert('success', `Solicitud creada. ID: ${newId}`);
+                showAlert('success', `Solicitud creada. ID: ${newId}`);
         closeModal();
         form.reset();
         grupoCooperativaShow(false);
         selQuincena.value = '';
         setSelectedMotivos([]);
         recalcCostos();
-        if (inpCorreos) inpCorreos.value = '';
+        // Reset visual del bloque de correos en el modal
+        if (modalCorreos) {
+          modalCorreos.innerHTML = `
+            <h4 style="margin:.5rem 0 .25rem 0;">Correos a enviar</h4>
+            <div><strong>Productor:</strong> —</div>
+            <div><strong>Cooperativa:</strong> —</div>
+          `;
+        }
+
       } catch (err) {
         console.log(err);
         showAlert('error', `Error: ${err.message}`);
