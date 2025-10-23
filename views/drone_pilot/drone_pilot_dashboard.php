@@ -222,6 +222,35 @@ $sesionDebug = [
             align-items: center;
             gap: .25rem;
             background: #fff;
+            position: relative;
+            /* ← necesario para botón X */
+            overflow: hidden;
+            /* ← recorta el botón si hiciera overflow */
+        }
+
+        /* Botón rojo de eliminar en miniaturas */
+        .thumb-remove {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 26px;
+            height: 26px;
+            line-height: 24px;
+            border-radius: 999px;
+            border: 2px solid #fff;
+            background: #ef4444;
+            /* rojo */
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .2);
+            user-select: none;
+        }
+
+        .thumb-remove:active {
+            transform: scale(.96);
         }
 
         .preview-item img {
@@ -830,18 +859,20 @@ $sesionDebug = [
             mediaList.forEach(m => {
                 const item = document.createElement('div');
                 item.className = 'preview-item';
+                item.dataset.mediaId = String(m.id); // ← id de DB
                 const url = '../../' + m.ruta; // ajustá el prefijo si tu path público difiere
                 const etiqueta = (m.tipo || '').replace('_', ' ');
                 item.innerHTML = `
-    <a href="${url}" target="_blank" rel="noopener">
-        <img src="${url}" alt="${etiqueta}">
-    </a>
-    <div class="meta"><span class="badge-tipo">${etiqueta}</span></div>
-`;
+            <button class="thumb-remove" data-media-id="${m.id}" title="Eliminar">×</button>
+            <a href="${url}" target="_blank" rel="noopener">
+                <img src="${url}" alt="${etiqueta}">
+            </a>
+            <div class="meta"><span class="badge-tipo">${etiqueta}</span></div>
+        `;
                 cont.appendChild(item);
-
             });
         }
+
 
         // (Opcional) Normalizadores por si la API devolviera formatos no compatibles con <input type="date/time">
         function toDateInput(val) {
@@ -907,8 +938,12 @@ $sesionDebug = [
                 }
 
 
+                // Guarda el id de reporte (si existe) por si hiciera falta en futuras acciones
+                const contPrev = document.getElementById('preview-fotos-existentes');
+                if (contPrev) contPrev.dataset.reporteId = rep ? String(rep.id) : '';
+
                 renderMediaExistente(media);
-                toggleFirmaGroupsByMedia(media);
+                toggleFirmaGroupsByMedia(media)
 
                 // Cargar receta editable
                 try {
@@ -1122,23 +1157,80 @@ $sesionDebug = [
             return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
 
+        function fileKey(f) {
+            return `${f.name}::${f.size}::${f.lastModified}`;
+        }
+
         function renderPreviews(files) {
             previewFotos.innerHTML = '';
             if (!files || !files.length) return;
 
             Array.from(files).forEach(f => {
                 const url = URL.createObjectURL(f);
+                const key = fileKey(f);
                 const item = document.createElement('div');
                 item.className = 'preview-item';
+                item.dataset.fileKey = key;
                 item.innerHTML = `
+            <button class="thumb-remove" data-file-key="${key}" title="Eliminar">×</button>
             <img src="${url}" alt="${f.name}">
             <div class="meta">${f.name}<br>${bytesToSize(f.size)}</div>
         `;
                 previewFotos.appendChild(item);
-                // Liberar URL cuando la imagen cargue
                 item.querySelector('img').onload = () => URL.revokeObjectURL(url);
             });
         }
+
+        /** Elimina un archivo del input[file] por su key (name+size+lastModified) */
+        function removeFileFromInputByKey(input, key) {
+            const files = Array.from(input.files || []);
+            const dt = new DataTransfer();
+            files.forEach(f => {
+                if (fileKey(f) !== key) dt.items.add(f);
+            });
+            input.files = dt.files;
+        }
+
+        /** Delegación: eliminar nuevas imágenes seleccionadas (aún sin subir) */
+        previewFotos?.addEventListener('click', (e) => {
+            const btn = e.target.closest('.thumb-remove[data-file-key]');
+            if (!btn) return;
+            const key = btn.getAttribute('data-file-key');
+            removeFileFromInputByKey(inputFotos, key);
+            btn.closest('.preview-item')?.remove();
+        });
+
+        /** Delegación: eliminar adjuntos existentes (DB+archivo) */
+        document.getElementById('preview-fotos-existentes')?.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.thumb-remove[data-media-id]');
+            if (!btn) return;
+
+            const mediaId = btn.getAttribute('data-media-id');
+            const sid = document.getElementById('reporte_solicitud_id')?.value;
+            if (!sid || !mediaId) return;
+
+            try {
+                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        action: 'eliminar_media',
+                        solicitud_id: sid,
+                        media_id: mediaId
+                    })
+                });
+                const js = await res.json();
+                if (!res.ok || !js.ok) throw new Error(js.message || 'Error API');
+                btn.closest('.preview-item')?.remove();
+                showAlert?.('success', 'Imagen eliminada.');
+            } catch (err) {
+                console.error(err);
+                showAlert?.('error', 'No se pudo eliminar la imagen.');
+            }
+        });
 
         inputFotos?.addEventListener('change', (e) => {
             const files = Array.from(e.target.files || []);

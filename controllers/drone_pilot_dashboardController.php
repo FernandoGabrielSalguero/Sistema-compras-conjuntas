@@ -114,6 +114,35 @@ try {
             jsonResponse(true, null, 'Producto agregado a la receta');
         }
 
+        if ($action === 'eliminar_media') {
+            $sid = (int)($_POST['solicitud_id'] ?? 0);
+            $mid = (int)($_POST['media_id'] ?? 0);
+            if ($sid <= 0 || $mid <= 0) jsonResponse(false, null, 'Parámetros inválidos.', 400);
+
+            // Validar pertenencia del piloto a la solicitud
+            $sol = $model->getSolicitudDetalle($sid, (int)$usuarioId);
+            if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
+
+            // Traer media y validar que corresponda a esta solicitud
+            $media = $model->getMediaById($mid);
+            if (!$media) jsonResponse(false, null, 'Adjunto inexistente.', 404);
+
+            $sidFromReporte = $model->getSolicitudIdByReporte((int)$media['reporte_id']);
+            if ($sidFromReporte !== $sid) jsonResponse(false, null, 'La imagen no pertenece a esta solicitud.', 403);
+
+            // Eliminar archivo físico si existe
+            $rutaPublica = $media['ruta']; // p.ej. 'uploads/ReporteDrones/{sid}/foto_xxx.jpg'
+            $rutaFs = realpath(__DIR__ . '/../') . DIRECTORY_SEPARATOR . $rutaPublica;
+            if (is_file($rutaFs)) {
+                @unlink($rutaFs);
+            }
+
+            // Eliminar registro
+            $model->deleteMediaById($mid);
+
+            jsonResponse(true, null, 'Imagen eliminada.');
+        }
+
         if ($action === 'crear_reporte') {
             $sid = (int)($_POST['solicitud_id'] ?? 0);
             if ($sid <= 0) jsonResponse(false, null, 'Solicitud inválida.', 400);

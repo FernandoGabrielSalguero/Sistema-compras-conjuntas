@@ -182,15 +182,49 @@ class DronePilotDashboardModel
     /** Media asociada a un reporte (fotos y firmas) */
     public function getMediaByReporte(int $reporteId): array
     {
-        $sql = "SELECT tipo, ruta
-            FROM drones_solicitud_reporte_media
-            WHERE reporte_id = :rid
-            ORDER BY created_at ASC, id ASC";
+        $sql = "SELECT id, tipo, ruta
+        FROM drones_solicitud_reporte_media
+        WHERE reporte_id = :rid
+        ORDER BY created_at ASC, id ASC";
         $st = $this->pdo->prepare($sql);
         $st->execute([':rid' => $reporteId]);
         return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
+    /** Obtiene una media por id */
+    public function getMediaById(int $mediaId): ?array
+    {
+        $sql = "SELECT id, reporte_id, tipo, ruta
+            FROM drones_solicitud_reporte_media
+            WHERE id = :mid
+            LIMIT 1";
+        $st = $this->pdo->prepare($sql);
+        $st->execute([':mid' => $mediaId]);
+        $row = $st->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    /** Dado un reporte_id devuelve su solicitud_id */
+    public function getSolicitudIdByReporte(int $reporteId): ?int
+    {
+        $sql = "SELECT solicitud_id
+            FROM drones_solicitud_Reporte
+            WHERE id = :rid
+            LIMIT 1";
+        $st = $this->pdo->prepare($sql);
+        $st->execute([':rid' => $reporteId]);
+        $sid = $st->fetchColumn();
+        return $sid ? (int)$sid : null;
+    }
+
+    /** Elimina el registro de media por id */
+    public function deleteMediaById(int $mediaId): void
+    {
+        $sql = "DELETE FROM drones_solicitud_reporte_media
+            WHERE id = :mid";
+        $st = $this->pdo->prepare($sql);
+        $st->execute([':mid' => $mediaId]);
+    }
 
     /** Guarda registros de media (foto/firma) */
     public function guardarMedia(int $reporteId, string $tipo, string $ruta): void
