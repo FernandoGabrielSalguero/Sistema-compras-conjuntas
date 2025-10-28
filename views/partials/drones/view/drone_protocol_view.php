@@ -131,8 +131,8 @@ declare(strict_types=1);
               </div>
             </div>
 
-            <h3 style="color: #5b21b6;">Datos de Geolocalización</h3>
-            <div class="grid-4">
+                        <h3 id="geo-title" style="color: #5b21b6;">Datos de Geolocalización</h3>
+            <div id="bloque-geo" class="grid-4">
               <div class="input-group">
                 <label for="pv_lat">Lat</label>
                 <div class="input-icon input-icon-gps">
@@ -146,17 +146,10 @@ declare(strict_types=1);
                 </div>
               </div>
               <div class="input-group">
-                <label for="pv_usuario">Productor</label>
-                <div class="input-icon input-icon-user">
-                  <input id="pv_usuario" readonly>
-                </div>
-              </div>
-              <div class="input-group">
                 <label for="btn-maps">Abrir en Google Maps</label>
                 <button type="button" id="btn-maps" class="btn btn-info" aria-label="Abrir ubicación en Google Maps" disabled aria-disabled="true">
                   Maps
                 </button>
-
               </div>
             </div>
 
