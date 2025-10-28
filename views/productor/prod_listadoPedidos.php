@@ -509,50 +509,39 @@ $sesion_payload = [
                 }
                 openCancelModal(btn.dataset.id);
             });
+
             // Delegación: abrir modal de Registro Fitosanitario cuando la solicitud esté completada
             listado.addEventListener('click', (ev) => {
                 const btnFito = ev.target.closest('button.btn-fito');
                 if (!btnFito) return;
                 const id = Number(btnFito.dataset.id);
 
-                // Intenta abrir el modal del componente incluido
-                const modalFito = document.getElementById('modalFito') || document.querySelector('[data-modal="fito"]');
-                if (!modalFito) {
-                    toast('error', 'No se encontró el modal de Registro Fitosanitario.');
+                // Preferir la API global expuesta por el modal consolidado
+                if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
+                    try {
+                        window.FitoJSONModal.open(id);
+                        return;
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
 
+                // Fallback mínimo: localizar el modal por su ID real y mostrarlo
+                const modalFito = document.getElementById('modal-fito-json');
+                if (!modalFito) {
+                    // Solo mostramos error si realmente no está presente el modal en el DOM
+                    toast('error', 'No se pudo inicializar el Registro Fitosanitario (modal no presente).');
                     return;
                 }
-
-                // Si el modal expone una API global, preferila
-                if (typeof window.openFitoModal === 'function') {
-                    try {
-                        window.openFitoModal(id);
-                        return;
-                    } catch (e) {}
-                }
-
-                // Fallback genérico: abrir modal y setear id si hay campo destinado
-                modalFito.classList.add('is-open');
-                modalFito.setAttribute('aria-hidden', 'false');
-                document.body.style.overflow = 'hidden';
-
-                const idField = modalFito.querySelector('[data-fito-id]');
-                if (idField) {
-                    idField.value = String(id);
-                }
-
-                // Cierre accesible (si no lo provee el propio modal)
-                const closeBtn = modalFito.querySelector('[data-fito-close]') || modalFito.querySelector('.modal-close');
-                if (closeBtn && !closeBtn.__fitoBound) {
-                    closeBtn.__fitoBound = true;
-                    closeBtn.addEventListener('click', () => {
-                        modalFito.classList.remove('is-open');
-                        modalFito.setAttribute('aria-hidden', 'true');
-                        document.body.style.overflow = '';
-                    });
-                }
+                // Mostrar el modal aunque la API todavía no esté ligada,
+                // e intentar abrir con la API apenas se registre.
+                modalFito.classList.remove('hidden');
+                setTimeout(() => {
+                    if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
+                        window.FitoJSONModal.open(id);
+                    }
+                }, 50);
             });
-
 
             // Paginación
             pag.addEventListener('click', (ev) => {
