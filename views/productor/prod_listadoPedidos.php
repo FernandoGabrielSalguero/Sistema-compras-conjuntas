@@ -7,7 +7,6 @@ error_reporting(E_ALL);
 session_start();
 
 require_once '../../middleware/authMiddleware.php';
-include __DIR__ . '/../partials/drones/view/drone_modal_fito_json.php';
 
 checkAccess('productor');
 $nombre  = $_SESSION['nombre']  ?? 'Sin nombre';
@@ -262,6 +261,11 @@ $sesion_payload = [
                     </div>
                 </div>
 
+                <?php
+                // Modal de Registro Fitosanitario (aseguramos que esté dentro del <body>)
+                include __DIR__ . '/../partials/drones/view/drone_modal_fito_json.php';
+                ?>
+
             </section>
         </div>
     </div>
@@ -274,6 +278,26 @@ $sesion_payload = [
             const API = '../../controllers/prod_listadoPedidosController.php';
             const $ = (s, ctx = document) => ctx.querySelector(s);
             const $$ = (s, ctx = document) => Array.from(ctx.querySelectorAll(s));
+
+            // Wrapper de toast seguro para evitar crash del framework si falta el contenedor
+            const toast = (type, msg) => {
+                try {
+                    if (typeof window.showToast === 'function') {
+                        window.showToast(type, msg);
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('showToast falló, usando fallback:', e);
+                }
+                // Fallback accesible
+                if (type === 'error') {
+                    console.error(msg);
+                } else {
+                    console.log(msg);
+                }
+                alert(msg);
+            };
+
 
             const ses = (() => {
                 try {
@@ -383,7 +407,8 @@ $sesion_payload = [
                     });
                     renderItems(data.items, data.total, data.page);
                 } catch (e) {
-                    window.showToast?.('error', e.message || 'No se pudo cargar el listado.');
+                    toast('error', e.message || 'No se pudo cargar el listado.');
+
                 } finally {
                     window.hideSpinner?.();
                 }
@@ -397,7 +422,8 @@ $sesion_payload = [
 
             function openCancelModal(id) {
                 if (!modalCancel) {
-                    window.showToast?.('error', 'No se pudo abrir el modal.');
+                    toast('error', 'No se pudo abrir el modal.');
+
                     return;
                 }
                 __pendingCancelId = Number(id);
@@ -454,7 +480,8 @@ $sesion_payload = [
                     closeCancelModal();
                     await load(); // sincroniza con servidor sin recargar página
                 } catch (e) {
-                    window.showToast?.('error', e.message || 'No se pudo cancelar.');
+                    toast('error', 'No se pudo cancelar.');
+
                 } finally {
                     btnModalConfirm.disabled = false;
                     btnModalConfirm.textContent = 'Sí, cancelar';
@@ -476,7 +503,8 @@ $sesion_payload = [
                 const esCancelable = cancelables.includes(estado);
 
                 if (!esCancelable) {
-                    window.showToast?.('error', 'Solo se pueden cancelar solicitudes en estado INGRESADA o APROBADA_COOP.');
+                    toast('error', 'Solo se pueden cancelar solicitudes en estado INGRESADA o APROBADA_COOP.');
+
                     return;
                 }
                 openCancelModal(btn.dataset.id);
@@ -490,7 +518,8 @@ $sesion_payload = [
                 // Intenta abrir el modal del componente incluido
                 const modalFito = document.getElementById('modalFito') || document.querySelector('[data-modal="fito"]');
                 if (!modalFito) {
-                    window.showToast?.('error', 'No se encontró el modal de Registro Fitosanitario.');
+                    toast('error', 'No se encontró el modal de Registro Fitosanitario.');
+
                     return;
                 }
 
