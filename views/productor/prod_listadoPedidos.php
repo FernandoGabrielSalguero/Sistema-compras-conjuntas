@@ -276,6 +276,7 @@ $sesion_payload = [
     <script>
         (() => {
             const API = '../../controllers/prod_listadoPedidosController.php';
+            const DRONE_API = '../partials/drones/controller/drone_list_controller.php';
             const $ = (s, ctx = document) => ctx.querySelector(s);
             const $$ = (s, ctx = document) => Array.from(ctx.querySelectorAll(s));
 
