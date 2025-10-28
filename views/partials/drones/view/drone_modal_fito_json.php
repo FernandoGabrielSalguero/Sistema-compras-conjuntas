@@ -11,15 +11,20 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         <h3 id="modal-fito-json-title">Registro Fitosanitario</h3>
         <p id="modal-fito-json-desc" class="sr-only">Vista consolidada de la solicitud y sus tablas relacionadas.</p>
 
-        <!-- Tabs (solo SVE) -->
+        <!-- Menú hamburguesa (solo SVE) -->
         <?php if ($isSVE): ?>
-            <div class="tabs" style="display:flex; gap:8px; margin-bottom:12px;">
-                <button type="button" class="btn btn-aceptar" id="tab-formato" aria-selected="true">Formato</button>
-                <button type="button" class="btn btn-aceptar" id="tab-json" aria-selected="false">JSON</button>
-                <div style="flex:1"></div>
-                <button type="button" class="btn btn-info" id="btn-imprimir">Imprimir</button>
+            <div class="menu-flotante" role="menubar" aria-label="Menú de registro">
+                <button type="button" class="btn btn-info menu-toggle" id="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-list" title="Acciones" style="border-radius:9999px; width:40px; height:40px; padding:0; display:inline-flex; align-items:center; justify-content:center;">
+                    &#9776; <span class="sr-only">Abrir menú</span>
+                </button>
+                <div class="menu-dropdown hidden" id="menu-list" role="menu" aria-labelledby="menu-toggle">
+                    <button type="button" class="btn btn-aceptar menu-item" id="tab-formato" role="menuitem" aria-selected="true">Formato</button>
+                    <button type="button" class="btn btn-aceptar menu-item" id="tab-json" role="menuitem" aria-selected="false">JSON</button>
+                    <button type="button" class="btn btn-info menu-item" id="btn-imprimir" role="menuitem">Imprimir</button>
+                </div>
             </div>
         <?php endif; ?>
+
 
         <!-- CONTENIDO FORMATEADO -->
         <div id="fito-formato" style="background:#fff; border-radius:14px; padding:16px;">
@@ -132,10 +137,11 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         font-size: .95rem
     }
 
-    /* Mostrar tabs solo a SVE */
-    #modal-fito-json.role-no-sve .tabs {
+    /* Mostrar menú solo a SVE */
+    #modal-fito-json.role-no-sve .menu-flotante {
         display: none !important;
     }
+
 
     /* Centramos el contenedor y damos padding para respirar en viewport pequeños */
     #modal-fito-json {
@@ -156,14 +162,36 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         scrollbar-gutter: stable both-edges;
     }
 
-    /* Tabs siempre visibles al hacer scroll (mejora UX) */
-    #modal-fito-json .tabs {
+    /* Menú hamburguesa flotante en esquina superior derecha */
+    #modal-fito-json .menu-flotante {
         position: sticky;
-        top: 0;
-        background: #fff;
-        padding-top: 4px;
-        z-index: 2;
+        top: 8px;
+        margin-left: auto;
+        display: flex;
+        justify-content: flex-end;
+        z-index: 3;
     }
+
+    /* Dropdown del menú */
+    #modal-fito-json .menu-dropdown {
+        position: absolute;
+        right: 16px;
+        top: 56px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 160px;
+    }
+
+    #modal-fito-json .menu-dropdown.hidden {
+        display: none !important;
+    }
+
 
     /* Scrollbar amigable (opcional) */
     #modal-fito-json .modal-content::-webkit-scrollbar {
@@ -199,9 +227,10 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         }
 
         #modal-fito-json .form-buttons,
-        #modal-fito-json .tabs {
+        #modal-fito-json .menu-flotante {
             display: none !important;
         }
+
 
         #modal-fito-json .modal-content {
             box-shadow: none !important;
@@ -229,11 +258,11 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         if (window.__SVE_FITO_JSON_INIT__) return;
         window.__SVE_FITO_JSON_INIT__ = true;
 
-       const DRONE_API_CANDIDATES = [
-  '/views/partials/drones/controller/drone_list_controller.php',     // absoluta desde la raíz del sitio
-  '../partials/drones/controller/drone_list_controller.php',         // relativa típica: /views/<vista>/
-  '../../views/partials/drones/controller/drone_list_controller.php' // por si se incluye desde subcarpetas más profundas
-];
+        const DRONE_API_CANDIDATES = [
+            '/views/partials/drones/controller/drone_list_controller.php', // absoluta desde la raíz del sitio
+            '../partials/drones/controller/drone_list_controller.php', // relativa típica: /views/<vista>/
+            '../../views/partials/drones/controller/drone_list_controller.php' // por si se incluye desde subcarpetas más profundas
+        ];
         const modal = document.getElementById('modal-fito-json');
 
         // Tabs
@@ -567,5 +596,46 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             open,
             close: closeModal
         };
+    })();
+</script>
+<script>
+    (function() {
+        const modal = document.getElementById('modal-fito-json');
+        const toggle = document.getElementById('menu-toggle');
+        const dropdown = document.getElementById('menu-list');
+
+        if (!toggle || !dropdown) return;
+
+        const openMenu = () => {
+            dropdown.classList.remove('hidden');
+            toggle.setAttribute('aria-expanded', 'true');
+        };
+        const closeMenu = () => {
+            dropdown.classList.add('hidden');
+            toggle.setAttribute('aria-expanded', 'false');
+        };
+        const isOpen = () => toggle.getAttribute('aria-expanded') === 'true';
+
+        toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isOpen() ? closeMenu() : openMenu();
+        });
+
+        // Cerrar al hacer click fuera
+        document.addEventListener('click', (e) => {
+            if (isOpen() && !dropdown.contains(e.target) && e.target !== toggle) {
+                closeMenu();
+            }
+        });
+
+        // Cerrar con ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isOpen()) closeMenu();
+        });
+
+        // Cerrar al elegir una opción
+        dropdown.addEventListener('click', (e) => {
+            if (e.target.closest('.menu-item')) closeMenu();
+        });
     })();
 </script>
