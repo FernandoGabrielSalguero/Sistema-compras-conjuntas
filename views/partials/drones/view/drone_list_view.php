@@ -5,6 +5,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sve';
+
+
 ?>
 
 <link rel="preload" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -74,14 +76,14 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         <div class="product-header">
             <h3 id="quick-filters-title">Filtros rápidos</h3>
         </div>
-<br>
+        <br>
         <div class="form-grid grid-4" role="group" aria-label="Filtrar por estado">
             <button type="button" class="chip" data-estado="" aria-pressed="true">Todas las solicitudes</button>
             <button type="button" class="chip" data-estado="ingresada" aria-pressed="false">Solicitudes ingresadas</button>
             <button type="button" class="chip" data-estado="completada" aria-pressed="false">Solicitudes completadas</button>
             <button type="button" class="chip" data-estado="cancelada" aria-pressed="false">Solicitudes canceladas</button>
         </div>
-<br>
+        <br>
         <div class="form-grid grid-4" role="group" aria-label="Filtrar por rango">
             <button type="button" class="chip" data-rango="" aria-pressed="true" id="chip-rango-todo">Todo</button>
             <div id="rango-chips-dynamic" class="chips-dynamic"></div>
@@ -474,18 +476,22 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                 });
             });
 
-            // bind botón Registro Fitosanitario (modal JSON)
+            // bind botón Registro Fitosanitario (modal JSON) — apertura explícita habilitada por el usuario
             els.cards.querySelectorAll('.btn-fito').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const id = btn.getAttribute('data-id');
                     if (!id) return;
-                    if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
+                    if (typeof window.__SVE_enableFitoAndOpen === 'function') {
+                        window.__SVE_enableFitoAndOpen(Number(id));
+                    } else if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
+                        // fallback: si el parche no cargó por algún motivo
                         window.FitoJSONModal.open(Number(id));
                     } else {
                         console.error('FitoJSONModal no está disponible');
                     }
                 });
             });
+
 
             // bind botón eliminar (abre modal)
             els.cards.querySelectorAll('.btn-delete').forEach(btn => {
@@ -633,6 +639,38 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         // Arranque
         loadRangos();
         load();
+    })();
+
+    /* ==== Hotfix SVE: evitar auto-apertura del modal Fitosanitario al cargar ==== */
+    (function() {
+        if (window.__SVE_FITO_PATCH__) return;
+        window.__SVE_FITO_PATCH__ = true;
+
+        function installPatch() {
+            // Espera a que el objeto del modal exista
+            if (!window.FitoJSONModal || typeof window.FitoJSONModal.open !== 'function') {
+                setTimeout(installPatch, 50);
+                return;
+            }
+
+            // Guardamos el open real y lo bloqueamos hasta acción de usuario
+            const realOpen = window.FitoJSONModal.open.bind(window.FitoJSONModal);
+            let unlocked = false;
+
+            // Anula cualquier intento de apertura automática durante el load
+            window.FitoJSONModal.open = function() {
+                if (!unlocked) return; // Bloqueado hasta que el usuario haga clic
+                return realOpen.apply(this, arguments);
+            };
+
+            // API explícita: el clic del usuario habilita y abre
+            window.__SVE_enableFitoAndOpen = function(id) {
+                unlocked = true;
+                return realOpen(Number(id));
+            };
+        }
+
+        installPatch();
     })();
 </script>
 
