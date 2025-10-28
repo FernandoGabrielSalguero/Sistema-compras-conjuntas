@@ -5,8 +5,6 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sve';
-
-
 ?>
 
 <link rel="preload" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -274,6 +272,40 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         display: contents;
     }
 </style>
+
+<script>
+    /* ==== Hotfix SVE: evitar auto-apertura del modal Fitosanitario al cargar ==== */
+    (function() {
+        if (window.__SVE_FITO_PATCH__) return;
+        window.__SVE_FITO_PATCH__ = true;
+
+        function installPatch() {
+            // Espera a que el objeto del modal exista
+            if (!window.FitoJSONModal || typeof window.FitoJSONModal.open !== 'function') {
+                setTimeout(installPatch, 50);
+                return;
+            }
+
+            // Guardamos el open real y lo bloqueamos hasta acción de usuario
+            const realOpen = window.FitoJSONModal.open.bind(window.FitoJSONModal);
+            let unlocked = false;
+
+            // Anula cualquier intento de apertura automática durante el load
+            window.FitoJSONModal.open = function() {
+                if (!unlocked) return; // Bloqueado hasta que el usuario haga clic
+                return realOpen.apply(this, arguments);
+            };
+
+            // API explícita: el clic del usuario habilita y abre
+            window.__SVE_enableFitoAndOpen = function(id) {
+                unlocked = true;
+                return realOpen(Number(id));
+            };
+        }
+
+        installPatch();
+    })();
+</script>
 
 
 <script>
@@ -639,38 +671,6 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         // Arranque
         loadRangos();
         load();
-    })();
-
-    /* ==== Hotfix SVE: evitar auto-apertura del modal Fitosanitario al cargar ==== */
-    (function() {
-        if (window.__SVE_FITO_PATCH__) return;
-        window.__SVE_FITO_PATCH__ = true;
-
-        function installPatch() {
-            // Espera a que el objeto del modal exista
-            if (!window.FitoJSONModal || typeof window.FitoJSONModal.open !== 'function') {
-                setTimeout(installPatch, 50);
-                return;
-            }
-
-            // Guardamos el open real y lo bloqueamos hasta acción de usuario
-            const realOpen = window.FitoJSONModal.open.bind(window.FitoJSONModal);
-            let unlocked = false;
-
-            // Anula cualquier intento de apertura automática durante el load
-            window.FitoJSONModal.open = function() {
-                if (!unlocked) return; // Bloqueado hasta que el usuario haga clic
-                return realOpen.apply(this, arguments);
-            };
-
-            // API explícita: el clic del usuario habilita y abre
-            window.__SVE_enableFitoAndOpen = function(id) {
-                unlocked = true;
-                return realOpen(Number(id));
-            };
-        }
-
-        installPatch();
     })();
 </script>
 
