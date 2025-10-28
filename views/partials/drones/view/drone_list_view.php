@@ -12,6 +12,15 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
 </noscript>
 <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
+<!-- Bloqueo visual inmediato del modal fitosanitario para evitar cualquier "flash" al cargar -->
+<style id="sve-fito-autoblock">
+    /* El include del modal puede inyectar HTML visible por milisegundos.
+     Este estilo lo oculta SIEMPRE hasta que sea eliminado explícitamente
+     por __SVE_enableFitoAndOpen(...) antes de abrir el modal. */
+    #modal-fito-json {
+        display: none !important;
+    }
+</style>
 
 <!-- Descarga de consolidado -->
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
@@ -274,7 +283,7 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 </style>
 
 <script>
-    /* ==== Hotfix SVE: evitar auto-apertura del modal Fitosanitario al cargar ==== */
+    /* ==== Hotfix SVE: evitar auto-apertura del modal Fitosanitario al cargar (con desbloqueo controlado) ==== */
     (function() {
         if (window.__SVE_FITO_PATCH__) return;
         window.__SVE_FITO_PATCH__ = true;
@@ -298,6 +307,10 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 
             // API explícita: el clic del usuario habilita y abre
             window.__SVE_enableFitoAndOpen = function(id) {
+                // Quita el CSS de autobloqueo si existe (evita flash y permite mostrar el modal)
+                var autoblock = document.getElementById('sve-fito-autoblock');
+                if (autoblock && autoblock.parentNode) autoblock.parentNode.removeChild(autoblock);
+
                 unlocked = true;
                 return realOpen(Number(id));
             };
@@ -306,6 +319,8 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         installPatch();
     })();
 </script>
+
+
 
 
 <script>
