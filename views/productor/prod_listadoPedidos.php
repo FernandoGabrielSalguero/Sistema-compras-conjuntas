@@ -262,6 +262,9 @@ $sesion_payload = [
                 </div>
 
                 <?php
+                // Definimos la constante JS global que el modal necesita para sus peticiones
+                echo '<script>window.DRONE_API = "../../views/partials/drones/controller/drone_list_controller.php";</script>';
+
                 // Modal de Registro Fitosanitario (aseguramos que esté dentro del <body>)
                 include __DIR__ . '/../partials/drones/view/drone_modal_fito_json.php';
                 ?>
