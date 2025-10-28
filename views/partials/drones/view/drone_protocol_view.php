@@ -892,7 +892,8 @@ h3{font-size:14px!important; margin-top:6px;}
             return;
           }
           pintarDetalle(json.data);
-          healthEl.textContent = 'Estas viendo el protocolo de la solicitud número ' + id;
+const prod = json.data?.solicitud?.ses_usuario || '';
+healthEl.textContent = 'Estas viendo el protocolo de la solicitud número ' + id + (prod ? ' — Corresponde al productor ' + prod : '');
         })
         .catch(err => showAlert('error', err && err.message ? err.message : String(err)));
     }
