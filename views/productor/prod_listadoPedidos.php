@@ -7,6 +7,8 @@ error_reporting(E_ALL);
 session_start();
 
 require_once '../../middleware/authMiddleware.php';
+include __DIR__ . '/../partials/drones/view/drone_modal_fito_json.php';
+
 checkAccess('productor');
 $nombre  = $_SESSION['nombre']  ?? 'Sin nombre';
 $idReal  = $_SESSION['id_real'] ?? null;
@@ -340,14 +342,23 @@ $sesion_payload = [
             <div class="row"><span class="label">Costo del servicio</span><span class="value">${fmtNum(it.costo_total)} ${it.moneda||''}</span></div>
           </div>
 <div class="card-actions">
-  <button
-    class="btn btn-cancelar btn-cancelar-soft"
-    data-id="${it.id}"
-    aria-label="Cancelar solicitud ${it.id}"
-    ${puedeCancelar ? '' : 'disabled'}
-    title="${puedeCancelar ? 'Cancelar solicitud' : 'Solo se puede cancelar en estado INGRESADA o APROBADA_COOP'}"
-  >Cancelar</button>
+  ${
+    (it.estado === 'completada')
+      ? `<button
+           class="btn btn-aceptar btn-fito"
+           data-id="${it.id}"
+           aria-label="Abrir registro fitosanitario de la solicitud ${it.id}"
+         >Registro Fitosanitario</button>`
+      : `<button
+           class="btn btn-cancelar btn-cancelar-soft"
+           data-id="${it.id}"
+           aria-label="Cancelar solicitud ${it.id}"
+           ${puedeCancelar ? '' : 'disabled'}
+           title="${puedeCancelar ? 'Cancelar solicitud' : 'Solo se puede cancelar en estado INGRESADA o APROBADA_COOP'}"
+         >Cancelar</button>`
+  }
 </div>
+
         </article>
       `;
                 }).join('') || `<div class="gform-helper">No hay pedidos todavía.</div>`;
@@ -453,9 +464,9 @@ $sesion_payload = [
 
             // Delegación: abrir modal desde cada tarjeta (solo si está pendiente)
             listado.addEventListener('click', (ev) => {
-const btn = ev.target.closest('button.btn-cancelar');
-if (!btn) return;
-if (btn.hasAttribute('disabled')) return; // evita abrir modal si está deshabilitado
+                const btn = ev.target.closest('button.btn-cancelar');
+                if (!btn) return;
+                if (btn.hasAttribute('disabled')) return; // evita abrir modal si está deshabilitado
 
 
                 const card = btn.closest('.pedido-card');
@@ -469,6 +480,48 @@ if (btn.hasAttribute('disabled')) return; // evita abrir modal si está deshabil
                     return;
                 }
                 openCancelModal(btn.dataset.id);
+            });
+            // Delegación: abrir modal de Registro Fitosanitario cuando la solicitud esté completada
+            listado.addEventListener('click', (ev) => {
+                const btnFito = ev.target.closest('button.btn-fito');
+                if (!btnFito) return;
+                const id = Number(btnFito.dataset.id);
+
+                // Intenta abrir el modal del componente incluido
+                const modalFito = document.getElementById('modalFito') || document.querySelector('[data-modal="fito"]');
+                if (!modalFito) {
+                    window.showToast?.('error', 'No se encontró el modal de Registro Fitosanitario.');
+                    return;
+                }
+
+                // Si el modal expone una API global, preferila
+                if (typeof window.openFitoModal === 'function') {
+                    try {
+                        window.openFitoModal(id);
+                        return;
+                    } catch (e) {}
+                }
+
+                // Fallback genérico: abrir modal y setear id si hay campo destinado
+                modalFito.classList.add('is-open');
+                modalFito.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+
+                const idField = modalFito.querySelector('[data-fito-id]');
+                if (idField) {
+                    idField.value = String(id);
+                }
+
+                // Cierre accesible (si no lo provee el propio modal)
+                const closeBtn = modalFito.querySelector('[data-fito-close]') || modalFito.querySelector('.modal-close');
+                if (closeBtn && !closeBtn.__fitoBound) {
+                    closeBtn.__fitoBound = true;
+                    closeBtn.addEventListener('click', () => {
+                        modalFito.classList.remove('is-open');
+                        modalFito.setAttribute('aria-hidden', 'true');
+                        document.body.style.overflow = '';
+                    });
+                }
             });
 
 

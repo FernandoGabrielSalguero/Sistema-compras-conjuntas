@@ -123,7 +123,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     <div class="card">
                         <div class="card-title">
                             <span class="material-icons">receipt_long</span>
-                            <h3>Mis pedidos</h3>
+                            <h3>Mis pedidos de Drone</h3>
                         </div>
                         <p>Revisá el estado de tus pedidos y descargá comprobantes.</p>
                         <div class="action-footer">
