@@ -276,7 +276,6 @@ $sesion_payload = [
     <script>
         (() => {
             const API = '../../controllers/prod_listadoPedidosController.php';
-            const DRONE_API = '../partials/drones/controller/drone_list_controller.php';
             const $ = (s, ctx = document) => ctx.querySelector(s);
             const $$ = (s, ctx = document) => Array.from(ctx.querySelectorAll(s));
 
@@ -511,39 +510,6 @@ $sesion_payload = [
                 openCancelModal(btn.dataset.id);
             });
 
-            // Delegación: abrir modal de Registro Fitosanitario cuando la solicitud esté completada
-            listado.addEventListener('click', (ev) => {
-                const btnFito = ev.target.closest('button.btn-fito');
-                if (!btnFito) return;
-                const id = Number(btnFito.dataset.id);
-
-                // Preferir la API global expuesta por el modal consolidado
-                if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
-                    try {
-                        window.FitoJSONModal.open(id);
-                        return;
-                    } catch (e) {
-                        console.error(e);
-                    }
-                }
-
-                // Fallback mínimo: localizar el modal por su ID real y mostrarlo
-                const modalFito = document.getElementById('modal-fito-json');
-                if (!modalFito) {
-                    // Solo mostramos error si realmente no está presente el modal en el DOM
-                    toast('error', 'No se pudo inicializar el Registro Fitosanitario (modal no presente).');
-                    return;
-                }
-                // Mostrar el modal aunque la API todavía no esté ligada,
-                // e intentar abrir con la API apenas se registre.
-                modalFito.classList.remove('hidden');
-                setTimeout(() => {
-                    if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
-                        window.FitoJSONModal.open(id);
-                    }
-                }, 50);
-            });
-
             // Paginación
             pag.addEventListener('click', (ev) => {
                 const b = ev.target.closest('button[data-nav]');
@@ -557,6 +523,80 @@ $sesion_payload = [
             load();
         })();
     </script>
+
+    <script>
+        /**
+         * Script dedicado a la apertura del Registro Fitosanitario desde el listado del productor.
+         * - Define window.DRONE_API con ruta ABSOLUTA para que el modal lo use si lo necesita.
+         * - Enlaza el click de "Registro Fitosanitario" y llama a window.FitoJSONModal.open(id).
+         * - Incluye fallback seguro al modal #modal-fito-json.
+         */
+
+        // Ruta absoluta al controlador del registro (ver estructura del proyecto)
+        window.DRONE_API = '/views/partials/drones/controller/drone_list_controller.php';
+
+        (function() {
+            // Utilidades locales no intrusivas
+            const $ = (s, ctx = document) => ctx.querySelector(s);
+
+            // Contenedor donde viven las tarjetas
+            const listado = $('#listado');
+
+            // Handler de apertura del modal de Registro Fitosanitario
+            function onOpenFito(ev) {
+                const btnFito = ev.target.closest('button.btn-fito');
+                if (!btnFito) return;
+
+                const id = Number(btnFito.dataset.id);
+
+                // Preferir API pública del modal
+                if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
+                    try {
+                        window.FitoJSONModal.open(id);
+                        return;
+                    } catch (e) {
+                        console.error('[FitoJSONModal.open] error:', e);
+                    }
+                }
+
+                // Fallback: mostrar el modal por ID conocido y reintentar apertura
+                const modalFito = document.getElementById('modal-fito-json');
+                if (!modalFito) {
+                    // Usamos un fallback mínimo sin depender del framework
+                    try {
+                        if (typeof window.showToast === 'function') {
+                            window.showToast('error', 'No se pudo inicializar el Registro Fitosanitario (modal no presente).');
+                        } else {
+                            alert('No se pudo inicializar el Registro Fitosanitario (modal no presente).');
+                        }
+                    } catch (_) {
+                        alert('No se pudo inicializar el Registro Fitosanitario (modal no presente).');
+                    }
+                    return;
+                }
+
+                modalFito.classList.remove('hidden');
+
+                // Nuevo intento breve para cuando el modal termine de inicializar su API
+                setTimeout(() => {
+                    if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
+                        window.FitoJSONModal.open(id);
+                    }
+                }, 50);
+            }
+
+            // Vincular delegación solo cuando #listado exista
+            if (listado) {
+                listado.addEventListener('click', onOpenFito);
+            } else {
+                document.addEventListener('DOMContentLoaded', () => {
+                    const $listado = document.getElementById('listado');
+                    $listado?.addEventListener('click', onOpenFito);
+                });
+            }
+        })();
+    </script>
+
 </body>
 
 </html>
