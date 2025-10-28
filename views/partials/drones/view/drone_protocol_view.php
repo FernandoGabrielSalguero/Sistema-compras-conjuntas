@@ -131,7 +131,7 @@ declare(strict_types=1);
               </div>
             </div>
 
-                        <h3 id="geo-title" style="color: #5b21b6;">Datos de Geolocalización</h3>
+            <h3 id="geo-title" style="color: #5b21b6;">Datos de Geolocalización</h3>
             <div id="bloque-geo" class="grid-4">
               <div class="input-group">
                 <label for="pv_lat">Lat</label>
@@ -482,6 +482,57 @@ declare(strict_types=1);
   .data-table td:nth-child(5) {
     white-space: normal;
   }
+
+  /* === Ajustes de tabla Productos a utilizar === */
+  .data-table th,
+  .data-table td {
+    vertical-align: middle;
+  }
+
+  .data-table th:nth-child(4),
+  .data-table td:nth-child(4) {
+    text-align: center;
+  }
+
+  /* el input de Orden mezcla centrado y con ancho coherente */
+  .data-table td:nth-child(4) .input-icon {
+    max-width: 90px;
+    margin: 0 auto;
+  }
+
+  .data-table td:nth-child(4) input {
+    text-align: center;
+  }
+
+  /* el textarea de Notas ocupa todo el ancho del TD y mantiene estilo del framework */
+  .data-table td:nth-child(5) .input-icon {
+    width: 100%;
+  }
+
+  .data-table td:nth-child(5) textarea {
+    width: 100%;
+  }
+
+  /* coherencia visual en modo lectura/edición */
+  .edit-receta[readonly] {
+    background: #f8fafc;
+  }
+
+  .edit-receta:not([readonly]) {
+    background: #fff;
+  }
+
+  /* ocultar bloque de geolocalización cuando no hay datos */
+  #bloque-geo[hidden],
+  #geo-title[hidden] {
+    display: none !important;
+  }
+
+  /* pequeño ajuste general de padding para alinear encabezados con celdas */
+  .data-table th {
+    padding-top: .45rem;
+    padding-bottom: .45rem;
+  }
 </style>
 
 <script>
@@ -612,8 +663,8 @@ declare(strict_types=1);
         } = window.jspdf;
 
         // --- Parámetros base (forzar layout desktop, tamaño real A4) ---
-        const A4PX = 1440;               // ~78% del tamaño original en el PDF
-const SCALE = 2.0;               // más nitidez por el mayor downscale
+        const A4PX = 1440; // ~78% del tamaño original en el PDF
+        const SCALE = 2.0; // más nitidez por el mayor downscale
         const MARGIN_MM = 5; // margen más fino
         const WINDOW_W = 1600; // viewport ancho fijo (fuerza desktop)
         const WINDOW_H = Math.max(sectionEl.scrollHeight, 2200);
@@ -885,8 +936,8 @@ h3{font-size:14px!important; margin-top:6px;}
             return;
           }
           pintarDetalle(json.data);
-const prod = json.data?.solicitud?.ses_usuario || '';
-healthEl.textContent = 'Estas viendo el protocolo de la solicitud número ' + id + (prod ? ' — Corresponde al productor ' + prod : '');
+          const prod = json.data?.solicitud?.ses_usuario || '';
+          healthEl.textContent = 'Estas viendo el protocolo de la solicitud número ' + id + (prod ? ' — Corresponde al productor ' + prod : '');
         })
         .catch(err => showAlert('error', err && err.message ? err.message : String(err)));
     }
@@ -918,7 +969,6 @@ healthEl.textContent = 'Estas viendo el protocolo de la solicitud número ' + id
       setVal('pv_numero', d.dir_numero || '');
       setVal('pv_lat', d.ubicacion_lat || '');
       setVal('pv_lng', d.ubicacion_lng || '');
-      setVal('pv_usuario', d.ses_usuario || '');
 
       // Guardar el id de la solicitud en data.solicitud_id para el flujo de edición
       if (!data.solicitud_id && d && typeof d === 'object') {
@@ -927,6 +977,16 @@ healthEl.textContent = 'Estas viendo el protocolo de la solicitud número ' + id
 
       // Habilitar/Deshabilitar botón Maps acorde a coords
       updateMapsButton(d.ubicacion_lat, d.ubicacion_lng);
+      toggleGeo(d.ubicacion_lat, d.ubicacion_lng);
+
+      function toggleGeo(lat, lng) {
+        const geo = document.getElementById('bloque-geo');
+        const geoTitle = document.getElementById('geo-title');
+        const has = !!lat && !!lng;
+        if (geo) geo.hidden = !has;
+        if (geoTitle) geoTitle.hidden = !has;
+      }
+
 
       // Items + receta (ordenado por prioridad: orden_mezcla ASC) y con soporte de edición
       const tbody = document.getElementById('tabla-items');
@@ -982,17 +1042,22 @@ healthEl.textContent = 'Estas viendo el protocolo de la solicitud número ' + id
               </div>
               <small class="muted">${f.unidad || ''}</small>
             </td>
-            <td style="text-align:center;">
-              <input 
-                type="number" step="1" class="edit-receta" data-field="orden_mezcla" data-receta-id="${f.receta_id ?? ''}"
-                value="${(f.orden===9999 || Number.isNaN(Number(f.orden))) ? '' : f.orden}" 
-                readonly
-                style="max-width:90px;text-align:center;"
-              />
+            <td>
+              <div class="input-icon input-icon-hashtag center">
+                <input 
+                  type="number" step="1"
+                  class="edit-receta" data-field="orden_mezcla" data-receta-id="${f.receta_id ?? ''}"
+                  value="${(f.orden===9999 || Number.isNaN(Number(f.orden))) ? '' : f.orden}" 
+                  readonly
+                />
+              </div>
             </td>
             <td>
-              <textarea rows="1" class="edit-receta" data-field="notas" data-receta-id="${f.receta_id ?? ''}" readonly>${(f.notas||'')}</textarea>
+              <div class="input-icon input-icon-note">
+                <textarea rows="1" class="edit-receta" data-field="notas" data-receta-id="${f.receta_id ?? ''}" readonly>${(f.notas||'')}</textarea>
+              </div>
             </td>
+
           </tr>
         `).join('');
       }
