@@ -345,7 +345,7 @@ $sesion_payload = [
                 listado.innerHTML = items.map(it => {
                     const estadoClass = `estado-${it.estado}`;
                     const puedeCancelar = (['ingresada', 'aprobada_coop'].includes(it.estado));
-                    const puedeVerRegistro = (it.estado === 'cancelada');
+                    const puedeVerRegistro = (it.estado === 'completada');
 
                     return `
         <article class="pedido-card" aria-label="Solicitud #${it.id}">
