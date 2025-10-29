@@ -107,11 +107,13 @@ LIMIT :limit OFFSET :offset";
         }
     }
 
-    /**
-     * Detalle de una solicitud del productor (incluye costos y patologías).
+        /**
+     * Detalle completo del registro fitosanitario para una solicitud del productor.
+     * Incluye: datos de solicitud, costos, patologías, reporte operativo, productos y media (fotos/firmas).
      */
     public function detalleById(int $solicitudId, string $productorIdReal): array
     {
+        // Datos principales + costos + patologías agregadas
         $sql = "
         SELECT
             s.id,
@@ -157,10 +159,66 @@ LIMIT :limit OFFSET :offset";
         $st->bindValue(':id', $solicitudId, PDO::PARAM_INT);
         $st->bindValue(':pid', $productorIdReal, PDO::PARAM_STR);
         $st->execute();
-        $row = $st->fetch();
-        if (!$row) {
+        $solicitud = $st->fetch();
+        if (!$solicitud) {
             throw new RuntimeException('Solicitud no encontrada.');
         }
-        return $row;
+
+        // Reporte operativo (único por solicitud)
+        $stRep = $this->pdo->prepare("
+            SELECT r.id, r.nom_cliente, r.nom_piloto, r.nom_encargado,
+                   r.fecha_visita, r.hora_ingreso, r.hora_egreso,
+                   r.nombre_finca, r.cultivo_pulverizado, r.cuadro_cuartel,
+                   r.sup_pulverizada, r.vol_aplicado, r.vel_viento,
+                   r.temperatura, r.humedad_relativa, r.observaciones
+            FROM drones_solicitud_Reporte r
+            WHERE r.solicitud_id = :id
+            LIMIT 1
+        ");
+        $stRep->execute([':id' => $solicitudId]);
+        $reporte = $stRep->fetch() ?: null;
+
+        // Productos utilizados (de receta si existe, si no con fallback a item)
+        $stProd = $this->pdo->prepare("
+            SELECT
+              COALESCE(si.nombre_producto, ps.nombre) AS nombre_comercial,
+              sir.principio_activo,
+              sir.dosis AS dosis_ml_ha,
+              sir.cant_prod_usado AS cant_usada,
+              sir.fecha_vencimiento
+            FROM drones_solicitud_item si
+            LEFT JOIN dron_productos_stock ps ON ps.id = si.producto_id
+            LEFT JOIN drones_solicitud_item_receta sir ON sir.solicitud_item_id = si.id
+            WHERE si.solicitud_id = :id
+            ORDER BY COALESCE(sir.orden_mezcla, si.id)
+        ");
+        $stProd->execute([':id' => $solicitudId]);
+        $productos = $stProd->fetchAll() ?: [];
+
+        // Media (fotos y firmas) asociadas al reporte
+        $media = ['foto' => [], 'firma_cliente' => [], 'firma_piloto' => []];
+        if ($reporte && isset($reporte['id'])) {
+            $stMed = $this->pdo->prepare("
+                SELECT tipo, ruta
+                FROM drones_solicitud_reporte_media
+                WHERE reporte_id = :rid
+                ORDER BY id ASC
+            ");
+            $stMed->execute([':rid' => $reporte['id']]);
+            $rows = $stMed->fetchAll() ?: [];
+            foreach ($rows as $m) {
+                $t = $m['tipo'];
+                if (!isset($media[$t])) $media[$t] = [];
+                $media[$t][] = $m['ruta'];
+            }
+        }
+
+        return [
+            'solicitud' => $solicitud,
+            'reporte'   => $reporte,
+            'productos' => $productos,
+            'media'     => $media
+        ];
     }
+
 }

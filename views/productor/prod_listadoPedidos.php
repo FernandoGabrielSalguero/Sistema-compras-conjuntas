@@ -208,6 +208,106 @@ $sesion_payload = [
             background: transparent;
             cursor: pointer;
         }
+
+        /* ===== Estilos Registro Fitosanitario (modal) ===== */
+        #registroPrint {
+            background: #fff;
+            padding: 18px 20px;
+        }
+
+        .rf-row {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 12px
+        }
+
+        .rf-grid-2 {
+            grid-template-columns: 1fr 1fr
+        }
+
+        .rf-card {
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .05)
+        }
+
+        .rf-muted {
+            color: #475569
+        }
+
+        .rf-title {
+            font-weight: 700;
+            margin: 0 0 6px 0;
+            text-align: center
+        }
+
+        .rf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px
+        }
+
+        .rf-table th,
+        .rf-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e9ecef;
+            text-align: left;
+            font-size: .92rem;
+        }
+
+        .rf-media {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px
+        }
+
+        .rf-media img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid #eee
+        }
+
+        .rf-signs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 10px
+        }
+
+        .rf-sign {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px
+        }
+
+        .rf-sign img {
+            width: 180px;
+            height: 90px;
+            object-fit: contain;
+            border: 1px dashed #bbb;
+            background: #fff
+        }
+
+        .rf-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 10px
+        }
+
+        @media (max-width:720px) {
+            .rf-grid-2 {
+                grid-template-columns: 1fr
+            }
+
+            .rf-media {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
     </style>
 </head>
 
@@ -270,11 +370,13 @@ $sesion_payload = [
                             </button>
                         </div>
                         <div class="modal-body">
-                            <div id="registroBody">
+                            <!-- Contenedor imprimible -->
+                            <div id="registroPrint">
                                 <p class="gform-helper">Cargando…</p>
                             </div>
                         </div>
-                        <div class="modal-actions">
+                        <div class="modal-actions rf-actions">
+                            <button id="btnPdf" class="btn btn-info">Descargar PDF</button>
                             <button class="btn btn-aceptar" onclick="closeRegistroModal()">Aceptar</button>
                             <button class="btn btn-cancelar" onclick="closeRegistroModal()">Cancelar</button>
                         </div>
@@ -287,6 +389,9 @@ $sesion_payload = [
 
     <!-- Spinner global (si lo tenés en tu proyecto) -->
     <script src="../../views/partials/spinner-global.js"></script>
+    <!-- Exportar a PDF -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <script>
         (() => {
@@ -531,31 +636,180 @@ $sesion_payload = [
 
             async function cargarRegistro(id) {
                 try {
-                    registroBody.innerHTML = '<p class="gform-helper">Cargando…</p>';
-                    const data = await apiGet({
+                    const cont = document.getElementById('registroPrint');
+                    cont.innerHTML = '<p class="gform-helper">Cargando…</p>';
+
+                    const resp = await apiGet({
                         action: 'detail',
                         id: String(id)
                     });
-                    const f = (s) => s ?? '—';
-                    const fmtDT = (s) => s ? new Date(s).toLocaleString('es-AR') : '—';
 
-                    registroBody.innerHTML = `
-                        <div class="listado" style="gap:.5rem;">
-                            <div class="row"><span class="label">Solicitud</span><span class="value">#${data.id}</span></div>
-                            <div class="row"><span class="label">Estado</span><span class="value">${f(data.estado)}</span></div>
-                            <div class="row"><span class="label">Motivo cancelación</span><span class="value" style="white-space:normal; text-align:right;">${f(data.motivo_cancelacion)}</span></div>
-                            <div class="row"><span class="label">Hectáreas</span><span class="value">${fmtNum(data.superficie_ha)}</span></div>
-                            <div class="row"><span class="label">Fecha visita</span><span class="value">${fmtFecha(data.fecha_visita)}</span></div>
-                            <div class="row"><span class="label">Horario visita</span><span class="value">${f(data.hora_visita)}</span></div>
-                            <div class="row"><span class="label">Patologías</span><span class="value" style="white-space:normal; text-align:right;">${f(data.patologias)}</span></div>
-                            <div class="row"><span class="label">Costo total</span><span class="value">${fmtNum(data.costo_total)} ${f(data.moneda)}</span></div>
-                            <div class="row"><span class="label">Dirección</span><span class="value" style="white-space:normal; text-align:right;">${[data.dir_calle, data.dir_numero, data.dir_localidad, data.dir_provincia].filter(Boolean).join(' ') || '—'}</span></div>
-                            <div class="row"><span class="label">Creado</span><span class="value">${fmtDT(data.created_at)}</span></div>
-                            <div class="row"><span class="label">Actualizado</span><span class="value">${fmtDT(data.updated_at)}</span></div>
+                    const s = resp.solicitud || {};
+                    const r = resp.reporte || {};
+                    const prods = Array.isArray(resp.productos) ? resp.productos : [];
+                    const media = resp.media || {
+                        foto: [],
+                        firma_cliente: [],
+                        firma_piloto: []
+                    };
+
+                    const f = (x) => (x ?? '—');
+                    const fmtDT = (x) => x ? new Date(x).toLocaleString('es-AR') : '—';
+                    const addr = [s.dir_calle, s.dir_numero, s.dir_localidad, s.dir_provincia].filter(Boolean).join(' ');
+
+                    const fotosHtml = (media.foto || []).map(src => `<img src="${src}" alt="foto">`).join('');
+                    const firmaCliente = (media.firma_cliente && media.firma_cliente[0]) ? `<img src="${media.firma_cliente[0]}" alt="firma cliente">` : `<div style="width:180px;height:90px;border:1px dashed #bbb;background:#fff;"></div>`;
+                    const firmaPiloto = (media.firma_piloto && media.firma_piloto[0]) ? `<img src="${media.firma_piloto[0]}" alt="firma piloto">` : `<div style="width:180px;height:90px;border:1px dashed #bbb;background:#fff;"></div>`;
+
+                    const prodsHtml = prods.map(p => `
+                        <tr>
+                            <td>${f(p.nombre_comercial)}</td>
+                            <td>${f(p.principio_activo)}</td>
+                            <td>${f(p.dosis_ml_ha)}</td>
+                            <td>${f(p.cant_usada)}</td>
+                            <td>${f(p.fecha_vencimiento)}</td>
+                        </tr>`).join('');
+
+                    cont.innerHTML = `
+                        <h3 class="rf-title">Registro Fitosanitario</h3>
+
+                        <div class="rf-row rf-grid-2">
+                            <div class="rf-card">
+                                <div><b>Cliente:</b> ${f(r.nom_cliente)}</div>
+                                <div><b>Representante:</b> ${f(r.nom_encargado)}</div>
+                                <div><b>Nombre finca:</b> ${f(r.nombre_finca)}</div>
+                            </div>
+                            <div class="rf-card">
+                                <div><b>Cultivo pulverizado:</b> ${f(r.cultivo_pulverizado)}</div>
+                                <div><b>Superficie pulverizada (ha):</b> ${f(r.sup_pulverizada)}</div>
+                                <div><b>Operador Drone:</b> ${f(r.nom_piloto)}</div>
+                            </div>
+                        </div>
+
+                        <div class="rf-card">
+                            <div style="text-align:center;font-weight:700;margin-bottom:6px;">Condiciones meteorológicas al momento del vuelo</div>
+                            <div class="rf-row rf-grid-2">
+                                <div><b>Hora Ingreso:</b> ${f(r.hora_ingreso)}</div>
+                                <div><b>Hora Salida:</b> ${f(r.hora_egreso)}</div>
+                                <div><b>Temperatura (°C):</b> ${f(r.temperatura)}</div>
+                                <div><b>Humedad Relativa (%):</b> ${f(r.humedad_relativa)}</div>
+                                <div><b>Vel. Viento (m/s):</b> ${f(r.vel_viento)}</div>
+                                <div><b>Volumen aplicado (l/ha):</b> ${f(r.vol_aplicado)}</div>
+                            </div>
+                        </div>
+
+                        <div class="rf-card">
+                            <div style="font-weight:700;margin-bottom:8px;">Productos utilizados</div>
+                            <table class="rf-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre Comercial</th>
+                                        <th>Principio Activo</th>
+                                        <th>Dosis (ml/gr/ha)</th>
+                                        <th>Cant. Producto Usado</th>
+                                        <th>Fecha de Vencimiento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${prodsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="rf-card">
+                            <div style="text-align:center;font-weight:700;margin-bottom:8px;">Registro fotográfico y firmas</div>
+                            <div class="rf-media">${fotosHtml}</div>
+                            <div class="rf-signs">
+                                <div class="rf-sign">
+                                    ${firmaPiloto}
+                                    <small class="rf-muted">Firma Prestador de Servicio</small>
+                                </div>
+                                <div class="rf-sign">
+                                    ${firmaCliente}
+                                    <small class="rf-muted">Firma Representante del cliente</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rf-row rf-grid-2">
+                            <div class="rf-card">
+                                <div><b>Solicitud:</b> #${f(s.id)}</div>
+                                <div><b>Fecha visita:</b> ${f(s.fecha_visita)}</div>
+                                <div><b>Horario:</b> ${f(s.hora_visita)}</div>
+                                <div><b>Patologías:</b> ${f(s.patologias)}</div>
+                            </div>
+                            <div class="rf-card">
+                                <div><b>Dirección:</b> ${addr || '—'}</div>
+                                <div><b>Costo total:</b> ${fmtNum(s.costo_total)} ${f(s.moneda)}</div>
+                                <div><b>Creado:</b> ${fmtDT(s.created_at)}</div>
+                                <div><b>Actualizado:</b> ${fmtDT(s.updated_at)}</div>
+                            </div>
                         </div>
                     `;
+
+                    // Event export PDF
+                    const btnPdf = document.getElementById('btnPdf');
+                    btnPdf.onclick = async () => {
+                        try {
+                            const {
+                                jsPDF
+                            } = window.jspdf;
+                            const node = document.getElementById('registroPrint');
+
+                            const canvas = await html2canvas(node, {
+                                scale: 2,
+                                useCORS: true
+                            });
+                            const imgData = canvas.toDataURL('image/png');
+
+                            const pdf = new jsPDF('p', 'pt', 'a4');
+                            const pageWidth = pdf.internal.pageSize.getWidth();
+                            const pageHeight = pdf.internal.pageSize.getHeight();
+
+                            const imgWidth = pageWidth - 40; // 20pt margen izq/der
+                            const imgHeight = canvas.height * imgWidth / canvas.width;
+
+                            let position = 20;
+                            let remaining = imgHeight;
+
+                            let y = 20;
+                            let h = imgHeight;
+
+                            if (h <= pageHeight - 40) {
+                                pdf.addImage(imgData, 'PNG', 20, y, imgWidth, h);
+                            } else {
+                                // Particionado vertical simple
+                                let sY = 0;
+                                const onePageHeightPx = canvas.height * ((pageHeight - 40) / imgHeight);
+
+                                while (remaining > 0) {
+                                    const pageCanvas = document.createElement('canvas');
+                                    pageCanvas.width = canvas.width;
+                                    pageCanvas.height = Math.min(onePageHeightPx, remaining);
+                                    const ctx = pageCanvas.getContext('2d');
+                                    ctx.drawImage(canvas, 0, sY, canvas.width, pageCanvas.height, 0, 0, canvas.width, pageCanvas.height);
+
+                                    const pageImg = pageCanvas.toDataURL('image/png');
+                                    const pageImgHeight = (pageCanvas.height / canvas.width) * imgWidth;
+
+                                    pdf.addImage(pageImg, 'PNG', 20, 20, imgWidth, pageImgHeight);
+
+                                    remaining -= pageCanvas.height;
+                                    sY += pageCanvas.height;
+
+                                    if (remaining > 0) pdf.addPage();
+                                }
+                            }
+
+                            pdf.save(`registro_fitosanitario_${f(s.id)}.pdf`);
+                        } catch (err) {
+                            console.error(err);
+                            window.showToast?.('error', 'No se pudo exportar el PDF.');
+                        }
+                    };
                 } catch (e) {
-                    registroBody.innerHTML = `<p class="gform-helper">No se pudo cargar el registro: ${e.message || 'Error'}</p>`;
+                    const cont = document.getElementById('registroPrint');
+                    cont.innerHTML = `<p class="gform-helper">No se pudo cargar el registro: ${e.message || 'Error'}</p>`;
                 }
             }
 
