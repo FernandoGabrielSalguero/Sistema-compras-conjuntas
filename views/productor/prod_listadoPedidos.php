@@ -38,6 +38,13 @@ $sesion_payload = [
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
 
+    <!-- Bloqueo visual inmediato del modal fitosanitario para evitar "flash" (idéntico a SVE) -->
+    <style id="sve-fito-autoblock">
+        #modal-fito-json {
+            display: none !important;
+        }
+    </style>
+
     <style>
         .main {
             margin-left: 0;
@@ -263,11 +270,47 @@ $sesion_payload = [
 
                 <?php
                 // Definimos la constante JS global que el modal necesita para sus peticiones
-                echo '<script>window.DRONE_API = "../../views/partials/drones/controller/drone_list_controller.php";</script>';
+                $droneApiAbs = rtrim((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'], '/')
+                    . '/views/partials/drones/controller/drone_list_controller.php';
+                echo '<script>window.DRONE_API = ' . json_encode($droneApiAbs) . ';</script>';
 
                 // Modal de Registro Fitosanitario (aseguramos que esté dentro del <body>)
                 include __DIR__ . '/../partials/drones/view/drone_modal_fito_json.php';
                 ?>
+
+                <script>
+                    /* ==== Hotfix SVE: evitar auto-apertura del modal Fitosanitario y habilitar apertura sólo por interacción ==== */
+                    (function() {
+                        if (window.__SVE_FITO_PATCH__) return;
+                        window.__SVE_FITO_PATCH__ = true;
+
+                        function install() {
+                            if (!window.FitoJSONModal || typeof window.FitoJSONModal.open !== 'function') {
+                                setTimeout(install, 50);
+                                return;
+                            }
+                            const realOpen = window.FitoJSONModal.open.bind(window.FitoJSONModal);
+                            let unlocked = false;
+
+                            // Bloqueo por defecto: no permitir auto-open hasta que el usuario dispare la acción
+                            window.FitoJSONModal.open = function() {
+                                if (!unlocked) return;
+                                return realOpen.apply(this, arguments);
+                            };
+
+                            // API pública: igual que en drone_list_view.php
+                            window.__SVE_enableFitoAndOpen = function(id) {
+                                // Quita el autobloqueo visual si existe, para evitar flashes
+                                var autoblock = document.getElementById('sve-fito-autoblock');
+                                if (autoblock && autoblock.parentNode) autoblock.parentNode.removeChild(autoblock);
+                                unlocked = true;
+                                return realOpen(Number(id));
+                            };
+                        }
+                        install();
+                    })();
+                </script>
+
 
             </section>
         </div>
@@ -544,36 +587,42 @@ $sesion_payload = [
             // Contenedor donde viven las tarjetas
             const listado = $('#listado');
 
-            // Handler de apertura del modal de Registro Fitosanitario
-            // Handler de apertura del modal de Registro Fitosanitario
-            // (misma lógica que en los otros módulos: invocar directo la API pública del modal)
+            // Handler de apertura del modal de Registro Fitosanitario (idéntico criterio al de SVE)
             function onOpenFito(ev) {
                 const btnFito = ev.target.closest('button.btn-fito');
                 if (!btnFito) return;
 
                 const id = Number(btnFito.dataset.id);
 
-                // Llamada directa como en el módulo de ingeniero
+                // Preferimos la API pública con desbloqueo explícito (parche SVE)
+                if (typeof window.__SVE_enableFitoAndOpen === 'function') {
+                    window.__SVE_enableFitoAndOpen(id);
+                    return;
+                }
+
+                // Fallback: si el parche no cargó por algún motivo, abrimos directo si existe la API
                 if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
                     window.FitoJSONModal.open(id);
                     return;
                 }
 
-                // Fallback mínimo: si por timing aún no registró la API, mostrar modal y reintentar
+                // Último recurso: si el modal existe en DOM, lo mostramos y reintentamos breve
                 const modal = document.getElementById('modal-fito-json');
                 if (modal) {
                     modal.classList.remove('hidden');
                     setTimeout(() => {
-                        if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
+                        if (typeof window.__SVE_enableFitoAndOpen === 'function') {
+                            window.__SVE_enableFitoAndOpen(id);
+                        } else if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
                             window.FitoJSONModal.open(id);
                         }
                     }, 50);
                     return;
                 }
 
-                // Si no existe el modal en DOM
                 (window.showToast ? window.showToast('error', 'No se encontró el modal de Registro Fitosanitario.') : alert('No se encontró el modal de Registro Fitosanitario.'));
             }
+
 
             // Vincular delegación solo cuando #listado exista
             if (listado) {
