@@ -169,11 +169,16 @@ $sesion_payload = [
         }
 
         .modal-content {
-            width: min(560px, 100%);
             background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 24px 60px rgba(0, 0, 0, .25);
-            overflow: hidden;
+            border-radius: 10px;
+            max-width: 1100px;
+            /* <-- Cambiá este valor para definir el ancho deseado */
+            width: 90%;
+            /* <-- Ajusta el porcentaje de ancho */
+            max-height: 85vh;
+            /* <-- Ahora no ocupa el 100% del alto */
+            overflow-y: auto;
+            padding: 20px;
         }
 
         .modal-header,
@@ -657,9 +662,13 @@ $sesion_payload = [
                     const fmtDT = (x) => x ? new Date(x).toLocaleString('es-AR') : '—';
                     const addr = [s.dir_calle, s.dir_numero, s.dir_localidad, s.dir_provincia].filter(Boolean).join(' ');
 
-                    const fotosHtml = (media.foto || []).map(src => `<img src="${src}" alt="foto">`).join('');
-                    const firmaCliente = (media.firma_cliente && media.firma_cliente[0]) ? `<img src="${media.firma_cliente[0]}" alt="firma cliente">` : `<div style="width:180px;height:90px;border:1px dashed #bbb;background:#fff;"></div>`;
-                    const firmaPiloto = (media.firma_piloto && media.firma_piloto[0]) ? `<img src="${media.firma_piloto[0]}" alt="firma piloto">` : `<div style="width:180px;height:90px;border:1px dashed #bbb;background:#fff;"></div>`;
+                    const fotos = (d.media.fotos || []).map((f) =>
+                        `<img src="../../uploads/ReporteDrones/${id}/${f.archivo}" alt="${f.nombre}" />`
+                    ).join('');
+
+                    const firmas = (d.media.firmas || []).map((f) =>
+                        `<img src="../../uploads/ReporteDrones/${id}/${f.archivo}" alt="${f.nombre}" />`
+                    ).join('');
 
                     const prodsHtml = prods.map(p => `
                         <tr>
