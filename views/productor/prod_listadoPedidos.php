@@ -313,6 +313,125 @@ $sesion_payload = [
                 grid-template-columns: repeat(2, 1fr)
             }
         }
+
+        #modal-fito-json .hidden {
+        display: none !important
+    }
+
+    #modal-fito-json table td,
+    #modal-fito-json table th {
+        font-size: .95rem
+    }
+
+    /* Mostrar menú solo a SVE */
+    #modal-fito-json.role-no-sve .menu-flotante {
+        display: none !important;
+    }
+
+
+    /* Centramos el contenedor y damos padding para respirar en viewport pequeños */
+    #modal-fito-json {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+    }
+
+    /* Caja del modal: tamaño máximo y scroll vertical */
+    #modal-fito-json .modal-content {
+        max-width: 1024px;
+        /* respeta tu ancho actual */
+        max-height: 82vh;
+        /* ACHICADO: no ocupa toda la altura */
+        overflow: auto;
+        /* scroll interno */
+        scrollbar-gutter: stable both-edges;
+    }
+
+    /* Menú hamburguesa flotante en esquina superior derecha */
+    #modal-fito-json .menu-flotante {
+        position: sticky;
+        top: 8px;
+        margin-left: auto;
+        display: flex;
+        justify-content: flex-end;
+        z-index: 3;
+    }
+
+    /* Dropdown del menú */
+    #modal-fito-json .menu-dropdown {
+        position: absolute;
+        right: 16px;
+        top: 56px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 160px;
+    }
+
+    #modal-fito-json .menu-dropdown.hidden {
+        display: none !important;
+    }
+
+
+    /* Scrollbar amigable (opcional) */
+    #modal-fito-json .modal-content::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #modal-fito-json .modal-content::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 8px;
+    }
+
+    /* Un poco menos de margen vertical entre cards internas */
+    #modal-fito-json .card {
+        margin-top: 10px;
+    }
+
+    /* En móviles permitimos un poco más de alto útil */
+    @media (max-width: 768px) {
+        #modal-fito-json .modal-content {
+            max-height: 88vh;
+        }
+    }
+
+    /* Impresión se mantiene como antes (si ya lo añadiste en la vista principal, no hace falta duplicar) */
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+
+        #modal-fito-json,
+        #modal-fito-json * {
+            visibility: visible;
+        }
+
+        #modal-fito-json .form-buttons,
+        #modal-fito-json .menu-flotante {
+            display: none !important;
+        }
+
+
+        #modal-fito-json .modal-content {
+            box-shadow: none !important;
+            border: none !important;
+        }
+    }
+
+    /* Tamaño más grande para fotos (mejor impresión) */
+    #fito-galeria img {
+        height: 220px !important;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        object-fit: cover;
+        width: 100%;
+    }
     </style>
 </head>
 
@@ -777,7 +896,6 @@ cont.innerHTML = `
   </div>
 </div>
 `;
-
 
                     // Event export PDF
                     const btnPdf = document.getElementById('btnPdf');
