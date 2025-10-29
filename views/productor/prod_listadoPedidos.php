@@ -270,16 +270,81 @@ $sesion_payload = [
 
                 <?php
                 // Definimos la constante JS global que el modal necesita para sus peticiones
-                $droneApiAbs = rtrim((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'], '/')
-                    . '/views/partials/drones/controller/drone_list_controller.php';
-                echo '<script>window.DRONE_API = ' . json_encode($droneApiAbs) . ';</script>';
+                echo '<script>window.DRONE_API = null;</script>';
 
                 // Modal de Registro Fitosanitario (aseguramos que esté dentro del <body>)
                 include __DIR__ . '/../partials/drones/view/drone_modal_fito_json.php';
                 ?>
+                <script>
+                    /**
+                     * Resolutor robusto de DRONE_API con fallbacks y persistencia local.
+                     * - Prueba candidatos en orden hasta obtener un 200 con JSON {ok:true} del endpoint list_rangos.
+                     * - Persiste en localStorage para no repetir.
+                     * - Expone window.__SVE_resolveDroneAPI() que retorna una URL válida.
+                     */
+                    (function() {
+                        if (window.__SVE_DRONE_API_RESOLVER__) return;
+                        window.__SVE_DRONE_API_RESOLVER__ = true;
+
+                        const KEY = 'SVE_DRONE_API_URL';
+                        const cached = localStorage.getItem(KEY);
+
+                        // Lista de candidatos (absolutos y relativos) para cubrir distintas estructuras de deploy
+                        const CANDIDATES = [
+                            // Absoluto estándar (el que intentaste)
+                            new URL('/views/partials/drones/controller/drone_list_controller.php', location.origin).toString(),
+                            // Relativo al archivo actual (productor)
+                            new URL('../../views/partials/drones/controller/drone_list_controller.php', location.href).toString(),
+                            // Relativo al "view" (como en SVE)
+                            new URL('../partials/drones/controller/drone_list_controller.php', location.href).toString(),
+                            // Variante con "controllers" arriba (por si el proyecto lo ubica diferente)
+                            new URL('/controllers/partials/drones/drone_list_controller.php', location.origin).toString()
+                        ];
+
+                        async function probe(url) {
+                            try {
+                                const u = url + (url.includes('?') ? '&' : '?') + 'action=list_rangos';
+                                const res = await fetch(u, {
+                                    cache: 'no-store',
+                                    credentials: 'same-origin'
+                                });
+                                if (!res.ok) return false;
+                                const json = await res.json().catch(() => null);
+                                return json && json.ok === true;
+                            } catch {
+                                return false;
+                            }
+                        }
+
+                        async function resolve() {
+                            // 1) Si hay cache, probalo primero
+                            if (cached && await probe(cached)) {
+                                window.DRONE_API = cached;
+                                return cached;
+                            }
+                            // 2) Probar candidatos en orden
+                            for (const c of CANDIDATES) {
+                                if (await probe(c)) {
+                                    window.DRONE_API = c;
+                                    localStorage.setItem(KEY, c);
+                                    return c;
+                                }
+                            }
+                            // 3) Sin éxito: dejamos null y que el caller maneje el error
+                            window.DRONE_API = null;
+                            throw new Error('No se pudo resolver DRONE_API');
+                        }
+
+                        // API pública (Promise<string>)
+                        window.__SVE_resolveDroneAPI = async function() {
+                            if (window.DRONE_API) return window.DRONE_API;
+                            return await resolve();
+                        };
+                    })();
+                </script>
 
                 <script>
-                    /* ==== Hotfix SVE: evitar auto-apertura del modal Fitosanitario y habilitar apertura sólo por interacción ==== */
+                    /* ==== Hotfix + pre-resolución de DRONE_API antes de abrir ==== */
                     (function() {
                         if (window.__SVE_FITO_PATCH__) return;
                         window.__SVE_FITO_PATCH__ = true;
@@ -298,11 +363,22 @@ $sesion_payload = [
                                 return realOpen.apply(this, arguments);
                             };
 
-                            // API pública: igual que en drone_list_view.php
-                            window.__SVE_enableFitoAndOpen = function(id) {
+                            // API pública: igual que en drone_list_view.php, pero asegurando DRONE_API resuelta
+                            window.__SVE_enableFitoAndOpen = async function(id) {
                                 // Quita el autobloqueo visual si existe, para evitar flashes
                                 var autoblock = document.getElementById('sve-fito-autoblock');
                                 if (autoblock && autoblock.parentNode) autoblock.parentNode.removeChild(autoblock);
+
+                                try {
+                                    // Asegurar DRONE_API válida antes de abrir (evita 404 por ruta)
+                                    if (typeof window.__SVE_resolveDroneAPI === 'function') {
+                                        await window.__SVE_resolveDroneAPI();
+                                    }
+                                } catch (e) {
+                                    (window.showToast ? window.showToast('error', 'No se pudo resolver el servicio de drones.') : alert('No se pudo resolver el servicio de drones.'));
+                                    return;
+                                }
+
                                 unlocked = true;
                                 return realOpen(Number(id));
                             };
@@ -310,6 +386,7 @@ $sesion_payload = [
                         install();
                     })();
                 </script>
+
 
 
             </section>
@@ -588,25 +665,30 @@ $sesion_payload = [
             const listado = $('#listado');
 
             // Handler de apertura del modal de Registro Fitosanitario (idéntico criterio al de SVE)
-            function onOpenFito(ev) {
+            // Handler de apertura del modal de Registro Fitosanitario (espera DRONE_API resuelta)
+            async function onOpenFito(ev) {
                 const btnFito = ev.target.closest('button.btn-fito');
                 if (!btnFito) return;
 
                 const id = Number(btnFito.dataset.id);
 
-                // Preferimos la API pública con desbloqueo explícito (parche SVE)
+                try {
+                    if (typeof window.__SVE_resolveDroneAPI === 'function') {
+                        await window.__SVE_resolveDroneAPI(); // evita 404 por ruta incorrecta
+                    }
+                } catch (e) {
+                    (window.showToast ? window.showToast('error', 'No se pudo conectar al servicio de drones.') : alert('No se pudo conectar al servicio de drones.'));
+                    return;
+                }
+
                 if (typeof window.__SVE_enableFitoAndOpen === 'function') {
-                    window.__SVE_enableFitoAndOpen(id);
-                    return;
+                    return window.__SVE_enableFitoAndOpen(id);
                 }
 
-                // Fallback: si el parche no cargó por algún motivo, abrimos directo si existe la API
                 if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
-                    window.FitoJSONModal.open(id);
-                    return;
+                    return window.FitoJSONModal.open(id);
                 }
 
-                // Último recurso: si el modal existe en DOM, lo mostramos y reintentamos breve
                 const modal = document.getElementById('modal-fito-json');
                 if (modal) {
                     modal.classList.remove('hidden');
@@ -624,6 +706,7 @@ $sesion_payload = [
             }
 
 
+
             // Vincular delegación solo cuando #listado exista
             if (listado) {
                 listado.addEventListener('click', onOpenFito);
@@ -635,6 +718,17 @@ $sesion_payload = [
             }
         })();
     </script>
+
+    <script>
+        // Si por algún motivo otro script necesitara DRONE_API pronto:
+        (function() {
+            if (!window.DRONE_API && typeof window.__SVE_resolveDroneAPI === 'function') {
+                // Lanzamos en background un resolve (sin bloquear UI); el handler de botón espera explícitamente.
+                window.__SVE_resolveDroneAPI().catch(() => {});
+            }
+        })();
+    </script>
+
 
 </body>
 
