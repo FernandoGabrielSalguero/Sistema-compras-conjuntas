@@ -7,7 +7,6 @@ error_reporting(E_ALL);
 session_start();
 
 require_once '../../middleware/authMiddleware.php';
-
 checkAccess('productor');
 $nombre  = $_SESSION['nombre']  ?? 'Sin nombre';
 $idReal  = $_SESSION['id_real'] ?? null;
@@ -37,13 +36,6 @@ $sesion_payload = [
     <!-- CDN proyecto -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script defer src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"></script>
-
-    <!-- Bloqueo visual inmediato del modal fitosanitario para evitar "flash" (idéntico a SVE) -->
-    <style id="sve-fito-autoblock">
-        #modal-fito-json {
-            display: none !important;
-        }
-    </style>
 
     <style>
         .main {
@@ -268,127 +260,6 @@ $sesion_payload = [
                     </div>
                 </div>
 
-                <?php
-                // Definimos la constante JS global que el modal necesita para sus peticiones
-                echo '<script>window.DRONE_API = null;</script>';
-
-                // Modal de Registro Fitosanitario (aseguramos que esté dentro del <body>)
-                include __DIR__ . '/../partials/drones/view/drone_modal_fito_json.php';
-                ?>
-                <script>
-                    /**
-                     * Resolutor robusto de DRONE_API con fallbacks y persistencia local.
-                     * - Prueba candidatos en orden hasta obtener un 200 con JSON {ok:true} del endpoint list_rangos.
-                     * - Persiste en localStorage para no repetir.
-                     * - Expone window.__SVE_resolveDroneAPI() que retorna una URL válida.
-                     */
-                    (function() {
-                        if (window.__SVE_DRONE_API_RESOLVER__) return;
-                        window.__SVE_DRONE_API_RESOLVER__ = true;
-
-                        const KEY = 'SVE_DRONE_API_URL';
-                        const cached = localStorage.getItem(KEY);
-
-                        // Lista de candidatos (absolutos y relativos) para cubrir distintas estructuras de deploy
-                        const CANDIDATES = [
-                            // Absoluto estándar (el que intentaste)
-                            new URL('/views/partials/drones/controller/drone_list_controller.php', location.origin).toString(),
-                            // Relativo al archivo actual (productor)
-                            new URL('../../views/partials/drones/controller/drone_list_controller.php', location.href).toString(),
-                            // Relativo al "view" (como en SVE)
-                            new URL('../partials/drones/controller/drone_list_controller.php', location.href).toString(),
-                            // Variante con "controllers" arriba (por si el proyecto lo ubica diferente)
-                            new URL('/controllers/partials/drones/drone_list_controller.php', location.origin).toString()
-                        ];
-
-                        async function probe(url) {
-                            try {
-                                const u = url + (url.includes('?') ? '&' : '?') + 'action=list_rangos';
-                                const res = await fetch(u, {
-                                    cache: 'no-store',
-                                    credentials: 'same-origin'
-                                });
-                                if (!res.ok) return false;
-                                const json = await res.json().catch(() => null);
-                                return json && json.ok === true;
-                            } catch {
-                                return false;
-                            }
-                        }
-
-                        async function resolve() {
-                            // 1) Si hay cache, probalo primero
-                            if (cached && await probe(cached)) {
-                                window.DRONE_API = cached;
-                                return cached;
-                            }
-                            // 2) Probar candidatos en orden
-                            for (const c of CANDIDATES) {
-                                if (await probe(c)) {
-                                    window.DRONE_API = c;
-                                    localStorage.setItem(KEY, c);
-                                    return c;
-                                }
-                            }
-                            // 3) Sin éxito: dejamos null y que el caller maneje el error
-                            window.DRONE_API = null;
-                            throw new Error('No se pudo resolver DRONE_API');
-                        }
-
-                        // API pública (Promise<string>)
-                        window.__SVE_resolveDroneAPI = async function() {
-                            if (window.DRONE_API) return window.DRONE_API;
-                            return await resolve();
-                        };
-                    })();
-                </script>
-
-                <script>
-                    /* ==== Hotfix + pre-resolución de DRONE_API antes de abrir ==== */
-                    (function() {
-                        if (window.__SVE_FITO_PATCH__) return;
-                        window.__SVE_FITO_PATCH__ = true;
-
-                        function install() {
-                            if (!window.FitoJSONModal || typeof window.FitoJSONModal.open !== 'function') {
-                                setTimeout(install, 50);
-                                return;
-                            }
-                            const realOpen = window.FitoJSONModal.open.bind(window.FitoJSONModal);
-                            let unlocked = false;
-
-                            // Bloqueo por defecto: no permitir auto-open hasta que el usuario dispare la acción
-                            window.FitoJSONModal.open = function() {
-                                if (!unlocked) return;
-                                return realOpen.apply(this, arguments);
-                            };
-
-                            // API pública: igual que en drone_list_view.php, pero asegurando DRONE_API resuelta
-                            window.__SVE_enableFitoAndOpen = async function(id) {
-                                // Quita el autobloqueo visual si existe, para evitar flashes
-                                var autoblock = document.getElementById('sve-fito-autoblock');
-                                if (autoblock && autoblock.parentNode) autoblock.parentNode.removeChild(autoblock);
-
-                                try {
-                                    // Asegurar DRONE_API válida antes de abrir (evita 404 por ruta)
-                                    if (typeof window.__SVE_resolveDroneAPI === 'function') {
-                                        await window.__SVE_resolveDroneAPI();
-                                    }
-                                } catch (e) {
-                                    (window.showToast ? window.showToast('error', 'No se pudo resolver el servicio de drones.') : alert('No se pudo resolver el servicio de drones.'));
-                                    return;
-                                }
-
-                                unlocked = true;
-                                return realOpen(Number(id));
-                            };
-                        }
-                        install();
-                    })();
-                </script>
-
-
-
             </section>
         </div>
     </div>
@@ -401,26 +272,6 @@ $sesion_payload = [
             const API = '../../controllers/prod_listadoPedidosController.php';
             const $ = (s, ctx = document) => ctx.querySelector(s);
             const $$ = (s, ctx = document) => Array.from(ctx.querySelectorAll(s));
-
-            // Wrapper de toast seguro para evitar crash del framework si falta el contenedor
-            const toast = (type, msg) => {
-                try {
-                    if (typeof window.showToast === 'function') {
-                        window.showToast(type, msg);
-                        return;
-                    }
-                } catch (e) {
-                    console.warn('showToast falló, usando fallback:', e);
-                }
-                // Fallback accesible
-                if (type === 'error') {
-                    console.error(msg);
-                } else {
-                    console.log(msg);
-                }
-                alert(msg);
-            };
-
 
             const ses = (() => {
                 try {
@@ -489,23 +340,14 @@ $sesion_payload = [
             <div class="row"><span class="label">Costo del servicio</span><span class="value">${fmtNum(it.costo_total)} ${it.moneda||''}</span></div>
           </div>
 <div class="card-actions">
-  ${
-    (it.estado === 'completada')
-      ? `<button
-           class="btn btn-aceptar btn-fito"
-           data-id="${it.id}"
-           aria-label="Abrir registro fitosanitario de la solicitud ${it.id}"
-         >Registro Fitosanitario</button>`
-      : `<button
-           class="btn btn-cancelar btn-cancelar-soft"
-           data-id="${it.id}"
-           aria-label="Cancelar solicitud ${it.id}"
-           ${puedeCancelar ? '' : 'disabled'}
-           title="${puedeCancelar ? 'Cancelar solicitud' : 'Solo se puede cancelar en estado INGRESADA o APROBADA_COOP'}"
-         >Cancelar</button>`
-  }
+  <button
+    class="btn btn-cancelar btn-cancelar-soft"
+    data-id="${it.id}"
+    aria-label="Cancelar solicitud ${it.id}"
+    ${puedeCancelar ? '' : 'disabled'}
+    title="${puedeCancelar ? 'Cancelar solicitud' : 'Solo se puede cancelar en estado INGRESADA o APROBADA_COOP'}"
+  >Cancelar</button>
 </div>
-
         </article>
       `;
                 }).join('') || `<div class="gform-helper">No hay pedidos todavía.</div>`;
@@ -530,8 +372,7 @@ $sesion_payload = [
                     });
                     renderItems(data.items, data.total, data.page);
                 } catch (e) {
-                    toast('error', e.message || 'No se pudo cargar el listado.');
-
+                    window.showToast?.('error', e.message || 'No se pudo cargar el listado.');
                 } finally {
                     window.hideSpinner?.();
                 }
@@ -545,8 +386,7 @@ $sesion_payload = [
 
             function openCancelModal(id) {
                 if (!modalCancel) {
-                    toast('error', 'No se pudo abrir el modal.');
-
+                    window.showToast?.('error', 'No se pudo abrir el modal.');
                     return;
                 }
                 __pendingCancelId = Number(id);
@@ -603,8 +443,7 @@ $sesion_payload = [
                     closeCancelModal();
                     await load(); // sincroniza con servidor sin recargar página
                 } catch (e) {
-                    toast('error', 'No se pudo cancelar.');
-
+                    window.showToast?.('error', e.message || 'No se pudo cancelar.');
                 } finally {
                     btnModalConfirm.disabled = false;
                     btnModalConfirm.textContent = 'Sí, cancelar';
@@ -614,9 +453,9 @@ $sesion_payload = [
 
             // Delegación: abrir modal desde cada tarjeta (solo si está pendiente)
             listado.addEventListener('click', (ev) => {
-                const btn = ev.target.closest('button.btn-cancelar');
-                if (!btn) return;
-                if (btn.hasAttribute('disabled')) return; // evita abrir modal si está deshabilitado
+const btn = ev.target.closest('button.btn-cancelar');
+if (!btn) return;
+if (btn.hasAttribute('disabled')) return; // evita abrir modal si está deshabilitado
 
 
                 const card = btn.closest('.pedido-card');
@@ -626,12 +465,12 @@ $sesion_payload = [
                 const esCancelable = cancelables.includes(estado);
 
                 if (!esCancelable) {
-                    toast('error', 'Solo se pueden cancelar solicitudes en estado INGRESADA o APROBADA_COOP.');
-
+                    window.showToast?.('error', 'Solo se pueden cancelar solicitudes en estado INGRESADA o APROBADA_COOP.');
                     return;
                 }
                 openCancelModal(btn.dataset.id);
             });
+
 
             // Paginación
             pag.addEventListener('click', (ev) => {
@@ -646,90 +485,6 @@ $sesion_payload = [
             load();
         })();
     </script>
-
-    <script>
-        /**
-         * Script dedicado a la apertura del Registro Fitosanitario desde el listado del productor.
-         * - Define window.DRONE_API con ruta ABSOLUTA para que el modal lo use si lo necesita.
-         * - Enlaza el click de "Registro Fitosanitario" y llama a window.FitoJSONModal.open(id).
-         * - Incluye fallback seguro al modal #modal-fito-json.
-         */
-
-
-
-        (function() {
-            // Utilidades locales no intrusivas
-            const $ = (s, ctx = document) => ctx.querySelector(s);
-
-            // Contenedor donde viven las tarjetas
-            const listado = $('#listado');
-
-            // Handler de apertura del modal de Registro Fitosanitario (idéntico criterio al de SVE)
-            // Handler de apertura del modal de Registro Fitosanitario (espera DRONE_API resuelta)
-            async function onOpenFito(ev) {
-                const btnFito = ev.target.closest('button.btn-fito');
-                if (!btnFito) return;
-
-                const id = Number(btnFito.dataset.id);
-
-                try {
-                    if (typeof window.__SVE_resolveDroneAPI === 'function') {
-                        await window.__SVE_resolveDroneAPI(); // evita 404 por ruta incorrecta
-                    }
-                } catch (e) {
-                    (window.showToast ? window.showToast('error', 'No se pudo conectar al servicio de drones.') : alert('No se pudo conectar al servicio de drones.'));
-                    return;
-                }
-
-                if (typeof window.__SVE_enableFitoAndOpen === 'function') {
-                    return window.__SVE_enableFitoAndOpen(id);
-                }
-
-                if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
-                    return window.FitoJSONModal.open(id);
-                }
-
-                const modal = document.getElementById('modal-fito-json');
-                if (modal) {
-                    modal.classList.remove('hidden');
-                    setTimeout(() => {
-                        if (typeof window.__SVE_enableFitoAndOpen === 'function') {
-                            window.__SVE_enableFitoAndOpen(id);
-                        } else if (window.FitoJSONModal && typeof window.FitoJSONModal.open === 'function') {
-                            window.FitoJSONModal.open(id);
-                        }
-                    }, 50);
-                    return;
-                }
-
-                (window.showToast ? window.showToast('error', 'No se encontró el modal de Registro Fitosanitario.') : alert('No se encontró el modal de Registro Fitosanitario.'));
-            }
-
-
-
-            // Vincular delegación solo cuando #listado exista
-            if (listado) {
-                listado.addEventListener('click', onOpenFito);
-            } else {
-                document.addEventListener('DOMContentLoaded', () => {
-                    const $listado = document.getElementById('listado');
-                    $listado?.addEventListener('click', onOpenFito);
-                });
-            }
-        })();
-    </script>
-
-    <script>
-        // Si por algún motivo otro script necesitara DRONE_API pronto:
-        (function() {
-            if (!window.DRONE_API && typeof window.__SVE_resolveDroneAPI === 'function') {
-                // Lanzamos en background un resolve (sin bloquear UI); el handler de botón espera explícitamente.
-                window.__SVE_resolveDroneAPI().catch(() => {});
-            }
-        })();
-    </script>
-
-
 </body>
 
 </html>
