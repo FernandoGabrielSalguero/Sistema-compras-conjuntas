@@ -345,7 +345,9 @@ $sesion_payload = [
                 listado.innerHTML = items.map(it => {
                     const estadoClass = `estado-${it.estado}`;
                     const puedeCancelar = (['ingresada', 'aprobada_coop'].includes(it.estado));
-                    const puedeVerRegistro = (it.estado === 'completada');
+                    const estadoNorm = String(it.estado ?? '').trim().toLowerCase();
+                    const puedeVerRegistro = (estadoNorm === 'completada');
+
 
                     return `
         <article class="pedido-card" aria-label="Solicitud #${it.id}">
@@ -565,8 +567,9 @@ $sesion_payload = [
                 const card = btn.closest('.pedido-card');
                 const badge = card?.querySelector('.estado-badge');
                 const estado = badge?.textContent?.trim()?.toLowerCase() || '';
-                if (estado !== 'cancelada') {
-                    window.showToast?.('error', 'El registro solo está disponible para solicitudes canceladas.');
+                if (estado !== 'completada') {
+                    // No mostramos toast para evitar el error del framework
+                    console.warn('Registro solo disponible para solicitudes completadas.');
                     return;
                 }
                 openRegistroModal(btn.dataset.id);
