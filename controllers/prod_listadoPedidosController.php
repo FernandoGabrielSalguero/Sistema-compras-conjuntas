@@ -40,20 +40,36 @@ try {
 
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $action = $_GET['action'] ?? 'list';
-        if ($action !== 'list') {
-            http_response_code(400);
+        if ($action === 'list') {
+            $page = max(1, (int)($_GET['page'] ?? 1));
+            $size = min(50, max(1, (int)($_GET['size'] ?? 10)));
+            $offset = ($page - 1) * $size;
+
+            $res = $model->listByProductor($idReal, $size, $offset);
+            http_response_code(200);
             ob_clean();
-            echo json_encode(['ok' => false, 'error' => 'Acción GET no soportada']);
+            echo json_encode(['ok' => true, 'data' => ['items' => $res['items'], 'total' => $res['total'], 'page' => $page]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             exit;
         }
-        $page = max(1, (int)($_GET['page'] ?? 1));
-        $size = min(50, max(1, (int)($_GET['size'] ?? 10)));
-        $offset = ($page - 1) * $size;
 
-        $res = $model->listByProductor($idReal, $size, $offset);
-        http_response_code(200);
+        if ($action === 'detail') {
+            $id = (int)($_GET['id'] ?? 0);
+            if ($id <= 0) {
+                http_response_code(400);
+                ob_clean();
+                echo json_encode(['ok' => false, 'error' => 'ID inválido']);
+                exit;
+            }
+            $row = $model->detalleById($id, $idReal);
+            http_response_code(200);
+            ob_clean();
+            echo json_encode(['ok' => true, 'data' => $row], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            exit;
+        }
+
+        http_response_code(400);
         ob_clean();
-        echo json_encode(['ok' => true, 'data' => ['items' => $res['items'], 'total' => $res['total'], 'page' => $page]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        echo json_encode(['ok' => false, 'error' => 'Acción GET no soportada']);
         exit;
     }
 

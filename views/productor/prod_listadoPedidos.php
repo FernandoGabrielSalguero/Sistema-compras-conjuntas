@@ -260,6 +260,27 @@ $sesion_payload = [
                     </div>
                 </div>
 
+                <!-- Modal de Registro Fitosanitario -->
+                <div id="modalRegistro" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modalRegistroTitle">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 id="modalRegistroTitle" class="modal-title">Registro Fitosanitario</h3>
+                            <button type="button" class="modal-close" aria-label="Cerrar" onclick="closeRegistroModal()">
+                                <span class="material-icons">close</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="registroBody">
+                                <p class="gform-helper">Cargando…</p>
+                            </div>
+                        </div>
+                        <div class="modal-actions">
+                            <button class="btn btn-aceptar" onclick="closeRegistroModal()">Aceptar</button>
+                            <button class="btn btn-cancelar" onclick="closeRegistroModal()">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+
             </section>
         </div>
     </div>
@@ -324,6 +345,7 @@ $sesion_payload = [
                 listado.innerHTML = items.map(it => {
                     const estadoClass = `estado-${it.estado}`;
                     const puedeCancelar = (['ingresada', 'aprobada_coop'].includes(it.estado));
+                    const puedeVerRegistro = (it.estado === 'cancelada');
 
                     return `
         <article class="pedido-card" aria-label="Solicitud #${it.id}">
@@ -334,23 +356,30 @@ $sesion_payload = [
           <div class="pedido-meta">
             <div class="row"><span class="label">Hectáreas</span><span class="value">${fmtNum(it.superficie_ha)}</span></div>
             <div class="row"><span class="label">Fecha de visita</span><span class="value">${fmtFecha(it.fecha_visita)}</span></div>
-<div class="row"><span class="label">Horario de visita</span><span class="value">${it.hora_visita || '—'}</span></div>
-<div class="row"><span class="label">Patologías</span><span class="value" style="white-space:normal; text-align:right;">${it.patologias || '—'}</span></div>
-
+            <div class="row"><span class="label">Horario de visita</span><span class="value">${it.hora_visita || '—'}</span></div>
+            <div class="row"><span class="label">Patologías</span><span class="value" style="white-space:normal; text-align:right;">${it.patologias || '—'}</span></div>
             <div class="row"><span class="label">Costo del servicio</span><span class="value">${fmtNum(it.costo_total)} ${it.moneda||''}</span></div>
           </div>
-<div class="card-actions">
-  <button
-    class="btn btn-cancelar btn-cancelar-soft"
-    data-id="${it.id}"
-    aria-label="Cancelar solicitud ${it.id}"
-    ${puedeCancelar ? '' : 'disabled'}
-    title="${puedeCancelar ? 'Cancelar solicitud' : 'Solo se puede cancelar en estado INGRESADA o APROBADA_COOP'}"
-  >Cancelar</button>
-</div>
+          <div class="card-actions">
+            <button
+              class="btn btn-cancelar btn-cancelar-soft"
+              data-id="${it.id}"
+              aria-label="Cancelar solicitud ${it.id}"
+              ${puedeCancelar ? '' : 'disabled'}
+              title="${puedeCancelar ? 'Cancelar solicitud' : 'Solo se puede cancelar en estado INGRESADA o APROBADA_COOP'}"
+            >Cancelar</button>
+            ${puedeVerRegistro ? `
+            <button
+              class="btn btn-info btn-registro"
+              data-id="${it.id}"
+              aria-label="Ver registro fitosanitario ${it.id}"
+              title="Registro Fitosanitario"
+            >Registro Fitosanitario</button>` : ``}
+          </div>
         </article>
       `;
                 }).join('') || `<div class="gform-helper">No hay pedidos todavía.</div>`;
+
 
                 // Pagination (simple)
                 const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -453,9 +482,9 @@ $sesion_payload = [
 
             // Delegación: abrir modal desde cada tarjeta (solo si está pendiente)
             listado.addEventListener('click', (ev) => {
-const btn = ev.target.closest('button.btn-cancelar');
-if (!btn) return;
-if (btn.hasAttribute('disabled')) return; // evita abrir modal si está deshabilitado
+                const btn = ev.target.closest('button.btn-cancelar');
+                if (!btn) return;
+                if (btn.hasAttribute('disabled')) return; // evita abrir modal si está deshabilitado
 
 
                 const card = btn.closest('.pedido-card');
@@ -469,6 +498,86 @@ if (btn.hasAttribute('disabled')) return; // evita abrir modal si está deshabil
                     return;
                 }
                 openCancelModal(btn.dataset.id);
+            });
+
+            // ====== Modal de Registro Fitosanitario ======
+            const modalRegistro = document.getElementById('modalRegistro');
+            const registroBody = document.getElementById('registroBody');
+            let __invokerBtnRegistro = null;
+
+            function openRegistroModal(id) {
+                if (!modalRegistro) {
+                    window.showToast?.('error', 'No se pudo abrir el modal.');
+                    return;
+                }
+                modalRegistro.classList.add('is-open');
+                modalRegistro.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+                cargarRegistro(id);
+            }
+
+            function closeRegistroModal() {
+                modalRegistro.classList.remove('is-open');
+                modalRegistro.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+                if (__invokerBtnRegistro) {
+                    __invokerBtnRegistro.focus();
+                    __invokerBtnRegistro = null;
+                }
+            }
+            window.closeRegistroModal = closeRegistroModal;
+
+            async function cargarRegistro(id) {
+                try {
+                    registroBody.innerHTML = '<p class="gform-helper">Cargando…</p>';
+                    const data = await apiGet({
+                        action: 'detail',
+                        id: String(id)
+                    });
+                    const f = (s) => s ?? '—';
+                    const fmtDT = (s) => s ? new Date(s).toLocaleString('es-AR') : '—';
+
+                    registroBody.innerHTML = `
+                        <div class="listado" style="gap:.5rem;">
+                            <div class="row"><span class="label">Solicitud</span><span class="value">#${data.id}</span></div>
+                            <div class="row"><span class="label">Estado</span><span class="value">${f(data.estado)}</span></div>
+                            <div class="row"><span class="label">Motivo cancelación</span><span class="value" style="white-space:normal; text-align:right;">${f(data.motivo_cancelacion)}</span></div>
+                            <div class="row"><span class="label">Hectáreas</span><span class="value">${fmtNum(data.superficie_ha)}</span></div>
+                            <div class="row"><span class="label">Fecha visita</span><span class="value">${fmtFecha(data.fecha_visita)}</span></div>
+                            <div class="row"><span class="label">Horario visita</span><span class="value">${f(data.hora_visita)}</span></div>
+                            <div class="row"><span class="label">Patologías</span><span class="value" style="white-space:normal; text-align:right;">${f(data.patologias)}</span></div>
+                            <div class="row"><span class="label">Costo total</span><span class="value">${fmtNum(data.costo_total)} ${f(data.moneda)}</span></div>
+                            <div class="row"><span class="label">Dirección</span><span class="value" style="white-space:normal; text-align:right;">${[data.dir_calle, data.dir_numero, data.dir_localidad, data.dir_provincia].filter(Boolean).join(' ') || '—'}</span></div>
+                            <div class="row"><span class="label">Creado</span><span class="value">${fmtDT(data.created_at)}</span></div>
+                            <div class="row"><span class="label">Actualizado</span><span class="value">${fmtDT(data.updated_at)}</span></div>
+                        </div>
+                    `;
+                } catch (e) {
+                    registroBody.innerHTML = `<p class="gform-helper">No se pudo cargar el registro: ${e.message || 'Error'}</p>`;
+                }
+            }
+
+            // Delegación: abrir modal de registro
+            listado.addEventListener('click', (ev) => {
+                const btn = ev.target.closest('button.btn-registro');
+                if (!btn) return;
+                __invokerBtnRegistro = btn;
+                const card = btn.closest('.pedido-card');
+                const badge = card?.querySelector('.estado-badge');
+                const estado = badge?.textContent?.trim()?.toLowerCase() || '';
+                if (estado !== 'cancelada') {
+                    window.showToast?.('error', 'El registro solo está disponible para solicitudes canceladas.');
+                    return;
+                }
+                openRegistroModal(btn.dataset.id);
+            });
+
+            // Cerrar modal de registro con click de fondo y Escape
+            modalRegistro?.addEventListener('click', (e) => {
+                if (e.target === modalRegistro) closeRegistroModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modalRegistro?.classList.contains('is-open')) closeRegistroModal();
             });
 
 
