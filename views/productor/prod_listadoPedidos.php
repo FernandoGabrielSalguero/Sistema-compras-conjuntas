@@ -662,13 +662,26 @@ $sesion_payload = [
                     const fmtDT = (x) => x ? new Date(x).toLocaleString('es-AR') : '—';
                     const addr = [s.dir_calle, s.dir_numero, s.dir_localidad, s.dir_provincia].filter(Boolean).join(' ');
 
-                    const fotos = (d.media.fotos || []).map((f) =>
-                        `<img src="../../uploads/ReporteDrones/${id}/${f.archivo}" alt="${f.nombre}" />`
-                    ).join('');
+                    const normalizaRuta = (p) => {
+                        if (!p) return '';
+                        // si ya viene absoluta (/uploads/...), la dejamos; si es relativa, anteponemos "../../"
+                        const clean = String(p).replace(/^\.?\/*/, '');
+                        return p.startsWith('/') ? p : `../../${clean}`;
+                    };
 
-                    const firmas = (d.media.firmas || []).map((f) =>
-                        `<img src="../../uploads/ReporteDrones/${id}/${f.archivo}" alt="${f.nombre}" />`
-                    ).join('');
+                    // Galería de fotos
+                    const fotosHtml = (media.foto || [])
+                        .map(src => `<img src="${normalizaRuta(src)}" alt="foto">`)
+                        .join('');
+
+                    // Firmas (si no existen, mostramos marco vacío)
+                    const firmaCliente = (media.firma_cliente && media.firma_cliente[0]) ?
+                        `<img src="${normalizaRuta(media.firma_cliente[0])}" alt="firma cliente">` :
+                        `<div style="width:180px;height:90px;border:1px dashed #bbb;background:#fff;"></div>`;
+
+                    const firmaPiloto = (media.firma_piloto && media.firma_piloto[0]) ?
+                        `<img src="${normalizaRuta(media.firma_piloto[0])}" alt="firma piloto">` :
+                        `<div style="width:180px;height:90px;border:1px dashed #bbb;background:#fff;"></div>`;
 
                     const prodsHtml = prods.map(p => `
                         <tr>
