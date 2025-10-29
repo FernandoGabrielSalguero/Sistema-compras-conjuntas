@@ -692,82 +692,92 @@ $sesion_payload = [
                             <td>${f(p.fecha_vencimiento)}</td>
                         </tr>`).join('');
 
-                    cont.innerHTML = `
-                        <h3 class="rf-title">Registro Fitosanitario</h3>
+                    // ==== Formato estilo “fito-” (estructura y estilos inline, como tu ejemplo) ====
+cont.innerHTML = `
+<div id="fito-formato" style="background:#fff; border-radius:14px; padding:16px;">
+  <!-- Encabezado -->
+  <div class="header" style="display:flex; align-items:center; gap:16px; border-bottom:1px solid #e5e7eb; padding-bottom:12px; margin-bottom:12px;">
+    <img id="fito-logo" src="/assets/png/logo_con_color_original.png" alt="Logo" style="height:56px; width:auto;">
+    <div style="flex:1;">
+      <div style="font-weight:600;">Registro Aplicación Drone:</div>
+      <div>Ruta50Km1036,SanMartín</div>
+      <div>BodegaToro–Mdz.Arg</div>
+      <div>Teléfonodecontacto:261-2070518</div>
+    </div>
+    <div style="text-align:right;">
+      <div><strong>N°: ${f(s.id)}</strong></div>
+      <div>Fecha: ${f(s.fecha_visita)}</div>
+    </div>
+  </div>
 
-                        <div class="rf-row rf-grid-2">
-                            <div class="rf-card">
-                                <div><b>Cliente:</b> ${f(r.nom_cliente)}</div>
-                                <div><b>Representante:</b> ${f(r.nom_encargado)}</div>
-                                <div><b>Nombre finca:</b> ${f(r.nombre_finca)}</div>
-                            </div>
-                            <div class="rf-card">
-                                <div><b>Cultivo pulverizado:</b> ${f(r.cultivo_pulverizado)}</div>
-                                <div><b>Superficie pulverizada (ha):</b> ${f(r.sup_pulverizada)}</div>
-                                <div><b>Operador Drone:</b> ${f(r.nom_piloto)}</div>
-                            </div>
-                        </div>
+  <!-- Datos principales -->
+  <div class="grid-2" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+    <div class="card" style="padding:12px; border:1px solid #e5e7eb; border-radius:12px;">
+      <div><strong>Cliente:</strong> ${f(r.nom_cliente)}</div>
+      <div><strong>Representante:</strong> ${f(r.nom_encargado)}</div>
+      <div><strong>Nombre finca:</strong> ${f(r.nombre_finca)}</div>
+    </div>
+    <div class="card" style="padding:12px; border:1px solid #e5e7eb; border-radius:12px;">
+      <div><strong>Cultivo pulverizado:</strong> ${f(r.cultivo_pulverizado)}</div>
+      <div><strong>Superficie pulverizada (ha):</strong> ${f(r.sup_pulverizada)}</div>
+      <div><strong>Operador Drone:</strong> ${f(r.nom_piloto)}</div>
+    </div>
+  </div>
 
-                        <div class="rf-card">
-                            <div style="text-align:center;font-weight:700;margin-bottom:6px;">Condiciones meteorológicas al momento del vuelo</div>
-                            <div class="rf-row rf-grid-2">
-                                <div><b>Hora Ingreso:</b> ${f(r.hora_ingreso)}</div>
-                                <div><b>Hora Salida:</b> ${f(r.hora_egreso)}</div>
-                                <div><b>Temperatura (°C):</b> ${f(r.temperatura)}</div>
-                                <div><b>Humedad Relativa (%):</b> ${f(r.humedad_relativa)}</div>
-                                <div><b>Vel. Viento (m/s):</b> ${f(r.vel_viento)}</div>
-                                <div><b>Volumen aplicado (l/ha):</b> ${f(r.vol_aplicado)}</div>
-                            </div>
-                        </div>
+  <!-- Condiciones (solo si hay datos) -->
+  <div class="card" style="margin-top:12px; padding:12px; border:1px solid #e5e7eb; border-radius:12px; ${(r.hora_ingreso||r.hora_egreso||r.temperatura||r.humedad_relativa||r.vel_viento||r.vol_aplicado)?'':'display:none;'}">
+    <div style="font-weight:600; margin-bottom:8px;">Condiciones meteorológicas al momento del vuelo</div>
+    <div class="grid-4" style="display:grid; grid-template-columns: repeat(4,1fr); gap:8px;">
+      <div>Hora Ingreso: <span>${f(r.hora_ingreso)}</span></div>
+      <div>Hora Salida: <span>${f(r.hora_egreso)}</span></div>
+      <div>Temperatura (°C): <span>${f(r.temperatura)}</span></div>
+      <div>Humedad Relativa (%): <span>${f(r.humedad_relativa)}</span></div>
+      <div>Vel. Viento (m/s): <span>${f(r.vel_viento)}</span></div>
+      <div>Volumen aplicado (l/ha): <span>${f(r.vol_aplicado)}</span></div>
+    </div>
+  </div>
 
-                        <div class="rf-card">
-                            <div style="font-weight:700;margin-bottom:8px;">Productos utilizados</div>
-                            <table class="rf-table">
-                                <thead>
-                                    <tr>
-                                        <th>Nombre Comercial</th>
-                                        <th>Principio Activo</th>
-                                        <th>Dosis (ml/gr/ha)</th>
-                                        <th>Cant. Producto Usado</th>
-                                        <th>Fecha de Vencimiento</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${prodsHtml}
-                                </tbody>
-                            </table>
-                        </div>
+  <!-- Tabla de productos -->
+  <div class="card" style="margin-top:12px; padding:12px; border:1px solid #e5e7eb; border-radius:12px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+      <div style="font-weight:600;">Productos utilizados</div>
+    </div>
+    <div style="overflow:auto;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="border-bottom:1px solid #e5e7eb; text-align:left; padding:8px;">Nombre Comercial</th>
+            <th style="border-bottom:1px solid #e5e7eb; text-align:left; padding:8px;">Principio Activo</th>
+            <th style="border-bottom:1px solid #e5e7eb; text-align:left; padding:8px;">Dosis (ml/gr/ha)</th>
+            <th style="border-bottom:1px solid #e5e7eb; text-align:left; padding:8px;">Cant. Producto Usado</th>
+            <th style="border-bottom:1px solid #e5e7eb; text-align:left; padding:8px;">Fecha de Vencimiento</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${prodsHtml}
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-                        <div class="rf-card">
-                            <div style="text-align:center;font-weight:700;margin-bottom:8px;">Registro fotográfico y firmas</div>
-                            <div class="rf-media">${fotosHtml}</div>
-                            <div class="rf-signs">
-                                <div class="rf-sign">
-                                    ${firmaPiloto}
-                                    <small class="rf-muted">Firma Prestador de Servicio</small>
-                                </div>
-                                <div class="rf-sign">
-                                    ${firmaCliente}
-                                    <small class="rf-muted">Firma Representante del cliente</small>
-                                </div>
-                            </div>
-                        </div>
+  <!-- Galería -->
+  <div class="card" style="margin-top:12px; padding:12px; border:1px solid #e5e7eb; border-radius:12px;">
+    <div style="font-weight:600; margin-bottom:8px;">Registro fotográfico y firmas</div>
+    <div id="fito-galeria" class="grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:12px;">${fotosHtml}</div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:12px;">
+      <div style="text-align:center;">
+        ${firmaPiloto}
+        <div>Firma Prestador de Servicio</div>
+      </div>
+      <div style="text-align:center;">
+        ${firmaCliente}
+        <div>Firma Representante del cliente</div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
 
-                        <div class="rf-row rf-grid-2">
-                            <div class="rf-card">
-                                <div><b>Solicitud:</b> #${f(s.id)}</div>
-                                <div><b>Fecha visita:</b> ${f(s.fecha_visita)}</div>
-                                <div><b>Horario:</b> ${f(s.hora_visita)}</div>
-                                <div><b>Patologías:</b> ${f(s.patologias)}</div>
-                            </div>
-                            <div class="rf-card">
-                                <div><b>Dirección:</b> ${addr || '—'}</div>
-                                <div><b>Costo total:</b> ${fmtNum(s.costo_total)} ${f(s.moneda)}</div>
-                                <div><b>Creado:</b> ${fmtDT(s.created_at)}</div>
-                                <div><b>Actualizado:</b> ${fmtDT(s.updated_at)}</div>
-                            </div>
-                        </div>
-                    `;
 
                     // Event export PDF
                     const btnPdf = document.getElementById('btnPdf');
