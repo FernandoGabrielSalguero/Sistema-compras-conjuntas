@@ -224,7 +224,7 @@ final class DroneDrawerListadoModel
         $this->pdo->beginTransaction();
         try {
             $estado = isset($s['estado']) ? strtolower((string)$s['estado']) : null;
-            $validEstados = ['ingresada', 'procesando', 'aprobada_coop', 'cancelada', 'completada'];
+            $validEstados = ['ingresada', 'procesando', 'aprobada_coop', 'cancelada', 'completada', 'visita_realizada'];
             if ($estado !== null && !in_array($estado, $validEstados, true)) {
                 throw new InvalidArgumentException('Estado no válido');
             }
