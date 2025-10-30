@@ -41,7 +41,7 @@ unset($_SESSION['cierre_info']);
     /* === Modal Drone: dimensiones cómodas para la vista embebida === */
     #modalDrone .modal-content {
         width: min(1200px, 95vw);
-        max-height: 90vh;
+        max-height: 95vh;
         overflow: hidden;
     }
 
