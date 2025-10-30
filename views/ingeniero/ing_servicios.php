@@ -212,8 +212,9 @@ unset($_SESSION['cierre_info']);
                         <h3 id="modalTractorTitle">Detalle Tractor</h3>
                         <p id="modalTractorBody">Información del productor seleccionada aparecerá aquí.</p>
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="button" onclick="closeModal('modalTractor')">Aceptar</button>
-                            <button class="btn btn-cancelar" type="button" onclick="closeModal('modalTractor')">Cancelar</button>
+                            <button class="btn btn-aceptar" type="button" onclick="sveCloseModal('modalTractor')">Aceptar</button>
+                            <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalTractor')">Cancelar</button>
+
 
                         </div>
                     </div>
@@ -224,8 +225,9 @@ unset($_SESSION['cierre_info']);
                         <h3 id="modalDroneTitle">Detalle Drone</h3>
                         <p id="modalDroneBody">Información del productor seleccionada aparecerá aquí.</p>
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="button" onclick="closeModal('modalDrone')">Aceptar</button>
-                            <button class="btn btn-cancelar" type="button" onclick="closeModal('modalDrone')">Cancelar</button>
+                            <button class="btn btn-aceptar" type="button" onclick="sveCloseModal('modalDrone')">Aceptar</button>
+                            <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalDrone')">Cancelar</button>
+
 
                         </div>
                     </div>
@@ -236,8 +238,9 @@ unset($_SESSION['cierre_info']);
                         <h3 id="modalFamiliaTitle">Grupo Familiar</h3>
                         <p id="modalFamiliaBody">Información del productor seleccionada aparecerá aquí.</p>
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="button" onclick="closeModal('modalFamilia')">Aceptar</button>
-                            <button class="btn btn-cancelar" type="button" onclick="closeModal('modalFamilia')">Cancelar</button>
+                            <button class="btn btn-aceptar" type="button" onclick="sveCloseModal('modalFamilia')">Aceptar</button>
+                            <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalFamilia')">Cancelar</button>
+
 
                         </div>
                     </div>
@@ -368,7 +371,6 @@ unset($_SESSION['cierre_info']);
     <td>${p.telefono || '-'}</td>
     <td>${p.zona || '-'}</td>
     <td>
-        <td>
     <!-- TOOLTIP: botón Tractor -->
     <button class="btn-icon" aria-label="Tractor" title="Tractor" onclick="openModalId('modalTractor')">
         <span class="material-symbols-outlined" style="color:green;">agriculture</span>
@@ -384,6 +386,7 @@ unset($_SESSION['cierre_info']);
         <span class="material-icons" style="color:green;">diversity_3</span>
     </button>
 </td>
+
 
 `;
 
@@ -442,10 +445,20 @@ unset($_SESSION['cierre_info']);
             el && el.classList.remove('hidden');
         }
 
-        function closeModal(id) {
-            console.log('closeModal', id);
+        // Namespacing para apertura también, si en el futuro hay colisión:
+        window.openModalId = window.openModalId || function(id) {
+            console.log('openModalId', id);
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('hidden');
+        };
+
+        // Namespacing para no chocar con framework.js
+        function sveCloseModal(id) {
+            console.log('sveCloseModal', id);
             const modal = document.getElementById(id);
-            if (modal) modal.classList.add('hidden');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
         }
     </script>
 
