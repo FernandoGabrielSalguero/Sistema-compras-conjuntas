@@ -6,8 +6,8 @@ ini_set('display_errors', '0');
 error_reporting(E_ALL);
 header('Content-Type: application/json; charset=utf-8');
 
-require_once __DIR__ . '/../model/ing_new_pulverizacion_model.php';
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../models/ing_new_pulverizacion_model.php';
 
 $resp = function (array $data = [], bool $ok = true, ?string $err = null) {
     echo json_encode($ok ? ['ok' => true, 'data' => $data] : ['ok' => false, 'error' => $err ?? 'Error'], JSON_UNESCAPED_UNICODE);
