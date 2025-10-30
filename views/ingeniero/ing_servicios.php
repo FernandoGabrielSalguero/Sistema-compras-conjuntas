@@ -37,6 +37,31 @@ unset($_SESSION['cierre_info']);
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 </head>
 
+<style>
+    /* === Filtros responsive (solo esta vista) === */
+    #card-filtros .filters-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        align-items: end;
+    }
+
+    /* Tablet */
+    @media (max-width: 900px) {
+        #card-filtros .filters-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+        #card-filtros .filters-grid {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+    }
+</style>
+
+
 <body>
 
     <!-- 🔲 CONTENEDOR PRINCIPAL -->
@@ -130,7 +155,7 @@ unset($_SESSION['cierre_info']);
                 <!-- 🔎 Filtros -->
                 <div class="card" id="card-filtros" aria-labelledby="filtros-title">
                     <h2 id="filtros-title">Filtros</h2>
-                    <div class="form-grid grid-2">
+                    <div class="filters-grid">
                         <div class="input-group">
                             <label for="filtroNombre">Nombre</label>
                             <div class="input-icon input-icon-name">
@@ -149,11 +174,12 @@ unset($_SESSION['cierre_info']);
                                 <input type="text" id="filtroZona" name="filtroZona" placeholder="Ej: Este / Oeste / Valle" />
                             </div>
                         </div>
-                        <br>
-                        <button class="btn btn-info" type="button" id="btnLimpiarFiltros">Limpiar filtros</button>
+                        <div>
+                            <button class="btn btn-info" type="button" id="btnLimpiarFiltros" style="width:100%;">Limpiar filtros</button>
+                        </div>
                     </div>
-
                 </div>
+
 
                 <!-- 📊 Tabla de productores -->
                 <div class="card tabla-card" id="card-productores" aria-labelledby="prod-title">
@@ -339,32 +365,18 @@ unset($_SESSION['cierre_info']);
     <td>${p.telefono || '-'}</td>
     <td>${p.zona || '-'}</td>
     <td>
-        <button class="btn-icon"
-                aria-label="Tractor"
-                title="Tractor"
-                data-id_real="${p.id_real || ''}"
-                data-nombre="${(p.nombre || '').replace(/"/g, '&quot;')}"
-                onclick="openModalFromBtn('modalTractor', this)">
+        <button class="btn-icon" aria-label="Tractor" title="Tractor" onclick="openModalId('modalTractor')">
             <span class="material-symbols-outlined">agriculture</span>
         </button>
-        <button class="btn-icon"
-                aria-label="Drone"
-                title="Drone"
-                data-id_real="${p.id_real || ''}"
-                data-nombre="${(p.nombre || '').replace(/"/g, '&quot;')}"
-                onclick="openModalFromBtn('modalDrone', this)">
+        <button class="btn-icon" aria-label="Drone" title="Drone" onclick="openModalId('modalDrone')">
             <span class="material-symbols-outlined">drone</span>
         </button>
-        <button class="btn-icon"
-                aria-label="Familia"
-                title="Familia"
-                data-id_real="${p.id_real || ''}"
-                data-nombre="${(p.nombre || '').replace(/"/g, '&quot;')}"
-                onclick="openModalFromBtn('modalFamilia', this)">
+        <button class="btn-icon" aria-label="Familia" title="Familia" onclick="openModalId('modalFamilia')">
             <span class="material-icons">diversity_3</span>
         </button>
     </td>
 `;
+
 
                         tbody.appendChild(tr);
                     });
@@ -413,30 +425,19 @@ unset($_SESSION['cierre_info']);
             }
         }
 
-        function openModalFromBtn(modalId, btn) {
-            const payload = {
-                id_real: btn.dataset.id_real || '',
-                nombre: btn.dataset.nombre || ''
-            };
-            console.log('openModalFromBtn', modalId, payload);
-            openModal(modalId, payload);
+        // Modales simples: un botón → un modal (sin payload)
+        function openModalId(id) {
+            console.log('openModalId', id);
+            const el = document.getElementById(id);
+            el && el.classList.remove('hidden');
         }
 
-        // Modales simples (evita layout shift)
-        function openModal(id, payload = null) {
-            console.log('openModal', id, payload);
+        function closeModal(id) {
+            console.log('closeModal', id);
             const el = document.getElementById(id);
-            if (payload && id === 'modalTractor') {
-                document.getElementById('modalTractorBody').textContent = `Productor: ${payload.nombre || '-'} (ID Real: ${payload.id_real || '-'})`;
-            }
-            if (payload && id === 'modalDrone') {
-                document.getElementById('modalDroneBody').textContent = `Productor: ${payload.nombre || '-'} (ID Real: ${payload.id_real || '-'})`;
-            }
-            if (payload && id === 'modalFamilia') {
-                document.getElementById('modalFamiliaBody').textContent = `Productor: ${payload.nombre || '-'} (ID Real: ${payload.id_real || '-'})`;
-            }
-            el?.classList.remove('hidden');
+            el && el.classList.add('hidden');
         }
+
 
         function closeModal(id) {
             console.log('closeModal', id);
