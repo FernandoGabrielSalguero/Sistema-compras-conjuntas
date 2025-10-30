@@ -109,6 +109,10 @@ unset($_SESSION['cierre_info']);
                     <span class="link-text">Drones</span>
                     </li>
 
+                    <li onclick="location.href='ing_servicios.php'">
+                        <span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Servicios</span>
+                    </li>
+
                     <li onclick="location.href='../../../logout.php'">
                         <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
                     </li>
