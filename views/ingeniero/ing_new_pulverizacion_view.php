@@ -424,6 +424,59 @@
                 hid = $('#prod_idreal'),
                 ta = $('#ta'),
                 prodNombreSnap = $('#prod_nombre_snap');
+
+            // === Prefill de productor desde el parent/URL ===
+            // Permite completar automáticamente el productor al abrir el modal.
+            // Prioriza: evento -> objeto global -> querystring.
+
+            function __prefillProductor(data) {
+                if (!data) return;
+                const idReal = String(
+                    data.id_real ?? data.productor_id_real ?? data.idReal ?? ''
+                ).trim();
+                const nombre =
+                    (data.nombre ?? data.usuario ?? data.name ?? '').toString().trim();
+
+                if (idReal && nombre) {
+                    // Autocompleta UI
+                    txt.value = nombre;
+                    // Campos que usa el backend:
+                    hid.value = idReal.slice(0, 20); // drones_solicitud.productor_id_real (FK -> usuarios.id_real)
+                    prodNombreSnap.value = nombre.slice(0, 150); // snapshot opcional
+                    // Cierra cualquier typeahead abierto
+                    show(ta, false);
+                }
+            }
+
+            // 1) Escucha un evento para prefill (padre puede dispararlo al abrir el modal)
+            window.addEventListener('sve:modal_prefill', (ev) => {
+                try {
+                    __prefillProductor(ev.detail || {});
+                } catch (e) {}
+            });
+
+            // 2) Objeto global opcional que el padre puede setear antes de cargar el iframe/contenido
+            if (window.__SVE_MODAL_PREFILL) {
+                try {
+                    __prefillProductor(window.__SVE_MODAL_PREFILL);
+                } catch (e) {}
+            }
+
+            // 3) Querystring ?prod_id_real=...&prod_nombre=...
+            try {
+                const qs = new URLSearchParams(location.search);
+                const qId = qs.get('prod_id_real');
+                const qNom = qs.get('prod_nombre') || qs.get('nombre') || qs.get('usuario');
+                if (qId && qNom) __prefillProductor({
+                    id_real: qId,
+                    nombre: qNom
+                });
+            } catch (e) {
+                /* noop */ }
+
+            // 4) API pública para uso directo desde el padre
+            window.dronePulvPrefill = __prefillProductor;
+
             let items = [];
             txt.addEventListener('input', async () => {
                 const q = txt.value.trim();
