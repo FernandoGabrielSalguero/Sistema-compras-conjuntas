@@ -93,8 +93,18 @@ unset($_SESSION['cierre_info']);
 
                 <!-- Bienvenida -->
                 <div class="card">
-                    <h2>Hola</h2>
-                    <p>Te presentamos el tablero Power BI. Vas a poder consultar todas las metricas desde esta página</p>
+                    <h2>Hola! </h2>
+                    <p>En esta página, vas a poder solicitar los servicios disponibles para los productores asociados a tus cooperativas</p>
+
+                    <!-- 🔘 Tarjeta con los botones del tab -->
+                    <div class="tabs">
+                        <div class="tab-buttons" role="tablist" aria-label="Secciones de pulverización">
+
+                            <!-- Botón Tutorial -->
+                            <button type="button" id="btnIniciarTutorial" class="btn btn-info" aria-label="Iniciar tutorial" style="margin-left:auto">Tutorial</button>
+
+                        </div>
+                    </div>
                 </div>
 
 
