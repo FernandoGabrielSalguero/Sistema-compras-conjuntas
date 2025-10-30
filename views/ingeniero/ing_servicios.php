@@ -229,8 +229,8 @@ unset($_SESSION['cierre_info']);
                         <h3 id="modalTractorTitle">Crear una solicitud de cosecha mecanica</h3>
                         <p id="modalTractorBody">Pronto, vas a poder solicitarle servicios de cosecha mecanica a los productores.</p>
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="button" onclick="sveCloseModal('modalTractor')">Aceptar</button>
-                            <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalTractor')">Cancelar</button>
+
+                            <button class="btn btn-cerrar" type="button" onclick="sveCloseModal('modalTractor')">Cancelar</button>
 
 
                         </div>
@@ -253,8 +253,8 @@ unset($_SESSION['cierre_info']);
                         </div>
 
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="button" onclick="sveCloseModal('modalDrone')">Aceptar</button>
-                            <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalDrone')">Cancelar</button>
+
+                            <button class="btn btn-cerrar" type="button" onclick="sveCloseModal('modalDrone')">Cancelar</button>
                         </div>
                     </div>
                 </div>
@@ -264,8 +264,8 @@ unset($_SESSION['cierre_info']);
                         <h3 id="modalFamiliaTitle">Sistema de relevamiento</h3>
                         <p id="modalFamiliaBody">Pronto, vas a tener acceso a las opciones de relevamiento desde este boton</p>
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="button" onclick="sveCloseModal('modalFamilia')">Aceptar</button>
-                            <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalFamilia')">Cancelar</button>
+
+                            <button class="btn btn-cerrar" type="button" onclick="sveCloseModal('modalFamilia')">Cancelar</button>
 
 
                         </div>
