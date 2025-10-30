@@ -397,24 +397,23 @@ unset($_SESSION['cierre_info']);
     <td>${p.telefono || '-'}</td>
     <td>${p.zona || '-'}</td>
     <td>
-    <!-- TOOLTIP: botón Tractor -->
-    <button class="btn-icon" aria-label="Tractor" title="Cosecha mecanica" onclick="openModalId('modalTractor')">
-        <span class="material-symbols-outlined" style="color:red;">agriculture</span>
-    </button>
+        <!-- TOOLTIP: botón Tractor -->
+        <button class="btn-icon" aria-label="Tractor" title="Cosecha mecánica" onclick="openModalId('modalTractor', this)">
+            <span class="material-symbols-outlined" style="color:red;">agriculture</span>
+        </button>
 
-    <!-- TOOLTIP: botón Drone -->
-    <button class="btn-icon" aria-label="Drone" title="Pulverización con Drone" onclick="openModalId('modalDrone')">
-        <span class="material-symbols-outlined" style="color:green;">drone</span>
-    </button>
+        <!-- TOOLTIP: botón Drone -->
+        <button class="btn-icon" aria-label="Drone" title="Pulverización con Drone" onclick="openModalId('modalDrone', this)">
+            <span class="material-symbols-outlined" style="color:green;">drone</span>
+        </button>
 
-    <!-- TOOLTIP: botón Familia -->
-    <button class="btn-icon" aria-label="Familia" title="Relevamiento" onclick="openModalId('modalFamilia')">
-        <span class="material-icons" style="color:blue;">diversity_3</span>
-    </button>
-</td>
-
-
+        <!-- TOOLTIP: botón Familia -->
+        <button class="btn-icon" aria-label="Familia" title="Relevamiento" onclick="openModalId('modalFamilia', this)">
+            <span class="material-icons" style="color:blue;">diversity_3</span>
+        </button>
+    </td>
 `;
+
 
 
                         tbody.appendChild(tr);
@@ -465,17 +464,29 @@ unset($_SESSION['cierre_info']);
         }
 
         // Modales simples: un botón → un modal (sin payload)
-        function openModalId(id) {
+       function openModalId(id, btn = null) {
     console.log('openModalId', id);
+
+    // 🔹 Obtener datos del productor desde la fila del botón clickeado
+    if (btn && btn.closest('tr')) {
+        const fila = btn.closest('tr');
+        const datosProductor = {
+            nombre: fila.querySelector('td:nth-child(2)')?.innerText.trim() || '',
+            cuit: fila.querySelector('td:nth-child(3)')?.innerText.trim() || '',
+            telefono: fila.querySelector('td:nth-child(4)')?.innerText.trim() || '',
+            zona: fila.querySelector('td:nth-child(5)')?.innerText.trim() || ''
+        };
+        console.log('Datos usuario seleccionado en tabla:', datosProductor);
+        // Podrías almacenar en window.selectedProductor si querés usar en el iframe:
+        window.selectedProductor = datosProductor;
+    }
+
     const el = document.getElementById(id);
     if (el) {
-        // Si abrimos el modal de Drone, recargamos el iframe para garantizar estado limpio.
+        // Si abrimos el modal de Drone, recargamos el iframe limpio
         if (id === 'modalDrone') {
             const ifr = document.getElementById('modalDroneIframe');
             if (ifr) {
-                // Si querés pasar parámetros (ej: productor_id), acá es el lugar:
-                // const params = new URLSearchParams({ productor_id: seleccionadoId || '' }).toString();
-                // ifr.src = `./ing_new_pulverizacion_view.php?${params}`;
                 ifr.src = './ing_new_pulverizacion_view.php';
             }
         }
