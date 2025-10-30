@@ -704,6 +704,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </body>
 
 </html>
-
-<!-- Auditoría UI (opcional) -->
-<script defer src="/assets/js/activity_logger.js"></script>
