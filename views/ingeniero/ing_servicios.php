@@ -372,18 +372,18 @@ unset($_SESSION['cierre_info']);
     <td>${p.zona || '-'}</td>
     <td>
     <!-- TOOLTIP: botón Tractor -->
-    <button class="btn-icon" aria-label="Tractor" title="Tractor" onclick="openModalId('modalTractor')">
-        <span class="material-symbols-outlined" style="color:green;">agriculture</span>
+    <button class="btn-icon" aria-label="Tractor" title="Cosecha mecanica" onclick="openModalId('modalTractor')">
+        <span class="material-symbols-outlined" style="color:red;">agriculture</span>
     </button>
 
     <!-- TOOLTIP: botón Drone -->
-    <button class="btn-icon" aria-label="Drone" title="Drone" onclick="openModalId('modalDrone')">
+    <button class="btn-icon" aria-label="Drone" title="Pulverización con Drone" onclick="openModalId('modalDrone')">
         <span class="material-symbols-outlined" style="color:green;">drone</span>
     </button>
 
     <!-- TOOLTIP: botón Familia -->
-    <button class="btn-icon" aria-label="Familia" title="Familia" onclick="openModalId('modalFamilia')">
-        <span class="material-icons" style="color:green;">diversity_3</span>
+    <button class="btn-icon" aria-label="Familia" title="Relevamiento" onclick="openModalId('modalFamilia')">
+        <span class="material-icons" style="color:blue;">diversity_3</span>
     </button>
 </td>
 
