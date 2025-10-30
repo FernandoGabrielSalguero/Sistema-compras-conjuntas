@@ -103,118 +103,117 @@ unset($_SESSION['cierre_info']);
                             <button type="button" id="btnIniciarTutorial" class="btn btn-info" aria-label="Iniciar tutorial" style="margin-left:auto">Tutorial</button>
                         </div>
                     </div>
+                </div>
 
-                    <!-- 🧩 Cooperativas del ingeniero -->
-                    <div class="card" id="card-cooperativas" aria-labelledby="coops-title">
-                        <h2 id="coops-title">Tus cooperativas</h2>
-                        <p>Seleccioná una cooperativa para ver sus productores asociados.</p>
-                        <div class="form-grid grid-2">
-                            <div class="input-group">
-                                <label for="selectCooperativa">Cooperativa</label>
-                                <div class="input-icon input-icon-name">
-                                    <select id="selectCooperativa" name="selectCooperativa" aria-label="Seleccionar cooperativa">
-                                        <option value="">-- Seleccioná una cooperativa --</option>
-                                    </select>
-                                </div>
+                <!-- 🧩 Cooperativas del ingeniero -->
+                <div class="card" id="card-cooperativas" aria-labelledby="coops-title">
+                    <h2 id="coops-title">Tus cooperativas</h2>
+                    <p>Seleccioná una cooperativa para ver sus productores asociados.</p>
+                    <div class="form-grid grid-2">
+                        <div class="input-group">
+                            <label for="selectCooperativa">Cooperativa</label>
+                            <div class="input-icon input-icon-name">
+                                <select id="selectCooperativa" name="selectCooperativa" aria-label="Seleccionar cooperativa">
+                                    <option value="">-- Seleccioná una cooperativa --</option>
+                                </select>
                             </div>
-                            <div class="input-group">
-                                <label for="coopResumen">Resumen</label>
-                                <div class="input-icon input-icon-name">
-                                    <input type="text" id="coopResumen" name="coopResumen" placeholder="0 cooperativas" readonly />
-                                </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="coopResumen">Resumen</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="text" id="coopResumen" name="coopResumen" placeholder="0 cooperativas" readonly />
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- 🔎 Filtros -->
-                    <div class="card" id="card-filtros" aria-labelledby="filtros-title">
-                        <h2 id="filtros-title">Filtros</h2>
-                        <div class="form-grid grid-3">
-                            <div class="input-group">
-                                <label for="filtroNombre">Nombre</label>
-                                <div class="input-icon input-icon-name">
-                                    <input type="text" id="filtroNombre" name="filtroNombre" placeholder="Ej: Juan Pérez" aria-describedby="ayudaNombre" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="filtroCuit">CUIT</label>
-                                <div class="input-icon input-icon-name">
-                                    <input type="text" id="filtroCuit" name="filtroCuit" placeholder="Ej: 20123456789" inputmode="numeric" />
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="filtroZona">Zona</label>
-                                <div class="input-icon input-icon-name">
-                                    <input type="text" id="filtroZona" name="filtroZona" placeholder="Ej: Este / Oeste / Valle" />
-                                </div>
+                <!-- 🔎 Filtros -->
+                <div class="card" id="card-filtros" aria-labelledby="filtros-title">
+                    <h2 id="filtros-title">Filtros</h2>
+                    <div class="form-grid grid-3">
+                        <div class="input-group">
+                            <label for="filtroNombre">Nombre</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="text" id="filtroNombre" name="filtroNombre" placeholder="Ej: Juan Pérez" aria-describedby="ayudaNombre" />
                             </div>
                         </div>
-                        <div class="form-grid grid-3">
-                            <button class="btn btn-info" type="button" id="btnLimpiarFiltros">Limpiar filtros</button>
-                            <div></div>
-                            <div></div>
+                        <div class="input-group">
+                            <label for="filtroCuit">CUIT</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="text" id="filtroCuit" name="filtroCuit" placeholder="Ej: 20123456789" inputmode="numeric" />
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- 📊 Tabla de productores -->
-                    <div class="card tabla-card" id="card-productores" aria-labelledby="prod-title">
-                        <h2 id="prod-title">Productores asociados</h2>
-                        <div class="tabla-wrapper" style="max-height: 460px; overflow: auto;">
-                            <!-- 👇 Altura de la tabla: modificar el valor de max-height arriba si necesitás otro alto -->
-                            <table class="data-table" id="tablaProductores">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Nombre</th>
-                                        <th>CUIT</th>
-                                        <th>Teléfono</th>
-                                        <th>Zona</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbodyProductores">
-                                    <tr id="filaVacia">
-                                        <td colspan="6">Selecciona una cooperativa para poder ver a sus productores asociados</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- 🪟 Modales -->
-                    <div id="modalTractor" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTractorTitle">
-                        <div class="modal-content">
-                            <h3 id="modalTractorTitle">Detalle Tractor</h3>
-                            <p id="modalTractorBody">Información del productor seleccionada aparecerá aquí.</p>
-                            <div class="form-buttons">
-                                <button class="btn btn-aceptar" onclick="closeModal('modalTractor')">Aceptar</button>
-                                <button class="btn btn-cancelar" onclick="closeModal('modalTractor')">Cancelar</button>
+                        <div class="input-group">
+                            <label for="filtroZona">Zona</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="text" id="filtroZona" name="filtroZona" placeholder="Ej: Este / Oeste / Valle" />
                             </div>
                         </div>
                     </div>
+                    <div class="form-grid grid-3">
+                        <button class="btn btn-info" type="button" id="btnLimpiarFiltros">Limpiar filtros</button>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </div>
 
-                    <div id="modalDrone" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalDroneTitle">
-                        <div class="modal-content">
-                            <h3 id="modalDroneTitle">Detalle Drone</h3>
-                            <p id="modalDroneBody">Información del productor seleccionada aparecerá aquí.</p>
-                            <div class="form-buttons">
-                                <button class="btn btn-aceptar" onclick="closeModal('modalDrone')">Aceptar</button>
-                                <button class="btn btn-cancelar" onclick="closeModal('modalDrone')">Cancelar</button>
-                            </div>
+                <!-- 📊 Tabla de productores -->
+                <div class="card tabla-card" id="card-productores" aria-labelledby="prod-title">
+                    <h2 id="prod-title">Productores asociados</h2>
+                    <div class="tabla-wrapper" style="max-height: 460px; overflow: auto;">
+                        <!-- 👇 Altura de la tabla: modificar el valor de max-height arriba si necesitás otro alto -->
+                        <table class="data-table" id="tablaProductores">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nombre</th>
+                                    <th>CUIT</th>
+                                    <th>Teléfono</th>
+                                    <th>Zona</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyProductores">
+                                <tr id="filaVacia">
+                                    <td colspan="6">Selecciona una cooperativa para poder ver a sus productores asociados</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 🪟 Modales -->
+                <div id="modalTractor" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTractorTitle">
+                    <div class="modal-content">
+                        <h3 id="modalTractorTitle">Detalle Tractor</h3>
+                        <p id="modalTractorBody">Información del productor seleccionada aparecerá aquí.</p>
+                        <div class="form-buttons">
+                            <button class="btn btn-aceptar" onclick="closeModal('modalTractor')">Aceptar</button>
+                            <button class="btn btn-cancelar" onclick="closeModal('modalTractor')">Cancelar</button>
                         </div>
                     </div>
+                </div>
 
-                    <div id="modalFamilia" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalFamiliaTitle">
-                        <div class="modal-content">
-                            <h3 id="modalFamiliaTitle">Grupo Familiar</h3>
-                            <p id="modalFamiliaBody">Información del productor seleccionada aparecerá aquí.</p>
-                            <div class="form-buttons">
-                                <button class="btn btn-aceptar" onclick="closeModal('modalFamilia')">Aceptar</button>
-                                <button class="btn btn-cancelar" onclick="closeModal('modalFamilia')">Cancelar</button>
-                            </div>
+                <div id="modalDrone" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalDroneTitle">
+                    <div class="modal-content">
+                        <h3 id="modalDroneTitle">Detalle Drone</h3>
+                        <p id="modalDroneBody">Información del productor seleccionada aparecerá aquí.</p>
+                        <div class="form-buttons">
+                            <button class="btn btn-aceptar" onclick="closeModal('modalDrone')">Aceptar</button>
+                            <button class="btn btn-cancelar" onclick="closeModal('modalDrone')">Cancelar</button>
                         </div>
                     </div>
+                </div>
 
+                <div id="modalFamilia" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalFamiliaTitle">
+                    <div class="modal-content">
+                        <h3 id="modalFamiliaTitle">Grupo Familiar</h3>
+                        <p id="modalFamiliaBody">Información del productor seleccionada aparecerá aquí.</p>
+                        <div class="form-buttons">
+                            <button class="btn btn-aceptar" onclick="closeModal('modalFamilia')">Aceptar</button>
+                            <button class="btn btn-cancelar" onclick="closeModal('modalFamilia')">Cancelar</button>
+                        </div>
+                    </div>
                 </div>
 
 
