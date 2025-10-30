@@ -230,20 +230,25 @@
 
     <script>
         (() => {
-            const CTRL = 'ing_new_pulverizacion_controller.php';
+            const CTRL = '../../controllers/ing_new_pulverizacion_controller.php';
 
             const $ = s => document.querySelector(s);
             const show = (el, v) => el.classList.toggle('hidden', !v);
             const msg = $('#msg');
 
-            async function getJSON(url) {
-                const r = await fetch(url, {
-                    credentials: 'same-origin'
-                });
-                const j = await r.json();
-                if (!j.ok) throw new Error(j.error || 'Error');
-                return j.data;
-            }
+            async function getJSON(url){
+  const r = await fetch(url,{credentials:'same-origin'});
+  const txt = await r.text();
+  try{
+    const j = JSON.parse(txt);
+    if(!j.ok) throw new Error(j.error||'Error');
+    return j.data;
+  }catch(e){
+    console.error('No es JSON. Respuesta cruda:', txt.slice(0,300));
+    throw new Error('Respuesta no-JSON del servidor');
+  }
+}
+
             async function postJSON(url, body) {
                 const r = await fetch(url, {
                     method: 'POST',
