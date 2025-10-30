@@ -125,7 +125,7 @@
 <body>
 
     <div class="card">
-        <h2>Formulario de inscripción</h2>
+        <h2 style="text-align: center;">Formulario de inscripción</h2>
         <p class="notice">Completá los campos y confirmá. Se enviará un correo al productor y, si corresponde, a la cooperativa.</p>
 
         <form id="frm" novalidate>
