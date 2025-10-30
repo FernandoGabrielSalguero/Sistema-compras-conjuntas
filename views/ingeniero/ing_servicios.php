@@ -38,6 +38,23 @@ unset($_SESSION['cierre_info']);
 </head>
 
 <style>
+    /* === Modal Drone: dimensiones cómodas para la vista embebida === */
+    #modalDrone .modal-content {
+        width: min(1200px, 95vw);
+        max-height: 90vh;
+        overflow: hidden;
+    }
+
+    #modalDrone .modal-body {
+        margin-top: 8px;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 8px;
+    }
+
+    #modalDroneIframe {
+        background: #fff;
+    }
+
     /* === Filtros responsive (solo esta vista) === */
     #card-filtros .filters-grid {
         display: grid;
@@ -222,13 +239,22 @@ unset($_SESSION['cierre_info']);
 
                 <div id="modalDrone" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalDroneTitle">
                     <div class="modal-content">
-                        <h3 id="modalDroneTitle">Crear solicitud de pulveriazción con Drone</h3>
-                        <p id="modalDroneBody">Información del productor seleccionada aparecerá aquí.</p>
+                        <h3 id="modalDroneTitle">Crear solicitud de pulverización con Drone</h3>
+
+                        <!-- Vista embebida en iframe para evitar conflictos de HTML/CSS/JS -->
+                        <div id="modalDroneBody" class="modal-body">
+                            <iframe
+                                id="modalDroneIframe"
+                                src="./ing_new_pulverizacion_view.php"
+                                title="Nueva solicitud de pulverización"
+                                style="width:100%; height:80vh; border:0; display:block;"
+                                loading="lazy"
+                                referrerpolicy="no-referrer"></iframe>
+                        </div>
+
                         <div class="form-buttons">
                             <button class="btn btn-aceptar" type="button" onclick="sveCloseModal('modalDrone')">Aceptar</button>
                             <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalDrone')">Cancelar</button>
-
-
                         </div>
                     </div>
                 </div>
@@ -440,10 +466,22 @@ unset($_SESSION['cierre_info']);
 
         // Modales simples: un botón → un modal (sin payload)
         function openModalId(id) {
-            console.log('openModalId', id);
-            const el = document.getElementById(id);
-            el && el.classList.remove('hidden');
+    console.log('openModalId', id);
+    const el = document.getElementById(id);
+    if (el) {
+        // Si abrimos el modal de Drone, recargamos el iframe para garantizar estado limpio.
+        if (id === 'modalDrone') {
+            const ifr = document.getElementById('modalDroneIframe');
+            if (ifr) {
+                // Si querés pasar parámetros (ej: productor_id), acá es el lugar:
+                // const params = new URLSearchParams({ productor_id: seleccionadoId || '' }).toString();
+                // ifr.src = `./ing_new_pulverizacion_view.php?${params}`;
+                ifr.src = './ing_new_pulverizacion_view.php';
+            }
         }
+        el.classList.remove('hidden');
+    }
+}
 
         // Namespacing para apertura también, si en el futuro hay colisión:
         window.openModalId = window.openModalId || function(id) {
@@ -461,9 +499,6 @@ unset($_SESSION['cierre_info']);
             }
         }
     </script>
-
-
 </body>
-
 
 </html>
