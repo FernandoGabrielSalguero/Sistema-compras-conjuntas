@@ -127,19 +127,22 @@ final class IngNewPulverizacionModel
     public function correoPreferidoPorIdReal(string $idReal): ?string
     {
         if ($idReal === '') return null;
-        $st = $this->pdo->prepare("SELECT ui.correo FROM usuarios u
-            LEFT JOIN usuarios_info ui ON ui.usuario_id=u.id
-            WHERE u.id_real=? LIMIT 1");
-        $st->execute([$idReal]);
-        $v = $st->fetchColumn();
-        if ($v && trim((string)$v) !== '') return trim((string)$v);
 
-        $st = $this->pdo->prepare("SELECT COALESCE(NULLIF(TRIM(email),''),NULLIF(TRIM(correo),''),NULLIF(TRIM(mail),'')) AS email
-                                     FROM usuarios WHERE id_real=? LIMIT 1");
+        // Única fuente válida según schema: usuarios_info.correo
+        $st = $this->pdo->prepare(
+            "SELECT ui.correo
+           FROM usuarios u
+           LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+          WHERE u.id_real = ? 
+          LIMIT 1"
+        );
         $st->execute([$idReal]);
         $v = $st->fetchColumn();
-        return $v ? (string)$v : null;
+
+        $correo = $v ? trim((string)$v) : '';
+        return $correo !== '' ? $correo : null;
     }
+
 
     public function nombrePorIdReal(string $idReal): ?string
     {
