@@ -229,59 +229,62 @@ unset($_SESSION['cierre_info']);
                         <h3 id="modalTractorTitle">Crear una solicitud de cosecha mecanica</h3>
                         <p id="modalTractorBody">Pronto, vas a poder solicitarle servicios de cosecha mecanica a los productores.</p>
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="button" onclick="sveCloseModal('modalTractor')">Aceptar</button>
                             <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalTractor')">Cancelar</button>
-
-
                         </div>
+
+
+
                     </div>
                 </div>
+        </div>
 
-                <div id="modalDrone" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalDroneTitle">
-                    <div class="modal-content">
-                        <h3 id="modalDroneTitle">Crear solicitud de pulverización con Drone</h3>
+        <div id="modalDrone" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalDroneTitle">
+            <div class="modal-content">
+                <h3 id="modalDroneTitle">Crear solicitud de pulverización con Drone</h3>
 
-                        <!-- Vista embebida en iframe para evitar conflictos de HTML/CSS/JS -->
-                        <div id="modalDroneBody" class="modal-body">
-                            <iframe
-                                id="modalDroneIframe"
-                                src="./ing_new_pulverizacion_view.php"
-                                title="Nueva solicitud de pulverización"
-                                style="width:100%; height:80vh; border:0; display:block;"
-                                loading="lazy"
-                                referrerpolicy="no-referrer"></iframe>
-                        </div>
-
-                        <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="button" onclick="sveCloseModal('modalDrone')">Aceptar</button>
-                            <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalDrone')">Cancelar</button>
-                        </div>
-                    </div>
+                <!-- Vista embebida en iframe para evitar conflictos de HTML/CSS/JS -->
+                <div id="modalDroneBody" class="modal-body">
+                    <iframe
+                        id="modalDroneIframe"
+                        src="./ing_new_pulverizacion_view.php"
+                        title="Nueva solicitud de pulverización"
+                        style="width:100%; height:80vh; border:0; display:block;"
+                        loading="lazy"
+                        referrerpolicy="no-referrer"></iframe>
                 </div>
 
-                <div id="modalFamilia" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalFamiliaTitle">
-                    <div class="modal-content">
-                        <h3 id="modalFamiliaTitle">Sistema de relevamiento</h3>
-                        <p id="modalFamiliaBody">Pronto, vas a tener acceso a las opciones de relevamiento desde este boton</p>
-                        <div class="form-buttons">
-                            <button class="btn btn-aceptar" type="button" onclick="sveCloseModal('modalFamilia')">Aceptar</button>
-                            <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalFamilia')">Cancelar</button>
-
-
-                        </div>
-                    </div>
+                <div class="form-buttons">
+                    <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalDrone')">Cancelar</button>
                 </div>
 
+            </div>
+        </div>
+    </div>
 
-                <!-- contenedor del toastify -->
-                <div id="toast-container"></div>
-                <div id="toast-container-boton"></div>
-                <!-- Spinner Global -->
-                <script src="../../views/partials/spinner-global.js"></script>
+    <div id="modalFamilia" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalFamiliaTitle">
+        <div class="modal-content">
+            <h3 id="modalFamiliaTitle">Sistema de relevamiento</h3>
+            <p id="modalFamiliaBody">Pronto, vas a tener acceso a las opciones de relevamiento desde este boton</p>
+            <div class="form-buttons">
+                <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalFamilia')">Cancelar</button>
+            </div>
 
-            </section>
+
 
         </div>
+    </div>
+    </div>
+
+
+    <!-- contenedor del toastify -->
+    <div id="toast-container"></div>
+    <div id="toast-container-boton"></div>
+    <!-- Spinner Global -->
+    <script src="../../views/partials/spinner-global.js"></script>
+
+    </section>
+
+    </div>
     </div>
 
     <!-- toast + lógica de cooperativas/productores -->
