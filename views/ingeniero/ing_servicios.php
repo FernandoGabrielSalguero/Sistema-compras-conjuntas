@@ -109,7 +109,7 @@ unset($_SESSION['cierre_info']);
                 <div class="card" id="card-cooperativas" aria-labelledby="coops-title">
                     <h2 id="coops-title">Tus cooperativas</h2>
                     <p>Seleccioná una cooperativa para ver sus productores asociados.</p>
-                    <div class="form-grid grid-1">
+                    <div class="form-grid grid-2">
                         <div class="input-group">
                             <label for="selectCooperativa">Cooperativa</label>
                             <div class="input-icon input-icon-name">
@@ -149,12 +149,10 @@ unset($_SESSION['cierre_info']);
                                 <input type="text" id="filtroZona" name="filtroZona" placeholder="Ej: Este / Oeste / Valle" />
                             </div>
                         </div>
-                    </div>
-                    <div class="form-grid grid-2">
+                        <br>
                         <button class="btn btn-info" type="button" id="btnLimpiarFiltros">Limpiar filtros</button>
-                        <div></div>
-                        <div></div>
                     </div>
+
                 </div>
 
                 <!-- 📊 Tabla de productores -->
