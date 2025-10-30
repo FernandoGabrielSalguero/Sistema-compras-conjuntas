@@ -15,12 +15,12 @@ $resp = function (array $data = [], bool $ok = true, ?string $err = null) {
 
 try {
     session_start();
-    $model = new IngNewPulverizacionModel();
+    $model  = new IngNewPulverizacionModel();
     $model->pdo = $pdo;
     $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
     $action = $_GET['action'] ?? '';
 
-    /* ======== GET: catálogos y búsquedas ======== */
+    /* ===== GET ===== */
     if ($method === 'GET') {
         switch ($action) {
             case 'formas_pago':
@@ -38,7 +38,14 @@ try {
             case 'costo_base_ha':
                 $resp($model->costoBaseHectarea());
                 break;
-
+            case 'productos_por_patologia':
+                $pid = (int)($_GET['patologia_id'] ?? 0);
+                if ($pid <= 0) {
+                    $resp([]);
+                    break;
+                }
+                $resp($model->productosPorPatologia($pid));
+                break;
             case 'buscar_usuarios':
                 $q = trim((string)($_GET['q'] ?? ''));
                 if (mb_strlen($q) < 2) {
@@ -50,12 +57,10 @@ try {
                 $coopId = trim((string)($_GET['coop_id'] ?? '')) ?: null;
                 $resp($model->buscarUsuariosFiltrado($q, $rol, $idReal, $coopId));
                 break;
-
             case 'correo_por_id_real':
                 $idReal = trim((string)($_GET['id_real'] ?? ''));
                 $resp(['correo' => $model->correoPreferidoPorIdReal($idReal)]);
                 break;
-
             default:
                 $resp(['pong' => true]);
                 break;
@@ -63,7 +68,7 @@ try {
         exit;
     }
 
-    /* ======== POST: crear solicitud + correos ======== */
+    /* ===== POST ===== */
     if ($method === 'POST') {
         $raw = file_get_contents('php://input');
         $data = json_decode($raw, true);
@@ -72,9 +77,29 @@ try {
             exit;
         }
 
-        // Normalización/saneamiento mínimo
+        // Normalización
+        $itemsIn = array_values(array_filter(array_map(function ($it) {
+            if (!is_array($it)) return null;
+            $pid    = isset($it['producto_id']) ? (int)$it['producto_id'] : 0;
+            $fuente = in_array($it['fuente'] ?? '', ['sve', 'productor'], true) ? $it['fuente'] : '';
+            $nombreCustom = isset($it['nombre_producto_custom']) ? trim((string)$it['nombre_producto_custom']) : '';
+            if ($fuente === '') return null;
+            if ($fuente === 'sve') {
+                if ($pid <= 0) return null;
+                return ['producto_id' => $pid, 'fuente' => 'sve'];
+            }
+            // productor
+            if ($fuente === 'productor') {
+                if ($nombreCustom === '') return null;
+                return ['producto_id' => ($pid > 0 ? $pid : 0), 'fuente' => 'productor', 'nombre_producto_custom' => mb_substr($nombreCustom, 0, 150)];
+            }
+            return null;
+        }, $data['items'] ?? [])));
+
         $payload = [
-            'productor_id_real'   => empty($data['productor_id_real']) ? null : substr((string)$data['productor_id_real'], 0, 20),
+            'productor_id_real'        => empty($data['productor_id_real']) ? null : substr((string)$data['productor_id_real'], 0, 20),
+            'productor_nombre_snapshot' => isset($data['productor_nombre_snapshot']) ? mb_substr((string)$data['productor_nombre_snapshot'], 0, 150) : null,
+
             'representante'       => in_array($data['representante'] ?? '', ['si', 'no'], true) ? $data['representante'] : null,
             'linea_tension'       => in_array($data['linea_tension'] ?? '', ['si', 'no'], true) ? $data['linea_tension'] : null,
             'zona_restringida'    => in_array($data['zona_restringida'] ?? '', ['si', 'no'], true) ? $data['zona_restringida'] : null,
@@ -82,17 +107,21 @@ try {
             'agua_potable'        => in_array($data['agua_potable'] ?? '', ['si', 'no'], true) ? $data['agua_potable'] : null,
             'libre_obstaculos'    => in_array($data['libre_obstaculos'] ?? '', ['si', 'no'], true) ? $data['libre_obstaculos'] : null,
             'area_despegue'       => in_array($data['area_despegue'] ?? '', ['si', 'no'], true) ? $data['area_despegue'] : null,
+
             'superficie_ha'       => isset($data['superficie_ha']) ? (float)$data['superficie_ha'] : null,
             'forma_pago_id'       => isset($data['forma_pago_id']) ? (int)$data['forma_pago_id'] : null,
-            // Guardamos el id_real en el campo existente "coop_descuento_nombre" para compatibilidad
             'coop_descuento_nombre' => !empty($data['coop_descuento_id_real']) ? substr((string)$data['coop_descuento_id_real'], 0, 100) : null,
+
             'patologia_id'        => isset($data['patologia_id']) ? (int)$data['patologia_id'] : null,
             'rango'               => substr((string)($data['rango'] ?? ''), 0, 50),
+
             'dir_provincia'       => substr(trim((string)($data['dir_provincia'] ?? '')), 0, 100),
             'dir_localidad'       => substr(trim((string)($data['dir_localidad'] ?? '')), 0, 100),
             'dir_calle'           => substr(trim((string)($data['dir_calle'] ?? '')), 0, 150),
             'dir_numero'          => substr(trim((string)($data['dir_numero'] ?? '')), 0, 20),
+
             'observaciones'       => isset($data['observaciones']) ? (string)$data['observaciones'] : null,
+            'items'               => $itemsIn
         ];
 
         // Requeridos
@@ -112,6 +141,24 @@ try {
             exit;
         }
 
+        // Validación items (si vienen)
+        if (!empty($payload['items'])) {
+            foreach ($payload['items'] as $it) {
+                if (empty($it['fuente'])) {
+                    $resp([], false, "Indicá quién aporta cada producto.");
+                    exit;
+                }
+                if ($it['fuente'] === 'sve' && (int)($it['producto_id'] ?? 0) <= 0) {
+                    $resp([], false, "Producto inválido para SVE.");
+                    exit;
+                }
+                if ($it['fuente'] === 'productor' && empty($it['nombre_producto_custom'])) {
+                    $resp([], false, "Ingresá el nombre del producto del productor.");
+                    exit;
+                }
+            }
+        }
+
         // Crear
         $res = $model->crearSolicitud($payload);
         if (!($res['ok'] ?? false)) {
@@ -120,13 +167,14 @@ try {
         }
         $id = (int)$res['id'];
 
-        // ====== Envío de correos (no bloqueante: errores no rompen la creación) ======
+        // Correos
         $prodId = (string)$payload['productor_id_real'];
         $coopId = $payload['coop_descuento_nombre'] ? (string)$payload['coop_descuento_nombre'] : '';
         $mailProd = $model->correoPreferidoPorIdReal($prodId);
         $mailCoop = $coopId !== '' ? $model->correoPreferidoPorIdReal($coopId) : null;
 
-        $nomProd = $model->nombrePorIdReal($prodId) ?? 'Productor';
+        // nombre efectivo (snapshot si vino, sino lookup)
+        $nomProd = $payload['productor_nombre_snapshot'] ?: ($model->nombrePorIdReal($prodId) ?? 'Productor');
         $asunto  = "Solicitud de pulverización creada (ID #$id)";
         $lineas  = [
             "Hola $nomProd,",
@@ -151,19 +199,17 @@ try {
     }
 
     $resp([], false, 'Método no permitido');
-} catch (Throwable $e) {
+} catch (\Throwable $e) {
     echo json_encode(['ok' => false, 'error' => 'Excepción: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
 }
 
-/* ====== Utilidad simple de correo (usa mail()) ======
-   Idealmente reemplazar por tu librería SMTP (PHPMailer, etc.) */
+/* mail() simple: reemplazar por tu lib SMTP si querés */
 function enviar_correo_simple(?string $to, string $subject, string $body): bool
 {
     if (!$to || !filter_var($to, FILTER_VALIDATE_EMAIL)) return false;
     $headers = [];
     $headers[] = "MIME-Version: 1.0";
     $headers[] = "Content-Type: text/plain; charset=UTF-8";
-    // Ajustá el remitente a tu dominio
     $headers[] = "From: Notificaciones <no-reply@tudominio.local>";
     $headers[] = "X-Mailer: PHP/" . phpversion();
     return @mail($to, '=?UTF-8?B?' . base64_encode($subject) . '?=', $body, implode("\r\n", $headers));

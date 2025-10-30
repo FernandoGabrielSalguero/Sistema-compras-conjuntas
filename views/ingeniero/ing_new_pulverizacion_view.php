@@ -1,4 +1,4 @@
-<?php /* Vista mínima para nueva solicitud de pulverización (ingeniero) */ ?>
+<?php /* Vista mínima + productos por patología + costos + snapshot productor */ ?>
 <!doctype html>
 <html lang="es">
 
@@ -119,13 +119,83 @@
             border: 1px solid #a5f3fc;
             margin-bottom: 12px
         }
+
+        /* Productos (chips) */
+        .chips-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 6px
+        }
+
+        .chip input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none
+        }
+
+        .chip-box {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            padding: 8px 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 999px;
+            background: #fff;
+            cursor: pointer;
+            user-select: none
+        }
+
+        .chip input[type="checkbox"]:checked+.chip-box {
+            background: #ecfdf5;
+            border-color: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, .20) inset
+        }
+
+        .chip-name {
+            font-weight: 600
+        }
+
+        .chip-cost {
+            font-size: .9rem;
+            opacity: .7
+        }
+
+        .chips-custom {
+            margin-top: 8px
+        }
+
+        .tabla-wrapper {
+            overflow: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        thead th {
+            background: #f8fafc
+        }
+
+        th,
+        td {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            text-align: left
+        }
+
+        .right {
+            text-align: right;
+            white-space: nowrap
+        }
     </style>
 </head>
 
 <body>
 
     <div class="card">
-        <h2 style="text-align: center;">Formulario de inscripción</h2>
+        <h2 style="text-align:center;">Formulario de inscripción</h2>
         <p class="notice">Completá los campos y confirmá. Se enviará un correo al productor y, si corresponde, a la cooperativa.</p>
 
         <form id="frm" novalidate>
@@ -137,6 +207,7 @@
                     <div class="typeahead">
                         <input id="prod_txt" autocomplete="off" placeholder="Buscar productor..." />
                         <input type="hidden" id="prod_idreal" />
+                        <input type="hidden" id="prod_nombre_snap" />
                         <div id="ta" class="ta-list hidden" role="listbox" aria-label="Sugerencias"></div>
                     </div>
                 </div>
@@ -217,6 +288,39 @@
                     <textarea id="obs" rows="3" maxlength="233"></textarea>
                 </div>
 
+                <!-- Productos por patología (chips) -->
+                <div class="full card" id="card-productos" hidden>
+                    <h3>Productos sugeridos por patología</h3>
+                    <div id="chips" class="chips-grid"></div>
+                    <div class="chips-custom">
+                        <label>Otro (aporta productor)</label>
+                        <input id="prod_custom" placeholder="Nombre del producto..." />
+                    </div>
+                </div>
+
+                <!-- Costos -->
+                <div class="full card" id="card-costos">
+                    <h3>Resumen de costos</h3>
+                    <div class="tabla-wrapper">
+                        <table aria-label="Resumen de costos">
+                            <thead>
+                                <tr>
+                                    <th>Ítem</th>
+                                    <th>Detalle</th>
+                                    <th class="right">Importe</th>
+                                </tr>
+                            </thead>
+                            <tbody id="costos-body"></tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="2">Precio final</th>
+                                    <th id="precio-final" class="right">$ 0,00</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
             </div>
 
             <div class="btns">
@@ -236,19 +340,20 @@
             const show = (el, v) => el.classList.toggle('hidden', !v);
             const msg = $('#msg');
 
-            async function getJSON(url){
-  const r = await fetch(url,{credentials:'same-origin'});
-  const txt = await r.text();
-  try{
-    const j = JSON.parse(txt);
-    if(!j.ok) throw new Error(j.error||'Error');
-    return j.data;
-  }catch(e){
-    console.error('No es JSON. Respuesta cruda:', txt.slice(0,300));
-    throw new Error('Respuesta no-JSON del servidor');
-  }
-}
-
+            async function getJSON(url) {
+                const r = await fetch(url, {
+                    credentials: 'same-origin'
+                });
+                const txt = await r.text();
+                try {
+                    const j = JSON.parse(txt);
+                    if (!j.ok) throw new Error(j.error || 'Error');
+                    return j.data;
+                } catch (e) {
+                    console.error('No es JSON. Respuesta cruda:', txt.slice(0, 300));
+                    throw new Error('Respuesta no-JSON del servidor');
+                }
+            }
             async function postJSON(url, body) {
                 const r = await fetch(url, {
                     method: 'POST',
@@ -263,40 +368,67 @@
                 return j.data;
             }
 
-            // Cargas iniciales
+            // ====== Estado productos/costos ======
+            const ProductosState = {
+                seleccionados: new Set(), // ids de productos (SVE)
+                catalog: new Map(), // id -> {id,nombre,costo_hectarea,detalle}
+                costoBaseHa: 0,
+                moneda: 'ARS'
+            };
+
             const pago = $('#pago'),
                 coop = $('#coop'),
                 rango = $('#rango'),
                 pat = $('#pat');
             const coopWrap = $('#coop_wrap');
+            const cardProd = $('#card-productos'),
+                chips = $('#chips');
+            const costosBody = $('#costos-body'),
+                precioFinal = $('#precio-final');
+
+            function fmtMon(n, curr) {
+                try {
+                    return new Intl.NumberFormat('es-AR', {
+                        style: 'currency',
+                        currency: curr
+                    }).format(Number(n || 0));
+                } catch {
+                    return '$ ' + Number(n || 0).toFixed(2);
+                }
+            }
+            const currFrom = (m) => (m === 'USD' ? 'USD' : 'ARS');
+
             async function init() {
-                // combos
-                const [pagos, rangos, pats, coops] = await Promise.all([
+                const [pagos, rangos, pats, coops, costo] = await Promise.all([
                     getJSON(`${CTRL}?action=formas_pago`),
                     getJSON(`${CTRL}?action=rangos`),
                     getJSON(`${CTRL}?action=patologias`),
-                    getJSON(`${CTRL}?action=cooperativas`)
+                    getJSON(`${CTRL}?action=cooperativas`),
+                    getJSON(`${CTRL}?action=costo_base_ha`)
                 ]);
                 pago.innerHTML = '<option value="">Seleccionar</option>' + pagos.map(x => `<option value="${x.id}">${x.nombre}</option>`).join('');
                 rango.innerHTML = '<option value="">Seleccionar</option>' + rangos.map(x => `<option value="${x.rango}">${x.label}</option>`).join('');
                 pat.innerHTML = '<option value="">Seleccionar</option>' + pats.map(x => `<option value="${x.id}">${x.nombre}</option>`).join('');
                 coop.innerHTML = '<option value="">Seleccionar</option>' + coops.map(x => `<option value="${x.id_real}">${x.usuario}</option>`).join('');
+                ProductosState.costoBaseHa = Number(costo.costo || 0);
+                ProductosState.moneda = costo.moneda || 'ARS';
+                recalcCostos();
             }
             init().catch(console.error);
 
-            // Pago -> mostrar cooperativa si id=6
-            pago.addEventListener('change', () => {
-                show(coopWrap, String(pago.value) === '6');
-            });
+            // Pago -> cooperativa
+            pago.addEventListener('change', () => show(coopWrap, String(pago.value) === '6'));
 
-            // Typeahead productores
+            // Typeahead productores (guarda snapshot de nombre)
             const txt = $('#prod_txt'),
                 hid = $('#prod_idreal'),
-                ta = $('#ta');
+                ta = $('#ta'),
+                prodNombreSnap = $('#prod_nombre_snap');
             let items = [];
             txt.addEventListener('input', async () => {
                 const q = txt.value.trim();
                 hid.value = '';
+                prodNombreSnap.value = '';
                 if (q.length < 2) {
                     show(ta, false);
                     ta.innerHTML = '';
@@ -305,7 +437,8 @@
                 try {
                     const data = await getJSON(`${CTRL}?action=buscar_usuarios&q=${encodeURIComponent(q)}${coop.value?`&coop_id=${encodeURIComponent(coop.value)}`:''}`);
                     items = data || [];
-                    ta.innerHTML = items.map(it => `<div class="ta-item" data-id="${it.id_real}">${it.usuario}</div>`).join('');
+                    // Escapar simple (textContent via template)
+                    ta.innerHTML = items.map(it => `<div class="ta-item" data-id="${it.id_real}" data-nombre="${encodeURIComponent(it.usuario)}">${it.usuario}</div>`).join('');
                     show(ta, items.length > 0);
                 } catch (e) {
                     show(ta, false);
@@ -315,9 +448,10 @@
                 const li = e.target.closest('.ta-item');
                 if (!li) return;
                 const id = li.getAttribute('data-id');
-                const lab = li.textContent;
-                txt.value = lab;
+                const nombre = decodeURIComponent(li.getAttribute('data-nombre') || '');
+                txt.value = nombre;
                 hid.value = id;
+                prodNombreSnap.value = nombre;
                 show(ta, false);
             });
             document.addEventListener('click', (e) => {
@@ -325,6 +459,100 @@
                     show(ta, false);
                 }
             });
+
+            // Patología -> cargar productos
+            pat.addEventListener('change', async () => {
+                ProductosState.seleccionados.clear();
+                ProductosState.catalog.clear();
+                chips.innerHTML = '';
+                const pid = Number(pat.value || 0);
+                if (!pid) {
+                    cardProd.hidden = true;
+                    recalcCostos();
+                    return;
+                }
+                try {
+                    const data = await getJSON(`${CTRL}?action=productos_por_patologia&patologia_id=${pid}`);
+                    (data || []).forEach(p => {
+                        const id = Number(p.id);
+                        ProductosState.catalog.set(id, {
+                            id,
+                            nombre: String(p.nombre || ''),
+                            detalle: String(p.detalle || ''),
+                            costo_hectarea: Number(p.costo_hectarea || 0)
+                        });
+                    });
+                    renderChips();
+                    cardProd.hidden = ProductosState.catalog.size === 0;
+                    recalcCostos();
+                } catch (e) {
+                    cardProd.hidden = true;
+                    recalcCostos();
+                }
+            });
+
+            function renderChips() {
+                const frag = document.createDocumentFragment();
+                Array.from(ProductosState.catalog.values())
+                    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+                    .forEach(p => {
+                        const label = document.createElement('label');
+                        label.className = 'chip';
+                        label.innerHTML = `
+          <input type="checkbox" value="${p.id}">
+          <span class="chip-box">
+            <span class="chip-name">${p.nombre}</span>
+            <span class="chip-cost">${fmtMon(p.costo_hectarea, currFrom(ProductosState.moneda))}/ha</span>
+          </span>`;
+                        frag.appendChild(label);
+                    });
+                chips.innerHTML = '';
+                chips.appendChild(frag);
+                chips.onchange = (e) => {
+                    const cb = e.target;
+                    if (cb && cb.type === 'checkbox' && cb.value) {
+                        const id = Number(cb.value);
+                        if (cb.checked) ProductosState.seleccionados.add(id);
+                        else ProductosState.seleccionados.delete(id);
+                        recalcCostos();
+                    }
+                };
+            }
+
+            function recalcCostos() {
+                const ha = Math.max(0, Number($('#ha').value || 0));
+                const baseHa = Number(ProductosState.costoBaseHa || 0);
+                const moneda = currFrom(ProductosState.moneda);
+
+                const rows = [];
+                const baseTotal = baseHa * ha;
+                rows.push(`<tr><th>Valor de las hectáreas</th><td>${ProductosState.moneda}</td><td class="right">${fmtMon(baseHa, moneda)}</td></tr>`);
+                rows.push(`<tr><th>Cantidad de hectáreas</th><td></td><td class="right">${ha}</td></tr>`);
+                rows.push(`<tr><th>Total base (servicio)</th><td></td><td class="right">${fmtMon(baseTotal, moneda)}</td></tr>`);
+
+                let prodTotal = 0;
+                Array.from(ProductosState.seleccionados).forEach(id => {
+                    const p = ProductosState.catalog.get(id);
+                    if (!p) return;
+                    const tot = (p.costo_hectarea || 0) * ha;
+                    prodTotal += tot;
+                    rows.push(`<tr><th>Producto</th><td>${p.nombre} (SVE)</td><td class="right">${fmtMon(tot, moneda)}</td></tr>`);
+                });
+
+                // Custom "Otro" del productor: costo 0
+                const custom = ($('#prod_custom').value || '').trim();
+                if (custom) {
+                    rows.push(`<tr><th>Producto</th><td>${custom} (Productor)</td><td class="right">${fmtMon(0, moneda)}</td></tr>`);
+                }
+
+                const total = baseTotal + prodTotal;
+                costosBody.innerHTML = rows.join('');
+                precioFinal.textContent = fmtMon(total, moneda);
+            }
+
+            // eventos que impactan costos
+            $('#ha').addEventListener('input', recalcCostos);
+            $('#prod_custom').addEventListener('input', recalcCostos);
 
             // Validación mínima
             function valSel(id) {
@@ -346,8 +574,11 @@
                     loc = $('#loc'),
                     calle = $('#calle'),
                     nro = $('#nro');
+
+                // payload base
                 const payload = {
                     productor_id_real: $('#prod_idreal').value || null,
+                    productor_nombre_snapshot: $('#prod_nombre_snap').value || null,
                     representante: $('#representante').value,
                     linea_tension: $('#linea_tension').value,
                     zona_restringida: $('#zona_restringida').value,
@@ -364,12 +595,29 @@
                     dir_localidad: loc.value || '',
                     dir_calle: calle.value || '',
                     dir_numero: String(nro.value || ''),
-                    observaciones: $('#obs').value || ''
+                    observaciones: $('#obs').value || '',
+                    items: []
                 };
 
-                // checks mínimos
+                // items de productos
+                Array.from(ProductosState.seleccionados).forEach(id => {
+                    payload.items.push({
+                        producto_id: Number(id),
+                        fuente: 'sve'
+                    });
+                });
+                const custom = ($('#prod_custom').value || '').trim();
+                if (custom) {
+                    payload.items.push({
+                        producto_id: 0,
+                        fuente: 'productor',
+                        nombre_producto_custom: custom
+                    });
+                }
+
+                // checks
                 if (!payload.productor_id_real) {
-                    req(txt);
+                    req($('#prod_txt'));
                     return;
                 }
                 for (const id of ['#representante', '#linea_tension', '#zona_restringida', '#corriente_electrica', '#agua_potable', '#libre_obstaculos', '#area_despegue']) {
@@ -409,6 +657,13 @@
                     msg.classList.remove('hidden');
                     $('#frm').reset();
                     show(coopWrap, false);
+                    // limpiar estado productos
+                    ProductosState.seleccionados.clear();
+                    ProductosState.catalog.clear();
+                    chips.innerHTML = '';
+                    $('#prod_custom').value = '';
+                    cardProd.hidden = true;
+                    recalcCostos();
                 } catch (e) {
                     msg.textContent = 'Error: ' + (e.message || e);
                     msg.classList.remove('hidden');

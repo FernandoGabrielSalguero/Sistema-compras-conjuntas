@@ -4,30 +4,25 @@ declare(strict_types=1);
 
 final class IngNewPulverizacionModel
 {
-    /** @var PDO */
     public PDO $pdo;
 
-    /* ======= Catálogos / búsquedas ======= */
+    /* ===== Catálogos / búsquedas ===== */
 
     public function formasPago(): array
     {
         $sql = "SELECT id,nombre FROM dron_formas_pago WHERE activo='si' ORDER BY nombre";
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
-
     public function patologias(): array
     {
         $sql = "SELECT id,nombre FROM dron_patologias WHERE activo='si' ORDER BY nombre";
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
-
     public function cooperativas(): array
     {
         $sql = "SELECT usuario,id_real FROM usuarios WHERE rol='cooperativa' ORDER BY usuario";
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
-
-    /** Rangos simples */
     public function rangos(): array
     {
         return [
@@ -44,7 +39,6 @@ final class IngNewPulverizacionModel
         ];
     }
 
-    /** Búsqueda de productores con filtro por rol (ingeniero/cooperativa/sve/productor) */
     public function buscarUsuariosFiltrado(string $q, string $rol, string $idReal, ?string $coopId = null): array
     {
         $like = '%' . $q . '%';
@@ -101,7 +95,19 @@ final class IngNewPulverizacionModel
         return [];
     }
 
-    /** Costo base/ha vigente */
+    public function productosPorPatologia(int $patologiaId): array
+    {
+        $sql = "SELECT s.id, s.nombre, COALESCE(s.costo_hectarea,0) AS costo_hectarea, COALESCE(s.detalle,'') AS detalle
+                  FROM dron_productos_stock_patologias sp
+                  JOIN dron_productos_stock s ON s.id = sp.producto_id
+                 WHERE sp.patologia_id = ?
+                   AND LOWER(COALESCE(s.activo,'no')) = 'si'
+              ORDER BY s.nombre";
+        $st = $this->pdo->prepare($sql);
+        $st->execute([$patologiaId]);
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function costoBaseHectarea(): array
     {
         $sql = "SELECT costo, COALESCE(moneda,'Pesos') AS moneda, updated_at
@@ -116,22 +122,18 @@ final class IngNewPulverizacionModel
         return $row;
     }
 
-    /* ======= Correo / datos básicos ======= */
+    /* ===== Correo / datos básicos ===== */
 
-    /** Correo preferente por id_real (usuarios_info.correo si existe, sino email/correo/mail en usuarios) */
     public function correoPreferidoPorIdReal(string $idReal): ?string
     {
         if ($idReal === '') return null;
-        // usuarios_info
-        $st = $this->pdo->prepare("SELECT ui.correo
-                                     FROM usuarios u
-                                LEFT JOIN usuarios_info ui ON ui.usuario_id=u.id
-                                    WHERE u.id_real=? LIMIT 1");
+        $st = $this->pdo->prepare("SELECT ui.correo FROM usuarios u
+            LEFT JOIN usuarios_info ui ON ui.usuario_id=u.id
+            WHERE u.id_real=? LIMIT 1");
         $st->execute([$idReal]);
         $v = $st->fetchColumn();
         if ($v && trim((string)$v) !== '') return trim((string)$v);
 
-        // fallback en usuarios
         $st = $this->pdo->prepare("SELECT COALESCE(NULLIF(TRIM(email),''),NULLIF(TRIM(correo),''),NULLIF(TRIM(mail),'')) AS email
                                      FROM usuarios WHERE id_real=? LIMIT 1");
         $st->execute([$idReal]);
@@ -147,8 +149,39 @@ final class IngNewPulverizacionModel
         return $v ? (string)$v : null;
     }
 
-    /* ======= Creación de solicitud ======= */
+    /* ===== Helpers productos ===== */
+    private function productoCostoHa(int $id): float
+    {
+        if ($id <= 0) return 0.0;
+        $st = $this->pdo->prepare("SELECT costo_hectarea FROM dron_productos_stock WHERE id=?");
+        $st->execute([$id]);
+        $v = $st->fetchColumn();
+        return $v !== false ? (float)$v : 0.0;
+    }
+    private function productoNombre(int $id): string
+    {
+        if ($id <= 0) return '';
+        $st = $this->pdo->prepare("SELECT nombre FROM dron_productos_stock WHERE id=?");
+        $st->execute([$id]);
+        $v = $st->fetchColumn();
+        return $v ? (string)$v : '';
+    }
 
+    /* ===== Intentar snapshot de productor_nombre si existe la columna ===== */
+    private function actualizarProductorNombreSnapshot(int $solicitudId, ?string $nombre): void
+    {
+        if ($solicitudId <= 0 || !$nombre) return;
+        try {
+            $hasCol = (bool)$this->pdo->query("SHOW COLUMNS FROM drones_solicitud LIKE 'productor_nombre'")->fetch();
+            if ($hasCol) {
+                $st = $this->pdo->prepare("UPDATE drones_solicitud SET productor_nombre = :n WHERE id = :id");
+                $st->execute([':n' => mb_substr($nombre, 0, 150), ':id' => $solicitudId]);
+            }
+        } catch (\Throwable $e) { /* silencioso */
+        }
+    }
+
+    /* ===== Creación con items y costos ===== */
     public function crearSolicitud(array $d): array
     {
         $this->pdo->beginTransaction();
@@ -179,33 +212,67 @@ final class IngNewPulverizacionModel
             ]);
             $sid = (int)$this->pdo->lastInsertId();
 
+            // 1.b) snapshot de nombre (si columna existe)
+            $this->actualizarProductorNombreSnapshot($sid, $d['productor_nombre_snapshot'] ?? null);
+
             // 2) motivo
             $stm = $this->pdo->prepare("INSERT INTO drones_solicitud_motivo (solicitud_id,patologia_id,es_otros) VALUES (?,?,0)");
-            $stm->execute([$sid, $d['patologia_id']]);
+            $stm->execute([$sid, (int)$d['patologia_id']]);
 
             // 3) rango
             $str = $this->pdo->prepare("INSERT INTO drones_solicitud_rango (solicitud_id,rango) VALUES (?,?)");
             $str->execute([$sid, $d['rango']]);
 
-            // 4) costos (base = costoHa * ha)
+            // 4) items (si vienen)
+            $productosTotal = 0.0;
+            if (!empty($d['items']) && is_array($d['items'])) {
+                $sti = $this->pdo->prepare("INSERT INTO drones_solicitud_item
+                    (solicitud_id, patologia_id, fuente, producto_id, costo_hectarea_snapshot, total_producto_snapshot, nombre_producto)
+                    VALUES (?,?,?,?,?,?,?)");
+
+                foreach ($d['items'] as $it) {
+                    $pid    = isset($it['producto_id']) ? (int)$it['producto_id'] : 0;
+                    $fuente = (string)($it['fuente'] ?? '');
+                    $custom = isset($it['nombre_producto_custom']) ? trim((string)$it['nombre_producto_custom']) : '';
+
+                    if ($fuente === 'productor') {
+                        $nombre = $custom !== '' ? mb_substr($custom, 0, 150) : $this->productoNombre($pid);
+                        $costoHa = 0.00;
+                        $total = 0.00;
+                        $productoIdDb = ($pid > 0) ? $pid : null;
+                    } else { // SVE
+                        $nombre = $this->productoNombre($pid);
+                        $costoHa = $this->productoCostoHa($pid);
+                        $total   = (float)$d['superficie_ha'] * (float)$costoHa;
+                        $productoIdDb = $pid;
+                        $productosTotal += $total;
+                    }
+
+                    $sti->execute([$sid, (int)$d['patologia_id'], $fuente, $productoIdDb, $costoHa, $total, $nombre]);
+                }
+            }
+
+            // 5) costos
             $row = $this->costoBaseHectarea();
             $costoHa = (float)$row['costo'];
             $moneda = (string)$row['moneda'];
-            $baseHa = (float)$d['superficie_ha'];
-            $baseTotal = $costoHa * $baseHa;
+            $baseHa  = (float)$d['superficie_ha'];
+            $baseTotal = $baseHa * $costoHa;
+            $total   = $baseTotal + $productosTotal;
+
             $stc = $this->pdo->prepare("INSERT INTO drones_solicitud_costos
               (solicitud_id,moneda,costo_base_por_ha,base_ha,base_total,productos_total,total,desglose_json)
-              VALUES (?,?,?,?,?,0,?,NULL)");
-            $stc->execute([$sid, $moneda, $costoHa, $baseHa, $baseTotal, $baseTotal]);
+              VALUES (?,?,?,?,?,?,?,NULL)");
+            $stc->execute([$sid, $moneda, $costoHa, $baseHa, $baseTotal, $productosTotal, $total]);
 
-            // 5) evento
+            // 6) evento
             $ste = $this->pdo->prepare("INSERT INTO drones_solicitud_evento (solicitud_id,tipo,detalle,actor)
               VALUES (?,'creada','Solicitud ingresada por formulario (ingeniero)','sistema')");
             $ste->execute([$sid]);
 
             $this->pdo->commit();
             return ['ok' => true, 'id' => $sid];
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             $this->pdo->rollBack();
             return ['ok' => false, 'error' => $e->getMessage()];
         }
