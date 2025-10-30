@@ -109,7 +109,7 @@ unset($_SESSION['cierre_info']);
                 <div class="card" id="card-cooperativas" aria-labelledby="coops-title">
                     <h2 id="coops-title">Tus cooperativas</h2>
                     <p>Seleccioná una cooperativa para ver sus productores asociados.</p>
-                    <div class="form-grid grid-2">
+                    <div class="form-grid grid-1">
                         <div class="input-group">
                             <label for="selectCooperativa">Cooperativa</label>
                             <div class="input-icon input-icon-name">
@@ -130,7 +130,7 @@ unset($_SESSION['cierre_info']);
                 <!-- 🔎 Filtros -->
                 <div class="card" id="card-filtros" aria-labelledby="filtros-title">
                     <h2 id="filtros-title">Filtros</h2>
-                    <div class="form-grid grid-3">
+                    <div class="form-grid grid-2">
                         <div class="input-group">
                             <label for="filtroNombre">Nombre</label>
                             <div class="input-icon input-icon-name">
@@ -150,7 +150,7 @@ unset($_SESSION['cierre_info']);
                             </div>
                         </div>
                     </div>
-                    <div class="form-grid grid-3">
+                    <div class="form-grid grid-2">
                         <button class="btn btn-info" type="button" id="btnLimpiarFiltros">Limpiar filtros</button>
                         <div></div>
                         <div></div>
