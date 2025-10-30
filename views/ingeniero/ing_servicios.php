@@ -56,8 +56,8 @@ unset($_SESSION['cierre_info']);
                     </li>
 
                     <li onclick="location.href='ing_pulverizacion.php'">
-                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                    <span class="link-text">Drones</span>
+                        <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
+                        <span class="link-text">Drones</span>
                     </li>
 
                     <li onclick="location.href='ing_servicios.php'">
@@ -93,7 +93,7 @@ unset($_SESSION['cierre_info']);
 
                 <!-- Bienvenida -->
                 <div class="card">
-                <h2>Hola!</h2>
+                    <h2>Hola!</h2>
                     <p>En esta página, vas a poder solicitar los servicios disponibles para los productores asociados a tus cooperativas</p>
 
                     <!-- 🔘 Tarjeta con los botones del tab -->
@@ -229,109 +229,113 @@ unset($_SESSION['cierre_info']);
         </div>
     </div>
 
-            <!-- toast + lógica de cooperativas/productores -->
-        <script>
-            window.addEventListener('DOMContentLoaded', () => {
-                console.log('Datos de sesión', <?php echo json_encode($_SESSION); ?>);
+    <!-- toast + lógica de cooperativas/productores -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('Datos de sesión', <?php echo json_encode($_SESSION); ?>);
 
-                <?php if (!empty($cierre_info)): ?>
-                    const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-                    cierreData.pendientes.forEach(op => {
-                        const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
-                        console.log(mensaje);
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('info', mensaje);
-                        } else {
-                            console.warn('⚠️ showToastBoton no está definido aún.');
-                        }
+            <?php if (!empty($cierre_info)): ?>
+                const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+                cierreData.pendientes.forEach(op => {
+                    const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
+                    console.log(mensaje);
+                    if (typeof showToastBoton === 'function') {
+                        showToastBoton('info', mensaje);
+                    } else {
+                        console.warn('⚠️ showToastBoton no está definido aún.');
+                    }
+                });
+            <?php endif; ?>
+
+            inicializarCooperativasYFiltros();
+        });
+
+        async function inicializarCooperativasYFiltros() {
+            const selectCoop = document.getElementById('selectCooperativa');
+            const resumen = document.getElementById('coopResumen');
+            const tbody = document.getElementById('tbodyProductores');
+            const filaVacia = document.getElementById('filaVacia');
+            const filtroNombre = document.getElementById('filtroNombre');
+            const filtroCuit = document.getElementById('filtroCuit');
+            const filtroZona = document.getElementById('filtroZona');
+
+            // Cargar cooperativas del ingeniero
+            try {
+                const res = await fetch('../../controllers/ing_ServiciosController.php?action=cooperativas_del_ingeniero', {
+                    credentials: 'include'
+                });
+                const json = await res.json();
+                console.log('cooperativas_del_ingeniero →', json);
+
+                if (json.ok && Array.isArray(json.data)) {
+                    resumen.value = `${json.data.length} cooperativa(s)`;
+                    json.data.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.cooperativa_id_real;
+                        opt.textContent = `${c.nombre} (${c.cuit ?? 'sin CUIT'})`;
+                        selectCoop.appendChild(opt);
                     });
-                <?php endif; ?>
+                } else {
+                    showAlert('error', json.error || 'No se pudieron cargar las cooperativas.');
+                }
+            } catch (e) {
+                console.error('Error cargando cooperativas:', e);
+                showAlert('error', 'Error cargando cooperativas.');
+            }
 
-                inicializarCooperativasYFiltros();
+            // Cambio de cooperativa → carga productores
+            selectCoop.addEventListener('change', async () => {
+                const coopId = selectCoop.value;
+                console.log('Cooperativa seleccionada:', coopId);
+                await cargarProductores(coopId);
+                aplicarFiltros(); // inicial para aplicar filtros con la lista cargada
             });
 
-            async function inicializarCooperativasYFiltros() {
-                const selectCoop = document.getElementById('selectCooperativa');
-                const resumen = document.getElementById('coopResumen');
-                const tbody = document.getElementById('tbodyProductores');
-                const filaVacia = document.getElementById('filaVacia');
-                const filtroNombre = document.getElementById('filtroNombre');
-                const filtroCuit = document.getElementById('filtroCuit');
-                const filtroZona = document.getElementById('filtroZona');
+            // Filtros en vivo
+            ['input', 'keyup', 'change'].forEach(evt => {
+                filtroNombre.addEventListener(evt, aplicarFiltros);
+                filtroCuit.addEventListener(evt, aplicarFiltros);
+                filtroZona.addEventListener(evt, aplicarFiltros);
+            });
 
-                // Cargar cooperativas del ingeniero
-                try {
-                    const res = await fetch('../../controllers/ing_ServiciosController.php?action=cooperativas_del_ingeniero', { credentials: 'include' });
-                    const json = await res.json();
-                    console.log('cooperativas_del_ingeniero →', json);
+            document.getElementById('btnLimpiarFiltros').addEventListener('click', () => {
+                filtroNombre.value = '';
+                filtroCuit.value = '';
+                filtroZona.value = '';
+                aplicarFiltros();
+            });
 
-                    if (json.ok && Array.isArray(json.data)) {
-                        resumen.value = `${json.data.length} cooperativa(s)`;
-                        json.data.forEach(c => {
-                            const opt = document.createElement('option');
-                            opt.value = c.cooperativa_id_real;
-                            opt.textContent = `${c.nombre} (${c.cuit ?? 'sin CUIT'})`;
-                            selectCoop.appendChild(opt);
-                        });
-                    } else {
-                        showAlert('error', json.error || 'No se pudieron cargar las cooperativas.');
-                    }
-                } catch (e) {
-                    console.error('Error cargando cooperativas:', e);
-                    showAlert('error', 'Error cargando cooperativas.');
+            async function cargarProductores(coopId) {
+                tbody.innerHTML = '';
+                if (!coopId) {
+                    tbody.appendChild(filaVaciaTemplate());
+                    return;
                 }
+                try {
+                    const res = await fetch(`../../controllers/ing_ServiciosController.php?action=productores_por_coop&cooperativa_id_real=${encodeURIComponent(coopId)}`, {
+                        credentials: 'include'
+                    });
+                    const json = await res.json();
+                    console.log('productores_por_coop →', json);
 
-                // Cambio de cooperativa → carga productores
-                selectCoop.addEventListener('change', async () => {
-                    const coopId = selectCoop.value;
-                    console.log('Cooperativa seleccionada:', coopId);
-                    await cargarProductores(coopId);
-                    aplicarFiltros(); // inicial para aplicar filtros con la lista cargada
-                });
-
-                // Filtros en vivo
-                ['input', 'keyup', 'change'].forEach(evt => {
-                    filtroNombre.addEventListener(evt, aplicarFiltros);
-                    filtroCuit.addEventListener(evt, aplicarFiltros);
-                    filtroZona.addEventListener(evt, aplicarFiltros);
-                });
-
-                document.getElementById('btnLimpiarFiltros').addEventListener('click', () => {
-                    filtroNombre.value = '';
-                    filtroCuit.value = '';
-                    filtroZona.value = '';
-                    aplicarFiltros();
-                });
-
-                async function cargarProductores(coopId) {
-                    tbody.innerHTML = '';
-                    if (!coopId) {
+                    if (!(json.ok && Array.isArray(json.data))) {
+                        showAlert('info', json.error || 'No se encontraron productores.');
                         tbody.appendChild(filaVaciaTemplate());
                         return;
                     }
-                    try {
-                        const res = await fetch(`../../controllers/ing_ServiciosController.php?action=productores_por_coop&cooperativa_id_real=${encodeURIComponent(coopId)}`, { credentials: 'include' });
-                        const json = await res.json();
-                        console.log('productores_por_coop →', json);
 
-                        if (!(json.ok && Array.isArray(json.data))) {
-                            showAlert('info', json.error || 'No se encontraron productores.');
-                            tbody.appendChild(filaVaciaTemplate());
-                            return;
-                        }
+                    if (json.data.length === 0) {
+                        tbody.appendChild(filaVaciaTemplate('La cooperativa seleccionada no tiene productores asociados'));
+                        return;
+                    }
 
-                        if (json.data.length === 0) {
-                            tbody.appendChild(filaVaciaTemplate('La cooperativa seleccionada no tiene productores asociados'));
-                            return;
-                        }
+                    json.data.forEach((p, idx) => {
+                        const tr = document.createElement('tr');
+                        tr.dataset.nombre = (p.nombre || '').toLowerCase();
+                        tr.dataset.cuit = String(p.cuit || '');
+                        tr.dataset.zona = (p.zona || '').toLowerCase();
 
-                        json.data.forEach((p, idx) => {
-                            const tr = document.createElement('tr');
-                            tr.dataset.nombre = (p.nombre || '').toLowerCase();
-                            tr.dataset.cuit = String(p.cuit || '');
-                            tr.dataset.zona = (p.zona || '').toLowerCase();
-
-                            tr.innerHTML = `
+                        tr.innerHTML = `
     <td>${idx + 1}</td>
     <td>${p.nombre || '-'}</td>
     <td>${p.cuit || '-'}</td>
@@ -365,73 +369,83 @@ unset($_SESSION['cierre_info']);
     </td>
 `;
 
-                            tbody.appendChild(tr);
-                        });
-                    } catch (e) {
-                        console.error('Error cargando productores:', e);
-                        showAlert('error', 'Error cargando productores.');
-                        tbody.appendChild(filaVaciaTemplate());
-                    }
-                }
-
-                function aplicarFiltros() {
-                    const nombre = (filtroNombre.value || '').toLowerCase();
-                    const cuit = (filtroCuit.value || '').replace(/\D/g, '');
-                    const zona = (filtroZona.value || '').toLowerCase();
-                    const rows = Array.from(document.querySelectorAll('#tbodyProductores tr'));
-
-                    if (rows.length === 1 && rows[0].id === 'filaVacia') return; // nada que filtrar
-
-                    let visibles = 0;
-                    rows.forEach(r => {
-                        if (r.id === 'filaVacia') return;
-                        const matchNombre = !nombre || (r.dataset.nombre || '').includes(nombre);
-                        const matchCuit = !cuit || (r.dataset.cuit || '').includes(cuit);
-                        const matchZona = !zona || (r.dataset.zona || '').includes(zona);
-                        const visible = matchNombre && matchCuit && matchZona;
-                        r.style.display = visible ? '' : 'none';
-                        if (visible) visibles++;
+                        tbody.appendChild(tr);
                     });
-
-                    // mensaje si no hay resultados
-                    const existente = document.getElementById('filaSinResultados');
-                    if (existente) existente.remove();
-                    if (visibles === 0) {
-                        const tr = document.createElement('tr');
-                        tr.id = 'filaSinResultados';
-                        tr.innerHTML = `<td colspan="6">No hay resultados para los filtros aplicados</td>`;
-                        document.getElementById('tbodyProductores').appendChild(tr);
-                    }
+                } catch (e) {
+                    console.error('Error cargando productores:', e);
+                    showAlert('error', 'Error cargando productores.');
+                    tbody.appendChild(filaVaciaTemplate());
                 }
+            }
 
-                function filaVaciaTemplate(msg = 'Selecciona una cooperativa para poder ver a sus productores asociados') {
+            function aplicarFiltros() {
+                const nombre = (filtroNombre.value || '').toLowerCase();
+                const cuit = (filtroCuit.value || '').replace(/\D/g, '');
+                const zona = (filtroZona.value || '').toLowerCase();
+                const rows = Array.from(document.querySelectorAll('#tbodyProductores tr'));
+
+                if (rows.length === 1 && rows[0].id === 'filaVacia') return; // nada que filtrar
+
+                let visibles = 0;
+                rows.forEach(r => {
+                    if (r.id === 'filaVacia') return;
+                    const matchNombre = !nombre || (r.dataset.nombre || '').includes(nombre);
+                    const matchCuit = !cuit || (r.dataset.cuit || '').includes(cuit);
+                    const matchZona = !zona || (r.dataset.zona || '').includes(zona);
+                    const visible = matchNombre && matchCuit && matchZona;
+                    r.style.display = visible ? '' : 'none';
+                    if (visible) visibles++;
+                });
+
+                // mensaje si no hay resultados
+                const existente = document.getElementById('filaSinResultados');
+                if (existente) existente.remove();
+                if (visibles === 0) {
                     const tr = document.createElement('tr');
-                    tr.id = 'filaVacia';
-                    tr.innerHTML = `<td colspan="6">${msg}</td>`;
-                    return tr;
+                    tr.id = 'filaSinResultados';
+                    tr.innerHTML = `<td colspan="6">No hay resultados para los filtros aplicados</td>`;
+                    document.getElementById('tbodyProductores').appendChild(tr);
                 }
             }
 
-            // Modales simples (evita layout shift)
-            function openModal(id, payload = null) {
-                console.log('openModal', id, payload);
-                const el = document.getElementById(id);
-                if (payload && id === 'modalTractor') {
-                    document.getElementById('modalTractorBody').textContent = `Productor: ${payload.nombre || '-'} (ID Real: ${payload.id_real || '-'})`;
-                }
-                if (payload && id === 'modalDrone') {
-                    document.getElementById('modalDroneBody').textContent = `Productor: ${payload.nombre || '-'} (ID Real: ${payload.id_real || '-'})`;
-                }
-                if (payload && id === 'modalFamilia') {
-                    document.getElementById('modalFamiliaBody').textContent = `Productor: ${payload.nombre || '-'} (ID Real: ${payload.id_real || '-'})`;
-                }
-                el?.classList.remove('hidden');
+            function filaVaciaTemplate(msg = 'Selecciona una cooperativa para poder ver a sus productores asociados') {
+                const tr = document.createElement('tr');
+                tr.id = 'filaVacia';
+                tr.innerHTML = `<td colspan="6">${msg}</td>`;
+                return tr;
             }
-            function closeModal(id) {
-                console.log('closeModal', id);
-                document.getElementById(id)?.classList.add('hidden');
+        }
+
+        function openModalFromBtn(modalId, btn) {
+            const payload = {
+                id_real: btn.dataset.id_real || '',
+                nombre: btn.dataset.nombre || ''
+            };
+            console.log('openModalFromBtn', modalId, payload);
+            openModal(modalId, payload);
+        }
+
+        // Modales simples (evita layout shift)
+        function openModal(id, payload = null) {
+            console.log('openModal', id, payload);
+            const el = document.getElementById(id);
+            if (payload && id === 'modalTractor') {
+                document.getElementById('modalTractorBody').textContent = `Productor: ${payload.nombre || '-'} (ID Real: ${payload.id_real || '-'})`;
             }
-        </script>
+            if (payload && id === 'modalDrone') {
+                document.getElementById('modalDroneBody').textContent = `Productor: ${payload.nombre || '-'} (ID Real: ${payload.id_real || '-'})`;
+            }
+            if (payload && id === 'modalFamilia') {
+                document.getElementById('modalFamiliaBody').textContent = `Productor: ${payload.nombre || '-'} (ID Real: ${payload.id_real || '-'})`;
+            }
+            el?.classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            console.log('closeModal', id);
+            document.getElementById(id)?.classList.add('hidden');
+        }
+    </script>
 
 
 </body>
