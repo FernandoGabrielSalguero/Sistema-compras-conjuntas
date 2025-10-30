@@ -384,18 +384,18 @@ unset($_SESSION['cierre_info']);
                         return;
                     }
 
-json.data.forEach((p, idx) => {
-    const tr = document.createElement('tr');
+                    json.data.forEach((p, idx) => {
+                        const tr = document.createElement('tr');
 
-    // 🔹 Normalizo dataset visible
-    tr.dataset.nombre = (p.nombre || '').toLowerCase();
-    tr.dataset.cuit = String(p.cuit || '');
-    tr.dataset.zona = (p.zona || '').toLowerCase();
+                        // 🔹 Normalizo dataset visible
+                        tr.dataset.nombre = (p.nombre || '').toLowerCase();
+                        tr.dataset.cuit = String(p.cuit || '');
+                        tr.dataset.zona = (p.zona || '').toLowerCase();
 
-    // 🔹 Guardo el identificador real del usuario (cualquiera disponible)
-    tr.dataset.usuarioIdReal = String(p.usuario_id_real || p.id_real || p.id || '');
+                        // 🔹 Guardo el identificador real del usuario (cualquiera disponible)
+                        tr.dataset.usuarioIdReal = String(p.usuario_id_real || p.id_real || p.id || '');
 
-    tr.innerHTML = `
+                        tr.innerHTML = `
     <td>${idx + 1}</td>
     <td>${p.nombre || '-'}</td>
     <td>${p.cuit || '-'}</td>
@@ -418,8 +418,8 @@ json.data.forEach((p, idx) => {
         </button>
     </td>
 `;
-    tbody.appendChild(tr);
-});
+                        tbody.appendChild(tr);
+                    });
 
                 } catch (e) {
                     console.error('Error cargando productores:', e);
@@ -467,67 +467,105 @@ json.data.forEach((p, idx) => {
         }
 
         // Modales simples: un botón → un modal (sin payload)
-       async function openModalId(id, btn = null) {
-    console.log('openModalId', id);
+        async function openModalId(id, btn = null) {
+            console.log('openModalId', id);
 
-    // 🔹 Si viene del clic en un botón dentro de la tabla, obtengo el usuario_id_real
-    if (btn && btn.closest('tr')) {
-        const fila = btn.closest('tr');
-        const usuarioIdReal = fila.dataset.usuarioIdReal || '';
+            // 🔹 Si viene del clic en un botón dentro de la tabla, obtengo el usuario_id_real
+            if (btn && btn.closest('tr')) {
+                const fila = btn.closest('tr');
+                const usuarioIdReal = fila.dataset.usuarioIdReal || '';
 
-        // 🔹 Armo el objeto "visible" ya mostrado en la fila (por coherencia)
-        const datosVisibles = {
-            nombre: fila.querySelector('td:nth-child(2)')?.innerText.trim() || '',
-            cuit: fila.querySelector('td:nth-child(3)')?.innerText.trim() || '',
-            telefono: fila.querySelector('td:nth-child(4)')?.innerText.trim() || '',
-            zona: fila.querySelector('td:nth-child(5)')?.innerText.trim() || ''
-        };
+                // 🔹 Armo el objeto "visible" ya mostrado en la fila (por coherencia)
+                const datosVisibles = {
+                    nombre: fila.querySelector('td:nth-child(2)')?.innerText.trim() || '',
+                    cuit: fila.querySelector('td:nth-child(3)')?.innerText.trim() || '',
+                    telefono: fila.querySelector('td:nth-child(4)')?.innerText.trim() || '',
+                    zona: fila.querySelector('td:nth-child(5)')?.innerText.trim() || ''
+                };
 
-        // 🔹 Si tengo identificador, pido datos completos (usuarios + usuarios_info)
-        if (usuarioIdReal) {
-            try {
-                const res = await fetch(`../../controllers/ing_ServiciosController.php?action=detalle_usuario&usuario_id_real=${encodeURIComponent(usuarioIdReal)}`, {
-                    credentials: 'include'
-                });
-                const json = await res.json();
+                // 🔹 Si tengo identificador, pido datos completos (usuarios + usuarios_info)
+                if (usuarioIdReal) {
+                    try {
+                        const res = await fetch(`../../controllers/ing_ServiciosController.php?action=detalle_usuario&usuario_id_real=${encodeURIComponent(usuarioIdReal)}`, {
+                            credentials: 'include'
+                        });
+                        const json = await res.json();
 
-                if (json?.ok) {
-                    // ✅ Imprimo TODO con la leyenda solicitada
-                    console.log('Datos usuario seleccionado en tabla:', {
-                        visibles: datosVisibles,
-                        usuarios: json.data.usuarios || null,
-                        usuarios_info: json.data.usuarios_info || null
-                    });
+                        if (json?.ok) {
+                            // ✅ Imprimo TODO con la leyenda solicitada
+                            console.log('Datos usuario seleccionado en tabla:', {
+                                visibles: datosVisibles,
+                                usuarios: json.data.usuarios || null,
+                                usuarios_info: json.data.usuarios_info || null
+                            });
+                        } else {
+                            console.warn('No se pudo obtener detalle_usuario:', json?.error || 'Error desconocido');
+                            console.log('Datos usuario seleccionado en tabla:', {
+                                visibles: datosVisibles
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error detalle_usuario:', e);
+                        console.log('Datos usuario seleccionado en tabla:', {
+                            visibles: datosVisibles
+                        });
+                    }
                 } else {
-                    console.warn('No se pudo obtener detalle_usuario:', json?.error || 'Error desconocido');
-                    console.log('Datos usuario seleccionado en tabla:', { visibles: datosVisibles });
+                    // Si no tengo id real, al menos imprimo lo visible
+                    console.log('Datos usuario seleccionado en tabla:', {
+                        visibles: datosVisibles
+                    });
                 }
-            } catch (e) {
-                console.error('Error detalle_usuario:', e);
-                console.log('Datos usuario seleccionado en tabla:', { visibles: datosVisibles });
-            }
-        } else {
-            // Si no tengo id real, al menos imprimo lo visible
-            console.log('Datos usuario seleccionado en tabla:', { visibles: datosVisibles });
-        }
 
-        // Si querés acceder luego en otras partes:
-        window.selectedProductor = { id_real: usuarioIdReal, ...datosVisibles };
-    }
+                // Si querés acceder luego en otras partes:
+                window.selectedProductor = {
+                    id_real: usuarioIdReal,
+                    ...datosVisibles
+                };
 
-    const el = document.getElementById(id);
-    if (el) {
-        if (id === 'modalDrone') {
-            const ifr = document.getElementById('modalDroneIframe');
-            if (ifr) {
-                // Podrías pasar el id_real por querystring si lo necesitás en la vista
-                // ifr.src = `./ing_new_pulverizacion_view.php?usuario_id_real=${encodeURIComponent(window.selectedProductor?.id_real || '')}`;
-                ifr.src = './ing_new_pulverizacion_view.php';
+                // Normalizo strings por seguridad
+                if (window.selectedProductor) {
+                    window.selectedProductor.id_real = String(window.selectedProductor.id_real || '');
+                    window.selectedProductor.nombre = String(window.selectedProductor.nombre || '');
+                }
+
+            }
+
+            const el = document.getElementById(id);
+            if (el) {
+                if (id === 'modalDrone') {
+                    const ifr = document.getElementById('modalDroneIframe');
+                    if (ifr) {
+                        // ✅ 1) Pasamos datos por querystring (la vista ya lo soporta)
+                        const pid = encodeURIComponent(window.selectedProductor?.id_real || '');
+                        const pnom = encodeURIComponent(window.selectedProductor?.nombre || '');
+                        const base = './ing_new_pulverizacion_view.php';
+                        const url = pid && pnom ? `${base}?prod_id_real=${pid}&prod_nombre=${pnom}` : base;
+
+                        // Forzamos recarga del iframe con los parámetros
+                        ifr.src = url;
+
+                        // ✅ 2) Además, al cargar, enviamos postMessage (fallback/robustez)
+                        ifr.onload = () => {
+                            try {
+                                const payload = {
+                                    type: 'sve:modal_prefill',
+                                    payload: {
+                                        id_real: window.selectedProductor?.id_real || '',
+                                        nombre: window.selectedProductor?.nombre || ''
+                                    }
+                                };
+                                ifr.contentWindow && ifr.contentWindow.postMessage(payload, '*');
+                            } catch (e) {
+                                console.warn('postMessage a iframe falló:', e);
+                            }
+                        };
+                    }
+                }
+
+                el.classList.remove('hidden');
             }
         }
-        el.classList.remove('hidden');
-    }
-}
 
 
         // Namespacing para apertura también, si en el futuro hay colisión:
