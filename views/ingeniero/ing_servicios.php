@@ -212,8 +212,9 @@ unset($_SESSION['cierre_info']);
                         <h3 id="modalTractorTitle">Detalle Tractor</h3>
                         <p id="modalTractorBody">Información del productor seleccionada aparecerá aquí.</p>
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" onclick="closeModal('modalTractor')">Aceptar</button>
-                            <button class="btn btn-cancelar" onclick="closeModal('modalTractor')">Cancelar</button>
+                            <button class="btn btn-aceptar" type="button" onclick="closeModal('modalTractor')">Aceptar</button>
+                            <button class="btn btn-cancelar" type="button" onclick="closeModal('modalTractor')">Cancelar</button>
+
                         </div>
                     </div>
                 </div>
@@ -223,8 +224,9 @@ unset($_SESSION['cierre_info']);
                         <h3 id="modalDroneTitle">Detalle Drone</h3>
                         <p id="modalDroneBody">Información del productor seleccionada aparecerá aquí.</p>
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" onclick="closeModal('modalDrone')">Aceptar</button>
-                            <button class="btn btn-cancelar" onclick="closeModal('modalDrone')">Cancelar</button>
+                            <button class="btn btn-aceptar" type="button" onclick="closeModal('modalDrone')">Aceptar</button>
+                            <button class="btn btn-cancelar" type="button" onclick="closeModal('modalDrone')">Cancelar</button>
+
                         </div>
                     </div>
                 </div>
@@ -234,8 +236,9 @@ unset($_SESSION['cierre_info']);
                         <h3 id="modalFamiliaTitle">Grupo Familiar</h3>
                         <p id="modalFamiliaBody">Información del productor seleccionada aparecerá aquí.</p>
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" onclick="closeModal('modalFamilia')">Aceptar</button>
-                            <button class="btn btn-cancelar" onclick="closeModal('modalFamilia')">Cancelar</button>
+                            <button class="btn btn-aceptar" type="button" onclick="closeModal('modalFamilia')">Aceptar</button>
+                            <button class="btn btn-cancelar" type="button" onclick="closeModal('modalFamilia')">Cancelar</button>
+
                         </div>
                     </div>
                 </div>
@@ -365,16 +368,23 @@ unset($_SESSION['cierre_info']);
     <td>${p.telefono || '-'}</td>
     <td>${p.zona || '-'}</td>
     <td>
-        <button class="btn-icon" aria-label="Tractor" title="Tractor" onclick="openModalId('modalTractor')">
-            <span class="material-symbols-outlined">agriculture</span>
-        </button>
-        <button class="btn-icon" aria-label="Drone" title="Drone" onclick="openModalId('modalDrone')">
-            <span class="material-symbols-outlined">drone</span>
-        </button>
-        <button class="btn-icon" aria-label="Familia" title="Familia" onclick="openModalId('modalFamilia')">
-            <span class="material-icons">diversity_3</span>
-        </button>
-    </td>
+        <td>
+    <!-- TOOLTIP: botón Tractor -->
+    <button class="btn-icon" aria-label="Tractor" title="Tractor" onclick="openModalId('modalTractor')">
+        <span class="material-symbols-outlined" style="color:green;">agriculture</span>
+    </button>
+
+    <!-- TOOLTIP: botón Drone -->
+    <button class="btn-icon" aria-label="Drone" title="Drone" onclick="openModalId('modalDrone')">
+        <span class="material-symbols-outlined" style="color:green;">drone</span>
+    </button>
+
+    <!-- TOOLTIP: botón Familia -->
+    <button class="btn-icon" aria-label="Familia" title="Familia" onclick="openModalId('modalFamilia')">
+        <span class="material-icons" style="color:green;">diversity_3</span>
+    </button>
+</td>
+
 `;
 
 
@@ -434,14 +444,8 @@ unset($_SESSION['cierre_info']);
 
         function closeModal(id) {
             console.log('closeModal', id);
-            const el = document.getElementById(id);
-            el && el.classList.add('hidden');
-        }
-
-
-        function closeModal(id) {
-            console.log('closeModal', id);
-            document.getElementById(id)?.classList.add('hidden');
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.add('hidden');
         }
     </script>
 
