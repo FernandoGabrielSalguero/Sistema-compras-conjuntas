@@ -475,7 +475,22 @@
                 /* noop */ }
 
             // 4) API pública para uso directo desde el padre
-            window.dronePulvPrefill = __prefillProductor;
+window.dronePulvPrefill = __prefillProductor;
+
+// 5) Soporte postMessage desde el parent (cuando está embebido en iframe)
+window.addEventListener('message', (ev) => {
+    try {
+        const data = ev && ev.data ? ev.data : null;
+        if (!data) return;
+        // Acepta { type:'sve:modal_prefill', payload:{ id_real, nombre } } o el objeto directo
+        if (data.type === 'sve:modal_prefill' && data.payload) {
+            __prefillProductor(data.payload);
+        } else if (data.id_real || data.productor_id_real || data.nombre || data.usuario) {
+            __prefillProductor(data);
+        }
+    } catch(e) {}
+});
+
 
             let items = [];
             txt.addEventListener('input', async () => {
