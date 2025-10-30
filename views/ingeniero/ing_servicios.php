@@ -209,8 +209,8 @@ unset($_SESSION['cierre_info']);
                 <!-- 🪟 Modales -->
                 <div id="modalTractor" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTractorTitle">
                     <div class="modal-content">
-                        <h3 id="modalTractorTitle">Detalle Tractor</h3>
-                        <p id="modalTractorBody">Información del productor seleccionada aparecerá aquí.</p>
+                        <h3 id="modalTractorTitle">Crear una solicitud de cosecha mecanica</h3>
+                        <p id="modalTractorBody">Pronto, vas a poder solicitarle servicios de cosecha mecanica a los productores.</p>
                         <div class="form-buttons">
                             <button class="btn btn-aceptar" type="button" onclick="sveCloseModal('modalTractor')">Aceptar</button>
                             <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalTractor')">Cancelar</button>
@@ -222,7 +222,7 @@ unset($_SESSION['cierre_info']);
 
                 <div id="modalDrone" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalDroneTitle">
                     <div class="modal-content">
-                        <h3 id="modalDroneTitle">Detalle Drone</h3>
+                        <h3 id="modalDroneTitle">Crear solicitud de pulveriazción con Drone</h3>
                         <p id="modalDroneBody">Información del productor seleccionada aparecerá aquí.</p>
                         <div class="form-buttons">
                             <button class="btn btn-aceptar" type="button" onclick="sveCloseModal('modalDrone')">Aceptar</button>
@@ -235,8 +235,8 @@ unset($_SESSION['cierre_info']);
 
                 <div id="modalFamilia" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalFamiliaTitle">
                     <div class="modal-content">
-                        <h3 id="modalFamiliaTitle">Grupo Familiar</h3>
-                        <p id="modalFamiliaBody">Información del productor seleccionada aparecerá aquí.</p>
+                        <h3 id="modalFamiliaTitle">Sistema de relevamiento</h3>
+                        <p id="modalFamiliaBody">Pronto, vas a tener acceso a las opciones de relevamiento desde este boton</p>
                         <div class="form-buttons">
                             <button class="btn btn-aceptar" type="button" onclick="sveCloseModal('modalFamilia')">Aceptar</button>
                             <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalFamilia')">Cancelar</button>
