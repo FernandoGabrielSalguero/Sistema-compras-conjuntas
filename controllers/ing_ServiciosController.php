@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 ini_set('display_errors', '0'); // evitar fuga en prod
@@ -10,7 +11,8 @@ header('Content-Type: application/json; charset=UTF-8');
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/ing_ServiciosModel.php';
 
-function respond(array $payload, int $code = 200): void {
+function respond(array $payload, int $code = 200): void
+{
     http_response_code($code);
     echo json_encode($payload, JSON_UNESCAPED_UNICODE);
     exit;
@@ -28,22 +30,46 @@ try {
 
     switch ($action) {
         case 'cooperativas_del_ingeniero': {
-            $idReal = isset($_SESSION['id_real']) ? (string)$_SESSION['id_real'] : '';
-            if ($idReal === '') {
-                respond(['ok' => false, 'error' => 'Ingeniero no identificado'], 400);
+                $idReal = isset($_SESSION['id_real']) ? (string)$_SESSION['id_real'] : '';
+                if ($idReal === '') {
+                    respond(['ok' => false, 'error' => 'Ingeniero no identificado'], 400);
+                }
+                $data = $model->getCooperativasByIngeniero($idReal);
+                respond(['ok' => true, 'data' => $data]);
             }
-            $data = $model->getCooperativasByIngeniero($idReal);
-            respond(['ok' => true, 'data' => $data]);
-        }
 
         case 'productores_por_coop': {
-            $coop = isset($_GET['cooperativa_id_real']) ? trim((string)$_GET['cooperativa_id_real']) : '';
-            if ($coop === '') {
-                respond(['ok' => false, 'error' => 'Parámetro cooperativa_id_real requerido'], 400);
+                $coop = isset($_GET['cooperativa_id_real']) ? trim((string)$_GET['cooperativa_id_real']) : '';
+                if ($coop === '') {
+                    respond(['ok' => false, 'error' => 'Parámetro cooperativa_id_real requerido'], 400);
+                }
+                $data = $model->getProductoresByCooperativa($coop);
+                respond(['ok' => true, 'data' => $data]);
             }
-            $data = $model->getProductoresByCooperativa($coop);
-            respond(['ok' => true, 'data' => $data]);
-        }
+
+        case 'detalle_usuario': {
+                $usuarioIdReal = $_GET['usuario_id_real'] ?? $_POST['usuario_id_real'] ?? null;
+
+                if (!$usuarioIdReal) {
+                    respond(['ok' => false, 'error' => 'usuario_id_real es requerido'], 400);
+                }
+
+                try {
+                    // $model ya está instanciado arriba con $pdo: $model = new IngServiciosModel($pdo);
+                    $detalle = $model->getUsuarioConInfo($usuarioIdReal);
+
+                    if (!$detalle) {
+                        respond(['ok' => false, 'error' => 'Usuario no encontrado'], 404);
+                    }
+
+                    respond(['ok' => true, 'data' => $detalle]);
+                } catch (\Throwable $e) {
+                    error_log('[detalle_usuario] ' . $e->getMessage());
+                    respond(['ok' => false, 'error' => 'Error interno'], 500);
+                }
+            }
+
+
 
         default:
             respond(['ok' => false, 'error' => 'Acción no soportada'], 404);

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 class IngServiciosModel
@@ -58,5 +59,31 @@ class IngServiciosModel
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':coop' => $coopIdReal]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function getUsuarioConInfo(string $usuarioIdReal): ?array
+    {
+        // 1) usuarios (clave de negocio: id_real)
+        $sqlU = "SELECT * FROM usuarios WHERE id_real = :id_real LIMIT 1";
+        $stmtU = $this->pdo->prepare($sqlU);
+        $stmtU->bindValue(':id_real', $usuarioIdReal, \PDO::PARAM_STR);
+        $stmtU->execute();
+        $usuario = $stmtU->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$usuario) {
+            return null;
+        }
+
+        // 2) usuarios_info (FK física: usuarios_info.usuario_id -> usuarios.id)
+        $sqlI = "SELECT * FROM usuarios_info WHERE usuario_id = :usuario_id LIMIT 1";
+        $stmtI = $this->pdo->prepare($sqlI);
+        $stmtI->bindValue(':usuario_id', (int)$usuario['id'], \PDO::PARAM_INT);
+        $stmtI->execute();
+        $usuarioInfo = $stmtI->fetch(\PDO::FETCH_ASSOC) ?: null;
+
+        return [
+            'usuarios'      => $usuario,
+            'usuarios_info' => $usuarioInfo
+        ];
     }
 }
