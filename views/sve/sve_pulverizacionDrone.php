@@ -28,11 +28,23 @@ $tabMap = [
   'variables'   => __DIR__ . '/../partials/drones/view/drone_variables_view.php',
 ];
 
-// Normalización y “fallback” a Solicitudes
+// Fallback a Solicitudes
 if (!array_key_exists($tab, $tabMap)) {
   $tab = 'solicitudes';
 }
 $currentView = $tabMap[$tab];
+
+// Modo AJAX: devolver solo la vista solicitada (sin layout)
+if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
+  header('Content-Type: text/html; charset=utf-8');
+  if (is_file($currentView)) {
+    require $currentView;
+  } else {
+    echo '<p>No se encontró la vista: <code>' . htmlspecialchars(basename($currentView)) . '</code>.</p>';
+  }
+  exit;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -168,29 +180,31 @@ $currentView = $tabMap[$tab];
           <h2>Hola! </h2>
           <p>Te presentamos el gestor de proyectos de vuelo. Desde acá, vas a controlar todo el servicio de pulverización con drones.</p>
 
-          <!-- 🔘 Tabs: cada click recarga la página con ?tab= -->
+                    <!-- 🔘 Tabs: cada click vuelve a pedir la vista por AJAX -->
           <div class="tabs">
-            <div class="tab-buttons">
-              <button class="tab-button <?php echo $tab === 'solicitudes' ? 'active' : ''; ?>" onclick="location.href='?tab=solicitudes'">Solicitudes</button>
-              <button class="tab-button <?php echo $tab === 'formulario' ? 'active' : ''; ?>" onclick="location.href='?tab=formulario'">Nuevo servicio</button>
-              <button class="tab-button <?php echo $tab === 'protocolo' ? 'active' : ''; ?>" onclick="location.href='?tab=protocolo'">Protocolo</button>
-              <button class="tab-button <?php echo $tab === 'calendario' ? 'active' : ''; ?>" onclick="location.href='?tab=calendario'">Calendario</button>
-              <button class="tab-button <?php echo $tab === 'stock' ? 'active' : ''; ?>" onclick="location.href='?tab=stock'">Stock</button>
-              <button class="tab-button <?php echo $tab === 'variables' ? 'active' : ''; ?>" onclick="location.href='?tab=variables'">Variables</button>
+            <div class="tab-buttons" id="tabs">
+              <button class="tab-button <?php echo $tab === 'solicitudes' ? 'active' : ''; ?>" data-tab="solicitudes">Solicitudes</button>
+              <button class="tab-button <?php echo $tab === 'formulario'  ? 'active' : ''; ?>" data-tab="formulario">Nuevo servicio</button>
+              <button class="tab-button <?php echo $tab === 'protocolo'   ? 'active' : ''; ?>" data-tab="protocolo">Protocolo</button>
+              <button class="tab-button <?php echo $tab === 'calendario'  ? 'active' : ''; ?>" data-tab="calendario">Calendario</button>
+              <button class="tab-button <?php echo $tab === 'stock'       ? 'active' : ''; ?>" data-tab="stock">Stock</button>
+              <button class="tab-button <?php echo $tab === 'variables'   ? 'active' : ''; ?>" data-tab="variables">Variables</button>
             </div>
           </div>
+
         </div>
 
-        <!-- 🧩 Contenido del TAB seleccionado (se renderiza 1 vista por request) -->
+                <!-- 🧩 Contenido del TAB seleccionado -->
         <div class="card" id="tab-content-card" style="margin-top: 12px;">
           <?php
-          if (is_file($currentView)) {
-            require $currentView;
-          } else {
-            echo '<p>No se encontró la vista: <code>' . htmlspecialchars(basename($currentView)) . '</code>.</p>';
-          }
+            if (is_file($currentView)) {
+              require $currentView; // Render inicial (Solicitudes por defecto)
+            } else {
+              echo '<p>No se encontró la vista: <code>' . htmlspecialchars(basename($currentView)) . '</code>.</p>';
+            }
           ?>
         </div>
+
 
 
         <!-- contenedor del toastify -->
@@ -204,71 +218,44 @@ $currentView = $tabMap[$tab];
     </div>
   </div>
 
-
-
-  <!-- JS simple para alternar contenido entre tarjetas -->
+    <!-- JS: carga de vistas por AJAX (sin recargar la página) -->
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const buttons = document.querySelectorAll('.tab-buttons .tab-button[data-target]');
-      const panels = document.querySelectorAll('#tab-content-card .tab-panel');
-      const STORAGE_KEY = 'sve_drone_tab';
+    document.addEventListener('DOMContentLoaded', function () {
+      const tabContainer = document.getElementById('tabs');
+      const content = document.getElementById('tab-content-card');
 
-      function isTabButton(el) {
-        return el && el.dataset && el.dataset.target;
-      }
+      async function loadTab(tab) {
+        // Estado activo visual
+        document.querySelectorAll('#tabs .tab-button').forEach(b => {
+          b.classList.toggle('active', b.dataset.tab === tab);
+        });
 
-      function activate(targetSel) {
-        // Limpia estados
-        buttons.forEach(b => b.classList.remove('active'));
-        panels.forEach(p => p.classList.remove('active'));
-
-        // Activa botón/panel destino
-        const btn = Array.from(buttons).find(b => b.dataset.target === targetSel);
-        const panel = document.querySelector(targetSel);
-
-        if (btn) btn.classList.add('active');
-        if (panel) panel.classList.add('active');
-
-        // Quitar fondo/sombra del contenedor en vistas "planas"
-        const wrapper = document.getElementById('tab-content-card');
-        if (wrapper) {
-          const sinChrome = ['#panel-variables', '#panel-stock', '#panel-protocolo'].includes(targetSel);
-          wrapper.classList.toggle('no-chrome', sinChrome);
+        // Carga de la vista desde el servidor (siempre fresca)
+        const url = `?ajax=1&tab=${encodeURIComponent(tab)}`;
+        content.setAttribute('aria-busy', 'true');
+        try {
+          const res = await fetch(url, { cache: 'no-store', headers: { 'X-Requested-With': 'fetch' } });
+          const html = await res.text();
+          content.innerHTML = html;
+        } catch (e) {
+          content.innerHTML = '<p>Error cargando la vista. Intente nuevamente.</p>';
+        } finally {
+          content.removeAttribute('aria-busy');
         }
       }
 
-      // Cambiar de pestaña SIN recargar
-      buttons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          if (!isTabButton(btn)) return;
-          const target = btn.dataset.target;
-          if (!target) return;
-          sessionStorage.setItem(STORAGE_KEY, target);
-          activate(target);
-        });
+      // Delegación de clicks en tabs
+      tabContainer.addEventListener('click', function (e) {
+        const btn = e.target.closest('.tab-button');
+        if (!btn) return;
+        const tab = btn.dataset.tab;
+        if (!tab) return;
+        e.preventDefault();
+        loadTab(tab);
       });
-
-      // Botón "Actualizar" (recarga manual)
-      const refreshBtn = document.getElementById('btn-refresh');
-      if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-          // Conserva la pestaña actual al recargar
-          const activeBtn = document.querySelector('.tab-buttons .tab-button.active[data-target]');
-          const current = activeBtn ? activeBtn.dataset.target : '#panel-solicitudes';
-          sessionStorage.setItem(STORAGE_KEY, current);
-          location.reload();
-        });
-      }
-
-      // Activar la pestaña persistida (o default)
-      const initial = sessionStorage.getItem(STORAGE_KEY) || '#panel-solicitudes';
-      activate(initial);
     });
   </script>
 
-
-  <!-- Contenedor exclusivo para impresión -->
-  <div id="printArea" class="only-print"></div>
 </body>
 
 </html>
