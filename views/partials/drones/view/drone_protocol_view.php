@@ -453,28 +453,24 @@ declare(strict_types=1);
   }
 
   .data-table th:nth-child(1) {
-    width: 3%;
-    text-align: center;
+    width: 22%;
   }
-  
+
   .data-table th:nth-child(2) {
     width: 20%;
-    text-align: center;
   }
 
   .data-table th:nth-child(3) {
-    width: 3%;
-    text-align: center;
+    width: 13%;
   }
-  
+
   .data-table th:nth-child(4) {
-    width: 7%;
+    width: 10%;
     text-align: center;
   }
-  
+
   .data-table th:nth-child(5) {
     width: 35%;
-    text-align: center;
   }
 
   .data-table td {
