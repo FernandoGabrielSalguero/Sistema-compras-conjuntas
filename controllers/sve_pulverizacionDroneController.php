@@ -16,12 +16,18 @@ try {
     switch ($action) {
         case 'list_solicitudes':
             $filters = [
-                'q'      => isset($_GET['q']) ? trim($_GET['q']) : '',
-                'fecha'  => isset($_GET['fecha']) ? trim($_GET['fecha']) : '',
-                'estado' => isset($_GET['estado']) ? trim($_GET['estado']) : '',
+                'q'      => isset($_GET['q']) ? trim((string)$_GET['q']) : '',
+                'fecha'  => isset($_GET['fecha']) ? trim((string)$_GET['fecha']) : '',
+                'estado' => isset($_GET['estado']) ? trim((string)$_GET['estado']) : '',
+                'limit'  => isset($_GET['limit']) ? (int)$_GET['limit'] : 25,
+                'offset' => isset($_GET['offset']) ? (int)$_GET['offset'] : 0,
             ];
+            if ($filters['limit'] <= 0)  $filters['limit'] = 25;
+            if ($filters['limit'] > 100) $filters['limit'] = 100;
+            if ($filters['offset'] < 0)  $filters['offset'] = 0;
+
             $data = $droneModel->listarSolicitudes($filters);
-            echo json_encode(['ok' => true, 'data' => $data]);
+            echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE);
             break;
 
         case 'get_solicitud':
@@ -73,7 +79,7 @@ try {
             }
 
             $ok = $droneModel->actualizarSolicitud($id, $payload);
-            echo json_encode(['ok' => (bool)$ok]);
+            echo json_encode(['ok' => (bool)$ok], JSON_UNESCAPED_UNICODE);
             break;
 
         case 'add_producto':
@@ -88,7 +94,7 @@ try {
                 break;
             }
             $ok = $droneModel->agregarProducto($sid, $tipo, $fuente, $marca);
-            echo json_encode(['ok' => (bool)$ok]);
+            echo json_encode(['ok' => (bool)$ok], JSON_UNESCAPED_UNICODE);
             break;
 
         default:
@@ -98,5 +104,9 @@ try {
     }
 } catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => 'Error del servidor', 'detail' => $e->getMessage()]);
+    echo json_encode([
+        'ok' => false,
+        'error' => 'Error del servidor',
+        'detail' => $e->getMessage()
+    ], JSON_UNESCAPED_UNICODE);
 }

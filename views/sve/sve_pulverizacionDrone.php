@@ -171,77 +171,48 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         <!-- 🧩 Tarjeta separada para el contenido del tab -->
         <div class="card" id="tab-content-card" style="margin-top: 12px;">
 
-          <!-- Panel: Solicitudes -->
-          <div class="tab-panel active" id="panel-solicitudes">
-            <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_list_view.php';
-            if (is_file($viewFile)) {
-              require $viewFile;
-            } else {
-              echo '<p>No se encontró la vista <code>drone_list_view.php</code>.</p>';
-            }
-            ?>
+                    <!-- Panel: Solicitudes (lazy) -->
+          <div class="tab-panel active" id="panel-solicitudes"
+               data-url="../partials/drones/view/drone_list_view.php"
+               data-loaded="false">
+            <div class="placeholder">Cargando módulo “Solicitudes” cuando abras la pestaña…</div>
           </div>
 
-          <!-- Panel: Formulario -->
-          <div class="tab-panel" id="panel-formulario">
-            <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_formulario_N_Servicio_view.php';
-            if (is_file($viewFile)) {
-              require $viewFile;
-            } else {
-              echo '<p>No se encontró la vista <code>drone_formulario_N_Servicio_view.php</code>.</p>';
-            }
-            ?>
+          <!-- Panel: Formulario (lazy) -->
+          <div class="tab-panel" id="panel-formulario"
+               data-url="../partials/drones/view/drone_formulario_N_Servicio_view.php"
+               data-loaded="false">
+            <div class="placeholder">Cargando módulo “Nuevo servicio” cuando abras la pestaña…</div>
           </div>
 
-          <!-- Panel: Protocolo -->
-          <div class="tab-panel" id="panel-protocolo">
-            <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_protocol_view.php';
-            if (is_file($viewFile)) {
-              require $viewFile;
-            } else {
-              echo '<p>No se encontró la vista <code>drone_protocol_view.php</code>.</p>';
-            }
-            ?>
+          <!-- Panel: Protocolo (lazy) -->
+          <div class="tab-panel" id="panel-protocolo"
+               data-url="../partials/drones/view/drone_protocol_view.php"
+               data-loaded="false">
+            <div class="placeholder">Cargando módulo “Protocolo” cuando abras la pestaña…</div>
           </div>
 
-          <!-- Panel: Calendario -->
-          <div class="tab-panel" id="panel-calendario">
-            <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_calendar_view.php';
-            if (is_file($viewFile)) {
-              require $viewFile;
-            } else {
-              echo '<p>No se encontró la vista <code>drone_calendar_view.php</code>.</p>';
-            }
-            ?>
+          <!-- Panel: Calendario (lazy) -->
+          <div class="tab-panel" id="panel-calendario"
+               data-url="../partials/drones/view/drone_calendar_view.php"
+               data-loaded="false">
+            <div class="placeholder">Cargando módulo “Calendario” cuando abras la pestaña…</div>
           </div>
 
-          <!-- Panel: Stock -->
-          <div class="tab-panel" id="panel-stock">
-            <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_stock_view.php';
-            if (is_file($viewFile)) {
-              require $viewFile;
-            } else {
-              echo '<p>No se encontró la vista <code>drone_stock_view.php</code>.</p>';
-            }
-            ?>
+          <!-- Panel: Stock (lazy) -->
+          <div class="tab-panel" id="panel-stock"
+               data-url="../partials/drones/view/drone_stock_view.php"
+               data-loaded="false">
+            <div class="placeholder">Cargando módulo “Stock” cuando abras la pestaña…</div>
           </div>
 
-          <!-- Panel: Variables -->
-          <div class="tab-panel" id="panel-variables">
-            <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_variables_view.php';
-            if (is_file($viewFile)) {
-              require $viewFile;
-            } else {
-              echo '<p>No se encontró la vista <code>drone_variables_view.php</code>.</p>';
-            }
-            ?>
+          <!-- Panel: Variables (lazy) -->
+          <div class="tab-panel" id="panel-variables"
+               data-url="../partials/drones/view/drone_variables_view.php"
+               data-loaded="false">
+            <div class="placeholder">Cargando módulo “Variables” cuando abras la pestaña…</div>
           </div>
+
 
         </div>
 
@@ -256,63 +227,92 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     </div>
   </div>
 
-
-
-  <!-- JS simple para alternar contenido entre tarjetas -->
+    <!-- JS para tabs con Lazy Loading por módulo -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const buttons = document.querySelectorAll('.tab-buttons .tab-button[data-target]');
-      const panels = document.querySelectorAll('#tab-content-card .tab-panel');
+      const panels  = document.querySelectorAll('#tab-content-card .tab-panel');
       const STORAGE_KEY = 'sve_drone_tab';
 
-      function isTabButton(el) {
-        return el && el.dataset && el.dataset.target;
+      function isTabButton(el){ return el && el.dataset && el.dataset.target; }
+
+      async function loadPanel(panel, {force=false} = {}) {
+        if (!panel) return;
+        const loaded = panel.getAttribute('data-loaded') === 'true';
+        const url    = panel.getAttribute('data-url');
+
+        if (!url) return; // nada que cargar
+        if (loaded && !force) return; // ya cargado
+
+        // Spinner básico (usa el mismo contenedor de spinner global ya cargado)
+        const prevHTML = panel.innerHTML;
+        panel.innerHTML = '<div class="center p-4"><div class="spinner"></div><p>Cargando…</p></div>';
+
+        try {
+          const bust = 'cache=' + Date.now();
+          const resp = await fetch(url + (url.includes('?') ? '&' : '?') + bust, { credentials: 'same-origin' });
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          const html = await resp.text();
+          panel.innerHTML = html;
+          panel.setAttribute('data-loaded','true');
+        } catch (err) {
+          panel.innerHTML = '<div class="alert error">No se pudo cargar el módulo (' + (err.message || 'Error') + ').</div>';
+          // En caso de error, permite reintentar manualmente
+          panel.insertAdjacentHTML('beforeend', '<div class="mt-2"><button class="btn" onclick="location.reload()">Recargar página</button></div>');
+        }
       }
 
-      function activate(targetSel) {
-        // Limpia estados
+      function applyChrome(targetSel){
+        const wrapper = document.getElementById('tab-content-card');
+        if (!wrapper) return;
+        const sinChrome = ['#panel-variables', '#panel-stock', '#panel-protocolo'].includes(targetSel);
+        wrapper.classList.toggle('no-chrome', sinChrome);
+      }
+
+      async function activate(targetSel) {
+        // desactivar todo
         buttons.forEach(b => b.classList.remove('active'));
         panels.forEach(p => p.classList.remove('active'));
 
-        // Activa botón/panel destino
-        const btn = Array.from(buttons).find(b => b.dataset.target === targetSel);
+        // activar objetivo
+        const btn   = Array.from(buttons).find(b => b.dataset.target === targetSel);
         const panel = document.querySelector(targetSel);
 
         if (btn) btn.classList.add('active');
         if (panel) panel.classList.add('active');
 
-        // Quitar fondo/sombra del contenedor en vistas "planas"
-        const wrapper = document.getElementById('tab-content-card');
-        if (wrapper) {
-          const sinChrome = ['#panel-variables', '#panel-stock', '#panel-protocolo'].includes(targetSel);
-          wrapper.classList.toggle('no-chrome', sinChrome);
-        }
+        applyChrome(targetSel);
+
+        // Cargar on-demand
+        await loadPanel(panel);
       }
 
-      // Cambiar de pestaña SIN recargar
+      // Navegación entre pestañas sin recargar
       buttons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', async () => {
           if (!isTabButton(btn)) return;
           const target = btn.dataset.target;
           if (!target) return;
           sessionStorage.setItem(STORAGE_KEY, target);
-          activate(target);
+          await activate(target);
         });
       });
 
-      // Botón "Actualizar" (recarga manual)
+      // Botón "Actualizar" => recarga SOLO la pestaña activa
       const refreshBtn = document.getElementById('btn-refresh');
       if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-          // Conserva la pestaña actual al recargar
+        refreshBtn.addEventListener('click', async () => {
           const activeBtn = document.querySelector('.tab-buttons .tab-button.active[data-target]');
-          const current = activeBtn ? activeBtn.dataset.target : '#panel-solicitudes';
-          sessionStorage.setItem(STORAGE_KEY, current);
-          location.reload();
+          const current   = activeBtn ? activeBtn.dataset.target : '#panel-solicitudes';
+          const panel     = document.querySelector(current);
+          if (panel) {
+            panel.setAttribute('data-loaded','false');
+            await loadPanel(panel, {force:true});
+          }
         });
       }
 
-      // Activar la pestaña persistida (o default)
+      // Activar la pestaña persistida (o default) y cargar su módulo
       const initial = sessionStorage.getItem(STORAGE_KEY) || '#panel-solicitudes';
       activate(initial);
     });
