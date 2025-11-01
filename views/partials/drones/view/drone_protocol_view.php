@@ -453,7 +453,7 @@ declare(strict_types=1);
   }
 
   .data-table th:nth-child(1) {
-    width: 22%;
+    width: 3%;
   }
 
   .data-table th:nth-child(2) {
@@ -461,11 +461,11 @@ declare(strict_types=1);
   }
 
   .data-table th:nth-child(3) {
-    width: 13%;
+    width: 7%;
   }
 
   .data-table th:nth-child(4) {
-    width: 10%;
+    width: 7%;
     text-align: center;
   }
 

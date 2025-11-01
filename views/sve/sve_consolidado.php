@@ -202,9 +202,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <script>
-        /* ===========================
-   Boot
-=========================== */
+        /* ===========================  Boot ========================== */
         document.addEventListener('DOMContentLoaded', () => {
             cargarOperativos();
             cargarCooperativas();
@@ -220,9 +218,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             document.getElementById('cooperativa').addEventListener('change', onFilterChange);
         });
 
-        /* ===========================
-           Helpers (números, HTML, ids)
-        =========================== */
+        /* ===========================  Helpers (números, HTML, ids)     =========================== */
         function nfmt(n) {
             return new Intl.NumberFormat('es-AR').format(Number(n) || 0);
         }
