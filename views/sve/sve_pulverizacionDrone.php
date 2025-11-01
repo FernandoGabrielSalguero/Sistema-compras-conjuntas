@@ -15,9 +15,24 @@ $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
 $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
-//Cargamos los operativos cerrados
-$cierre_info = $_SESSION['cierre_info'] ?? null;
-unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
+// Resolución de TAB (default: solicitudes)
+$tab = isset($_GET['tab']) ? strtolower(trim($_GET['tab'])) : 'solicitudes';
+
+// Mapeo de tabs a vistas
+$tabMap = [
+  'solicitudes' => __DIR__ . '/../partials/drones/view/drone_list_view.php',
+  'formulario'  => __DIR__ . '/../partials/drones/view/drone_formulario_N_Servicio_view.php',
+  'protocolo'   => __DIR__ . '/../partials/drones/view/drone_protocol_view.php',
+  'calendario'  => __DIR__ . '/../partials/drones/view/drone_calendar_view.php',
+  'stock'       => __DIR__ . '/../partials/drones/view/drone_stock_view.php',
+  'variables'   => __DIR__ . '/../partials/drones/view/drone_variables_view.php',
+];
+
+// Normalización y “fallback” a Solicitudes
+if (!array_key_exists($tab, $tabMap)) {
+  $tab = 'solicitudes';
+}
+$currentView = $tabMap[$tab];
 ?>
 
 <!DOCTYPE html>
@@ -84,47 +99,47 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
       <nav class="sidebar-menu">
         <ul>
-                    <li onclick="location.href='sve_dashboard.php'">
-                        <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
-                    </li>
-                    <li onclick="location.href='sve_consolidado.php'">
-                        <span class="material-icons" style="color: #5b21b6;">analytics</span><span class="link-text">Consolidado</span>
-                    </li>
-                    <li onclick="location.href='sve_altausuarios.php'">
-                        <span class="material-icons" style="color: #5b21b6;">person</span><span class="link-text">Alta usuarios</span>
-                    </li>
-                    <li onclick="location.href='sve_asociarProductores.php'">
-                        <span class="material-icons" style="color: #5b21b6;">link</span><span class="link-text">Asociaciones</span>
-                    </li>
-                    <li onclick="location.href='sve_cargaMasiva.php'">
-                        <span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Carga masiva</span>
-                    </li>
-                    <li onclick="location.href='sve_registro_login.php'">
-                        <span class="material-icons" style="color: #5b21b6;">login</span><span class="link-text">Ingresos</span>
-                    </li>
-                    <li onclick="location.href='sve_operativos.php'">
-                        <span class="material-icons" style="color: #5b21b6;">assignment</span><span class="link-text">Operativos</span>
-                    </li>
-                    <li onclick="location.href='sve_mercadodigital.php'">
-                        <span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
-                    </li>
-                    <li onclick="location.href='sve_listadoPedidos.php'">
-                        <span class="material-icons" style="color: #5b21b6;">assignment_turned_in</span><span class="link-text">Listado Pedidos</span>
-                    </li>
-                    <li onclick="location.href='sve_productos.php'">
-                        <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
-                    </li>
-                    <li onclick="location.href='sve_pulverizacionDrone.php'">
-                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                    <span class="link-text">Drones</span>
-                    </li>
-                    <li onclick="location.href='sve_publicaciones.php'">
-                        <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
-                    </li>
-                    <li onclick="location.href='../../../logout.php'">
-                        <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
-                    </li>
-                </ul>
+          <li onclick="location.href='sve_dashboard.php'">
+            <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
+          </li>
+          <li onclick="location.href='sve_consolidado.php'">
+            <span class="material-icons" style="color: #5b21b6;">analytics</span><span class="link-text">Consolidado</span>
+          </li>
+          <li onclick="location.href='sve_altausuarios.php'">
+            <span class="material-icons" style="color: #5b21b6;">person</span><span class="link-text">Alta usuarios</span>
+          </li>
+          <li onclick="location.href='sve_asociarProductores.php'">
+            <span class="material-icons" style="color: #5b21b6;">link</span><span class="link-text">Asociaciones</span>
+          </li>
+          <li onclick="location.href='sve_cargaMasiva.php'">
+            <span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Carga masiva</span>
+          </li>
+          <li onclick="location.href='sve_registro_login.php'">
+            <span class="material-icons" style="color: #5b21b6;">login</span><span class="link-text">Ingresos</span>
+          </li>
+          <li onclick="location.href='sve_operativos.php'">
+            <span class="material-icons" style="color: #5b21b6;">assignment</span><span class="link-text">Operativos</span>
+          </li>
+          <li onclick="location.href='sve_mercadodigital.php'">
+            <span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
+          </li>
+          <li onclick="location.href='sve_listadoPedidos.php'">
+            <span class="material-icons" style="color: #5b21b6;">assignment_turned_in</span><span class="link-text">Listado Pedidos</span>
+          </li>
+          <li onclick="location.href='sve_productos.php'">
+            <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
+          </li>
+          <li onclick="location.href='sve_pulverizacionDrone.php'">
+            <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
+            <span class="link-text">Drones</span>
+          </li>
+          <li onclick="location.href='sve_publicaciones.php'">
+            <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
+          </li>
+          <li onclick="location.href='../../../logout.php'">
+            <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
+          </li>
+        </ul>
       </nav>
 
       <div class="sidebar-footer">
@@ -153,97 +168,30 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
           <h2>Hola! </h2>
           <p>Te presentamos el gestor de proyectos de vuelo. Desde acá, vas a controlar todo el servicio de pulverización con drones.</p>
 
-          <!-- 🔘 Tarjeta con los botones del tab -->
+          <!-- 🔘 Tabs: cada click recarga la página con ?tab= -->
           <div class="tabs">
             <div class="tab-buttons">
-              <button class="tab-button" data-target="#panel-solicitudes">Solicitudes</button>
-              <button class="tab-button" data-target="#panel-formulario">Nuevo servicio</button>
-              <button class="tab-button" data-target="#panel-protocolo">Protocolo</button>
-              <button class="tab-button" data-target="#panel-calendario">Calendario</button>
-              <button class="tab-button" data-target="#panel-stock">Stock</button>
-              <button class="tab-button" data-target="#panel-variables">Variables</button>
-              <!-- Botón de actualización on-demand -->
-              <button id="btn-refresh" class="btn btn-aceptar" style="margin-left:auto">Actualizar</button>
+              <button class="tab-button <?php echo $tab === 'solicitudes' ? 'active' : ''; ?>" onclick="location.href='?tab=solicitudes'">Solicitudes</button>
+              <button class="tab-button <?php echo $tab === 'formulario' ? 'active' : ''; ?>" onclick="location.href='?tab=formulario'">Nuevo servicio</button>
+              <button class="tab-button <?php echo $tab === 'protocolo' ? 'active' : ''; ?>" onclick="location.href='?tab=protocolo'">Protocolo</button>
+              <button class="tab-button <?php echo $tab === 'calendario' ? 'active' : ''; ?>" onclick="location.href='?tab=calendario'">Calendario</button>
+              <button class="tab-button <?php echo $tab === 'stock' ? 'active' : ''; ?>" onclick="location.href='?tab=stock'">Stock</button>
+              <button class="tab-button <?php echo $tab === 'variables' ? 'active' : ''; ?>" onclick="location.href='?tab=variables'">Variables</button>
             </div>
           </div>
         </div>
 
-        <!-- 🧩 Tarjeta separada para el contenido del tab -->
+        <!-- 🧩 Contenido del TAB seleccionado (se renderiza 1 vista por request) -->
         <div class="card" id="tab-content-card" style="margin-top: 12px;">
-
-          <!-- Panel: Solicitudes -->
-          <div class="tab-panel active" id="panel-solicitudes">
-            <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_list_view.php';
-            if (is_file($viewFile)) {
-              require $viewFile;
-            } else {
-              echo '<p>No se encontró la vista <code>drone_list_view.php</code>.</p>';
-            }
-            ?>
-          </div>
-
-          <!-- Panel: Formulario -->
-          <div class="tab-panel" id="panel-formulario">
-            <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_formulario_N_Servicio_view.php';
-            if (is_file($viewFile)) {
-              require $viewFile;
-            } else {
-              echo '<p>No se encontró la vista <code>drone_formulario_N_Servicio_view.php</code>.</p>';
-            }
-            ?>
-          </div>
-
-          <!-- Panel: Protocolo -->
-          <div class="tab-panel" id="panel-protocolo">
-            <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_protocol_view.php';
-            if (is_file($viewFile)) {
-              require $viewFile;
-            } else {
-              echo '<p>No se encontró la vista <code>drone_protocol_view.php</code>.</p>';
-            }
-            ?>
-          </div>
-
-          <!-- Panel: Calendario -->
-          <div class="tab-panel" id="panel-calendario">
-            <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_calendar_view.php';
-            if (is_file($viewFile)) {
-              require $viewFile;
-            } else {
-              echo '<p>No se encontró la vista <code>drone_calendar_view.php</code>.</p>';
-            }
-            ?>
-          </div>
-
-          <!-- Panel: Stock -->
-          <div class="tab-panel" id="panel-stock">
-            <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_stock_view.php';
-            if (is_file($viewFile)) {
-              require $viewFile;
-            } else {
-              echo '<p>No se encontró la vista <code>drone_stock_view.php</code>.</p>';
-            }
-            ?>
-          </div>
-
-          <!-- Panel: Variables -->
-          <div class="tab-panel" id="panel-variables">
-            <?php
-            $viewFile = __DIR__ . '/../partials/drones/view/drone_variables_view.php';
-            if (is_file($viewFile)) {
-              require $viewFile;
-            } else {
-              echo '<p>No se encontró la vista <code>drone_variables_view.php</code>.</p>';
-            }
-            ?>
-          </div>
-
+          <?php
+          if (is_file($currentView)) {
+            require $currentView;
+          } else {
+            echo '<p>No se encontró la vista: <code>' . htmlspecialchars(basename($currentView)) . '</code>.</p>';
+          }
+          ?>
         </div>
+
 
         <!-- contenedor del toastify -->
         <div id="toast-container"></div>
@@ -317,6 +265,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
       activate(initial);
     });
   </script>
+
 
   <!-- Contenedor exclusivo para impresión -->
   <div id="printArea" class="only-print"></div>
