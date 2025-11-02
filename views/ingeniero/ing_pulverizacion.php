@@ -225,21 +225,6 @@ unset($_SESSION['cierre_info']);
                             ?>
                         </div>
                     </div>
-
-                    <!-- Panel: Formulario -->
-                    <div class="tab-panel tutorial-PanelFormulario" id="panel-formulario" role="tabpanel" aria-labelledby="tab-formulario" tabindex="0" hidden>
-                        <div class="tutorial-FormularioNuevoServicio">
-                            <?php
-                            $viewFile = __DIR__ . '/../partials/drones/view/drone_formulario_N_Servicio_view.php';
-                            if (is_file($viewFile)) {
-                                require $viewFile;
-                            } else {
-                                echo '<p>No se encontró la vista <code>drone_formulario_N_Servicio_view.php</code>.</p>';
-                            }
-                            ?>
-                        </div>
-                    </div>
-
                 </div>
 
                 <!-- contenedor del toastify -->
