@@ -486,20 +486,41 @@ declare(strict_types=1);
     text-align: center;
   }
 
-  /* Quitar bordes SOLO en columnas Dosis (3) y Orden mezcla (4) */
+  /* Quitar bordes por defecto en Dosis (3), Orden mezcla (4) y Notas (5) */
   table[aria-label="Productos y receta"] tbody td:nth-child(3) .input-icon,
-  table[aria-label="Productos y receta"] tbody td:nth-child(4) .input-icon {
+  table[aria-label="Productos y receta"] tbody td:nth-child(4) .input-icon,
+  table[aria-label="Productos y receta"] tbody td:nth-child(5) .input-icon {
     border: none !important;
     box-shadow: none !important;
     background: transparent !important;
   }
 
   table[aria-label="Productos y receta"] tbody td:nth-child(3) .edit-receta,
-  table[aria-label="Productos y receta"] tbody td:nth-child(4) .edit-receta {
+  table[aria-label="Productos y receta"] tbody td:nth-child(4) .edit-receta,
+  table[aria-label="Productos y receta"] tbody td:nth-child(5) .edit-receta {
     border: none !important;
     box-shadow: none !important;
     outline: none !important;
     background: transparent !important;
+  }
+
+  /* Al entrar en modo edición, volver a mostrar bordes en Dosis/Orden/Notas */
+  #protocolo-section.editing table[aria-label="Productos y receta"] tbody td:nth-child(3) .input-icon,
+  #protocolo-section.editing table[aria-label="Productos y receta"] tbody td:nth-child(4) .input-icon,
+  #protocolo-section.editing table[aria-label="Productos y receta"] tbody td:nth-child(5) .input-icon {
+    border: 1px solid #d1d5db !important;
+    background: #fff !important;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .02) !important;
+    border-radius: 8px !important;
+  }
+
+  #protocolo-section.editing table[aria-label="Productos y receta"] tbody td:nth-child(3) .edit-receta,
+  #protocolo-section.editing table[aria-label="Productos y receta"] tbody td:nth-child(4) .edit-receta,
+  #protocolo-section.editing table[aria-label="Productos y receta"] tbody td:nth-child(5) .edit-receta {
+    border: 0 !important;
+    /* el borde visual lo da .input-icon */
+    background: transparent !important;
+    outline: none !important;
   }
 
   /* Unificar estilo de inputs editables (sin fondo “gris azulado”) */
@@ -561,6 +582,16 @@ declare(strict_types=1);
         "'": '&#39;'
       };
       return String(s ?? '').replace(/[&<>"']/g, ch => map[ch]);
+    }
+
+    // Formato de dosis: si decimales son 0, devolver entero; si no, conservar
+    function formatDosis(v) {
+      if (v === null || v === undefined || v === '') return '';
+      const n = Number(v);
+      if (!Number.isFinite(n)) return String(v);
+      // mantener hasta 3 decimales reales; si es entero, sin decimales
+      const isInteger = Math.abs(n - Math.trunc(n)) < 1e-9;
+      return isInteger ? String(Math.trunc(n)) : String(+n.toFixed(3)).replace(/\.?0+$/, '');
     }
 
     // Bind acciones
@@ -1063,7 +1094,7 @@ h3{font-size:14px!important; margin-top:6px;}
                 <input 
                   type="number" step="0.001" inputmode="decimal"
                   class="edit-receta" data-field="dosis" data-receta-id="${f.receta_id ?? ''}"
-                  value="${String(f.dosis_val ?? '').replace(/"/g,'&quot;')}" 
+                  value="${formatDosis(f.dosis_val).replace(/"/g,'&quot;')}" 
                   readonly
                 />
               </div>
@@ -1117,6 +1148,13 @@ h3{font-size:14px!important; margin-top:6px;}
 
     function setEditMode(on) {
       editMode = !!on;
+
+      // Toggle clase de edición en el contenedor para que el CSS muestre/oculte bordes
+      if (sectionEl) {
+        if (editMode) sectionEl.classList.add('editing');
+        else sectionEl.classList.remove('editing');
+      }
+
       const recInputs = document.querySelectorAll('.edit-receta');
       recInputs.forEach(el => {
         if (editMode) {
@@ -1144,6 +1182,7 @@ h3{font-size:14px!important; margin-top:6px;}
       // Botón
       if (btnModificar) btnModificar.textContent = editMode ? 'Guardar' : 'Modificar';
     }
+
 
     function onClickModificarGuardar() {
       if (!currentSolicitudId) {
