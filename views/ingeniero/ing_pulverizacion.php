@@ -255,9 +255,11 @@ unset($_SESSION['cierre_info']);
                         </div>
 
                         <div class="form-buttons">
+                            <button id="btn-imprimir" class="btn btn-aceptar">Imprimir</button>
                             <button id="btn-descargar" class="btn btn-info">Descargar</button>
                             <button class="btn btn-cancelar" onclick="closeModal()">Cerrar</button>
                         </div>
+
                     </div>
                 </div>
 
@@ -307,141 +309,184 @@ unset($_SESSION['cierre_info']);
             const $btnLimpiar = document.getElementById('btn-limpiar');
 
             async function openModal(id, estado) {
-                if ((estado || '').toLowerCase() !== 'completada') {
-                    alert('El Registro Fitosanitario sólo está disponible cuando la solicitud está COMPLETADA.');
-                    return;
-                }
                 const el = document.getElementById('modal');
                 const cont = document.getElementById('registro-container');
-                cont.innerHTML = '<div class="skeleton h-8 w-full mb-2"></div>';
 
-                // Obtener registro desde API
-                const res = await fetch(`${API}?action=registro&id=${id}`, {
-                    credentials: 'same-origin'
+                console.log('[SVE][Pulv] openModal()', {
+                    id,
+                    estado
                 });
-                const j = await res.json();
-                if (!j.ok) {
-                    cont.innerHTML = `<div class="alert alert-error">${j.error||'Error'}</div>`;
-                    el.classList.remove('hidden');
+
+                // Mostrar modal de inmediato con skeleton
+                cont.innerHTML = '<div class="skeleton h-8 w-full mb-2"></div>';
+                el.classList.remove('hidden');
+
+                // Seguridad extra: si no está completada, no continuamos (el botón ya no se muestra, pero lo dejamos por si acaso)
+                if ((estado || '').toLowerCase() !== 'completada') {
+                    console.warn('[SVE][Pulv] Solicitud no completada, no se carga el registro.');
+                    cont.innerHTML = '<div class="alert">Registro disponible solo cuando la solicitud está COMPLETADA.</div>';
                     return;
                 }
 
-                const d = j.data;
+                try {
+                    const url = `${API}?action=registro&id=${id}`;
+                    console.log('[SVE][Pulv] Fetch registro:', url);
 
-                // Render del registro (estructura visible en las capturas)
-                cont.innerHTML = `
-                  <div class="card" style="box-shadow:none;border:0">
-                    <div class="grid grid-cols-3 gap-2 items-start">
-                      <div class="col-span-2">
-                        <img src="../../../assets/logo_sve.png" alt="SVE" style="height:48px">
-                        <h2 class="mt-2">Registro Fitosanitario</h2>
-                      </div>
-                      <div class="text-right">
-                        <p><strong>N°:</strong> ${d.numero||d.solicitud_id}</p>
-                        <p><strong>Fecha:</strong> ${d.fecha_visita||''}</p>
-                      </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3 mt-3">
-                      <div class="card">
-                        <p><strong>Cliente:</strong> ${d.productor_nombre||'—'}</p>
-                        <p><strong>Representante:</strong> ${d.representante||'—'}</p>
-                        <p><strong>Nombre finca:</strong> ${d.nombre_finca||'—'}</p>
-                      </div>
-                      <div class="card">
-                        <p><strong>Cultivo pulverizado:</strong> ${d.cultivo||'—'}</p>
-                        <p><strong>Superficie pulverizada (ha):</strong> ${d.superficie||'—'}</p>
-                        <p><strong>Operador Drone:</strong> ${d.piloto_nombre||'—'}</p>
-                      </div>
-                    </div>
-
-                    <div class="card mt-3">
-                      <h4>Condiciones meteorológicas al momento del vuelo</h4>
-                      <div class="grid grid-cols-3 gap-2">
-                        <p><strong>Hora Ingreso:</strong> ${d.hora_ingreso||'—'}</p>
-                        <p><strong>Hora Salida:</strong> ${d.hora_egreso||'—'}</p>
-                        <p><strong>Temperatura (°C):</strong> ${d.temperatura||'—'}</p>
-                        <p><strong>Humedad Relativa (%):</strong> ${d.humedad||'—'}</p>
-                        <p><strong>Vel. Viento (m/s):</strong> ${d.vel_viento||'—'}</p>
-                        <p><strong>Volumen aplicado (l/ha):</strong> ${d.vol_aplicado||'—'}</p>
-                      </div>
-                    </div>
-
-                    <div class="card mt-3 tabla-card">
-                      <h4>Productos utilizados</h4>
-                      <div class="tabla-wrapper">
-                        <table class="data-table">
-                          <thead>
-                            <tr>
-                              <th>Nombre Comercial</th>
-                              <th>Principio Activo</th>
-                              <th>Dosis (ml/gr/ha)</th>
-                              <th>Cant. Producto Usado</th>
-                              <th>Fecha de Vencimiento</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            ${(d.productos||[]).map(p => `
-                              <tr>
-                                <td>${p.nombre||''}</td>
-                                <td>${p.principio||''}</td>
-                                <td>${p.dosis||''} ${p.unidad||''}</td>
-                                <td>${p.cant_usada||''}</td>
-                                <td>${p.vto||''}</td>
-                              </tr>`).join('')}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                    <div class="card mt-3">
-                      <h4>Registro fotográfico y firmas</h4>
-                      <div class="grid grid-cols-3 gap-2 mb-2">
-                        ${(d.fotos||[]).map(src => `<img src="${src}" alt="foto" style="width:100%;height:160px;object-fit:cover;border-radius:8px">`).join('')}
-                      </div>
-                      <div class="grid grid-cols-2 gap-6 items-center">
-                        <div class="text-center">
-                          ${d.firma_prestador ? `<img src="${d.firma_prestador}" alt="firma prestador" style="height:80px">` : ''}
-                          <div class="opacity-70 mt-1">Firma Prestador de Servicio</div>
-                        </div>
-                        <div class="text-center">
-                          ${d.firma_cliente ? `<img src="${d.firma_cliente}" alt="firma cliente" style="height:80px">` : ''}
-                          <div class="opacity-70 mt-1">Firma Representante del cliente</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                `;
-
-                // Descargar PDF
-                document.getElementById('btn-descargar').onclick = async function() {
-                    const {
-                        jsPDF
-                    } = window.jspdf;
-                    const node = document.getElementById('registro-container');
-                    const canvas = await html2canvas(node, {
-                        scale: 2,
-                        useCORS: true
+                    const res = await fetch(url, {
+                        credentials: 'same-origin'
                     });
-                    const imgData = canvas.toDataURL('image/png');
-                    const pdf = new jsPDF({
-                        orientation: 'p',
-                        unit: 'pt',
-                        format: 'a4'
-                    });
-                    const pageWidth = pdf.internal.pageSize.getWidth();
-                    const pageHeight = pdf.internal.pageSize.getHeight();
-                    const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
-                    const w = canvas.width * ratio;
-                    const h = canvas.height * ratio;
-                    const x = (pageWidth - w) / 2;
-                    const y = 20;
-                    pdf.addImage(imgData, 'PNG', x, y, w, h);
-                    pdf.save(`registro_${id}.pdf`);
-                };
+                    console.log('[SVE][Pulv] HTTP status:', res.status);
 
-                el.classList.remove('hidden');
+                    const j = await res.json();
+                    console.log('[SVE][Pulv] Payload registro:', j);
+
+                    if (!j.ok) {
+                        cont.innerHTML = `<div class="alert alert-error">${j.error||'Error al obtener el registro'}</div>`;
+                        return;
+                    }
+
+                    const d = j.data || {};
+                    // Render del registro
+                    cont.innerHTML = `
+          <div class="card" style="box-shadow:none;border:0">
+            <div class="grid grid-cols-3 gap-2 items-start">
+              <div class="col-span-2">
+                <img src="../../../assets/logo_sve.png" alt="SVE" style="height:48px">
+                <h2 class="mt-2">Registro Fitosanitario</h2>
+              </div>
+              <div class="text-right">
+                <p><strong>N°:</strong> ${d.numero||d.solicitud_id||id}</p>
+                <p><strong>Fecha:</strong> ${d.fecha_visita||''}</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mt-3">
+              <div class="card">
+                <p><strong>Cliente:</strong> ${d.productor_nombre||'—'}</p>
+                <p><strong>Representante:</strong> ${d.representante||'—'}</p>
+                <p><strong>Nombre finca:</strong> ${d.nombre_finca||'—'}</p>
+              </div>
+              <div class="card">
+                <p><strong>Cultivo pulverizado:</strong> ${d.cultivo||'—'}</p>
+                <p><strong>Superficie pulverizada (ha):</strong> ${d.superficie||'—'}</p>
+                <p><strong>Operador Drone:</strong> ${d.piloto_nombre||'—'}</p>
+              </div>
+            </div>
+
+            <div class="card mt-3">
+              <h4>Condiciones meteorológicas al momento del vuelo</h4>
+              <div class="grid grid-cols-3 gap-2">
+                <p><strong>Hora Ingreso:</strong> ${d.hora_ingreso||'—'}</p>
+                <p><strong>Hora Salida:</strong> ${d.hora_egreso||'—'}</p>
+                <p><strong>Temperatura (°C):</strong> ${d.temperatura||'—'}</p>
+                <p><strong>Humedad Relativa (%):</strong> ${d.humedad||'—'}</p>
+                <p><strong>Vel. Viento (m/s):</strong> ${d.vel_viento||'—'}</p>
+                <p><strong>Volumen aplicado (l/ha):</strong> ${d.vol_aplicado||'—'}</p>
+              </div>
+            </div>
+
+            <div class="card mt-3 tabla-card">
+              <h4>Productos utilizados</h4>
+              <div class="tabla-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Nombre Comercial</th>
+                      <th>Principio Activo</th>
+                      <th>Dosis (ml/gr/ha)</th>
+                      <th>Cant. Producto Usado</th>
+                      <th>Fecha de Vencimiento</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${(d.productos||[]).map(p => `
+                      <tr>
+                        <td>${p.nombre||''}</td>
+                        <td>${p.principio||''}</td>
+                        <td>${p.dosis||''} ${p.unidad||''}</td>
+                        <td>${p.cant_usada||''}</td>
+                        <td>${p.vto||''}</td>
+                      </tr>`).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card mt-3">
+              <h4>Registro fotográfico y firmas</h4>
+              <div class="grid grid-cols-3 gap-2 mb-2">
+                ${(d.fotos||[]).map(src => `<img src="${src}" alt="foto" style="width:100%;height:160px;object-fit:cover;border-radius:8px">`).join('')}
+              </div>
+              <div class="grid grid-cols-2 gap-6 items-center">
+                <div class="text-center">
+                  ${d.firma_prestador ? `<img src="${d.firma_prestador}" alt="firma prestador" style="height:80px">` : ''}
+                  <div class="opacity-70 mt-1">Firma Prestador de Servicio</div>
+                </div>
+                <div class="text-center">
+                  ${d.firma_cliente ? `<img src="${d.firma_cliente}" alt="firma cliente" style="height:80px">` : ''}
+                  <div class="opacity-70 mt-1">Firma Representante del cliente</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+                    // Descargar PDF
+                    document.getElementById('btn-descargar').onclick = async function() {
+                        const {
+                            jsPDF
+                        } = window.jspdf;
+                        const node = document.getElementById('registro-container');
+                        const canvas = await html2canvas(node, {
+                            scale: 2,
+                            useCORS: true
+                        });
+                        const imgData = canvas.toDataURL('image/png');
+                        const pdf = new jsPDF({
+                            orientation: 'p',
+                            unit: 'pt',
+                            format: 'a4'
+                        });
+                        const pageWidth = pdf.internal.pageSize.getWidth();
+                        const pageHeight = pdf.internal.pageSize.getHeight();
+                        const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
+                        const w = canvas.width * ratio;
+                        const h = canvas.height * ratio;
+                        const x = (pageWidth - w) / 2;
+                        const y = 20;
+                        pdf.addImage(imgData, 'PNG', x, y, w, h);
+                        pdf.save(`registro_${id}.pdf`);
+                    };
+
+                    // Imprimir (solo contenido del modal)
+                    document.getElementById('btn-imprimir').onclick = function() {
+                        try {
+                            const html = document.getElementById('registro-container').innerHTML;
+                            const w = window.open('', '_blank', 'width=900,height=700');
+                            w.document.write(`
+                  <html>
+                    <head>
+                      <title>Registro ${id}</title>
+                      <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
+                      <style>body{padding:16px}</style>
+                    </head>
+                    <body>${html}</body>
+                  </html>`);
+                            w.document.close();
+                            w.focus();
+                            w.print();
+                            w.close();
+                        } catch (e) {
+                            console.error('[SVE][Pulv] Error al imprimir:', e);
+                        }
+                    };
+
+                } catch (e) {
+                    console.error('[SVE][Pulv] Excepción al cargar registro:', e);
+                    cont.innerHTML = `<div class="alert alert-error">Error inesperado al cargar el registro.</div>`;
+                }
             }
+
             window.openModal = openModal;
 
             window.closeModal = function() {
@@ -472,6 +517,8 @@ unset($_SESSION['cierre_info']);
             }
 
             function row(r) {
+                const estado = (r.estado || '').toLowerCase();
+                const puedeAbrir = estado === 'completada';
                 return `
         <tr>
             <td>${r.id}</td>
@@ -481,22 +528,32 @@ unset($_SESSION['cierre_info']);
             <td>${badgeEstado(r.estado)}</td>
             <td>${fmtMoney(r.costo_total)}</td>
             <td>
-                <button class="btn-icon" title="Abrir registro" onclick="openModal(${r.id}, '${r.estado||''}')">
-                    <span class="material-icons">open_in_new</span>
-                </button>
+                ${puedeAbrir ? `
+                <button class="btn-icon" title="Registro fitosanitario" onclick="openModal(${r.id}, '${r.estado||''}')">
+                    <span class="material-icons">description</span>
+                </button>` : ``}
             </td>
         </tr>`;
             }
+
             async function cargarCoops() {
                 const url = `${API}?action=coops_ingeniero`;
-                const res = await fetch(url, {
-                    credentials: 'same-origin'
-                });
-                const j = await res.json();
-                if (!j.ok) return;
-                const ops = j.data.map(c => `<option value="${c.id_real}">${c.nombre}</option>`).join('');
-                $coop.insertAdjacentHTML('beforeend', ops);
+                console.log('[SVE][Pulv] Fetch coops:', url);
+                try {
+                    const res = await fetch(url, {
+                        credentials: 'same-origin'
+                    });
+                    console.log('[SVE][Pulv] coops status:', res.status);
+                    const j = await res.json();
+                    console.log('[SVE][Pulv] coops payload:', j);
+                    if (!j.ok) return;
+                    const ops = j.data.map(c => `<option value="${c.id_real}">${c.nombre}</option>`).join('');
+                    $coop.insertAdjacentHTML('beforeend', ops);
+                } catch (e) {
+                    console.error('[SVE][Pulv] Error coops:', e);
+                }
             }
+
             async function cargar(page = 1, size = 20) {
                 $tbody.innerHTML = `<tr><td colspan="7">Cargando...</td></tr>`;
                 const params = new URLSearchParams({
@@ -506,20 +563,31 @@ unset($_SESSION['cierre_info']);
                     q: $q.value.trim(),
                     coop: $coop.value
                 });
-                const res = await fetch(`${API}?${params.toString()}`, {
-                    credentials: 'same-origin'
-                });
-                const j = await res.json();
-                if (!j.ok) {
-                    $tbody.innerHTML = `<tr><td colspan="7">${j.error||'Error'}</td></tr>`;
-                    return;
+                const url = `${API}?${params.toString()}`;
+                console.log('[SVE][Pulv] Fetch listado:', url);
+
+                try {
+                    const res = await fetch(url, {
+                        credentials: 'same-origin'
+                    });
+                    console.log('[SVE][Pulv] listado status:', res.status);
+                    const j = await res.json();
+                    console.log('[SVE][Pulv] listado payload:', j);
+
+                    if (!j.ok) {
+                        $tbody.innerHTML = `<tr><td colspan="7">${j.error||'Error'}</td></tr>`;
+                        return;
+                    }
+                    const rows = j.data.items || [];
+                    if (!rows.length) {
+                        $tbody.innerHTML = `<tr><td colspan="7">Sin resultados</td></tr>`;
+                        return;
+                    }
+                    $tbody.innerHTML = rows.map(row).join('');
+                } catch (e) {
+                    console.error('[SVE][Pulv] Error listado:', e);
+                    $tbody.innerHTML = `<tr><td colspan="7">Error cargando listado</td></tr>`;
                 }
-                const rows = j.data.items || [];
-                if (!rows.length) {
-                    $tbody.innerHTML = `<tr><td colspan="7">Sin resultados</td></tr>`;
-                    return;
-                }
-                $tbody.innerHTML = rows.map(row).join('');
             }
 
             $btnFiltrar.addEventListener('click', () => cargar());
@@ -534,6 +602,21 @@ unset($_SESSION['cierre_info']);
                 cargar();
             });
         })();
+
+        // Trazas de UX
+        $btnFiltrar.addEventListener('click', () => {
+            console.log('[SVE][Pulv] Click Filtrar', {
+                q: $q.value.trim(),
+                coop: $coop.value
+            });
+            cargar();
+        });
+        $btnLimpiar.addEventListener('click', () => {
+            console.log('[SVE][Pulv] Click Limpiar');
+            $q.value = '';
+            $coop.value = '';
+            cargar();
+        });
     </script>
 
 
