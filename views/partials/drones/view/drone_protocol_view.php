@@ -316,6 +316,8 @@ declare(strict_types=1);
     resize: none;
     overflow: hidden;
     white-space: pre-wrap;
+    word-break: break-word;
+    /* fuerza salto en palabras largas */
     line-height: 1.35;
   }
 
@@ -729,6 +731,41 @@ declare(strict_types=1);
             if (cont) cont.hidden = false;
             const footer = doc.querySelector('.protocolo-footer');
             if (footer) footer.style.display = 'none';
+
+            // --- Fix: Textareas e inputs se pintan como texto envuelto en el CLON ---
+            const style = doc.createElement('style');
+            style.textContent = `
+          .export-input{
+            display:block; padding:6px 8px; border:1px solid #d1d5db; border-radius:8px;
+            background:#f8fafc; line-height:1.35; font-size:13px; white-space:pre-wrap; word-break:break-word;
+          }
+          .export-area{
+            display:block; padding:8px 9px; border:1px solid #d1d5db; border-radius:8px;
+            background:transparent; line-height:1.35; font-size:13px; white-space:pre-wrap; word-break:break-word; min-height:64px;
+          }
+        `;
+            doc.head.appendChild(style);
+
+            const scope = doc.getElementById('protocolo-section') || doc;
+
+            // Reemplazar <textarea> por bloques de texto con saltos reales
+            scope.querySelectorAll('textarea').forEach((ta) => {
+              const div = doc.createElement('div');
+              div.className = 'export-area';
+              div.textContent = ta.value || ta.textContent || '';
+              div.style.width = '100%';
+              ta.parentNode.replaceChild(div, ta);
+            });
+
+            // Reemplazar <input> por bloques de texto (mantiene apariencia y evita rendering plano)
+            scope.querySelectorAll('input').forEach((inp) => {
+              const div = doc.createElement('div');
+              div.className = 'export-input';
+              div.textContent = (inp.value ?? inp.getAttribute('value') ?? '').toString();
+              div.style.width = '100%';
+              inp.parentNode.replaceChild(div, inp);
+            });
+            // --- Fin Fix ---
           }
         });
 
