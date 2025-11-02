@@ -50,25 +50,39 @@ unset($_SESSION['cierre_info']);
             </div>
 
             <nav class="sidebar-menu">
-                <ul>
-                    <li onclick="location.href='ing_dashboard.php'">
-                        <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
-                    </li>
+    <ul>
+        <li onclick="location.href='ing_dashboard.php'">
+            <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
+        </li>
 
-                    <li onclick="location.href='ing_pulverizacion.php'">
+        <!-- Acordeón: Drone -->
+        <li class="accordion" style="list-style: none;">
+            <button id="menu-drone-toggle" class="btn-icon" type="button" style="width:100%;display:flex;align-items:center;gap:.5rem;justify-content:space-between;background:transparent;border:none;padding:.75rem 1rem;cursor:pointer;">
+                <span style="display:flex;align-items:center;gap:.5rem;">
+                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
+                    <span class="link-text">Drone</span>
+                </span>
+                <span id="menu-drone-expand" class="material-icons">expand_more</span>
+            </button>
+            <ul id="menu-drone-submenu" class="submenu" style="display:none;margin:0;padding:0 0 0 2.25rem;">
+                <li onclick="location.href='ing_pulverizacion.php'" style="list-style:none;cursor:pointer;padding:.5rem 1rem;">
                     <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
                     <span class="link-text">Drones</span>
-                    </li>
+                </li>
+                <li onclick="location.href='ing_servicios.php'" style="list-style:none;cursor:pointer;padding:.5rem 1rem;">
+                    <span class="material-icons" style="color:#5b21b6;">upload_file</span>
+                    <span class="link-text">Servicios</span>
+                </li>
+            </ul>
+        </li>
+        <!-- Fin acordeón -->
 
-                    <li onclick="location.href='ing_servicios.php'">
-                        <span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Servicios</span>
-                    </li>
+        <li onclick="location.href='../../../logout.php'">
+            <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
+        </li>
+    </ul>
+</nav>
 
-                    <li onclick="location.href='../../../logout.php'">
-                        <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
-                    </li>
-                </ul>
-            </nav>
 
             <div class="sidebar-footer">
                 <button class="btn-icon" onclick="toggleSidebar()">
@@ -109,7 +123,7 @@ unset($_SESSION['cierre_info']);
         </div>
     </div>
 
-    <!-- toast -->
+    <!-- toast + acordeón Drone -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             console.log(<?php echo json_encode($_SESSION); ?>);
@@ -126,8 +140,22 @@ unset($_SESSION['cierre_info']);
                     }
                 });
             <?php endif; ?>
+
+            // Acordeón: Drone
+            const btn = document.getElementById('menu-drone-toggle');
+            const submenu = document.getElementById('menu-drone-submenu');
+            const expandIcon = document.getElementById('menu-drone-expand');
+
+            if (btn && submenu) {
+                btn.addEventListener('click', () => {
+                    const isHidden = (submenu.style.display === '' || submenu.style.display === 'none');
+                    submenu.style.display = isHidden ? 'block' : 'none';
+                    if (expandIcon) expandIcon.textContent = isHidden ? 'expand_less' : 'expand_more';
+                });
+            }
         });
     </script>
+
 
 </body>
 
