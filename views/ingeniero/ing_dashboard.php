@@ -93,7 +93,7 @@ unset($_SESSION['cierre_info']);
                 <ul class="submenu-root">
                     <li>
                         <a href="ing_servicios.php">
-                            <span class="material-symbols-outlined">more</span>
+                            <span class="material-symbols-outlined">add</span>
                             <span class="link-text">Solicitar Servicio</span>
                         </a>
                     </li>
