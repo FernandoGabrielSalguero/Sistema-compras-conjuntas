@@ -109,8 +109,6 @@ unset($_SESSION['cierre_info']);
             padding: .4rem 1.5rem;
             text-decoration: none;
         }
-
-
     </style>
 
 </head>
@@ -127,7 +125,7 @@ unset($_SESSION['cierre_info']);
             </div>
             <nav class="sidebar-menu">
 
-            <!-- Título de sección -->
+                <!-- Título de sección -->
                 <div class="sidebar-section-title">Menú</div>
 
                 <!-- Grupo superior -->
@@ -193,38 +191,6 @@ unset($_SESSION['cierre_info']);
                 <div class="card">
                     <h2>Hola! </h2>
                     <p>Te presentamos el gestor de proyectos de vuelo. Desde acá, vas a controlar todo el servicio de pulverización con drones.</p>
-
-                    <!-- 🔘 Tarjeta con los botones del tab -->
-                    <div class="tabs">
-                        <div class="tab-buttons" role="tablist" aria-label="Secciones de pulverización">
-                            <button type="button" id="tab-solicitudes" class="tab-button" role="tab" aria-controls="panel-solicitudes" aria-selected="true" data-target="#panel-solicitudes">Solicitudes</button>
-                            <button type="button" id="tab-formulario" class="tab-button" role="tab" aria-controls="panel-formulario" aria-selected="false" data-target="#panel-formulario">Nuevo servicio</button>
-
-                            <!-- Botón Tutorial -->
-                            <button type="button" id="btnIniciarTutorial" class="btn btn-info" aria-label="Iniciar tutorial" style="margin-left:auto">Tutorial</button>
-
-                            <!-- Botón de actualización on-demand -->
-                            <button type="button" id="btn-refresh" class="btn btn-aceptar tutorial-BotonActualizar">Actualizar</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 🧩 Tarjeta separada para el contenido del tab -->
-                <div class="card" id="tab-content-card" style="margin-top: 12px;">
-
-                    <!-- Panel: Solicitudes -->
-                    <div class="tab-panel active tutorial-PanelSolicitudes" id="panel-solicitudes" role="tabpanel" aria-labelledby="tab-solicitudes" tabindex="0">
-                        <div class="tutorial-TablaSolicitudes">
-                            <?php
-                            $viewFile = __DIR__ . '/../partials/drones/view/drone_list_view.php';
-                            if (is_file($viewFile)) {
-                                require $viewFile;
-                            } else {
-                                echo '<p>No se encontró la vista <code>drone_list_view.php</code>.</p>';
-                            }
-                            ?>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- contenedor del toastify -->
@@ -266,72 +232,6 @@ unset($_SESSION['cierre_info']);
 
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Señal para CSS: ya puede mostrar solo el activo
-            document.documentElement.classList.add('js-ready');
-
-            const STORAGE_KEY = 'sve_drone_tab';
-            const buttons = document.querySelectorAll('.tab-buttons .tab-button[data-target]');
-            const panels = document.querySelectorAll('#tab-content-card .tab-panel');
-
-            function syncHidden(targetSel) {
-                panels.forEach(p => {
-                    const isActive = '#' + p.id === targetSel;
-                    p.classList.toggle('active', isActive);
-                    // Sincroniza atributo hidden por accesibilidad y estilos del navegador
-                    if (isActive) {
-                        p.removeAttribute('hidden');
-                    } else {
-                        p.setAttribute('hidden', 'hidden');
-                    }
-                });
-            }
-
-            function syncButtons(targetSel) {
-                buttons.forEach(b => {
-                    const isActive = b.dataset.target === targetSel;
-                    b.classList.toggle('active', isActive);
-                    b.setAttribute('aria-selected', isActive ? 'true' : 'false');
-                    if (isActive) b.focus({
-                        preventScroll: true
-                    });
-                });
-            }
-
-            function activate(targetSel) {
-                syncButtons(targetSel);
-                syncHidden(targetSel);
-                sessionStorage.setItem(STORAGE_KEY, targetSel);
-            }
-
-            // Click en tabs
-            buttons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const target = btn.dataset.target;
-                    if (!target) return;
-                    activate(target);
-                });
-            });
-
-            // Botón "Actualizar" (recarga manual)
-            const refreshBtn = document.getElementById('btn-refresh');
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', () => {
-                    const activeBtn = document.querySelector('.tab-buttons .tab-button.active[data-target]');
-                    const current = activeBtn ? activeBtn.dataset.target : '#panel-solicitudes';
-                    sessionStorage.setItem(STORAGE_KEY, current);
-                    location.reload();
-                });
-            }
-
-            // Estado inicial
-            const initial = sessionStorage.getItem(STORAGE_KEY) || '#panel-solicitudes';
-            activate(initial);
-        });
-    </script>
-
 
     <!-- Mantener defer; si el tutorial manipula tabs, no debe sobreescribir el estado -->
     <script src="../partials/tutorials/cooperativas/pulverizacion.js?v=<?= time() ?>" defer></script>
