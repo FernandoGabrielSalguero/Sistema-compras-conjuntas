@@ -507,8 +507,8 @@ declare(strict_types=1);
 </style>
 
 <script>
-  const TABLE_COL_MAXPX_SERV = 220; // ← ancho máx. por columna en "Servicios"
-  const TABLE_COL_MAXPX_PROD = 220; // ← ancho máx. por columna en "Productos a utilizar"
+  const TABLE_COL_MAXPX_SERV = 120; // ← ancho máx. por columna en "Servicios"
+  const TABLE_COL_MAXPX_PROD = 120; // ← ancho máx. por columna en "Productos a utilizar"
   (function() {
 
 
