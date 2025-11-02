@@ -377,6 +377,13 @@ declare(strict_types=1);
     justify-content: flex-end;
   }
 
+  /* Evitar scroll horizontal accidental en la página principal */
+  .content,
+  .protocolo-card {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
   /* Ajustes solo para exportación (usados en el clon) */
   @media print {
     .protocolo-header {
@@ -773,16 +780,18 @@ declare(strict_types=1);
           if (cont) cont.hidden = false;
 
           // Estilos específicos de exportación (tabla y “inputs”)
-          const style = doc.createElement('style');
+                    const style = doc.createElement('style');
           style.textContent = `
   /* === Layout desktop completo (forzar a tamaño real) === */
   html,body{width:${A4PX}px!important; margin:0; padding:0; background:#fff!important; zoom:1!important;}
   .content{width:${A4PX}px!important; max-width:${A4PX}px!important; margin:0 auto; box-sizing:border-box; background:#fff;}
+  .protocolo-header{width:${A4PX}px!important; max-width:${A4PX}px!important;} /* <-- forzar ancho SOLO en el clon */
   .protocol-grid{grid-template-columns:1fr 2fr!important;}
   .grid-2{grid-template-columns:1fr 1fr!important;}
   .grid-3{grid-template-columns:repeat(3,1fr)!important;}
   .grid-4{grid-template-columns:repeat(4,1fr)!important;}
   .tabla-wrapper{overflow:visible!important;}
+
 
 
 h1,h2,h3,label,td,th,div,span,p,input,textarea{font-family:"Inter",Arial,sans-serif!important; color:#111!important; font-size:13px!important; line-height:1.35;}
@@ -815,9 +824,7 @@ h3{font-size:14px!important; margin-top:6px;}
 
         // --- Header reusable (se repite en cada hoja) ---
         const headerNode = sectionEl.querySelector('.protocolo-header');
-        // Forzar ancho del header al nuevo tamaño
-        headerNode.style.width = A4PX + 'px';
-        headerNode.style.maxWidth = A4PX + 'px';
+        // ⚠️ No modificar el DOM vivo; el ancho se fuerza SOLO en el clon dentro de applyExportStyles
         const headerCanvas = await html2canvas(headerNode, {
           backgroundColor: '#ffffff',
           scale: SCALE,
