@@ -255,7 +255,7 @@ unset($_SESSION['cierre_info']);
                         </div>
 
                         <div class="form-buttons">
-                            <button id="btn-descargar" class="btn btn-primary">Descargar PDF</button>
+                            <button id="btn-descargar" class="btn btn-info">Descargar</button>
                             <button class="btn btn-cancelar" onclick="closeModal()">Cerrar</button>
                         </div>
                     </div>
