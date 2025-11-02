@@ -185,12 +185,62 @@ unset($_SESSION['cierre_info']);
             </header>
 
             <!-- 📦 CONTENIDO -->
+            <!-- 📦 CONTENIDO -->
             <section class="content">
 
-                <!-- Bienvenida -->
+                <!-- Filtros -->
                 <div class="card">
-                    <h2>Hola! </h2>
-                    <p>Te presentamos el gestor de proyectos de vuelo. Desde acá, vas a controlar todo el servicio de pulverización con drones.</p>
+                    <h2>Solicitudes de pulverización</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                        <div>
+                            <label class="label">Productor</label>
+                            <input id="filtro-productor" type="text" class="input" placeholder="Nombre del productor">
+                        </div>
+                        <div>
+                            <label class="label">Cooperativa</label>
+                            <select id="filtro-coop" class="select">
+                                <option value="">Todas</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <button id="btn-filtrar" class="btn btn-primary">Filtrar</button>
+                            <button id="btn-limpiar" class="btn">Limpiar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla dinámica -->
+                <div class="card tabla-card">
+                    <h2>Listado</h2>
+                    <div class="tabla-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Productor</th>
+                                    <th>Cooperativa</th>
+                                    <th>Fecha visita</th>
+                                    <th>Estado</th>
+                                    <th>Costo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-solicitudes">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Modal -->
+                <div id="modal" class="modal hidden">
+                    <div class="modal-content">
+                        <h3>Detalle de solicitud</h3>
+                        <p id="modal-body">Contenido pendiente.</p>
+                        <div class="form-buttons">
+                            <button class="btn btn-aceptar" onclick="closeModal()">Aceptar</button>
+                            <button class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- contenedor del toastify -->
@@ -202,7 +252,6 @@ unset($_SESSION['cierre_info']);
                 <script>
                     (function() {
                         try {
-                            // Datos de sesión expuestos de forma controlada
                             const sessionData = <?= json_encode([
                                                     'nombre'         => $nombre,
                                                     'correo'         => $correo,
@@ -213,15 +262,12 @@ unset($_SESSION['cierre_info']);
                                                     'id_real'        => $_SESSION['id_real'] ?? null,
                                                 ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 
-                            // Variable global de solo lectura (convención para depurar)
                             Object.defineProperty(window, '__SVE_SESSION__', {
                                 value: Object.freeze(sessionData),
                                 writable: false,
                                 configurable: false,
                                 enumerable: true
                             });
-
-                            // Log amigable
                             console.info('[SVE] Sesión cargada:', sessionData);
                         } catch (err) {
                             console.error('[SVE] Error al exponer la sesión:', err);
@@ -229,9 +275,116 @@ unset($_SESSION['cierre_info']);
                     })();
                 </script>
             </section>
-
         </div>
     </div>
+
+    <script>
+        (function() {
+            const API = "../../controllers/ing_pulverizacionController.php";
+            const $tbody = document.getElementById('tbody-solicitudes');
+            const $q = document.getElementById('filtro-productor');
+            const $coop = document.getElementById('filtro-coop');
+            const $btnFiltrar = document.getElementById('btn-filtrar');
+            const $btnLimpiar = document.getElementById('btn-limpiar');
+
+            function openModal(id) {
+                const el = document.getElementById('modal');
+                document.getElementById('modal-body').textContent = "Abriste el modal de la solicitud #" + id;
+                el.classList.remove('hidden');
+            }
+            window.openModal = openModal;
+            window.closeModal = function() {
+                document.getElementById('modal').classList.add('hidden');
+            };
+
+            function badgeEstado(estado) {
+                const cls = {
+                    ingresada: 'badge warning',
+                    procesando: 'badge info',
+                    aprobada_coop: 'badge info',
+                    visita_realizada: 'badge info',
+                    completada: 'badge success',
+                    cancelada: 'badge danger'
+                } [estado] || 'badge';
+                return `<span class="${cls}">${estado || '—'}</span>`;
+            }
+
+            function fmtMoney(v) {
+                try {
+                    return Number(v || 0).toLocaleString('es-AR', {
+                        style: 'currency',
+                        currency: 'ARS'
+                    });
+                } catch (e) {
+                    return '$0';
+                }
+            }
+
+            function row(r) {
+                return `
+        <tr>
+            <td>${r.id}</td>
+            <td>${r.productor_nombre || r.productor_id_real}</td>
+            <td>${r.cooperativa_nombre || '—'}</td>
+            <td>${r.fecha_visita || '—'}</td>
+            <td>${badgeEstado(r.estado)}</td>
+            <td>${fmtMoney(r.costo_total)}</td>
+            <td>
+                <button class="btn-icon" title="Abrir modal" onclick="openModal(${r.id})">
+                    <span class="material-icons">open_in_new</span>
+                </button>
+            </td>
+        </tr>`;
+            }
+            async function cargarCoops() {
+                const url = `${API}?action=coops_ingeniero`;
+                const res = await fetch(url, {
+                    credentials: 'same-origin'
+                });
+                const j = await res.json();
+                if (!j.ok) return;
+                const ops = j.data.map(c => `<option value="${c.id_real}">${c.nombre}</option>`).join('');
+                $coop.insertAdjacentHTML('beforeend', ops);
+            }
+            async function cargar(page = 1, size = 20) {
+                $tbody.innerHTML = `<tr><td colspan="7">Cargando...</td></tr>`;
+                const params = new URLSearchParams({
+                    action: 'list_ingeniero',
+                    page: String(page),
+                    size: String(size),
+                    q: $q.value.trim(),
+                    coop: $coop.value
+                });
+                const res = await fetch(`${API}?${params.toString()}`, {
+                    credentials: 'same-origin'
+                });
+                const j = await res.json();
+                if (!j.ok) {
+                    $tbody.innerHTML = `<tr><td colspan="7">${j.error||'Error'}</td></tr>`;
+                    return;
+                }
+                const rows = j.data.items || [];
+                if (!rows.length) {
+                    $tbody.innerHTML = `<tr><td colspan="7">Sin resultados</td></tr>`;
+                    return;
+                }
+                $tbody.innerHTML = rows.map(row).join('');
+            }
+
+            $btnFiltrar.addEventListener('click', () => cargar());
+            $btnLimpiar.addEventListener('click', () => {
+                $q.value = '';
+                $coop.value = '';
+                cargar();
+            });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                cargarCoops();
+                cargar();
+            });
+        })();
+    </script>
+
 
     <!-- Mantener defer; si el tutorial manipula tabs, no debe sobreescribir el estado -->
     <script src="../partials/tutorials/cooperativas/pulverizacion.js?v=<?= time() ?>" defer></script>

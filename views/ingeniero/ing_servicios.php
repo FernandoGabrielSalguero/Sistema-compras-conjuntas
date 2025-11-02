@@ -110,7 +110,11 @@ unset($_SESSION['cierre_info']);
         background:#fff;
     }
     .chip.active { border-color:#5b21b6; background:#f5f3ff; }
-    .badge { display:inline-block; padding:.15rem .5rem; border-radius:9999px; background:#eef2ff; }
+    .badge {
+        display:inline-block;
+        padding:.15rem .5rem;
+        border-radius:9999px;
+        background: #5b21b6; }
 
 </style>
 
