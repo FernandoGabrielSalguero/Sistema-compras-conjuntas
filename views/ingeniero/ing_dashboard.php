@@ -93,14 +93,14 @@ unset($_SESSION['cierre_info']);
                 <ul class="submenu-root">
                     <li>
                         <a href="ing_pulverizacion.php">
-                            <span class="material-icons">chevron_right</span>
+                            <span class="material-symbols-outlined">drone</span>
                             <span class="link-text">Pulverización</span>
                         </a>
                     </li>
 
                     <li>
                         <a href="ing_servicios.php">
-                            <span class="material-icons">chevron_right</span>
+                            <span class="material-symbols-outlined">drone</span>
                             <span class="link-text">Pulverización</span>
                         </a>
                     </li>
