@@ -76,6 +76,31 @@ unset($_SESSION['cierre_info']);
             grid-template-columns: repeat(1, minmax(0, 1fr));
         }
     }
+
+        /* Título pequeño de sección (similar a “APPS”) */
+        .sidebar-section-title {
+            margin: 12px 16px 6px;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            opacity: .7;
+        }
+
+        /* Lista simple de subitems */
+        .submenu-root {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .submenu-root a {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .4rem 1.5rem;
+            text-decoration: none;
+        }
 </style>
 
 
@@ -92,22 +117,45 @@ unset($_SESSION['cierre_info']);
             </div>
 
             <nav class="sidebar-menu">
+
+            <!-- Título de sección -->
+                <div class="sidebar-section-title">Menú</div>
+
+                <!-- Grupo superior -->
                 <ul>
                     <li onclick="location.href='ing_dashboard.php'">
-                        <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
+                        <span class="material-icons" style="color:#5b21b6;">home</span>
+                        <span class="link-text">Inicio</span>
+                    </li>
+                </ul>
+
+                <!-- Título de sección -->
+                <div class="sidebar-section-title">Drones</div>
+
+                <!-- Lista directa de páginas de Drones (sin acordeón) -->
+                <ul class="submenu-root">
+                    <li>
+                        <a href="ing_servicios.php">
+                            <span class="material-symbols-outlined">add</span>
+                            <span class="link-text">Solicitar Servicio</span>
+                        </a>
                     </li>
 
-                    <li onclick="location.href='ing_pulverizacion.php'">
-                        <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                        <span class="link-text">Drones</span>
+                    <li>
+                        <a href="ing_pulverizacion.php">
+                            <span class="material-symbols-outlined">drone</span>
+                            <span class="link-text">Servicios Solicitados</span>
+                        </a>
                     </li>
 
-                    <li onclick="location.href='ing_servicios.php'">
-                        <span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Servicios</span>
-                    </li>
+                    <!-- Agregá más ítems aquí cuando existan nuevas hojas de Drones -->
+                </ul>
 
+                <!-- Resto de opciones -->
+                <ul>
                     <li onclick="location.href='../../../logout.php'">
-                        <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
+                        <span class="material-icons" style="color:red;">logout</span>
+                        <span class="link-text">Salir</span>
                     </li>
                 </ul>
             </nav>

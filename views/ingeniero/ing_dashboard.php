@@ -78,6 +78,10 @@ unset($_SESSION['cierre_info']);
                 <span class="logo-text">SVE</span>
             </div>
             <nav class="sidebar-menu">
+
+            <!-- Título de sección -->
+                <div class="sidebar-section-title">Menú</div>
+
                 <!-- Grupo superior -->
                 <ul>
                     <li onclick="location.href='ing_dashboard.php'">

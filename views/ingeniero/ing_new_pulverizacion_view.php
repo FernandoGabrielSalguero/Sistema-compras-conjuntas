@@ -189,6 +189,31 @@
             text-align: right;
             white-space: nowrap
         }
+
+        /* Título pequeño de sección (similar a “APPS”) */
+        .sidebar-section-title {
+            margin: 12px 16px 6px;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            opacity: .7;
+        }
+
+        /* Lista simple de subitems */
+        .submenu-root {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .submenu-root a {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .4rem 1.5rem;
+            text-decoration: none;
+        }
     </style>
 </head>
 
