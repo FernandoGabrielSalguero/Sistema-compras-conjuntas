@@ -35,6 +35,68 @@ unset($_SESSION['cierre_info']);
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+
+    <style>
+        /* Título pequeño de sección (similar a “APPS”) */
+        .sidebar-section-title {
+            margin: 12px 16px 6px;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            opacity: .7;
+        }
+
+        /* Submenú */
+        .submenu-root,
+        .submenu {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .has-submenu>.submenu-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: .6rem 1rem;
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+        }
+
+        .has-submenu .left {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .submenu {
+            display: none;
+        }
+
+        .submenu.open {
+            display: block;
+        }
+
+        .submenu a {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .4rem 1.5rem;
+            text-decoration: none;
+        }
+
+        .chevron {
+            transition: transform .2s ease;
+        }
+
+        .submenu-toggle[aria-expanded="true"] .chevron {
+            transform: rotate(180deg);
+        }
+    </style>
+
 </head>
 
 <body>
@@ -48,40 +110,52 @@ unset($_SESSION['cierre_info']);
                 <span class="material-icons logo-icon">dashboard</span>
                 <span class="logo-text">SVE</span>
             </div>
-
             <nav class="sidebar-menu">
-    <ul>
-        <li onclick="location.href='ing_dashboard.php'">
-            <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
-        </li>
+                <!-- Grupo superior -->
+                <ul>
+                    <li onclick="location.href='ing_dashboard.php'">
+                        <span class="material-icons" style="color:#5b21b6;">home</span>
+                        <span class="link-text">Inicio</span>
+                    </li>
+                </ul>
 
-        <!-- Acordeón: Drone -->
-        <li class="accordion" style="list-style: none;">
-            <button id="menu-drone-toggle" class="btn-icon" type="button" style="width:100%;display:flex;align-items:center;gap:.5rem;justify-content:space-between;background:transparent;border:none;padding:.75rem 1rem;cursor:pointer;">
-                <span style="display:flex;align-items:center;gap:.5rem;">
-                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                    <span class="link-text">Drone</span>
-                </span>
-                <span id="menu-drone-expand" class="material-icons">expand_more</span>
-            </button>
-            <ul id="menu-drone-submenu" class="submenu" style="display:none;margin:0;padding:0 0 0 2.25rem;">
-                <li onclick="location.href='ing_pulverizacion.php'" style="list-style:none;cursor:pointer;padding:.5rem 1rem;">
-                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                    <span class="link-text">Drones</span>
-                </li>
-                <li onclick="location.href='ing_servicios.php'" style="list-style:none;cursor:pointer;padding:.5rem 1rem;">
-                    <span class="material-icons" style="color:#5b21b6;">upload_file</span>
-                    <span class="link-text">Servicios</span>
-                </li>
-            </ul>
-        </li>
-        <!-- Fin acordeón -->
+                <!-- Título de sección -->
+                <div class="sidebar-section-title">Drones</div>
 
-        <li onclick="location.href='../../../logout.php'">
-            <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
-        </li>
-    </ul>
-</nav>
+                <!-- Submenú de Drones -->
+                <ul class="submenu-root">
+                    <li class="has-submenu">
+                        <button class="submenu-toggle" aria-expanded="true" type="button">
+                            <span class="left">
+                                <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
+                                <span class="link-text">Drones</span>
+                            </span>
+                            <span class="material-icons chevron">expand_more</span>
+                        </button>
+                        <ul class="submenu open">
+                            <li>
+                                <a href="ing_pulverizacion.php">
+                                    <span class="material-icons">chevron_right</span>
+                                    <span class="link-text">Pulverización</span>
+                                </a>
+                            </li>
+                            <!-- Agregá más ítems aquí cuando existan nuevas hojas de Drones -->
+                        </ul>
+                    </li>
+                </ul>
+
+                <!-- Resto de opciones -->
+                <ul>
+                    <li onclick="location.href='ing_servicios.php'">
+                        <span class="material-icons" style="color:#5b21b6;">upload_file</span>
+                        <span class="link-text">Servicios</span>
+                    </li>
+                    <li onclick="location.href='../../../logout.php'">
+                        <span class="material-icons" style="color:red;">logout</span>
+                        <span class="link-text">Salir</span>
+                    </li>
+                </ul>
+            </nav>
 
 
             <div class="sidebar-footer">
@@ -123,7 +197,7 @@ unset($_SESSION['cierre_info']);
         </div>
     </div>
 
-    <!-- toast + acordeón Drone -->
+    <!-- toast -->
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             console.log(<?php echo json_encode($_SESSION); ?>);
@@ -140,22 +214,24 @@ unset($_SESSION['cierre_info']);
                     }
                 });
             <?php endif; ?>
-
-            // Acordeón: Drone
-            const btn = document.getElementById('menu-drone-toggle');
-            const submenu = document.getElementById('menu-drone-submenu');
-            const expandIcon = document.getElementById('menu-drone-expand');
-
-            if (btn && submenu) {
-                btn.addEventListener('click', () => {
-                    const isHidden = (submenu.style.display === '' || submenu.style.display === 'none');
-                    submenu.style.display = isHidden ? 'block' : 'none';
-                    if (expandIcon) expandIcon.textContent = isHidden ? 'expand_less' : 'expand_more';
-                });
-            }
         });
     </script>
 
+    <script>
+        /* Toggle del submenú Drones */
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.submenu-toggle').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var expanded = btn.getAttribute('aria-expanded') === 'true';
+                    btn.setAttribute('aria-expanded', String(!expanded));
+                    var submenu = btn.nextElementSibling;
+                    if (submenu) {
+                        submenu.classList.toggle('open', !expanded);
+                    }
+                });
+            });
+        });
+    </script>
 
 </body>
 
