@@ -377,12 +377,6 @@ declare(strict_types=1);
     justify-content: flex-end;
   }
 
-  /* (Opcional) Alinear números en Orden mezcla */
-  .data-table td:nth-child(4),
-  .data-table th:nth-child(4) {
-    text-align: center;
-  }
-
   /* Ajustes solo para exportación (usados en el clon) */
   @media print {
     .protocolo-header {
@@ -440,68 +434,62 @@ declare(strict_types=1);
     }
   }
 
-  /* === Ajustes visuales en pantalla para coincidir con export === */
+  /* === Ajustes visuales base === */
   .data-table {
     table-layout: auto;
-    /* permite que el contenido determine el ancho */
+    /* contenido define ancho */
     border-collapse: separate;
   }
 
-  /* El centrado de la 4ta columna se mantiene sin imponer ancho */
-  .data-table th:nth-child(4),
-  .data-table td:nth-child(4) {
-    text-align: center;
+  .data-table th {
+    padding-top: .45rem;
+    padding-bottom: .45rem;
   }
 
   .data-table td {
     word-break: break-word;
-    vertical-align: top;
+    white-space: normal;
+  }
+
+  /* ===== Tabla Servicios (columna por contenido, centrada) ===== */
+  aside .data-table th,
+  aside .data-table td {
     text-align: center;
-    /* ← asegurar centrado también aquí */
-    white-space: normal;
-    /* ← wrap al alcanzar el ancho máximo */
-  }
-
-  .data-table td:nth-child(1),
-  .data-table td:nth-child(5) {
-    white-space: normal;
-  }
-
-  /* === Ajustes de tabla Productos a utilizar (centrado y auto-anchos) === */
-  .data-table th,
-  .data-table td {
     vertical-align: middle;
-    text-align: center;
-    /* ← Centrar todo el contenido */
-    white-space: normal;
-    /* ← Permitir salto de línea */
+    padding-left: .25rem;
+    padding-right: .25rem;
+    /* ↓ menos padding = menos “aire” innecesario */
   }
 
-  /* Inputs/areas centrados dentro de celdas */
-  .data-table input,
-  .data-table textarea {
-    text-align: center;
+  aside .data-table .badge {
+    display: inline-block;
+    white-space: nowrap;
   }
 
-  /* Contenedores internos ocupan el ancho disponible de la celda */
-  .data-table .input-icon {
+  /* ===== Tabla Productos a utilizar ===== */
+  table[aria-label="Productos y receta"] th,
+  table[aria-label="Productos y receta"] td {
+    text-align: center;
+    vertical-align: middle;
+    padding-left: .25rem;
+    padding-right: .25rem;
+  }
+
+  table[aria-label="Productos y receta"] .input-icon {
     width: 100%;
     max-width: 100%;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 0 auto;
   }
 
-  /* El textarea de Notas ocupa todo el ancho del TD */
-  .data-table td:nth-child(5) .input-icon,
-  .data-table td:nth-child(5) textarea {
-    width: 100%;
+  table[aria-label="Productos y receta"] input,
+  table[aria-label="Productos y receta"] textarea {
+    text-align: center;
   }
 
   /* Unificar estilo de inputs editables (sin fondo “gris azulado”) */
   .edit-receta {
     background: transparent !important;
     box-shadow: none;
-    /* si el framework aplica sombra diferenciada */
   }
 
 
@@ -519,7 +507,11 @@ declare(strict_types=1);
 </style>
 
 <script>
+  const TABLE_COL_MAXPX_SERV = 340; // ← ancho máx. por columna en "Servicios"
+  const TABLE_COL_MAXPX_PROD = 420; // ← ancho máx. por columna en "Productos a utilizar"
   (function() {
+
+
     const API = '../partials/drones/controller/drone_protocol_controller.php';
     const $ = (sel) => document.querySelector(sel);
 
@@ -629,10 +621,10 @@ declare(strict_types=1);
         tbodyServicios.appendChild(tr);
       });
 
-      // Ajuste de columnas según contenido real
+      // Ajuste de columnas según contenido real (tabla Servicios)
       const table = tbodyServicios.closest('table');
       if (table) autoFitTableByContent(table, {
-        maxPx: TABLE_COL_MAXPX
+        maxPx: TABLE_COL_MAXPX_SERV
       });
 
     }
@@ -1058,9 +1050,9 @@ h3{font-size:14px!important; margin-top:6px;}
       // Ajuste de columnas de la tabla de productos según contenido
       const tablaProductos = document.querySelector('#tabla-items')?.closest('table');
       if (tablaProductos) autoFitTableByContent(tablaProductos, {
-        minEmptyPx: 64,
-        paddingPx: 18,
-        maxPx: TABLE_COL_MAXPX
+        minEmptyPx: 56,
+        paddingPx: 14,
+        maxPx: TABLE_COL_MAXPX_PROD
       });
 
       // parámetros
