@@ -603,20 +603,6 @@ unset($_SESSION['cierre_info']);
             });
         })();
 
-        // Trazas de UX
-        $btnFiltrar.addEventListener('click', () => {
-            console.log('[SVE][Pulv] Click Filtrar', {
-                q: $q.value.trim(),
-                coop: $coop.value
-            });
-            cargar();
-        });
-        $btnLimpiar.addEventListener('click', () => {
-            console.log('[SVE][Pulv] Click Limpiar');
-            $q.value = '';
-            $coop.value = '';
-            cargar();
-        });
     </script>
 
 
