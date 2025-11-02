@@ -92,18 +92,19 @@ unset($_SESSION['cierre_info']);
                 <!-- Lista directa de páginas de Drones (sin acordeón) -->
                 <ul class="submenu-root">
                     <li>
-                        <a href="ing_pulverizacion.php">
-                            <span class="material-symbols-outlined">drone</span>
-                            <span class="link-text">Pulverización</span>
+                        <a href="ing_servicios.php">
+                            <span class="material-symbols-outlined">more</span>
+                            <span class="link-text">Solicitar Servicio</span>
                         </a>
                     </li>
 
                     <li>
-                        <a href="ing_servicios.php">
+                        <a href="ing_pulverizacion.php">
                             <span class="material-symbols-outlined">drone</span>
-                            <span class="link-text">Pulverización</span>
+                            <span class="link-text">Servicios Solicitados</span>
                         </a>
                     </li>
+
                     <!-- Agregá más ítems aquí cuando existan nuevas hojas de Drones -->
                 </ul>
 
