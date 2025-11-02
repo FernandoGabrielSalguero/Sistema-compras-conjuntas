@@ -392,18 +392,12 @@ declare(strict_types=1);
 
   /* ===== Listado de Servicios: mostrar 10 filas con scroll vertical ===== */
   aside .tabla-wrapper {
-    /* Altura calculada: alto del header + 10 filas */
     --headH: 44px;
-    /* ajustable si tu header es más alto/bajo */
     --rowH: 40px;
-    /* alto promedio de una fila (ajustable) */
     max-height: calc(var(--headH) + (var(--rowH) * 10));
     overflow-y: auto;
-    /* scroll vertical solo en el listado */
     border: 1px solid #e5e7eb;
-    /* opcional: delimita visualmente el área scrolleable */
     border-radius: 6px;
-    /* opcional */
   }
 
   /* Header pegado arriba mientras se hace scroll */
@@ -411,7 +405,6 @@ declare(strict_types=1);
     position: sticky;
     top: 0;
     background: #fff;
-    /* asegura contraste sobre el contenido scrolleado */
     z-index: 2;
   }
 
@@ -449,28 +442,15 @@ declare(strict_types=1);
 
   /* === Ajustes visuales en pantalla para coincidir con export === */
   .data-table {
-    table-layout: fixed;
+    table-layout: auto;
+    /* permite que el contenido determine el ancho */
+    border-collapse: separate;
   }
 
-  .data-table th:nth-child(1) {
-    width: 22%;
-  }
-
-  .data-table th:nth-child(2) {
-    width: 20%;
-  }
-
-  .data-table th:nth-child(3) {
-    width: 13%;
-  }
-
-  .data-table th:nth-child(4) {
-    width: 10%;
+  /* El centrado de la 4ta columna se mantiene sin imponer ancho */
+  .data-table th:nth-child(4),
+  .data-table td:nth-child(4) {
     text-align: center;
-  }
-
-  .data-table th:nth-child(5) {
-    width: 35%;
   }
 
   .data-table td {
@@ -618,6 +598,9 @@ declare(strict_types=1);
     function renderServicios(items) {
       if (!items || !items.length) {
         tbodyServicios.innerHTML = '<tr><td colspan="4">Sin resultados</td></tr>';
+        // intentar ajustar igualmente la estructura vacía
+        const table = tbodyServicios.closest('table');
+        if (table) autoFitTableByContent(table);
         return;
       }
       tbodyServicios.innerHTML = '';
@@ -635,13 +618,17 @@ declare(strict_types=1);
         });
 
         tr.innerHTML = `
-        <td>${row.id}</td>
+        <td>${row.id ?? ''}</td>
         <td>${row.productor_nombre || ''}</td>
-        <td><span class="badge ${badgeClass(row.estado)}">${row.estado}</span></td>
+        <td><span class="badge ${badgeClass(row.estado)}">${row.estado || ''}</span></td>
         <td>${row.fecha_visita || ''}</td>
       `;
         tbodyServicios.appendChild(tr);
       });
+
+      // Ajuste de columnas según contenido real
+      const table = tbodyServicios.closest('table');
+      if (table) autoFitTableByContent(table);
     }
 
     // ===== PDF A4 multipágina con HEADER repetido =====
@@ -663,10 +650,10 @@ declare(strict_types=1);
         } = window.jspdf;
 
         // --- Parámetros base (forzar layout desktop, tamaño real A4) ---
-        const A4PX = 1440; // ~78% del tamaño original en el PDF
-        const SCALE = 2.0; // más nitidez por el mayor downscale
-        const MARGIN_MM = 5; // margen más fino
-        const WINDOW_W = 1600; // viewport ancho fijo (fuerza desktop)
+        const A4PX = 1440;
+        const SCALE = 2.0;
+        const MARGIN_MM = 5;
+        const WINDOW_W = 1600;
         const WINDOW_H = Math.max(sectionEl.scrollHeight, 2200);
 
 
@@ -1029,8 +1016,8 @@ h3{font-size:14px!important; margin-top:6px;}
       } else {
         tbody.innerHTML = filas.map((f, idx) => `
           <tr data-row="${idx}">
-            <td>${f.producto}</td>
-            <td>${f.principio}</td>
+            <td>${f.producto || ''}</td>
+            <td>${f.principio || ''}</td>
             <td>
               <div class="input-icon input-icon-lab">
                 <input 
@@ -1062,6 +1049,13 @@ h3{font-size:14px!important; margin-top:6px;}
         `).join('');
       }
 
+      // Ajuste de columnas de la tabla de productos según contenido
+      const tablaProductos = document.querySelector('#tabla-items')?.closest('table');
+      if (tablaProductos) autoFitTableByContent(tablaProductos, {
+        minEmptyPx: 64,
+        paddingPx: 18,
+        maxPx: 480
+      });
 
       // parámetros
       const p = data.parametros || {};
@@ -1203,4 +1197,86 @@ h3{font-size:14px!important; margin-top:6px;}
     }
 
   })();
+
+  /**
+   * Ajusta anchos de columnas de una tabla según el contenido visible.
+   * - Si TODA la columna está vacía => usa un mínimo (minEmptyPx).
+   * - Si tiene texto => fija ancho al máximo contenido observado + padding.
+   * No requiere <colgroup>; aplica width en px a <th> y <td>.
+   * @param {HTMLTableElement} tableEl
+   * @param {{minEmptyPx?:number, paddingPx?:number, maxPx?:number}} opts
+   */
+  function autoFitTableByContent(tableEl, opts = {}) {
+    if (!tableEl) return;
+    const minEmptyPx = Number.isFinite(opts.minEmptyPx) ? opts.minEmptyPx : 56;
+    const paddingPx = Number.isFinite(opts.paddingPx) ? opts.paddingPx : 16;
+    const maxPx = Number.isFinite(opts.maxPx) ? opts.maxPx : 560;
+
+    const thead = tableEl.tHead;
+    const tbody = tableEl.tBodies && tableEl.tBodies[0];
+    if (!thead || !tbody) return;
+
+    const ths = Array.from(thead.rows[0]?.cells || []);
+    const rows = Array.from(tbody.rows || []);
+    const colCount = ths.length;
+
+    // Helper para medir texto con mismo font del TH
+    const measurer = (function() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      function getFont(el) {
+        const cs = window.getComputedStyle(el);
+        return `${cs.fontStyle} ${cs.fontVariant} ${cs.fontWeight} ${cs.fontSize}/${cs.lineHeight} ${cs.fontFamily}`;
+      }
+      return function measure(text, refEl) {
+        const t = (text ?? '').toString();
+        if (!ctx) return t.length * 8; // fallback tosco
+        ctx.font = getFont(refEl || tableEl);
+        const m = ctx.measureText(t);
+        // sumar algo de holgura
+        return Math.ceil(m.width);
+      };
+    })();
+
+    for (let c = 0; c < colCount; c++) {
+      const hdr = ths[c];
+      let maxWidth = measurer(hdr?.innerText || '', hdr);
+      let allEmpty = true;
+
+      rows.forEach(tr => {
+        const td = tr.cells[c];
+        if (!td) return;
+
+        // tomar valor visible prioritario (inputs/textareas), si no, texto
+        let val = '';
+        const input = td.querySelector('input');
+        const ta = td.querySelector('textarea');
+        if (input) val = input.value ?? input.getAttribute('value') ?? '';
+        else if (ta) val = ta.value ?? ta.textContent ?? '';
+        else val = td.innerText ?? '';
+
+        const trimmed = (val || '').toString().trim();
+        if (trimmed !== '') allEmpty = false;
+
+        // medir texto (limitando por maxPx posteriormente)
+        const w = measurer(trimmed, td);
+        if (w > maxWidth) maxWidth = w;
+      });
+
+      const finalWidth = Math.min(allEmpty ? minEmptyPx : (maxWidth + paddingPx), maxPx);
+
+      // aplicar ancho a header y celdas
+      if (hdr) {
+        hdr.style.width = finalWidth + 'px';
+        hdr.style.maxWidth = finalWidth + 'px';
+      }
+      rows.forEach(tr => {
+        const td = tr.cells[c];
+        if (!td) return;
+        td.style.width = finalWidth + 'px';
+        td.style.maxWidth = finalWidth + 'px';
+      });
+    }
+  }
 </script>
