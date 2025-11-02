@@ -456,6 +456,10 @@ declare(strict_types=1);
   .data-table td {
     word-break: break-word;
     vertical-align: top;
+    text-align: center;
+    /* ← asegurar centrado también aquí */
+    white-space: normal;
+    /* ← wrap al alcanzar el ancho máximo */
   }
 
   .data-table td:nth-child(1),
@@ -463,44 +467,43 @@ declare(strict_types=1);
     white-space: normal;
   }
 
-  /* === Ajustes de tabla Productos a utilizar === */
+  /* === Ajustes de tabla Productos a utilizar (centrado y auto-anchos) === */
   .data-table th,
   .data-table td {
     vertical-align: middle;
+    text-align: center;
+    /* ← Centrar todo el contenido */
+    white-space: normal;
+    /* ← Permitir salto de línea */
   }
 
-  .data-table th:nth-child(4),
-  .data-table td:nth-child(4) {
+  /* Inputs/areas centrados dentro de celdas */
+  .data-table input,
+  .data-table textarea {
     text-align: center;
   }
 
-  /* el input de Orden mezcla centrado y con ancho coherente */
-  .data-table td:nth-child(4) .input-icon {
-    max-width: 90px;
-    margin: 0 auto;
-  }
-
-  .data-table td:nth-child(4) input {
-    text-align: center;
-  }
-
-  /* el textarea de Notas ocupa todo el ancho del TD y mantiene estilo del framework */
-  .data-table td:nth-child(5) .input-icon {
+  /* Contenedores internos ocupan el ancho disponible de la celda */
+  .data-table .input-icon {
     width: 100%;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
   }
 
+  /* El textarea de Notas ocupa todo el ancho del TD */
+  .data-table td:nth-child(5) .input-icon,
   .data-table td:nth-child(5) textarea {
     width: 100%;
   }
 
-  /* coherencia visual en modo lectura/edición */
-  .edit-receta[readonly] {
-    background: #f8fafc;
+  /* Unificar estilo de inputs editables (sin fondo “gris azulado”) */
+  .edit-receta {
+    background: transparent !important;
+    box-shadow: none;
+    /* si el framework aplica sombra diferenciada */
   }
 
-  .edit-receta:not([readonly]) {
-    background: #fff;
-  }
 
   /* ocultar bloque de geolocalización cuando no hay datos */
   #bloque-geo[hidden],
@@ -628,7 +631,10 @@ declare(strict_types=1);
 
       // Ajuste de columnas según contenido real
       const table = tbodyServicios.closest('table');
-      if (table) autoFitTableByContent(table);
+      if (table) autoFitTableByContent(table, {
+        maxPx: TABLE_COL_MAXPX
+      });
+
     }
 
     // ===== PDF A4 multipágina con HEADER repetido =====
@@ -1054,7 +1060,7 @@ h3{font-size:14px!important; margin-top:6px;}
       if (tablaProductos) autoFitTableByContent(tablaProductos, {
         minEmptyPx: 64,
         paddingPx: 18,
-        maxPx: 480
+        maxPx: TABLE_COL_MAXPX
       });
 
       // parámetros
@@ -1279,4 +1285,8 @@ h3{font-size:14px!important; margin-top:6px;}
       });
     }
   }
+  // ===== Configuración de tablas =====
+  // ⬇⬇⬇  ANCHO MÁXIMO DE COLUMNA (px) — MODIFICABLE POR CLIENTE  ⬇⬇⬇
+  const TABLE_COL_MAXPX = 420; // <- cambiar este valor para ajustar el ancho máximo por columna
+  // ⬆⬆⬆  FIN CONFIGURACIÓN  ⬆⬆⬆
 </script>
