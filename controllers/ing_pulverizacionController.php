@@ -73,6 +73,28 @@ try {
             exit;
         }
 
+        // Registro Fitosanitario (detalle para modal/PDF)
+        if ($action === 'registro') {
+            if ($rolSesion !== 'ingeniero') {
+                http_response_code(403);
+                ob_clean();
+                echo json_encode(['ok' => false, 'error' => 'Solo ingeniero']);
+                exit;
+            }
+            $id = (int)($_GET['id'] ?? 0);
+            if ($id <= 0) {
+                http_response_code(400);
+                ob_clean();
+                echo json_encode(['ok' => false, 'error' => 'ID inválido']);
+                exit;
+            }
+            $data = $model->getRegistroBySolicitud($id, $idReal);
+            http_response_code(200);
+            ob_clean();
+            echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            exit;
+        }
+
         http_response_code(400);
         ob_clean();
         echo json_encode(['ok' => false, 'error' => 'Acción GET no soportada']);

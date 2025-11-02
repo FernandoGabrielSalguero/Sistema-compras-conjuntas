@@ -119,4 +119,126 @@ class ingPulverizacionModel
 
         return ['items' => $items, 'total' => $total];
     }
+
+    /**
+     * Obtiene el Registro Fitosanitario de una solicitud
+     * validando que pertenezca a productores de coops del ingeniero.
+     */
+    public function getRegistroBySolicitud(int $solicitudId, string $ingenieroIdReal): array
+    {
+        // Verificación de acceso (ingeniero -> productores de sus cooperativas)
+        $sqlChk = "
+            SELECT 1
+            FROM drones_solicitud ds
+            WHERE ds.id = :sid
+              AND ds.productor_id_real IN (
+                SELECT rpc.productor_id_real
+                FROM rel_productor_coop rpc
+                JOIN rel_coop_ingeniero rci
+                  ON rci.cooperativa_id_real = rpc.cooperativa_id_real
+                WHERE rci.ingeniero_id_real = :ing
+              )";
+        $stChk = $this->pdo->prepare($sqlChk);
+        $stChk->execute([':sid' => $solicitudId, ':ing' => $ingenieroIdReal]);
+        if (!$stChk->fetchColumn()) {
+            throw new InvalidArgumentException('No autorizado o solicitud inexistente.');
+        }
+
+        // Cabecera + nombres
+        $sqlHead = "
+            SELECT ds.id AS solicitud_id, ds.fecha_visita, ds.estado,
+                   COALESCE(ui_prod.nombre, uprod.usuario) AS productor_nombre,
+                   COALESCE(ui_pil.nombre, upil.usuario)   AS piloto_nombre
+            FROM drones_solicitud ds
+            JOIN usuarios uprod ON uprod.id_real = ds.productor_id_real
+            LEFT JOIN usuarios_info ui_prod ON ui_prod.usuario_id = uprod.id
+            LEFT JOIN usuarios upil ON upil.id = ds.piloto_id
+            LEFT JOIN usuarios_info ui_pil ON ui_pil.usuario_id = upil.id
+            WHERE ds.id = :sid";
+        $h = $this->pdo->prepare($sqlHead);
+        $h->execute([':sid' => $solicitudId]);
+        $head = $h->fetch() ?: [];
+
+        // Reporte operativo (último)
+        $sqlRep = "
+            SELECT nom_cliente, nom_piloto, nom_encargado,
+                   fecha_visita, hora_ingreso, hora_egreso,
+                   nombre_finca, cultivo_pulverizado, sup_pulverizada,
+                   vol_aplicado, vel_viento, temperatura, humedad_relativa
+            FROM drones_solicitud_Reporte
+            WHERE solicitud_id = :sid
+            ORDER BY id DESC
+            LIMIT 1";
+        $r = $this->pdo->prepare($sqlRep);
+        $r->execute([':sid' => $solicitudId]);
+        $rep = $r->fetch() ?: [];
+
+        // Productos (nombre comercial + receta)
+        $sqlProd = "
+            SELECT
+              COALESCE(dsi.nombre_producto, dps.nombre) AS nombre,
+              dsir.principio_activo,
+              dsir.dosis,
+              dsir.unidad,
+              dsir.cant_prod_usado,
+              dsir.fecha_vencimiento
+            FROM drones_solicitud_item dsi
+            LEFT JOIN dron_productos_stock dps ON dps.id = dsi.producto_id
+            LEFT JOIN drones_solicitud_item_receta dsir ON dsir.solicitud_item_id = dsi.id
+            WHERE dsi.solicitud_id = :sid
+            ORDER BY dsi.id ASC";
+        $p = $this->pdo->prepare($sqlProd);
+        $p->execute([':sid' => $solicitudId]);
+        $prods = [];
+        foreach ($p->fetchAll() ?: [] as $row) {
+            $prods[] = [
+                'nombre'    => $row['nombre'] ?? '',
+                'principio' => $row['principio_activo'] ?? '',
+                'dosis'     => $row['dosis'] ?? '',
+                'unidad'    => $row['unidad'] ?? '',
+                'cant_usada' => $row['cant_prod_usado'] ?? '',
+                'vto'       => $row['fecha_vencimiento'] ?? ''
+            ];
+        }
+
+        // Media (fotos y firmas)
+        $sqlMed = "
+            SELECT tipo, ruta
+            FROM drones_solicitud_reporte_media
+            WHERE reporte_id = (
+                SELECT id FROM drones_solicitud_Reporte
+                WHERE solicitud_id = :sid ORDER BY id DESC LIMIT 1
+            )";
+        $m = $this->pdo->prepare($sqlMed);
+        $m->execute([':sid' => $solicitudId]);
+        $fotos = [];
+        $firmaCliente = null;
+        $firmaPrestador = null;
+        foreach ($m->fetchAll() ?: [] as $row) {
+            if ($row['tipo'] === 'foto') $fotos[] = $row['ruta'];
+            if ($row['tipo'] === 'firma_cliente') $firmaCliente = $row['ruta'];
+            if ($row['tipo'] === 'firma_piloto') $firmaPrestador = $row['ruta'];
+        }
+
+        return [
+            'solicitud_id'  => $head['solicitud_id'] ?? $solicitudId,
+            'fecha_visita'  => $rep['fecha_visita'] ?? ($head['fecha_visita'] ?? null),
+            'productor_nombre' => $head['productor_nombre'] ?? null,
+            'piloto_nombre' => $head['piloto_nombre'] ?? null,
+            'representante' => $rep['nom_encargado'] ?? null,
+            'nombre_finca'  => $rep['nombre_finca'] ?? null,
+            'cultivo'       => $rep['cultivo_pulverizado'] ?? null,
+            'superficie'    => $rep['sup_pulverizada'] ?? null,
+            'hora_ingreso'  => $rep['hora_ingreso'] ?? null,
+            'hora_egreso'   => $rep['hora_egreso'] ?? null,
+            'temperatura'   => $rep['temperatura'] ?? null,
+            'humedad'       => $rep['humedad_relativa'] ?? null,
+            'vel_viento'    => $rep['vel_viento'] ?? null,
+            'vol_aplicado'  => $rep['vol_aplicado'] ?? null,
+            'productos'     => $prods,
+            'fotos'         => $fotos,
+            'firma_cliente' => $firmaCliente,
+            'firma_prestador' => $firmaPrestador
+        ];
+    }
 }

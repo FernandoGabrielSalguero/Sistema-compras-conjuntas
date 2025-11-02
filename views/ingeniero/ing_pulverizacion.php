@@ -38,6 +38,10 @@ unset($_SESSION['cierre_info']);
     <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
     <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
 
+    <!-- Exportar a PDF -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
         /* Estilos tarjetas */
         .user-card {
@@ -185,29 +189,35 @@ unset($_SESSION['cierre_info']);
             </header>
 
             <!-- 📦 CONTENIDO -->
-            <!-- 📦 CONTENIDO -->
             <section class="content">
 
                 <!-- Filtros -->
                 <div class="card">
                     <h2>Solicitudes de pulverización</h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
-                        <div>
-                            <label class="label">Productor</label>
-                            <input id="filtro-productor" type="text" class="input" placeholder="Nombre del productor">
+                        <div class="input-group">
+                            <label for="filtro-productor">Productor</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="text" id="filtro-productor" name="filtro-productor" placeholder="Nombre del productor" />
+                            </div>
                         </div>
-                        <div>
-                            <label class="label">Cooperativa</label>
-                            <select id="filtro-coop" class="select">
-                                <option value="">Todas</option>
-                            </select>
+
+                        <div class="input-group">
+                            <label for="filtro-coop">Cooperativa</label>
+                            <div class="input-icon">
+                                <select id="filtro-coop" name="filtro-coop" class="select">
+                                    <option value="">Todas</option>
+                                </select>
+                            </div>
                         </div>
+
                         <div class="flex gap-2">
-                            <button id="btn-filtrar" class="btn btn-primary">Filtrar</button>
-                            <button id="btn-limpiar" class="btn">Limpiar</button>
+                            <button id="btn-filtrar" class="btn btn-aceptar">Filtrar</button>
+                            <button id="btn-limpiar" class="btn btn-cancelar">Limpiar</button>
                         </div>
                     </div>
                 </div>
+
 
                 <!-- Tabla dinámica -->
                 <div class="card tabla-card">
@@ -233,15 +243,24 @@ unset($_SESSION['cierre_info']);
 
                 <!-- Modal -->
                 <div id="modal" class="modal hidden">
-                    <div class="modal-content">
-                        <h3>Detalle de solicitud</h3>
-                        <p id="modal-body">Contenido pendiente.</p>
+                    <div class="modal-content" style="max-width:980px">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3>Registro Fitosanitario</h3>
+                            <button class="btn-icon" onclick="closeModal()"><span class="material-icons">close</span></button>
+                        </div>
+
+                        <!-- CONTENIDO PRINT/PDF -->
+                        <div id="registro-container">
+                            <!-- Se completa dinámicamente -->
+                        </div>
+
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" onclick="closeModal()">Aceptar</button>
-                            <button class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
+                            <button id="btn-descargar" class="btn btn-primary">Descargar PDF</button>
+                            <button class="btn btn-cancelar" onclick="closeModal()">Cerrar</button>
                         </div>
                     </div>
                 </div>
+
 
                 <!-- contenedor del toastify -->
                 <div id="toast-container"></div>
@@ -287,12 +306,144 @@ unset($_SESSION['cierre_info']);
             const $btnFiltrar = document.getElementById('btn-filtrar');
             const $btnLimpiar = document.getElementById('btn-limpiar');
 
-            function openModal(id) {
+            async function openModal(id, estado) {
+                if ((estado || '').toLowerCase() !== 'completada') {
+                    alert('El Registro Fitosanitario sólo está disponible cuando la solicitud está COMPLETADA.');
+                    return;
+                }
                 const el = document.getElementById('modal');
-                document.getElementById('modal-body').textContent = "Abriste el modal de la solicitud #" + id;
+                const cont = document.getElementById('registro-container');
+                cont.innerHTML = '<div class="skeleton h-8 w-full mb-2"></div>';
+
+                // Obtener registro desde API
+                const res = await fetch(`${API}?action=registro&id=${id}`, {
+                    credentials: 'same-origin'
+                });
+                const j = await res.json();
+                if (!j.ok) {
+                    cont.innerHTML = `<div class="alert alert-error">${j.error||'Error'}</div>`;
+                    el.classList.remove('hidden');
+                    return;
+                }
+
+                const d = j.data;
+
+                // Render del registro (estructura visible en las capturas)
+                cont.innerHTML = `
+                  <div class="card" style="box-shadow:none;border:0">
+                    <div class="grid grid-cols-3 gap-2 items-start">
+                      <div class="col-span-2">
+                        <img src="../../../assets/logo_sve.png" alt="SVE" style="height:48px">
+                        <h2 class="mt-2">Registro Fitosanitario</h2>
+                      </div>
+                      <div class="text-right">
+                        <p><strong>N°:</strong> ${d.numero||d.solicitud_id}</p>
+                        <p><strong>Fecha:</strong> ${d.fecha_visita||''}</p>
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mt-3">
+                      <div class="card">
+                        <p><strong>Cliente:</strong> ${d.productor_nombre||'—'}</p>
+                        <p><strong>Representante:</strong> ${d.representante||'—'}</p>
+                        <p><strong>Nombre finca:</strong> ${d.nombre_finca||'—'}</p>
+                      </div>
+                      <div class="card">
+                        <p><strong>Cultivo pulverizado:</strong> ${d.cultivo||'—'}</p>
+                        <p><strong>Superficie pulverizada (ha):</strong> ${d.superficie||'—'}</p>
+                        <p><strong>Operador Drone:</strong> ${d.piloto_nombre||'—'}</p>
+                      </div>
+                    </div>
+
+                    <div class="card mt-3">
+                      <h4>Condiciones meteorológicas al momento del vuelo</h4>
+                      <div class="grid grid-cols-3 gap-2">
+                        <p><strong>Hora Ingreso:</strong> ${d.hora_ingreso||'—'}</p>
+                        <p><strong>Hora Salida:</strong> ${d.hora_egreso||'—'}</p>
+                        <p><strong>Temperatura (°C):</strong> ${d.temperatura||'—'}</p>
+                        <p><strong>Humedad Relativa (%):</strong> ${d.humedad||'—'}</p>
+                        <p><strong>Vel. Viento (m/s):</strong> ${d.vel_viento||'—'}</p>
+                        <p><strong>Volumen aplicado (l/ha):</strong> ${d.vol_aplicado||'—'}</p>
+                      </div>
+                    </div>
+
+                    <div class="card mt-3 tabla-card">
+                      <h4>Productos utilizados</h4>
+                      <div class="tabla-wrapper">
+                        <table class="data-table">
+                          <thead>
+                            <tr>
+                              <th>Nombre Comercial</th>
+                              <th>Principio Activo</th>
+                              <th>Dosis (ml/gr/ha)</th>
+                              <th>Cant. Producto Usado</th>
+                              <th>Fecha de Vencimiento</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            ${(d.productos||[]).map(p => `
+                              <tr>
+                                <td>${p.nombre||''}</td>
+                                <td>${p.principio||''}</td>
+                                <td>${p.dosis||''} ${p.unidad||''}</td>
+                                <td>${p.cant_usada||''}</td>
+                                <td>${p.vto||''}</td>
+                              </tr>`).join('')}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <div class="card mt-3">
+                      <h4>Registro fotográfico y firmas</h4>
+                      <div class="grid grid-cols-3 gap-2 mb-2">
+                        ${(d.fotos||[]).map(src => `<img src="${src}" alt="foto" style="width:100%;height:160px;object-fit:cover;border-radius:8px">`).join('')}
+                      </div>
+                      <div class="grid grid-cols-2 gap-6 items-center">
+                        <div class="text-center">
+                          ${d.firma_prestador ? `<img src="${d.firma_prestador}" alt="firma prestador" style="height:80px">` : ''}
+                          <div class="opacity-70 mt-1">Firma Prestador de Servicio</div>
+                        </div>
+                        <div class="text-center">
+                          ${d.firma_cliente ? `<img src="${d.firma_cliente}" alt="firma cliente" style="height:80px">` : ''}
+                          <div class="opacity-70 mt-1">Firma Representante del cliente</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                `;
+
+                // Descargar PDF
+                document.getElementById('btn-descargar').onclick = async function() {
+                    const {
+                        jsPDF
+                    } = window.jspdf;
+                    const node = document.getElementById('registro-container');
+                    const canvas = await html2canvas(node, {
+                        scale: 2,
+                        useCORS: true
+                    });
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF({
+                        orientation: 'p',
+                        unit: 'pt',
+                        format: 'a4'
+                    });
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
+                    const w = canvas.width * ratio;
+                    const h = canvas.height * ratio;
+                    const x = (pageWidth - w) / 2;
+                    const y = 20;
+                    pdf.addImage(imgData, 'PNG', x, y, w, h);
+                    pdf.save(`registro_${id}.pdf`);
+                };
+
                 el.classList.remove('hidden');
             }
             window.openModal = openModal;
+
             window.closeModal = function() {
                 document.getElementById('modal').classList.add('hidden');
             };
@@ -330,7 +481,7 @@ unset($_SESSION['cierre_info']);
             <td>${badgeEstado(r.estado)}</td>
             <td>${fmtMoney(r.costo_total)}</td>
             <td>
-                <button class="btn-icon" title="Abrir modal" onclick="openModal(${r.id})">
+                <button class="btn-icon" title="Abrir registro" onclick="openModal(${r.id}, '${r.estado||''}')">
                     <span class="material-icons">open_in_new</span>
                 </button>
             </td>
