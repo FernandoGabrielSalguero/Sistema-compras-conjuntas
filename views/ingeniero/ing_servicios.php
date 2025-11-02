@@ -271,19 +271,6 @@ unset($_SESSION['cierre_info']);
                     </div>
                 </div>
 
-                <!-- 🪟 Modales -->
-                <div id="modalTractor" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTractorTitle">
-                    <div class="modal-content">
-                        <h3 id="modalTractorTitle">Crear una solicitud de cosecha mecanica</h3>
-                        <p id="modalTractorBody">Pronto, vas a poder solicitarle servicios de cosecha mecanica a los productores.</p>
-                        <div class="form-buttons">
-                            <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalTractor')">Cancelar</button>
-                        </div>
-
-
-
-                    </div>
-                </div>
         </div>
 
         <div id="modalDrone" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalDroneTitle">
@@ -306,19 +293,6 @@ unset($_SESSION['cierre_info']);
                 </div>
 
             </div>
-        </div>
-    </div>
-
-    <div id="modalFamilia" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalFamiliaTitle">
-        <div class="modal-content">
-            <h3 id="modalFamiliaTitle">Sistema de relevamiento</h3>
-            <p id="modalFamiliaBody">Pronto, vas a tener acceso a las opciones de relevamiento desde este boton</p>
-            <div class="form-buttons">
-                <button class="btn btn-cancelar" type="button" onclick="sveCloseModal('modalFamilia')">Cancelar</button>
-            </div>
-
-
-
         </div>
     </div>
     </div>
@@ -453,19 +427,9 @@ unset($_SESSION['cierre_info']);
     <td>${p.telefono || '-'}</td>
     <td>${p.zona || '-'}</td>
     <td>
-        <!-- TOOLTIP: botón Tractor -->
-        <button class="btn-icon" aria-label="Tractor" title="Cosecha mecanica" onclick="openModalId('modalTractor', this)">
-            <span class="material-symbols-outlined" style="color:red;">agriculture</span>
-        </button>
-
         <!-- TOOLTIP: botón Drone -->
         <button class="btn-icon" aria-label="Drone" title="Pulverización con Drone" onclick="openModalId('modalDrone', this)">
             <span class="material-symbols-outlined" style="color:green;">drone</span>
-        </button>
-
-        <!-- TOOLTIP: botón Familia -->
-        <button class="btn-icon" aria-label="Familia" title="Relevamiento" onclick="openModalId('modalFamilia', this)">
-            <span class="material-icons" style="color:blue;">diversity_3</span>
         </button>
     </td>
 `;
