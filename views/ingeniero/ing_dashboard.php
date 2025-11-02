@@ -47,55 +47,22 @@ unset($_SESSION['cierre_info']);
             opacity: .7;
         }
 
-        /* Submenú */
-        .submenu-root,
-        .submenu {
+        /* Lista simple de subitems */
+        .submenu-root {
             list-style: none;
             margin: 0;
             padding: 0;
         }
 
-        .has-submenu>.submenu-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            padding: .6rem 1rem;
-            background: transparent;
-            border: 0;
-            cursor: pointer;
-        }
-
-        .has-submenu .left {
-            display: inline-flex;
-            align-items: center;
-            gap: .5rem;
-        }
-
-        .submenu {
-            display: none;
-        }
-
-        .submenu.open {
-            display: block;
-        }
-
-        .submenu a {
+        .submenu-root a {
             display: flex;
             align-items: center;
             gap: .5rem;
             padding: .4rem 1.5rem;
             text-decoration: none;
         }
-
-        .chevron {
-            transition: transform .2s ease;
-        }
-
-        .submenu-toggle[aria-expanded="true"] .chevron {
-            transform: rotate(180deg);
-        }
     </style>
+
 
 </head>
 
@@ -122,27 +89,17 @@ unset($_SESSION['cierre_info']);
                 <!-- Título de sección -->
                 <div class="sidebar-section-title">Drones</div>
 
-                <!-- Submenú de Drones -->
+                <!-- Lista directa de páginas de Drones (sin acordeón) -->
                 <ul class="submenu-root">
-                    <li class="has-submenu">
-                        <button class="submenu-toggle" aria-expanded="true" type="button">
-                            <span class="left">
-                                <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                                <span class="link-text">Drones</span>
-                            </span>
-                            <span class="material-icons chevron">expand_more</span>
-                        </button>
-                        <ul class="submenu open">
-                            <li>
-                                <a href="ing_pulverizacion.php">
-                                    <span class="material-icons">chevron_right</span>
-                                    <span class="link-text">Pulverización</span>
-                                </a>
-                            </li>
-                            <!-- Agregá más ítems aquí cuando existan nuevas hojas de Drones -->
-                        </ul>
+                    <li>
+                        <a href="ing_pulverizacion.php">
+                            <span class="material-icons">chevron_right</span>
+                            <span class="link-text">Pulverización</span>
+                        </a>
                     </li>
+                    <!-- Agregá más ítems aquí cuando existan nuevas hojas de Drones -->
                 </ul>
+
 
                 <!-- Resto de opciones -->
                 <ul>
@@ -214,22 +171,6 @@ unset($_SESSION['cierre_info']);
                     }
                 });
             <?php endif; ?>
-        });
-    </script>
-
-    <script>
-        /* Toggle del submenú Drones */
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.submenu-toggle').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    var expanded = btn.getAttribute('aria-expanded') === 'true';
-                    btn.setAttribute('aria-expanded', String(!expanded));
-                    var submenu = btn.nextElementSibling;
-                    if (submenu) {
-                        submenu.classList.toggle('open', !expanded);
-                    }
-                });
-            });
         });
     </script>
 
