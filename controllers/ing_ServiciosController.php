@@ -47,6 +47,15 @@ try {
                 respond(['ok' => true, 'data' => $data]);
             }
 
+        case 'productores_del_ingeniero': {
+                $idReal = isset($_SESSION['id_real']) ? (string)$_SESSION['id_real'] : '';
+                if ($idReal === '') {
+                    respond(['ok' => false, 'error' => 'Ingeniero no identificado'], 400);
+                }
+                $data = $model->getProductoresByIngeniero($idReal);
+                respond(['ok' => true, 'data' => $data]);
+            }
+
         case 'detalle_usuario': {
                 $usuarioIdReal = $_GET['usuario_id_real'] ?? $_POST['usuario_id_real'] ?? null;
 
@@ -55,7 +64,6 @@ try {
                 }
 
                 try {
-                    // $model ya está instanciado arriba con $pdo: $model = new IngServiciosModel($pdo);
                     $detalle = $model->getUsuarioConInfo($usuarioIdReal);
 
                     if (!$detalle) {
@@ -68,8 +76,6 @@ try {
                     respond(['ok' => false, 'error' => 'Error interno'], 500);
                 }
             }
-
-
 
         default:
             respond(['ok' => false, 'error' => 'Acción no soportada'], 404);

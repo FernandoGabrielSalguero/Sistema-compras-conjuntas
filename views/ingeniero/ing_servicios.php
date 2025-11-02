@@ -59,7 +59,7 @@ unset($_SESSION['cierre_info']);
     #card-filtros .filters-grid {
         display: grid;
         gap: 12px;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         align-items: end;
     }
 
@@ -101,6 +101,17 @@ unset($_SESSION['cierre_info']);
             padding: .4rem 1.5rem;
             text-decoration: none;
         }
+
+            /* Chips y badge */
+    .chip {
+        display:inline-flex; align-items:center; gap:.4rem;
+        padding:.35rem .7rem; border-radius:9999px;
+        border:1px solid #e5e7eb; cursor:pointer; user-select:none;
+        background:#fff;
+    }
+    .chip.active { border-color:#5b21b6; background:#f5f3ff; }
+    .badge { display:inline-block; padding:.15rem .5rem; border-radius:9999px; background:#eef2ff; }
+
 </style>
 
 
@@ -195,29 +206,20 @@ unset($_SESSION['cierre_info']);
                     </div>
                 </div>
 
-                <!-- 🧩 Cooperativas del ingeniero -->
+                                <!-- 🧩 Cooperativas del ingeniero -->
                 <div class="card" id="card-cooperativas" aria-labelledby="coops-title">
-                    <h2 id="coops-title">Tus cooperativas</h2>
-                    <p>Seleccioná una cooperativa para ver sus productores asociados.</p>
-                    <div class="form-grid grid-2">
-                        <div class="input-group">
-                            <label for="selectCooperativa">Cooperativa</label>
-                            <div class="input-icon input-icon-name">
-                                <select id="selectCooperativa" name="selectCooperativa" aria-label="Seleccionar cooperativa">
-                                    <option value="">-- Seleccioná una cooperativa --</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="input-group">
-                            <label for="coopResumen">Resumen</label>
-                            <div class="input-icon input-icon-name">
-                                <input type="text" id="coopResumen" name="coopResumen" placeholder="0 cooperativas" readonly />
-                            </div>
-                        </div>
+                    <div style="display:flex; align-items:center; gap:.5rem;">
+                        <h2 id="coops-title" style="margin:0;">Tus cooperativas</h2>
+                        <span id="coopCountBadge" class="badge">0</span>
                     </div>
+                    <p>Seleccioná una cooperativa para ver sus productores asociados.</p>
+
+                    <!-- Chips dinámicos -->
+                    <div id="chipsCooperativas" class="chips" role="tablist" aria-label="Cooperativas del ingeniero" style="display:flex; flex-wrap:wrap; gap:.5rem;"></div>
                 </div>
 
-                <!-- 🔎 Filtros -->
+
+                                <!-- 🔎 Filtros -->
                 <div class="card" id="card-filtros" aria-labelledby="filtros-title">
                     <h2 id="filtros-title">Filtros</h2>
                     <div class="filters-grid">
@@ -233,17 +235,12 @@ unset($_SESSION['cierre_info']);
                                 <input type="text" id="filtroCuit" name="filtroCuit" placeholder="Ej: 20123456789" inputmode="numeric" />
                             </div>
                         </div>
-                        <div class="input-group">
-                            <label for="filtroZona">Zona</label>
-                            <div class="input-icon input-icon-name">
-                                <input type="text" id="filtroZona" name="filtroZona" placeholder="Ej: Este / Oeste / Valle" />
-                            </div>
-                        </div>
                         <div>
                             <button class="btn btn-info" type="button" id="btnLimpiarFiltros" style="width:100%;">Limpiar filtros</button>
                         </div>
                     </div>
                 </div>
+
 
 
                 <!-- 📊 Tabla de productores -->
@@ -310,7 +307,7 @@ unset($_SESSION['cierre_info']);
     </div>
 
     <!-- toast + lógica de cooperativas/productores -->
-    <script>
+        <script>
         window.addEventListener('DOMContentLoaded', () => {
             console.log('Datos de sesión', <?php echo json_encode($_SESSION); ?>);
 
@@ -331,30 +328,58 @@ unset($_SESSION['cierre_info']);
         });
 
         async function inicializarCooperativasYFiltros() {
-            const selectCoop = document.getElementById('selectCooperativa');
-            const resumen = document.getElementById('coopResumen');
+            const chipsWrap = document.getElementById('chipsCooperativas');
+            const coopBadge = document.getElementById('coopCountBadge');
             const tbody = document.getElementById('tbodyProductores');
-            const filaVacia = document.getElementById('filaVacia');
             const filtroNombre = document.getElementById('filtroNombre');
             const filtroCuit = document.getElementById('filtroCuit');
-            const filtroZona = document.getElementById('filtroZona');
 
-            // Cargar cooperativas del ingeniero
+            let cooperativas = [];
+            let productoresPorCoop = {};   // cache por cooperativa_id_real
+            let productoresTodos = null;   // cache global (todas las coops)
+            let coopSeleccionada = null;
+
+            // Cargar cooperativas del ingeniero (chips)
             try {
-                const res = await fetch('../../controllers/ing_ServiciosController.php?action=cooperativas_del_ingeniero', {
-                    credentials: 'include'
-                });
+                const res = await fetch('../../controllers/ing_ServiciosController.php?action=cooperativas_del_ingeniero', { credentials: 'include' });
                 const json = await res.json();
                 console.log('cooperativas_del_ingeniero →', json);
 
                 if (json.ok && Array.isArray(json.data)) {
-                    resumen.value = `${json.data.length} cooperativa(s)`;
-                    json.data.forEach(c => {
-                        const opt = document.createElement('option');
-                        opt.value = c.cooperativa_id_real;
-                        opt.textContent = `${c.nombre} (${c.cuit ?? 'sin CUIT'})`;
-                        selectCoop.appendChild(opt);
+                    cooperativas = json.data;
+                    coopBadge.textContent = String(cooperativas.length);
+
+                    chipsWrap.innerHTML = '';
+                    cooperativas.forEach((c, i) => {
+                        const chip = document.createElement('button');
+                        chip.type = 'button';
+                        chip.className = 'chip';
+                        chip.dataset.id = c.cooperativa_id_real;
+                        chip.setAttribute('role', 'tab');
+                        chip.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+                        chip.innerHTML = `<span class="material-icons" style="font-size:16px;">apartment</span><span>${c.nombre} (${c.cuit ?? 'sin CUIT'})</span>`;
+                        chip.addEventListener('click', async () => {
+                            document.querySelectorAll('#chipsCooperativas .chip').forEach(el => { el.classList.remove('active'); el.setAttribute('aria-selected','false'); });
+                            chip.classList.add('active');
+                            chip.setAttribute('aria-selected','true');
+                            coopSeleccionada = chip.dataset.id;
+                            await cargarYRenderizarPorCoop();
+                        });
+                        chipsWrap.appendChild(chip);
                     });
+
+                    // Preseleccionar primer chip
+                    if (cooperativas.length > 0) {
+                        const first = chipsWrap.querySelector('.chip');
+                        if (first) {
+                            first.classList.add('active');
+                            first.setAttribute('aria-selected','true');
+                            coopSeleccionada = first.dataset.id;
+                            await cargarYRenderizarPorCoop();
+                        }
+                    } else {
+                        renderRows([]); // sin cooperativas
+                    }
                 } else {
                     showAlert('error', json.error || 'No se pudieron cargar las cooperativas.');
                 }
@@ -363,121 +388,102 @@ unset($_SESSION['cierre_info']);
                 showAlert('error', 'Error cargando cooperativas.');
             }
 
-            // Cambio de cooperativa → carga productores
-            selectCoop.addEventListener('change', async () => {
-                const coopId = selectCoop.value;
-                console.log('Cooperativa seleccionada:', coopId);
-                await cargarProductores(coopId);
-                aplicarFiltros(); // inicial para aplicar filtros con la lista cargada
-            });
-
             // Filtros en vivo
             ['input', 'keyup', 'change'].forEach(evt => {
                 filtroNombre.addEventListener(evt, aplicarFiltros);
                 filtroCuit.addEventListener(evt, aplicarFiltros);
-                filtroZona.addEventListener(evt, aplicarFiltros);
             });
 
             document.getElementById('btnLimpiarFiltros').addEventListener('click', () => {
                 filtroNombre.value = '';
                 filtroCuit.value = '';
-                filtroZona.value = '';
                 aplicarFiltros();
             });
 
-            async function cargarProductores(coopId) {
+            async function cargarYRenderizarPorCoop() {
+                if (!coopSeleccionada) { renderRows([]); return; }
+                if (!productoresPorCoop[coopSeleccionada]) {
+                    try {
+                        const res = await fetch(`../../controllers/ing_ServiciosController.php?action=productores_por_coop&cooperativa_id_real=${encodeURIComponent(coopSeleccionada)}`, { credentials: 'include' });
+                        const json = await res.json();
+                        console.log('productores_por_coop →', json);
+                        productoresPorCoop[coopSeleccionada] = (json.ok && Array.isArray(json.data)) ? json.data : [];
+                    } catch (e) {
+                        console.error('Error cargando productores:', e);
+                        productoresPorCoop[coopSeleccionada] = [];
+                        showAlert('error', 'Error cargando productores.');
+                    }
+                }
+                aplicarFiltros(); // render con dataset actual/cooperativa
+            }
+
+            async function getTodosLosProductores() {
+                if (productoresTodos) return productoresTodos;
+                try {
+                    const res = await fetch(`../../controllers/ing_ServiciosController.php?action=productores_del_ingeniero`, { credentials: 'include' });
+                    const json = await res.json();
+                    console.log('productores_del_ingeniero →', json);
+                    productoresTodos = (json.ok && Array.isArray(json.data)) ? json.data : [];
+                } catch (e) {
+                    console.error('Error cargando productores del ingeniero:', e);
+                    productoresTodos = [];
+                }
+                return productoresTodos;
+            }
+
+            function normalizarFila(p, idxBase = 0) {
+                return `
+    <tr data-usuario-id-real="${String(p.usuario_id_real || p.id_real || p.id || '')}">
+        <td>${idxBase + 1}</td>
+        <td>${p.nombre || '-'}</td>
+        <td>${p.cuit || '-'}</td>
+        <td>${p.telefono || '-'}</td>
+        <td>${p.zona || '-'}</td>
+        <td>
+            <button class="btn-icon" aria-label="Drone" title="Pulverización con Drone" onclick="openModalId('modalDrone', this)">
+                <span class="material-symbols-outlined" style="color:green;">drone</span>
+            </button>
+        </td>
+    </tr>`;
+            }
+
+            function renderRows(arr) {
                 tbody.innerHTML = '';
-                if (!coopId) {
-                    tbody.appendChild(filaVaciaTemplate());
+                if (!arr || arr.length === 0) {
+                    const tr = document.createElement('tr');
+                    tr.id = 'filaVacia';
+                    tr.innerHTML = `<td colspan="6">No hay resultados</td>`;
+                    tbody.appendChild(tr);
                     return;
                 }
-                try {
-                    const res = await fetch(`../../controllers/ing_ServiciosController.php?action=productores_por_coop&cooperativa_id_real=${encodeURIComponent(coopId)}`, {
-                        credentials: 'include'
-                    });
-                    const json = await res.json();
-                    console.log('productores_por_coop →', json);
-
-                    if (!(json.ok && Array.isArray(json.data))) {
-                        showAlert('info', json.error || 'No se encontraron productores.');
-                        tbody.appendChild(filaVaciaTemplate());
-                        return;
-                    }
-
-                    if (json.data.length === 0) {
-                        tbody.appendChild(filaVaciaTemplate('La cooperativa seleccionada no tiene productores asociados'));
-                        return;
-                    }
-
-                    json.data.forEach((p, idx) => {
-                        const tr = document.createElement('tr');
-
-                        // 🔹 Normalizo dataset visible
-                        tr.dataset.nombre = (p.nombre || '').toLowerCase();
-                        tr.dataset.cuit = String(p.cuit || '');
-                        tr.dataset.zona = (p.zona || '').toLowerCase();
-
-                        // 🔹 Guardo el identificador real del usuario (cualquiera disponible)
-                        tr.dataset.usuarioIdReal = String(p.usuario_id_real || p.id_real || p.id || '');
-
-                        tr.innerHTML = `
-    <td>${idx + 1}</td>
-    <td>${p.nombre || '-'}</td>
-    <td>${p.cuit || '-'}</td>
-    <td>${p.telefono || '-'}</td>
-    <td>${p.zona || '-'}</td>
-    <td>
-        <!-- TOOLTIP: botón Drone -->
-        <button class="btn-icon" aria-label="Drone" title="Pulverización con Drone" onclick="openModalId('modalDrone', this)">
-            <span class="material-symbols-outlined" style="color:green;">drone</span>
-        </button>
-    </td>
-`;
-                        tbody.appendChild(tr);
-                    });
-
-                } catch (e) {
-                    console.error('Error cargando productores:', e);
-                    showAlert('error', 'Error cargando productores.');
-                    tbody.appendChild(filaVaciaTemplate());
-                }
+                const html = arr.map((p, i) => normalizarFila(p, i)).join('');
+                tbody.insertAdjacentHTML('beforeend', html);
             }
 
-            function aplicarFiltros() {
-                const nombre = (filtroNombre.value || '').toLowerCase();
+            async function aplicarFiltros() {
+                const nombre = (filtroNombre.value || '').toLowerCase().trim();
                 const cuit = (filtroCuit.value || '').replace(/\D/g, '');
-                const zona = (filtroZona.value || '').toLowerCase();
-                const rows = Array.from(document.querySelectorAll('#tbodyProductores tr'));
 
-                if (rows.length === 1 && rows[0].id === 'filaVacia') return; // nada que filtrar
+                // Base de datos a filtrar:
+                // - Si hay "nombre", buscar GLOBAL (todas las cooperativas del ingeniero).
+                // - Si no hay "nombre", usar la cooperativa seleccionada.
+                let base = [];
+                if (nombre) {
+                    base = await getTodosLosProductores();
+                } else if (coopSeleccionada) {
+                    base = productoresPorCoop[coopSeleccionada] || [];
+                }
 
-                let visibles = 0;
-                rows.forEach(r => {
-                    if (r.id === 'filaVacia') return;
-                    const matchNombre = !nombre || (r.dataset.nombre || '').includes(nombre);
-                    const matchCuit = !cuit || (r.dataset.cuit || '').includes(cuit);
-                    const matchZona = !zona || (r.dataset.zona || '').includes(zona);
-                    const visible = matchNombre && matchCuit && matchZona;
-                    r.style.display = visible ? '' : 'none';
-                    if (visible) visibles++;
+                // Filtrado
+                const filtrados = base.filter(p => {
+                    const n = String(p.nombre || '').toLowerCase();
+                    const c = String(p.cuit || '');
+                    const okNombre = !nombre || n.includes(nombre);
+                    const okCuit = !cuit || c.includes(cuit);
+                    return okNombre && okCuit;
                 });
 
-                // mensaje si no hay resultados
-                const existente = document.getElementById('filaSinResultados');
-                if (existente) existente.remove();
-                if (visibles === 0) {
-                    const tr = document.createElement('tr');
-                    tr.id = 'filaSinResultados';
-                    tr.innerHTML = `<td colspan="6">No hay resultados para los filtros aplicados</td>`;
-                    document.getElementById('tbodyProductores').appendChild(tr);
-                }
-            }
-
-            function filaVaciaTemplate(msg = 'Selecciona una cooperativa para poder ver a sus productores asociados') {
-                const tr = document.createElement('tr');
-                tr.id = 'filaVacia';
-                tr.innerHTML = `<td colspan="6">${msg}</td>`;
-                return tr;
+                renderRows(filtrados);
             }
         }
 

@@ -86,4 +86,32 @@ class IngServiciosModel
             'usuarios_info' => $usuarioInfo
         ];
     }
+
+    /**
+     * Devuelve todos los productores asociados a cualquiera de las cooperativas
+     * vinculadas al ingeniero (por id_real).
+     */
+    public function getProductoresByIngeniero(string $ingenieroIdReal): array
+    {
+        $sql = "
+            SELECT DISTINCT
+                u.id_real,
+                COALESCE(ui.nombre, u.usuario) AS nombre,
+                u.cuit,
+                ui.telefono,
+                ui.zona_asignada AS zona
+            FROM rel_coop_ingeniero rci
+            JOIN rel_productor_coop rpc
+                ON rpc.cooperativa_id_real = rci.cooperativa_id_real
+            JOIN usuarios u
+                ON u.id_real = rpc.productor_id_real AND u.rol = 'productor'
+            LEFT JOIN usuarios_info ui
+                ON ui.usuario_id = u.id
+            WHERE rci.ingeniero_id_real = :ingeniero_id_real
+            ORDER BY nombre ASC
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':ingeniero_id_real' => $ingenieroIdReal]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+    }
 }
