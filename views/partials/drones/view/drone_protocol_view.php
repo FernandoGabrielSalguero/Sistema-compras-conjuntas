@@ -1279,6 +1279,6 @@ h3{font-size:14px!important; margin-top:6px;}
   }
   // ===== Configuración de tablas =====
   // ⬇⬇⬇  ANCHO MÁXIMO DE COLUMNA (px) — MODIFICABLE POR CLIENTE  ⬇⬇⬇
-  const TABLE_COL_MAXPX = 420; // <- cambiar este valor para ajustar el ancho máximo por columna
+  const TABLE_COL_MAXPX = 120; // <- cambiar este valor para ajustar el ancho máximo por columna
   // ⬆⬆⬆  FIN CONFIGURACIÓN  ⬆⬆⬆
 </script>
