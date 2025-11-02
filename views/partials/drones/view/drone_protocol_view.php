@@ -486,12 +486,35 @@ declare(strict_types=1);
     text-align: center;
   }
 
+  /* Quitar bordes SOLO en columnas Dosis (3) y Orden mezcla (4) */
+  table[aria-label="Productos y receta"] tbody td:nth-child(3) .input-icon,
+  table[aria-label="Productos y receta"] tbody td:nth-child(4) .input-icon {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  table[aria-label="Productos y receta"] tbody td:nth-child(3) .edit-receta,
+  table[aria-label="Productos y receta"] tbody td:nth-child(4) .edit-receta {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background: transparent !important;
+  }
+
   /* Unificar estilo de inputs editables (sin fondo “gris azulado”) */
   .edit-receta {
     background: transparent !important;
     box-shadow: none;
   }
 
+  /* Etiqueta de fuente debajo del nombre del producto */
+  .fuente-prod {
+    font-weight: 700;
+    color: #5b21b6;
+    margin-top: 2px;
+    line-height: 1.2;
+  }
 
   /* ocultar bloque de geolocalización cuando no hay datos */
   #bloque-geo[hidden],
@@ -527,6 +550,18 @@ declare(strict_types=1);
       nombre: $('#filtro_nombre'),
       estado: $('#filtro_estado')
     };
+
+    // Escapar HTML simple para insertar texto seguro
+    function escapeHtml(s) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      };
+      return String(s ?? '').replace(/[&<>"']/g, ch => map[ch]);
+    }
 
     // Bind acciones
     btnDescargar?.addEventListener('click', descargarComoPDFUnaPagina);
@@ -981,12 +1016,14 @@ h3{font-size:14px!important; margin-top:6px;}
       if (Array.isArray(data.items) && data.items.length) {
         data.items.forEach((it) => {
           const producto = it.nombre_producto || '';
+          const fuente = it.fuente || '';
           if (it.receta && it.receta.length) {
             it.receta.forEach((rc) => {
               const ordenVal = (rc.orden_mezcla === null || rc.orden_mezcla === undefined) ? 9999 : Number(rc.orden_mezcla);
               filas.push({
                 receta_id: Number(rc.id) || null,
                 producto,
+                fuente,
                 principio: rc.principio_activo || '',
                 dosis_val: (rc.dosis ?? ''),
                 unidad: (rc.unidad || ''),
@@ -997,6 +1034,7 @@ h3{font-size:14px!important; margin-top:6px;}
           } else {
             filas.push({
               producto,
+              fuente,
               principio: '',
               dosis: '',
               orden: 9999,
@@ -1006,6 +1044,7 @@ h3{font-size:14px!important; margin-top:6px;}
         });
       }
 
+
       // ordenar por orden_mezcla asc (prioridad)
       filas.sort((a, b) => (a.orden - b.orden));
 
@@ -1014,7 +1053,10 @@ h3{font-size:14px!important; margin-top:6px;}
       } else {
         tbody.innerHTML = filas.map((f, idx) => `
           <tr data-row="${idx}">
-            <td>${f.producto || ''}</td>
+            <td>
+              <div>${f.producto || ''}</div>
+              ${f.fuente ? `<div class="fuente-prod">${escapeHtml(f.fuente)}</div>` : ''}
+            </td>
             <td>${f.principio || ''}</td>
             <td>
               <div class="input-icon input-icon-lab">

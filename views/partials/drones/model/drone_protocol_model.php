@@ -87,7 +87,8 @@ class DroneProtocolModel
         // items (nombre_producto preferente; si es NULL, intento nombre de stock)
         $sqlI = "
             SELECT i.id,
-                   COALESCE(i.nombre_producto, ps.nombre) AS nombre_producto
+                   COALESCE(i.nombre_producto, ps.nombre) AS nombre_producto,
+                   i.fuente
             FROM drones_solicitud_item i
             LEFT JOIN dron_productos_stock ps ON ps.id = i.producto_id
             WHERE i.solicitud_id = :id
@@ -137,6 +138,7 @@ class DroneProtocolModel
                 return [
                     'id' => (int)$x['id'],
                     'nombre_producto' => $x['nombre_producto'],
+                    'fuente' => $x['fuente'] ?? null,
                     'receta' => $x['receta'],
                 ];
             }, $items),
