@@ -113,6 +113,22 @@ unset($_SESSION['cierre_info']);
             padding: .4rem 1.5rem;
             text-decoration: none;
         }
+
+        .table-actions-hide .data-table .btn-icon:not(.btn-open-registro) {
+            display: none !important;
+        }
+
+        /* Estilos para el volcado JSON en el modal */
+        pre.json-dump {
+            max-height: 70vh;
+            overflow: auto;
+            background: #0b1020;
+            color: #d8f3ff;
+            padding: 12px;
+            border-radius: 8px;
+            font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            margin: 0;
+        }
     </style>
 
 </head>
@@ -189,7 +205,7 @@ unset($_SESSION['cierre_info']);
             </header>
 
             <!-- 📦 CONTENIDO -->
-            <section class="content">
+            <section class="content table-actions-hide">
 
                 <!-- Filtros -->
                 <div class="card">
@@ -441,92 +457,34 @@ unset($_SESSION['cierre_info']);
 
                     console.log('[RegistroFitosanitario] normalizado:', d);
 
+                    const jsonCompleto = JSON.stringify({
+                            fuente: "registro_fitosanitario",
+                            raw: payload,
+                            normalizado: d
+                        },
+                        null, 2
+                    );
+
                     cont.innerHTML = `
-      <div class="card" style="box-shadow:none;border:0">
-        <div class="grid grid-cols-3 gap-2 items-start">
-          <div class="col-span-2">
-            <img src="${safeSrc('../../../assets/logo_sve.png')}" alt="SVE" style="height:48px">
-            <h2 class="mt-2">Registro Fitosanitario</h2>
-          </div>
-          <div class="text-right">
-            <p><strong>N°:</strong> ${esc(d.numero)}</p>
-            <p><strong>Fecha:</strong> ${esc(d.fecha_visita)}</p>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3 mt-3">
-          <div class="card">
-            <p><strong>Cliente:</strong> ${esc(d.productor_nombre)}</p>
-            <p><strong>Representante:</strong> ${esc(d.representante)}</p>
-            <p><strong>Nombre finca:</strong> ${esc(d.nombre_finca)}</p>
-          </div>
-          <div class="card">
-            <p><strong>Cultivo pulverizado:</strong> ${esc(d.cultivo)}</p>
-            <p><strong>Superficie pulverizada (ha):</strong> ${esc(d.superficie)}</p>
-            <p><strong>Operador Drone:</strong> ${esc(d.piloto_nombre)}</p>
-          </div>
-        </div>
-
-        <div class="card mt-3">
-          <h4>Condiciones meteorológicas al momento del vuelo</h4>
-          <div class="grid grid-cols-3 gap-2">
-            <p><strong>Hora Ingreso:</strong> ${esc(d.hora_ingreso)}</p>
-            <p><strong>Hora Salida:</strong> ${esc(d.hora_egreso)}</p>
-            <p><strong>Temperatura (°C):</strong> ${esc(d.temperatura)}</p>
-            <p><strong>Humedad Relativa (%):</strong> ${esc(d.humedad)}</p>
-            <p><strong>Vel. Viento (m/s):</strong> ${esc(d.vel_viento)}</p>
-            <p><strong>Volumen aplicado (l/ha):</strong> ${esc(d.vol_aplicado)}</p>
-          </div>
-        </div>
-
-        <div class="card mt-3 tabla-card">
-          <h4>Productos utilizados</h4>
-          <div class="tabla-wrapper">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Nombre Comercial</th>
-                  <th>Principio Activo</th>
-                  <th>Dosis (ml/gr/ha)</th>
-                  <th>Cant. Producto Usado</th>
-                  <th>Fecha de Vencimiento</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(d.productos||[]).map(p => `
-                  <tr>
-                    <td>${esc(p.nombre)}</td>
-                    <td>${esc(p.principio)}</td>
-                    <td>${esc(p.dosis)} ${esc(p.unidad ?? '')}</td>
-                    <td>${esc(p.cant_usada)}</td>
-                    <td>${esc(p.vto)}</td>
-                  </tr>`).join('')}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card mt-3">
-          <h4>Registro fotográfico y firmas</h4>
-          <div class="grid grid-cols-3 gap-2 mb-2">
-            ${(d.fotos||[]).map(src => {
-              const s = safeSrc(src);
-              return s ? `<img src="${s}" alt="foto" style="width:100%;height:160px;object-fit:cover;border-radius:8px">` : '';
-            }).join('')}
-          </div>
-          <div class="grid grid-cols-2 gap-6 items-center">
-            <div class="text-center">
-              ${d.firma_prestador && safeSrc(d.firma_prestador) ? `<img src="${safeSrc(d.firma_prestador)}" alt="firma prestador" style="height:80px">` : ''}
-              <div class="opacity-70 mt-1">Firma Prestador de Servicio</div>
-            </div>
-            <div class="text-center">
-              ${d.firma_cliente && safeSrc(d.firma_cliente) ? `<img src="${safeSrc(d.firma_cliente)}" alt="firma cliente" style="height:80px">` : ''}
-              <div class="opacity-70 mt-1">Firma Representante del cliente</div>
-            </div>
-          </div>
-        </div>
+  <div class="card" style="box-shadow:none;border:0">
+    <div class="grid grid-cols-3 gap-2 items-start">
+      <div class="col-span-2">
+        <img src="${safeSrc('../../../assets/logo_sve.png')}" alt="SVE" style="height:48px">
+        <h2 class="mt-2">Registro Fitosanitario</h2>
       </div>
-    `;
+      <div class="text-right">
+        <p><strong>N°:</strong> ${esc(d.numero)}</p>
+        <p><strong>Fecha:</strong> ${esc(d.fecha_visita)}</p>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <h4>Datos (JSON)</h4>
+      <pre class="json-dump">${esc(jsonCompleto)}</pre>
+    </div>
+  </div>
+`;
+
 
                     document.getElementById('btn-descargar').onclick = async function() {
                         const {
