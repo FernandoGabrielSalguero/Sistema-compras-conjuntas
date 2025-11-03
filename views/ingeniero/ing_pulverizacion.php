@@ -312,6 +312,16 @@ unset($_SESSION['cierre_info']);
                 return String(s ?? '').trim().toLowerCase();
             }
 
+            function safeSrc(src) {
+  try {
+    const u = new URL(src, window.location.origin);
+    // Permitir relativas y tu mismo host
+    if (u.origin === window.location.origin) return u.pathname + u.search + u.hash;
+    // Agregar aquí tu CDN/host permitido si aplica
+    return '';
+  } catch { return ''; }
+}
+
             async function openModal(id, estado) {
     const el = document.getElementById('modal');
     const cont = document.getElementById('registro-container');
