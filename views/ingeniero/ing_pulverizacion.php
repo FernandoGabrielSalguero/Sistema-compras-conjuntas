@@ -574,7 +574,9 @@ unset($_SESSION['cierre_info']);
         <h2 class="mt-2">Registro Fitosanitario</h2>
         <div class="rf-pill" style="margin-top:.5rem;">
           <div class="rf-title">Registro Aplicación Drone:</div>
-          <div>—</div>
+          <div>Ruta50Km1036,SanMartín
+BodegaToro–Mdz.Arg
+Teléfonodecontacto:261-2070518</div>
         </div>
       </div>
       <div class="rf-meta rf-pill">
