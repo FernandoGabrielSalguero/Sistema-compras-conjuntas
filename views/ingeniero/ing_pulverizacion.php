@@ -600,21 +600,38 @@ unset($_SESSION['cierre_info']);
                 const estado = normEstado(r.estado);
                 const puedeAbrir = estado === 'completada';
                 return `
-        <tr>
-            <td>${r.id}</td>
-            <td>${r.productor_nombre || r.productor_id_real}</td>
-            <td>${r.cooperativa_nombre || '—'}</td>
-            <td>${r.fecha_visita || '—'}</td>
-            <td>${badgeEstado(r.estado)}</td>
-            <td>${fmtMoney(r.costo_total)}</td>
-            <td>
-                ${puedeAbrir ? `
-                <button class="btn-icon" title="Registro fitosanitario" onclick="openModal(${r.id}, '${(r.estado||'').replace(/'/g, "\\'")}')">
-                    <span class="material-icons">description</span>
-                </button>` : ``}
-            </td>
-        </tr>`;
+    <tr>
+      <td>${r.id}</td>
+      <td>${r.productor_nombre || r.productor_id_real}</td>
+      <td>${r.cooperativa_nombre || '—'}</td>
+      <td>${r.fecha_visita || '—'}</td>
+      <td>${badgeEstado(r.estado)}</td>
+      <td>${fmtMoney(r.costo_total)}</td>
+      <td>
+        ${puedeAbrir ? `
+          <button
+            class="btn-icon btn-open-registro"
+            type="button"
+            title="Registro fitosanitario"
+            data-id="${r.id}"
+            data-estado="${(r.estado||'').replace(/"/g, '&quot;')}">
+            <span class="material-icons">description</span>
+          </button>` : ``}
+      </td>
+    </tr>`;
             }
+
+            // Delegación: asegura que el click dispare openModal con los datos correctos
+            $tbody.addEventListener('click', (ev) => {
+                const btn = ev.target.closest('.btn-open-registro');
+                if (!btn) return;
+                ev.preventDefault();
+                const id = Number(btn.dataset.id || 0);
+                const estado = btn.dataset.estado || '';
+                if (id > 0) {
+                    openModal(id, estado);
+                }
+            });
 
             async function cargarCoops() {
                 const url = `${API}?action=coops_ingeniero`;
