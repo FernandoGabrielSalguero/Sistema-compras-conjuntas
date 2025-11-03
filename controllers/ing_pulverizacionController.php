@@ -12,6 +12,8 @@ header('Content-Type: application/json; charset=UTF-8');
 $mwPath = __DIR__ . '/../middleware/authMiddleware.php';
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/ing_pulverizacionModel.php';
+require_once $mwPath;
+checkAccess('ingeniero');
 
 try {
     $idReal = $_SESSION['id_real'] ?? null;
