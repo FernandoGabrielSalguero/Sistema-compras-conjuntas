@@ -255,10 +255,9 @@ unset($_SESSION['cierre_info']);
                         </div>
 
                         <div class="form-buttons">
-                            <button id="btn-imprimir" class="btn btn-aceptar">Imprimir</button>
-                            <button id="btn-descargar" class="btn btn-info">Descargar</button>
-                            <button class="btn btn-cancelar" onclick="closeModal()">Cerrar</button>
-                        </div>
+    <button id="btn-descargar" class="btn btn-info">Descargar</button>
+    <button class="btn btn-cancelar" onclick="closeModal()">Cerrar</button>
+</div>
 
                     </div>
                 </div>
@@ -343,16 +342,17 @@ unset($_SESSION['cierre_info']);
                     console.log('[SVE][Pulv] HTTP status:', res.status);
 
                     const j = await res.json();
-                    console.log('[SVE][Pulv] Payload registro:', j);
+console.log('[SVE][Pulv] Payload registro:', j);
 
-                    if (!j.ok) {
-                        cont.innerHTML = `<div class="alert alert-error">${j.error||'Error al obtener el registro'}</div>`;
-                        return;
-                    }
+if (!j.ok) {
+    cont.innerHTML = `<div class="alert alert-error">${j.error||'Error al obtener el registro'}</div>`;
+    return;
+}
 
-                    const d = j.data || {};
-                    // Render del registro
-                    cont.innerHTML = `
+const d = j.data || {};
+console.log('[SVE][Pulv] Registro data:', d); // 👈 imprime en consola la info del servicio
+// Render del registro
+cont.innerHTML = `
           <div class="card" style="box-shadow:none;border:0">
             <div class="grid grid-cols-3 gap-2 items-start">
               <div class="col-span-2">
@@ -452,29 +452,6 @@ unset($_SESSION['cierre_info']);
                         const y = 20;
                         pdf.addImage(imgData, 'PNG', x, y, w, h);
                         pdf.save(`registro_${id}.pdf`);
-                    };
-
-                    // Imprimir (solo contenido del modal)
-                    document.getElementById('btn-imprimir').onclick = function() {
-                        try {
-                            const html = document.getElementById('registro-container').innerHTML;
-                            const w = window.open('', '_blank', 'width=900,height=700');
-                            w.document.write(`
-                  <html>
-                    <head>
-                      <title>Registro ${id}</title>
-                      <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
-                      <style>body{padding:16px}</style>
-                    </head>
-                    <body>${html}</body>
-                  </html>`);
-                            w.document.close();
-                            w.focus();
-                            w.print();
-                            w.close();
-                        } catch (e) {
-                            console.error('[SVE][Pulv] Error al imprimir:', e);
-                        }
                     };
 
                 } catch (e) {
