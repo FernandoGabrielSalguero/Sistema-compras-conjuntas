@@ -469,7 +469,7 @@ unset($_SESSION['cierre_info']);
   <div class="card" style="box-shadow:none;border:0">
     <div class="grid grid-cols-3 gap-2 items-start">
       <div class="col-span-2">
-        <img src="${safeSrc('../../../assets/logo_sve.png')}" alt="SVE" style="height:48px">
+        <img src="${safeSrc('../../../assets/png/logo_sve.png')}" alt="SVE" style="height:48px">
         <h2 class="mt-2">Registro Fitosanitario</h2>
       </div>
       <div class="text-right">
