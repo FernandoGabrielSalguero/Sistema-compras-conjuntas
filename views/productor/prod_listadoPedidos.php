@@ -764,18 +764,33 @@ $sesion_payload = [
                     cont.innerHTML = '<p class="gform-helper">Cargando…</p>';
 
                     const resp = await apiGet({
-                        action: 'detail',
-                        id: String(id)
-                    });
+    action: 'detail',
+    id: String(id)
+});
 
-                    const s = resp.solicitud || {};
-                    const r = resp.reporte || {};
-                    const prods = Array.isArray(resp.productos) ? resp.productos : [];
-                    const media = resp.media || {
-                        foto: [],
-                        firma_cliente: [],
-                        firma_piloto: []
-                    };
+const s = resp.solicitud || {};
+const r = resp.reporte || {};
+const prods = Array.isArray(resp.productos) ? resp.productos : [];
+const media = resp.media || {
+    foto: [],
+    firma_cliente: [],
+    firma_piloto: []
+};
+
+// === DEBUG: imprimir en consola lo que se muestra en el modal ===
+const registroFitoDebug = {
+    id_solicitud: s.id ?? id,
+    solicitud: s,
+    reporte: r,
+    productos: prods,
+    media: media
+};
+try {
+    console.log('[RegistroFitosanitario] payload:', JSON.stringify(registroFitoDebug, null, 2));
+} catch (e) {
+    console.log('[RegistroFitosanitario] payload (obj):', registroFitoDebug);
+}
+
 
                     const f = (x) => (x ?? '—');
                     const fmtDT = (x) => x ? new Date(x).toLocaleString('es-AR') : '—';
