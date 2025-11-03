@@ -238,6 +238,41 @@ unset($_SESSION['cierre_info']);
         #registro-container {
             overflow-x: hidden;
         }
+
+        .rf-row {
+            display: grid;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .rf-row.cols-3 {
+            grid-template-columns: 160px 1fr 220px;
+        }
+
+        /* logo | tarjeta | meta */
+        .rf-row.cols-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        /* cliente | cultivo  */
+        .rf-app {
+            text-align: center;
+        }
+
+        /* tarjeta aplicación centrada */
+        @media (max-width: 900px) {
+            .rf-row.cols-3 {
+                grid-template-columns: 120px 1fr 180px;
+            }
+        }
+
+        @media (max-width: 720px) {
+
+            .rf-row.cols-3,
+            .rf-row.cols-2 {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 
 </head>
@@ -568,28 +603,36 @@ unset($_SESSION['cierre_info']);
 
                     cont.innerHTML = `
   <div class="card" style="box-shadow:none;border:0">
-    <div class="rf-header">
+    <!-- Fila 1: logo | tarjeta aplicación | N° + fecha -->
+    <div class="rf-row cols-3">
+      <!-- Logo -->
       <div>
         <img class="rf-logo" src="${safeSrc('../../../assets/png/logo_con_color_original.png')}" alt="SVE">
-        <div class="rf-pill" style="margin-top:.5rem;">
-          <div class="rf-title">Registro Aplicación Drone:</div>
-          <div>Ruta50Km1036,SanMartín
-BodegaToro–Mdz.Arg
-Teléfonodecontacto:261-2070518</div>
-        </div>
       </div>
+
+      <!-- Tarjeta de aplicación (centrada) -->
+      <div class="rf-pill rf-app">
+        <div class="rf-title">Registro Aplicación Drone:</div>
+        <div>Ruta50Km1036,SanMartín<br>BodegaToro–Mdz.Arg<br>Teléfonodecontacto:261-2070518</div>
+      </div>
+
+      <!-- N° y Fecha -->
       <div class="rf-meta rf-pill">
         <div><strong>N°:</strong> ${esc(d.numero)}</div>
         <div><strong>Fecha:</strong> ${esc(d.fecha_visita)}</div>
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-3 rf-section">
+    <!-- Fila 2: Cliente | Cultivo -->
+    <div class="rf-row cols-2 rf-section">
+      <!-- Datos del cliente -->
       <div class="rf-pill">
         <div><strong>Cliente:</strong> ${esc(d.productor_nombre)}</div>
         <div><strong>Representante:</strong> ${esc(d.representante)}</div>
         <div><strong>Nombre finca:</strong> ${esc(d.nombre_finca)}</div>
       </div>
+
+      <!-- Datos del cultivo -->
       <div class="rf-pill">
         <div><strong>Cultivo pulverizado:</strong> ${esc(d.cultivo)}</div>
         <div><strong>Superficie pulverizada (ha):</strong> ${esc(d.superficie || '—')}</div>
