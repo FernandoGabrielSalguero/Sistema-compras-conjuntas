@@ -308,6 +308,11 @@ unset($_SESSION['cierre_info']);
             const $btnFiltrar = document.getElementById('btn-filtrar');
             const $btnLimpiar = document.getElementById('btn-limpiar');
 
+            // Normaliza estados con posibles espacios/mayúsculas
+            function normEstado(s) {
+                return String(s ?? '').trim().toLowerCase();
+            }
+
             async function openModal(id, estado) {
                 const el = document.getElementById('modal');
                 const cont = document.getElementById('registro-container');
@@ -321,8 +326,8 @@ unset($_SESSION['cierre_info']);
                 cont.innerHTML = '<div class="skeleton h-8 w-full mb-2"></div>';
                 el.classList.remove('hidden');
 
-                // Seguridad extra: si no está completada, no continuamos (el botón ya no se muestra, pero lo dejamos por si acaso)
-                if ((estado || '').toLowerCase() !== 'completada') {
+                // No continuar si el estado NO es 'completada' (tolerando espacios)
+                if (normEstado(estado) !== 'completada') {
                     console.warn('[SVE][Pulv] Solicitud no completada, no se carga el registro.');
                     cont.innerHTML = '<div class="alert">Registro disponible solo cuando la solicitud está COMPLETADA.</div>';
                     return;
@@ -433,20 +438,11 @@ unset($_SESSION['cierre_info']);
 
                     // Descargar PDF
                     document.getElementById('btn-descargar').onclick = async function() {
-                        const {
-                            jsPDF
-                        } = window.jspdf;
+                        const { jsPDF } = window.jspdf;
                         const node = document.getElementById('registro-container');
-                        const canvas = await html2canvas(node, {
-                            scale: 2,
-                            useCORS: true
-                        });
+                        const canvas = await html2canvas(node, { scale: 2, useCORS: true });
                         const imgData = canvas.toDataURL('image/png');
-                        const pdf = new jsPDF({
-                            orientation: 'p',
-                            unit: 'pt',
-                            format: 'a4'
-                        });
+                        const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
                         const pageWidth = pdf.internal.pageSize.getWidth();
                         const pageHeight = pdf.internal.pageSize.getHeight();
                         const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
@@ -501,7 +497,7 @@ unset($_SESSION['cierre_info']);
                     visita_realizada: 'badge info',
                     completada: 'badge success',
                     cancelada: 'badge danger'
-                } [estado] || 'badge';
+                } [normEstado(estado)] || 'badge';
                 return `<span class="${cls}">${estado || '—'}</span>`;
             }
 
@@ -517,7 +513,7 @@ unset($_SESSION['cierre_info']);
             }
 
             function row(r) {
-                const estado = (r.estado || '').toLowerCase();
+                const estado = normEstado(r.estado);
                 const puedeAbrir = estado === 'completada';
                 return `
         <tr>
@@ -529,7 +525,7 @@ unset($_SESSION['cierre_info']);
             <td>${fmtMoney(r.costo_total)}</td>
             <td>
                 ${puedeAbrir ? `
-                <button class="btn-icon" title="Registro fitosanitario" onclick="openModal(${r.id}, '${r.estado||''}')">
+                <button class="btn-icon" title="Registro fitosanitario" onclick="openModal(${r.id}, '${(r.estado||'').replace(/'/g, "\\'")}')">
                     <span class="material-icons">description</span>
                 </button>` : ``}
             </td>
