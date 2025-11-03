@@ -750,6 +750,25 @@ unset($_SESSION['cierre_info']);
                 document.getElementById('modal').classList.add('hidden');
             };
 
+            (function() {
+                const modalEl = document.getElementById('modal');
+
+                // Click en el fondo (fuera de .modal-content)
+                modalEl.addEventListener('click', (ev) => {
+                    // Si el usuario clickea exactamente el overlay (no un hijo), cerramos
+                    if (ev.target === modalEl && !modalEl.classList.contains('hidden')) {
+                        closeModal();
+                    }
+                });
+
+                // Tecla Escape
+                document.addEventListener('keydown', (ev) => {
+                    if (ev.key === 'Escape' && !modalEl.classList.contains('hidden')) {
+                        closeModal();
+                    }
+                });
+            })();
+
             function badgeEstado(estado) {
                 const cls = {
                     ingresada: 'badge warning',
