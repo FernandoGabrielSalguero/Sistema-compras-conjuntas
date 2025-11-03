@@ -119,19 +119,40 @@ try {
         $prodNombre = (string)($_SESSION['nombre'] ?? '');
         $prodCorreo = (string)($_SESSION['correo'] ?? '');
 
-        // Cooperativa asociada (primera encontrada)
-        $sqlCoop = "
-        SELECT ui.nombre AS coop_nombre, ui.correo AS coop_correo
-        FROM rel_productor_coop rpc
-        INNER JOIN usuarios u ON u.id_real = rpc.cooperativa_id_real
-        LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
-        WHERE rpc.productor_id_real = ?
-        ORDER BY rpc.id ASC
-        LIMIT 1
-    ";
-        $stCoop = $pdo->prepare($sqlCoop);
-        $stCoop->execute([$prodIdReal]);
-        $coop = $stCoop->fetch(PDO::FETCH_ASSOC) ?: ['coop_nombre' => null, 'coop_correo' => null];
+                // ¿Pago por cooperativa? (id = 6)
+        $formaPagoId = (int)($data['forma_pago_id'] ?? 0);
+        $esPagoCoop  = ($formaPagoId === 6);
+
+        // Cooperativa destino:
+        // - Si es pago por cooperativa (id 6), usar la seleccionada por el productor (usuarios.id_real == coop_descuento_nombre).
+        // - Si no, usar la primera vinculada al productor (como antes).
+        $coop = ['coop_nombre' => null, 'coop_correo' => null];
+
+        if ($esPagoCoop && !empty($data['coop_descuento_nombre'])) {
+            $sqlCoopSel = "
+                SELECT ui.nombre AS coop_nombre, ui.correo AS coop_correo
+                FROM usuarios u
+                LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+                WHERE u.rol='cooperativa' AND u.permiso_ingreso='Habilitado' AND u.id_real = ?
+                LIMIT 1
+            ";
+            $stCoopSel = $pdo->prepare($sqlCoopSel);
+            $stCoopSel->execute([(string)$data['coop_descuento_nombre']]);
+            $coop = $stCoopSel->fetch(PDO::FETCH_ASSOC) ?: ['coop_nombre' => null, 'coop_correo' => null];
+        } else {
+            $sqlCoop = "
+                SELECT ui.nombre AS coop_nombre, ui.correo AS coop_correo
+                FROM rel_productor_coop rpc
+                INNER JOIN usuarios u ON u.id_real = rpc.cooperativa_id_real
+                LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+                WHERE rpc.productor_id_real = ?
+                ORDER BY rpc.id ASC
+                LIMIT 1
+            ";
+            $stCoop = $pdo->prepare($sqlCoop);
+            $stCoop->execute([$prodIdReal]);
+            $coop = $stCoop->fetch(PDO::FETCH_ASSOC) ?: ['coop_nombre' => null, 'coop_correo' => null];
+        }
 
         // Forma de pago (texto)
         $formaPagoTxt = '';
@@ -188,7 +209,7 @@ try {
         $direccion = (array)($data['direccion'] ?? []);
         $ubicacion = (array)($data['ubicacion'] ?? []);
 
-        $mailPayload = [
+                $mailPayload = [
             'solicitud_id'    => (int)$id,
             'productor'       => ['nombre' => $prodNombre, 'correo' => $prodCorreo],
             'cooperativa'     => ['nombre' => (string)($coop['coop_nombre'] ?? ''), 'correo' => (string)($coop['coop_correo'] ?? '')],
@@ -206,6 +227,12 @@ try {
                 'total'    => $costoBaseTotal + $costoProductos,
                 'costo_ha' => $costoBaseHa
             ],
+            // Señal para construir versión especial para cooperativa y drones
+            'pago_por_coop'   => $esPagoCoop,
+            // URL de destino para los botones del correo de cooperativa
+            'cta_url'         => 'https://compraconjunta.sve.com.ar/index.php',
+            // Texto extra requerido por negocio (se usa sólo en el cuerpo para cooperativa/drones)
+            'coop_texto_extra'=> "Estimada cooperativa. Por el presente correo se les informa que un productor vinculado a su cooperativa a manifestado la intención de tomar el servicio de dron y de pagarlo a través del descuento por la cuota de vino. \nSi este productor productor posee los fondos necesarios para llevar a cabo el pago por favor apruébelo seleccionado el botón que dice Aprobar Solicitud el cual se encuentra al final de este correo. \nEn caso de que el productor no este en condiciones de pagarlo por esta vía por favor haga click en el botón que dice Declinar Solicitud el cual se encuentra al final de este correo. \nAnte cualquier duda por favor comuníquese al 2612072518.",
         ];
 
         $mailResp = Maill::enviarSolicitudDron($mailPayload);
