@@ -571,7 +571,6 @@ unset($_SESSION['cierre_info']);
     <div class="rf-header">
       <div>
         <img class="rf-logo" src="${safeSrc('../../../assets/png/logo_con_color_original.png')}" alt="SVE">
-        <h2 class="mt-2">Registro Fitosanitario</h2>
         <div class="rf-pill" style="margin-top:.5rem;">
           <div class="rf-title">Registro Aplicación Drone:</div>
           <div>Ruta50Km1036,SanMartín
