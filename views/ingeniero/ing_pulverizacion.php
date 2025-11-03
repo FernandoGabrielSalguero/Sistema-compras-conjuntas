@@ -129,6 +129,96 @@ unset($_SESSION['cierre_info']);
             font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
             margin: 0;
         }
+
+        /* ===== Registro Fitosanitario – estilos visuales tipo tarjetas ===== */
+        .rf-header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .rf-logo {
+            height: 48px;
+        }
+
+        .rf-meta {
+            text-align: right;
+        }
+
+        .rf-pill {
+            background: #f7f8fb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: .9rem 1rem;
+        }
+
+        .rf-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin: 0 0 .4rem;
+        }
+
+        .rf-table {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .rf-table table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .rf-table thead th {
+            background: #f7f8fb;
+            font-weight: 600;
+            text-align: left;
+            padding: .7rem .8rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .rf-table tbody td {
+            padding: .65rem .8rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .rf-grid-fotos {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .8rem;
+        }
+
+        .rf-foto {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        .rf-firma {
+            display: block;
+            height: 90px;
+            margin: 10px auto;
+        }
+
+        .rf-caption {
+            text-align: center;
+            opacity: .7;
+            margin-top: .25rem;
+        }
+
+        .rf-section {
+            margin-top: 1rem;
+        }
+
+        .modal .form-buttons {
+            display: flex;
+            gap: .5rem;
+            justify-content: flex-end;
+        }
     </style>
 
 </head>
@@ -457,33 +547,99 @@ unset($_SESSION['cierre_info']);
 
                     console.log('[RegistroFitosanitario] normalizado:', d);
 
-                    const jsonCompleto = JSON.stringify({
-                            fuente: "registro_fitosanitario",
-                            raw: payload,
-                            normalizado: d
-                        },
-                        null, 2
-                    );
-
                     cont.innerHTML = `
   <div class="card" style="box-shadow:none;border:0">
-    <div class="grid grid-cols-3 gap-2 items-start">
-      <div class="col-span-2">
-        <img src="${safeSrc('../../../assets/png/logo_con_color_original.png')}" alt="SVE" style="height:48px">
+    <div class="rf-header">
+      <div>
+        <img class="rf-logo" src="${safeSrc('../../../assets/png/logo_con_color_original.png')}" alt="SVE">
         <h2 class="mt-2">Registro Fitosanitario</h2>
+        <div class="rf-pill" style="margin-top:.5rem;">
+          <div class="rf-title">Registro Aplicación Drone:</div>
+          <div>—</div>
+        </div>
       </div>
-      <div class="text-right">
-        <p><strong>N°:</strong> ${esc(d.numero)}</p>
-        <p><strong>Fecha:</strong> ${esc(d.fecha_visita)}</p>
+      <div class="rf-meta rf-pill">
+        <div><strong>N°:</strong> ${esc(d.numero)}</div>
+        <div><strong>Fecha:</strong> ${esc(d.fecha_visita)}</div>
       </div>
     </div>
 
-    <div class="card mt-3">
-      <h4>Datos (JSON)</h4>
-      <pre class="json-dump">${esc(jsonCompleto)}</pre>
+    <div class="grid grid-cols-2 gap-3 rf-section">
+      <div class="rf-pill">
+        <div><strong>Cliente:</strong> ${esc(d.productor_nombre)}</div>
+        <div><strong>Representante:</strong> ${esc(d.representante)}</div>
+        <div><strong>Nombre finca:</strong> ${esc(d.nombre_finca)}</div>
+      </div>
+      <div class="rf-pill">
+        <div><strong>Cultivo pulverizado:</strong> ${esc(d.cultivo)}</div>
+        <div><strong>Superficie pulverizada (ha):</strong> ${esc(d.superficie || '—')}</div>
+        <div><strong>Operador Drone:</strong> ${esc(d.piloto_nombre)}</div>
+      </div>
+    </div>
+
+    <div class="rf-pill rf-section">
+      <div class="rf-title">Condiciones meteorológicas al momento del vuelo</div>
+      <div class="grid grid-cols-3 gap-2">
+        <div><strong>Hora Ingreso:</strong> ${esc(d.hora_ingreso || '—')}</div>
+        <div><strong>Hora Salida:</strong> ${esc(d.hora_egreso || '—')}</div>
+        <div><strong>Temperatura (°C):</strong> ${esc(d.temperatura || '—')}</div>
+        <div><strong>Humedad Relativa (%):</strong> ${esc(d.humedad || '—')}</div>
+        <div><strong>Vel. Viento (m/s):</strong> ${esc(d.vel_viento || '—')}</div>
+        <div><strong>Volumen aplicado (l/ha):</strong> ${esc(d.vol_aplicado || '—')}</div>
+      </div>
+    </div>
+
+    <div class="rf-section">
+      <div class="rf-title" style="margin-bottom:.4rem;">Productos utilizados</div>
+      <div class="rf-table">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nombre Comercial</th>
+              <th>Principio Activo</th>
+              <th>Dosis (ml/gr/ha)</th>
+              <th>Cant. Producto Usado</th>
+              <th>Fecha de Vencimiento</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(d.productos||[]).map(p => `
+              <tr>
+                <td>${esc(p.nombre || '—')}</td>
+                <td>${esc(p.principio || '—')}</td>
+                <td>${esc(p.dosis || '—')} ${esc(p.unidad ?? '')}</td>
+                <td>${esc(p.cant_usada || '—')}</td>
+                <td>${esc(p.vto || '—')}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="rf-section">
+      <div class="rf-title" style="text-align:center;">Registro fotográfico y firmas</div>
+      <div class="rf-grid-fotos" style="margin-bottom:.6rem;">
+        ${(d.fotos||[]).map(src => {
+          const s = safeSrc(src);
+          return s ? `<img class="rf-foto" src="${s}" alt="foto">` : '';
+        }).join('')}
+      </div>
+      <div>
+        ${d.firma_prestador && safeSrc(d.firma_prestador) ? `<img class="rf-firma" src="${safeSrc(d.firma_prestador)}" alt="firma prestador">` : ''}
+        <div class="rf-caption">Firma Prestador de Servicio</div>
+      </div>
     </div>
   </div>
 `;
+
+                    const btns = document.querySelector('.modal .form-buttons');
+                    if (btns) {
+                        btns.innerHTML = `
+    <button id="btn-descargar" class="btn btn-info">Descargar PDF</button>
+    <button class="btn btn-aceptar" onclick="closeModal()">Aceptar</button>
+    <button class="btn btn-cancelar" onclick="closeModal()">Cancelar</button>
+  `;
+                    }
 
 
                     document.getElementById('btn-descargar').onclick = async function() {
