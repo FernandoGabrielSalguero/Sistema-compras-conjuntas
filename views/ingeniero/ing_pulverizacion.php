@@ -497,10 +497,7 @@ unset($_SESSION['cierre_info']);
                 const el = document.getElementById('modal');
                 const cont = document.getElementById('registro-container');
 
-                console.log('[SVE][Pulv][openModal] selección:', {
-                    id,
-                    estado
-                });
+                // console.log('[SVE][Pulv][openModal] selección:', {id, estado});
 
                 cont.innerHTML = '<div class="skeleton h-8 w-full mb-2"></div>';
                 el.classList.remove('hidden');
@@ -513,16 +510,16 @@ unset($_SESSION['cierre_info']);
 
                 try {
                     const url = `${API}?action=registro&id=${id}`;
-                    console.log('[SVE][Pulv] Fetch registro:', url);
+                    // console.log('[SVE][Pulv] Fetch registro:', url);
                     const res = await fetch(url, {
                         credentials: 'same-origin'
                     });
-                    console.log('[SVE][Pulv] HTTP status:', res.status);
+                    // console.log('[SVE][Pulv] HTTP status:', res.status);
 
                     const raw = await res.json();
                     const payload = (raw && typeof raw === 'object' && 'ok' in raw) ? (raw.ok ? raw.data : null) : raw;
 
-                    console.log('[RegistroFitosanitario] payload:', payload);
+                    // console.log('[RegistroFitosanitario] payload:', payload);
 
                     if (!payload) {
                         cont.innerHTML = `<div class="alert alert-error">${(raw && raw.error) ? raw.error : 'Error al obtener el registro'}</div>`;
@@ -599,7 +596,7 @@ unset($_SESSION['cierre_info']);
                         };
                     })();
 
-                    console.log('[RegistroFitosanitario] normalizado:', d);
+                    // console.log('[RegistroFitosanitario] normalizado:', d);
 
                     cont.innerHTML = `
   <div class="card" style="box-shadow:none;border:0">
@@ -613,7 +610,7 @@ unset($_SESSION['cierre_info']);
       <!-- Tarjeta de aplicación (centrada) -->
       <div class="rf-pill rf-app">
         <div class="rf-title">Registro Aplicación Drone:</div>
-        <div>Ruta50Km1036,SanMartín<br>BodegaToro–Mdz.Arg<br>Teléfonodecontacto:261-2070518</div>
+        <div>Ruta50Km1036, SanMartín<br>BodegaToro–Mdz.Arg<br>Teléfo:2612070518</div>
       </div>
 
       <!-- N° y Fecha -->
@@ -831,14 +828,14 @@ unset($_SESSION['cierre_info']);
 
             async function cargarCoops() {
                 const url = `${API}?action=coops_ingeniero`;
-                console.log('[SVE][Pulv] Fetch coops:', url);
+                // console.log('[SVE][Pulv] Fetch coops:', url);
                 try {
                     const res = await fetch(url, {
                         credentials: 'same-origin'
                     });
-                    console.log('[SVE][Pulv] coops status:', res.status);
+                    // console.log('[SVE][Pulv] coops status:', res.status);
                     const j = await res.json();
-                    console.log('[SVE][Pulv] coops payload:', j);
+                    // console.log('[SVE][Pulv] coops payload:', j);
                     if (!j.ok) return;
                     const ops = j.data.map(c => `<option value="${c.id_real}">${c.nombre}</option>`).join('');
                     $coop.insertAdjacentHTML('beforeend', ops);
@@ -857,15 +854,15 @@ unset($_SESSION['cierre_info']);
                     coop: $coop.value
                 });
                 const url = `${API}?${params.toString()}`;
-                console.log('[SVE][Pulv] Fetch listado:', url);
+                // console.log('[SVE][Pulv] Fetch listado:', url);
 
                 try {
                     const res = await fetch(url, {
                         credentials: 'same-origin'
                     });
-                    console.log('[SVE][Pulv] listado status:', res.status);
+                    // console.log('[SVE][Pulv] listado status:', res.status);
                     const j = await res.json();
-                    console.log('[SVE][Pulv] listado payload:', j);
+                    // console.log('[SVE][Pulv] listado payload:', j);
 
                     if (!j.ok) {
                         $tbody.innerHTML = `<tr><td colspan="7">${j.error||'Error'}</td></tr>`;
