@@ -219,6 +219,25 @@ unset($_SESSION['cierre_info']);
             gap: .5rem;
             justify-content: flex-end;
         }
+
+        /* Altura y scroll del modal */
+        #modal .modal-content {
+            height: 80vh;
+            /* ocupar 80% del alto de la pantalla */
+            max-height: 80vh;
+            /* prevenir excedentes por estilos del framework */
+            overflow-y: auto;
+            /* scroll vertical si hace falta */
+            overscroll-behavior: contain;
+            scrollbar-gutter: stable both-edges;
+            /* evita saltos al aparecer el scroll */
+        }
+
+        /* Opcional: impedir scroll horizontal por contenidos anchos */
+        #modal .modal-content,
+        #registro-container {
+            overflow-x: hidden;
+        }
     </style>
 
 </head>
