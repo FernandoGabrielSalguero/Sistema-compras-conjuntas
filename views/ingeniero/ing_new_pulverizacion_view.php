@@ -491,6 +491,14 @@
             }
             init().catch(console.error);
 
+            // Evita autocompletado del navegador específicamente en inputs "Otro"
+            document.addEventListener('focusin', (e) => {
+                if (e.target && e.target.classList && e.target.classList.contains('prod-custom')) {
+                    e.target.setAttribute('autocomplete', 'off');
+                }
+            });
+
+
             // Pago -> cooperativa
             pago.addEventListener('change', () => show(coopWrap, String(pago.value) === '6'));
 
@@ -699,12 +707,22 @@
 
                     wrapper.appendChild(chipsDiv);
 
-                    // campo "Otro" por patología
+                    // campo "Otro" por patología (sin autocompletar)
                     const customDiv = document.createElement('div');
                     customDiv.className = 'chips-custom';
                     customDiv.innerHTML = `
                         <label>Otro (aporta productor)</label>
-                        <input type="text" class="prod-custom" data-patologia-id="${pid}" placeholder="Nombre del producto..." />
+                        <input
+                            type="text"
+                            class="prod-custom"
+                            data-patologia-id="${pid}"
+                            name="prod_custom_${pid}"
+                            placeholder="Nombre del producto..."
+                            autocomplete="off"
+                            aria-autocomplete="none"
+                            inputmode="text"
+                            spellcheck="false"
+                        />
                     `;
                     customDiv.addEventListener('input', (e) => {
                         const inp = e.target;
@@ -716,6 +734,7 @@
                             recalcCostos();
                         }
                     });
+
 
                     wrapper.appendChild(customDiv);
                     frag.appendChild(wrapper);
