@@ -254,19 +254,20 @@ unset($_SESSION['cierre_info']);
                         <!-- 👇 Altura de la tabla: modificar el valor de max-height arriba si necesitás otro alto -->
                         <table class="data-table" id="tablaProductores">
                             <thead>
-    <tr>
-        <th>#</th>
-        <th>Nombre</th>
-        <th>CUIT</th>
-        <th>Teléfono</th>
-        <th>Acciones</th>
-    </tr>
-</thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nombre</th>
+                                    <th>CUIT</th>
+                                    <th>Teléfono</th>
+                                    <th>Zona</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
                             <tbody id="tbodyProductores">
-    <tr id="filaVacia">
-        <td colspan="5">Selecciona una cooperativa para poder ver a sus productores asociados</td>
-    </tr>
-</tbody>
+                                <tr id="filaVacia">
+                                    <td colspan="6">Selecciona una cooperativa para poder ver a sus productores asociados</td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -435,33 +436,33 @@ unset($_SESSION['cierre_info']);
             }
 
             function normalizarFila(p, idxBase = 0) {
-    return `
-<tr data-usuario-id-real="${String(p.usuario_id_real || p.id_real || p.id || '')}">
-    <td>${idxBase + 1}</td>
-    <td>${p.nombre || '-'}</td>
-    <td>${p.cuit || '-'}</td>
-    <td>${p.telefono || '-'}</td>
-    <td>
-        <button class="btn btn-primary" type="button" aria-label="Solicitar Servicios" title="Solicitar Servicios" onclick="openModalId('modalDrone', this)">
-            Solicitar Servicios
-        </button>
-    </td>
-</tr>`;
-}
-
+                return `
+    <tr data-usuario-id-real="${String(p.usuario_id_real || p.id_real || p.id || '')}">
+        <td>${idxBase + 1}</td>
+        <td>${p.nombre || '-'}</td>
+        <td>${p.cuit || '-'}</td>
+        <td>${p.telefono || '-'}</td>
+        <td>${p.zona || '-'}</td>
+        <td>
+            <button class="btn-icon" aria-label="Drone" title="Pulverización con Drone" onclick="openModalId('modalDrone', this)">
+                <span class="material-symbols-outlined" style="color:green;">drone</span>
+            </button>
+        </td>
+    </tr>`;
+            }
 
             function renderRows(arr) {
-    tbody.innerHTML = '';
-    if (!arr || arr.length === 0) {
-        const tr = document.createElement('tr');
-        tr.id = 'filaVacia';
-        tr.innerHTML = `<td colspan="5">No hay resultados</td>`;
-        tbody.appendChild(tr);
-        return;
-    }
-    const html = arr.map((p, i) => normalizarFila(p, i)).join('');
-    tbody.insertAdjacentHTML('beforeend', html);
-}
+                tbody.innerHTML = '';
+                if (!arr || arr.length === 0) {
+                    const tr = document.createElement('tr');
+                    tr.id = 'filaVacia';
+                    tr.innerHTML = `<td colspan="6">No hay resultados</td>`;
+                    tbody.appendChild(tr);
+                    return;
+                }
+                const html = arr.map((p, i) => normalizarFila(p, i)).join('');
+                tbody.insertAdjacentHTML('beforeend', html);
+            }
 
             async function aplicarFiltros() {
                 const nombre = (filtroNombre.value || '').toLowerCase().trim();
@@ -501,10 +502,11 @@ unset($_SESSION['cierre_info']);
 
                 // 🔹 Armo el objeto "visible" ya mostrado en la fila (por coherencia)
                 const datosVisibles = {
-    nombre: fila.querySelector('td:nth-child(2)')?.innerText.trim() || '',
-    cuit: fila.querySelector('td:nth-child(3)')?.innerText.trim() || '',
-    telefono: fila.querySelector('td:nth-child(4)')?.innerText.trim() || ''
-};
+                    nombre: fila.querySelector('td:nth-child(2)')?.innerText.trim() || '',
+                    cuit: fila.querySelector('td:nth-child(3)')?.innerText.trim() || '',
+                    telefono: fila.querySelector('td:nth-child(4)')?.innerText.trim() || '',
+                    zona: fila.querySelector('td:nth-child(5)')?.innerText.trim() || ''
+                };
 
                 // 🔹 Si tengo identificador, pido datos completos (usuarios + usuarios_info)
                 if (usuarioIdReal) {
