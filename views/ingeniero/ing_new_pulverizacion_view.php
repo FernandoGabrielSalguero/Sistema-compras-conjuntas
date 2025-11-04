@@ -19,13 +19,13 @@
             border: 1px solid #e5e7eb;
             border-radius: 10px;
             padding: 16px;
-            max-width: 980px;
+            max-width: 1280px;
             margin: 0 auto 16px
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 12px
         }
 
@@ -283,10 +283,10 @@
                     <select id="rango"></select>
                 </div>
 
-                <!-- Patología (una) -->
+                <!-- Patologías (múltiple) -->
                 <div>
-                    <label for="pat">Patología</label>
-                    <select id="pat"></select>
+                    <label for="pat">Patologías</label>
+                    <select id="pat" multiple></select>
                 </div>
 
                 <!-- Dirección -->
@@ -395,8 +395,8 @@
 
             // ====== Estado productos/costos ======
             const ProductosState = {
-                seleccionados: new Set(), // ids de productos (SVE)
-                catalog: new Map(), // id -> {id,nombre,costo_hectarea,detalle}
+                seleccionados: new Set(), // keys `${id}_${patologia_id}`
+                catalog: new Map(), // key -> {id, patologia_id, nombre, costo_hectarea, detalle}
                 costoBaseHa: 0,
                 moneda: 'ARS'
             };
@@ -433,7 +433,8 @@
                 ]);
                 pago.innerHTML = '<option value="">Seleccionar</option>' + pagos.map(x => `<option value="${x.id}">${x.nombre}</option>`).join('');
                 rango.innerHTML = '<option value="">Seleccionar</option>' + rangos.map(x => `<option value="${x.rango}">${x.label}</option>`).join('');
-                pat.innerHTML = '<option value="">Seleccionar</option>' + pats.map(x => `<option value="${x.id}">${x.nombre}</option>`).join('');
+                pat.innerHTML = pats.map(x => `<option value="${x.id}">${x.nombre}</option>`).join('');
+                window.__PatMap = new Map(pats.map(x => [Number(x.id), String(x.nombre)]));
                 coop.innerHTML = '<option value="">Seleccionar</option>' + coops.map(x => `<option value="${x.id_real}">${x.usuario}</option>`).join('');
                 ProductosState.costoBaseHa = Number(costo.costo || 0);
                 ProductosState.moneda = costo.moneda || 'ARS';
@@ -497,24 +498,25 @@
                     nombre: qNom
                 });
             } catch (e) {
-                /* noop */ }
+                /* noop */
+            }
 
             // 4) API pública para uso directo desde el padre
-window.dronePulvPrefill = __prefillProductor;
+            window.dronePulvPrefill = __prefillProductor;
 
-// 5) Soporte postMessage desde el parent (cuando está embebido en iframe)
-window.addEventListener('message', (ev) => {
-    try {
-        const data = ev && ev.data ? ev.data : null;
-        if (!data) return;
-        // Acepta { type:'sve:modal_prefill', payload:{ id_real, nombre } } o el objeto directo
-        if (data.type === 'sve:modal_prefill' && data.payload) {
-            __prefillProductor(data.payload);
-        } else if (data.id_real || data.productor_id_real || data.nombre || data.usuario) {
-            __prefillProductor(data);
-        }
-    } catch(e) {}
-});
+            // 5) Soporte postMessage desde el parent (cuando está embebido en iframe)
+            window.addEventListener('message', (ev) => {
+                try {
+                    const data = ev && ev.data ? ev.data : null;
+                    if (!data) return;
+                    // Acepta { type:'sve:modal_prefill', payload:{ id_real, nombre } } o el objeto directo
+                    if (data.type === 'sve:modal_prefill' && data.payload) {
+                        __prefillProductor(data.payload);
+                    } else if (data.id_real || data.productor_id_real || data.nombre || data.usuario) {
+                        __prefillProductor(data);
+                    }
+                } catch (e) {}
+            });
 
 
             let items = [];
@@ -553,26 +555,41 @@ window.addEventListener('message', (ev) => {
                 }
             });
 
-            // Patología -> cargar productos
+            // Patologías (múltiple) -> cargar y fusionar productos
             pat.addEventListener('change', async () => {
                 ProductosState.seleccionados.clear();
                 ProductosState.catalog.clear();
                 chips.innerHTML = '';
-                const pid = Number(pat.value || 0);
-                if (!pid) {
+
+                const patIds = Array.from(pat.selectedOptions).map(o => Number(o.value || 0)).filter(x => x > 0);
+                if (patIds.length === 0) {
                     cardProd.hidden = true;
                     recalcCostos();
                     return;
                 }
+
                 try {
-                    const data = await getJSON(`${CTRL}?action=productos_por_patologia&patologia_id=${pid}`);
-                    (data || []).forEach(p => {
-                        const id = Number(p.id);
-                        ProductosState.catalog.set(id, {
-                            id,
-                            nombre: String(p.nombre || ''),
-                            detalle: String(p.detalle || ''),
-                            costo_hectarea: Number(p.costo_hectarea || 0)
+                    // Cargar productos de cada patología seleccionada y fusionar
+                    const all = await Promise.all(
+                        patIds.map(pid => getJSON(`${CTRL}?action=productos_por_patologia&patologia_id=${pid}`).then(arr => ({
+                            pid,
+                            arr
+                        })))
+                    );
+                    all.forEach(({
+                        pid,
+                        arr
+                    }) => {
+                        (arr || []).forEach(p => {
+                            const id = Number(p.id);
+                            const key = `${id}_${pid}`;
+                            ProductosState.catalog.set(key, {
+                                id,
+                                patologia_id: pid,
+                                nombre: String(p.nombre || ''),
+                                detalle: String(p.detalle || ''),
+                                costo_hectarea: Number(p.costo_hectarea || 0)
+                            });
                         });
                     });
                     renderChips();
@@ -584,19 +601,21 @@ window.addEventListener('message', (ev) => {
                 }
             });
 
+
             function renderChips() {
                 const frag = document.createDocumentFragment();
-                Array.from(ProductosState.catalog.values())
-                    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-                    .forEach(p => {
+                const patName = (id) => (window.__PatMap && window.__PatMap.get(Number(id))) || `Patología ${id}`;
+                Array.from(ProductosState.catalog.entries())
+                    .sort((a, b) => a[1].nombre.localeCompare(b[1].nombre, 'es'))
+                    .forEach(([key, p]) => {
                         const label = document.createElement('label');
                         label.className = 'chip';
                         label.innerHTML = `
-          <input type="checkbox" value="${p.id}">
-          <span class="chip-box">
-            <span class="chip-name">${p.nombre}</span>
-            <span class="chip-cost">${fmtMon(p.costo_hectarea, currFrom(ProductosState.moneda))}/ha</span>
-          </span>`;
+      <input type="checkbox" value="${key}">
+      <span class="chip-box">
+        <span class="chip-name">${p.nombre}</span>
+        <span class="chip-cost">${patName(p.patologia_id)} · ${fmtMon(p.costo_hectarea, currFrom(ProductosState.moneda))}/ha</span>
+      </span>`;
                         frag.appendChild(label);
                     });
                 chips.innerHTML = '';
@@ -604,18 +623,20 @@ window.addEventListener('message', (ev) => {
                 chips.onchange = (e) => {
                     const cb = e.target;
                     if (cb && cb.type === 'checkbox' && cb.value) {
-                        const id = Number(cb.value);
-                        if (cb.checked) ProductosState.seleccionados.add(id);
-                        else ProductosState.seleccionados.delete(id);
+                        const key = String(cb.value);
+                        if (cb.checked) ProductosState.seleccionados.add(key);
+                        else ProductosState.seleccionados.delete(key);
                         recalcCostos();
                     }
                 };
             }
 
+
             function recalcCostos() {
                 const ha = Math.max(0, Number($('#ha').value || 0));
                 const baseHa = Number(ProductosState.costoBaseHa || 0);
                 const moneda = currFrom(ProductosState.moneda);
+                const patName = (id) => (window.__PatMap && window.__PatMap.get(Number(id))) || `Patología ${id}`;
 
                 const rows = [];
                 const baseTotal = baseHa * ha;
@@ -624,15 +645,14 @@ window.addEventListener('message', (ev) => {
                 rows.push(`<tr><th>Total base (servicio)</th><td></td><td class="right">${fmtMon(baseTotal, moneda)}</td></tr>`);
 
                 let prodTotal = 0;
-                Array.from(ProductosState.seleccionados).forEach(id => {
-                    const p = ProductosState.catalog.get(id);
+                Array.from(ProductosState.seleccionados).forEach(key => {
+                    const p = ProductosState.catalog.get(key);
                     if (!p) return;
                     const tot = (p.costo_hectarea || 0) * ha;
                     prodTotal += tot;
-                    rows.push(`<tr><th>Producto</th><td>${p.nombre} (SVE)</td><td class="right">${fmtMon(tot, moneda)}</td></tr>`);
+                    rows.push(`<tr><th>Producto</th><td>${p.nombre} (SVE · ${patName(p.patologia_id)})</td><td class="right">${fmtMon(tot, moneda)}</td></tr>`);
                 });
 
-                // Custom "Otro" del productor: costo 0
                 const custom = ($('#prod_custom').value || '').trim();
                 if (custom) {
                     rows.push(`<tr><th>Producto</th><td>${custom} (Productor)</td><td class="right">${fmtMon(0, moneda)}</td></tr>`);
@@ -642,6 +662,7 @@ window.addEventListener('message', (ev) => {
                 costosBody.innerHTML = rows.join('');
                 precioFinal.textContent = fmtMon(total, moneda);
             }
+
 
             // eventos que impactan costos
             $('#ha').addEventListener('input', recalcCostos);
@@ -669,6 +690,7 @@ window.addEventListener('message', (ev) => {
                     nro = $('#nro');
 
                 // payload base
+                const patIds = Array.from($('#pat').selectedOptions).map(o => Number(o.value || 0)).filter(x => x > 0);
                 const payload = {
                     productor_id_real: $('#prod_idreal').value || null,
                     productor_nombre_snapshot: $('#prod_nombre_snap').value || null,
@@ -682,7 +704,7 @@ window.addEventListener('message', (ev) => {
                     superficie_ha: Number(ha.value || 0),
                     forma_pago_id: Number($('#pago').value || 0),
                     coop_descuento_id_real: $('#coop').value || null,
-                    patologia_id: Number($('#pat').value || 0),
+                    patologia_ids: patIds,
                     rango: $('#rango').value || '',
                     dir_provincia: prov.value || '',
                     dir_localidad: loc.value || '',
@@ -692,19 +714,25 @@ window.addEventListener('message', (ev) => {
                     items: []
                 };
 
-                // items de productos
-                Array.from(ProductosState.seleccionados).forEach(id => {
+
+                // items de productos (con patología por item)
+                Array.from(ProductosState.seleccionados).forEach(key => {
+                    const p = ProductosState.catalog.get(key);
+                    if (!p) return;
                     payload.items.push({
-                        producto_id: Number(id),
-                        fuente: 'sve'
+                        producto_id: Number(p.id),
+                        fuente: 'sve',
+                        patologia_id: Number(p.patologia_id)
                     });
                 });
                 const custom = ($('#prod_custom').value || '').trim();
                 if (custom) {
+                    const patForCustom = (payload.patologia_ids && payload.patologia_ids[0]) ? Number(payload.patologia_ids[0]) : null;
                     payload.items.push({
                         producto_id: 0,
                         fuente: 'productor',
-                        nombre_producto_custom: custom
+                        nombre_producto_custom: custom,
+                        patologia_id: patForCustom
                     });
                 }
 
@@ -731,7 +759,7 @@ window.addEventListener('message', (ev) => {
                     req($('#coop'));
                     return;
                 }
-                if (!payload.patologia_id) {
+                if (!payload.patologia_ids || payload.patologia_ids.length === 0) {
                     req($('#pat'));
                     return;
                 }

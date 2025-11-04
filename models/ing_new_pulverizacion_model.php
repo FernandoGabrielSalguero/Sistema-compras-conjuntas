@@ -218,9 +218,11 @@ final class IngNewPulverizacionModel
             // 1.b) snapshot de nombre (si columna existe)
             $this->actualizarProductorNombreSnapshot($sid, $d['productor_nombre_snapshot'] ?? null);
 
-            // 2) motivo
+            // 2) motivos (varias patologías)
             $stm = $this->pdo->prepare("INSERT INTO drones_solicitud_motivo (solicitud_id,patologia_id,es_otros) VALUES (?,?,0)");
-            $stm->execute([$sid, (int)$d['patologia_id']]);
+            foreach ((array)($d['patologia_ids'] ?? []) as $pid) {
+                $stm->execute([$sid, (int)$pid]);
+            }
 
             // 3) rango
             $str = $this->pdo->prepare("INSERT INTO drones_solicitud_rango (solicitud_id,rango) VALUES (?,?)");
@@ -237,6 +239,7 @@ final class IngNewPulverizacionModel
                     $pid    = isset($it['producto_id']) ? (int)$it['producto_id'] : 0;
                     $fuente = (string)($it['fuente'] ?? '');
                     $custom = isset($it['nombre_producto_custom']) ? trim((string)$it['nombre_producto_custom']) : '';
+                    $patIt  = isset($it['patologia_id']) ? (int)$it['patologia_id'] : 0;
 
                     if ($fuente === 'productor') {
                         $nombre = $custom !== '' ? mb_substr($custom, 0, 150) : $this->productoNombre($pid);
@@ -251,7 +254,7 @@ final class IngNewPulverizacionModel
                         $productosTotal += $total;
                     }
 
-                    $sti->execute([$sid, (int)$d['patologia_id'], $fuente, $productoIdDb, $costoHa, $total, $nombre]);
+                    $sti->execute([$sid, $patIt, $fuente, $productoIdDb, $costoHa, $total, $nombre]);
                 }
             }
 

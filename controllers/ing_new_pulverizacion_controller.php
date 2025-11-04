@@ -77,21 +77,27 @@ try {
             exit;
         }
 
-        // Normalización
+        // Normalización (incluye patologia_id por item)
         $itemsIn = array_values(array_filter(array_map(function ($it) {
             if (!is_array($it)) return null;
             $pid    = isset($it['producto_id']) ? (int)$it['producto_id'] : 0;
             $fuente = in_array($it['fuente'] ?? '', ['sve', 'productor'], true) ? $it['fuente'] : '';
+            $patId  = isset($it['patologia_id']) ? (int)$it['patologia_id'] : 0;
             $nombreCustom = isset($it['nombre_producto_custom']) ? trim((string)$it['nombre_producto_custom']) : '';
-            if ($fuente === '') return null;
+            if ($fuente === '' || $patId <= 0) return null;
             if ($fuente === 'sve') {
                 if ($pid <= 0) return null;
-                return ['producto_id' => $pid, 'fuente' => 'sve'];
+                return ['producto_id' => $pid, 'fuente' => 'sve', 'patologia_id' => $patId];
             }
             // productor
             if ($fuente === 'productor') {
                 if ($nombreCustom === '') return null;
-                return ['producto_id' => ($pid > 0 ? $pid : 0), 'fuente' => 'productor', 'nombre_producto_custom' => mb_substr($nombreCustom, 0, 150)];
+                return [
+                    'producto_id' => ($pid > 0 ? $pid : 0),
+                    'fuente' => 'productor',
+                    'nombre_producto_custom' => mb_substr($nombreCustom, 0, 150),
+                    'patologia_id' => $patId
+                ];
             }
             return null;
         }, $data['items'] ?? [])));
@@ -112,7 +118,7 @@ try {
             'forma_pago_id'       => isset($data['forma_pago_id']) ? (int)$data['forma_pago_id'] : null,
             'coop_descuento_nombre' => !empty($data['coop_descuento_id_real']) ? substr((string)$data['coop_descuento_id_real'], 0, 100) : null,
 
-            'patologia_id'        => isset($data['patologia_id']) ? (int)$data['patologia_id'] : null,
+            'patologia_ids'       => array_values(array_unique(array_filter(array_map('intval', (array)($data['patologia_ids'] ?? [])), fn($v) => $v > 0))),
             'rango'               => substr((string)($data['rango'] ?? ''), 0, 50),
 
             'dir_provincia'       => substr(trim((string)($data['dir_provincia'] ?? '')), 0, 100),
@@ -125,7 +131,7 @@ try {
         ];
 
         // Requeridos
-        $req = ['productor_id_real', 'representante', 'linea_tension', 'zona_restringida', 'corriente_electrica', 'agua_potable', 'libre_obstaculos', 'area_despegue', 'superficie_ha', 'forma_pago_id', 'patologia_id', 'rango', 'dir_provincia', 'dir_localidad', 'dir_calle', 'dir_numero'];
+        $req = ['productor_id_real', 'representante', 'linea_tension', 'zona_restringida', 'corriente_electrica', 'agua_potable', 'libre_obstaculos', 'area_despegue', 'superficie_ha', 'forma_pago_id', 'patologia_ids', 'rango', 'dir_provincia', 'dir_localidad', 'dir_calle', 'dir_numero'];
         foreach ($req as $k) {
             if (empty($payload[$k]) && $payload[$k] !== 0 && $payload[$k] !== '0') {
                 $resp([], false, "Campo requerido faltante: $k");
@@ -140,12 +146,20 @@ try {
             $resp([], false, "Debe seleccionar cooperativa (forma de pago 6).");
             exit;
         }
+        if (empty($payload['patologia_ids']) || !is_array($payload['patologia_ids'])) {
+            $resp([], false, "Debe seleccionar al menos una patología.");
+            exit;
+        }
 
         // Validación items (si vienen)
         if (!empty($payload['items'])) {
             foreach ($payload['items'] as $it) {
                 if (empty($it['fuente'])) {
                     $resp([], false, "Indicá quién aporta cada producto.");
+                    exit;
+                }
+                if ((int)($it['patologia_id'] ?? 0) <= 0) {
+                    $resp([], false, "Cada item debe indicar su patología.");
                     exit;
                 }
                 if ($it['fuente'] === 'sve' && (int)($it['producto_id'] ?? 0) <= 0) {
@@ -181,7 +195,7 @@ try {
             "Tu solicitud de pulverización con drones fue registrada.",
             "ID: #$id",
             "Hectáreas: " . $payload['superficie_ha'],
-            "Patología ID: " . $payload['patologia_id'],
+            "Patologías: " . implode(',', $payload['patologia_ids']),
             "Rango: " . $payload['rango'],
             "Dirección: " . $payload['dir_calle'] . ' ' . $payload['dir_numero'] . ', ' . $payload['dir_localidad'] . ', ' . $payload['dir_provincia'],
             "",
