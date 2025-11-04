@@ -284,10 +284,10 @@
                 </div>
 
                 <!-- Patologías (múltiple como chips) -->
-<div>
-    <label>Patologías</label>
-    <div id="pat-chips" class="chips-grid" role="group" aria-label="Seleccionar patologías"></div>
-</div>
+                <div>
+                    <label>Patologías</label>
+                    <div id="pat-chips" class="chips-grid" role="group" aria-label="Seleccionar patologías"></div>
+                </div>
 
                 <!-- Dirección -->
                 <div>
@@ -402,9 +402,9 @@
             };
 
             const pago = $('#pago'),
-    coop = $('#coop'),
-    rango = $('#rango'),
-    patChips = $('#pat-chips');
+                coop = $('#coop'),
+                rango = $('#rango'),
+                patChips = $('#pat-chips');
 
             const coopWrap = $('#coop_wrap');
             const cardProd = $('#card-productos'),
@@ -425,30 +425,30 @@
             const currFrom = (m) => (m === 'USD' ? 'USD' : 'ARS');
 
             // === Chips de Patologías (render + lectura) ===
-function renderPatChips(pats) {
-    const frag = document.createDocumentFragment();
-    (pats || []).forEach(p => {
-        const id = Number(p.id);
-        const label = document.createElement('label');
-        label.className = 'chip';
-        label.innerHTML = `
+            function renderPatChips(pats) {
+                const frag = document.createDocumentFragment();
+                (pats || []).forEach(p => {
+                    const id = Number(p.id);
+                    const label = document.createElement('label');
+                    label.className = 'chip';
+                    label.innerHTML = `
   <input type="checkbox" value="${id}">
   <span class="chip-box">
     <span class="chip-name">${String(p.nombre || '')}</span>
     <span class="chip-cost">Patología #${id}</span>
   </span>`;
-        frag.appendChild(label);
-    });
-    const cont = document.getElementById('pat-chips');
-    cont.innerHTML = '';
-    cont.appendChild(frag);
-}
+                    frag.appendChild(label);
+                });
+                const cont = document.getElementById('pat-chips');
+                cont.innerHTML = '';
+                cont.appendChild(frag);
+            }
 
-function getSelectedPatIds() {
-    return Array.from(document.querySelectorAll('#pat-chips input[type="checkbox"]:checked'))
-        .map(cb => Number(cb.value))
-        .filter(v => v > 0);
-}
+            function getSelectedPatIds() {
+                return Array.from(document.querySelectorAll('#pat-chips input[type="checkbox"]:checked'))
+                    .map(cb => Number(cb.value))
+                    .filter(v => v > 0);
+            }
 
 
             async function init() {
@@ -462,7 +462,7 @@ function getSelectedPatIds() {
                 pago.innerHTML = '<option value="">Seleccionar</option>' + pagos.map(x => `<option value="${x.id}">${x.nombre}</option>`).join('');
                 rango.innerHTML = '<option value="">Seleccionar</option>' + rangos.map(x => `<option value="${x.rango}">${x.label}</option>`).join('');
                 window.__PatMap = new Map(pats.map(x => [Number(x.id), String(x.nombre)]));
-renderPatChips(pats);
+                renderPatChips(pats);
                 coop.innerHTML = '<option value="">Seleccionar</option>' + coops.map(x => `<option value="${x.id_real}">${x.usuario}</option>`).join('');
                 ProductosState.costoBaseHa = Number(costo.costo || 0);
                 ProductosState.moneda = costo.moneda || 'ARS';
@@ -584,43 +584,49 @@ renderPatChips(pats);
             });
 
             // Patologías (chips) -> cargar y fusionar productos
-patChips.addEventListener('change', async () => {
-    ProductosState.seleccionados.clear();
-    ProductosState.catalog.clear();
-    chips.innerHTML = '';
+            patChips.addEventListener('change', async () => {
+                ProductosState.seleccionados.clear();
+                ProductosState.catalog.clear();
+                chips.innerHTML = '';
 
-    const patIds = getSelectedPatIds();
-    if (patIds.length === 0) {
-        cardProd.hidden = true;
-        recalcCostos();
-        return;
-    }
+                const patIds = getSelectedPatIds();
+                if (patIds.length === 0) {
+                    cardProd.hidden = true;
+                    recalcCostos();
+                    return;
+                }
 
-    try {
-        const all = await Promise.all(
-            patIds.map(pid => getJSON(`${CTRL}?action=productos_por_patologia&patologia_id=${pid}`).then(arr => ({ pid, arr })))
-        );
-        all.forEach(({ pid, arr }) => {
-            (arr || []).forEach(p => {
-                const id = Number(p.id);
-                const key = `${id}_${pid}`;
-                ProductosState.catalog.set(key, {
-                    id,
-                    patologia_id: pid,
-                    nombre: String(p.nombre || ''),
-                    detalle: String(p.detalle || ''),
-                    costo_hectarea: Number(p.costo_hectarea || 0)
-                });
+                try {
+                    const all = await Promise.all(
+                        patIds.map(pid => getJSON(`${CTRL}?action=productos_por_patologia&patologia_id=${pid}`).then(arr => ({
+                            pid,
+                            arr
+                        })))
+                    );
+                    all.forEach(({
+                        pid,
+                        arr
+                    }) => {
+                        (arr || []).forEach(p => {
+                            const id = Number(p.id);
+                            const key = `${id}_${pid}`;
+                            ProductosState.catalog.set(key, {
+                                id,
+                                patologia_id: pid,
+                                nombre: String(p.nombre || ''),
+                                detalle: String(p.detalle || ''),
+                                costo_hectarea: Number(p.costo_hectarea || 0)
+                            });
+                        });
+                    });
+                    renderChips();
+                    cardProd.hidden = ProductosState.catalog.size === 0;
+                    recalcCostos();
+                } catch (e) {
+                    cardProd.hidden = true;
+                    recalcCostos();
+                }
             });
-        });
-        renderChips();
-        cardProd.hidden = ProductosState.catalog.size === 0;
-        recalcCostos();
-    } catch (e) {
-        cardProd.hidden = true;
-        recalcCostos();
-    }
-});
 
             function renderChips() {
                 const frag = document.createDocumentFragment();
@@ -710,8 +716,8 @@ patChips.addEventListener('change', async () => {
                     nro = $('#nro');
 
                 // payload base
-const patIds = getSelectedPatIds();
-const payload = {
+                const patIds = getSelectedPatIds();
+                const payload = {
                     productor_id_real: $('#prod_idreal').value || null,
                     productor_nombre_snapshot: $('#prod_nombre_snap').value || null,
                     representante: $('#representante').value,
@@ -780,9 +786,9 @@ const payload = {
                     return;
                 }
                 if (!payload.patologia_ids || payload.patologia_ids.length === 0) {
-    req($('#pat-chips'));
-    return;
-}
+                    req($('#pat-chips'));
+                    return;
+                }
                 if (!payload.rango) {
                     req($('#rango'));
                     return;

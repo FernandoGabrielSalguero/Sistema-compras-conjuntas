@@ -38,12 +38,21 @@ unset($_SESSION['cierre_info']);
 </head>
 
 <style>
-    /* === Modal Drone: dimensiones cómodas para la vista embebida === */
+/* === Modal Drone: dimensiones cómodas para la vista embebida === */
+/* 💡 Ajuste de ancho del modal: modificar el valor de 'width' solo para escritorio */
+#modalDrone .modal-content {
+    width: min(1400px, 95vw); /* <-- ANCHO para escritorio (aumentado) */
+    max-height: 95vh;
+    overflow: hidden;
+}
+
+/* 💡 En móviles, el modal mantiene el ancho actual (95vw) */
+@media (max-width: 900px) {
     #modalDrone .modal-content {
-        width: min(1200px, 95vw);
-        max-height: 95vh;
-        overflow: hidden;
+        width: 95vw; /* ancho original para pantallas pequeñas */
     }
+}
+
 
     #modalDrone .modal-body {
         margin-top: 8px;
