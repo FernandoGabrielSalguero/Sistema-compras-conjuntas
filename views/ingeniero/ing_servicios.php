@@ -442,7 +442,7 @@ unset($_SESSION['cierre_info']);
 <td>${p.cuit || '-'}</td>
 <td>${p.telefono || '-'}</td>
 <td>
-    <button class="btn btn-success" type="button" title="Solicitar Servicio" onclick="openModalId('modalDrone', this)">
+    <button class="btn btn-info" type="button" title="Solicitar Servicio" onclick="openModalId('modalDrone', this)">
         Solicitar Servicio
     </button>
 </td>
