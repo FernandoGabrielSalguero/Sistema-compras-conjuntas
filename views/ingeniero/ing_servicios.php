@@ -259,7 +259,6 @@ unset($_SESSION['cierre_info']);
                                     <th>Nombre</th>
                                     <th>CUIT</th>
                                     <th>Teléfono</th>
-                                    <th>Zona</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -440,14 +439,13 @@ unset($_SESSION['cierre_info']);
     <tr data-usuario-id-real="${String(p.usuario_id_real || p.id_real || p.id || '')}">
         <td>${idxBase + 1}</td>
         <td>${p.nombre || '-'}</td>
-        <td>${p.cuit || '-'}</td>
-        <td>${p.telefono || '-'}</td>
-        <td>${p.zona || '-'}</td>
-        <td>
-            <button class="btn-icon" aria-label="Drone" title="Pulverización con Drone" onclick="openModalId('modalDrone', this)">
-                <span class="material-symbols-outlined" style="color:green;">drone</span>
-            </button>
-        </td>
+<td>${p.cuit || '-'}</td>
+<td>${p.telefono || '-'}</td>
+<td>
+    <button class="btn btn-success" type="button" title="Solicitar Servicio" onclick="openModalId('modalDrone', this)">
+        Solicitar Servicio
+    </button>
+</td>
     </tr>`;
             }
 
@@ -504,8 +502,7 @@ unset($_SESSION['cierre_info']);
                 const datosVisibles = {
                     nombre: fila.querySelector('td:nth-child(2)')?.innerText.trim() || '',
                     cuit: fila.querySelector('td:nth-child(3)')?.innerText.trim() || '',
-                    telefono: fila.querySelector('td:nth-child(4)')?.innerText.trim() || '',
-                    zona: fila.querySelector('td:nth-child(5)')?.innerText.trim() || ''
+                    telefono: fila.querySelector('td:nth-child(4)')?.innerText.trim() || ''
                 };
 
                 // 🔹 Si tengo identificador, pido datos completos (usuarios + usuarios_info)
