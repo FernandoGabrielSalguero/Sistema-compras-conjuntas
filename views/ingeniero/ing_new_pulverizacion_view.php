@@ -291,7 +291,7 @@
 
                 <!-- Dirección -->
                 <div>
-                    <label for="prov">Provincia</label>
+                    <label style="display: none;" for="prov">Provincia</label>
                     <input id="prov" value="Mendoza" />
                 </div>
                 <div>
