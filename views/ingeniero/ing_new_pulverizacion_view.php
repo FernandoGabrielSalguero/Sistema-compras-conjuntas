@@ -120,12 +120,13 @@
             margin-bottom: 12px
         }
 
-        /* Productos (chips) */
         .chips-grid {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 6px
+            margin-top: 6px;
+            flex-direction: row;
+            /* desktop: horizontal */
         }
 
         .chip input[type="checkbox"] {
@@ -214,6 +215,28 @@
             padding: .4rem 1.5rem;
             text-decoration: none;
         }
+
+        /* Tarjetas por patología dentro de "Productos sugeridos" */
+        .pat-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 10px;
+            background: #fff;
+        }
+
+        .pat-card h4 {
+            margin: 0 0 8px 0;
+            font-size: 1rem;
+        }
+
+        /* Chips: vertical en mobile */
+        @media (max-width:600px) {
+            .chips-grid {
+                flex-direction: column;
+                /* mobile: vertical */
+            }
+        }
     </style>
 </head>
 
@@ -283,12 +306,6 @@
                     <select id="rango"></select>
                 </div>
 
-                <!-- Patologías (múltiple como chips) -->
-                <div>
-                    <label>Patologías</label>
-                    <div id="pat-chips" class="chips-grid" role="group" aria-label="Seleccionar patologías"></div>
-                </div>
-
                 <!-- Dirección -->
                 <div style="display: none;">
                     <label for="prov">Provincia</label>
@@ -307,20 +324,22 @@
                     <input id="nro" type="number" min="1" step="1" />
                 </div>
 
+                <!-- Tarjeta de Patologías (nueva, debajo de dirección y arriba de observaciones) -->
+                <div class="full card" id="card-patologias">
+                    <h3>Patologías</h3>
+                    <div id="pat-chips" class="chips-grid" role="group" aria-label="Seleccionar patologías"></div>
+                </div>
+
                 <!-- Observaciones -->
                 <div class="full">
                     <label for="obs">Observaciones</label>
                     <textarea id="obs" rows="3" maxlength="233"></textarea>
                 </div>
 
-                <!-- Productos por patología (chips) -->
+                <!-- Productos por patología (tarjetas por cada patología seleccionada) -->
                 <div class="full card" id="card-productos" hidden>
                     <h3>Productos sugeridos por patología</h3>
-                    <div id="chips" class="chips-grid"></div>
-                    <div class="chips-custom">
-                        <label>Otro (aporta productor)</label>
-                        <input id="prod_custom" placeholder="Nombre del producto..." />
-                    </div>
+                    <div id="cards-productos"></div>
                 </div>
 
                 <!-- Costos -->
@@ -397,6 +416,8 @@
             const ProductosState = {
                 seleccionados: new Set(), // keys `${id}_${patologia_id}`
                 catalog: new Map(), // key -> {id, patologia_id, nombre, costo_hectarea, detalle}
+                catalogByPat: new Map(), // pat_id -> Array<{id, nombre, costo_hectarea, detalle}>
+                customByPat: new Map(), // pat_id -> string (nombre ingresado "Otro")
                 costoBaseHa: 0,
                 moneda: 'ARS'
             };
@@ -408,7 +429,7 @@
 
             const coopWrap = $('#coop_wrap');
             const cardProd = $('#card-productos'),
-                chips = $('#chips');
+                cardsProductos = $('#cards-productos');
             const costosBody = $('#costos-body'),
                 precioFinal = $('#precio-final');
 
@@ -435,7 +456,6 @@
   <input type="checkbox" value="${id}">
   <span class="chip-box">
     <span class="chip-name">${String(p.nombre || '')}</span>
-    <span class="chip-cost">Patología #${id}</span>
   </span>`;
                     frag.appendChild(label);
                 });
@@ -443,6 +463,7 @@
                 cont.innerHTML = '';
                 cont.appendChild(frag);
             }
+
 
             function getSelectedPatIds() {
                 return Array.from(document.querySelectorAll('#pat-chips input[type="checkbox"]:checked'))
@@ -583,11 +604,13 @@
                 }
             });
 
-            // Patologías (chips) -> cargar y fusionar productos
+            // Patologías (chips) -> cargar productos y renderizar tarjetas por patología
             patChips.addEventListener('change', async () => {
                 ProductosState.seleccionados.clear();
                 ProductosState.catalog.clear();
-                chips.innerHTML = '';
+                ProductosState.catalogByPat.clear();
+                ProductosState.customByPat.clear();
+                cardsProductos.innerHTML = '';
 
                 const patIds = getSelectedPatIds();
                 if (patIds.length === 0) {
@@ -598,29 +621,38 @@
 
                 try {
                     const all = await Promise.all(
-                        patIds.map(pid => getJSON(`${CTRL}?action=productos_por_patologia&patologia_id=${pid}`).then(arr => ({
-                            pid,
-                            arr
-                        })))
+                        patIds.map(pid =>
+                            getJSON(`${CTRL}?action=productos_por_patologia&patologia_id=${pid}`)
+                            .then(arr => ({
+                                pid,
+                                arr
+                            }))
+                        )
                     );
+
                     all.forEach(({
                         pid,
                         arr
                     }) => {
+                        const list = [];
                         (arr || []).forEach(p => {
                             const id = Number(p.id);
                             const key = `${id}_${pid}`;
-                            ProductosState.catalog.set(key, {
+                            const item = {
                                 id,
                                 patologia_id: pid,
                                 nombre: String(p.nombre || ''),
                                 detalle: String(p.detalle || ''),
                                 costo_hectarea: Number(p.costo_hectarea || 0)
-                            });
+                            };
+                            ProductosState.catalog.set(key, item);
+                            list.push(item);
                         });
+                        ProductosState.catalogByPat.set(pid, list);
                     });
-                    renderChips();
-                    cardProd.hidden = ProductosState.catalog.size === 0;
+
+                    renderProductoCards(patIds);
+                    cardProd.hidden = (ProductosState.catalogByPat.size === 0);
                     recalcCostos();
                 } catch (e) {
                     cardProd.hidden = true;
@@ -628,35 +660,70 @@
                 }
             });
 
-            function renderChips() {
-                const frag = document.createDocumentFragment();
+            function renderProductoCards(patIds) {
                 const patName = (id) => (window.__PatMap && window.__PatMap.get(Number(id))) || `Patología ${id}`;
-                Array.from(ProductosState.catalog.entries())
-                    .sort((a, b) => a[1].nombre.localeCompare(b[1].nombre, 'es'))
-                    .forEach(([key, p]) => {
-                        const label = document.createElement('label');
-                        label.className = 'chip';
-                        label.innerHTML = `
-      <input type="checkbox" value="${key}">
-      <span class="chip-box">
-        <span class="chip-name">${p.nombre}</span>
-        <span class="chip-cost">${patName(p.patologia_id)} · ${fmtMon(p.costo_hectarea, currFrom(ProductosState.moneda))}/ha</span>
-      </span>`;
-                        frag.appendChild(label);
-                    });
-                chips.innerHTML = '';
-                chips.appendChild(frag);
-                chips.onchange = (e) => {
-                    const cb = e.target;
-                    if (cb && cb.type === 'checkbox' && cb.value) {
-                        const key = String(cb.value);
-                        if (cb.checked) ProductosState.seleccionados.add(key);
-                        else ProductosState.seleccionados.delete(key);
-                        recalcCostos();
-                    }
-                };
-            }
+                const moneda = currFrom(ProductosState.moneda);
 
+                const frag = document.createDocumentFragment();
+                patIds.forEach(pid => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'pat-card';
+                    wrapper.innerHTML = `<h4>${patName(pid)}</h4>`;
+
+                    // chips de productos para esta patología
+                    const chipsDiv = document.createElement('div');
+                    chipsDiv.className = 'chips-grid';
+                    (ProductosState.catalogByPat.get(pid) || [])
+                    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+                        .forEach(p => {
+                            const key = `${p.id}_${pid}`;
+                            const label = document.createElement('label');
+                            label.className = 'chip';
+                            label.innerHTML = `
+        <input type="checkbox" value="${key}">
+        <span class="chip-box">
+            <span class="chip-name">${p.nombre}</span>
+            <span class="chip-cost">${fmtMon(p.costo_hectarea, moneda)}/ha</span>
+        </span>`;
+                            chipsDiv.appendChild(label);
+                        });
+
+                    chipsDiv.addEventListener('change', (e) => {
+                        const cb = e.target;
+                        if (cb && cb.type === 'checkbox' && cb.value) {
+                            if (cb.checked) ProductosState.seleccionados.add(cb.value);
+                            else ProductosState.seleccionados.delete(cb.value);
+                            recalcCostos();
+                        }
+                    });
+
+                    wrapper.appendChild(chipsDiv);
+
+                    // campo "Otro" por patología
+                    const customDiv = document.createElement('div');
+                    customDiv.className = 'chips-custom';
+                    customDiv.innerHTML = `
+                        <label>Otro (aporta productor)</label>
+                        <input type="text" class="prod-custom" data-patologia-id="${pid}" placeholder="Nombre del producto..." />
+                    `;
+                    customDiv.addEventListener('input', (e) => {
+                        const inp = e.target;
+                        if (inp && inp.classList.contains('prod-custom')) {
+                            const pId = Number(inp.getAttribute('data-patologia-id'));
+                            const val = (inp.value || '').trim();
+                            if (val) ProductosState.customByPat.set(pId, val);
+                            else ProductosState.customByPat.delete(pId);
+                            recalcCostos();
+                        }
+                    });
+
+                    wrapper.appendChild(customDiv);
+                    frag.appendChild(wrapper);
+                });
+
+                cardsProductos.innerHTML = '';
+                cardsProductos.appendChild(frag);
+            }
 
             function recalcCostos() {
                 const ha = Math.max(0, Number($('#ha').value || 0));
@@ -679,10 +746,12 @@
                     rows.push(`<tr><th>Producto</th><td>${p.nombre} (SVE · ${patName(p.patologia_id)})</td><td class="right">${fmtMon(tot, moneda)}</td></tr>`);
                 });
 
-                const custom = ($('#prod_custom').value || '').trim();
-                if (custom) {
-                    rows.push(`<tr><th>Producto</th><td>${custom} (Productor)</td><td class="right">${fmtMon(0, moneda)}</td></tr>`);
-                }
+                // "Otro" por patología (no suma costo)
+                ProductosState.customByPat.forEach((val, pId) => {
+                    if ((val || '').trim()) {
+                        rows.push(`<tr><th>Producto</th><td>${val} (Productor · ${patName(pId)})</td><td class="right">${fmtMon(0, moneda)}</td></tr>`);
+                    }
+                });
 
                 const total = baseTotal + prodTotal;
                 costosBody.innerHTML = rows.join('');
@@ -692,7 +761,6 @@
 
             // eventos que impactan costos
             $('#ha').addEventListener('input', recalcCostos);
-            $('#prod_custom').addEventListener('input', recalcCostos);
 
             // Validación mínima
             function valSel(id) {
@@ -751,16 +819,19 @@
                         patologia_id: Number(p.patologia_id)
                     });
                 });
-                const custom = ($('#prod_custom').value || '').trim();
-                if (custom) {
-                    const patForCustom = (payload.patologia_ids && payload.patologia_ids[0]) ? Number(payload.patologia_ids[0]) : null;
+
+                // "Otro" por patología (productor, sin costo)
+                ProductosState.customByPat.forEach((val, patId) => {
+                    const nombre = (val || '').trim();
+                    if (!nombre) return;
                     payload.items.push({
                         producto_id: 0,
                         fuente: 'productor',
-                        nombre_producto_custom: custom,
-                        patologia_id: patForCustom
+                        nombre_producto_custom: nombre,
+                        patologia_id: Number(patId)
                     });
-                }
+                });
+
 
                 // checks
                 if (!payload.productor_id_real) {
@@ -807,8 +878,9 @@
                     // limpiar estado productos
                     ProductosState.seleccionados.clear();
                     ProductosState.catalog.clear();
-                    chips.innerHTML = '';
-                    $('#prod_custom').value = '';
+                    ProductosState.catalogByPat.clear();
+                    ProductosState.customByPat.clear();
+                    cardsProductos.innerHTML = '';
                     cardProd.hidden = true;
                     recalcCostos();
                 } catch (e) {
