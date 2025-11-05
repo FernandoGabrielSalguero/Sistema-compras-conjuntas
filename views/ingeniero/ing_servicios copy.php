@@ -38,38 +38,33 @@ unset($_SESSION['cierre_info']);
 </head>
 
 <style>
-    /* === Modal Drone: dimensiones cómodas para la vista embebida === */
-    /* 💡 Ajuste de ancho del modal SOLO en escritorio.
+/* === Modal Drone: dimensiones cómodas para la vista embebida === */
+/* 💡 Ajuste de ancho del modal SOLO en escritorio.
    👉 CAMBIAR este valor para controlar el ancho: */
+#modalDrone .modal-content {
+    /* === ANCHO ESCRITORIO DEL MODAL/IFRAME === */
+    width: min(1280px, 95vw); /* ← ajustá este valor si querés más/menos ancho */
+    max-width: none;          /* anula límites del framework (p.ej. 520px) */
+    max-height: 95vh;
+    overflow: hidden;
+    margin: 0 auto;           /* centra horizontalmente */
+}
+
+/* Asegura centrado del modal en la pantalla (overlay) */
+#modalDrone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;            /* margen de respiración en bordes */
+}
+
+/* 💡 En móviles, mantener el ancho actual */
+@media (max-width: 900px) {
     #modalDrone .modal-content {
-        /* === ANCHO ESCRITORIO DEL MODAL/IFRAME === */
-        width: min(1280px, 95vw);
-        /* ← ajustá este valor si querés más/menos ancho */
-        max-width: none;
-        /* anula límites del framework (p.ej. 520px) */
-        max-height: 95vh;
-        overflow: hidden;
-        margin: 0 auto;
-        /* centra horizontalmente */
+        width: 95vw;          /* móvil como está ahora */
+        max-width: 95vw;
     }
-
-    /* Asegura centrado del modal en la pantalla (overlay) */
-    #modalDrone {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 16px;
-        /* margen de respiración en bordes */
-    }
-
-    /* 💡 En móviles, mantener el ancho actual */
-    @media (max-width: 900px) {
-        #modalDrone .modal-content {
-            width: 95vw;
-            /* móvil como está ahora */
-            max-width: 95vw;
-        }
-    }
+}
 
     #modalDrone .modal-body {
         margin-top: 8px;
@@ -81,120 +76,67 @@ unset($_SESSION['cierre_info']);
         background: #fff;
     }
 
-    /* === Grids de tarjetas (cooperativas y productores) === */
-    .cards-grid {
+    /* === Filtros responsive (solo esta vista) === */
+    #card-filtros .filters-grid {
         display: grid;
         gap: 12px;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        align-items: end;
     }
 
-    @media (max-width: 1200px) {
-        .cards-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-    }
-
+    /* Tablet */
     @media (max-width: 900px) {
-        .cards-grid {
+        #card-filtros .filters-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 
+    /* Mobile */
     @media (max-width: 600px) {
-        .cards-grid {
+        #card-filtros .filters-grid {
             grid-template-columns: repeat(1, minmax(0, 1fr));
         }
     }
 
-    .coop-card,
-    .producer-card {
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-        gap: .5rem;
-        transition: box-shadow .15s ease, transform .05s ease;
-        cursor: pointer;
-    }
+        /* Título pequeño de sección (similar a “APPS”) */
+        .sidebar-section-title {
+            margin: 12px 16px 6px;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            opacity: .7;
+        }
 
-    .coop-card:hover,
-    .producer-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, .06);
-    }
+        /* Lista simple de subitems */
+        .submenu-root {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
 
-    .coop-card .title,
-    .producer-card .title {
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: .5rem;
-    }
+        .submenu-root a {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .4rem 1.5rem;
+            text-decoration: none;
+        }
 
-    .producer-card .meta {
-        font-size: .9rem;
-        color: #475569;
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .producer-card .actions {
-        margin-top: auto;
-        display: flex;
-        gap: .5rem;
-    }
-
-    /* Título pequeño de sección (similar a “APPS”) */
-    .sidebar-section-title {
-        margin: 12px 16px 6px;
-        font-size: .72rem;
-        font-weight: 600;
-        letter-spacing: .08em;
-        text-transform: uppercase;
-        opacity: .7;
-    }
-
-    /* Lista simple de subitems */
-    .submenu-root {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-    }
-
-    .submenu-root a {
-        display: flex;
-        align-items: center;
-        gap: .5rem;
-        padding: .4rem 1.5rem;
-        text-decoration: none;
-    }
-
-    /* Chips y badge */
+            /* Chips y badge */
     .chip {
-        display: inline-flex;
-        align-items: center;
-        gap: .4rem;
-        padding: .35rem .7rem;
-        border-radius: 9999px;
-        border: 1px solid #e5e7eb;
-        cursor: pointer;
-        user-select: none;
-        background: #fff;
+        display:inline-flex; align-items:center; gap:.4rem;
+        padding:.35rem .7rem; border-radius:9999px;
+        border:1px solid #e5e7eb; cursor:pointer; user-select:none;
+        background:#fff;
     }
-
-    .chip.active {
-        border-color: #5b21b6;
-        background: #f5f3ff;
-    }
-
+    .chip.active { border-color:#5b21b6; background:#f5f3ff; }
     .badge {
-        display: inline-block;
-        padding: .15rem .5rem;
-        border-radius: 9999px;
-        background: #5b21b6;
-    }
+        display:inline-block;
+        padding:.15rem .5rem;
+        border-radius:9999px;
+        background: #5b21b6; }
+
 </style>
 
 
@@ -212,7 +154,7 @@ unset($_SESSION['cierre_info']);
 
             <nav class="sidebar-menu">
 
-                <!-- Título de sección -->
+            <!-- Título de sección -->
                 <div class="sidebar-section-title">Menú</div>
 
                 <!-- Grupo superior -->
@@ -289,7 +231,7 @@ unset($_SESSION['cierre_info']);
                     </div>
                 </div>
 
-                <!-- 🧩 Cooperativas del ingeniero (tarjetas) -->
+                                <!-- 🧩 Cooperativas del ingeniero -->
                 <div class="card" id="card-cooperativas" aria-labelledby="coops-title">
                     <div style="display:flex; align-items:center; gap:.5rem;">
                         <h2 id="coops-title" style="margin:0;">Tus cooperativas</h2>
@@ -297,26 +239,57 @@ unset($_SESSION['cierre_info']);
                     </div>
                     <p>Seleccioná una cooperativa para ver sus productores asociados.</p>
 
-                    <!-- Grid dinámico de cooperativas -->
-                    <div id="gridCooperativas" class="cards-grid" role="list" aria-label="Cooperativas del ingeniero"></div>
+                    <!-- Chips dinámicos -->
+                    <div id="chipsCooperativas" class="chips" role="tablist" aria-label="Cooperativas del ingeniero" style="display:flex; flex-wrap:wrap; gap:.5rem;"></div>
                 </div>
 
-                <!-- 🔎 Productores (tarjetas + buscador por nombre) -->
-                <div class="card hidden" id="card-productores-grid" aria-labelledby="prod-title">
-                    <div style="display:flex; align-items:end; gap:.75rem; flex-wrap:wrap;">
-                        <h2 id="prod-title" style="margin:0;">Productores asociados</h2>
-                        <div class="spacer" style="flex:1;"></div>
-                        <div class="input-group" style="min-width:240px;">
-                            <label for="buscadorNombre">Nombre</label>
+
+                                <!-- 🔎 Filtros -->
+                <div class="card" id="card-filtros" aria-labelledby="filtros-title">
+                    <h2 id="filtros-title">Filtros</h2>
+                    <div class="filters-grid">
+                        <div class="input-group">
+                            <label for="filtroNombre">Nombre</label>
                             <div class="input-icon input-icon-name">
-                                <input type="text" id="buscadorNombre" name="buscadorNombre" placeholder="Ej: Juan Pérez" aria-label="Buscar productor por nombre" />
+                                <input type="text" id="filtroNombre" name="filtroNombre" placeholder="Ej: Juan Pérez" aria-describedby="ayudaNombre" />
                             </div>
                         </div>
-                        <button class="btn btn-secondary" type="button" id="btnVolverCoops" title="Buscar cooperativa">Buscar cooperativa</button>
+                        <div class="input-group">
+                            <label for="filtroCuit">CUIT</label>
+                            <div class="input-icon input-icon-name">
+                                <input type="text" id="filtroCuit" name="filtroCuit" placeholder="Ej: 20123456789" inputmode="numeric" />
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-info" type="button" id="btnLimpiarFiltros" style="width:100%;">Limpiar filtros</button>
+                        </div>
                     </div>
+                </div>
 
-                    <!-- Grid dinámico de productores -->
-                    <div id="gridProductores" class="cards-grid" role="list" aria-label="Productores de la cooperativa seleccionada" style="margin-top:12px;"></div>
+
+
+                <!-- 📊 Tabla de productores -->
+                <div class="card tabla-card" id="card-productores" aria-labelledby="prod-title">
+                    <h2 id="prod-title">Productores asociados</h2>
+                    <div class="tabla-wrapper" style="max-height: 460px; overflow: auto;">
+                        <!-- 👇 Altura de la tabla: modificar el valor de max-height arriba si necesitás otro alto -->
+                        <table class="data-table" id="tablaProductores">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nombre</th>
+                                    <th>CUIT</th>
+                                    <th>Teléfono</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyProductores">
+                                <tr id="filaVacia">
+                                    <td colspan="6">Selecciona una cooperativa para poder ver a sus productores asociados</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
         </div>
@@ -358,7 +331,7 @@ unset($_SESSION['cierre_info']);
     </div>
 
     <!-- toast + lógica de cooperativas/productores -->
-    <script>
+        <script>
         window.addEventListener('DOMContentLoaded', () => {
             console.log('Datos de sesión', <?php echo json_encode($_SESSION); ?>);
 
@@ -379,34 +352,58 @@ unset($_SESSION['cierre_info']);
         });
 
         async function inicializarCooperativasYFiltros() {
-            // Referencias UI
-            const cardCoops = document.getElementById('card-cooperativas');
-            const gridCoops = document.getElementById('gridCooperativas');
+            const chipsWrap = document.getElementById('chipsCooperativas');
             const coopBadge = document.getElementById('coopCountBadge');
+            const tbody = document.getElementById('tbodyProductores');
+            const filtroNombre = document.getElementById('filtroNombre');
+            const filtroCuit = document.getElementById('filtroCuit');
 
-            const cardProds = document.getElementById('card-productores-grid');
-            const gridProds = document.getElementById('gridProductores');
-            const buscadorNombre = document.getElementById('buscadorNombre');
-            const btnVolverCoops = document.getElementById('btnVolverCoops');
-
-            // Estado
             let cooperativas = [];
-            let coopSeleccionada = null; // id_real seleccionado
-            const cacheProductoresPorCoop = {}; // { coop_id_real: [productores] }
+            let productoresPorCoop = {};   // cache por cooperativa_id_real
+            let productoresTodos = null;   // cache global (todas las coops)
+            let coopSeleccionada = null;
 
-            // Cargar cooperativas del ingeniero (tarjetas)
+            // Cargar cooperativas del ingeniero (chips)
             try {
-                const res = await fetch('../../controllers/ing_ServiciosController.php?action=cooperativas_del_ingeniero', {
-                    credentials: 'include'
-                });
+                const res = await fetch('../../controllers/ing_ServiciosController.php?action=cooperativas_del_ingeniero', { credentials: 'include' });
                 const json = await res.json();
                 console.log('cooperativas_del_ingeniero →', json);
 
                 if (json.ok && Array.isArray(json.data)) {
                     cooperativas = json.data;
                     coopBadge.textContent = String(cooperativas.length);
-                    renderTarjetasCooperativas(cooperativas);
-                    mostrarCooperativas();
+
+                    chipsWrap.innerHTML = '';
+                    cooperativas.forEach((c, i) => {
+                        const chip = document.createElement('button');
+                        chip.type = 'button';
+                        chip.className = 'chip';
+                        chip.dataset.id = c.cooperativa_id_real;
+                        chip.setAttribute('role', 'tab');
+                        chip.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+                        chip.innerHTML = `<span class="material-icons" style="font-size:16px;">apartment</span><span>${c.nombre} (${c.cuit ?? 'sin CUIT'})</span>`;
+                        chip.addEventListener('click', async () => {
+                            document.querySelectorAll('#chipsCooperativas .chip').forEach(el => { el.classList.remove('active'); el.setAttribute('aria-selected','false'); });
+                            chip.classList.add('active');
+                            chip.setAttribute('aria-selected','true');
+                            coopSeleccionada = chip.dataset.id;
+                            await cargarYRenderizarPorCoop();
+                        });
+                        chipsWrap.appendChild(chip);
+                    });
+
+                    // Preseleccionar primer chip
+                    if (cooperativas.length > 0) {
+                        const first = chipsWrap.querySelector('.chip');
+                        if (first) {
+                            first.classList.add('active');
+                            first.setAttribute('aria-selected','true');
+                            coopSeleccionada = first.dataset.id;
+                            await cargarYRenderizarPorCoop();
+                        }
+                    } else {
+                        renderRows([]); // sin cooperativas
+                    }
                 } else {
                     showAlert('error', json.error || 'No se pudieron cargar las cooperativas.');
                 }
@@ -415,130 +412,102 @@ unset($_SESSION['cierre_info']);
                 showAlert('error', 'Error cargando cooperativas.');
             }
 
-            // Eventos
+            // Filtros en vivo
             ['input', 'keyup', 'change'].forEach(evt => {
-                buscadorNombre.addEventListener(evt, aplicarFiltroNombre);
-            });
-            btnVolverCoops.addEventListener('click', () => {
-                buscadorNombre.value = '';
-                gridProds.innerHTML = '';
-                coopSeleccionada = null;
-                mostrarCooperativas();
+                filtroNombre.addEventListener(evt, aplicarFiltros);
+                filtroCuit.addEventListener(evt, aplicarFiltros);
             });
 
-            // Render de UI
-            function renderTarjetasCooperativas(arr) {
-                gridCoops.innerHTML = '';
-                if (!arr || arr.length === 0) {
-                    gridCoops.innerHTML = `<div class="producer-card" role="listitem"><div>No hay cooperativas disponibles.</div></div>`;
-                    return;
-                }
-                const html = arr.map(c => {
-                    const id = String(c.cooperativa_id_real || c.id_real || c.id || '');
-                    const nombre = String(c.nombre || 'Cooperativa');
-                    const cuit = String(c.cuit || 'sin CUIT');
-                    return `
-                    <article class="coop-card" role="listitem" tabindex="0" data-id="${id}" aria-label="${nombre}">
-                        <div class="title"><span class="material-icons">apartment</span> ${nombre}</div>
-                        <div class="meta" style="color:#475569;">CUIT: ${cuit}</div>
-                    </article>`;
-                }).join('');
-                gridCoops.insertAdjacentHTML('beforeend', html);
+            document.getElementById('btnLimpiarFiltros').addEventListener('click', () => {
+                filtroNombre.value = '';
+                filtroCuit.value = '';
+                aplicarFiltros();
+            });
 
-                // Click/Enter para seleccionar
-                gridCoops.querySelectorAll('.coop-card').forEach(card => {
-                    const select = async () => {
-                        coopSeleccionada = card.dataset.id;
-                        await cargarYMostrarProductores(coopSeleccionada);
-                    };
-                    card.addEventListener('click', select);
-                    card.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            select();
-                        }
-                    });
-                });
-            }
-
-            async function cargarYMostrarProductores(coopId) {
-                if (!coopId) return;
-                if (!cacheProductoresPorCoop[coopId]) {
+            async function cargarYRenderizarPorCoop() {
+                if (!coopSeleccionada) { renderRows([]); return; }
+                if (!productoresPorCoop[coopSeleccionada]) {
                     try {
-                        const res = await fetch(`../../controllers/ing_ServiciosController.php?action=productores_por_coop&cooperativa_id_real=${encodeURIComponent(coopId)}`, {
-                            credentials: 'include'
-                        });
+                        const res = await fetch(`../../controllers/ing_ServiciosController.php?action=productores_por_coop&cooperativa_id_real=${encodeURIComponent(coopSeleccionada)}`, { credentials: 'include' });
                         const json = await res.json();
                         console.log('productores_por_coop →', json);
-                        cacheProductoresPorCoop[coopId] = (json.ok && Array.isArray(json.data)) ? json.data : [];
+                        productoresPorCoop[coopSeleccionada] = (json.ok && Array.isArray(json.data)) ? json.data : [];
                     } catch (e) {
                         console.error('Error cargando productores:', e);
-                        cacheProductoresPorCoop[coopId] = [];
+                        productoresPorCoop[coopSeleccionada] = [];
                         showAlert('error', 'Error cargando productores.');
                     }
                 }
-                buscadorNombre.value = '';
-                renderTarjetasProductores(cacheProductoresPorCoop[coopId]);
-                mostrarProductores();
+                aplicarFiltros(); // render con dataset actual/cooperativa
             }
 
-            function renderTarjetasProductores(arr) {
-                gridProds.innerHTML = '';
+            async function getTodosLosProductores() {
+                if (productoresTodos) return productoresTodos;
+                try {
+                    const res = await fetch(`../../controllers/ing_ServiciosController.php?action=productores_del_ingeniero`, { credentials: 'include' });
+                    const json = await res.json();
+                    console.log('productores_del_ingeniero →', json);
+                    productoresTodos = (json.ok && Array.isArray(json.data)) ? json.data : [];
+                } catch (e) {
+                    console.error('Error cargando productores del ingeniero:', e);
+                    productoresTodos = [];
+                }
+                return productoresTodos;
+            }
+
+            function normalizarFila(p, idxBase = 0) {
+                return `
+    <tr data-usuario-id-real="${String(p.usuario_id_real || p.id_real || p.id || '')}">
+        <td>${idxBase + 1}</td>
+        <td>${p.nombre || '-'}</td>
+<td>${p.cuit || '-'}</td>
+<td>${p.telefono || '-'}</td>
+<td>
+    <button class="btn btn-info" type="button" title="Solicitar Servicio" onclick="openModalId('modalDrone', this)">
+        Solicitar Servicio
+    </button>
+</td>
+    </tr>`;
+            }
+
+            function renderRows(arr) {
+                tbody.innerHTML = '';
                 if (!arr || arr.length === 0) {
-                    gridProds.innerHTML = `<div class="producer-card" role="listitem"><div>No hay productores para esta cooperativa.</div></div>`;
+                    const tr = document.createElement('tr');
+                    tr.id = 'filaVacia';
+                    tr.innerHTML = `<td colspan="6">No hay resultados</td>`;
+                    tbody.appendChild(tr);
                     return;
                 }
-                const html = arr.map(p => {
-                    const id = String(p.usuario_id_real || p.id_real || p.id || '');
-                    const nombre = String(p.nombre || '-');
-                    const cuit = String(p.cuit || '-');
-                    const tel = String(p.telefono || '-');
-                    return `
-                    <article class="producer-card" role="listitem" tabindex="0" aria-label="${nombre}">
-                        <div class="title"><span class="material-symbols-outlined">person</span> ${nombre}</div>
-                        <div class="meta"><span>CUIT: ${cuit}</span><span>Tel: ${tel}</span></div>
-                        <div class="actions">
-                            <button class="btn btn-info" type="button" title="Solicitar Servicio"
-                                onclick="seleccionarProductorYAbrirModal('${id}','${nombre.replace(/'/g, "\\'")}','${tel.replace(/'/g, "\\'")}','${cuit.replace(/'/g, "\\'")}')">
-                                Solicitar Servicio
-                            </button>
-                        </div>
-                    </article>`;
-                }).join('');
-                gridProds.insertAdjacentHTML('beforeend', html);
+                const html = arr.map((p, i) => normalizarFila(p, i)).join('');
+                tbody.insertAdjacentHTML('beforeend', html);
             }
 
-            function aplicarFiltroNombre() {
-                const nombre = (buscadorNombre.value || '').toLowerCase().trim();
-                const base = cacheProductoresPorCoop[coopSeleccionada] || [];
-                if (!nombre) {
-                    renderTarjetasProductores(base);
-                    return;
+            async function aplicarFiltros() {
+                const nombre = (filtroNombre.value || '').toLowerCase().trim();
+                const cuit = (filtroCuit.value || '').replace(/\D/g, '');
+
+                // Base de datos a filtrar:
+                // - Si hay "nombre", buscar GLOBAL (todas las cooperativas del ingeniero).
+                // - Si no hay "nombre", usar la cooperativa seleccionada.
+                let base = [];
+                if (nombre) {
+                    base = await getTodosLosProductores();
+                } else if (coopSeleccionada) {
+                    base = productoresPorCoop[coopSeleccionada] || [];
                 }
-                const filtrados = base.filter(p => String(p.nombre || '').toLowerCase().includes(nombre));
-                renderTarjetasProductores(filtrados);
-            }
 
-            function mostrarCooperativas() {
-                cardCoops.classList.remove('hidden');
-                cardProds.classList.add('hidden');
-            }
+                // Filtrado
+                const filtrados = base.filter(p => {
+                    const n = String(p.nombre || '').toLowerCase();
+                    const c = String(p.cuit || '');
+                    const okNombre = !nombre || n.includes(nombre);
+                    const okCuit = !cuit || c.includes(cuit);
+                    return okNombre && okCuit;
+                });
 
-            function mostrarProductores() {
-                cardCoops.classList.add('hidden');
-                cardProds.classList.remove('hidden');
+                renderRows(filtrados);
             }
-        }
-
-        // Helper para setear el productor seleccionado y abrir el modal
-        function seleccionarProductorYAbrirModal(id_real, nombre, telefono, cuit) {
-            window.selectedProductor = {
-                id_real: String(id_real || ''),
-                nombre: String(nombre || ''),
-                telefono: String(telefono || ''),
-                cuit: String(cuit || '')
-            };
-            openModalId('modalDrone'); // reutiliza el flujo existente (querystring + postMessage)
         }
 
         // Modales simples: un botón → un modal (sin payload)
@@ -629,10 +598,7 @@ unset($_SESSION['cierre_info']);
                                         nombre: window.selectedProductor?.nombre || ''
                                     }
                                 };
-                                // Limitar origen si conocés el host (mejor seguridad). Aquí se mantiene '*'
-                                if (ifr.contentWindow) {
-                                    ifr.contentWindow.postMessage(payload, '*');
-                                }
+                                ifr.contentWindow && ifr.contentWindow.postMessage(payload, '*');
                             } catch (e) {
                                 console.warn('postMessage a iframe falló:', e);
                             }
