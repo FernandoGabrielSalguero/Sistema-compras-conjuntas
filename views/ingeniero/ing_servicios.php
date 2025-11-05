@@ -328,10 +328,10 @@ unset($_SESSION['cierre_info']);
                             <button class="btn btn-cancelar" type="button" id="btnVolverCoops" title="Buscar cooperativa">Volver a ver las cooperativas</button>
                         </div>
 
-                        <hr style="border:none; border-top:1px solid #e5e7eb; margin:12px 0;">
-                        <h3 style="margin:0;">Listado de productores</h3>
+                        <!-- <hr style="border:none; border-top:1px solid #e5e7eb; margin:12px 0;"> -->
                     </div>
-
+                    <h3 style="margin:0;">Listado de productores</h3>
+                    
                     <!-- Grid dinámico de productores -->
                     <div id="gridProductores" class="cards-grid" role="list" aria-label="Productores de la cooperativa seleccionada" style="margin-top:12px;"></div>
                 </div>
