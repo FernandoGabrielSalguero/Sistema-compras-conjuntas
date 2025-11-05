@@ -320,12 +320,11 @@ unset($_SESSION['cierre_info']);
                             <h3 id="prod-filter-title" style="margin:0;">Busca al productor por nombre</h3>
                             <div class="spacer" style="flex:1;"></div>
                             <div class="input-group" style="min-width:240px;">
-                                <label for="buscadorNombre">Nombre</label>
+                                <!-- <label for="buscadorNombre">Nombre</label> -->
                                 <div class="input-icon input-icon-name">
                                     <input type="text" id="buscadorNombre" name="buscadorNombre" placeholder="Ej: Juan Pérez" aria-label="Buscar productor por nombre" />
                                 </div>
                             </div>
-                            <hr style="border:none; border-top:1px solid #e5e7eb; margin:12px 0;">
                             <button class="btn btn-cancelar" type="button" id="btnVolverCoops" title="Buscar cooperativa">Volver a ver las cooperativas</button>
                         </div>
 
