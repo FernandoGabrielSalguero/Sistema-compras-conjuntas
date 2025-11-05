@@ -195,6 +195,15 @@ unset($_SESSION['cierre_info']);
         border-radius: 9999px;
         background: #5b21b6;
     }
+
+    /* Tarjeta de filtros: misma estética que producer-card, sin puntero de link */
+    .filter-card {
+        cursor: default;
+    }
+
+    .filter-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .06);
+    }
 </style>
 
 
@@ -305,21 +314,24 @@ unset($_SESSION['cierre_info']);
 
                 <!-- 🔎 Productores (tarjetas + buscador por nombre) -->
                 <div class="card hidden" id="card-productores-grid" aria-labelledby="prod-title">
-                    <div style="display:flex; align-items:end; gap:.75rem; flex-wrap:wrap;">
-                        <h2 id="prod-title" style="margin:0;">Busca al productor por nombre</h2>
-                        <div class="spacer" style="flex:1;"></div>
-                        <br>
-                        <div class="input-group" style="min-width:240px;">
-                            <label for="buscadorNombre">Nombre</label>
-                            <div class="input-icon input-icon-name">
-                                <input type="text" id="buscadorNombre" name="buscadorNombre" placeholder="Ej: Juan Pérez" aria-label="Buscar productor por nombre" />
+                    <!-- Tarjeta de filtros/título (consistente con producer-card) -->
+                    <div class="producer-card filter-card" role="region" aria-labelledby="prod-filter-title" style="padding:16px;">
+                        <div style="display:flex; align-items:end; gap:.75rem; flex-wrap:wrap;">
+                            <h3 id="prod-filter-title" style="margin:0;">Busca al productor por nombre</h3>
+                            <div class="spacer" style="flex:1;"></div>
+                            <div class="input-group" style="min-width:240px;">
+                                <label for="buscadorNombre">Nombre</label>
+                                <div class="input-icon input-icon-name">
+                                    <input type="text" id="buscadorNombre" name="buscadorNombre" placeholder="Ej: Juan Pérez" aria-label="Buscar productor por nombre" />
+                                </div>
                             </div>
+                            <button class="btn btn-cancelar" type="button" id="btnVolverCoops" title="Buscar cooperativa">Volver a ver las cooperativas</button>
                         </div>
-                        <button class="btn btn-cancelar" type="button" id="btnVolverCoops" title="Buscar cooperativa">Volver a ver las cooperativas</button>
+
+                        <hr style="border:none; border-top:1px solid #e5e7eb; margin:12px 0;">
+                        <h3 style="margin:0;">Listado de productores</h3>
                     </div>
-                    <br>
-                    <br>
-                    <h2 id="prod-title" style="margin:0;">Listado de productores</h2>
+
                     <!-- Grid dinámico de productores -->
                     <div id="gridProductores" class="cards-grid" role="list" aria-label="Productores de la cooperativa seleccionada" style="margin-top:12px;"></div>
                 </div>
