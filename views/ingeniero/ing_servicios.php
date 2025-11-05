@@ -325,11 +325,13 @@ unset($_SESSION['cierre_info']);
                                     <input type="text" id="buscadorNombre" name="buscadorNombre" placeholder="Ej: Juan Pérez" aria-label="Buscar productor por nombre" />
                                 </div>
                             </div>
+                            <hr style="border:none; border-top:1px solid #e5e7eb; margin:12px 0;">
                             <button class="btn btn-cancelar" type="button" id="btnVolverCoops" title="Buscar cooperativa">Volver a ver las cooperativas</button>
                         </div>
 
-                        <!-- <hr style="border:none; border-top:1px solid #e5e7eb; margin:12px 0;"> -->
                     </div>
+
+                    <br>
                     <h3 style="margin:0;">Listado de productores</h3>
                     
                     <!-- Grid dinámico de productores -->
