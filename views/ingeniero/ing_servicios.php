@@ -286,7 +286,7 @@ unset($_SESSION['cierre_info']);
                     <div class="tabs">
                         <div class="tab-buttons" role="tablist" aria-label="Secciones de pulverización">
                             <!-- Botón Tutorial -->
-                            <button type="button" id="btnIniciarTutorial" class="btn btn-info" aria-label="Iniciar tutorial" style="margin-left:auto">Tutorial</button>
+                            <!-- <button type="button" id="btnIniciarTutorial" class="btn btn-info" aria-label="Iniciar tutorial" style="margin-left:auto">Tutorial</button> -->
                         </div>
                     </div>
                 </div>
