@@ -109,7 +109,7 @@ unset($_SESSION['cierre_info']);
     .coop-card,
     .producer-card {
         background: #fff;
-        border: 3px solid #5b21b6;
+        border: 1px solid #5b21b6;
         border-radius: 12px;
         padding: 12px;
         display: flex;
