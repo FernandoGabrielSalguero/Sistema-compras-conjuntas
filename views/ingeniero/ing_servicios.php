@@ -306,7 +306,7 @@ unset($_SESSION['cierre_info']);
                 <!-- 🔎 Productores (tarjetas + buscador por nombre) -->
                 <div class="card hidden" id="card-productores-grid" aria-labelledby="prod-title">
                     <div style="display:flex; align-items:end; gap:.75rem; flex-wrap:wrap;">
-                        <h3 id="prod-title" style="margin:0;">Busca al productor por nombre</h3>
+                        <h2 id="prod-title" style="margin:0;">Busca al productor por nombre</h2>
                         <div class="spacer" style="flex:1;"></div>
                         <br>
                         <div class="input-group" style="min-width:240px;">
@@ -319,7 +319,7 @@ unset($_SESSION['cierre_info']);
                     </div>
                     <br>
                     <br>
-                    <h2 id="prod-title" style="margin:0;">Listaod de productores</h2>
+                    <h2 id="prod-title" style="margin:0;">Listado de productores</h2>
                     <!-- Grid dinámico de productores -->
                     <div id="gridProductores" class="cards-grid" role="list" aria-label="Productores de la cooperativa seleccionada" style="margin-top:12px;"></div>
                 </div>
