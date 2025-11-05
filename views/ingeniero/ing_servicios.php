@@ -295,7 +295,7 @@ unset($_SESSION['cierre_info']);
                         <h2 id="coops-title" style="margin:0;">Tus cooperativas</h2>
                         <span id="coopCountBadge" class="badge">0</span>
                     </div>
-                    <p>Seleccioná una cooperativa para ver sus productores asociados.</p>
+                    <h6>Señor ingeniero, para solicitar el servicio de Drone, debe seleccionar la cooperativa a la que pertenece y luego hacer click en el boton "Solicitar servicio"</h6>
 
                     <!-- Grid dinámico de cooperativas -->
                     <div id="gridCooperativas" class="cards-grid" role="list" aria-label="Cooperativas del ingeniero"></div>
@@ -312,7 +312,7 @@ unset($_SESSION['cierre_info']);
                                 <input type="text" id="buscadorNombre" name="buscadorNombre" placeholder="Ej: Juan Pérez" aria-label="Buscar productor por nombre" />
                             </div>
                         </div>
-                        <button class="btn btn-secondary" type="button" id="btnVolverCoops" title="Buscar cooperativa">Buscar cooperativa</button>
+                        <button class="btn btn-info" type="button" id="btnVolverCoops" title="Buscar cooperativa">Buscar cooperativa</button>
                     </div>
 
                     <!-- Grid dinámico de productores -->
