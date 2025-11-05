@@ -237,43 +237,6 @@
                 /* mobile: vertical */
             }
         }
-
-        /* --- Toggle por propietario de productos (solo CSS) --- */
-.prod-owner {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    margin: 6px 0 10px 0;
-    flex-wrap: wrap;
-    font-size: .95rem;
-}
-.prod-owner .radio {
-    display: inline-flex;
-    align-items: center;
-    gap: .35rem;
-    padding: 4px 8px;
-    border: 1px solid #e5e7eb;
-    border-radius: 999px;
-    background: #fff;
-    user-select: none;
-    cursor: pointer;
-}
-.prod-owner input[type="radio"] {
-    accent-color: #10b981;
-}
-
-/* Por defecto, oculto ambos contenedores */
-.pat-card .prod-chips { display: none; }
-.pat-card .prod-custom { display: none; }
-
-/* Si elige "Sí", mostrar solo el input personalizado */
-.pat-card:has(input.prod-si:checked) .prod-custom { display: block; }
-.pat-card:has(input.prod-si:checked) .prod-chips { display: none; }
-
-/* Si elige "No", mostrar solo los chips de productos */
-.pat-card:has(input.prod-no:checked) .prod-chips { display: flex; }
-.pat-card:has(input.prod-no:checked) .prod-custom { display: none; }
-
     </style>
 </head>
 
@@ -706,93 +669,80 @@
             });
 
             function renderProductoCards(patIds) {
-    const patName = (id) => (window.__PatMap && window.__PatMap.get(Number(id))) || `Patología ${id}`;
-    const moneda = currFrom(ProductosState.moneda);
+                const patName = (id) => (window.__PatMap && window.__PatMap.get(Number(id))) || `Patología ${id}`;
+                const moneda = currFrom(ProductosState.moneda);
 
-    const frag = document.createDocumentFragment();
-    patIds.forEach(pid => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'pat-card';
-        wrapper.innerHTML = `
-            <h4>Elijamos los productos para tratar ${patName(pid)}</h4>
-            <div class="prod-owner">
-                <span>¿El productor tiene los productos para tratar ${patName(pid)}?</span>
-                <label class="radio">
-                    <input type="radio" name="owner_${pid}" class="owner-input prod-si" value="si">
-                    Si
-                </label>
-                <label class="radio">
-                    <input type="radio" name="owner_${pid}" class="owner-input prod-no" value="no">
-                    No
-                </label>
-            </div>
-        `;
+                const frag = document.createDocumentFragment();
+                patIds.forEach(pid => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'pat-card';
+                    wrapper.innerHTML = `<h4>${patName(pid)}</h4>`;
 
-        // chips de productos para esta patología (se muestran solo si elige "No")
-        const chipsDiv = document.createElement('div');
-        chipsDiv.className = 'chips-grid prod-chips';
-        (ProductosState.catalogByPat.get(pid) || [])
-            .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-            .forEach(p => {
-                const key = `${p.id}_${pid}`;
-                const label = document.createElement('label');
-                label.className = 'chip';
-                label.innerHTML = `
+                    // chips de productos para esta patología
+                    const chipsDiv = document.createElement('div');
+                    chipsDiv.className = 'chips-grid';
+                    (ProductosState.catalogByPat.get(pid) || [])
+                    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+                        .forEach(p => {
+                            const key = `${p.id}_${pid}`;
+                            const label = document.createElement('label');
+                            label.className = 'chip';
+                            label.innerHTML = `
         <input type="checkbox" value="${key}">
         <span class="chip-box">
             <span class="chip-name">${p.nombre}</span>
             <span class="chip-cost">${fmtMon(p.costo_hectarea, moneda)}/ha</span>
         </span>`;
-                chipsDiv.appendChild(label);
-            });
+                            chipsDiv.appendChild(label);
+                        });
 
-        chipsDiv.addEventListener('change', (e) => {
-            const cb = e.target;
-            if (cb && cb.type === 'checkbox' && cb.value) {
-                if (cb.checked) ProductosState.seleccionados.add(cb.value);
-                else ProductosState.seleccionados.delete(cb.value);
-                recalcCostos();
+                    chipsDiv.addEventListener('change', (e) => {
+                        const cb = e.target;
+                        if (cb && cb.type === 'checkbox' && cb.value) {
+                            if (cb.checked) ProductosState.seleccionados.add(cb.value);
+                            else ProductosState.seleccionados.delete(cb.value);
+                            recalcCostos();
+                        }
+                    });
+
+                    wrapper.appendChild(chipsDiv);
+
+                    // campo "Otro" por patología (sin autocompletar)
+                    const customDiv = document.createElement('div');
+                    customDiv.className = 'chips-custom';
+                    customDiv.innerHTML = `
+                        <label>Si el productor aporta el producto para tratar esta patologia, coloque su nombre aquí:</label>
+                        <input
+                            type="text"
+                            class="prod-custom"
+                            data-patologia-id="${pid}"
+                            name="prod_custom_${pid}"
+                            placeholder="Nombre del producto..."
+                            autocomplete="off"
+                            aria-autocomplete="none"
+                            inputmode="text"
+                            spellcheck="false"
+                        />
+                    `;
+                    customDiv.addEventListener('input', (e) => {
+                        const inp = e.target;
+                        if (inp && inp.classList.contains('prod-custom')) {
+                            const pId = Number(inp.getAttribute('data-patologia-id'));
+                            const val = (inp.value || '').trim();
+                            if (val) ProductosState.customByPat.set(pId, val);
+                            else ProductosState.customByPat.delete(pId);
+                            recalcCostos();
+                        }
+                    });
+
+
+                    wrapper.appendChild(customDiv);
+                    frag.appendChild(wrapper);
+                });
+
+                cardsProductos.innerHTML = '';
+                cardsProductos.appendChild(frag);
             }
-        });
-
-        wrapper.appendChild(chipsDiv);
-
-        // campo "Otro" por patología (se muestra solo si elige "Sí")
-        const customDiv = document.createElement('div');
-        customDiv.className = 'chips-custom prod-custom';
-        customDiv.innerHTML = `
-            <label>Si el productor aporta el producto para tratar esta patologia, coloque su nombre aquí:</label>
-            <input
-                type="text"
-                class="prod-custom"
-                data-patologia-id="${pid}"
-                name="prod_custom_${pid}"
-                placeholder="Nombre del producto..."
-                autocomplete="off"
-                aria-autocomplete="none"
-                inputmode="text"
-                spellcheck="false"
-            />
-        `;
-        customDiv.addEventListener('input', (e) => {
-            const inp = e.target;
-            if (inp && inp.classList.contains('prod-custom')) {
-                const pId = Number(inp.getAttribute('data-patologia-id'));
-                const val = (inp.value || '').trim();
-                if (val) ProductosState.customByPat.set(pId, val);
-                else ProductosState.customByPat.delete(pId);
-                recalcCostos();
-            }
-        });
-
-        wrapper.appendChild(customDiv);
-        frag.appendChild(wrapper);
-    });
-
-    cardsProductos.innerHTML = '';
-    cardsProductos.appendChild(frag);
-}
-
 
             function recalcCostos() {
                 const ha = Math.max(0, Number($('#ha').value || 0));
