@@ -308,6 +308,7 @@ unset($_SESSION['cierre_info']);
                     <div style="display:flex; align-items:end; gap:.75rem; flex-wrap:wrap;">
                         <h2 id="prod-title" style="margin:0;">Productores asociados</h2>
                         <div class="spacer" style="flex:1;"></div>
+                        <br>
                         <div class="input-group" style="min-width:240px;">
                             <label for="buscadorNombre">Nombre</label>
                             <div class="input-icon input-icon-name">
@@ -316,7 +317,7 @@ unset($_SESSION['cierre_info']);
                         </div>
                         <button class="btn btn-cancelar" type="button" id="btnVolverCoops" title="Buscar cooperativa">Volver a ver las cooperativas</button>
                     </div>
-
+                    <br>
                     <!-- Grid dinámico de productores -->
                     <div id="gridProductores" class="cards-grid" role="list" aria-label="Productores de la cooperativa seleccionada" style="margin-top:12px;"></div>
                 </div>
