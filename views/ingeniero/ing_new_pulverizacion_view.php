@@ -711,7 +711,7 @@
                     const customDiv = document.createElement('div');
                     customDiv.className = 'chips-custom';
                     customDiv.innerHTML = `
-                        <label>Otro (aporta productor)</label>
+                        <label>Si el productor aporta el producto para tratar esta patologia, coloque su nombre aquí</label>
                         <input
                             type="text"
                             class="prod-custom"
