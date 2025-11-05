@@ -278,7 +278,9 @@ unset($_SESSION['cierre_info']);
                 <!-- Bienvenida -->
                 <div class="card">
                     <h2>Hola!</h2>
-                    <p>En esta página, vas a poder solicitar los servicios disponibles para los productores asociados a tus cooperativas</p>
+                    <p>Señor ingeniero, en esta página usted puede solicitar el servicio de pulverización con drone para los productores asociados a sus cooperativas asignadas. <br>
+                        Debe seleccionar primero la cooperativa a la que pertenece el productor y luego hacer click en el botón "Solicitar Servicio" que se encuentra en la tarjeta del productor correspondiente.
+                    </p>
 
                     <!-- 🔘 Tarjeta con los botones del tab -->
                     <div class="tabs">
@@ -295,7 +297,7 @@ unset($_SESSION['cierre_info']);
                         <h2 id="coops-title" style="margin:0;">Tus cooperativas</h2>
                         <span id="coopCountBadge" class="badge">0</span>
                     </div>
-                    <h6>Señor ingeniero, para solicitar el servicio de Drone, debe seleccionar la cooperativa a la que pertenece y luego hacer click en el boton "Solicitar servicio"</h6>
+                    <!-- <p>Señor ingeniero, para solicitar el servicio de Drone, debe seleccionar la cooperativa a la que pertenece y luego hacer click en el boton "Solicitar servicio"</p> -->
 
                     <!-- Grid dinámico de cooperativas -->
                     <div id="gridCooperativas" class="cards-grid" role="list" aria-label="Cooperativas del ingeniero"></div>
