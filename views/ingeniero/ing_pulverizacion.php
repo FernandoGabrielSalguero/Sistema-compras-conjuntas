@@ -319,6 +319,16 @@ unset($_SESSION['cierre_info']);
             font-size: .75rem;
             border: 1px solid #e5e7eb
         }
+
+        #cards-solicitudes {
+            grid-template-columns: repeat(1, minmax(0, 1fr))
+        }
+
+        @media (min-width:1024px) {
+            #cards-solicitudes {
+                grid-template-columns: repeat(4, 1fr)
+            }
+        }
     </style>
 
 </head>
@@ -427,7 +437,7 @@ unset($_SESSION['cierre_info']);
                 <!-- Listado con tarjetas -->
                 <div class="card tabla-card">
                     <h2>Listado</h2>
-                    <div id="cards-solicitudes" class="grid gap-3"></div>
+                    <div id="cards-solicitudes" class="grid grid-cols-1 lg:grid-cols-4 gap-3"></div>
                 </div>
 
                 <!-- Modal -->
@@ -515,6 +525,20 @@ unset($_SESSION['cierre_info']);
                         </div>
                     </div>
                 </div>
+
+                <!-- Modal Confirmación Eliminar -->
+                <div id="modal-confirm" class="modal hidden">
+                    <div class="modal-content" style="max-width:520px">
+                        <h3 class="mb-2">Confirmar eliminación</h3>
+                        <p>Esta acción marcará el pedido como <b>cancelado</b>. ¿Desea continuar?</p>
+                        <input type="hidden" id="confirm-id">
+                        <div class="form-buttons">
+                            <button id="btn-confirm-ok" class="btn btn-aceptar">Eliminar</button>
+                            <button class="btn btn-cancelar" onclick="closeConfirm()">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+
 
                 <!-- contenedor del toastify -->
                 <div id="toast-container"></div>
@@ -886,6 +910,24 @@ unset($_SESSION['cierre_info']);
                 }
             }
 
+            function openConfirm(id) {
+                document.getElementById('confirm-id').value = String(id);
+                document.getElementById('modal-confirm').classList.remove('hidden');
+            }
+
+            function closeConfirm() {
+                document.getElementById('modal-confirm').classList.add('hidden');
+            }
+            window.closeConfirm = closeConfirm;
+
+            document.getElementById('btn-confirm-ok').addEventListener('click', async (e) => {
+                e.preventDefault();
+                const id = Number(document.getElementById('confirm-id').value || 0);
+                closeConfirm();
+                if (id > 0) await eliminarSolicitud(id);
+            });
+
+
             function row(r) {
                 const estado = normEstado(r.estado);
                 const precio = fmtMoney(r.costo_total);
@@ -903,13 +945,10 @@ unset($_SESSION['cierre_info']);
       <div class="acciones">
         <button class="btn btn-info btn-ver" data-id="${r.id}">Ver</button>
         <button class="btn btn-aceptar btn-editar" data-id="${r.id}">Editar</button>
-        <button class="btn-icon btn-eliminar" title="Eliminar" data-id="${r.id}">
-            <span class="material-icons" style="color:#ef4444;">delete</span>
-        </button>
+        <button class="btn btn-cancelar btn-eliminar" data-id="${r.id}">Eliminar</button>
         ${estado === 'completada' ? `
-          <button class="btn-icon btn-open-registro" title="Registro fitosanitario" data-id="${r.id}" data-estado="${(r.estado||'').replace(/"/g, '&quot;')}">
-            <span class="material-icons">description</span>
-          </button>` : ``}
+          <button class="btn btn-secundario btn-open-registro" data-id="${r.id}" data-estado="${(r.estado||'').replace(/"/g, '&quot;')}">Registro</button>
+        ` : ``}
       </div>
     </div>`;
             }
@@ -939,8 +978,9 @@ unset($_SESSION['cierre_info']);
                 const btnDel = ev.target.closest('.btn-eliminar');
                 if (btnDel) {
                     ev.preventDefault();
-                    eliminarSolicitud(Number(btnDel.dataset.id));
+                    openConfirm(Number(btnDel.dataset.id));
                 }
+
             });
 
             async function cargarCoops() {
@@ -1126,7 +1166,6 @@ unset($_SESSION['cierre_info']);
             });
         })();
     </script>
-
 
     <!-- Mantener defer; si el tutorial manipula tabs, no debe sobreescribir el estado -->
     <script src="../partials/tutorials/cooperativas/pulverizacion.js?v=<?= time() ?>" defer></script>
