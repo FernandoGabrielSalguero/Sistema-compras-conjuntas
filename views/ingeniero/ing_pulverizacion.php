@@ -983,14 +983,16 @@ unset($_SESSION['cierre_info']);
             });
 
             // Cerrar modal de confirmación con fondo o ESC
-(function(){
-    const m = document.getElementById('modal-confirm');
-    if (!m) return;
-    m.addEventListener('click', (ev) => { if (ev.target === m) closeConfirm(); });
-    document.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Escape' && !m.classList.contains('hidden')) closeConfirm();
-    });
-})();
+            (function() {
+                const m = document.getElementById('modal-confirm');
+                if (!m) return;
+                m.addEventListener('click', (ev) => {
+                    if (ev.target === m) closeConfirm();
+                });
+                document.addEventListener('keydown', (ev) => {
+                    if (ev.key === 'Escape' && !m.classList.contains('hidden')) closeConfirm();
+                });
+            })();
 
             async function cargarCoops() {
                 const url = `${API}?action=coops_inge   niero`;
