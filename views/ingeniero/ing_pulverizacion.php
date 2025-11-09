@@ -944,7 +944,7 @@ unset($_SESSION['cierre_info']);
         <button class="btn btn-aceptar btn-editar" data-id="${r.id}">Editar</button>
         <button class="btn btn-cancelar btn-eliminar" data-id="${r.id}">Eliminar</button>
         ${estado === 'completada' ? `
-          <button class="btn btn-secundario btn-open-registro" data-id="${r.id}" data-estado="${(r.estado||'').replace(/"/g, '&quot;')}">Registro</button>
+          <button class="btn btn-info btn-open-registro" data-id="${r.id}" data-estado="${(r.estado||'').replace(/"/g, '&quot;')}">Registro</button>
         ` : ``}
       </div>
     </div>`;
