@@ -249,48 +249,325 @@ class ingPulverizacionModel
   {
     // Autorización idéntica a getRegistroBySolicitud
     $sqlChk = "
-            SELECT 1
-            FROM drones_solicitud ds
-            WHERE ds.id = :sid
-              AND ds.productor_id_real IN (
-                SELECT rpc.productor_id_real
-                FROM rel_productor_coop rpc
-                JOIN rel_coop_ingeniero rci
-                  ON rci.cooperativa_id_real = rpc.cooperativa_id_real
-                WHERE rci.ingeniero_id_real = :ing
-              )";
+        SELECT 1
+        FROM drones_solicitud ds
+        WHERE ds.id = :sid
+          AND ds.productor_id_real IN (
+            SELECT rpc.productor_id_real
+            FROM rel_productor_coop rpc
+            JOIN rel_coop_ingeniero rci
+              ON rci.cooperativa_id_real = rpc.cooperativa_id_real
+            WHERE rci.ingeniero_id_real = :ing
+          )";
     $st = $this->pdo->prepare($sqlChk);
     $st->execute([':sid' => $solicitudId, ':ing' => $ingenieroIdReal]);
     if (!$st->fetchColumn()) {
       throw new InvalidArgumentException('No autorizado o solicitud inexistente.');
     }
 
+    // Cabecera de la solicitud + nombres
     $sql = "
-            SELECT
-                ds.id,
-                ds.productor_id_real,
-                COALESCE(uip.nombre, up.usuario) AS productor_nombre,
-                COALESCE(uicoop.nombre, ucoop.usuario) AS cooperativa_nombre,
-                ds.fecha_visita, ds.hora_visita_desde, ds.hora_visita_hasta,
-                ds.estado, ds.piloto_id, ds.forma_pago_id, ds.observaciones
-            FROM drones_solicitud ds
-            JOIN usuarios up ON up.id_real = ds.productor_id_real
-            LEFT JOIN usuarios_info uip ON uip.usuario_id = up.id
-            LEFT JOIN rel_productor_coop rpc2 ON rpc2.productor_id_real = ds.productor_id_real
-            LEFT JOIN usuarios ucoop ON ucoop.id_real = rpc2.cooperativa_id_real
-            LEFT JOIN usuarios_info uicoop ON uicoop.usuario_id = ucoop.id
-            WHERE ds.id = :sid";
+        SELECT
+            ds.*,
+            COALESCE(uip.nombre, up.usuario) AS productor_nombre,
+            COALESCE(uicoop.nombre, ucoop.usuario) AS cooperativa_nombre
+        FROM drones_solicitud ds
+        JOIN usuarios up ON up.id_real = ds.productor_id_real
+        LEFT JOIN usuarios_info uip ON uip.usuario_id = up.id
+        LEFT JOIN rel_productor_coop rpc2 ON rpc2.productor_id_real = ds.productor_id_real
+        LEFT JOIN usuarios ucoop ON ucoop.id_real = rpc2.cooperativa_id_real
+        LEFT JOIN usuarios_info uicoop ON uicoop.usuario_id = ucoop.id
+        WHERE ds.id = :sid";
     $h = $this->pdo->prepare($sql);
     $h->execute([':sid' => $solicitudId]);
-    $head = $h->fetch() ?: [];
+    $sol = $h->fetch() ?: [];
 
-    $sqlCosto = "SELECT COALESCE(total,0) AS total FROM drones_solicitud_costos WHERE solicitud_id = :sid";
+    // Costos
+    $sqlCosto = "SELECT * FROM drones_solicitud_costos WHERE solicitud_id = :sid";
     $c = $this->pdo->prepare($sqlCosto);
     $c->execute([':sid' => $solicitudId]);
-    $head['costo_total'] = (float)($c->fetchColumn() ?: 0);
+    $costos = $c->fetch() ?: null;
 
-    return $head;
+    // Parámetros
+    $sqlPar = "SELECT * FROM drones_solicitud_parametros WHERE solicitud_id = :sid ORDER BY id DESC LIMIT 1";
+    $p = $this->pdo->prepare($sqlPar);
+    $p->execute([':sid' => $solicitudId]);
+    $parametros = $p->fetch() ?: null;
+
+    // Motivos
+    $sqlMot = "
+        SELECT dsm.*, dp.nombre AS patologia_nombre
+        FROM drones_solicitud_motivo dsm
+        LEFT JOIN dron_patologias dp ON dp.id = dsm.patologia_id
+        WHERE dsm.solicitud_id = :sid";
+    $m = $this->pdo->prepare($sqlMot);
+    $m->execute([':sid' => $solicitudId]);
+    $motivos = $m->fetchAll() ?: [];
+
+    // Items + Receta
+    $sqlIt = "
+        SELECT i.*, r.principio_activo, r.dosis, r.unidad, r.cant_prod_usado, r.fecha_vencimiento, r.orden_mezcla, r.notas
+        FROM drones_solicitud_item i
+        LEFT JOIN drones_solicitud_item_receta r ON r.solicitud_item_id = i.id
+        WHERE i.solicitud_id = :sid
+        ORDER BY i.id ASC";
+    $it = $this->pdo->prepare($sqlIt);
+    $it->execute([':sid' => $solicitudId]);
+    $items = $it->fetchAll() ?: [];
+
+    // Reporte + media
+    $sqlRep = "SELECT * FROM drones_solicitud_Reporte WHERE solicitud_id = :sid ORDER BY id DESC LIMIT 1";
+    $r = $this->pdo->prepare($sqlRep);
+    $r->execute([':sid' => $solicitudId]);
+    $reporte = $r->fetch() ?: null;
+
+    $media = [];
+    if ($reporte) {
+      $sqlMed = "SELECT * FROM drones_solicitud_reporte_media WHERE reporte_id = :rid";
+      $md = $this->pdo->prepare($sqlMed);
+      $md->execute([':rid' => $reporte['id']]);
+      $media = $md->fetchAll() ?: [];
+    }
+
+    return [
+      'solicitud'  => $sol,
+      'costos'     => $costos,
+      'parametros' => $parametros,
+      'motivos'    => $motivos,
+      'items'      => $items,
+      'reporte'    => $reporte,
+      'media'      => $media
+    ];
   }
+
+
+  public function updateSolicitudFull(int $solicitudId, string $ingenieroIdReal, array $data): void
+  {
+    // Autorización
+    $sqlChk = "
+        SELECT 1
+        FROM drones_solicitud ds
+        WHERE ds.id = :sid
+          AND ds.productor_id_real IN (
+            SELECT rpc.productor_id_real
+            FROM rel_productor_coop rpc
+            JOIN rel_coop_ingeniero rci
+              ON rci.cooperativa_id_real = rpc.cooperativa_id_real
+            WHERE rci.ingeniero_id_real = :ing
+          )";
+    $st = $this->pdo->prepare($sqlChk);
+    $st->execute([':sid' => $solicitudId, ':ing' => $ingenieroIdReal]);
+    if (!$st->fetchColumn()) {
+      throw new InvalidArgumentException('No autorizado o solicitud inexistente.');
+    }
+
+    $this->pdo->beginTransaction();
+    try {
+      // 1) Actualizar campos básicos de drones_solicitud
+      $base = $data['base'] ?? [];
+      if ($base) {
+        $fields = [
+          'fecha_visita',
+          'hora_visita_desde',
+          'hora_visita_hasta',
+          'estado',
+          'piloto_id',
+          'forma_pago_id',
+          'observaciones'
+        ];
+        $sets = [];
+        $params = [':sid' => $solicitudId];
+        foreach ($fields as $f) {
+          if (array_key_exists($f, $base) && $base[$f] !== null) {
+            $sets[] = "$f = :$f";
+            $params[":$f"] = $base[$f];
+          }
+        }
+        if ($sets) {
+          $sql = "UPDATE drones_solicitud SET " . implode(',', $sets) . " WHERE id = :sid";
+          $u = $this->pdo->prepare($sql);
+          $u->execute($params);
+        }
+      }
+
+      $full = $data['full'] ?? [];
+      // 2) Parámetros (UPSERT simple)
+      if (!empty($full['parametros'])) {
+        $p = $full['parametros'];
+        $exists = $this->pdo->prepare("SELECT id FROM drones_solicitud_parametros WHERE solicitud_id=:sid ORDER BY id DESC LIMIT 1");
+        $exists->execute([':sid' => $solicitudId]);
+        $pid = $exists->fetchColumn();
+        $cols = ['volumen_ha', 'velocidad_vuelo', 'alto_vuelo', 'ancho_pasada', 'tamano_gota', 'observaciones', 'observaciones_agua'];
+        if ($pid) {
+          $sets = [];
+          $params = [':id' => $pid];
+          foreach ($cols as $c) {
+            if (array_key_exists($c, $p)) {
+              $sets[] = "$c=:$c";
+              $params[":$c"] = $p[$c];
+            }
+          }
+          if ($sets) {
+            $sql = "UPDATE drones_solicitud_parametros SET " . implode(',', $sets) . " WHERE id=:id";
+            $stp = $this->pdo->prepare($sql);
+            $stp->execute($params);
+          }
+        } else {
+          $params = [':sid' => $solicitudId];
+          $fields = ['solicitud_id'];
+          $holders = [':sid'];
+          foreach ($cols as $c) {
+            if (array_key_exists($c, $p)) {
+              $fields[] = $c;
+              $holders[] = ":$c";
+              $params[":$c"] = $p[$c];
+            }
+          }
+          $sql = "INSERT INTO drones_solicitud_parametros (" . implode(',', $fields) . ") VALUES (" . implode(',', $holders) . ")";
+          $stp = $this->pdo->prepare($sql);
+          $stp->execute($params);
+        }
+      }
+
+      // 3) Motivos (reemplazo total)
+      if (isset($full['motivos'])) {
+        $del = $this->pdo->prepare("DELETE FROM drones_solicitud_motivo WHERE solicitud_id=:sid");
+        $del->execute([':sid' => $solicitudId]);
+        $ins = $this->pdo->prepare("INSERT INTO drones_solicitud_motivo (solicitud_id, patologia_id, es_otros, otros_text) VALUES (:sid,:pid,:eo,:ot)");
+        foreach ($full['motivos'] as $m) {
+          $ins->execute([
+            ':sid' => $solicitudId,
+            ':pid' => $m['patologia_id'] ?? null,
+            ':eo' => (int)($m['es_otros'] ?? 0),
+            ':ot' => $m['otros_text'] ?? null
+          ]);
+        }
+      }
+
+      // 4) Items + receta (reemplazo total)
+      if (isset($full['items'])) {
+        $this->pdo->prepare("DELETE r FROM drones_solicitud_item_receta r JOIN drones_solicitud_item i ON i.id=r.solicitud_item_id WHERE i.solicitud_id=:sid")->execute([':sid' => $solicitudId]);
+        $this->pdo->prepare("DELETE FROM drones_solicitud_item WHERE solicitud_id=:sid")->execute([':sid' => $solicitudId]);
+
+        $insI = $this->pdo->prepare("INSERT INTO drones_solicitud_item (solicitud_id, patologia_id, fuente, producto_id, costo_hectarea_snapshot, total_producto_snapshot, nombre_producto) VALUES (:sid,:pat,:fue,:prod,:chs,:tps,:nom)");
+        $insR = $this->pdo->prepare("INSERT INTO drones_solicitud_item_receta (solicitud_item_id, principio_activo, dosis, cant_prod_usado, fecha_vencimiento, unidad, orden_mezcla, notas) VALUES (:iid,:pa,:dos,:cpu,:fv,:uni,:om,:not)");
+        foreach ($full['items'] as $it) {
+          $insI->execute([
+            ':sid' => $solicitudId,
+            ':pat' => $it['patologia_id'] ?? null,
+            ':fue' => $it['fuente'] ?? 'sve',
+            ':prod' => $it['producto_id'] ?? null,
+            ':chs' => $it['costo_hectarea_snapshot'] ?? null,
+            ':tps' => $it['total_producto_snapshot'] ?? null,
+            ':nom' => $it['nombre_producto'] ?? null
+          ]);
+          $iid = (int)$this->pdo->lastInsertId();
+          $insR->execute([
+            ':iid' => $iid,
+            ':pa' => $it['principio_activo'] ?? null,
+            ':dos' => $it['dosis'] ?? null,
+            ':cpu' => $it['cant_prod_usado'] ?? null,
+            ':fv' => $it['fecha_vencimiento'] ?? null,
+            ':uni' => $it['unidad'] ?? null,
+            ':om' => $it['orden_mezcla'] ?? null,
+            ':not' => $it['notas'] ?? null
+          ]);
+        }
+      }
+
+      // 5) Reporte (UPSERT simple del último)
+      if (!empty($full['reporte'])) {
+        $r = $full['reporte'];
+        $exists = $this->pdo->prepare("SELECT id FROM drones_solicitud_Reporte WHERE solicitud_id=:sid ORDER BY id DESC LIMIT 1");
+        $exists->execute([':sid' => $solicitudId]);
+        $rid = $exists->fetchColumn();
+        $cols = ['nom_cliente', 'nom_piloto', 'nom_encargado', 'fecha_visita', 'hora_ingreso', 'hora_egreso', 'nombre_finca', 'cultivo_pulverizado', 'cuadro_cuartel', 'sup_pulverizada', 'vol_aplicado', 'vel_viento', 'temperatura', 'humedad_relativa', 'observaciones'];
+        if ($rid) {
+          $sets = [];
+          $params = [':id' => $rid];
+          foreach ($cols as $c) {
+            if (array_key_exists($c, $r)) {
+              $sets[] = "$c=:$c";
+              $params[":$c"] = $r[$c];
+            }
+          }
+          if ($sets) {
+            $sql = "UPDATE drones_solicitud_Reporte SET " . implode(',', $sets) . " WHERE id=:id";
+            $ur = $this->pdo->prepare($sql);
+            $ur->execute($params);
+          }
+        } else {
+          $params = [':sid' => $solicitudId];
+          $fields = ['solicitud_id'];
+          $holders = [':sid'];
+          foreach ($cols as $c) {
+            if (array_key_exists($c, $r)) {
+              $fields[] = $c;
+              $holders[] = ":$c";
+              $params[":$c"] = $r[$c];
+            }
+          }
+          $sql = "INSERT INTO drones_solicitud_Reporte (" . implode(',', $fields) . ") VALUES (" . implode(',', $holders) . ")";
+          $ir = $this->pdo->prepare($sql);
+          $ir->execute($params);
+          $rid = (int)$this->pdo->lastInsertId();
+        }
+
+        // Media (reemplazo si viene)
+        if (isset($full['media'])) {
+          $this->pdo->prepare("DELETE FROM drones_solicitud_reporte_media WHERE reporte_id=:rid")->execute([':rid' => $rid]);
+          $insm = $this->pdo->prepare("INSERT INTO drones_solicitud_reporte_media (reporte_id,tipo,ruta) VALUES (:rid,:tip,:rut)");
+          foreach ($full['media'] as $mm) {
+            $insm->execute([':rid' => $rid, ':tip' => $mm['tipo'], ':rut' => $mm['ruta']]);
+          }
+        }
+      }
+
+      // 6) Costos (opcional)
+      if (!empty($full['costos'])) {
+        $co = $full['costos'];
+        $exists = $this->pdo->prepare("SELECT id FROM drones_solicitud_costos WHERE solicitud_id=:sid");
+        $exists->execute([':sid' => $solicitudId]);
+        $cid = $exists->fetchColumn();
+        $cols = ['moneda', 'costo_base_por_ha', 'base_ha', 'base_total', 'productos_total', 'total', 'desglose_json'];
+        if ($cid) {
+          $sets = [];
+          $params = [':sid' => $solicitudId];
+          foreach ($cols as $c) {
+            if (array_key_exists($c, $co)) {
+              $sets[] = "$c=:$c";
+              $params[":$c"] = $co[$c];
+            }
+          }
+          if ($sets) {
+            $sql = "UPDATE drones_solicitud_costos SET " . implode(',', $sets) . " WHERE solicitud_id=:sid";
+            $uc = $this->pdo->prepare($sql);
+            $uc->execute($params);
+          }
+        } else {
+          $params = [':sid' => $solicitudId];
+          $fields = ['solicitud_id'];
+          $holders = [':sid'];
+          foreach ($cols as $c) {
+            if (array_key_exists($c, $co)) {
+              $fields[] = $c;
+              $holders[] = ":$c";
+              $params[":$c"] = $co[$c];
+            }
+          }
+          $sql = "INSERT INTO drones_solicitud_costos (" . implode(',', $fields) . ") VALUES (" . implode(',', $holders) . ")";
+          $ic = $this->pdo->prepare($sql);
+          $ic->execute($params);
+        }
+      }
+
+      $this->pdo->commit();
+    } catch (\Throwable $e) {
+      $this->pdo->rollBack();
+      throw $e;
+    }
+  }
+
 
   /**
    * Actualización básica de campos editables.

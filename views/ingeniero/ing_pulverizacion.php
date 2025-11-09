@@ -306,8 +306,20 @@ unset($_SESSION['cierre_info']);
 
         .sol-card .acciones {
             display: flex;
+            flex-direction: column;
             gap: .5rem;
-            align-items: center;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        #cards-solicitudes {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+
+        @media (min-width:1024px) {
+            #cards-solicitudes {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
 
         .badge.estado {
@@ -318,16 +330,6 @@ unset($_SESSION['cierre_info']);
             border-radius: 999px;
             font-size: .75rem;
             border: 1px solid #e5e7eb
-        }
-
-        #cards-solicitudes {
-            grid-template-columns: repeat(1, minmax(0, 1fr))
-        }
-
-        @media (min-width:1024px) {
-            #cards-solicitudes {
-                grid-template-columns: repeat(4, 1fr)
-            }
         }
     </style>
 
@@ -410,26 +412,12 @@ unset($_SESSION['cierre_info']);
                 <!-- Filtros -->
                 <div class="card">
                     <h2>Solicitudes de pulverización</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
-                        <div class="input-group">
-                            <label for="filtro-productor">Productor</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
+                        <div class="input-group md:col-span-2">
+                            <label for="filtro-productor">Buscar solicitudes de pulverización con drone por el nombre del productor</label>
                             <div class="input-icon input-icon-name">
-                                <input type="text" id="filtro-productor" name="filtro-productor" placeholder="Nombre del productor" />
+                                <input type="text" id="filtro-productor" name="filtro-productor" placeholder="Escribí para filtrar…" />
                             </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="filtro-coop">Cooperativa</label>
-                            <div class="input-icon">
-                                <select id="filtro-coop" name="filtro-coop" class="select">
-                                    <option value="">Todas</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="flex gap-2">
-                            <button id="btn-filtrar" class="btn btn-aceptar">Filtrar</button>
-                            <button id="btn-limpiar" class="btn btn-cancelar">Limpiar</button>
                         </div>
                     </div>
                 </div>
@@ -460,7 +448,7 @@ unset($_SESSION['cierre_info']);
 
                 <!-- Modal Detalle/Edición -->
                 <div id="modal-detalle" class="modal hidden">
-                    <div class="modal-content" style="max-width:820px">
+                    <div class="modal-content" style="max-width:980px">
                         <div class="flex items-center justify-between mb-2">
                             <h3 id="md-title">Pedido</h3>
                             <button class="btn-icon" onclick="closeDetalle()"><span class="material-icons">close</span></button>
@@ -468,7 +456,7 @@ unset($_SESSION['cierre_info']);
 
                         <form id="detalle-form" class="grid gap-3">
                             <input type="hidden" id="md-id">
-                            <div class="grid md:grid-cols-2 gap-3">
+                            <div class="grid md:grid-cols-3 gap-3">
                                 <div class="input-group">
                                     <label>Productor</label>
                                     <input id="md-productor" class="input" type="text" disabled>
@@ -476,18 +464,6 @@ unset($_SESSION['cierre_info']);
                                 <div class="input-group">
                                     <label>Cooperativa</label>
                                     <input id="md-coop" class="input" type="text" disabled>
-                                </div>
-                                <div class="input-group">
-                                    <label>Fecha visita</label>
-                                    <input id="md-fecha" class="input" type="date">
-                                </div>
-                                <div class="input-group">
-                                    <label>Hora desde</label>
-                                    <input id="md-hora-desde" class="input" type="time">
-                                </div>
-                                <div class="input-group">
-                                    <label>Hora hasta</label>
-                                    <input id="md-hora-hasta" class="input" type="time">
                                 </div>
                                 <div class="input-group">
                                     <label>Estado</label>
@@ -500,6 +476,20 @@ unset($_SESSION['cierre_info']);
                                         <option value="cancelada">cancelada</option>
                                     </select>
                                 </div>
+
+                                <div class="input-group">
+                                    <label>Fecha visita</label>
+                                    <input id="md-fecha" class="input" type="date">
+                                </div>
+                                <div class="input-group">
+                                    <label>Hora desde</label>
+                                    <input id="md-hora-desde" class="input" type="time">
+                                </div>
+                                <div class="input-group">
+                                    <label>Hora hasta</label>
+                                    <input id="md-hora-hasta" class="input" type="time">
+                                </div>
+
                                 <div class="input-group">
                                     <label>Piloto (ID)</label>
                                     <input id="md-piloto" class="input" type="number" min="1" step="1">
@@ -508,13 +498,21 @@ unset($_SESSION['cierre_info']);
                                     <label>Forma de pago (ID)</label>
                                     <input id="md-forma" class="input" type="number" min="1" step="1">
                                 </div>
-                                <div class="input-group md:col-span-2">
+
+                                <div class="input-group md:col-span-3">
                                     <label>Observaciones</label>
-                                    <textarea id="md-obs" class="textarea" rows="4"></textarea>
+                                    <textarea id="md-obs" class="textarea" rows="3"></textarea>
                                 </div>
-                                <div class="input-group md:col-span-2">
+
+                                <div class="input-group md:col-span-3">
                                     <label>Costo total</label>
                                     <input id="md-costo" class="input" type="text" disabled>
+                                </div>
+
+                                <div class="input-group md:col-span-3">
+                                    <label>Contenido completo del pedido (JSON)</label>
+                                    <textarea id="md-full" class="textarea" rows="16" spellcheck="false" style="font-family: ui-monospace, Menlo, Consolas, monospace;"></textarea>
+                                    <small>En “Editar” podés modificar íntegramente este JSON (solicitud, parámetros, motivos, items+receta, reporte, media y costos).</small>
                                 </div>
                             </div>
                         </form>
@@ -580,9 +578,8 @@ unset($_SESSION['cierre_info']);
             const API = "../../controllers/ing_pulverizacionController.php";
             const $cards = document.getElementById('cards-solicitudes');
             const $q = document.getElementById('filtro-productor');
-            const $coop = document.getElementById('filtro-coop');
-            const $btnFiltrar = document.getElementById('btn-filtrar');
-            const $btnLimpiar = document.getElementById('btn-limpiar');
+            const $btnFiltrar = null;
+            const $btnLimpiar = null;
 
             // Normaliza estados con posibles espacios/mayúsculas
             function normEstado(s) {
@@ -994,34 +991,16 @@ unset($_SESSION['cierre_info']);
                 });
             })();
 
-            async function cargarCoops() {
-                const url = `${API}?action=coops_inge   niero`;
-                // console.log('[SVE][Pulv] Fetch coops:', url);
-                try {
-                    const res = await fetch(url, {
-                        credentials: 'same-origin'
-                    });
-                    // console.log('[SVE][Pulv] coops status:', res.status);
-                    const j = await res.json();
-                    // console.log('[SVE][Pulv] coops payload:', j);
-                    if (!j.ok) return;
-                    const ops = j.data.map(c => `<option value="${c.id_real}">${c.nombre}</option>`).join('');
-                    $coop.insertAdjacentHTML('beforeend', ops);
-                } catch (e) {
-                    console.error('[SVE][Pulv] Error coops:', e);
-                }
-            }
-
             async function cargar(page = 1, size = 20) {
                 $cards.innerHTML = `<div class="skeleton h-10 w-full"></div>`;
                 const params = new URLSearchParams({
                     action: 'list_ingeniero',
                     page: String(page),
                     size: String(size),
-                    q: $q.value.trim(),
-                    coop: $coop.value
+                    q: $q.value.trim()
                 });
                 const url = `${API}?${params.toString()}`;
+
                 // console.log('[SVE][Pulv] Fetch listado:', url);
 
                 try {
@@ -1048,17 +1027,14 @@ unset($_SESSION['cierre_info']);
                 }
             }
 
-            $btnFiltrar.addEventListener('click', () => cargar());
-            $btnLimpiar.addEventListener('click', () => {
-                $q.value = '';
-                $coop.value = '';
-                cargar();
-            });
+            // Debounce simple para búsqueda en vivo
+function debounce(fn, ms=250){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
+const onType = debounce(()=>cargar(), 250);
+$q.addEventListener('input', onType);
 
-            document.addEventListener('DOMContentLoaded', () => {
-                cargarCoops();
-                cargar();
-            });
+document.addEventListener('DOMContentLoaded', () => {
+    cargar();
+});
 
             async function fetchDetalle(id) {
                 const url = `${API}?action=detalle&id=${id}`;
@@ -1070,72 +1046,80 @@ unset($_SESSION['cierre_info']);
                 return j.data;
             }
 
-            function openDetalle(id, editable = false) {
-                const el = document.getElementById('modal-detalle');
-                const form = document.getElementById('detalle-form');
-                const setRO = (ro) => {
-                    document.getElementById('md-fecha').disabled = ro;
-                    document.getElementById('md-hora-desde').disabled = ro;
-                    document.getElementById('md-hora-hasta').disabled = ro;
-                    document.getElementById('md-estado').disabled = ro;
-                    document.getElementById('md-piloto').disabled = ro;
-                    document.getElementById('md-forma').disabled = ro;
-                    document.getElementById('md-obs').disabled = ro;
-                    document.getElementById('btn-guardar').classList.toggle('hidden', ro);
-                };
+function openDetalle(id, editable = false) {
+    const el = document.getElementById('modal-detalle');
+    const setRO = (ro) => {
+        document.getElementById('md-fecha').disabled = ro;
+        document.getElementById('md-hora-desde').disabled = ro;
+        document.getElementById('md-hora-hasta').disabled = ro;
+        document.getElementById('md-estado').disabled = ro;
+        document.getElementById('md-piloto').disabled = ro;
+        document.getElementById('md-forma').disabled = ro;
+        document.getElementById('md-obs').disabled = ro;
+        document.getElementById('md-full').disabled = ro;
+        document.getElementById('btn-guardar').classList.toggle('hidden', ro);
+    };
 
-                document.getElementById('md-title').textContent = editable ? 'Editar pedido' : 'Detalle del pedido';
-                setRO(!editable);
-                el.classList.remove('hidden');
+    document.getElementById('md-title').textContent = editable ? 'Editar pedido' : 'Detalle del pedido';
+    setRO(!editable);
+    el.classList.remove('hidden');
 
-                (async () => {
-                    try {
-                        const d = await fetchDetalle(id);
-                        document.getElementById('md-id').value = d.id;
-                        document.getElementById('md-productor').value = d.productor_nombre || d.productor_id_real || '—';
-                        document.getElementById('md-coop').value = d.cooperativa_nombre || '—';
-                        document.getElementById('md-fecha').value = d.fecha_visita || '';
-                        document.getElementById('md-hora-desde').value = d.hora_visita_desde || '';
-                        document.getElementById('md-hora-hasta').value = d.hora_visita_hasta || '';
-                        document.getElementById('md-estado').value = (d.estado || '').toLowerCase();
-                        document.getElementById('md-piloto').value = d.piloto_id || '';
-                        document.getElementById('md-forma').value = d.forma_pago_id || '';
-                        document.getElementById('md-obs').value = d.observaciones || '';
-                        document.getElementById('md-costo').value = fmtMoney(d.costo_total || 0);
-                    } catch (e) {
-                        console.error(e);
-                        el.querySelector('.form-buttons').insertAdjacentHTML('beforebegin', `<div class="alert alert-error">No se pudo cargar el detalle.</div>`);
-                    }
-                })();
-            }
+    (async () => {
+        try {
+            const d = await fetchDetalle(id); // ahora devuelve TODO
+            document.getElementById('md-id').value = d.solicitud.id;
+            document.getElementById('md-productor').value = d.solicitud.productor_nombre || d.solicitud.productor_id_real || '—';
+            document.getElementById('md-coop').value = d.solicitud.cooperativa_nombre || '—';
+            document.getElementById('md-fecha').value = d.solicitud.fecha_visita || '';
+            document.getElementById('md-hora-desde').value = d.solicitud.hora_visita_desde || '';
+            document.getElementById('md-hora-hasta').value = d.solicitud.hora_visita_hasta || '';
+            document.getElementById('md-estado').value = (d.solicitud.estado || '').toLowerCase();
+            document.getElementById('md-piloto').value = d.solicitud.piloto_id || '';
+            document.getElementById('md-forma').value = d.solicitud.forma_pago_id || '';
+            document.getElementById('md-obs').value = d.solicitud.observaciones || '';
+            document.getElementById('md-costo').value = fmtMoney((d.costos && d.costos.total) || 0);
+            document.getElementById('md-full').value = JSON.stringify(d, null, 2);
+        } catch (e) {
+            console.error(e);
+            el.querySelector('.form-buttons').insertAdjacentHTML('beforebegin', `<div class="alert alert-error">No se pudo cargar el detalle.</div>`);
+        }
+    })();
+}
 
-            async function guardarCambios() {
-                const payload = {
-                    id: Number(document.getElementById('md-id').value),
-                    fecha_visita: document.getElementById('md-fecha').value || null,
-                    hora_visita_desde: document.getElementById('md-hora-desde').value || null,
-                    hora_visita_hasta: document.getElementById('md-hora-hasta').value || null,
-                    estado: document.getElementById('md-estado').value || null,
-                    piloto_id: document.getElementById('md-piloto').value ? Number(document.getElementById('md-piloto').value) : null,
-                    forma_pago_id: document.getElementById('md-forma').value ? Number(document.getElementById('md-forma').value) : null,
-                    observaciones: document.getElementById('md-obs').value || null
-                };
-                const res = await fetch(API, {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        action: 'update',
-                        data: payload
-                    })
-                });
-                const j = await res.json();
-                if (!j.ok) throw new Error(j.error || 'Error al guardar');
-                closeDetalle();
-                cargar();
-            }
+async function guardarCambios() {
+    const base = {
+        id: Number(document.getElementById('md-id').value),
+        fecha_visita: document.getElementById('md-fecha').value || null,
+        hora_visita_desde: document.getElementById('md-hora-desde').value || null,
+        hora_visita_hasta: document.getElementById('md-hora-hasta').value || null,
+        estado: document.getElementById('md-estado').value || null,
+        piloto_id: document.getElementById('md-piloto').value ? Number(document.getElementById('md-piloto').value) : null,
+        forma_pago_id: document.getElementById('md-forma').value ? Number(document.getElementById('md-forma').value) : null,
+        observaciones: document.getElementById('md-obs').value || null
+    };
+
+    let full;
+    try {
+        full = JSON.parse(document.getElementById('md-full').value || '{}');
+    } catch {
+        alert('El JSON completo tiene formato inválido.');
+        return;
+    }
+
+    const res = await fetch(API, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            action: 'update_full',
+            data: { base, full }
+        })
+    });
+    const j = await res.json();
+    if (!j.ok) throw new Error(j.error || 'Error al guardar');
+    closeDetalle();
+    cargar();
+}
 
             async function eliminarSolicitud(id) {
                 // solo usa el modal de confirmación; aquí NO se pide confirmación de nuevo

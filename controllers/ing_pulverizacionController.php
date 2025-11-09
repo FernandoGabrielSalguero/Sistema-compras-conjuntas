@@ -112,7 +112,7 @@ try {
                 echo json_encode(['ok' => false, 'error' => 'ID inválido']);
                 exit;
             }
-            $data = $model->getDetalleEditable($id, $idReal);
+            $data = $model->getDetalleEditable($id, $idReal); // ahora devuelve TODO
             http_response_code(200);
             ob_clean();
             echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -125,7 +125,28 @@ try {
         exit;
     }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($action === 'update_full') {
+        if ($rolSesion !== 'ingeniero') {
+            http_response_code(403);
+            ob_clean();
+            echo json_encode(['ok' => false, 'error' => 'Solo ingeniero']);
+            exit;
+        }
+        $data = $payload['data'] ?? null;
+        if (!$data || !isset($data['base']['id'])) {
+            http_response_code(400);
+            ob_clean();
+            echo json_encode(['ok' => false, 'error' => 'Datos inválidos']);
+            exit;
+        }
+        $model->updateSolicitudFull((int)$data['base']['id'], $idReal, $data);
+        http_response_code(200);
+        ob_clean();
+        echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $payload = json_decode(file_get_contents('php://input'), true) ?? [];
         $action = $payload['action'] ?? '';
 
@@ -133,20 +154,20 @@ try {
             if ($rolSesion !== 'ingeniero') {
                 http_response_code(403);
                 ob_clean();
-                echo json_encode(['ok'=>false,'error'=>'Solo ingeniero']);
+                echo json_encode(['ok' => false, 'error' => 'Solo ingeniero']);
                 exit;
             }
             $data = $payload['data'] ?? null;
             if (!$data || !isset($data['id'])) {
                 http_response_code(400);
                 ob_clean();
-                echo json_encode(['ok'=>false,'error'=>'Datos inválidos']);
+                echo json_encode(['ok' => false, 'error' => 'Datos inválidos']);
                 exit;
             }
             $model->updateSolicitudBasic((int)$data['id'], $idReal, $data);
             http_response_code(200);
             ob_clean();
-            echo json_encode(['ok'=>true], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
@@ -154,26 +175,26 @@ try {
             if ($rolSesion !== 'ingeniero') {
                 http_response_code(403);
                 ob_clean();
-                echo json_encode(['ok'=>false,'error'=>'Solo ingeniero']);
+                echo json_encode(['ok' => false, 'error' => 'Solo ingeniero']);
                 exit;
             }
             $sid = (int)($payload['id'] ?? 0);
             if ($sid <= 0) {
                 http_response_code(400);
                 ob_clean();
-                echo json_encode(['ok'=>false,'error'=>'ID inválido']);
+                echo json_encode(['ok' => false, 'error' => 'ID inválido']);
                 exit;
             }
             $model->cancelSolicitud($sid, $idReal);
             http_response_code(200);
             ob_clean();
-            echo json_encode(['ok'=>true], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
         http_response_code(400);
         ob_clean();
-        echo json_encode(['ok'=>false,'error'=>'Acción POST no soportada']);
+        echo json_encode(['ok' => false, 'error' => 'Acción POST no soportada']);
         exit;
     }
 
