@@ -33,8 +33,8 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
     <!-- Framework Success desde CDN -->
-    <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
-    <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+    <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
+    <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 
     <style>
         /* Oculta/expande subcategorías */

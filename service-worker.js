@@ -11,9 +11,9 @@ const PRECACHE_URLS = [
     '/assets/js/sve_operativo.js',
     '/views/partials/spinner-global.js',
     '/assets/png/logo_con_color_original.png',
-    'https://www.fernandosalguero.com/index.html',
-    'https://www.fernandosalguero.com/cdn/assets/css/framework.css',
-    'https://www.fernandosalguero.com/cdn/assets/javascript/framework.js'
+    'https://framework.impulsagroup.com/index.html',
+    'https://framework.impulsagroup.com/assets/css/framework.css',
+    'https://framework.impulsagroup.com/assets/javascript/framework.js'
 ];
 
 

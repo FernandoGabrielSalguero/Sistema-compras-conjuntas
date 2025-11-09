@@ -370,7 +370,6 @@
 
                 // Destinatarios: siempre casilla de drones
                 $mail->addAddress('dronesvecoop@gmail.com', 'Drones SVE');
-                // $mail->addAddress('fernandosalguero685@gmail.com', 'Drones SVE');
 
                 // Productor (si hay)
                 $pCorreo = (string)($data['productor']['correo'] ?? '');

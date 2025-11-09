@@ -34,8 +34,8 @@ unset($_SESSION['cierre_info']);
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
     <!-- Framework Success desde CDN -->
-    <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
-    <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+    <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
+    <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 
     <!-- CSS puntual (no rompe CDN) -->
     <style>
@@ -80,11 +80,11 @@ unset($_SESSION['cierre_info']);
     </style>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0ea5e9">
-<link rel="preconnect" href="https://www.fernandosalguero.com" crossorigin>
+<link rel="preconnect" href="https://www.impulsagroup.com" crossorigin>
 <script>
   window.SVE_CDN = {
-    css: "https://www.fernandosalguero.com/cdn/assets/css/framework.css",
-    js:  "https://www.fernandosalguero.com/cdn/assets/javascript/framework.js"
+    css: "https://framework.impulsagroup.com/assets/css/framework.css",
+    js:  "https://framework.impulsagroup.com/assets/javascript/framework.js"
   };
 </script>
 </head>

@@ -57,8 +57,8 @@ $productosDisponibles = $model->obtenerProductosAgrupadosPorCategoria();
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
     <!-- Framework Success desde CDN -->
-    <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
-    <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+    <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
+    <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 </head>
 
 <body style="padding: 2rem; background: #f9fafb;">

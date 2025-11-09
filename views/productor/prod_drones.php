@@ -41,8 +41,8 @@ $sesion_payload = [
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
     <!-- Tu framework (CSS/JS) -->
-    <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css">
-    <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+    <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
+    <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 
     <style>
         /* Ocupa todo el ancho: no hay sidebar en esta página */

@@ -131,8 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Iniciar Sesión</title>
 
     <!-- Framework visual del proyecto -->
-    <link rel="preconnect" href="https://www.fernandosalguero.com" />
-    <link rel="stylesheet" href="https://www.fernandosalguero.com/cdn/assets/css/framework.css" />
+    <link rel="preconnect" href="https://framework.impulsagroup.com" />
+    <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css" />
 
     <!-- Iconos -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
@@ -438,7 +438,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Spinner Global (si existe) -->
     <script src="views/partials/spinner-global.js"></script>
     <!-- Framework JS del proyecto -->
-    <script src="https://www.fernandosalguero.com/cdn/assets/javascript/framework.js" defer></script>
+    <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 
     <script>
         // =========================================================
