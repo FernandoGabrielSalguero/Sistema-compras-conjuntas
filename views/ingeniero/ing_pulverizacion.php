@@ -980,11 +980,20 @@ unset($_SESSION['cierre_info']);
                     ev.preventDefault();
                     openConfirm(Number(btnDel.dataset.id));
                 }
-
             });
 
+            // Cerrar modal de confirmación con fondo o ESC
+(function(){
+    const m = document.getElementById('modal-confirm');
+    if (!m) return;
+    m.addEventListener('click', (ev) => { if (ev.target === m) closeConfirm(); });
+    document.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape' && !m.classList.contains('hidden')) closeConfirm();
+    });
+})();
+
             async function cargarCoops() {
-                const url = `${API}?action=coops_ingeniero`;
+                const url = `${API}?action=coops_inge   niero`;
                 // console.log('[SVE][Pulv] Fetch coops:', url);
                 try {
                     const res = await fetch(url, {
@@ -1127,7 +1136,7 @@ unset($_SESSION['cierre_info']);
             }
 
             async function eliminarSolicitud(id) {
-                if (!confirm('¿Eliminar (cancelar) este pedido?')) return;
+                // solo usa el modal de confirmación; aquí NO se pide confirmación de nuevo
                 const res = await fetch(API, {
                     method: 'POST',
                     credentials: 'same-origin',
@@ -1141,7 +1150,14 @@ unset($_SESSION['cierre_info']);
                 });
                 const j = await res.json();
                 if (!j.ok) {
-                    alert(j.error || 'No se pudo eliminar');
+                    // mostrar error sin alert nativo
+                    const msg = (j.error || 'No se pudo eliminar');
+                    const host = document.getElementById('cards-solicitudes');
+                    if (host) {
+                        host.insertAdjacentHTML('afterbegin', `<div class="alert alert-error">${esc(msg)}</div>`);
+                    } else {
+                        console.error(msg);
+                    }
                     return;
                 }
                 cargar();
