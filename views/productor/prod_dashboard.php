@@ -144,7 +144,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     <div id="globalSpinner" class="spinner-overlay hidden">
         <div class="spinner"></div>
     </div>
-    <!-- <script src="https://www.fernandosalguero.com/cdn/components/spinner-global.js"></script> -->
 
     <!-- Modal completar datos de contacto -->
     <div id="modalCompletarDatos" class="modal hidden" aria-hidden="true" role="dialog" aria-labelledby="modal-title" aria-describedby="modal-desc">
