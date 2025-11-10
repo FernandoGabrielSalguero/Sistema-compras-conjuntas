@@ -238,6 +238,12 @@ unset($_SESSION['cierre_info']);
         #modal-detalle .modal-content,
         #registro-container {
             overflow-x: auto;
+            overflow-y: auto;
+            max-height: 80vh;
+            /* ocupa 80% del alto visible */
+            overscroll-behavior: contain;
+            scrollbar-gutter: stable both-edges;
+            /* evita saltos */
         }
 
         .rf-row {
@@ -455,6 +461,22 @@ unset($_SESSION['cierre_info']);
         #modal-detalle .modal-content {
             scrollbar-gutter: stable both-edges;
             overscroll-behavior: contain;
+        }
+
+        /* Ajuste para el modal Detalle (scroll interno completo) */
+        #modal-detalle .modal-content {
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+            max-height: 80vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #modal-detalle form {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 1rem;
         }
     </style>
 
