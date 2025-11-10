@@ -247,6 +247,7 @@
         <p class="notice">Completá los campos y confirmá. Se enviará un correo al productor y, si corresponde, a la cooperativa.</p>
 
         <form id="frm" novalidate>
+            <input type="hidden" id="solicitud_id" />
             <div class="grid">
 
                 <!-- Productor (typeahead) -->
@@ -368,8 +369,7 @@
             </div>
 
             <div class="btns">
-                <button type="button" id="enviar" class="btn-primary">Confirmar y guardar</button>
-                <button type="reset">Limpiar</button>
+                <button type="button" id="enviar" class="btn btn-aceptar">Actualizar</button>
             </div>
         </form>
 
@@ -597,7 +597,12 @@
                 const sol = window.__PREFILL_SOL;
                 if (!sol) return;
 
+                // 0) ID de la solicitud (edición)
+                const hId = document.querySelector('#solicitud_id');
+                if (hId && sol.id) hId.value = String(sol.id);
+
                 // 1) Productor
+
                 __prefillProductor({
                     id_real: sol.productor_id_real || sol.id_real || '',
                     nombre: sol.productor_nombre || sol.usuario || ''
@@ -620,16 +625,16 @@
                     bubbles: true
                 }));
                 // Cooperativa: si viene id_real lo usamos; si no, intentamos por nombre
-if (sol.coop_descuento_id_real) {
-    setVal(document.querySelector('#coop'), sol.coop_descuento_id_real);
-} else if (sol.coop_descuento_nombre) {
-    const sel = document.querySelector('#coop');
-    const nombre = (sol.coop_descuento_nombre || '').toString().trim();
-    if (sel && nombre) {
-        const opt = Array.from(sel.options).find(o => (o.text || '').trim() === nombre);
-        if (opt) sel.value = opt.value;
-    }
-}
+                if (sol.coop_descuento_id_real) {
+                    setVal(document.querySelector('#coop'), sol.coop_descuento_id_real);
+                } else if (sol.coop_descuento_nombre) {
+                    const sel = document.querySelector('#coop');
+                    const nombre = (sol.coop_descuento_nombre || '').toString().trim();
+                    if (sel && nombre) {
+                        const opt = Array.from(sel.options).find(o => (o.text || '').trim() === nombre);
+                        if (opt) sel.value = opt.value;
+                    }
+                }
                 setVal(document.querySelector('#rango'), sol.rango);
 
                 // 4) Dirección / obs
@@ -693,6 +698,8 @@ if (sol.coop_descuento_id_real) {
                     getJSON(`${CTRL}?action=solicitud&id=${id}`).then((data) => {
                         if (data && typeof data === 'object') {
                             window.__PREFILL_SOL = data;
+                            const hId = document.querySelector('#solicitud_id');
+                            if (hId && data.id) hId.value = String(data.id);
                             applyPrefillOnce();
                         }
                     }).catch(() => {
@@ -996,6 +1003,7 @@ if (sol.coop_descuento_id_real) {
                 // payload base
                 const patIds = getSelectedPatIds();
                 const payload = {
+                    solicitud_id: Number($('#solicitud_id').value || 0),
                     productor_id_real: $('#prod_idreal').value || null,
                     productor_nombre_snapshot: $('#prod_nombre_snap').value || null,
                     representante: $('#representante').value,
@@ -1081,22 +1089,13 @@ if (sol.coop_descuento_id_real) {
 
                 try {
                     const res = await postJSON(CTRL, payload);
-                    msg.textContent = `Solicitud creada. ID: ${res.id}`;
+                    msg.textContent = `Solicitud actualizada. ID: ${res.id}`;
                     msg.classList.remove('hidden');
-                    $('#frm').reset();
-                    show(coopWrap, false);
-                    // limpiar estado productos
-                    ProductosState.seleccionados.clear();
-                    ProductosState.catalog.clear();
-                    ProductosState.catalogByPat.clear();
-                    ProductosState.customByPat.clear();
-                    cardsProductos.innerHTML = '';
-                    cardProd.hidden = true;
-                    recalcCostos();
                 } catch (e) {
                     msg.textContent = 'Error: ' + (e.message || e);
                     msg.classList.remove('hidden');
                 }
+
             });
         })();
     </script>

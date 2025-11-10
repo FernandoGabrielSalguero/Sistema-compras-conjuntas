@@ -294,6 +294,141 @@ $st->execute([
         }
     }
 
+    public function actualizarSolicitud(int $id, array $d): array
+{
+    if ($id <= 0) {
+        return ['ok' => false, 'error' => 'ID inválido'];
+    }
+
+    $this->pdo->beginTransaction();
+    try {
+        // 1) nombre de cooperativa (si viene id_real)
+        $coopNombre = null;
+        if (!empty($d['coop_descuento_id_real'])) {
+            $coopNombre = $this->nombrePorIdReal((string)$d['coop_descuento_id_real']) ?? null;
+        }
+
+        // 2) actualizar cabecera (NO cambiamos estado)
+        $st = $this->pdo->prepare("
+            UPDATE drones_solicitud SET
+                productor_id_real = ?,
+                representante = ?,
+                linea_tension = ?,
+                zona_restringida = ?,
+                corriente_electrica = ?,
+                agua_potable = ?,
+                libre_obstaculos = ?,
+                area_despegue = ?,
+                superficie_ha = ?,
+                forma_pago_id = ?,
+                coop_descuento_nombre = ?,
+                dir_provincia = ?,
+                dir_localidad = ?,
+                dir_calle = ?,
+                dir_numero = ?,
+                observaciones = ?
+            WHERE id = ?
+            LIMIT 1
+        ");
+        $st->execute([
+            $d['productor_id_real'],
+            $d['representante'],
+            $d['linea_tension'],
+            $d['zona_restringida'],
+            $d['corriente_electrica'],
+            $d['agua_potable'],
+            $d['libre_obstaculos'],
+            $d['area_despegue'],
+            $d['superficie_ha'],
+            $d['forma_pago_id'],
+            $coopNombre,
+            $d['dir_provincia'],
+            $d['dir_localidad'],
+            $d['dir_calle'],
+            $d['dir_numero'],
+            $d['observaciones'],
+            $id
+        ]);
+
+        // 2.b) snapshot productor_nombre si existe columna
+        $this->actualizarProductorNombreSnapshot($id, $d['productor_nombre_snapshot'] ?? null);
+
+        // 3) Patologías: reemplazar
+        $this->pdo->prepare("DELETE FROM drones_solicitud_motivo WHERE solicitud_id=?")->execute([$id]);
+        $stm = $this->pdo->prepare("INSERT INTO drones_solicitud_motivo (solicitud_id,patologia_id,es_otros) VALUES (?,?,0)");
+        foreach ((array)($d['patologia_ids'] ?? []) as $pid) {
+            $stm->execute([$id, (int)$pid]);
+        }
+
+        // 4) Rango: inserto nuevo registro (mantengo histórico)
+        $this->pdo->prepare("INSERT INTO drones_solicitud_rango (solicitud_id,rango) VALUES (?,?)")
+                  ->execute([$id, $d['rango']]);
+
+        // 5) Items: reemplazar
+        $this->pdo->prepare("DELETE FROM drones_solicitud_item WHERE solicitud_id=?")->execute([$id]);
+        $productosTotal = 0.0;
+        if (!empty($d['items']) && is_array($d['items'])) {
+            $sti = $this->pdo->prepare("INSERT INTO drones_solicitud_item
+                (solicitud_id, patologia_id, fuente, producto_id, costo_hectarea_snapshot, total_producto_snapshot, nombre_producto)
+                VALUES (?,?,?,?,?,?,?)");
+
+            foreach ($d['items'] as $it) {
+                $pid    = isset($it['producto_id']) ? (int)$it['producto_id'] : 0;
+                $fuente = (string)($it['fuente'] ?? '');
+                $custom = isset($it['nombre_producto_custom']) ? trim((string)$it['nombre_producto_custom']) : '';
+                $patIt  = isset($it['patologia_id']) ? (int)$it['patologia_id'] : 0;
+
+                if ($fuente === 'productor') {
+                    $nombre   = $custom !== '' ? mb_substr($custom, 0, 150) : $this->productoNombre($pid);
+                    $costoHa  = 0.00;
+                    $total    = 0.00;
+                    $prodIdDb = ($pid > 0) ? $pid : null;
+                } else { // SVE
+                    $nombre   = $this->productoNombre($pid);
+                    $costoHa  = $this->productoCostoHa($pid);
+                    $total    = (float)$d['superficie_ha'] * (float)$costoHa;
+                    $prodIdDb = $pid;
+                    $productosTotal += $total;
+                }
+
+                $sti->execute([$id, $patIt, $fuente, $prodIdDb, $costoHa, $total, $nombre]);
+            }
+        }
+
+        // 6) Costos: recalcular y upsert
+        $row       = $this->costoBaseHectarea();
+        $costoHa   = (float)$row['costo'];
+        $moneda    = (string)$row['moneda'];
+        $baseHa    = (float)$d['superficie_ha'];
+        $baseTotal = $baseHa * $costoHa;
+        $total     = $baseTotal + $productosTotal;
+
+        // UPDATE si existe, sino INSERT
+        $upd = $this->pdo->prepare("UPDATE drones_solicitud_costos
+            SET moneda=?, costo_base_por_ha=?, base_ha=?, base_total=?, productos_total=?, total=?, desglose_json=NULL
+            WHERE solicitud_id=?");
+        $upd->execute([$moneda, $costoHa, $baseHa, $baseTotal, $productosTotal, $total, $id]);
+        if ($upd->rowCount() === 0) {
+            $ins = $this->pdo->prepare("INSERT INTO drones_solicitud_costos
+                (solicitud_id,moneda,costo_base_por_ha,base_ha,base_total,productos_total,total,desglose_json)
+                VALUES (?,?,?,?,?,?,?,NULL)");
+            $ins->execute([$id, $moneda, $costoHa, $baseHa, $baseTotal, $productosTotal, $total]);
+        }
+
+        // 7) Evento
+        $this->pdo->prepare("INSERT INTO drones_solicitud_evento (solicitud_id,tipo,detalle,actor)
+            VALUES (?,'actualizada','Solicitud actualizada desde el editor','sistema')")
+            ->execute([$id]);
+
+        $this->pdo->commit();
+        return ['ok' => true, 'id' => $id];
+    } catch (\Throwable $e) {
+        $this->pdo->rollBack();
+        return ['ok' => false, 'error' => $e->getMessage()];
+    }
+}
+
+
     /**
      * Devuelve el detalle completo de una solicitud para prellenar el editor.
      * Estructura:

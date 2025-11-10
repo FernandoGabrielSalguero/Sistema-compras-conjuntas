@@ -20,6 +20,12 @@ try {
     $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
     $action = $_GET['action'] ?? '';
 
+    // Si es actualización, exigir ID válido
+    if (!empty($payload['solicitud_id']) && $payload['solicitud_id'] <= 0) {
+        $resp([], false, 'ID de solicitud inválido');
+        exit;
+    }
+
     /* ===== GET ===== */
     if ($method === 'GET') {
         switch ($action) {
@@ -118,7 +124,8 @@ try {
         }, $data['items'] ?? [])));
 
         $payload = [
-            'productor_id_real'        => empty($data['productor_id_real']) ? null : substr((string)$data['productor_id_real'], 0, 20),
+            'solicitud_id'              => isset($data['solicitud_id']) ? (int)$data['solicitud_id'] : 0,
+            'productor_id_real'         => empty($data['productor_id_real']) ? null : substr((string)$data['productor_id_real'], 0, 20),
             'productor_nombre_snapshot' => isset($data['productor_nombre_snapshot']) ? mb_substr((string)$data['productor_nombre_snapshot'], 0, 150) : null,
 
             'representante'       => in_array($data['representante'] ?? '', ['si', 'no'], true) ? $data['representante'] : null,
@@ -188,39 +195,49 @@ try {
             }
         }
 
-        // Crear
-        $res = $model->crearSolicitud($payload);
-        if (!($res['ok'] ?? false)) {
-            $resp([], false, $res['error'] ?? 'No se pudo crear la solicitud');
-            exit;
+        // Crear o actualizar
+        if ($payload['solicitud_id'] > 0) {
+            $res = $model->actualizarSolicitud($payload['solicitud_id'], $payload);
+            if (!($res['ok'] ?? false)) {
+                $resp([], false, $res['error'] ?? 'No se pudo actualizar la solicitud');
+                exit;
+            }
+            $id = (int)$res['id'];
+        } else {
+            $res = $model->crearSolicitud($payload);
+            if (!($res['ok'] ?? false)) {
+                $resp([], false, $res['error'] ?? 'No se pudo crear la solicitud');
+                exit;
+            }
+            $id = (int)$res['id'];
         }
-        $id = (int)$res['id'];
 
-        // Correos
-        $prodId = (string)$payload['productor_id_real'];
-        $coopId = $payload['coop_descuento_id_real'] ? (string)$payload['coop_descuento_id_real'] : '';
-        $mailProd = $model->correoPreferidoPorIdReal($prodId);
-        $mailCoop = $coopId !== '' ? $model->correoPreferidoPorIdReal($coopId) : null;
+        // Correos (solo al crear; al actualizar no notificamos)
+        if ($payload['solicitud_id'] <= 0) {
+            $prodId = (string)$payload['productor_id_real'];
+            $coopId = $payload['coop_descuento_id_real'] ? (string)$payload['coop_descuento_id_real'] : '';
+            $mailProd = $model->correoPreferidoPorIdReal($prodId);
+            $mailCoop = $coopId !== '' ? $model->correoPreferidoPorIdReal($coopId) : null;
 
-        // nombre efectivo (snapshot si vino, sino lookup)
-        $nomProd = $payload['productor_nombre_snapshot'] ?: ($model->nombrePorIdReal($prodId) ?? 'Productor');
-        $asunto  = "Solicitud de pulverización creada (ID #$id)";
-        $lineas  = [
-            "Hola $nomProd,",
-            "Tu solicitud de pulverización con drones fue registrada.",
-            "ID: #$id",
-            "Hectáreas: " . $payload['superficie_ha'],
-            "Patologías: " . implode(',', $payload['patologia_ids']),
-            "Rango: " . $payload['rango'],
-            "Dirección: " . $payload['dir_calle'] . ' ' . $payload['dir_numero'] . ', ' . $payload['dir_localidad'] . ', ' . $payload['dir_provincia'],
-            "",
-            "Si no fuiste vos, por favor contactá al soporte."
-        ];
-        $cuerpo = implode("\n", $lineas);
+            $nomProd = $payload['productor_nombre_snapshot'] ?: ($model->nombrePorIdReal($prodId) ?? 'Productor');
+            $asunto  = "Solicitud de pulverización creada (ID #$id)";
+            $lineas  = [
+                "Hola $nomProd,",
+                "Tu solicitud de pulverización con drones fue registrada.",
+                "ID: #$id",
+                "Hectáreas: " . $payload['superficie_ha'],
+                "Patologías: " . implode(',', $payload['patologia_ids']),
+                "Rango: " . $payload['rango'],
+                "Dirección: " . $payload['dir_calle'] . ' ' . $payload['dir_numero'] . ', ' . $payload['dir_localidad'] . ', ' . $payload['dir_provincia'],
+                "",
+                "Si no fuiste vos, por favor contactá al soporte."
+            ];
+            $cuerpo = implode("\n", $lineas);
 
-        @enviar_correo_simple($mailProd, $asunto, $cuerpo);
-        if ($mailCoop) {
-            @enviar_correo_simple($mailCoop, $asunto, "Cooperativa:\nSe creó la solicitud ID #$id para el productor $nomProd.\n" . $cuerpo);
+            @enviar_correo_simple($mailProd, $asunto, $cuerpo);
+            if ($mailCoop) {
+                @enviar_correo_simple($mailCoop, $asunto, "Cooperativa:\nSe creó la solicitud ID #$id para el productor $nomProd.\n" . $cuerpo);
+            }
         }
 
         $resp(['id' => $id]);
