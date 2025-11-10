@@ -331,6 +331,13 @@ unset($_SESSION['cierre_info']);
             font-size: .75rem;
             border: 1px solid #e5e7eb
         }
+
+        /* Ocultar acciones en pedidos completados */
+.sol-card.estado-completada .btn-ver,
+.sol-card.estado-completada .btn-editar,
+.sol-card.estado-completada .btn-eliminar {
+    display: none !important;
+}
     </style>
 
 </head>
@@ -925,12 +932,13 @@ unset($_SESSION['cierre_info']);
             });
 
 
-            function row(r) {
+function row(r) {
                 const estado = normEstado(r.estado);
                 const precio = fmtMoney(r.costo_total);
                 const badge = `<span class="badge estado">${r.estado || '—'}</span>`;
+                const estadoClass = estado === 'completada' ? 'estado-completada' : '';
                 return `
-    <div class="sol-card">
+    <div class="sol-card ${estadoClass}">
       <div>
         <div class="titulo">${esc(r.productor_nombre || r.productor_id_real)}</div>
         <div class="numero">Pedido número: ${esc(r.id)}</div>
@@ -949,6 +957,7 @@ unset($_SESSION['cierre_info']);
       </div>
     </div>`;
             }
+
 
             // Delegación para acciones de tarjeta
             $cards.addEventListener('click', (ev) => {
