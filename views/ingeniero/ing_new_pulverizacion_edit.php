@@ -369,7 +369,7 @@
             </div>
 
             <div class="btns">
-                <button type="button" id="enviar" class="btn btn-aceptar">Actualizar</button>
+                <button type="button" id="enviar" class="btn btn-info">Actualizar</button>
             </div>
         </form>
 
