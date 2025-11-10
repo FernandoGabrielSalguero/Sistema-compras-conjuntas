@@ -531,6 +531,175 @@
                 }
             }
 
+            // ===== Prefill completo de solicitud: helpers y aplicación =====
+            window.__PREFILL_SOL = null;
+
+            function setVal(el, v) {
+                if (!el) return;
+                el.value = (v ?? '').toString();
+                el.dispatchEvent(new Event('input', {
+                    bubbles: true
+                }));
+                el.dispatchEvent(new Event('change', {
+                    bubbles: true
+                }));
+            }
+
+            function setBin(el, v) {
+                const val = (v || '').toString().trim().toLowerCase();
+                setVal(el, (val === 'si' || val === 'no') ? val : '');
+            }
+
+            function setNumber(el, v) {
+                const n = Number(v || 0);
+                setVal(el, isFinite(n) ? String(n) : '');
+            }
+
+            function checkChipsByIds(containerSel, ids) {
+                const set = new Set((ids || []).map(x => Number(x)));
+                document.querySelectorAll(`${containerSel} input[type="checkbox"]`).forEach(cb => {
+                    const num = Number(cb.value);
+                    cb.checked = set.has(num);
+                });
+                // Disparar change para que cargue productos por patología
+                document.querySelector(containerSel).dispatchEvent(new Event('change', {
+                    bubbles: true
+                }));
+            }
+
+            async function waitForProductsLoaded(patIds, timeoutMs = 3000) {
+                const start = Date.now();
+                while (Date.now() - start < timeoutMs) {
+                    let ok = true;
+                    for (const pid of (patIds || [])) {
+                        if (!ProductosState.catalogByPat.has(Number(pid))) {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    if (ok) return true;
+                    await new Promise(r => setTimeout(r, 120));
+                }
+                return false;
+            }
+
+            /**
+             * Aplica prellenado completo de la solicitud (campos, dirección, patologías, productos, costos).
+             * Estructura esperada (ejemplos):
+             * - productor_id_real, productor_nombre
+             * - representante, linea_tension, zona_restringida, corriente_electrica, agua_potable, libre_obstaculos, area_despegue
+             * - superficie_ha, forma_pago_id, coop_descuento_id_real, rango
+             * - dir_provincia, dir_localidad, dir_calle, dir_numero, observaciones
+             * - patologia_ids: number[]
+             * - items: [{producto_id, fuente('sve'|'productor'), patologia_id, nombre_producto_custom?}]
+             */
+            async function applyPrefillOnce() {
+                const sol = window.__PREFILL_SOL;
+                if (!sol) return;
+
+                // 1) Productor
+                __prefillProductor({
+                    id_real: sol.productor_id_real || sol.id_real || '',
+                    nombre: sol.productor_nombre || sol.usuario || ''
+                });
+
+                // 2) Binarios
+                setBin(document.querySelector('#representante'), sol.representante);
+                setBin(document.querySelector('#linea_tension'), sol.linea_tension);
+                setBin(document.querySelector('#zona_restringida'), sol.zona_restringida);
+                setBin(document.querySelector('#corriente_electrica'), sol.corriente_electrica);
+                setBin(document.querySelector('#agua_potable'), sol.agua_potable);
+                setBin(document.querySelector('#libre_obstaculos'), sol.libre_obstaculos);
+                setBin(document.querySelector('#area_despegue'), sol.area_despegue);
+
+                // 3) Numéricos / selects
+                setNumber(document.querySelector('#ha'), sol.superficie_ha);
+                setVal(document.querySelector('#pago'), sol.forma_pago_id);
+                // Mostrar/ocultar cooperativa según forma de pago
+                document.querySelector('#pago').dispatchEvent(new Event('change', {
+                    bubbles: true
+                }));
+                setVal(document.querySelector('#coop'), sol.coop_descuento_id_real);
+                setVal(document.querySelector('#rango'), sol.rango);
+
+                // 4) Dirección / obs
+                setVal(document.querySelector('#prov'), sol.dir_provincia || 'Mendoza');
+                setVal(document.querySelector('#loc'), sol.dir_localidad);
+                setVal(document.querySelector('#calle'), sol.dir_calle);
+                setVal(document.querySelector('#nro'), sol.dir_numero);
+                setVal(document.querySelector('#obs'), sol.observaciones);
+
+                // 5) Patologías -> check chips y cargar productos
+                const patIds = Array.isArray(sol.patologia_ids) ? sol.patologia_ids.map(Number) :
+                    (sol.patologias || sol.patology_ids || []).map(Number);
+                if (patIds.length) {
+                    checkChipsByIds('#pat-chips', patIds);
+                    // Esperar a que el fetch de productos por patología complete y renderice tarjetas
+                    await waitForProductsLoaded(patIds);
+
+                    // 6) Productos: marcar los seleccionados (SVE) y registrar "Otro" (productor)
+                    const items = Array.isArray(sol.items) ? sol.items : [];
+                    const sve = items.filter(it => Number(it.producto_id) > 0 && (it.fuente || 'sve') === 'sve');
+                    const otros = items.filter(it => (Number(it.producto_id) === 0) || (it.fuente || '') === 'productor');
+
+                    // Seleccionar chips de productos SVE por clave `${id}_${patologia_id}`
+                    sve.forEach(it => {
+                        const key = `${Number(it.producto_id)}_${Number(it.patologia_id)}`;
+                        const cb = document.querySelector(`.pat-card input[type="checkbox"][value="${key}"]`);
+                        if (cb) {
+                            cb.checked = true;
+                            cb.dispatchEvent(new Event('change', {
+                                bubbles: true
+                            }));
+                        }
+                    });
+
+                    // Completar campos "Otro" por patología
+                    otros.forEach(it => {
+                        const pid = Number(it.patologia_id);
+                        const inp = document.querySelector(`.pat-card .prod-custom[data-patologia-id="${pid}"]`);
+                        if (inp) {
+                            setVal(inp, (it.nombre_producto_custom || it.nombre || '').toString());
+                        }
+                    });
+                }
+
+                // 7) Recalcular costos
+                try {
+                    recalcCostos();
+                } catch (e) {}
+
+                // Consumir prefill (aplicar una sola vez)
+                window.__PREFILL_SOL = null;
+            }
+
+            // Intento de prefill por parámetro ?id=... usando el backend (opcional)
+            (function tryQueryPrefill() {
+                try {
+                    const qs = new URLSearchParams(location.search);
+                    const id = Number(qs.get('id') || 0);
+                    if (!id) return;
+                    // Si existe endpoint de detalle, se usará; si no, se ignora
+                    getJSON(`${CTRL}?action=solicitud&id=${id}`).then((data) => {
+                        if (data && typeof data === 'object') {
+                            window.__PREFILL_SOL = data;
+                            applyPrefillOnce();
+                        }
+                    }).catch(() => {
+                        /* silencioso */ });
+                } catch (e) {}
+            })();
+
+            // Reaplicar cuando finaliza init() (catálogos y combos cargados)
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    try {
+                        applyPrefillOnce();
+                    } catch (e) {}
+                }, 0);
+            });
+
+
             // 1) Escucha un evento para prefill (padre puede dispararlo al abrir el modal)
             window.addEventListener('sve:modal_prefill', (ev) => {
                 try {
@@ -566,15 +735,27 @@
                 try {
                     const data = ev && ev.data ? ev.data : null;
                     if (!data) return;
-                    // Acepta { type:'sve:modal_prefill', payload:{ id_real, nombre } } o el objeto directo
+
+                    // Prefill mínimo de productor (ya existente)
                     if (data.type === 'sve:modal_prefill' && data.payload) {
                         __prefillProductor(data.payload);
-                    } else if (data.id_real || data.productor_id_real || data.nombre || data.usuario) {
+                        return;
+                    }
+                    if (data.id_real || data.productor_id_real || data.nombre || data.usuario) {
                         __prefillProductor(data);
+                        return;
+                    }
+
+                    // Prefill COMPLETO de solicitud
+                    if (data.type === 'sve:prefill_solicitud' && data.payload) {
+                        window.__PREFILL_SOL = data.payload;
+                        // Intento aplicar si ya está todo cargado
+                        try {
+                            applyPrefillOnce();
+                        } catch (e) {}
                     }
                 } catch (e) {}
             });
-
 
             let items = [];
             txt.addEventListener('input', async () => {
