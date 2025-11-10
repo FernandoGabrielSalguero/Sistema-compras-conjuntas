@@ -235,8 +235,9 @@ unset($_SESSION['cierre_info']);
 
         /* Opcional: impedir scroll horizontal por contenidos anchos */
         #modal .modal-content,
+        #modal-detalle .modal-content,
         #registro-container {
-            overflow-x: hidden;
+            overflow-x: auto;
         }
 
         .rf-row {
@@ -439,6 +440,21 @@ unset($_SESSION['cierre_info']);
             height: 120px;
             object-fit: cover;
             border-radius: 10px;
+        }
+
+        /* Evitar cortes en tablas dentro de los modales: forzar ancho mínimo y permitir scroll */
+        .res-table table,
+        .rf-table table,
+        .data-table {
+            min-width: 760px;
+            /* ajustable si necesitás más/menos */
+        }
+
+        /* Opcional: mejora de usabilidad del scroll horizontal */
+        #modal .modal-content,
+        #modal-detalle .modal-content {
+            scrollbar-gutter: stable both-edges;
+            overscroll-behavior: contain;
         }
     </style>
 
