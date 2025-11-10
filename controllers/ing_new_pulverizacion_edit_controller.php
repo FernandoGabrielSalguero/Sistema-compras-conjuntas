@@ -20,12 +20,6 @@ try {
     $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
     $action = $_GET['action'] ?? '';
 
-    // Si es actualización, exigir ID válido
-    if (!empty($payload['solicitud_id']) && $payload['solicitud_id'] <= 0) {
-        $resp([], false, 'ID de solicitud inválido');
-        exit;
-    }
-
     /* ===== GET ===== */
     if ($method === 'GET') {
         switch ($action) {
@@ -193,6 +187,12 @@ try {
                     exit;
                 }
             }
+        }
+
+        // Si es actualización, exigir ID válido (ahora que $payload existe)
+        if (!empty($payload['solicitud_id']) && $payload['solicitud_id'] <= 0) {
+            $resp([], false, 'ID de solicitud inválido');
+            exit;
         }
 
         // Crear o actualizar

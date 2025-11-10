@@ -67,7 +67,14 @@
             display: flex;
             gap: 8px;
             justify-content: flex-end;
-            margin-top: 10px
+            margin-top: 10px;
+            position: relative;
+            z-index: 50;
+        }
+
+        .btns,
+        .btns * {
+            pointer-events: auto;
         }
 
         .btn-primary {
@@ -369,8 +376,9 @@
             </div>
 
             <div class="btns">
-                <button type="button" id="enviar" class="btn btn-info">Actualizar</button>
+                <button type="button" id="enviar" class="btn-primary">Actualizar</button>
             </div>
+
         </form>
 
         <div id="msg" class="notice hidden"></div>
@@ -703,7 +711,8 @@
                             applyPrefillOnce();
                         }
                     }).catch(() => {
-                        /* silencioso */ });
+                        /* silencioso */
+                    });
                 } catch (e) {}
             })();
 
