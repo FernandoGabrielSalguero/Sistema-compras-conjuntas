@@ -291,6 +291,7 @@ unset($_SESSION['cierre_info']);
             display: grid;
             grid-template-columns: 1fr auto;
             gap: .5rem .75rem;
+            margin: 10px;
         }
 
         .sol-card .titulo {
