@@ -336,7 +336,7 @@ unset($_SESSION['cierre_info']);
             padding: .15rem .5rem;
             border-radius: 999px;
             font-size: .75rem;
-            border: 1px solid #e5e7eb
+            background: #5b21b6;
         }
 
         /* Ocultar acciones en pedidos completados */
