@@ -378,7 +378,7 @@
 
     <script>
         (() => {
-            const CTRL = '../../controllers/ing_new_pulverizacion_controller.php';
+            const CTRL = '../../controllers/ing_new_pulverizacion_edit_controller.php';
 
             const $ = s => document.querySelector(s);
             const show = (el, v) => el.classList.toggle('hidden', !v);
