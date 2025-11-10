@@ -192,7 +192,7 @@ final class IngNewPulverizacionModel
             // 1) solicitud
             $st = $this->pdo->prepare("INSERT INTO drones_solicitud
               (productor_id_real,representante,linea_tension,zona_restringida,corriente_electrica,agua_potable,
-               libre_obstaculos,area_despegue,superficie_ha,forma_pago_id,coop_descuento_nombre,
+               libre_obstaculos,area_despegue,superficie_ha,forma_pago_id,coop_descuento_id_real,
                dir_provincia,dir_localidad,dir_calle,dir_numero,observaciones,estado)
                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'ingresada')");
             $st->execute([
@@ -206,13 +206,14 @@ final class IngNewPulverizacionModel
                 $d['area_despegue'],
                 $d['superficie_ha'],
                 $d['forma_pago_id'],
-                $d['coop_descuento_nombre'],
+                $d['coop_descuento_id_real'],
                 $d['dir_provincia'],
                 $d['dir_localidad'],
                 $d['dir_calle'],
                 $d['dir_numero'],
                 $d['observaciones']
             ]);
+
             $sid = (int)$this->pdo->lastInsertId();
 
             // 1.b) snapshot de nombre (si columna existe)
@@ -282,5 +283,89 @@ final class IngNewPulverizacionModel
             $this->pdo->rollBack();
             return ['ok' => false, 'error' => $e->getMessage()];
         }
+    }
+
+    /**
+     * Devuelve el detalle completo de una solicitud para prellenar el editor.
+     * Estructura:
+     * [
+     *   id, productor_id_real, productor_nombre,
+     *   representante, linea_tension, zona_restringida, corriente_electrica, agua_potable,
+     *   libre_obstaculos, area_despegue, superficie_ha, forma_pago_id, coop_descuento_id_real,
+     *   rango, dir_provincia, dir_localidad, dir_calle, dir_numero, observaciones,
+     *   patologia_ids: int[],
+     *   items: [{producto_id, fuente('sve'|'productor'), patologia_id, nombre_producto_custom?}]
+     * ]
+     */
+    public function detalleSolicitud(int $id): ?array
+    {
+        if ($id <= 0) return null;
+
+        // 1) Base de la solicitud
+        $sqlBase = "
+            SELECT
+                s.id,
+                s.productor_id_real,
+                COALESCE(s.productor_nombre, u.usuario) AS productor_nombre,
+                s.representante,
+                s.linea_tension,
+                s.zona_restringida,
+                s.corriente_electrica,
+                s.agua_potable,
+                s.libre_obstaculos,
+                s.area_despegue,
+                s.superficie_ha,
+                s.forma_pago_id,
+                s.coop_descuento_id_real,
+                s.dir_provincia,
+                s.dir_localidad,
+                s.dir_calle,
+                s.dir_numero,
+                COALESCE(s.observaciones,'') AS observaciones
+            FROM drones_solicitud s
+            LEFT JOIN usuarios u ON u.id_real = s.productor_id_real
+            WHERE s.id = :id
+            LIMIT 1";
+        $st = $this->pdo->prepare($sqlBase);
+        $st->execute([':id' => $id]);
+        $base = $st->fetch(PDO::FETCH_ASSOC);
+        if (!$base) return null;
+
+        // 2) Rango (último registrado)
+        $sqlRango = "SELECT rango FROM drones_solicitud_rango WHERE solicitud_id = ? ORDER BY id DESC LIMIT 1";
+        $stR = $this->pdo->prepare($sqlRango);
+        $stR->execute([$id]);
+        $rango = $stR->fetchColumn();
+        $base['rango'] = $rango ? (string)$rango : '';
+
+        // 3) Patologías seleccionadas
+        $sqlPat = "SELECT patologia_id FROM drones_solicitud_motivo WHERE solicitud_id = ? AND COALESCE(es_otros,0)=0";
+        $stP = $this->pdo->prepare($sqlPat);
+        $stP->execute([$id]);
+        $base['patologia_ids'] = array_map('intval', $stP->fetchAll(PDO::FETCH_COLUMN));
+
+        // 4) Items (productos SVE y/o “Otro” del productor)
+        $sqlItems = "
+            SELECT
+                COALESCE(producto_id,0) AS producto_id,
+                patologia_id,
+                fuente,
+                NULLIF(nombre_producto,'') AS nombre_producto_custom
+            FROM drones_solicitud_item
+            WHERE solicitud_id = ?";
+        $stI = $this->pdo->prepare($sqlItems);
+        $stI->execute([$id]);
+        $items = [];
+        while ($row = $stI->fetch(PDO::FETCH_ASSOC)) {
+            $items[] = [
+                'producto_id' => (int)$row['producto_id'],
+                'fuente' => in_array($row['fuente'], ['sve', 'productor'], true) ? $row['fuente'] : 'sve',
+                'patologia_id' => (int)$row['patologia_id'],
+                'nombre_producto_custom' => $row['nombre_producto_custom'] !== null ? (string)$row['nombre_producto_custom'] : null,
+            ];
+        }
+        $base['items'] = $items;
+
+        return $base;
     }
 }
