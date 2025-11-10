@@ -1045,7 +1045,6 @@ unset($_SESSION['cierre_info']);
         <div class="mt-1">${badge}</div>
       </div>
       <div class="acciones">
-        <button class="btn btn-info btn-ver" data-id="${r.id}">Ver</button>
         <button class="btn btn-aceptar btn-editar" data-id="${r.id}">Editar</button>
         <button class="btn btn-cancelar btn-eliminar" data-id="${r.id}">Eliminar</button>
         ${estado === 'completada' ? `
