@@ -333,11 +333,113 @@ unset($_SESSION['cierre_info']);
         }
 
         /* Ocultar acciones en pedidos completados */
-.sol-card.estado-completada .btn-ver,
-.sol-card.estado-completada .btn-editar,
-.sol-card.estado-completada .btn-eliminar {
-    display: none !important;
-}
+        .sol-card.estado-completada .btn-ver,
+        .sol-card.estado-completada .btn-editar,
+        .sol-card.estado-completada .btn-eliminar {
+            display: none !important;
+        }
+
+        /* ====== Resumen Pedido (modal detalle) ====== */
+        .res-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: .9rem;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
+            margin-bottom: .8rem;
+        }
+
+        .res-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .5rem;
+            margin-bottom: .4rem;
+        }
+
+        .res-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #374151;
+        }
+
+        .res-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: .15rem .55rem;
+            border-radius: 999px;
+            font-size: .75rem;
+            border: 1px solid #e5e7eb;
+            background: #f7f8fb;
+        }
+
+        .res-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .6rem .8rem;
+        }
+
+        @media (max-width: 720px) {
+            .res-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .res-kv {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: .4rem;
+        }
+
+        .res-kv .k {
+            color: #6b7280;
+            font-size: .85rem;
+        }
+
+        .res-kv .v {
+            font-weight: 500;
+        }
+
+        .res-table {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .res-table table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .res-table thead th {
+            background: #f7f8fb;
+            font-weight: 600;
+            text-align: left;
+            padding: .55rem .65rem;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: .9rem;
+        }
+
+        .res-table tbody td {
+            padding: .5rem .65rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: .9rem;
+        }
+
+        .res-media {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .6rem;
+        }
+
+        .res-media img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
     </style>
 
 </head>
@@ -516,11 +618,16 @@ unset($_SESSION['cierre_info']);
                                     <input id="md-costo" class="input" type="text" disabled>
                                 </div>
 
+                                <!-- Vista Resumen (se llena por JS). Se muestra en modo lectura -->
+                                <div id="md-summary" class="input-group md:col-span-3"></div>
+
+                                <!-- Editor JSON (solo visible en modo edición) -->
                                 <div class="input-group md:col-span-3">
                                     <label>Contenido completo del pedido (JSON)</label>
                                     <textarea id="md-full" class="textarea" rows="16" spellcheck="false" style="font-family: ui-monospace, Menlo, Consolas, monospace;"></textarea>
                                     <small>En “Editar” podés modificar íntegramente este JSON (solicitud, parámetros, motivos, items+receta, reporte, media y costos).</small>
                                 </div>
+
                             </div>
                         </form>
 
@@ -932,7 +1039,7 @@ unset($_SESSION['cierre_info']);
             });
 
 
-function row(r) {
+            function row(r) {
                 const estado = normEstado(r.estado);
                 const precio = fmtMoney(r.costo_total);
                 const badge = `<span class="badge estado">${r.estado || '—'}</span>`;
@@ -1037,13 +1144,19 @@ function row(r) {
             }
 
             // Debounce simple para búsqueda en vivo
-function debounce(fn, ms=250){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
-const onType = debounce(()=>cargar(), 250);
-$q.addEventListener('input', onType);
+            function debounce(fn, ms = 250) {
+                let t;
+                return (...a) => {
+                    clearTimeout(t);
+                    t = setTimeout(() => fn(...a), ms);
+                };
+            }
+            const onType = debounce(() => cargar(), 250);
+            $q.addEventListener('input', onType);
 
-document.addEventListener('DOMContentLoaded', () => {
-    cargar();
-});
+            document.addEventListener('DOMContentLoaded', () => {
+                cargar();
+            });
 
             async function fetchDetalle(id) {
                 const url = `${API}?action=detalle&id=${id}`;
@@ -1055,80 +1168,265 @@ document.addEventListener('DOMContentLoaded', () => {
                 return j.data;
             }
 
-function openDetalle(id, editable = false) {
-    const el = document.getElementById('modal-detalle');
-    const setRO = (ro) => {
-        document.getElementById('md-fecha').disabled = ro;
-        document.getElementById('md-hora-desde').disabled = ro;
-        document.getElementById('md-hora-hasta').disabled = ro;
-        document.getElementById('md-estado').disabled = ro;
-        document.getElementById('md-piloto').disabled = ro;
-        document.getElementById('md-forma').disabled = ro;
-        document.getElementById('md-obs').disabled = ro;
-        document.getElementById('md-full').disabled = ro;
-        document.getElementById('btn-guardar').classList.toggle('hidden', ro);
-    };
+            function renderResumen(d) {
+                const s = d.solicitud || {};
+                const p = d.parametros || {};
+                const c = d.costos || {};
+                const r = d.reporte || {};
+                const motivos = Array.isArray(d.motivos) ? d.motivos : [];
+                const items = Array.isArray(d.items) ? d.items : [];
+                const media = Array.isArray(d.media) ? d.media : [];
 
-    document.getElementById('md-title').textContent = editable ? 'Editar pedido' : 'Detalle del pedido';
-    setRO(!editable);
-    el.classList.remove('hidden');
+                const estadoBadge = `<span class="res-badge">${esc((s.estado||'').toUpperCase() || '—')}</span>`;
 
-    (async () => {
-        try {
-            const d = await fetchDetalle(id); // ahora devuelve TODO
-            document.getElementById('md-id').value = d.solicitud.id;
-            document.getElementById('md-productor').value = d.solicitud.productor_nombre || d.solicitud.productor_id_real || '—';
-            document.getElementById('md-coop').value = d.solicitud.cooperativa_nombre || '—';
-            document.getElementById('md-fecha').value = d.solicitud.fecha_visita || '';
-            document.getElementById('md-hora-desde').value = d.solicitud.hora_visita_desde || '';
-            document.getElementById('md-hora-hasta').value = d.solicitud.hora_visita_hasta || '';
-            document.getElementById('md-estado').value = (d.solicitud.estado || '').toLowerCase();
-            document.getElementById('md-piloto').value = d.solicitud.piloto_id || '';
-            document.getElementById('md-forma').value = d.solicitud.forma_pago_id || '';
-            document.getElementById('md-obs').value = d.solicitud.observaciones || '';
-            document.getElementById('md-costo').value = fmtMoney((d.costos && d.costos.total) || 0);
-            document.getElementById('md-full').value = JSON.stringify(d, null, 2);
-        } catch (e) {
-            console.error(e);
-            el.querySelector('.form-buttons').insertAdjacentHTML('beforebegin', `<div class="alert alert-error">No se pudo cargar el detalle.</div>`);
-        }
-    })();
-}
+                const kv = (k, v) => `
+      <div class="res-kv">
+        <div class="k">${esc(k)}</div>
+        <div class="v">${esc(v ?? '—')}</div>
+      </div>`;
 
-async function guardarCambios() {
-    const base = {
-        id: Number(document.getElementById('md-id').value),
-        fecha_visita: document.getElementById('md-fecha').value || null,
-        hora_visita_desde: document.getElementById('md-hora-desde').value || null,
-        hora_visita_hasta: document.getElementById('md-hora-hasta').value || null,
-        estado: document.getElementById('md-estado').value || null,
-        piloto_id: document.getElementById('md-piloto').value ? Number(document.getElementById('md-piloto').value) : null,
-        forma_pago_id: document.getElementById('md-forma').value ? Number(document.getElementById('md-forma').value) : null,
-        observaciones: document.getElementById('md-obs').value || null
-    };
+                const tablaItems = `
+      <div class="res-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Principio activo</th>
+              <th>Dosis</th>
+              <th>Unidad</th>
+              <th>Cant. usada</th>
+              <th>Venc.</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map(it => `
+              <tr>
+                <td>${esc(it.nombre_producto ?? '')}</td>
+                <td>${esc(it.principio_activo ?? '')}</td>
+                <td>${esc(it.dosis ?? '')}</td>
+                <td>${esc(it.unidad ?? '')}</td>
+                <td>${esc(it.cant_prod_usado ?? '')}</td>
+                <td>${esc(it.fecha_vencimiento ?? '')}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
 
-    let full;
-    try {
-        full = JSON.parse(document.getElementById('md-full').value || '{}');
-    } catch {
-        alert('El JSON completo tiene formato inválido.');
-        return;
-    }
+                const listaMotivos = motivos.length ?
+                    `<ul style="margin:.2rem 0 .2rem 1rem; list-style: disc;">
+           ${motivos.map(m => `<li>${esc(m.patologia_nombre || '')}${m.es_otros ? ` – ${esc(m.otros_text || '')}` : ''}</li>`).join('')}
+         </ul>` :
+                    `<div class="k" style="opacity:.7">Sin motivos registrados</div>`;
 
-    const res = await fetch(API, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            action: 'update_full',
-            data: { base, full }
-        })
-    });
-    const j = await res.json();
-    if (!j.ok) throw new Error(j.error || 'Error al guardar');
-    closeDetalle();
-    cargar();
-}
+                const fotos = media.filter(x => x.tipo === 'foto');
+                const firmas = media.filter(x => x.tipo && x.tipo.startsWith('firma'));
+
+                const gridFotos = fotos.length ?
+                    `<div class="res-media">
+           ${fotos.map(f => {
+             const src = safeSrc(f.ruta);
+             return src ? `<img src="${src}" alt="foto">` : '';
+           }).join('')}
+         </div>` : `<div class="k" style="opacity:.7">Sin fotos</div>`;
+
+                const gridFirmas = firmas.length ?
+                    `<div class="res-media" style="grid-template-columns: repeat(2, 1fr)">
+           ${firmas.map(f => {
+             const src = safeSrc(f.ruta);
+             return src ? `<img src="${src}" alt="${esc(f.tipo)}">` : '';
+           }).join('')}
+         </div>` : `<div class="k" style="opacity:.7">Sin firmas</div>`;
+
+                return `
+      <div class="res-card">
+        <div class="res-header">
+          <div class="res-title">Solicitud #${esc(s.id || '')}</div>
+          ${estadoBadge}
+        </div>
+        <div class="res-grid">
+          <div>
+            ${kv('Productor', s.productor_nombre || s.productor_id_real)}
+            ${kv('Cooperativa', s.cooperativa_nombre)}
+            ${kv('Fecha visita', s.fecha_visita)}
+            ${kv('Horario', `${s.hora_visita_desde || '—'} – ${s.hora_visita_hasta || '—'}`)}
+            ${kv('Piloto (ID)', s.piloto_id)}
+            ${kv('Forma de pago (ID)', s.forma_pago_id)}
+          </div>
+          <div>
+            ${kv('Costo total', (c.total != null ? fmtMoney(c.total) : '—'))}
+            ${kv('Moneda', c.moneda)}
+            ${kv('Base total', c.base_total)}
+            ${kv('Productos total', c.productos_total)}
+            ${kv('Observaciones', s.observaciones)}
+          </div>
+        </div>
+      </div>
+
+      <div class="res-card">
+        <div class="res-header"><div class="res-title">Parámetros de Aplicación</div></div>
+        <div class="res-grid">
+          <div>
+            ${kv('Volumen (L/ha)', p.volumen_ha)}
+            ${kv('Velocidad (m/s)', p.velocidad_vuelo)}
+            ${kv('Altura vuelo (m)', p.alto_vuelo)}
+          </div>
+          <div>
+            ${kv('Ancho pasada (m)', p.ancho_pasada)}
+            ${kv('Tamaño gota', p.tamano_gota)}
+            ${kv('Obs. agua', p.observaciones_agua)}
+          </div>
+        </div>
+        ${kv('Observaciones', p.observaciones)}
+      </div>
+
+      <div class="res-card">
+        <div class="res-header"><div class="res-title">Motivos / Patologías</div></div>
+        ${listaMotivos}
+      </div>
+
+      <div class="res-card">
+        <div class="res-header"><div class="res-title">Productos e Insumos</div></div>
+        ${tablaItems}
+      </div>
+
+      <div class="res-card">
+        <div class="res-header"><div class="res-title">Reporte Operativo</div></div>
+        <div class="res-grid">
+          <div>
+            ${kv('Fecha visita', r.fecha_visita)}
+            ${kv('Ingreso', r.hora_ingreso)}
+            ${kv('Egreso', r.hora_egreso)}
+            ${kv('Nombre finca', r.nombre_finca)}
+          </div>
+          <div>
+            ${kv('Cultivo', r.cultivo_pulverizado)}
+            ${kv('Superficie (ha)', r.sup_pulverizada)}
+            ${kv('Volumen aplicado (L/ha)', r.vol_aplicado)}
+          </div>
+        </div>
+        <div class="res-grid" style="margin-top:.6rem">
+          <div>
+            ${kv('Vel. viento (m/s)', r.vel_viento)}
+            ${kv('Temperatura (°C)', r.temperatura)}
+            ${kv('Humedad relativa (%)', r.humedad_relativa)}
+          </div>
+          <div>
+            ${kv('Encargado', r.nom_encargado)}
+            ${kv('Operador Drone', r.nom_piloto)}
+            ${kv('Cliente', r.nom_cliente)}
+          </div>
+        </div>
+      </div>
+
+      <div class="res-card">
+        <div class="res-header"><div class="res-title">Registro Fotográfico</div></div>
+        ${gridFotos}
+      </div>
+
+      <div class="res-card">
+        <div class="res-header"><div class="res-title">Firmas</div></div>
+        ${gridFirmas}
+      </div>
+    `;
+            }
+
+
+            function openDetalle(id, editable = false) {
+                const el = document.getElementById('modal-detalle');
+                const setRO = (ro) => {
+                    document.getElementById('md-fecha').disabled = ro;
+                    document.getElementById('md-hora-desde').disabled = ro;
+                    document.getElementById('md-hora-hasta').disabled = ro;
+                    document.getElementById('md-estado').disabled = ro;
+                    document.getElementById('md-piloto').disabled = ro;
+                    document.getElementById('md-forma').disabled = ro;
+                    document.getElementById('md-obs').disabled = ro;
+                    document.getElementById('md-full').disabled = ro;
+                    document.getElementById('btn-guardar').classList.toggle('hidden', ro);
+                };
+
+                document.getElementById('md-title').textContent = editable ? 'Editar pedido' : 'Detalle del pedido';
+                el.classList.remove('hidden');
+
+                // Mostrar/ocultar Resumen vs JSON según modo
+                const summaryHost = document.getElementById('md-summary');
+                const jsonGroup = document.getElementById('md-full').closest('.input-group');
+                if (editable) {
+                    summaryHost.classList.add('hidden');
+                    jsonGroup.classList.remove('hidden');
+                } else {
+                    summaryHost.classList.remove('hidden');
+                    jsonGroup.classList.add('hidden');
+                }
+                setRO(!editable);
+
+                (async () => {
+                    try {
+                        const d = await fetchDetalle(id); // devuelve TODO
+                        document.getElementById('md-id').value = d.solicitud.id;
+                        document.getElementById('md-productor').value = d.solicitud.productor_nombre || d.solicitud.productor_id_real || '—';
+                        document.getElementById('md-coop').value = d.solicitud.cooperativa_nombre || '—';
+                        document.getElementById('md-fecha').value = d.solicitud.fecha_visita || '';
+                        document.getElementById('md-hora-desde').value = d.solicitud.hora_visita_desde || '';
+                        document.getElementById('md-hora-hasta').value = d.solicitud.hora_visita_hasta || '';
+                        document.getElementById('md-estado').value = (d.solicitud.estado || '').toLowerCase();
+                        document.getElementById('md-piloto').value = d.solicitud.piloto_id || '';
+                        document.getElementById('md-forma').value = d.solicitud.forma_pago_id || '';
+                        document.getElementById('md-obs').value = d.solicitud.observaciones || '';
+                        document.getElementById('md-costo').value = fmtMoney((d.costos && d.costos.total) || 0);
+                        document.getElementById('md-full').value = JSON.stringify(d, null, 2);
+
+                        // Pintar resumen en modo lectura
+                        if (!editable && summaryHost) {
+                            summaryHost.innerHTML = renderResumen(d);
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        el.querySelector('.form-buttons').insertAdjacentHTML('beforebegin', `<div class="alert alert-error">No se pudo cargar el detalle.</div>`);
+                    }
+                })();
+            }
+
+
+            async function guardarCambios() {
+                const base = {
+                    id: Number(document.getElementById('md-id').value),
+                    fecha_visita: document.getElementById('md-fecha').value || null,
+                    hora_visita_desde: document.getElementById('md-hora-desde').value || null,
+                    hora_visita_hasta: document.getElementById('md-hora-hasta').value || null,
+                    estado: document.getElementById('md-estado').value || null,
+                    piloto_id: document.getElementById('md-piloto').value ? Number(document.getElementById('md-piloto').value) : null,
+                    forma_pago_id: document.getElementById('md-forma').value ? Number(document.getElementById('md-forma').value) : null,
+                    observaciones: document.getElementById('md-obs').value || null
+                };
+
+                let full;
+                try {
+                    full = JSON.parse(document.getElementById('md-full').value || '{}');
+                } catch {
+                    alert('El JSON completo tiene formato inválido.');
+                    return;
+                }
+
+                const res = await fetch(API, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'update_full',
+                        data: {
+                            base,
+                            full
+                        }
+                    })
+                });
+                const j = await res.json();
+                if (!j.ok) throw new Error(j.error || 'Error al guardar');
+                closeDetalle();
+                cargar();
+            }
 
             async function eliminarSolicitud(id) {
                 // solo usa el modal de confirmación; aquí NO se pide confirmación de nuevo
