@@ -306,7 +306,7 @@ final class IngNewPulverizacionModel
             SELECT
                 s.id,
                 s.productor_id_real,
-                COALESCE(s.productor_nombre, u.usuario) AS productor_nombre,
+                u.usuario AS productor_nombre,
                 s.representante,
                 s.linea_tension,
                 s.zona_restringida,

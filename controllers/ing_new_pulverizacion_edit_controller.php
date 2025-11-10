@@ -70,50 +70,14 @@ try {
                     break;
                 }
 
-                // Pedimos al modelo el detalle completo (solicitud + dirección + patologías + items)
-                // El modelo debe retornar las claves base; aquí normalizamos al formato que espera el front.
-                $det = $model->detalleSolicitud($id); // <-- método del modelo que obtiene TODO
+                $det = $model->detalleSolicitud($id);
                 if (!$det || !is_array($det)) {
                     $resp([], false, 'No se encontró la solicitud');
                     break;
                 }
 
-                // Normalización de campos al contrato que consume el iframe (applyPrefillOnce)
-                $payload = [
-                    'productor_id_real'          => empty($data['productor_id_real']) ? null : substr((string)$data['productor_id_real'], 0, 20),
-                    'productor_nombre_snapshot'  => isset($data['productor_nombre_snapshot']) ? mb_substr((string)$data['productor_nombre_snapshot'], 0, 150) : null,
-
-                    'representante'              => in_array($data['representante'] ?? '', ['si', 'no'], true) ? $data['representante'] : null,
-                    'linea_tension'              => in_array($data['linea_tension'] ?? '', ['si', 'no'], true) ? $data['linea_tension'] : null,
-                    'zona_restringida'           => in_array($data['zona_restringida'] ?? '', ['si', 'no'], true) ? $data['zona_restringida'] : null,
-                    'corriente_electrica'        => in_array($data['corriente_electrica'] ?? '', ['si', 'no'], true) ? $data['corriente_electrica'] : null,
-                    'agua_potable'               => in_array($data['agua_potable'] ?? '', ['si', 'no'], true) ? $data['agua_potable'] : null,
-                    'libre_obstaculos'           => in_array($data['libre_obstaculos'] ?? '', ['si', 'no'], true) ? $data['libre_obstaculos'] : null,
-                    'area_despegue'              => in_array($data['area_despegue'] ?? '', ['si', 'no'], true) ? $data['area_despegue'] : null,
-
-                    'superficie_ha'              => isset($data['superficie_ha']) ? (float)$data['superficie_ha'] : null,
-                    'forma_pago_id'              => isset($data['forma_pago_id']) ? (int)$data['forma_pago_id'] : null,
-
-                    // CONSISTENTE CON EL FRONT: usar id_real de la cooperativa (si aplica)
-                    'coop_descuento_id_real'     => !empty($data['coop_descuento_id_real']) ? substr((string)$data['coop_descuento_id_real'], 0, 100) : null,
-
-                    'patologia_ids'              => array_values(array_unique(array_filter(array_map('intval', (array)($data['patologia_ids'] ?? [])), fn($v) => $v > 0))),
-                    'rango'                      => substr((string)($data['rango'] ?? ''), 0, 50),
-
-                    'dir_provincia'              => substr(trim((string)($data['dir_provincia'] ?? '')), 0, 100),
-                    'dir_localidad'              => substr(trim((string)($data['dir_localidad'] ?? '')), 0, 100),
-                    'dir_calle'                  => substr(trim((string)($data['dir_calle'] ?? '')), 0, 150),
-                    'dir_numero'                 => substr(trim((string)($data['dir_numero'] ?? '')), 0, 20),
-
-                    'observaciones'              => isset($data['observaciones']) ? (string)$data['observaciones'] : null,
-                    'items'                      => $itemsIn
-                ];
-
-                $resp($payload);
-                break;
-
-            default:
-                $resp(['pong' => true]);
+                // Devolver tal cual lo arma el modelo (contrato que consume el front)
+                $resp($det);
                 break;
         }
         exit;
@@ -167,7 +131,7 @@ try {
 
             'superficie_ha'       => isset($data['superficie_ha']) ? (float)$data['superficie_ha'] : null,
             'forma_pago_id'       => isset($data['forma_pago_id']) ? (int)$data['forma_pago_id'] : null,
-            'coop_descuento_nombre' => !empty($data['coop_descuento_id_real']) ? substr((string)$data['coop_descuento_id_real'], 0, 100) : null,
+            'coop_descuento_id_real' => !empty($data['coop_descuento_id_real']) ? substr((string)$data['coop_descuento_id_real'], 0, 100) : null,
 
             'patologia_ids'       => array_values(array_unique(array_filter(array_map('intval', (array)($data['patologia_ids'] ?? [])), fn($v) => $v > 0))),
             'rango'               => substr((string)($data['rango'] ?? ''), 0, 50),
@@ -193,7 +157,7 @@ try {
             $resp([], false, "superficie_ha debe ser > 0");
             exit;
         }
-        if ($payload['forma_pago_id'] === 6 && empty($payload['coop_descuento_nombre'])) {
+        if ($payload['forma_pago_id'] === 6 && empty($payload['coop_descuento_id_real'])) {
             $resp([], false, "Debe seleccionar cooperativa (forma de pago 6).");
             exit;
         }
@@ -234,7 +198,7 @@ try {
 
         // Correos
         $prodId = (string)$payload['productor_id_real'];
-        $coopId = $payload['coop_descuento_nombre'] ? (string)$payload['coop_descuento_nombre'] : '';
+        $coopId = $payload['coop_descuento_id_real'] ? (string)$payload['coop_descuento_id_real'] : '';
         $mailProd = $model->correoPreferidoPorIdReal($prodId);
         $mailCoop = $coopId !== '' ? $model->correoPreferidoPorIdReal($coopId) : null;
 
