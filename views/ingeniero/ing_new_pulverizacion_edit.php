@@ -619,7 +619,17 @@
                 document.querySelector('#pago').dispatchEvent(new Event('change', {
                     bubbles: true
                 }));
-                setVal(document.querySelector('#coop'), sol.coop_descuento_id_real);
+                // Cooperativa: si viene id_real lo usamos; si no, intentamos por nombre
+if (sol.coop_descuento_id_real) {
+    setVal(document.querySelector('#coop'), sol.coop_descuento_id_real);
+} else if (sol.coop_descuento_nombre) {
+    const sel = document.querySelector('#coop');
+    const nombre = (sol.coop_descuento_nombre || '').toString().trim();
+    if (sel && nombre) {
+        const opt = Array.from(sel.options).find(o => (o.text || '').trim() === nombre);
+        if (opt) sel.value = opt.value;
+    }
+}
                 setVal(document.querySelector('#rango'), sol.rango);
 
                 // 4) Dirección / obs

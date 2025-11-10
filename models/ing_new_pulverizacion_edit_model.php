@@ -192,27 +192,36 @@ final class IngNewPulverizacionModel
             // 1) solicitud
             $st = $this->pdo->prepare("INSERT INTO drones_solicitud
               (productor_id_real,representante,linea_tension,zona_restringida,corriente_electrica,agua_potable,
-               libre_obstaculos,area_despegue,superficie_ha,forma_pago_id,coop_descuento_id_real,
+               libre_obstaculos,area_despegue,superficie_ha,forma_pago_id,coop_descuento_nombre,
                dir_provincia,dir_localidad,dir_calle,dir_numero,observaciones,estado)
                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'ingresada')");
-            $st->execute([
-                $d['productor_id_real'],
-                $d['representante'],
-                $d['linea_tension'],
-                $d['zona_restringida'],
-                $d['corriente_electrica'],
-                $d['agua_potable'],
-                $d['libre_obstaculos'],
-                $d['area_despegue'],
-                $d['superficie_ha'],
-                $d['forma_pago_id'],
-                $d['coop_descuento_id_real'],
-                $d['dir_provincia'],
-                $d['dir_localidad'],
-                $d['dir_calle'],
-                $d['dir_numero'],
-                $d['observaciones']
-            ]);
+
+            // En tu esquema la columna es coop_descuento_nombre.
+// Si vino id_real de la cooperativa, lo mapeamos a su nombre para guardar.
+$coopNombre = null;
+if (!empty($d['coop_descuento_id_real'])) {
+    $coopNombre = $this->nombrePorIdReal((string)$d['coop_descuento_id_real']) ?? null;
+}
+
+$st->execute([
+    $d['productor_id_real'],
+    $d['representante'],
+    $d['linea_tension'],
+    $d['zona_restringida'],
+    $d['corriente_electrica'],
+    $d['agua_potable'],
+    $d['libre_obstaculos'],
+    $d['area_despegue'],
+    $d['superficie_ha'],
+    $d['forma_pago_id'],
+    $coopNombre, // <- nombre de la cooperativa
+    $d['dir_provincia'],
+    $d['dir_localidad'],
+    $d['dir_calle'],
+    $d['dir_numero'],
+    $d['observaciones']
+]);
+
 
             $sid = (int)$this->pdo->lastInsertId();
 
@@ -316,16 +325,19 @@ final class IngNewPulverizacionModel
                 s.area_despegue,
                 s.superficie_ha,
                 s.forma_pago_id,
-                s.coop_descuento_id_real,
+                s.coop_descuento_nombre,
+                uc.id_real AS coop_descuento_id_real,
                 s.dir_provincia,
                 s.dir_localidad,
                 s.dir_calle,
                 s.dir_numero,
                 COALESCE(s.observaciones,'') AS observaciones
             FROM drones_solicitud s
-            LEFT JOIN usuarios u ON u.id_real = s.productor_id_real
+            LEFT JOIN usuarios u  ON u.id_real = s.productor_id_real
+            LEFT JOIN usuarios uc ON uc.usuario = s.coop_descuento_nombre
             WHERE s.id = :id
             LIMIT 1";
+
         $st = $this->pdo->prepare($sqlBase);
         $st->execute([':id' => $id]);
         $base = $st->fetch(PDO::FETCH_ASSOC);
