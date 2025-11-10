@@ -125,27 +125,6 @@ try {
         exit;
     }
 
-    if ($action === 'update_full') {
-        if ($rolSesion !== 'ingeniero') {
-            http_response_code(403);
-            ob_clean();
-            echo json_encode(['ok' => false, 'error' => 'Solo ingeniero']);
-            exit;
-        }
-        $data = $payload['data'] ?? null;
-        if (!$data || !isset($data['base']['id'])) {
-            http_response_code(400);
-            ob_clean();
-            echo json_encode(['ok' => false, 'error' => 'Datos inválidos']);
-            exit;
-        }
-        $model->updateSolicitudFull((int)$data['base']['id'], $idReal, $data);
-        http_response_code(200);
-        ob_clean();
-        echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        exit;
-    }
-
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $payload = json_decode(file_get_contents('php://input'), true) ?? [];
         $action = $payload['action'] ?? '';
@@ -168,6 +147,27 @@ try {
             http_response_code(200);
             ob_clean();
             echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        if ($action === 'update_full') {
+            if ($rolSesion !== 'ingeniero') {
+                http_response_code(403);
+                ob_clean();
+                echo json_encode(['ok' => false, 'error' => 'Solo ingeniero']);
+                exit;
+            }
+            $data = $payload['data'] ?? null;
+            if (!$data || !isset($data['base']['id'])) {
+                http_response_code(400);
+                ob_clean();
+                echo json_encode(['ok' => false, 'error' => 'Datos inválidos']);
+                exit;
+            }
+            $model->updateSolicitudFull((int)$data['base']['id'], $idReal, $data);
+            http_response_code(200);
+            ob_clean();
+            echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             exit;
         }
 
