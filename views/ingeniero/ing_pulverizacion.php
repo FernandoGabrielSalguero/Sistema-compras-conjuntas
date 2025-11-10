@@ -347,6 +347,108 @@ unset($_SESSION['cierre_info']);
             display: none !important;
         }
 
+        /* ====== Resumen Pedido (modal detalle) ====== */
+        .res-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: .9rem;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
+            margin-bottom: .8rem;
+        }
+
+        .res-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .5rem;
+            margin-bottom: .4rem;
+        }
+
+        .res-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #374151;
+        }
+
+        .res-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: .15rem .55rem;
+            border-radius: 999px;
+            font-size: .75rem;
+            border: 1px solid #e5e7eb;
+            background: #f7f8fb;
+        }
+
+        .res-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .6rem .8rem;
+        }
+
+        @media (max-width: 720px) {
+            .res-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .res-kv {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: .4rem;
+        }
+
+        .res-kv .k {
+            color: #6b7280;
+            font-size: .85rem;
+        }
+
+        .res-kv .v {
+            font-weight: 500;
+        }
+
+        .res-table {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .res-table table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .res-table thead th {
+            background: #f7f8fb;
+            font-weight: 600;
+            text-align: left;
+            padding: .55rem .65rem;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: .9rem;
+        }
+
+        .res-table tbody td {
+            padding: .5rem .65rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: .9rem;
+        }
+
+        .res-media {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .6rem;
+        }
+
+        .res-media img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
         /* Evitar cortes en tablas dentro de los modales: forzar ancho mínimo y permitir scroll */
         .res-table table,
         .rf-table table,
@@ -360,6 +462,22 @@ unset($_SESSION['cierre_info']);
         #modal-detalle .modal-content {
             scrollbar-gutter: stable both-edges;
             overscroll-behavior: contain;
+        }
+
+        /* Ajuste para el modal Detalle (scroll interno completo) */
+        #modal-detalle .modal-content {
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+            max-height: 80vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #modal-detalle form {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 1rem;
         }
     </style>
 
@@ -476,16 +594,182 @@ unset($_SESSION['cierre_info']);
                     </div>
                 </div>
 
-               <!-- Modal Detalle (limpio) -->
-<div id="modal-detalle" class="modal hidden">
-    <div class="modal-content" style="max-width:720px">
-        <div class="flex items-center justify-between mb-2">
-            <h3>Detalle</h3>
-            <button class="btn-icon" onclick="closeDetalle()"><span class="material-icons">close</span></button>
-        </div>
-        <div id="modal-detalle-body"></div>
-    </div>
-</div>
+                <!-- Modal Detalle/Edición -->
+                <div id="modal-detalle" class="modal hidden">
+                    <div class="modal-content" style="max-width:980px">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 id="md-title">Pedido</h3>
+                            <button class="btn-icon" onclick="closeDetalle()"><span class="material-icons">close</span></button>
+                        </div>
+
+                        <form id="detalle-form" class="grid gap-3">
+                            <input type="hidden" id="md-id">
+                            <div class="grid md:grid-cols-3 gap-3">
+                                <div class="input-group">
+                                    <label>Productor</label>
+                                    <input id="md-productor" class="input" type="text" disabled>
+                                </div>
+                                <div class="input-group">
+                                    <label>Cooperativa</label>
+                                    <input id="md-coop" class="input" type="text" disabled>
+                                </div>
+                                <div class="input-group">
+                                    <label>Estado</label>
+                                    <select id="md-estado" class="select">
+                                        <option value="ingresada">ingresada</option>
+                                        <option value="procesando">procesando</option>
+                                        <option value="aprobada_coop">aprobada_coop</option>
+                                        <option value="visita_realizada">visita_realizada</option>
+                                        <option value="completada">completada</option>
+                                        <option value="cancelada">cancelada</option>
+                                    </select>
+                                </div>
+
+                                <div class="input-group">
+                                    <label>Fecha visita</label>
+                                    <input id="md-fecha" class="input" type="date">
+                                </div>
+                                <div class="input-group">
+                                    <label>Hora desde</label>
+                                    <input id="md-hora-desde" class="input" type="time">
+                                </div>
+                                <div class="input-group">
+                                    <label>Hora hasta</label>
+                                    <input id="md-hora-hasta" class="input" type="time">
+                                </div>
+
+                                <div class="input-group">
+                                    <label>Piloto (ID)</label>
+                                    <input id="md-piloto" class="input" type="number" min="1" step="1">
+                                </div>
+                                <div class="input-group">
+                                    <label>Forma de pago (ID)</label>
+                                    <input id="md-forma" class="input" type="number" min="1" step="1">
+                                </div>
+
+                                <div class="input-group md:col-span-3">
+                                    <label>Observaciones</label>
+                                    <textarea id="md-obs" class="textarea" rows="3"></textarea>
+                                </div>
+
+                                <div class="input-group md:col-span-3">
+                                    <label>Costo total</label>
+                                    <input id="md-costo" class="input" type="text" disabled>
+                                </div>
+
+                                <!-- Vista Resumen (se llena por JS). Se muestra en modo lectura -->
+                                <div id="md-summary" class="input-group md:col-span-3"></div>
+
+                                <!-- Editor estructurado (solo visible en modo edición) -->
+                                <div id="md-editor" class="grid gap-3 md:col-span-3">
+
+                                    <!-- SOLICITUD (campos base ya existen arriba; aquí quedan de solo lectura para contexto) -->
+                                    <div class="card">
+                                        <h4 class="mb-2">Solicitud (contexto)</h4>
+                                        <div class="grid md:grid-cols-3 gap-3">
+                                            <div class="input-group">
+                                                <label>ID solicitud</label>
+                                                <input id="se-sol-id" class="input" type="text" disabled>
+                                            </div>
+                                            <div class="input-group">
+                                                <label>Productor</label>
+                                                <input id="se-sol-prod" class="input" type="text" disabled>
+                                            </div>
+                                            <div class="input-group">
+                                                <label>Cooperativa</label>
+                                                <input id="se-sol-coop" class="input" type="text" disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- PARÁMETROS -->
+                                    <div class="card">
+                                        <h4 class="mb-2">Parámetros de aplicación</h4>
+                                        <div class="grid md:grid-cols-3 gap-3">
+                                            <div class="input-group"><label>Volumen (L/ha)</label><input id="se-par-volumen_ha" class="input" type="number" step="0.01"></div>
+                                            <div class="input-group"><label>Velocidad (m/s)</label><input id="se-par-velocidad_vuelo" class="input" type="number" step="0.01"></div>
+                                            <div class="input-group"><label>Altura vuelo (m)</label><input id="se-par-alto_vuelo" class="input" type="number" step="0.01"></div>
+                                            <div class="input-group"><label>Ancho pasada (m)</label><input id="se-par-ancho_pasada" class="input" type="number" step="0.01"></div>
+                                            <div class="input-group"><label>Tamaño gota</label><input id="se-par-tamano_gota" class="input" type="text"></div>
+                                            <div class="input-group md:col-span-3"><label>Obs. agua</label><input id="se-par-observaciones_agua" class="input" type="text"></div>
+                                            <div class="input-group md:col-span-3"><label>Observaciones</label><textarea id="se-par-observaciones" class="textarea" rows="2"></textarea></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- MOTIVOS -->
+                                    <div class="card">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h4>Motivos / Patologías</h4>
+                                            <button type="button" id="btn-add-motivo" class="btn btn-info">Agregar motivo</button>
+                                        </div>
+                                        <div id="se-motivos" class="grid gap-2"></div>
+                                    </div>
+
+                                    <!-- ITEMS + RECETA -->
+                                    <div class="card">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h4>Productos e Insumos</h4>
+                                            <button type="button" id="btn-add-item" class="btn btn-info">Agregar item</button>
+                                        </div>
+                                        <div id="se-items" class="grid gap-2"></div>
+                                    </div>
+
+                                    <!-- REPORTE -->
+                                    <div class="card">
+                                        <h4 class="mb-2">Reporte operativo (último)</h4>
+                                        <div class="grid md:grid-cols-3 gap-3">
+                                            <div class="input-group"><label>Fecha visita</label><input id="se-rep-fecha_visita" class="input" type="date"></div>
+                                            <div class="input-group"><label>Hora ingreso</label><input id="se-rep-hora_ingreso" class="input" type="time"></div>
+                                            <div class="input-group"><label>Hora egreso</label><input id="se-rep-hora_egreso" class="input" type="time"></div>
+                                            <div class="input-group"><label>Nombre finca</label><input id="se-rep-nombre_finca" class="input" type="text"></div>
+                                            <div class="input-group"><label>Cultivo pulverizado</label><input id="se-rep-cultivo_pulverizado" class="input" type="text"></div>
+                                            <div class="input-group"><label>Superficie (ha)</label><input id="se-rep-sup_pulverizada" class="input" type="number" step="0.01"></div>
+                                            <div class="input-group"><label>Vol. aplicado (L/ha)</label><input id="se-rep-vol_aplicado" class="input" type="number" step="0.01"></div>
+                                            <div class="input-group"><label>Vel. viento (m/s)</label><input id="se-rep-vel_viento" class="input" type="number" step="0.01"></div>
+                                            <div class="input-group"><label>Temperatura (°C)</label><input id="se-rep-temperatura" class="input" type="number" step="0.1"></div>
+                                            <div class="input-group"><label>Humedad relativa (%)</label><input id="se-rep-humedad_relativa" class="input" type="number" step="0.1"></div>
+                                            <div class="input-group"><label>Cliente</label><input id="se-rep-nom_cliente" class="input" type="text"></div>
+                                            <div class="input-group"><label>Operador</label><input id="se-rep-nom_piloto" class="input" type="text"></div>
+                                            <div class="input-group md:col-span-3"><label>Encargado</label><input id="se-rep-nom_encargado" class="input" type="text"></div>
+                                            <div class="input-group md:col-span-3"><label>Observaciones</label><textarea id="se-rep-observaciones" class="textarea" rows="2"></textarea></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- MEDIA -->
+                                    <div class="card">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h4>Media (fotos y firmas)</h4>
+                                            <button type="button" id="btn-add-media" class="btn btn-info">Agregar media</button>
+                                        </div>
+                                        <div id="se-media" class="grid gap-2"></div>
+                                        <small>Tipos válidos: <code>foto</code>, <code>firma_cliente</code>, <code>firma_piloto</code></small>
+                                    </div>
+
+                                    <!-- COSTOS -->
+                                    <div class="card">
+                                        <h4 class="mb-2">Costos</h4>
+                                        <div class="grid md:grid-cols-3 gap-3">
+                                            <div class="input-group"><label>Moneda</label><input id="se-cos-moneda" class="input" type="text" placeholder="ARS"></div>
+                                            <div class="input-group"><label>Costo base por ha</label><input id="se-cos-costo_base_por_ha" class="input" type="number" step="0.01"></div>
+                                            <div class="input-group"><label>Base (ha)</label><input id="se-cos-base_ha" class="input" type="number" step="0.01"></div>
+                                            <div class="input-group"><label>Base total</label><input id="se-cos-base_total" class="input" type="number" step="0.01"></div>
+                                            <div class="input-group"><label>Productos total</label><input id="se-cos-productos_total" class="input" type="number" step="0.01"></div>
+                                            <div class="input-group"><label>Total</label><input id="se-cos-total" class="input" type="number" step="0.01"></div>
+                                            <div class="input-group md:col-span-3"><label>Desglose (JSON)</label><textarea id="se-cos-desglose_json" class="textarea" rows="2" placeholder='{"detalle":[...]}'></textarea></div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </form>
+
+                        <div class="form-buttons">
+                            <button id="btn-guardar" class="btn btn-aceptar">Guardar cambios</button>
+                            <button class="btn btn-cancelar" onclick="closeDetalle()">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Modal Confirmación Eliminar -->
                 <div id="modal-confirm" class="modal hidden">
@@ -1181,135 +1465,130 @@ unset($_SESSION['cierre_info']);
 
 
             function openDetalle(id, editable = false) {
-                const el = document.getElementById('modal-detalle');
-                const setRO = (ro) => {
-                    // campos base ya existentes
-                    document.getElementById('md-fecha').disabled = ro;
-                    document.getElementById('md-hora-desde').disabled = ro;
-                    document.getElementById('md-hora-hasta').disabled = ro;
-                    document.getElementById('md-estado').disabled = ro;
-                    document.getElementById('md-piloto').disabled = ro;
-                    document.getElementById('md-forma').disabled = ro;
-                    document.getElementById('md-obs').disabled = ro;
-                    // editor estructurado
-                    [...document.querySelectorAll('#md-editor input, #md-editor select, #md-editor textarea, #se-motivos .btn, #se-items .btn, #se-media .btn')]
-                    .forEach(n => {
-                        if (n) n.disabled = ro;
-                    });
-                    document.getElementById('btn-guardar').classList.toggle('hidden', ro);
-                };
+    const el = document.getElementById('modal-detalle');
+    const setRO = (ro) => {
+        // campos base ya existentes
+        document.getElementById('md-fecha').disabled = ro;
+        document.getElementById('md-hora-desde').disabled = ro;
+        document.getElementById('md-hora-hasta').disabled = ro;
+        document.getElementById('md-estado').disabled = ro;
+        document.getElementById('md-piloto').disabled = ro;
+        document.getElementById('md-forma').disabled = ro;
+        document.getElementById('md-obs').disabled = ro;
+        // editor estructurado
+        [...document.querySelectorAll('#md-editor input, #md-editor select, #md-editor textarea, #se-motivos .btn, #se-items .btn, #se-media .btn')]
+            .forEach(n => { if (n) n.disabled = ro; });
+        document.getElementById('btn-guardar').classList.toggle('hidden', ro);
+    };
 
-                document.getElementById('md-title').textContent = editable ? 'Editar pedido' : 'Detalle del pedido';
-                el.classList.remove('hidden');
+    document.getElementById('md-title').textContent = editable ? 'Editar pedido' : 'Detalle del pedido';
+    el.classList.remove('hidden');
 
-                // mostrar/ocultar resumen vs editor
-                const summaryHost = document.getElementById('md-summary');
-                const editorHost = document.getElementById('md-editor');
-                if (editable) {
-                    summaryHost.classList.add('hidden');
-                    editorHost.classList.remove('hidden');
-                } else {
-                    summaryHost.classList.remove('hidden');
-                    editorHost.classList.add('hidden');
-                }
-                setRO(!editable);
+    // mostrar/ocultar resumen vs editor
+const summaryHost = document.getElementById('md-summary');
+const editorHost  = document.getElementById('md-editor');
+if (editable) {
+    summaryHost.classList.add('hidden');
+    editorHost.classList.remove('hidden');
+} else {
+    summaryHost.classList.remove('hidden');
+    editorHost.classList.add('hidden');
+}
+    setRO(!editable);
 
-                (async () => {
-                    try {
-                        const d = await fetchDetalle(id); // {solicitud, parametros, motivos, items, reporte, media, costos}
+    (async () => {
+        try {
+            const d = await fetchDetalle(id); // {solicitud, parametros, motivos, items, reporte, media, costos}
 
-                        // header/base
-                        document.getElementById('md-id').value = d.solicitud.id;
-                        document.getElementById('md-productor').value = d.solicitud.productor_nombre || d.solicitud.productor_id_real || '—';
-                        document.getElementById('md-coop').value = d.solicitud.cooperativa_nombre || '—';
-                        document.getElementById('md-fecha').value = d.solicitud.fecha_visita || '';
-                        document.getElementById('md-hora-desde').value = d.solicitud.hora_visita_desde || '';
-                        document.getElementById('md-hora-hasta').value = d.solicitud.hora_visita_hasta || '';
-                        document.getElementById('md-estado').value = (d.solicitud.estado || '').toLowerCase();
-                        document.getElementById('md-piloto').value = d.solicitud.piloto_id || '';
-                        document.getElementById('md-forma').value = d.solicitud.forma_pago_id || '';
-                        document.getElementById('md-obs').value = d.solicitud.observaciones || '';
-                        document.getElementById('md-costo').value = fmtMoney((d.costos && d.costos.total) || 0);
+            // header/base
+            document.getElementById('md-id').value        = d.solicitud.id;
+            document.getElementById('md-productor').value = d.solicitud.productor_nombre || d.solicitud.productor_id_real || '—';
+            document.getElementById('md-coop').value      = d.solicitud.cooperativa_nombre || '—';
+            document.getElementById('md-fecha').value     = d.solicitud.fecha_visita || '';
+            document.getElementById('md-hora-desde').value= d.solicitud.hora_visita_desde || '';
+            document.getElementById('md-hora-hasta').value= d.solicitud.hora_visita_hasta || '';
+            document.getElementById('md-estado').value    = (d.solicitud.estado || '').toLowerCase();
+            document.getElementById('md-piloto').value    = d.solicitud.piloto_id || '';
+            document.getElementById('md-forma').value     = d.solicitud.forma_pago_id || '';
+            document.getElementById('md-obs').value       = d.solicitud.observaciones || '';
+            document.getElementById('md-costo').value     = fmtMoney((d.costos && d.costos.total) || 0);
 
-                        // contexto solicitud
-                        document.getElementById('se-sol-id').value = d.solicitud.id || '';
-                        document.getElementById('se-sol-prod').value = document.getElementById('md-productor').value;
-                        document.getElementById('se-sol-coop').value = document.getElementById('md-coop').value;
+            // contexto solicitud
+            document.getElementById('se-sol-id').value   = d.solicitud.id || '';
+            document.getElementById('se-sol-prod').value = document.getElementById('md-productor').value;
+            document.getElementById('se-sol-coop').value = document.getElementById('md-coop').value;
 
-                        // parámetros
-                        const p = d.parametros || {};
-                        const setVal = (id, v = '') => {
-                            const n = document.getElementById(id);
-                            if (n) n.value = v ?? '';
-                        };
-                        setVal('se-par-volumen_ha', p.volumen_ha);
-                        setVal('se-par-velocidad_vuelo', p.velocidad_vuelo);
-                        setVal('se-par-alto_vuelo', p.alto_vuelo);
-                        setVal('se-par-ancho_pasada', p.ancho_pasada);
-                        setVal('se-par-tamano_gota', p.tamano_gota);
-                        setVal('se-par-observaciones_agua', p.observaciones_agua);
-                        setVal('se-par-observaciones', p.observaciones);
+            // parámetros
+            const p = d.parametros || {};
+            const setVal = (id, v='') => { const n = document.getElementById(id); if (n) n.value = v ?? ''; };
+            setVal('se-par-volumen_ha',        p.volumen_ha);
+            setVal('se-par-velocidad_vuelo',   p.velocidad_vuelo);
+            setVal('se-par-alto_vuelo',        p.alto_vuelo);
+            setVal('se-par-ancho_pasada',      p.ancho_pasada);
+            setVal('se-par-tamano_gota',       p.tamano_gota);
+            setVal('se-par-observaciones_agua',p.observaciones_agua);
+            setVal('se-par-observaciones',     p.observaciones);
 
-                        // motivos
-                        renderMotivos(d.motivos || []);
+            // motivos
+            renderMotivos(d.motivos || []);
 
-                        // items
-                        renderItems(d.items || []);
+            // items
+            renderItems(d.items || []);
 
-                        // reporte
-                        const r = d.reporte || {};
-                        setVal('se-rep-fecha_visita', r.fecha_visita);
-                        setVal('se-rep-hora_ingreso', r.hora_ingreso);
-                        setVal('se-rep-hora_egreso', r.hora_egreso);
-                        setVal('se-rep-nombre_finca', r.nombre_finca);
-                        setVal('se-rep-cultivo_pulverizado', r.cultivo_pulverizado);
-                        setVal('se-rep-sup_pulverizada', r.sup_pulverizada);
-                        setVal('se-rep-vol_aplicado', r.vol_aplicado);
-                        setVal('se-rep-vel_viento', r.vel_viento);
-                        setVal('se-rep-temperatura', r.temperatura);
-                        setVal('se-rep-humedad_relativa', r.humedad_relativa);
-                        setVal('se-rep-nom_cliente', r.nom_cliente);
-                        setVal('se-rep-nom_piloto', r.nom_piloto);
-                        setVal('se-rep-nom_encargado', r.nom_encargado);
-                        setVal('se-rep-observaciones', r.observaciones);
+            // reporte
+            const r = d.reporte || {};
+            setVal('se-rep-fecha_visita',      r.fecha_visita);
+            setVal('se-rep-hora_ingreso',      r.hora_ingreso);
+            setVal('se-rep-hora_egreso',       r.hora_egreso);
+            setVal('se-rep-nombre_finca',      r.nombre_finca);
+            setVal('se-rep-cultivo_pulverizado',r.cultivo_pulverizado);
+            setVal('se-rep-sup_pulverizada',   r.sup_pulverizada);
+            setVal('se-rep-vol_aplicado',      r.vol_aplicado);
+            setVal('se-rep-vel_viento',        r.vel_viento);
+            setVal('se-rep-temperatura',       r.temperatura);
+            setVal('se-rep-humedad_relativa',  r.humedad_relativa);
+            setVal('se-rep-nom_cliente',       r.nom_cliente);
+            setVal('se-rep-nom_piloto',        r.nom_piloto);
+            setVal('se-rep-nom_encargado',     r.nom_encargado);
+            setVal('se-rep-observaciones',     r.observaciones);
 
-                        // media
-                        renderMedia(d.media || []);
+            // media
+            renderMedia(d.media || []);
 
-                        // costos
-                        const c = d.costos || {};
-                        setVal('se-cos-moneda', c.moneda || 'ARS');
-                        setVal('se-cos-costo_base_por_ha', c.costo_base_por_ha);
-                        setVal('se-cos-base_ha', c.base_ha);
-                        setVal('se-cos-base_total', c.base_total);
-                        setVal('se-cos-productos_total', c.productos_total);
-                        setVal('se-cos-total', c.total);
-                        setVal('se-cos-desglose_json', c.desglose_json);
+            // costos
+            const c = d.costos || {};
+            setVal('se-cos-moneda',            c.moneda || 'ARS');
+            setVal('se-cos-costo_base_por_ha', c.costo_base_por_ha);
+            setVal('se-cos-base_ha',           c.base_ha);
+            setVal('se-cos-base_total',        c.base_total);
+            setVal('se-cos-productos_total',   c.productos_total);
+            setVal('se-cos-total',             c.total);
+            setVal('se-cos-desglose_json',     c.desglose_json);
 
-                        // resumen en modo lectura
-                        if (!editable && summaryHost) {
-                            summaryHost.innerHTML = renderResumen(d);
-                        }
-                    } catch (e) {
-                        console.error(e);
-                        el.querySelector('.form-buttons').insertAdjacentHTML('beforebegin',
-                            `<div class="alert alert-error">No se pudo cargar el detalle.</div>`);
-                    }
-                })();
+            // resumen en modo lectura
+            if (!editable && summaryHost) {
+                summaryHost.innerHTML = renderResumen(d);
             }
+        } catch (e) {
+            console.error(e);
+            el.querySelector('.form-buttons').insertAdjacentHTML('beforebegin',
+              `<div class="alert alert-error">No se pudo cargar el detalle.</div>`);
+        }
+    })();
+}
 
-            // ===== Secciones dinámicas =====
-            function renderMotivos(motivos) {
-                const host = document.getElementById('se-motivos');
-                host.innerHTML = '';
-                motivos.forEach((m, idx) => host.appendChild(buildMotivoRow(m, idx)));
-            }
+// ===== Secciones dinámicas =====
+function renderMotivos(motivos) {
+  const host = document.getElementById('se-motivos');
+  host.innerHTML = '';
+  motivos.forEach((m, idx) => host.appendChild(buildMotivoRow(m, idx)));
+}
 
-            function buildMotivoRow(m = {}, idx = 0) {
-                const wrap = document.createElement('div');
-                wrap.className = 'grid md:grid-cols-4 gap-2 items-end';
-                wrap.dataset.kind = 'motivo';
-                wrap.innerHTML = `
+function buildMotivoRow(m = {}, idx = 0) {
+  const wrap = document.createElement('div');
+  wrap.className = 'grid md:grid-cols-4 gap-2 items-end';
+  wrap.dataset.kind = 'motivo';
+  wrap.innerHTML = `
     <div class="input-group">
       <label>Patología ID</label>
       <input class="input" type="number" data-field="patologia_id" value="${m.patologia_id ?? ''}">
@@ -1329,25 +1608,25 @@ unset($_SESSION['cierre_info']);
       <button type="button" class="btn btn-cancelar btn-del-row">Eliminar</button>
     </div>
   `;
-                wrap.querySelector('.btn-del-row').onclick = () => wrap.remove();
-                return wrap;
-            }
+  wrap.querySelector('.btn-del-row').onclick = () => wrap.remove();
+  return wrap;
+}
 
-            document.getElementById('btn-add-motivo').onclick = () => {
-                document.getElementById('se-motivos').appendChild(buildMotivoRow({}, Date.now()));
-            };
+document.getElementById('btn-add-motivo').onclick = () => {
+  document.getElementById('se-motivos').appendChild(buildMotivoRow({}, Date.now()));
+};
 
-            function renderItems(items) {
-                const host = document.getElementById('se-items');
-                host.innerHTML = '';
-                items.forEach((it, idx) => host.appendChild(buildItemRow(it, idx)));
-            }
+function renderItems(items) {
+  const host = document.getElementById('se-items');
+  host.innerHTML = '';
+  items.forEach((it, idx) => host.appendChild(buildItemRow(it, idx)));
+}
 
-            function buildItemRow(it = {}, idx = 0) {
-                const wrap = document.createElement('div');
-                wrap.className = 'grid gap-2 p-2 rounded border';
-                wrap.dataset.kind = 'item';
-                wrap.innerHTML = `
+function buildItemRow(it = {}, idx = 0) {
+  const wrap = document.createElement('div');
+  wrap.className = 'grid gap-2 p-2 rounded border';
+  wrap.dataset.kind = 'item';
+  wrap.innerHTML = `
     <div class="grid md:grid-cols-6 gap-2">
       <div class="input-group"><label>Patología ID</label><input class="input" type="number" data-field="patologia_id" value="${it.patologia_id ?? ''}"></div>
       <div class="input-group"><label>Fuente</label><input class="input" type="text" data-field="fuente" value="${it.fuente ?? 'sve'}"></div>
@@ -1369,25 +1648,25 @@ unset($_SESSION['cierre_info']);
       <button type="button" class="btn btn-cancelar btn-del-row">Eliminar</button>
     </div>
   `;
-                wrap.querySelector('.btn-del-row').onclick = () => wrap.remove();
-                return wrap;
-            }
+  wrap.querySelector('.btn-del-row').onclick = () => wrap.remove();
+  return wrap;
+}
 
-            document.getElementById('btn-add-item').onclick = () => {
-                document.getElementById('se-items').appendChild(buildItemRow({}, Date.now()));
-            };
+document.getElementById('btn-add-item').onclick = () => {
+  document.getElementById('se-items').appendChild(buildItemRow({}, Date.now()));
+};
 
-            function renderMedia(media) {
-                const host = document.getElementById('se-media');
-                host.innerHTML = '';
-                media.forEach((mm, idx) => host.appendChild(buildMediaRow(mm, idx)));
-            }
+function renderMedia(media) {
+  const host = document.getElementById('se-media');
+  host.innerHTML = '';
+  media.forEach((mm, idx) => host.appendChild(buildMediaRow(mm, idx)));
+}
 
-            function buildMediaRow(mm = {}, idx = 0) {
-                const wrap = document.createElement('div');
-                wrap.className = 'grid md:grid-cols-4 gap-2 items-end';
-                wrap.dataset.kind = 'media';
-                wrap.innerHTML = `
+function buildMediaRow(mm = {}, idx = 0) {
+  const wrap = document.createElement('div');
+  wrap.className = 'grid md:grid-cols-4 gap-2 items-end';
+  wrap.dataset.kind = 'media';
+  wrap.innerHTML = `
     <div class="input-group">
       <label>Tipo</label>
       <select class="select" data-field="tipo">
@@ -1404,132 +1683,119 @@ unset($_SESSION['cierre_info']);
       <button type="button" class="btn btn-cancelar btn-del-row">Eliminar</button>
     </div>
   `;
-                wrap.querySelector('.btn-del-row').onclick = () => wrap.remove();
-                return wrap;
-            }
+  wrap.querySelector('.btn-del-row').onclick = () => wrap.remove();
+  return wrap;
+}
 
-            document.getElementById('btn-add-media').onclick = () => {
-                document.getElementById('se-media').appendChild(buildMediaRow({}, Date.now()));
-            };
+document.getElementById('btn-add-media').onclick = () => {
+  document.getElementById('se-media').appendChild(buildMediaRow({}, Date.now()));
+};
 
-            // helpers para leer secciones dinámicas
-            function readSectionList(containerId, mapFn) {
-                return Array.from(document.querySelectorAll(`#${containerId} [data-kind]`)).map(mapFn);
-            }
+// helpers para leer secciones dinámicas
+function readSectionList(containerId, mapFn) {
+  return Array.from(document.querySelectorAll(`#${containerId} [data-kind]`)).map(mapFn);
+}
 
             async function guardarCambios() {
-                const toNum = (v) => (v === '' || v === null || v === undefined) ? null : (isNaN(Number(v)) ? v : Number(v));
-                const base = {
-                    id: Number(document.getElementById('md-id').value),
-                    fecha_visita: document.getElementById('md-fecha').value || null,
-                    hora_visita_desde: document.getElementById('md-hora-desde').value || null,
-                    hora_visita_hasta: document.getElementById('md-hora-hasta').value || null,
-                    estado: document.getElementById('md-estado').value || null,
-                    piloto_id: document.getElementById('md-piloto').value ? Number(document.getElementById('md-piloto').value) : null,
-                    forma_pago_id: document.getElementById('md-forma').value ? Number(document.getElementById('md-forma').value) : null,
-                    observaciones: document.getElementById('md-obs').value || null
-                };
+    const toNum = (v) => (v === '' || v === null || v === undefined) ? null : (isNaN(Number(v)) ? v : Number(v));
+    const base = {
+        id: Number(document.getElementById('md-id').value),
+        fecha_visita: document.getElementById('md-fecha').value || null,
+        hora_visita_desde: document.getElementById('md-hora-desde').value || null,
+        hora_visita_hasta: document.getElementById('md-hora-hasta').value || null,
+        estado: document.getElementById('md-estado').value || null,
+        piloto_id: document.getElementById('md-piloto').value ? Number(document.getElementById('md-piloto').value) : null,
+        forma_pago_id: document.getElementById('md-forma').value ? Number(document.getElementById('md-forma').value) : null,
+        observaciones: document.getElementById('md-obs').value || null
+    };
 
-                // parámetros
-                const full = {
-                    parametros: {
-                        volumen_ha: toNum(document.getElementById('se-par-volumen_ha').value),
-                        velocidad_vuelo: toNum(document.getElementById('se-par-velocidad_vuelo').value),
-                        alto_vuelo: toNum(document.getElementById('se-par-alto_vuelo').value),
-                        ancho_pasada: toNum(document.getElementById('se-par-ancho_pasada').value),
-                        tamano_gota: document.getElementById('se-par-tamano_gota').value || null,
-                        observaciones_agua: document.getElementById('se-par-observaciones_agua').value || null,
-                        observaciones: document.getElementById('se-par-observaciones').value || null
-                    }
-                };
+    // parámetros
+    const full = { parametros: {
+        volumen_ha:          toNum(document.getElementById('se-par-volumen_ha').value),
+        velocidad_vuelo:     toNum(document.getElementById('se-par-velocidad_vuelo').value),
+        alto_vuelo:          toNum(document.getElementById('se-par-alto_vuelo').value),
+        ancho_pasada:        toNum(document.getElementById('se-par-ancho_pasada').value),
+        tamano_gota:         document.getElementById('se-par-tamano_gota').value || null,
+        observaciones_agua:  document.getElementById('se-par-observaciones_agua').value || null,
+        observaciones:       document.getElementById('se-par-observaciones').value || null
+    }};
 
-                // motivos
-                full.motivos = readSectionList('se-motivos', (row) => {
-                    const get = (f) => row.querySelector(`[data-field="${f}"]`)?.value ?? '';
-                    return {
-                        patologia_id: toNum(get('patologia_id')),
-                        es_otros: Number(get('es_otros') || 0),
-                        otros_text: get('otros_text') || null
-                    };
-                });
+    // motivos
+    full.motivos = readSectionList('se-motivos', (row) => {
+        const get = (f) => row.querySelector(`[data-field="${f}"]`)?.value ?? '';
+        return {
+          patologia_id: toNum(get('patologia_id')),
+          es_otros:     Number(get('es_otros') || 0),
+          otros_text:   get('otros_text') || null
+        };
+    });
 
-                // items + receta
-                full.items = readSectionList('se-items', (row) => {
-                    const get = (f) => row.querySelector(`[data-field="${f}"]`)?.value ?? '';
-                    return {
-                        patologia_id: toNum(get('patologia_id')),
-                        fuente: get('fuente') || 'sve',
-                        producto_id: toNum(get('producto_id')),
-                        nombre_producto: get('nombre_producto') || null,
-                        costo_hectarea_snapshot: toNum(get('costo_hectarea_snapshot')),
-                        total_producto_snapshot: toNum(get('total_producto_snapshot')),
-                        principio_activo: get('principio_activo') || null,
-                        dosis: get('dosis') || null,
-                        unidad: get('unidad') || null,
-                        cant_prod_usado: get('cant_prod_usado') || null,
-                        fecha_vencimiento: get('fecha_vencimiento') || null,
-                        orden_mezcla: toNum(get('orden_mezcla')),
-                        notas: get('notas') || null
-                    };
-                });
+    // items + receta
+    full.items = readSectionList('se-items', (row) => {
+        const get = (f) => row.querySelector(`[data-field="${f}"]`)?.value ?? '';
+        return {
+          patologia_id:            toNum(get('patologia_id')),
+          fuente:                  get('fuente') || 'sve',
+          producto_id:             toNum(get('producto_id')),
+          nombre_producto:         get('nombre_producto') || null,
+          costo_hectarea_snapshot: toNum(get('costo_hectarea_snapshot')),
+          total_producto_snapshot: toNum(get('total_producto_snapshot')),
+          principio_activo:        get('principio_activo') || null,
+          dosis:                   get('dosis') || null,
+          unidad:                  get('unidad') || null,
+          cant_prod_usado:         get('cant_prod_usado') || null,
+          fecha_vencimiento:       get('fecha_vencimiento') || null,
+          orden_mezcla:            toNum(get('orden_mezcla')),
+          notas:                   get('notas') || null
+        };
+    });
 
-                // reporte
-                full.reporte = {
-                    fecha_visita: document.getElementById('se-rep-fecha_visita').value || null,
-                    hora_ingreso: document.getElementById('se-rep-hora_ingreso').value || null,
-                    hora_egreso: document.getElementById('se-rep-hora_egreso').value || null,
-                    nombre_finca: document.getElementById('se-rep-nombre_finca').value || null,
-                    cultivo_pulverizado: document.getElementById('se-rep-cultivo_pulverizado').value || null,
-                    sup_pulverizada: toNum(document.getElementById('se-rep-sup_pulverizada').value),
-                    vol_aplicado: toNum(document.getElementById('se-rep-vol_aplicado').value),
-                    vel_viento: toNum(document.getElementById('se-rep-vel_viento').value),
-                    temperatura: toNum(document.getElementById('se-rep-temperatura').value),
-                    humedad_relativa: toNum(document.getElementById('se-rep-humedad_relativa').value),
-                    nom_cliente: document.getElementById('se-rep-nom_cliente').value || null,
-                    nom_piloto: document.getElementById('se-rep-nom_piloto').value || null,
-                    nom_encargado: document.getElementById('se-rep-nom_encargado').value || null,
-                    observaciones: document.getElementById('se-rep-observaciones').value || null
-                };
+    // reporte
+    full.reporte = {
+      fecha_visita:      document.getElementById('se-rep-fecha_visita').value || null,
+      hora_ingreso:      document.getElementById('se-rep-hora_ingreso').value || null,
+      hora_egreso:       document.getElementById('se-rep-hora_egreso').value || null,
+      nombre_finca:      document.getElementById('se-rep-nombre_finca').value || null,
+      cultivo_pulverizado:document.getElementById('se-rep-cultivo_pulverizado').value || null,
+      sup_pulverizada:   toNum(document.getElementById('se-rep-sup_pulverizada').value),
+      vol_aplicado:      toNum(document.getElementById('se-rep-vol_aplicado').value),
+      vel_viento:        toNum(document.getElementById('se-rep-vel_viento').value),
+      temperatura:       toNum(document.getElementById('se-rep-temperatura').value),
+      humedad_relativa:  toNum(document.getElementById('se-rep-humedad_relativa').value),
+      nom_cliente:       document.getElementById('se-rep-nom_cliente').value || null,
+      nom_piloto:        document.getElementById('se-rep-nom_piloto').value || null,
+      nom_encargado:     document.getElementById('se-rep-nom_encargado').value || null,
+      observaciones:     document.getElementById('se-rep-observaciones').value || null
+    };
 
-                // media
-                full.media = readSectionList('se-media', (row) => {
-                    const get = (f) => row.querySelector(`[data-field="${f}"]`)?.value ?? '';
-                    return {
-                        tipo: get('tipo') || 'foto',
-                        ruta: get('ruta') || ''
-                    };
-                });
+    // media
+    full.media = readSectionList('se-media', (row) => {
+      const get = (f) => row.querySelector(`[data-field="${f}"]`)?.value ?? '';
+      return { tipo: get('tipo') || 'foto', ruta: get('ruta') || '' };
+    });
 
-                // costos
-                full.costos = {
-                    moneda: document.getElementById('se-cos-moneda').value || 'ARS',
-                    costo_base_por_ha: toNum(document.getElementById('se-cos-costo_base_por_ha').value),
-                    base_ha: toNum(document.getElementById('se-cos-base_ha').value),
-                    base_total: toNum(document.getElementById('se-cos-base_total').value),
-                    productos_total: toNum(document.getElementById('se-cos-productos_total').value),
-                    total: toNum(document.getElementById('se-cos-total').value),
-                    desglose_json: document.getElementById('se-cos-desglose_json').value || null
-                };
+    // costos
+    full.costos = {
+      moneda:              document.getElementById('se-cos-moneda').value || 'ARS',
+      costo_base_por_ha:   toNum(document.getElementById('se-cos-costo_base_por_ha').value),
+      base_ha:             toNum(document.getElementById('se-cos-base_ha').value),
+      base_total:          toNum(document.getElementById('se-cos-base_total').value),
+      productos_total:     toNum(document.getElementById('se-cos-productos_total').value),
+      total:               toNum(document.getElementById('se-cos-total').value),
+      desglose_json:       document.getElementById('se-cos-desglose_json').value || null
+    };
 
-                const res = await fetch(API, {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        action: 'update_full',
-                        data: {
-                            base,
-                            full
-                        }
-                    })
-                });
-                const j = await res.json();
-                if (!j.ok) throw new Error(j.error || 'Error al guardar');
-                closeDetalle();
-                cargar();
-            }
+    const res = await fetch(API, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ action: 'update_full', data: { base, full } })
+    });
+    const j = await res.json();
+    if (!j.ok) throw new Error(j.error || 'Error al guardar');
+    closeDetalle();
+    cargar();
+}
 
             async function eliminarSolicitud(id) {
                 // solo usa el modal de confirmación; aquí NO se pide confirmación de nuevo
