@@ -666,8 +666,8 @@ unset($_SESSION['cierre_info']);
             const $q = document.getElementById('filtro-productor');
             const $btnFiltrar = null;
             const $btnLimpiar = null;
-// Mapa global de solicitudes por id para poder precompletar el formulario de edición
-window.__SVE_SOL_MAP = new Map();
+            // Mapa global de solicitudes por id para poder precompletar el formulario de edición
+            window.__SVE_SOL_MAP = new Map();
 
             // Normaliza estados con posibles espacios/mayúsculas
             function normEstado(s) {
@@ -949,39 +949,77 @@ window.__SVE_SOL_MAP = new Map();
 
             window.openModal = openModal;
 
-            // ===== Nuevo flujo de edición: abre editor externo en iframe =====
+            // ===== Nuevo flujo de edición: abre editor externo en iframe (con prefill COMPLETO) =====
             function openEditar(id) {
-    const modal = document.getElementById('modal-detalle');
-    const iframe = document.getElementById('md-iframe');
-    const numId = Number(id);
-    iframe.src = `ing_new_pulverizacion_edit.php?id=${numId}`;
-    document.getElementById('md-title').textContent = 'Editar pedido';
-    modal.classList.remove('hidden');
+                const modal = document.getElementById('modal-detalle');
+                const iframe = document.getElementById('md-iframe');
+                const numId = Number(id);
 
-    // Enviar datos completos de la solicitud al iframe cuando cargue
-    iframe.addEventListener('load', () => {
-        try {
-            const dataMap = (window.__SVE_SOL_MAP instanceof Map) ? window.__SVE_SOL_MAP : null;
-            const payload = dataMap ? dataMap.get(numId) : null;
+                // Abrimos el editor con el ID en querystring (permite que el propio editor haga fetch si quiere)
+                iframe.src = `ing_new_pulverizacion_edit.php?id=${numId}`;
+                document.getElementById('md-title').textContent = 'Editar pedido';
+                modal.classList.remove('hidden');
 
-            // Prefill mínimo de productor (compatibilidad existente)
-            if (payload && iframe.contentWindow) {
-                const prodPayload = {
-                    id_real: payload.productor_id_real || payload.productorIdReal || payload.id_real || '',
-                    nombre: payload.productor_nombre || payload.productorNombre || payload.usuario || ''
+                // Helper: envía prefills al iframe si está disponible
+                const sendToIframe = (payload) => {
+                    if (!iframe || !iframe.contentWindow) return;
+                    try {
+                        // Prefill mínimo (productor) para que el typeahead quede seteado inmediato
+                        const prodPayload = {
+                            id_real: payload?.productor_id_real ?? payload?.productorIdReal ?? payload?.id_real ?? '',
+                            nombre: payload?.productor_nombre ?? payload?.productorNombre ?? payload?.usuario ?? ''
+                        };
+                        if (prodPayload.id_real && prodPayload.nombre) {
+                            iframe.contentWindow.postMessage({
+                                type: 'sve:modal_prefill',
+                                payload: prodPayload
+                            }, '*');
+                        }
+
+                        // Prefill COMPLETO (todos los campos, patologías, productos, etc.)
+                        iframe.contentWindow.postMessage({
+                            type: 'sve:prefill_solicitud',
+                            payload
+                        }, '*');
+                    } catch (e) {
+                        console.warn('[SVE][Pulv] Error enviando prefill al iframe:', e);
+                    }
                 };
-                iframe.contentWindow.postMessage({ type: 'sve:modal_prefill', payload: prodPayload }, '*');
-            }
 
-            // Prefill completo de solicitud
-            if (payload && iframe.contentWindow) {
-                iframe.contentWindow.postMessage({ type: 'sve:prefill_solicitud', payload }, '*');
+                // Al cargar el iframe, pedimos el DETALLE real al backend del editor.
+                iframe.addEventListener('load', async () => {
+                    try {
+                        // 1) Intento principal: detalle completo desde el controlador del editor
+                        const urlDetalle = `../../controllers/ing_new_pulverizacion_edit_controller.php?action=solicitud&id=${numId}`;
+                        const res = await fetch(urlDetalle, {
+                            credentials: 'same-origin'
+                        });
+                        const raw = await res.json();
+
+                        if (raw && raw.ok && raw.data) {
+                            // Enviamos el payload “canónico” que el editor espera para precargar TODO
+                            sendToIframe(raw.data);
+                            return;
+                        }
+
+                        // 2) Fallback: usamos el item del listado (parcial) si el detalle no estuvo disponible
+                        const dataMap = (window.__SVE_SOL_MAP instanceof Map) ? window.__SVE_SOL_MAP : null;
+                        const fallback = dataMap ? dataMap.get(numId) : null;
+                        if (fallback) sendToIframe(fallback);
+                        else console.warn('[SVE][Pulv] No hay datos para prefill (sin detalle ni fallback)');
+                    } catch (e) {
+                        console.warn('[SVE][Pulv] No se pudo obtener el detalle de la solicitud:', e);
+                        // Fallback igualmente
+                        try {
+                            const dataMap = (window.__SVE_SOL_MAP instanceof Map) ? window.__SVE_SOL_MAP : null;
+                            const fallback = dataMap ? dataMap.get(numId) : null;
+                            if (fallback) sendToIframe(fallback);
+                        } catch {}
+                    }
+                }, {
+                    once: true
+                });
             }
-        } catch (e) {
-            console.warn('[SVE][Pulv] No se pudo enviar prefill al iframe:', e);
-        }
-    }, { once: true });
-}
 
             window.closeDetalle = function() {
                 const modal = document.getElementById('modal-detalle');
@@ -1152,12 +1190,12 @@ window.__SVE_SOL_MAP = new Map();
                         return;
                     }
                     // Guardar items en un mapa global (id -> objeto solicitud) para prefill
-try {
-    window.__SVE_SOL_MAP = new Map((rows || []).map(r => [Number(r.id), r]));
-} catch (e) {
-    console.warn('[SVE][Pulv] No se pudo construir el mapa de solicitudes:', e);
-}
-$cards.innerHTML = rows.map(row).join('');
+                    try {
+                        window.__SVE_SOL_MAP = new Map((rows || []).map(r => [Number(r.id), r]));
+                    } catch (e) {
+                        console.warn('[SVE][Pulv] No se pudo construir el mapa de solicitudes:', e);
+                    }
+                    $cards.innerHTML = rows.map(row).join('');
                 } catch (e) {
                     console.error('[SVE][Pulv] Error listado:', e);
                     $cards.innerHTML = `<div class="alert alert-error">Error cargando listado</div>`;
@@ -1176,8 +1214,8 @@ $cards.innerHTML = rows.map(row).join('');
             $q.addEventListener('input', onType);
 
             document.addEventListener('DOMContentLoaded', () => {
-    cargar();
-});
+                cargar();
+            });
 
             async function eliminarSolicitud(id) {
                 // solo usa el modal de confirmación; aquí NO se pide confirmación de nuevo
