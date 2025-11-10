@@ -1180,7 +1180,6 @@ unset($_SESSION['cierre_info']);
             };
 
             document.addEventListener('DOMContentLoaded', () => {
-                cargarCoops();
                 cargar();
             });
         })();
