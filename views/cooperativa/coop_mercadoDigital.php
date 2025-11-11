@@ -159,39 +159,64 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         }
 
         /* ====== Filtro por categoría: estilo consistente con el framework ====== */
+        /* Layout del header: permite que el buscador baje cuando no entra */
         .accordion-header-row {
             display: flex;
             align-items: center;
-            justify-content: space-between;
             gap: 12px;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            /* 🔑 habilita salto de línea */
+            row-gap: 10px;
+            /* espacio vertical cuando baja */
         }
 
+        /* Título de categoría: ocupa lo mínimo y deja espacio al buscador */
+        .accordion-header-row>strong {
+            flex: 0 1 auto;
+            min-width: 140px;
+            /* evita quiebres raros del título */
+        }
+
+        /* Contenedor del buscador con el estilo del framework */
         .buscador-categoria {
-            min-width: 220px;
-            /* ancho cómodo en desktop */
-            max-width: 320px;
+            display: flex;
+            /* ya lo aporta .input-icon, lo reforzamos */
+            min-width: 240px;
+            /* ancho mínimo deseable en desktop */
+            max-width: 360px;
+            flex: 1 1 260px;
+            /* crece y si no entra, se va abajo */
+            width: auto;
         }
 
+        /* Input con altura y bordes consistentes */
         .buscador-categoria input.filtro-categoria {
             height: 40px;
-            /* altura similar al resto de inputs */
             border-radius: 10px;
-            /* mismo radio que tarjetas/inputs */
             font-size: 14px;
+            width: 100%;
+            /* ocupa todo el contenedor en cualquier línea */
         }
 
-        /* Responsive: que el buscador se acomode debajo del título */
-        @media (max-width: 768px) {
+        /* Cuando el card es más angosto, el buscador baja y ocupa todo el ancho */
+        @media (max-width: 1200px) {
             .accordion-header-row {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 8px;
+                justify-content: flex-start;
             }
 
             .buscador-categoria {
-                width: 100%;
-                min-width: 0;
+                flex-basis: 100%;
+                /* 🔑 cuando baja, que sea full width */
                 max-width: 100%;
+                min-width: 0;
+            }
+        }
+
+        /* Ultra responsive (móviles) */
+        @media (max-width: 768px) {
+            .accordion-header-row {
+                gap: 8px;
             }
         }
     </style>
