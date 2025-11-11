@@ -187,7 +187,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         <span class="material-icons" style="color: #5b21b6;">analytics</span><span class="link-text">Consolidado</span>
                     </li>
                     <li onclick="location.href='coop_pulverizacion.php'">
-                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span><span class="link-text">Pulverización con Drone</span>
+                        <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span><span class="link-text">Pulverización con Drone</span>
                     </li>
                     <li onclick="location.href='coop_usuarioInformacion.php'">
                         <ure class="material-icons" style="color: #5b21b6;">agriculture</ure><span class="link-text">Productores</span>
@@ -527,7 +527,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                     }
 
 
-                    // Cargamos los productos por categoria
+                    // Cargamos los productos por categoria (con filtro por categoría)
                     async function cargarProductosPorCategoria() {
                         try {
                             const res = await fetch('/controllers/coop_MercadoDigitalController.php?listar=productos_categorizados');
@@ -536,32 +536,41 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                             const contenedor = document.getElementById('acordeones-productos');
                             contenedor.innerHTML = '';
 
+                            let catIndex = 0;
                             for (const categoria in data) {
                                 const productos = data[categoria];
 
+                                const catId = `cat_${catIndex++}`;
                                 const acordeon = document.createElement('div');
-                                acordeon.classList.add('card'); // usa tu estilo de tarjeta
+                                acordeon.classList.add('card');
 
                                 const header = document.createElement('div');
                                 header.classList.add('accordion-header');
-                                header.innerHTML = `<strong>${categoria}</strong>`;
+                                header.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px; justify-content:space-between;">
+                    <strong>${categoria}</strong>
+                    <input type="text" class="filtro-categoria" placeholder="Filtrar productos..." 
+                           oninput="filtrarCategoria('${catId}', this.value)" />
+                </div>`;
 
                                 const body = document.createElement('div');
-                                body.classList.add('accordion-body');
+                                body.classList.add('accordion-body', 'productos-lista');
+                                body.id = `body_${catId}`;
 
-                                // Mostrar el cuerpo al hacer clic
-                                header.addEventListener('click', () => {
-                                    body.classList.toggle('show');
+                                // Mostrar/ocultar el cuerpo al hacer clic en cualquier parte del header excepto el input
+                                header.addEventListener('click', (e) => {
+                                    const isInput = e.target && e.target.classList.contains('filtro-categoria');
+                                    if (!isInput) body.classList.toggle('show');
                                 });
 
                                 productos.forEach(prod => {
-                                    // console.log(prod); //mirar los productos que vienen de la bbdd
                                     const grupo = document.createElement('div');
                                     grupo.className = 'input-group';
+                                    grupo.setAttribute('data-nombre', (prod.Nombre_producto || '').toLowerCase());
 
-grupo.innerHTML = `
+                                    // En este endpoint no viene Detalle_producto, por eso no mostramos el ícono info
+                                    grupo.innerHTML = `
 <label for="prod_${prod.producto_id}">
-    ${iconoInfo}
     <strong>${prod.Nombre_producto}</strong><br>
     <small style="color:#555;">
         Se vende por <strong>${prod.Unidad_Medida_venta}</strong> a 
@@ -579,9 +588,7 @@ grupo.innerHTML = `
         placeholder="Cantidad..." 
         data-alicuota="${prod.alicuota}" 
         data-precio="${prod.Precio_producto}" />
-</div>
-`;
-
+</div>`;
                                     body.appendChild(grupo);
                                 });
 
@@ -804,7 +811,7 @@ grupo.innerHTML = `
                     }
 
 
-                    // cargamos los productos por operativo
+                    // cargamos los productos por operativo (con filtro por categoría)
                     async function cargarProductosPorOperativo(operativoId) {
                         try {
                             const res = await fetch(`/controllers/coop_MercadoDigitalController.php?listar=productos_por_operativo&operativo_id=${operativoId}`);
@@ -813,35 +820,45 @@ grupo.innerHTML = `
                             const contenedor = document.getElementById('acordeones-productos');
                             contenedor.innerHTML = '';
 
+                            let catIndex = 0;
                             for (const categoria in data) {
                                 const productos = data[categoria];
 
+                                const catId = `cat_${catIndex++}`;
                                 const acordeon = document.createElement('div');
                                 acordeon.classList.add('card');
 
                                 const header = document.createElement('div');
                                 header.classList.add('accordion-header');
-                                header.innerHTML = `<strong>${categoria}</strong>`;
+                                header.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px; justify-content:space-between;">
+                    <strong>${categoria}</strong>
+                    <input type="text" class="filtro-categoria" placeholder="Filtrar productos..." 
+                           oninput="filtrarCategoria('${catId}', this.value)" />
+                </div>`;
 
                                 const body = document.createElement('div');
-                                body.classList.add('accordion-body');
+                                body.classList.add('accordion-body', 'productos-lista');
+                                body.id = `body_${catId}`;
 
-                                header.addEventListener('click', () => {
-                                    body.classList.toggle('show');
+                                header.addEventListener('click', (e) => {
+                                    const isInput = e.target && e.target.classList.contains('filtro-categoria');
+                                    if (!isInput) body.classList.toggle('show');
                                 });
 
                                 productos.forEach(prod => {
                                     const grupo = document.createElement('div');
                                     grupo.className = 'input-group';
+                                    grupo.setAttribute('data-nombre', (prod.Nombre_producto || '').toLowerCase());
 
                                     const tieneDetalle = prod.Detalle_producto && prod.Detalle_producto.trim() !== '';
                                     const iconoInfo = tieneDetalle ?
                                         `<button type="button" class="btn-icon info-icon" onclick="abrirModalDetalle('${prod.Detalle_producto.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">
-        <span class="material-icons">info</span>
-     </button>` :
+                            <span class="material-icons">info</span>
+                       </button>` :
                                         '';
 
-grupo.innerHTML = `
+                                    grupo.innerHTML = `
 <label for="prod_${prod.producto_id}">
     ${iconoInfo}
     <strong>${prod.Nombre_producto}</strong><br>
@@ -861,10 +878,7 @@ grupo.innerHTML = `
         placeholder="Cantidad..." 
         data-alicuota="${prod.alicuota}" 
         data-precio="${prod.Precio_producto}" />
-</div>
-`;
-
-
+</div>`;
                                     body.appendChild(grupo);
                                 });
 
@@ -876,6 +890,7 @@ grupo.innerHTML = `
                             console.error('❌ Error al cargar productos del operativo:', err);
                         }
                     }
+
 
                     // modal telefono y cuit
                     function cerrarModalDatos(limpiarCampos = false) {
@@ -901,6 +916,22 @@ grupo.innerHTML = `
                     function cerrarModalDetalle() {
                         document.getElementById('modalDetalleProducto').style.display = 'none';
                     }
+
+                    // 🔎 Filtra productos dentro de una categoría específica
+                    function filtrarCategoria(catId, texto) {
+                        const body = document.getElementById(`body_${catId}`);
+                        if (!body) return;
+
+                        const termino = (texto || '').toLowerCase().trim();
+                        const grupos = body.querySelectorAll('.input-group');
+
+                        grupos.forEach(grupo => {
+                            const nombre = (grupo.getAttribute('data-nombre') ||
+                                    grupo.querySelector('strong')?.textContent || '')
+                                .toLowerCase();
+                            grupo.style.display = nombre.includes(termino) ? '' : 'none';
+                        });
+                    }
                 </script>
 
                 <!-- Alert -->
@@ -909,11 +940,6 @@ grupo.innerHTML = `
 
         </div>
     </div>
-
-    <script>
-
-    </script>
-
 
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
