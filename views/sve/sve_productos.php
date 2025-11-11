@@ -32,7 +32,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 
-    <style>
+<style>
         .table-container {
             max-height: 500px;
             /* o el alto que prefieras */
@@ -51,7 +51,23 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             background-color: rgba(0, 0, 0, 0.2);
             border-radius: 4px;
         }
+
+        /* 🔹 Evitar que el detalle expanda la tabla y forzar salto de línea */
+        .data-table {
+            table-layout: fixed; /* permite respetar anchos y hacer wrapping */
+            width: 100%;
+        }
+        /* Columna 3 = "Detalle del producto" (th y td) */
+        .data-table th:nth-child(3),
+        .data-table td:nth-child(3) {
+            width: 320px;          /* ajustá a gusto: 260–420px */
+            max-width: 320px;
+            white-space: normal;   /* permite múltiples líneas */
+            word-wrap: break-word; /* soporte legacy */
+            overflow-wrap: anywhere; /* corta palabras muy largas */
+        }
     </style>
+
 </head>
 
 <body>
