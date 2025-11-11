@@ -35,27 +35,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <style>
         .table-container {
             max-height: 500px;
-            /* o el alto que prefieras */
             overflow: auto;
             border: 1px solid #ddd;
             border-radius: 0.5rem;
         }
 
-        /* Opcional: scroll visible y bonito */
-        .table-container::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
-        }
+        /* Scroll visual */
+        .table-container::-webkit-scrollbar { height: 8px; width: 8px; }
+        .table-container::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.2); border-radius: 4px; }
 
-        .table-container::-webkit-scrollbar-thumb {
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-        }
-
-        /* 🔹 Evitar que la tabla se expanda y forzar salto de línea */
+        /* 🔹 Desktop: anchos fijos + wrapping */
         .data-table {
             table-layout: fixed;
-            /* permite respetar anchos y hacer wrapping */
             width: 100%;
         }
 
@@ -73,7 +64,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         .data-table th:nth-child(3),
         .data-table td:nth-child(3) {
             width: 320px;
-            /* ajustá a gusto: 260–420px */
             max-width: 320px;
             white-space: normal;
             word-wrap: break-word;
@@ -99,7 +89,34 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             word-wrap: break-word;
             overflow-wrap: anywhere;
         }
+
+        /* 📱 Mobile: evitar superposición liberando anchos y forzando scroll horizontal */
+        @media (max-width: 768px) {
+            .table-container { overflow-x: auto; }
+            .data-table {
+                table-layout: auto;    /* el navegador reparte el ancho según contenido */
+                min-width: 900px;      /* fuerza scroll horizontal, no colapsa encabezados */
+            }
+            .data-table th, .data-table td {
+                white-space: normal;
+                word-break: break-word;
+                overflow-wrap: anywhere;
+            }
+            /* Quitar anchos fijos en mobile para que no se encimen los th */
+            .data-table th:nth-child(2),
+            .data-table td:nth-child(2),
+            .data-table th:nth-child(3),
+            .data-table td:nth-child(3),
+            .data-table th:nth-child(6),
+            .data-table td:nth-child(6),
+            .data-table th:nth-child(7),
+            .data-table td:nth-child(7) {
+                width: auto;
+                max-width: none;
+            }
+        }
     </style>
+
 
 </head>
 
