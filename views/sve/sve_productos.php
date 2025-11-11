@@ -32,7 +32,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 
-<style>
+    <style>
         .table-container {
             max-height: 500px;
             /* o el alto que prefieras */
@@ -52,19 +52,52 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             border-radius: 4px;
         }
 
-        /* 🔹 Evitar que el detalle expanda la tabla y forzar salto de línea */
+        /* 🔹 Evitar que la tabla se expanda y forzar salto de línea */
         .data-table {
-            table-layout: fixed; /* permite respetar anchos y hacer wrapping */
+            table-layout: fixed;
+            /* permite respetar anchos y hacer wrapping */
             width: 100%;
         }
-        /* Columna 3 = "Detalle del producto" (th y td) */
+
+        /* Columna 2 = "Nombre" */
+        .data-table th:nth-child(2),
+        .data-table td:nth-child(2) {
+            width: 240px;
+            max-width: 240px;
+            white-space: normal;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        /* Columna 3 = "Detalle del producto" */
         .data-table th:nth-child(3),
         .data-table td:nth-child(3) {
-            width: 320px;          /* ajustá a gusto: 260–420px */
+            width: 320px;
+            /* ajustá a gusto: 260–420px */
             max-width: 320px;
-            white-space: normal;   /* permite múltiples líneas */
-            word-wrap: break-word; /* soporte legacy */
-            overflow-wrap: anywhere; /* corta palabras muy largas */
+            white-space: normal;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        /* Columna 6 = "Unidad de venta" */
+        .data-table th:nth-child(6),
+        .data-table td:nth-child(6) {
+            width: 180px;
+            max-width: 180px;
+            white-space: normal;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        /* Columna 7 = "Categoria" */
+        .data-table th:nth-child(7),
+        .data-table td:nth-child(7) {
+            width: 200px;
+            max-width: 200px;
+            white-space: normal;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
         }
     </style>
 
