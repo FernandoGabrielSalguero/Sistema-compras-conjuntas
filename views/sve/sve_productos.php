@@ -32,10 +32,33 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 
-    <style>
+        <style>
+        /* ===========================
+           🔧 EDITA ANCHOS POR COLUMNA AQUÍ
+           (Usa px/rem/% a gusto. Estos valores se aplican en desktop/tablet.)
+           Orden de columnas:
+           1) ID, 2) Nombre, 3) Detalle, 4) Precio, 5) Moneda,
+           6) Unidad de venta, 7) Categoria, 8) Alicuota, 9) Acciones
+        ============================ */
+        :root {
+            --col-1-id: 80px;          /* ← AJUSTABLE */
+            --col-2-nombre: 240px;     /* ← AJUSTABLE */
+            --col-3-detalle: 320px;    /* ← AJUSTABLE */
+            --col-4-precio: 120px;     /* ← AJUSTABLE */
+            --col-5-moneda: 120px;     /* ← AJUSTABLE */
+            --col-6-unidad: 180px;     /* ← AJUSTABLE */
+            --col-7-categoria: 200px;  /* ← AJUSTABLE */
+            --col-8-alicuota: 120px;   /* ← AJUSTABLE */
+            --col-9-acciones: 140px;   /* ← AJUSTABLE */
+
+            /* Ancho mínimo de la tabla en mobile (suma aproximada de columnas).
+               Si cambias muchos anchos arriba, puedes ajustar este valor. */
+            --table-min-width: 1500px; /* ← AJUSTABLE */
+        }
+
         .table-container {
             max-height: 500px;
-            overflow: auto;
+            overflow: auto; /* vertical + horizontal si hace falta */
             border: 1px solid #ddd;
             border-radius: 0.5rem;
         }
@@ -44,78 +67,46 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         .table-container::-webkit-scrollbar { height: 8px; width: 8px; }
         .table-container::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.2); border-radius: 4px; }
 
-        /* 🔹 Desktop: anchos fijos + wrapping */
+        /* 💡 Reglas base para evitar solapamientos */
         .data-table {
-            table-layout: fixed;
+            table-layout: fixed; /* fija layout, respetando widths y evitando solapado */
             width: 100%;
+            border-collapse: collapse;
+            min-width: var(--table-min-width); /* fuerza scroll horizontal en pantallas estrechas */
         }
 
-        /* Columna 2 = "Nombre" */
-        .data-table th:nth-child(2),
-        .data-table td:nth-child(2) {
-            width: 240px;
-            max-width: 240px;
-            white-space: normal;
-            word-wrap: break-word;
-            overflow-wrap: anywhere;
+        .data-table th, .data-table td {
+            white-space: normal;       /* permite saltos de línea */
+            word-break: break-word;    /* corta palabras largas */
+            overflow-wrap: anywhere;   /* envuelve incluso strings sin espacios */
         }
 
-        /* Columna 3 = "Detalle del producto" */
-        .data-table th:nth-child(3),
-        .data-table td:nth-child(3) {
-            width: 320px;
-            max-width: 320px;
-            white-space: normal;
-            word-wrap: break-word;
-            overflow-wrap: anywhere;
-        }
+        /* Asignación de anchos por columna (desktop/tablet) */
+        .data-table th:nth-child(1), .data-table td:nth-child(1) { width: var(--col-1-id); max-width: var(--col-1-id); }
+        .data-table th:nth-child(2), .data-table td:nth-child(2) { width: var(--col-2-nombre); max-width: var(--col-2-nombre); }
+        .data-table th:nth-child(3), .data-table td:nth-child(3) { width: var(--col-3-detalle); max-width: var(--col-3-detalle); }
+        .data-table th:nth-child(4), .data-table td:nth-child(4) { width: var(--col-4-precio); max-width: var(--col-4-precio); text-align:right; }
+        .data-table th:nth-child(5), .data-table td:nth-child(5) { width: var(--col-5-moneda); max-width: var(--col-5-moneda); }
+        .data-table th:nth-child(6), .data-table td:nth-child(6) { width: var(--col-6-unidad); max-width: var(--col-6-unidad); }
+        .data-table th:nth-child(7), .data-table td:nth-child(7) { width: var(--col-7-categoria); max-width: var(--col-7-categoria); }
+        .data-table th:nth-child(8), .data-table td:nth-child(8) { width: var(--col-8-alicuota); max-width: var(--col-8-alicuota); text-align:center; }
+        .data-table th:nth-child(9), .data-table td:nth-child(9) { width: var(--col-9-acciones); max-width: var(--col-9-acciones); }
 
-        /* Columna 6 = "Unidad de venta" */
-        .data-table th:nth-child(6),
-        .data-table td:nth-child(6) {
-            width: 180px;
-            max-width: 180px;
-            white-space: normal;
-            word-wrap: break-word;
-            overflow-wrap: anywhere;
-        }
-
-        /* Columna 7 = "Categoria" */
-        .data-table th:nth-child(7),
-        .data-table td:nth-child(7) {
-            width: 200px;
-            max-width: 200px;
-            white-space: normal;
-            word-wrap: break-word;
-            overflow-wrap: anywhere;
-        }
-
-        /* 📱 Mobile: evitar superposición liberando anchos y forzando scroll horizontal */
+        /* 📱 Mobile: scroll horizontal explícito + mantener wrapping */
         @media (max-width: 768px) {
             .table-container { overflow-x: auto; }
             .data-table {
-                table-layout: auto;    /* el navegador reparte el ancho según contenido */
-                min-width: 900px;      /* fuerza scroll horizontal, no colapsa encabezados */
+                table-layout: fixed;      /* conservamos fixed para evitar saltos/solapes */
+                min-width: var(--table-min-width); /* asegura scroll horizontal */
             }
             .data-table th, .data-table td {
                 white-space: normal;
                 word-break: break-word;
                 overflow-wrap: anywhere;
             }
-            /* Quitar anchos fijos en mobile para que no se encimen los th */
-            .data-table th:nth-child(2),
-            .data-table td:nth-child(2),
-            .data-table th:nth-child(3),
-            .data-table td:nth-child(3),
-            .data-table th:nth-child(6),
-            .data-table td:nth-child(6),
-            .data-table th:nth-child(7),
-            .data-table td:nth-child(7) {
-                width: auto;
-                max-width: none;
-            }
         }
     </style>
+
 
 
 </head>
