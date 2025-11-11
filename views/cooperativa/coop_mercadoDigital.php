@@ -157,6 +157,43 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
         .info-icon {
             color: #5b21b6;
         }
+
+        /* ====== Filtro por categoría: estilo consistente con el framework ====== */
+        .accordion-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .buscador-categoria {
+            min-width: 220px;
+            /* ancho cómodo en desktop */
+            max-width: 320px;
+        }
+
+        .buscador-categoria input.filtro-categoria {
+            height: 40px;
+            /* altura similar al resto de inputs */
+            border-radius: 10px;
+            /* mismo radio que tarjetas/inputs */
+            font-size: 14px;
+        }
+
+        /* Responsive: que el buscador se acomode debajo del título */
+        @media (max-width: 768px) {
+            .accordion-header-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+
+            .buscador-categoria {
+                width: 100%;
+                min-width: 0;
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 
@@ -547,20 +584,26 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                 const header = document.createElement('div');
                                 header.classList.add('accordion-header');
                                 header.innerHTML = `
-                <div style="display:flex; align-items:center; gap:10px; justify-content:space-between;">
+                <div class="accordion-header-row">
                     <strong>${categoria}</strong>
-                    <input type="text" class="filtro-categoria" placeholder="Filtrar productos..." 
-                           oninput="filtrarCategoria('${catId}', this.value)" />
+                    <div class="buscador-categoria input-icon" title="Filtrar productos de esta categoría">
+                        <span class="material-icons">search</span>
+                        <input type="text"
+                               class="filtro-categoria"
+                               placeholder="Filtrar productos..."
+                               autocomplete="off"
+                               oninput="filtrarCategoria('${catId}', this.value)" />
+                    </div>
                 </div>`;
 
                                 const body = document.createElement('div');
                                 body.classList.add('accordion-body', 'productos-lista');
                                 body.id = `body_${catId}`;
 
-                                // Mostrar/ocultar el cuerpo al hacer clic en cualquier parte del header excepto el input
+                                // Mostrar/ocultar el cuerpo al hacer clic en el header excepto si el clic fue dentro del buscador
                                 header.addEventListener('click', (e) => {
-                                    const isInput = e.target && e.target.classList.contains('filtro-categoria');
-                                    if (!isInput) body.classList.toggle('show');
+                                    const isInsideSearch = e.target && (e.target.classList.contains('filtro-categoria') || e.target.closest('.buscador-categoria'));
+                                    if (!isInsideSearch) body.classList.toggle('show');
                                 });
 
                                 productos.forEach(prod => {
@@ -831,19 +874,26 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                                 const header = document.createElement('div');
                                 header.classList.add('accordion-header');
                                 header.innerHTML = `
-                <div style="display:flex; align-items:center; gap:10px; justify-content:space-between;">
+                <div class="accordion-header-row">
                     <strong>${categoria}</strong>
-                    <input type="text" class="filtro-categoria" placeholder="Filtrar productos..." 
-                           oninput="filtrarCategoria('${catId}', this.value)" />
+                    <div class="buscador-categoria input-icon" title="Filtrar productos de esta categoría">
+                        <span class="material-icons">search</span>
+                        <input type="text"
+                               class="filtro-categoria"
+                               placeholder="Filtrar productos..."
+                               autocomplete="off"
+                               oninput="filtrarCategoria('${catId}', this.value)" />
+                    </div>
                 </div>`;
 
                                 const body = document.createElement('div');
                                 body.classList.add('accordion-body', 'productos-lista');
                                 body.id = `body_${catId}`;
 
+                                // Mostrar/ocultar el cuerpo al hacer clic en el header excepto si el clic fue dentro del buscador
                                 header.addEventListener('click', (e) => {
-                                    const isInput = e.target && e.target.classList.contains('filtro-categoria');
-                                    if (!isInput) body.classList.toggle('show');
+                                    const isInsideSearch = e.target && (e.target.classList.contains('filtro-categoria') || e.target.closest('.buscador-categoria'));
+                                    if (!isInsideSearch) body.classList.toggle('show');
                                 });
 
                                 productos.forEach(prod => {
