@@ -615,7 +615,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         <span class="material-icons">search</span>
                         <input type="text"
                                class="filtro-categoria"
-                               placeholder="Filtrar productos..."
+                               placeholder="Busca el producto"
                                autocomplete="off"
                                oninput="filtrarCategoria('${catId}', this.value)" />
                     </div>
@@ -905,7 +905,7 @@ echo "<script>console.log('🟣 id_cooperativa desde PHP: " . $id_cooperativa_re
                         <span class="material-icons">search</span>
                         <input type="text"
                                class="filtro-categoria"
-                               placeholder="Filtrar productos..."
+                               placeholder="Busca el producto"
                                autocomplete="off"
                                oninput="filtrarCategoria('${catId}', this.value)" />
                     </div>
