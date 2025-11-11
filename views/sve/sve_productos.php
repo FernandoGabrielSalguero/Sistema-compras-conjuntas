@@ -522,18 +522,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 filas.forEach(fila => {
                     const nombre = fila.children[1]?.textContent.toLowerCase() || '';
-                    const categoria = fila.children[5]?.textContent.toLowerCase() || '';
+                    // Columna 7 = "Categoria" => índice 6
+                    const categoria = fila.children[6]?.textContent.toLowerCase() || '';
 
                     const coincideNombre = nombre.includes(nombreValor);
                     const coincideCategoria = categoria.includes(categoriaValor);
 
-                    if (coincideNombre && coincideCategoria) {
-                        fila.style.display = '';
-                    } else {
-                        fila.style.display = 'none';
-                    }
+                    fila.style.display = (coincideNombre && coincideCategoria) ? '' : 'none';
                 });
             }
+
 
             inputNombre.addEventListener('input', filtrarTabla);
             inputCategoria.addEventListener('input', filtrarTabla);
