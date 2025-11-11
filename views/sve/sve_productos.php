@@ -99,8 +99,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
                     </li>
                     <li onclick="location.href='sve_pulverizacionDrone.php'">
-                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                    <span class="link-text">Drones</span>
+                        <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
+                        <span class="link-text">Drones</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -211,23 +211,28 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                         <option value="Fertilizantes Especiales">Fertilizantes Especiales</option>
                                         <option value="Fertilizantes Foliares">Fertilizantes Foliares</option>
 
-                                            <option value="Levadura SA Bayanus">Levadura SA Bayanus</option>
-                                            <option value="Levadura SA TRB Genérico">Levadura SA TRB Genérico</option>
-                                            <option value="Levadura SA Tinto Verietal">Levadura SA Tinto Verietal</option>
-                                            <option value="Levadura SA Blanco Varietal">Levadura SA Blanco Varietal</option>
-                                            <option value="Levadura SA Dulce Natural">Levadura SA Dulce Natural</option>
-                                            <option value="Nutriente enologico">Nutriente enológico</option>
-                                            <option value="Desincrustante">Desincrustante</option>
-                                            <option value="Clarificante">Clarificante</option>
-                                            <option value="Acidulante">Acidulante</option>
-                                            <option value="Acido columna">Acido columna</option>
-                                            <option value="Enzima">Enzima</option>
+                                        <option value="Levadura SA Bayanus">Levadura SA Bayanus</option>
+                                        <option value="Levadura SA TRB Genérico">Levadura SA TRB Genérico</option>
+                                        <option value="Levadura SA Tinto Verietal">Levadura SA Tinto Verietal</option>
+                                        <option value="Levadura SA Blanco Varietal">Levadura SA Blanco Varietal</option>
+                                        <option value="Levadura SA Dulce Natural">Levadura SA Dulce Natural</option>
+                                        <option value="Nutriente enologico">Nutriente enológico</option>
+                                        <option value="Desincrustante">Desincrustante</option>
+                                        <option value="Clarificante">Clarificante</option>
+                                        <option value="Acidulante">Acidulante</option>
+                                        <option value="Acido columna">Acido columna</option>
+                                        <option value="Enzima">Enzima</option>
 
+                                        <option value="EPP (Elementos de protección personal )">EPP (Elementos de protección personal )</option>
+                                        <option value="Indumentaria">Indumentaria</option>
+                                        <option value="Calzado">Calzado</option>
+                                        <option value="Elementos de limpieza">Elementos de limpieza</option>
+                                        <option value="Cañerias">Cañerias</option>
+                                        <option value="Accesorios">Accesorios</option>
 
                                         <option value="Otros">Otros</option>
-
-
                                     </select>
+
                                 </div>
                             </div>
 
@@ -376,7 +381,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                             <option value="Levadura SA TRB Genérico">Levadura SA TRB Genérico</option>
                                             <option value="Levadura SA Tinto Verietal">Levadura SA Tinto Verietal</option>
                                             <option value="Levadura SA Blanco Varietal">Levadura SA Blanco Varietal</option>
-                                            <option value="Levadura SA Dulce Natural">Levadura SA Dulce Natural</option>
+                                            <option value="Levadura SA Dulce Natural">Levadura SA Dulce Natural</option>
                                             <option value="Nutriente enologico">Nutriente enológico</option>
                                             <option value="Desincrustante">Desincrustante</option>
                                             <option value="Clarificante">Clarificante</option>
@@ -384,9 +389,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                             <option value="Acido columna">Acido columna</option>
                                             <option value="Enzima">Enzima</option>
 
+                                            <option value="EPP (Elementos de protección personal )">EPP (Elementos de protección personal )</option>
+                                            <option value="Indumentaria">Indumentaria</option>
+                                            <option value="Calzado">Calzado</option>
+                                            <option value="Elementos de limpieza">Elementos de limpieza</option>
+                                            <option value="Cañerias">Cañerias</option>
+                                            <option value="Accesorios">Accesorios</option>
+
                                             <option value="Otros">Otros</option>
 
                                         </select>
+
                                     </div>
                                 </div>
 
