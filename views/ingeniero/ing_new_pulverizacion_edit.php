@@ -434,8 +434,10 @@
             const CTRL = '../../controllers/ing_new_pulverizacion_edit_controller.php'; // catálogos/búsquedas
             const CTRL_EDIT = '../../controllers/ing_pulverizacionController.php'; // detalle y update_full
             const QS_ID = Number(new URLSearchParams(location.search).get('id') || 0);
-// Exponer opcionalmente para cualquier script externo que aún lo use
-try { window.QS_ID = QS_ID; } catch (_) {}
+            // Exponer opcionalmente para cualquier script externo que aún lo use
+            try {
+                window.QS_ID = QS_ID;
+            } catch (_) {}
 
 
 
@@ -607,6 +609,40 @@ try { window.QS_ID = QS_ID; } catch (_) {}
                 recalcCostos();
             }
 
+            // Marca radios "Si/No" por patología según existan productos SVE (No) o del productor (Si)
+            function setOwnerRadiosFromItems(items) {
+                const byPat = new Map();
+                (items || []).forEach(it => {
+                    const pid = Number(it.patologia_id || 0);
+                    if (!pid) return;
+                    const fuente = String(it.fuente || '').toLowerCase();
+                    const nombre = String(it.nombre_producto || '').trim();
+                    const obj = byPat.get(pid) || {
+                        hasSve: false,
+                        hasProd: false
+                    };
+                    if (fuente === 'sve' && Number(it.producto_id || 0) > 0) obj.hasSve = true;
+                    if (fuente === 'productor' && nombre) obj.hasProd = true;
+                    byPat.set(pid, obj);
+                });
+
+                byPat.forEach((st, pid) => {
+                    // Regla: si hay producto del productor => "Si"; si hay SVE => "No".
+                    // Si hay ambos, preferimos "No" (se mostrarán chips) para que el usuario vea lo tomado como costo.
+                    const val = st.hasSve ? 'no' : (st.hasProd ? 'si' : null);
+                    if (!val) return;
+                    const r = document.querySelector(`.pat-card input[name="owner_${pid}"][value="${val}"]`);
+                    if (r) {
+                        r.checked = true;
+                        // El CSS usa :has() sobre .pat-card, con sólo chequear alcanzamos.
+                        // Disparamos un evento por si alguien escucha cambios.
+                        r.dispatchEvent(new Event('change', {
+                            bubbles: true
+                        }));
+                    }
+                });
+            }
+
             // Carga detalle completo y prellena el formulario
             async function loadDetalle(id) {
                 const res = await fetch(`${CTRL_EDIT}?action=detalle&id=${id}`, {
@@ -650,8 +686,9 @@ try { window.QS_ID = QS_ID; } catch (_) {}
                 checkPatologias(pids);
                 // Esperar a que se carguen los productos por esas patologías
                 await waitForProducts(pids);
-                // Aplicar selección de items
+                // Aplicar selección de items + setear radios Sí/No por patología
                 applyItemsSeleccionados(items);
+                setOwnerRadiosFromItems(items);
             }
 
             // Evita autocompletado del navegador específicamente en inputs "Otro"
@@ -981,7 +1018,7 @@ try { window.QS_ID = QS_ID; } catch (_) {}
                 const moneda = (ProductosState.moneda || 'ARS');
                 const costoBaseHa = Number(ProductosState.costoBaseHa || 0);
 
-                // Validaciones mínimas para edición (no exigimos rango/dirección)
+                // Validaciones mínimas para edición
                 if (!(QS_ID > 0)) {
                     msg.textContent = 'Error: faltó el ID de la solicitud.';
                     msg.classList.remove('hidden');
@@ -1003,6 +1040,43 @@ try { window.QS_ID = QS_ID; } catch (_) {}
                     req($('#pat-chips'));
                     return;
                 }
+                // Binarios y superficie/dirección: validamos presencia básica
+                for (const id of ['#representante', '#linea_tension', '#zona_restringida', '#corriente_electrica', '#agua_potable', '#libre_obstaculos', '#area_despegue']) {
+                    const v = document.querySelector(id).value;
+                    if (v !== 'si' && v !== 'no') {
+                        req(document.querySelector(id));
+                        return;
+                    }
+                }
+                if (!(Math.max(0, Number($('#ha').value || 0)) > 0)) {
+                    req($('#ha'));
+                    return;
+                }
+
+
+                // Cuando se selecciona algún chip SVE de una patología, marcamos "No"
+                cardsProductos.addEventListener('change', (e) => {
+                    const cb = e.target;
+                    if (!cb || cb.type !== 'checkbox' || !cb.value) return;
+                    const [prodId, patIdStr] = String(cb.value).split('_');
+                    const pid = Number(patIdStr || 0);
+                    if (!pid) return;
+                    const hasSveForPat = Array.from(document.querySelectorAll(`.pat-card input[type="checkbox"][value$="_${pid}"]`)).some(x => x.checked);
+                    const rNo = document.querySelector(`.pat-card input[name="owner_${pid}"][value="no"]`);
+                    const rSi = document.querySelector(`.pat-card input[name="owner_${pid}"][value="si"]`);
+                    if (hasSveForPat && rNo) {
+                        rNo.checked = true;
+                        rNo.dispatchEvent(new Event('change', {
+                            bubbles: true
+                        }));
+                    }
+                    if (!hasSveForPat && rSi && (ProductosState.customByPat.has(pid))) {
+                        rSi.checked = true;
+                        rSi.dispatchEvent(new Event('change', {
+                            bubbles: true
+                        }));
+                    }
+                });
 
                 // Construcción de items (SVE + productor)
                 const items = [];
@@ -1044,13 +1118,25 @@ try { window.QS_ID = QS_ID; } catch (_) {}
                 const baseTotal = costoBaseHa * haVal;
                 const total = baseTotal + productosTotal;
 
-                // Payload update_full: sólo incluimos campos que el modelo permite actualizar
+                // Payload update_full: ahora el modelo también actualiza binarios, superficie y dirección
                 const data = {
                     base: {
                         id: QS_ID,
                         forma_pago_id: Number($('#pago').value || 0),
-                        observaciones: $('#obs').value || ''
-                        // Nota: el modelo no actualiza aquí superficie_ha ni binarios ni dirección
+                        observaciones: $('#obs').value || '',
+                        representante: $('#representante').value || null,
+                        linea_tension: $('#linea_tension').value || null,
+                        zona_restringida: $('#zona_restringida').value || null,
+                        corriente_electrica: $('#corriente_electrica').value || null,
+                        agua_potable: $('#agua_potable').value || null,
+                        libre_obstaculos: $('#libre_obstaculos').value || null,
+                        area_despegue: $('#area_despegue').value || null,
+                        superficie_ha: Math.max(0, Number($('#ha').value || 0)),
+                        coop_descuento_nombre: $('#coop').value || null,
+                        dir_provincia: $('#prov').value || '',
+                        dir_localidad: $('#loc').value || '',
+                        dir_calle: $('#calle').value || '',
+                        dir_numero: String($('#nro').value || '')
                     },
                     full: {
                         // parámetros opcionales (omitimos si no hay UI específica)
@@ -1094,19 +1180,21 @@ try { window.QS_ID = QS_ID; } catch (_) {}
         })();
     </script>
 
-<script>
-    // Ajuste de título si estamos editando (independiente del resto del JS)
-    (function () {
-        var _id = 0;
-        try {
-            _id = Number(new URLSearchParams(location.search).get('id') || 0);
-        } catch (_) { _id = 0; }
-        if (_id > 0) {
-            var h2 = document.querySelector('.card h2');
-            if (h2) h2.textContent = 'Editar solicitud #' + _id;
-        }
-    })();
-</script>
+    <script>
+        // Ajuste de título si estamos editando (independiente del resto del JS)
+        (function() {
+            var _id = 0;
+            try {
+                _id = Number(new URLSearchParams(location.search).get('id') || 0);
+            } catch (_) {
+                _id = 0;
+            }
+            if (_id > 0) {
+                var h2 = document.querySelector('.card h2');
+                if (h2) h2.textContent = 'Editar solicitud #' + _id;
+            }
+        })();
+    </script>
 </body>
 
 </html>
