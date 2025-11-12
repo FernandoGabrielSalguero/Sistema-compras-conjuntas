@@ -986,40 +986,26 @@ unset($_SESSION['cierre_info']);
                     }
                 };
 
-                // Al cargar el iframe, pedimos el DETALLE real al backend del editor.
-                iframe.addEventListener('load', async () => {
-                    try {
-                        // 1) Intento principal: detalle completo desde el controlador del editor
-                        const urlDetalle = `../../controllers/ing_new_pulverizacion_edit_controller.php?action=solicitud&id=${numId}`;
-                        const res = await fetch(urlDetalle, {
-                            credentials: 'same-origin'
-                        });
-                        const raw = await res.json();
+                // Al cargar el iframe, el propio editor se autogestiona (fetch detalle por id y prefill)
+                iframe.addEventListener('load', () => {
+                    // No hacemos nada aquí.
+                }, { once: true });
 
-                        if (raw && raw.ok && raw.data) {
-                            // Enviamos el payload “canónico” que el editor espera para precargar TODO
-                            sendToIframe(raw.data);
-                            return;
-                        }
-
-                        // 2) Fallback: usamos el item del listado (parcial) si el detalle no estuvo disponible
-                        const dataMap = (window.__SVE_SOL_MAP instanceof Map) ? window.__SVE_SOL_MAP : null;
-                        const fallback = dataMap ? dataMap.get(numId) : null;
-                        if (fallback) sendToIframe(fallback);
-                        else console.warn('[SVE][Pulv] No hay datos para prefill (sin detalle ni fallback)');
-                    } catch (e) {
-                        console.warn('[SVE][Pulv] No se pudo obtener el detalle de la solicitud:', e);
-                        // Fallback igualmente
-                        try {
-                            const dataMap = (window.__SVE_SOL_MAP instanceof Map) ? window.__SVE_SOL_MAP : null;
-                            const fallback = dataMap ? dataMap.get(numId) : null;
-                            if (fallback) sendToIframe(fallback);
-                        } catch {}
-                    }
-                }, {
-                    once: true
-                });
             }
+
+                        // Escucha de eventos del iframe para refrescar listado al guardar
+            window.addEventListener('message', (ev) => {
+                try {
+                    if (ev && ev.data && ev.data.type === 'sve:solicitud_actualizada') {
+                        // Cierra el modal de edición y recarga las tarjetas
+                        closeDetalle();
+                        cargar();
+                    }
+                } catch (e) {
+                    console.warn('[SVE][Pulv] postMessage no procesado:', e);
+                }
+            });
+
 
             window.closeDetalle = function() {
                 const modal = document.getElementById('modal-detalle');
@@ -1254,6 +1240,25 @@ unset($_SESSION['cierre_info']);
             });
         })();
     </script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById('modal-edit-solicitud');
+            const iframe = document.getElementById('iframe-edit-solicitud');
+
+            document.querySelectorAll('.btn-editar').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.dataset.id;
+                    if (!id) return alert('ID de solicitud no encontrado');
+                    iframe.src = `ing_new_pulverizacion_edit.php?id=${id}`;
+                    modal.classList.add('show');
+                    modal.style.display = 'block';
+                });
+            });
+        });
+    </script>
+
 
     <!-- Mantener defer; si el tutorial manipula tabs, no debe sobreescribir el estado -->
     <script src="../partials/tutorials/cooperativas/pulverizacion.js?v=<?= time() ?>" defer></script>

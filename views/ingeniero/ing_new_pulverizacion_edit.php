@@ -239,41 +239,57 @@
         }
 
         /* --- Toggle por propietario de productos (solo CSS) --- */
-.prod-owner {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    margin: 6px 0 10px 0;
-    flex-wrap: wrap;
-    font-size: .95rem;
-}
-.prod-owner .radio {
-    display: inline-flex;
-    align-items: center;
-    gap: .35rem;
-    padding: 4px 8px;
-    border: 1px solid #e5e7eb;
-    border-radius: 999px;
-    background: #fff;
-    user-select: none;
-    cursor: pointer;
-}
-.prod-owner input[type="radio"] {
-    accent-color: #10b981;
-}
+        .prod-owner {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin: 6px 0 10px 0;
+            flex-wrap: wrap;
+            font-size: .95rem;
+        }
 
-/* Por defecto, oculto ambos contenedores */
-.pat-card .prod-chips { display: none; }
-.pat-card .prod-custom { display: none; }
+        .prod-owner .radio {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: 4px 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 999px;
+            background: #fff;
+            user-select: none;
+            cursor: pointer;
+        }
 
-/* Si elige "Sí", mostrar solo el input personalizado */
-.pat-card:has(input.prod-si:checked) .prod-custom { display: block; }
-.pat-card:has(input.prod-si:checked) .prod-chips { display: none; }
+        .prod-owner input[type="radio"] {
+            accent-color: #10b981;
+        }
 
-/* Si elige "No", mostrar solo los chips de productos */
-.pat-card:has(input.prod-no:checked) .prod-chips { display: flex; }
-.pat-card:has(input.prod-no:checked) .prod-custom { display: none; }
+        /* Por defecto, oculto ambos contenedores */
+        .pat-card .prod-chips {
+            display: none;
+        }
 
+        .pat-card .prod-custom {
+            display: none;
+        }
+
+        /* Si elige "Sí", mostrar solo el input personalizado */
+        .pat-card:has(input.prod-si:checked) .prod-custom {
+            display: block;
+        }
+
+        .pat-card:has(input.prod-si:checked) .prod-chips {
+            display: none;
+        }
+
+        /* Si elige "No", mostrar solo los chips de productos */
+        .pat-card:has(input.prod-no:checked) .prod-chips {
+            display: flex;
+        }
+
+        .pat-card:has(input.prod-no:checked) .prod-custom {
+            display: none;
+        }
     </style>
 </head>
 
@@ -415,7 +431,11 @@
 
     <script>
         (() => {
-            const CTRL = '../../controllers/ing_new_pulverizacion_edit_controller.php';
+            const CTRL = '../../controllers/ing_new_pulverizacion_edit_controller.php'; // catálogos/búsquedas
+            const CTRL_EDIT = '../../controllers/ing_pulverizacionController.php'; // detalle y update_full
+            const QS_ID = Number(new URLSearchParams(location.search).get('id') || 0);
+
+
 
             const $ = s => document.querySelector(s);
             const show = (el, v) => el.classList.toggle('hidden', !v);
@@ -508,7 +528,6 @@
                     .filter(v => v > 0);
             }
 
-
             async function init() {
                 const [pagos, rangos, pats, coops, costo] = await Promise.all([
                     getJSON(`${CTRL}?action=formas_pago`),
@@ -525,8 +544,113 @@
                 ProductosState.costoBaseHa = Number(costo.costo || 0);
                 ProductosState.moneda = costo.moneda || 'ARS';
                 recalcCostos();
+
+                // Si venimos en modo edición, precargar por ID
+                if (QS_ID > 0) {
+                    await loadDetalle(QS_ID);
+                }
             }
             init().catch(console.error);
+
+            // Espera hasta que el catálogo por patología esté listo (tras el change)
+            async function waitForProducts(patIds, timeoutMs = 4000) {
+                const start = Date.now();
+                return new Promise((resolve) => {
+                    const tick = () => {
+                        const ready = (patIds || []).every(pid => ProductosState.catalogByPat.has(pid));
+                        if (ready) return resolve(true);
+                        if (Date.now() - start > timeoutMs) return resolve(false);
+                        setTimeout(tick, 100);
+                    };
+                    tick();
+                });
+            }
+
+            // Marca chips de patologías según IDs
+            function checkPatologias(pids) {
+                const set = new Set(pids.map(Number));
+                document.querySelectorAll('#pat-chips input[type="checkbox"]').forEach(cb => {
+                    cb.checked = set.has(Number(cb.value));
+                });
+                // disparamos change para cargar productos por patología
+                patChips.dispatchEvent(new Event('change'));
+            }
+
+            // Marca productos seleccionados (SVE) y textos "productor"
+            function applyItemsSeleccionados(items) {
+                // Limpia estado
+                ProductosState.seleccionados.clear();
+                ProductosState.customByPat.clear();
+
+                (items || []).forEach(it => {
+                    const pid = Number(it.patologia_id || 0);
+                    const fuente = String(it.fuente || '').toLowerCase();
+                    const prodId = Number(it.producto_id || 0);
+                    const nombre = String(it.nombre_producto || '').trim();
+
+                    if (fuente === 'sve' && prodId > 0) {
+                        const key = `${prodId}_${pid}`;
+                        const cb = document.querySelector(`.pat-card input[type="checkbox"][value="${key}"]`);
+                        if (cb) {
+                            cb.checked = true;
+                            ProductosState.seleccionados.add(key);
+                        }
+                    } else if (fuente === 'productor' && nombre) {
+                        ProductosState.customByPat.set(pid, nombre);
+                        const inp = document.querySelector(`.pat-card input.prod-custom[data-patologia-id="${pid}"]`);
+                        if (inp) inp.value = nombre;
+                    }
+                });
+
+                recalcCostos();
+            }
+
+            // Carga detalle completo y prellena el formulario
+            async function loadDetalle(id) {
+                const res = await fetch(`${CTRL_EDIT}?action=detalle&id=${id}`, {
+                    credentials: 'same-origin'
+                });
+                const j = await res.json();
+                if (!j.ok || !j.data) throw new Error(j.error || 'No se pudo obtener el detalle');
+
+                const d = j.data || {};
+                const s = d.solicitud || {};
+                const motivos = d.motivos || [];
+                const items = d.items || [];
+
+                // Campos base visibles en el formulario
+                $('#prod_txt').value = s.productor_nombre || '';
+                $('#prod_idreal').value = s.productor_id_real || '';
+                $('#prod_nombre_snap').value = s.productor_nombre || s.productor_id_real || '';
+
+                const binIds = ['representante', 'linea_tension', 'zona_restringida', 'corriente_electrica', 'agua_potable', 'libre_obstaculos', 'area_despegue'];
+                binIds.forEach(k => {
+                    if (s[k]) {
+                        const el = document.getElementById(k);
+                        if (el) el.value = s[k];
+                    }
+                });
+
+                // NOTA: superficie_ha/dir_* pueden NO persistir con update_full (modelo actual no los actualiza)
+                if (s.superficie_ha != null) $('#ha').value = Number(s.superficie_ha);
+                if (s.forma_pago_id != null) $('#pago').value = String(s.forma_pago_id);
+                $('#coop').value = s.coop_descuento_nombre || '';
+                show(coopWrap, String($('#pago').value) === '6');
+
+                if (s.dir_localidad) $('#loc').value = s.dir_localidad;
+                if (s.dir_calle) $('#calle').value = s.dir_calle;
+                if (s.dir_numero) $('#nro').value = s.dir_numero;
+                if (s.dir_provincia) $('#prov').value = s.dir_provincia;
+                if (s.observaciones) $('#obs').value = s.observaciones;
+
+                // Patologías
+                const pids = motivos.map(m => Number(m.patologia_id || 0)).filter(v => v > 0);
+                checkPatologias(pids);
+                // Esperar a que se carguen los productos por esas patologías
+                await waitForProducts(pids);
+                // Aplicar selección de items
+                applyItemsSeleccionados(items);
+            }
 
             // Evita autocompletado del navegador específicamente en inputs "Otro"
             document.addEventListener('focusin', (e) => {
@@ -706,14 +830,14 @@
             });
 
             function renderProductoCards(patIds) {
-    const patName = (id) => (window.__PatMap && window.__PatMap.get(Number(id))) || `Patología ${id}`;
-    const moneda = currFrom(ProductosState.moneda);
+                const patName = (id) => (window.__PatMap && window.__PatMap.get(Number(id))) || `Patología ${id}`;
+                const moneda = currFrom(ProductosState.moneda);
 
-    const frag = document.createDocumentFragment();
-    patIds.forEach(pid => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'pat-card';
-        wrapper.innerHTML = `
+                const frag = document.createDocumentFragment();
+                patIds.forEach(pid => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'pat-card';
+                    wrapper.innerHTML = `
             <h4>Elijamos los productos para tratar ${patName(pid)}</h4>
             <div class="prod-owner">
                 <span>¿El productor tiene los productos para tratar ${patName(pid)}?</span>
@@ -728,39 +852,39 @@
             </div>
         `;
 
-        // chips de productos para esta patología (se muestran solo si elige "No")
-        const chipsDiv = document.createElement('div');
-        chipsDiv.className = 'chips-grid prod-chips';
-        (ProductosState.catalogByPat.get(pid) || [])
-            .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-            .forEach(p => {
-                const key = `${p.id}_${pid}`;
-                const label = document.createElement('label');
-                label.className = 'chip';
-                label.innerHTML = `
+                    // chips de productos para esta patología (se muestran solo si elige "No")
+                    const chipsDiv = document.createElement('div');
+                    chipsDiv.className = 'chips-grid prod-chips';
+                    (ProductosState.catalogByPat.get(pid) || [])
+                    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+                        .forEach(p => {
+                            const key = `${p.id}_${pid}`;
+                            const label = document.createElement('label');
+                            label.className = 'chip';
+                            label.innerHTML = `
         <input type="checkbox" value="${key}">
         <span class="chip-box">
             <span class="chip-name">${p.nombre}</span>
             <span class="chip-cost">${fmtMon(p.costo_hectarea, moneda)}/ha</span>
         </span>`;
-                chipsDiv.appendChild(label);
-            });
+                            chipsDiv.appendChild(label);
+                        });
 
-        chipsDiv.addEventListener('change', (e) => {
-            const cb = e.target;
-            if (cb && cb.type === 'checkbox' && cb.value) {
-                if (cb.checked) ProductosState.seleccionados.add(cb.value);
-                else ProductosState.seleccionados.delete(cb.value);
-                recalcCostos();
-            }
-        });
+                    chipsDiv.addEventListener('change', (e) => {
+                        const cb = e.target;
+                        if (cb && cb.type === 'checkbox' && cb.value) {
+                            if (cb.checked) ProductosState.seleccionados.add(cb.value);
+                            else ProductosState.seleccionados.delete(cb.value);
+                            recalcCostos();
+                        }
+                    });
 
-        wrapper.appendChild(chipsDiv);
+                    wrapper.appendChild(chipsDiv);
 
-        // campo "Otro" por patología (se muestra solo si elige "Sí")
-        const customDiv = document.createElement('div');
-        customDiv.className = 'chips-custom prod-custom';
-        customDiv.innerHTML = `
+                    // campo "Otro" por patología (se muestra solo si elige "Sí")
+                    const customDiv = document.createElement('div');
+                    customDiv.className = 'chips-custom prod-custom';
+                    customDiv.innerHTML = `
             <label>Si el productor aporta el producto para tratar esta patologia, coloque su nombre aquí:</label>
             <input
                 type="text"
@@ -774,24 +898,24 @@
                 spellcheck="false"
             />
         `;
-        customDiv.addEventListener('input', (e) => {
-            const inp = e.target;
-            if (inp && inp.classList.contains('prod-custom')) {
-                const pId = Number(inp.getAttribute('data-patologia-id'));
-                const val = (inp.value || '').trim();
-                if (val) ProductosState.customByPat.set(pId, val);
-                else ProductosState.customByPat.delete(pId);
-                recalcCostos();
+                    customDiv.addEventListener('input', (e) => {
+                        const inp = e.target;
+                        if (inp && inp.classList.contains('prod-custom')) {
+                            const pId = Number(inp.getAttribute('data-patologia-id'));
+                            const val = (inp.value || '').trim();
+                            if (val) ProductosState.customByPat.set(pId, val);
+                            else ProductosState.customByPat.delete(pId);
+                            recalcCostos();
+                        }
+                    });
+
+                    wrapper.appendChild(customDiv);
+                    frag.appendChild(wrapper);
+                });
+
+                cardsProductos.innerHTML = '';
+                cardsProductos.appendChild(frag);
             }
-        });
-
-        wrapper.appendChild(customDiv);
-        frag.appendChild(wrapper);
-    });
-
-    cardsProductos.innerHTML = '';
-    cardsProductos.appendChild(frag);
-}
 
 
             function recalcCostos() {
@@ -842,122 +966,138 @@
                 setTimeout(() => el.classList.remove('error'), 1500);
             }
 
-            // Submit
+            // Submit (modo edición): actualiza usando update_full
             $('#enviar').addEventListener('click', async () => {
                 msg.classList.add('hidden');
                 msg.textContent = '';
-                const ha = $('#ha'),
-                    prov = $('#prov'),
-                    loc = $('#loc'),
-                    calle = $('#calle'),
-                    nro = $('#nro');
 
-                // payload base
+                const haEl = $('#ha');
+
+                // Lectura selección actual
                 const patIds = getSelectedPatIds();
-                const payload = {
-                    productor_id_real: $('#prod_idreal').value || null,
-                    productor_nombre_snapshot: $('#prod_nombre_snap').value || null,
-                    representante: $('#representante').value,
-                    linea_tension: $('#linea_tension').value,
-                    zona_restringida: $('#zona_restringida').value,
-                    corriente_electrica: $('#corriente_electrica').value,
-                    agua_potable: $('#agua_potable').value,
-                    libre_obstaculos: $('#libre_obstaculos').value,
-                    area_despegue: $('#area_despegue').value,
-                    superficie_ha: Number(ha.value || 0),
-                    forma_pago_id: Number($('#pago').value || 0),
-                    coop_descuento_id_real: $('#coop').value || null,
-                    patologia_ids: patIds,
-                    rango: $('#rango').value || '',
-                    dir_provincia: prov.value || '',
-                    dir_localidad: loc.value || '',
-                    dir_calle: calle.value || '',
-                    dir_numero: String(nro.value || ''),
-                    observaciones: $('#obs').value || '',
-                    items: []
-                };
+                const haVal = Math.max(0, Number(haEl.value || 0));
+                const moneda = (ProductosState.moneda || 'ARS');
+                const costoBaseHa = Number(ProductosState.costoBaseHa || 0);
 
-
-                // items de productos (con patología por item)
-                Array.from(ProductosState.seleccionados).forEach(key => {
-                    const p = ProductosState.catalog.get(key);
-                    if (!p) return;
-                    payload.items.push({
-                        producto_id: Number(p.id),
-                        fuente: 'sve',
-                        patologia_id: Number(p.patologia_id)
-                    });
-                });
-
-                // "Otro" por patología (productor, sin costo)
-                ProductosState.customByPat.forEach((val, patId) => {
-                    const nombre = (val || '').trim();
-                    if (!nombre) return;
-                    payload.items.push({
-                        producto_id: 0,
-                        fuente: 'productor',
-                        nombre_producto_custom: nombre,
-                        patologia_id: Number(patId)
-                    });
-                });
-
-
-                // checks
-                if (!payload.productor_id_real) {
+                // Validaciones mínimas para edición (no exigimos rango/dirección)
+                if (!(QS_ID > 0)) {
+                    msg.textContent = 'Error: faltó el ID de la solicitud.';
+                    msg.classList.remove('hidden');
+                    return;
+                }
+                if (!$('#prod_idreal').value) {
                     req($('#prod_txt'));
                     return;
                 }
-                for (const id of ['#representante', '#linea_tension', '#zona_restringida', '#corriente_electrica', '#agua_potable', '#libre_obstaculos', '#area_despegue']) {
-                    if (!valSel(id)) {
-                        req($(id));
-                        return;
-                    }
-                }
-                if (!(payload.superficie_ha > 0)) {
-                    req(ha);
-                    return;
-                }
-                if (!payload.forma_pago_id) {
+                if (!$('#pago').value) {
                     req($('#pago'));
                     return;
                 }
-                if (payload.forma_pago_id === 6 && !payload.coop_descuento_id_real) {
+                if (String($('#pago').value) === '6' && !$('#coop').value) {
                     req($('#coop'));
                     return;
                 }
-                if (!payload.patologia_ids || payload.patologia_ids.length === 0) {
+                if (!patIds.length) {
                     req($('#pat-chips'));
                     return;
                 }
-                if (!payload.rango) {
-                    req($('#rango'));
-                    return;
-                }
-                if (!payload.dir_provincia || !payload.dir_localidad || !payload.dir_calle || !payload.dir_numero) {
-                    req(prov);
-                    return;
-                }
+
+                // Construcción de items (SVE + productor)
+                const items = [];
+                Array.from(ProductosState.seleccionados).forEach(key => {
+                    const p = ProductosState.catalog.get(key);
+                    if (!p) return;
+                    items.push({
+                        patologia_id: Number(p.patologia_id),
+                        fuente: 'sve',
+                        producto_id: Number(p.id),
+                        // snapshots opcionales: el modelo acepta nulos; dejamos sin setear para receta
+                    });
+                });
+                ProductosState.customByPat.forEach((val, patId) => {
+                    const nombre = String(val || '').trim();
+                    if (!nombre) return;
+                    items.push({
+                        patologia_id: Number(patId),
+                        fuente: 'productor',
+                        producto_id: null,
+                        nombre_producto: nombre
+                    });
+                });
+
+                // Motivos desde chips
+                const motivos = patIds.map(pid => ({
+                    patologia_id: Number(pid),
+                    es_otros: 0,
+                    otros_text: null
+                }));
+
+                // Cálculo de costos (base + productos)
+                let productosTotal = 0;
+                Array.from(ProductosState.seleccionados).forEach(key => {
+                    const p = ProductosState.catalog.get(key);
+                    if (!p) return;
+                    productosTotal += (Number(p.costo_hectarea || 0) * haVal);
+                });
+                const baseTotal = costoBaseHa * haVal;
+                const total = baseTotal + productosTotal;
+
+                // Payload update_full: sólo incluimos campos que el modelo permite actualizar
+                const data = {
+                    base: {
+                        id: QS_ID,
+                        forma_pago_id: Number($('#pago').value || 0),
+                        observaciones: $('#obs').value || ''
+                        // Nota: el modelo no actualiza aquí superficie_ha ni binarios ni dirección
+                    },
+                    full: {
+                        // parámetros opcionales (omitimos si no hay UI específica)
+                        motivos,
+                        items,
+                        // reporte/media se omite (no hay UI aquí)
+                        costos: {
+                            moneda: moneda,
+                            costo_base_por_ha: costoBaseHa,
+                            base_ha: haVal,
+                            base_total: baseTotal,
+                            productos_total: productosTotal,
+                            total: total
+                        }
+                    }
+                };
 
                 try {
-                    const res = await postJSON(CTRL, payload);
-                    msg.textContent = `Solicitud creada. ID: ${res.id}`;
+                    await postJSON(CTRL_EDIT, {
+                        action: 'update_full',
+                        data
+                    });
+                    msg.textContent = `Solicitud actualizada. ID: ${QS_ID}`;
                     msg.classList.remove('hidden');
-                    $('#frm').reset();
-                    show(coopWrap, false);
-                    // limpiar estado productos
-                    ProductosState.seleccionados.clear();
-                    ProductosState.catalog.clear();
-                    ProductosState.catalogByPat.clear();
-                    ProductosState.customByPat.clear();
-                    cardsProductos.innerHTML = '';
-                    cardProd.hidden = true;
-                    recalcCostos();
+
+                    // Notifica al padre para refrescar
+                    try {
+                        window.parent && window.parent.postMessage({
+                            type: 'sve:solicitud_actualizada',
+                            id: QS_ID
+                        }, '*');
+                    } catch (e) {}
+
                 } catch (e) {
                     msg.textContent = 'Error: ' + (e.message || e);
                     msg.classList.remove('hidden');
                 }
             });
+
+
         })();
+    </script>
+
+    <script>
+        // Ajuste de título si estamos editando
+        if (QS_ID > 0) {
+            const h2 = document.querySelector('.card h2');
+            if (h2) h2.textContent = `Editar solicitud #${QS_ID}`;
+        }
     </script>
 </body>
 
