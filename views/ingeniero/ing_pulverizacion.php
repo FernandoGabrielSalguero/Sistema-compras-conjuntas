@@ -956,7 +956,8 @@ unset($_SESSION['cierre_info']);
                 const numId = Number(id);
 
                 // Abrimos el editor con el ID en querystring (permite que el propio editor haga fetch si quiere)
-                iframe.src = `ing_new_pulverizacion_edit.php?id=${numId}`;
+                // cache-buster para evitar que el navegador use una versión vieja del iframe
+                iframe.src = `ing_new_pulverizacion_edit.php?id=${numId}&_=${Date.now()}`;
                 document.getElementById('md-title').textContent = 'Editar pedido';
                 modal.classList.remove('hidden');
 
@@ -989,11 +990,13 @@ unset($_SESSION['cierre_info']);
                 // Al cargar el iframe, el propio editor se autogestiona (fetch detalle por id y prefill)
                 iframe.addEventListener('load', () => {
                     // No hacemos nada aquí.
-                }, { once: true });
+                }, {
+                    once: true
+                });
 
             }
 
-                        // Escucha de eventos del iframe para refrescar listado al guardar
+            // Escucha de eventos del iframe para refrescar listado al guardar
             window.addEventListener('message', (ev) => {
                 try {
                     if (ev && ev.data && ev.data.type === 'sve:solicitud_actualizada') {

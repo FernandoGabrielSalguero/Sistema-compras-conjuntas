@@ -434,6 +434,8 @@
             const CTRL = '../../controllers/ing_new_pulverizacion_edit_controller.php'; // catálogos/búsquedas
             const CTRL_EDIT = '../../controllers/ing_pulverizacionController.php'; // detalle y update_full
             const QS_ID = Number(new URLSearchParams(location.search).get('id') || 0);
+// Exponer opcionalmente para cualquier script externo que aún lo use
+try { window.QS_ID = QS_ID; } catch (_) {}
 
 
 
@@ -1092,13 +1094,19 @@
         })();
     </script>
 
-    <script>
-        // Ajuste de título si estamos editando
-        if (QS_ID > 0) {
-            const h2 = document.querySelector('.card h2');
-            if (h2) h2.textContent = `Editar solicitud #${QS_ID}`;
+<script>
+    // Ajuste de título si estamos editando (independiente del resto del JS)
+    (function () {
+        var _id = 0;
+        try {
+            _id = Number(new URLSearchParams(location.search).get('id') || 0);
+        } catch (_) { _id = 0; }
+        if (_id > 0) {
+            var h2 = document.querySelector('.card h2');
+            if (h2) h2.textContent = 'Editar solicitud #' + _id;
         }
-    </script>
+    })();
+</script>
 </body>
 
 </html>
