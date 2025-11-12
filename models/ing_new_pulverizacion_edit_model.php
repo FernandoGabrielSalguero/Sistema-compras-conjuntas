@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-final class IngNewPulverizacionModel
+final class pulverizacionEditModel
 {
     public PDO $pdo;
 
