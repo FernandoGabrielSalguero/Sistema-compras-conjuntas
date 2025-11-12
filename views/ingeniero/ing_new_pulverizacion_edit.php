@@ -67,14 +67,7 @@
             display: flex;
             gap: 8px;
             justify-content: flex-end;
-            margin-top: 10px;
-            position: relative;
-            z-index: 50;
-        }
-
-        .btns,
-        .btns * {
-            pointer-events: auto;
+            margin-top: 10px
         }
 
         .btn-primary {
@@ -244,6 +237,43 @@
                 /* mobile: vertical */
             }
         }
+
+        /* --- Toggle por propietario de productos (solo CSS) --- */
+.prod-owner {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin: 6px 0 10px 0;
+    flex-wrap: wrap;
+    font-size: .95rem;
+}
+.prod-owner .radio {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: 4px 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    background: #fff;
+    user-select: none;
+    cursor: pointer;
+}
+.prod-owner input[type="radio"] {
+    accent-color: #10b981;
+}
+
+/* Por defecto, oculto ambos contenedores */
+.pat-card .prod-chips { display: none; }
+.pat-card .prod-custom { display: none; }
+
+/* Si elige "Sí", mostrar solo el input personalizado */
+.pat-card:has(input.prod-si:checked) .prod-custom { display: block; }
+.pat-card:has(input.prod-si:checked) .prod-chips { display: none; }
+
+/* Si elige "No", mostrar solo los chips de productos */
+.pat-card:has(input.prod-no:checked) .prod-chips { display: flex; }
+.pat-card:has(input.prod-no:checked) .prod-custom { display: none; }
+
     </style>
 </head>
 
@@ -254,7 +284,6 @@
         <p class="notice">Completá los campos y confirmá. Se enviará un correo al productor y, si corresponde, a la cooperativa.</p>
 
         <form id="frm" novalidate>
-            <input type="hidden" id="solicitud_id" />
             <div class="grid">
 
                 <!-- Productor (typeahead) -->
@@ -376,9 +405,9 @@
             </div>
 
             <div class="btns">
-                <button type="button" id="enviar" class="btn-primary">Actualizar</button>
+                <button type="button" id="enviar" class="btn-primary">Confirmar y guardar</button>
+                <button type="reset">Limpiar</button>
             </div>
-
         </form>
 
         <div id="msg" class="notice hidden"></div>
@@ -386,7 +415,7 @@
 
     <script>
         (() => {
-            const CTRL = '../../controllers/ing_new_pulverizacion_edit_controller.php';
+            const CTRL = '../../controllers/ing_new_pulverizacion_controller.php';
 
             const $ = s => document.querySelector(s);
             const show = (el, v) => el.classList.toggle('hidden', !v);
@@ -539,193 +568,6 @@
                 }
             }
 
-            // ===== Prefill completo de solicitud: helpers y aplicación =====
-            window.__PREFILL_SOL = null;
-
-            function setVal(el, v) {
-                if (!el) return;
-                el.value = (v ?? '').toString();
-                el.dispatchEvent(new Event('input', {
-                    bubbles: true
-                }));
-                el.dispatchEvent(new Event('change', {
-                    bubbles: true
-                }));
-            }
-
-            function setBin(el, v) {
-                const val = (v || '').toString().trim().toLowerCase();
-                setVal(el, (val === 'si' || val === 'no') ? val : '');
-            }
-
-            function setNumber(el, v) {
-                const n = Number(v || 0);
-                setVal(el, isFinite(n) ? String(n) : '');
-            }
-
-            function checkChipsByIds(containerSel, ids) {
-                const set = new Set((ids || []).map(x => Number(x)));
-                document.querySelectorAll(`${containerSel} input[type="checkbox"]`).forEach(cb => {
-                    const num = Number(cb.value);
-                    cb.checked = set.has(num);
-                });
-                // Disparar change para que cargue productos por patología
-                document.querySelector(containerSel).dispatchEvent(new Event('change', {
-                    bubbles: true
-                }));
-            }
-
-            async function waitForProductsLoaded(patIds, timeoutMs = 3000) {
-                const start = Date.now();
-                while (Date.now() - start < timeoutMs) {
-                    let ok = true;
-                    for (const pid of (patIds || [])) {
-                        if (!ProductosState.catalogByPat.has(Number(pid))) {
-                            ok = false;
-                            break;
-                        }
-                    }
-                    if (ok) return true;
-                    await new Promise(r => setTimeout(r, 120));
-                }
-                return false;
-            }
-
-            /**
-             * Aplica prellenado completo de la solicitud (campos, dirección, patologías, productos, costos).
-             * Estructura esperada (ejemplos):
-             * - productor_id_real, productor_nombre
-             * - representante, linea_tension, zona_restringida, corriente_electrica, agua_potable, libre_obstaculos, area_despegue
-             * - superficie_ha, forma_pago_id, coop_descuento_id_real, rango
-             * - dir_provincia, dir_localidad, dir_calle, dir_numero, observaciones
-             * - patologia_ids: number[]
-             * - items: [{producto_id, fuente('sve'|'productor'), patologia_id, nombre_producto_custom?}]
-             */
-            async function applyPrefillOnce() {
-                const sol = window.__PREFILL_SOL;
-                if (!sol) return;
-
-                // 0) ID de la solicitud (edición)
-                const hId = document.querySelector('#solicitud_id');
-                if (hId && sol.id) hId.value = String(sol.id);
-
-                // 1) Productor
-
-                __prefillProductor({
-                    id_real: sol.productor_id_real || sol.id_real || '',
-                    nombre: sol.productor_nombre || sol.usuario || ''
-                });
-
-                // 2) Binarios
-                setBin(document.querySelector('#representante'), sol.representante);
-                setBin(document.querySelector('#linea_tension'), sol.linea_tension);
-                setBin(document.querySelector('#zona_restringida'), sol.zona_restringida);
-                setBin(document.querySelector('#corriente_electrica'), sol.corriente_electrica);
-                setBin(document.querySelector('#agua_potable'), sol.agua_potable);
-                setBin(document.querySelector('#libre_obstaculos'), sol.libre_obstaculos);
-                setBin(document.querySelector('#area_despegue'), sol.area_despegue);
-
-                // 3) Numéricos / selects
-                setNumber(document.querySelector('#ha'), sol.superficie_ha);
-                setVal(document.querySelector('#pago'), sol.forma_pago_id);
-                // Mostrar/ocultar cooperativa según forma de pago
-                document.querySelector('#pago').dispatchEvent(new Event('change', {
-                    bubbles: true
-                }));
-                // Cooperativa: si viene id_real lo usamos; si no, intentamos por nombre
-                if (sol.coop_descuento_id_real) {
-                    setVal(document.querySelector('#coop'), sol.coop_descuento_id_real);
-                } else if (sol.coop_descuento_nombre) {
-                    const sel = document.querySelector('#coop');
-                    const nombre = (sol.coop_descuento_nombre || '').toString().trim();
-                    if (sel && nombre) {
-                        const opt = Array.from(sel.options).find(o => (o.text || '').trim() === nombre);
-                        if (opt) sel.value = opt.value;
-                    }
-                }
-                setVal(document.querySelector('#rango'), sol.rango);
-
-                // 4) Dirección / obs
-                setVal(document.querySelector('#prov'), sol.dir_provincia || 'Mendoza');
-                setVal(document.querySelector('#loc'), sol.dir_localidad);
-                setVal(document.querySelector('#calle'), sol.dir_calle);
-                setVal(document.querySelector('#nro'), sol.dir_numero);
-                setVal(document.querySelector('#obs'), sol.observaciones);
-
-                // 5) Patologías -> check chips y cargar productos
-                const patIds = Array.isArray(sol.patologia_ids) ? sol.patologia_ids.map(Number) :
-                    (sol.patologias || sol.patology_ids || []).map(Number);
-                if (patIds.length) {
-                    checkChipsByIds('#pat-chips', patIds);
-                    // Esperar a que el fetch de productos por patología complete y renderice tarjetas
-                    await waitForProductsLoaded(patIds);
-
-                    // 6) Productos: marcar los seleccionados (SVE) y registrar "Otro" (productor)
-                    const items = Array.isArray(sol.items) ? sol.items : [];
-                    const sve = items.filter(it => Number(it.producto_id) > 0 && (it.fuente || 'sve') === 'sve');
-                    const otros = items.filter(it => (Number(it.producto_id) === 0) || (it.fuente || '') === 'productor');
-
-                    // Seleccionar chips de productos SVE por clave `${id}_${patologia_id}`
-                    sve.forEach(it => {
-                        const key = `${Number(it.producto_id)}_${Number(it.patologia_id)}`;
-                        const cb = document.querySelector(`.pat-card input[type="checkbox"][value="${key}"]`);
-                        if (cb) {
-                            cb.checked = true;
-                            cb.dispatchEvent(new Event('change', {
-                                bubbles: true
-                            }));
-                        }
-                    });
-
-                    // Completar campos "Otro" por patología
-                    otros.forEach(it => {
-                        const pid = Number(it.patologia_id);
-                        const inp = document.querySelector(`.pat-card .prod-custom[data-patologia-id="${pid}"]`);
-                        if (inp) {
-                            setVal(inp, (it.nombre_producto_custom || it.nombre || '').toString());
-                        }
-                    });
-                }
-
-                // 7) Recalcular costos
-                try {
-                    recalcCostos();
-                } catch (e) {}
-
-                // Consumir prefill (aplicar una sola vez)
-                window.__PREFILL_SOL = null;
-            }
-
-            // Intento de prefill por parámetro ?id=... usando el backend (opcional)
-            (function tryQueryPrefill() {
-                try {
-                    const qs = new URLSearchParams(location.search);
-                    const id = Number(qs.get('id') || 0);
-                    if (!id) return;
-                    // Si existe endpoint de detalle, se usará; si no, se ignora
-                    getJSON(`${CTRL}?action=solicitud&id=${id}`).then((data) => {
-                        if (data && typeof data === 'object') {
-                            window.__PREFILL_SOL = data;
-                            const hId = document.querySelector('#solicitud_id');
-                            if (hId && data.id) hId.value = String(data.id);
-                            applyPrefillOnce();
-                        }
-                    }).catch(() => {
-                        /* silencioso */
-                    });
-                } catch (e) {}
-            })();
-
-            // Reaplicar cuando finaliza init() (catálogos y combos cargados)
-            document.addEventListener('DOMContentLoaded', () => {
-                setTimeout(() => {
-                    try {
-                        applyPrefillOnce();
-                    } catch (e) {}
-                }, 0);
-            });
-
-
             // 1) Escucha un evento para prefill (padre puede dispararlo al abrir el modal)
             window.addEventListener('sve:modal_prefill', (ev) => {
                 try {
@@ -761,27 +603,15 @@
                 try {
                     const data = ev && ev.data ? ev.data : null;
                     if (!data) return;
-
-                    // Prefill mínimo de productor (ya existente)
+                    // Acepta { type:'sve:modal_prefill', payload:{ id_real, nombre } } o el objeto directo
                     if (data.type === 'sve:modal_prefill' && data.payload) {
                         __prefillProductor(data.payload);
-                        return;
-                    }
-                    if (data.id_real || data.productor_id_real || data.nombre || data.usuario) {
+                    } else if (data.id_real || data.productor_id_real || data.nombre || data.usuario) {
                         __prefillProductor(data);
-                        return;
-                    }
-
-                    // Prefill COMPLETO de solicitud
-                    if (data.type === 'sve:prefill_solicitud' && data.payload) {
-                        window.__PREFILL_SOL = data.payload;
-                        // Intento aplicar si ya está todo cargado
-                        try {
-                            applyPrefillOnce();
-                        } catch (e) {}
                     }
                 } catch (e) {}
             });
+
 
             let items = [];
             txt.addEventListener('input', async () => {
@@ -876,80 +706,93 @@
             });
 
             function renderProductoCards(patIds) {
-                const patName = (id) => (window.__PatMap && window.__PatMap.get(Number(id))) || `Patología ${id}`;
-                const moneda = currFrom(ProductosState.moneda);
+    const patName = (id) => (window.__PatMap && window.__PatMap.get(Number(id))) || `Patología ${id}`;
+    const moneda = currFrom(ProductosState.moneda);
 
-                const frag = document.createDocumentFragment();
-                patIds.forEach(pid => {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'pat-card';
-                    wrapper.innerHTML = `<h4>${patName(pid)}</h4>`;
+    const frag = document.createDocumentFragment();
+    patIds.forEach(pid => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'pat-card';
+        wrapper.innerHTML = `
+            <h4>Elijamos los productos para tratar ${patName(pid)}</h4>
+            <div class="prod-owner">
+                <span>¿El productor tiene los productos para tratar ${patName(pid)}?</span>
+                <label class="radio">
+                    <input type="radio" name="owner_${pid}" class="owner-input prod-si" value="si">
+                    Si
+                </label>
+                <label class="radio">
+                    <input type="radio" name="owner_${pid}" class="owner-input prod-no" value="no">
+                    No
+                </label>
+            </div>
+        `;
 
-                    // chips de productos para esta patología
-                    const chipsDiv = document.createElement('div');
-                    chipsDiv.className = 'chips-grid';
-                    (ProductosState.catalogByPat.get(pid) || [])
-                    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-                        .forEach(p => {
-                            const key = `${p.id}_${pid}`;
-                            const label = document.createElement('label');
-                            label.className = 'chip';
-                            label.innerHTML = `
+        // chips de productos para esta patología (se muestran solo si elige "No")
+        const chipsDiv = document.createElement('div');
+        chipsDiv.className = 'chips-grid prod-chips';
+        (ProductosState.catalogByPat.get(pid) || [])
+            .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+            .forEach(p => {
+                const key = `${p.id}_${pid}`;
+                const label = document.createElement('label');
+                label.className = 'chip';
+                label.innerHTML = `
         <input type="checkbox" value="${key}">
         <span class="chip-box">
             <span class="chip-name">${p.nombre}</span>
             <span class="chip-cost">${fmtMon(p.costo_hectarea, moneda)}/ha</span>
         </span>`;
-                            chipsDiv.appendChild(label);
-                        });
+                chipsDiv.appendChild(label);
+            });
 
-                    chipsDiv.addEventListener('change', (e) => {
-                        const cb = e.target;
-                        if (cb && cb.type === 'checkbox' && cb.value) {
-                            if (cb.checked) ProductosState.seleccionados.add(cb.value);
-                            else ProductosState.seleccionados.delete(cb.value);
-                            recalcCostos();
-                        }
-                    });
-
-                    wrapper.appendChild(chipsDiv);
-
-                    // campo "Otro" por patología (sin autocompletar)
-                    const customDiv = document.createElement('div');
-                    customDiv.className = 'chips-custom';
-                    customDiv.innerHTML = `
-                        <label>Si el productor aporta el producto para tratar esta patologia, coloque su nombre aquí:</label>
-                        <input
-                            type="text"
-                            class="prod-custom"
-                            data-patologia-id="${pid}"
-                            name="prod_custom_${pid}"
-                            placeholder="Nombre del producto..."
-                            autocomplete="off"
-                            aria-autocomplete="none"
-                            inputmode="text"
-                            spellcheck="false"
-                        />
-                    `;
-                    customDiv.addEventListener('input', (e) => {
-                        const inp = e.target;
-                        if (inp && inp.classList.contains('prod-custom')) {
-                            const pId = Number(inp.getAttribute('data-patologia-id'));
-                            const val = (inp.value || '').trim();
-                            if (val) ProductosState.customByPat.set(pId, val);
-                            else ProductosState.customByPat.delete(pId);
-                            recalcCostos();
-                        }
-                    });
-
-
-                    wrapper.appendChild(customDiv);
-                    frag.appendChild(wrapper);
-                });
-
-                cardsProductos.innerHTML = '';
-                cardsProductos.appendChild(frag);
+        chipsDiv.addEventListener('change', (e) => {
+            const cb = e.target;
+            if (cb && cb.type === 'checkbox' && cb.value) {
+                if (cb.checked) ProductosState.seleccionados.add(cb.value);
+                else ProductosState.seleccionados.delete(cb.value);
+                recalcCostos();
             }
+        });
+
+        wrapper.appendChild(chipsDiv);
+
+        // campo "Otro" por patología (se muestra solo si elige "Sí")
+        const customDiv = document.createElement('div');
+        customDiv.className = 'chips-custom prod-custom';
+        customDiv.innerHTML = `
+            <label>Si el productor aporta el producto para tratar esta patologia, coloque su nombre aquí:</label>
+            <input
+                type="text"
+                class="prod-custom"
+                data-patologia-id="${pid}"
+                name="prod_custom_${pid}"
+                placeholder="Nombre del producto..."
+                autocomplete="off"
+                aria-autocomplete="none"
+                inputmode="text"
+                spellcheck="false"
+            />
+        `;
+        customDiv.addEventListener('input', (e) => {
+            const inp = e.target;
+            if (inp && inp.classList.contains('prod-custom')) {
+                const pId = Number(inp.getAttribute('data-patologia-id'));
+                const val = (inp.value || '').trim();
+                if (val) ProductosState.customByPat.set(pId, val);
+                else ProductosState.customByPat.delete(pId);
+                recalcCostos();
+            }
+        });
+
+        wrapper.appendChild(customDiv);
+        frag.appendChild(wrapper);
+    });
+
+    cardsProductos.innerHTML = '';
+    cardsProductos.appendChild(frag);
+}
+
 
             function recalcCostos() {
                 const ha = Math.max(0, Number($('#ha').value || 0));
@@ -1012,7 +855,6 @@
                 // payload base
                 const patIds = getSelectedPatIds();
                 const payload = {
-                    solicitud_id: Number($('#solicitud_id').value || 0),
                     productor_id_real: $('#prod_idreal').value || null,
                     productor_nombre_snapshot: $('#prod_nombre_snap').value || null,
                     representante: $('#representante').value,
@@ -1098,13 +940,22 @@
 
                 try {
                     const res = await postJSON(CTRL, payload);
-                    msg.textContent = `Solicitud actualizada. ID: ${res.id}`;
+                    msg.textContent = `Solicitud creada. ID: ${res.id}`;
                     msg.classList.remove('hidden');
+                    $('#frm').reset();
+                    show(coopWrap, false);
+                    // limpiar estado productos
+                    ProductosState.seleccionados.clear();
+                    ProductosState.catalog.clear();
+                    ProductosState.catalogByPat.clear();
+                    ProductosState.customByPat.clear();
+                    cardsProductos.innerHTML = '';
+                    cardProd.hidden = true;
+                    recalcCostos();
                 } catch (e) {
                     msg.textContent = 'Error: ' + (e.message || e);
                     msg.classList.remove('hidden');
                 }
-
             });
         })();
     </script>
