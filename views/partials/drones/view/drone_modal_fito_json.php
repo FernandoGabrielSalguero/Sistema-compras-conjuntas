@@ -63,6 +63,8 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                 <div class="grid-4" style="display:grid; grid-template-columns: repeat(4,1fr); gap:8px;">
                     <div>Hora Ingreso: <span id="fito-hora-in"></span></div>
                     <div>Hora Salida: <span id="fito-hora-out"></span></div>
+                    <div>Lavado dron MINER: <span id="fito-lavado-dron"></span></div>
+                    <div>Triple lavado envases: <span id="fito-triple-lavado"></span></div>
                     <div>Temperatura (°C): <span id="fito-temp"></span></div>
                     <div>Humedad Relativa (%): <span id="fito-hr"></span></div>
                     <div>Vel. Viento (m/s): <span id="fito-vv"></span></div>
@@ -289,10 +291,13 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         const condBox = document.getElementById('fito-condiciones');
         const horaInEl = document.getElementById('fito-hora-in');
         const horaOutEl = document.getElementById('fito-hora-out');
+        const lavadoDronEl = document.getElementById('fito-lavado-dron');
+        const tripleLavadoEl = document.getElementById('fito-triple-lavado');
         const tempEl = document.getElementById('fito-temp');
         const hrEl = document.getElementById('fito-hr');
         const vvEl = document.getElementById('fito-vv');
         const volEl = document.getElementById('fito-vol');
+
 
         const tbodyProd = document.querySelector('#fito-tabla-productos tbody');
         const galEl = document.getElementById('fito-galeria');
@@ -361,12 +366,24 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             operEl.textContent = rep.nom_piloto || '';
 
             // condiciones (mostrar solo si tenemos algún dato)
-            const hasCond = (rep.hora_ingreso || rep.hora_egreso || rep.temperatura || rep.humedad_relativa || rep.vel_viento || rep.vol_aplicado);
+                        const hasCond = (
+                rep.hora_ingreso ||
+                rep.hora_egreso ||
+                rep.lavado_dron_miner ||
+                rep.triple_lavado_envases ||
+                rep.temperatura ||
+                rep.humedad_relativa ||
+                rep.vel_viento ||
+                rep.vol_aplicado 
+            );
+
             if (hasCond) {
                 condBox.style.display = 'block';
             }
             horaInEl.textContent = rep.hora_ingreso || '';
             horaOutEl.textContent = rep.hora_egreso || '';
+            lavadoDronEl.textContent = rep.lavado_dron_miner || '';
+            tripleLavadoEl.textContent = rep.triple_lavado_envases || '';
             tempEl.textContent = rep.temperatura != null ? String(rep.temperatura) : '';
             hrEl.textContent = rep.humedad_relativa != null ? String(rep.humedad_relativa) : '';
             vvEl.textContent = rep.vel_viento != null ? String(rep.vel_viento) : '';
