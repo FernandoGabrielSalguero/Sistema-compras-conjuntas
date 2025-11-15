@@ -143,32 +143,45 @@ try {
             jsonResponse(true, null, 'Imagen eliminada.');
         }
 
-        if ($action === 'crear_reporte') {
+                if ($action === 'crear_reporte') {
             $sid = (int)($_POST['solicitud_id'] ?? 0);
             if ($sid <= 0) jsonResponse(false, null, 'Solicitud inválida.', 400);
             $sol = $model->getSolicitudDetalle($sid, (int)$usuarioId);
             if (!$sol) jsonResponse(false, null, 'No encontrado o sin permisos.', 404);
 
+            // Normalizamos selects: "Seleccionar" o vacío -> "Sin definir"
+            $lavado = $_POST['lavado_dron_miner'] ?? 'Seleccionar';
+            if ($lavado === 'Seleccionar' || $lavado === '' || $lavado === null) {
+                $lavado = 'Sin definir';
+            }
+            $tripleLavado = $_POST['triple_lavado_envases'] ?? 'Seleccionar';
+            if ($tripleLavado === 'Seleccionar' || $tripleLavado === '' || $tripleLavado === null) {
+                $tripleLavado = 'Sin definir';
+            }
+
             $payload = [
-                'solicitud_id'        => $sid,
-                'nom_cliente'         => trim($_POST['nom_cliente'] ?? ''),
-                'nom_piloto'          => trim($_POST['nom_piloto'] ?? ''),
-                'nom_encargado'       => trim($_POST['nom_encargado'] ?? ''),
-                'fecha_visita'        => $_POST['fecha_visita'] ?? null,
-                'hora_ingreso'        => $_POST['hora_ingreso'] ?? null,
-                'hora_egreso'         => $_POST['hora_egreso'] ?? null,
-                'nombre_finca'        => trim($_POST['nombre_finca'] ?? ''),
-                'cultivo_pulverizado' => trim($_POST['cultivo_pulverizado'] ?? ''),
-                'cuadro_cuartel'      => trim($_POST['cuadro_cuartel'] ?? ''),
-                'sup_pulverizada'     => $_POST['sup_pulverizada'] ?? null,
-                'vol_aplicado'        => $_POST['vol_aplicado'] ?? null,
-                'vel_viento'          => $_POST['vel_viento'] ?? null,
-                'temperatura'         => $_POST['temperatura'] ?? null,
-                'humedad_relativa'    => $_POST['humedad_relativa'] ?? null,
-                'observaciones'       => trim($_POST['observaciones'] ?? ''),
+                'solicitud_id'          => $sid,
+                'nom_cliente'           => trim($_POST['nom_cliente'] ?? ''),
+                'nom_piloto'            => trim($_POST['nom_piloto'] ?? ''),
+                'nom_encargado'         => trim($_POST['nom_encargado'] ?? ''),
+                'fecha_visita'          => $_POST['fecha_visita'] ?? null,
+                'hora_ingreso'          => $_POST['hora_ingreso'] ?? null,
+                'hora_egreso'           => $_POST['hora_egreso'] ?? null,
+                'nombre_finca'          => trim($_POST['nombre_finca'] ?? ''),
+                'cultivo_pulverizado'   => trim($_POST['cultivo_pulverizado'] ?? ''),
+                'cuadro_cuartel'        => trim($_POST['cuadro_cuartel'] ?? ''),
+                'sup_pulverizada'       => $_POST['sup_pulverizada'] ?? null,
+                'vol_aplicado'          => $_POST['vol_aplicado'] ?? null,
+                'vel_viento'            => $_POST['vel_viento'] ?? null,
+                'temperatura'           => $_POST['temperatura'] ?? null,
+                'humedad_relativa'      => $_POST['humedad_relativa'] ?? null,
+                'lavado_dron_miner'     => $lavado,
+                'triple_lavado_envases' => $tripleLavado,
+                'observaciones'         => trim($_POST['observaciones'] ?? ''),
             ];
 
             $pdo->beginTransaction();
+
             $reporteId = $model->crearReporte($payload);
 
             $baseDir = __DIR__ . '/../uploads/ReporteDrones/' . $sid;

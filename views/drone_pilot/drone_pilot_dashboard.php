@@ -633,6 +633,28 @@ $sesionDebug = [
                                         </div>
                                     </div>
 
+                                    <div class="input-group">
+                                        <label for="lavado_dron_miner">¿Se realizó lavado del dron y del Miner al finalizar la operación de pulverización?</label>
+                                        <div class="input-icon input-icon-chevron-down">
+                                            <select id="lavado_dron_miner" name="lavado_dron_miner">
+                                                <option value="Seleccionar" selected>Seleccionar</option>
+                                                <option value="Si">Si</option>
+                                                <option value="No">No</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label for="triple_lavado_envases">¿Se realizó el triple lavado sobre aquellos envases utilizados durante la operación de pulverización?</label>
+                                        <div class="input-icon input-icon-chevron-down">
+                                            <select id="triple_lavado_envases" name="triple_lavado_envases">
+                                                <option value="Seleccionar" selected>Seleccionar</option>
+                                                <option value="Si">Si</option>
+                                                <option value="No">No</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
                                     <div class="input-group full-row">
                                         <label for="observaciones_rep">Observaciones</label>
                                         <div class="input-icon input-icon-message">
@@ -928,6 +950,19 @@ $sesionDebug = [
                     setIfExistsNumber('vel_viento', rep.vel_viento ?? '');
                     setIfExistsNumber('temperatura', rep.temperatura ?? '');
                     setIfExistsNumber('humedad_relativa', rep.humedad_relativa ?? '');
+
+                    // Selects de lavado: mapeamos 'Sin definir' a 'Seleccionar'
+                    const selectLavado = document.getElementById('lavado_dron_miner');
+                    if (selectLavado) {
+                        const valLavado = rep.lavado_dron_miner ?? 'Sin definir';
+                        selectLavado.value = (valLavado === 'Sin definir' ? 'Seleccionar' : valLavado);
+                    }
+                    const selectTriple = document.getElementById('triple_lavado_envases');
+                    if (selectTriple) {
+                        const valTriple = rep.triple_lavado_envases ?? 'Sin definir';
+                        selectTriple.value = (valTriple === 'Sin definir' ? 'Seleccionar' : valTriple);
+                    }
+
                     setIfExists('observaciones_rep', rep.observaciones ?? '');
                     // Cambiar texto del botón
                     const btn = document.getElementById('btn-submit-reporte');
