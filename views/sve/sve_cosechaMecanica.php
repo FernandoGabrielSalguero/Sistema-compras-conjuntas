@@ -303,7 +303,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="link-text">Drones</span>
                     </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
-                        <span class="material-symbols-outlined" style="color:#5b21b6;">tractor</span>
+                        <span class="material-icons" style="color:#5b21b6;">agriculture</span>
                         <span class="link-text">Cosecha Mecánica</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
