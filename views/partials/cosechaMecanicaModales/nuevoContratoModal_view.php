@@ -38,15 +38,32 @@ declare(strict_types=1); ?>
                     </div>
                 </div>
 
-                <div class="input-group">
+                                <div class="input-group">
                     <label for="nuevoFechaApertura">Fecha apertura</label>
                     <div class="input-icon input-icon-name">
                         <input type="date"
                             id="nuevoFechaApertura"
                             name="fecha_apertura"
-                            required />
+                            required
+                            inputmode="numeric"
+                            pattern="\d{4}-\d{2}-\d{2}"
+                            placeholder="AAAA-MM-DD" />
                     </div>
                 </div>
+
+                <div class="input-group">
+                    <label for="nuevoFechaCierre">Fecha cierre</label>
+                    <div class="input-icon input-icon-name">
+                        <input type="date"
+                            id="nuevoFechaCierre"
+                            name="fecha_cierre"
+                            required
+                            inputmode="numeric"
+                            pattern="\d{4}-\d{2}-\d{2}"
+                            placeholder="AAAA-MM-DD" />
+                    </div>
+                </div>
+
 
                 <div class="input-group">
                     <label for="nuevoFechaCierre">Fecha cierre</label>
@@ -120,15 +137,29 @@ declare(strict_types=1); ?>
                 </div>
             </div>
 
-            <div class="input-group" style="margin-top: 1rem;">
-                <label for="nuevoDescripcion">Descripción</label>
+                        <div class="input-group" style="margin-top: 1rem;">
+                <label for="nuevoDescripcionEditor">Descripción</label>
                 <div class="input-icon input-icon-name">
+                    <div id="nuevoDescripcionToolbar">
+                        <span class="ql-formats">
+                            <button class="ql-bold"></button>
+                            <button class="ql-underline"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-list" value="ordered"></button>
+                            <button class="ql-list" value="bullet"></button>
+                            <button class="ql-indent" value="-1"></button>
+                            <button class="ql-indent" value="+1"></button>
+                        </span>
+                    </div>
+                    <div id="nuevoDescripcionEditor" style="height: 200px;"></div>
+                    <!-- textarea oculta donde se envía el HTML al backend -->
                     <textarea id="nuevoDescripcion"
                         name="descripcion"
-                        placeholder="Detalles generales del contrato (zonas, condiciones, observaciones, etc.)"
-                        rows="4"></textarea>
+                        style="display: none;"></textarea>
                 </div>
             </div>
+
 
             <div class="modal-footer">
                 <button type="button"
@@ -144,17 +175,36 @@ declare(strict_types=1); ?>
     </div>
 </div>
 <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        if (typeof tinymce !== 'undefined') {
-            tinymce.init({
-                selector: '#nuevoDescripcion',
-                menubar: false,
-                plugins: 'lists',
-                toolbar: 'undo redo | bold underline | bullist numlist outdent indent | bold underline',
-                branding: false,
-                height: 200
+document.addEventListener('DOMContentLoaded', function () {
+    var toolbarOptions = [
+        ['bold', 'underline'],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+        [{ 'indent': '-1' }, { 'indent': '+1' }]
+    ];
+
+    var editorContainer = document.getElementById('nuevoDescripcionEditor');
+    if (editorContainer) {
+        var quill = new Quill('#nuevoDescripcionEditor', {
+            theme: 'snow',
+            modules: {
+                toolbar: toolbarOptions
+            }
+        });
+
+        var form = document.getElementById('formNuevoContrato');
+        var hiddenTextarea = document.getElementById('nuevoDescripcion');
+
+        if (form && hiddenTextarea) {
+            form.addEventListener('submit', function () {
+                hiddenTextarea.value = quill.root.innerHTML;
             });
         }
-    });
+    }
+});
 </script>
+
