@@ -1,18 +1,147 @@
 <?php
+
+declare(strict_types=1);
+
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-header('Content-Type: application/json');
 
 require_once __DIR__ . '/../config.php';
 
+use PDO;
+use PDOException;
+
 class cosechaMecanicaModel
 {
-        private $pdo;
+        private PDO $pdo;
 
         public function __construct()
         {
                 global $pdo;
+
+                if (!($pdo instanceof PDO)) {
+                        throw new RuntimeException('Conexión PDO no inicializada en config.php');
+                }
+
                 $this->pdo = $pdo;
+                $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         }
 
+        /**
+         * Lista contratos con filtros opcionales.
+         * @return array<int, array<string, mixed>>
+         */
+        public function listarContratos(?string $nombre = null, ?string $estado = null): array
+        {
+                $sql = "SELECT id, nombre, fecha_apertura, fecha_cierre, estado
+                FROM CosechaMecanica
+                WHERE 1";
+                $params = [];
+
+                if ($nombre !== null && $nombre !== '') {
+                        $sql .= " AND nombre LIKE :nombre";
+                        $params[':nombre'] = '%' . $nombre . '%';
+                }
+
+                if ($estado !== null && $estado !== '') {
+                        $sql .= " AND estado = :estado";
+                        $params[':estado'] = $estado;
+                }
+
+                $sql .= " ORDER BY fecha_apertura DESC, id DESC";
+
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->execute($params);
+
+                return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        }
+
+        /**
+         * Crea un nuevo contrato.
+         * @param array<string, mixed> $data
+         */
+        public function crearContrato(array $data): int
+        {
+                $sql = "INSERT INTO CosechaMecanica (nombre, fecha_apertura, fecha_cierre, descripcion, estado)
+                VALUES (:nombre, :fecha_apertura, :fecha_cierre, :descripcion, :estado)";
+
+                $stmt = $this->pdo->prepare($sql);
+
+                $nombre = (string)($data['nombre'] ?? '');
+                $fechaApertura = (string)($data['fecha_apertura'] ?? '');
+                $fechaCierre = (string)($data['fecha_cierre'] ?? '');
+                $descripcion = $data['descripcion'] ?? null;
+                $estado = (string)($data['estado'] ?? 'borrador');
+
+                $stmt->bindValue(':nombre', $nombre, PDO::PARAM_STR);
+                $stmt->bindValue(':fecha_apertura', $fechaApertura, PDO::PARAM_STR);
+                $stmt->bindValue(':fecha_cierre', $fechaCierre, PDO::PARAM_STR);
+                $stmt->bindValue(':descripcion', $descripcion, $descripcion === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+                $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
+
+                $stmt->execute();
+
+                return (int)$this->pdo->lastInsertId();
+        }
+
+        /**
+         * Obtiene un contrato por ID.
+         * @return array<string, mixed>|null
+         */
+        public function obtenerContratoPorId(int $id): ?array
+        {
+                $sql = "SELECT id, nombre, fecha_apertura, fecha_cierre, descripcion, estado
+                FROM CosechaMecanica
+                WHERE id = :id
+                LIMIT 1";
+
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+                $stmt->execute();
+
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                return $row !== false ? $row : null;
+        }
+
+        /**
+         * Participaciones (cooperativas + productores) por contrato.
+         * @return array<int, array<string, mixed>>
+         */
+        public function obtenerParticipacionesPorContrato(int $contratoId): array
+        {
+                $sql = "SELECT
+                    id,
+                    contrato_id,
+                    nom_cooperativa,
+                    firma,
+                    productor,
+                    superficie,
+                    variedad,
+                    prod_estimada,
+                    fecha_estimada,
+                    km_finca,
+                    flete
+                FROM cosechaMecanica_cooperativas_participacion
+                WHERE contrato_id = :contrato_id
+                ORDER BY nom_cooperativa ASC, productor ASC, id ASC";
+
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->bindValue(':contrato_id', $contratoId, PDO::PARAM_INT);
+                $stmt->execute();
+
+                return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        }
+
+        /**
+         * Elimina un contrato (y sus participaciones por FK ON DELETE CASCADE).
+         */
+        public function eliminarContrato(int $id): bool
+        {
+                $sql = "DELETE FROM CosechaMecanica WHERE id = :id";
+
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+
+                return $stmt->execute();
+        }
 }
