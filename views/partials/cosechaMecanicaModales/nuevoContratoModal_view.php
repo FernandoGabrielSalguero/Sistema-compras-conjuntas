@@ -38,7 +38,7 @@ declare(strict_types=1); ?>
                     </div>
                 </div>
 
-                                <div class="input-group">
+                <div class="input-group">
                     <label for="nuevoFechaApertura">Fecha apertura</label>
                     <div class="input-icon input-icon-name">
                         <input type="date"
@@ -46,8 +46,8 @@ declare(strict_types=1); ?>
                             name="fecha_apertura"
                             required
                             inputmode="numeric"
-                            pattern="\d{4}-\d{2}-\d{2}"
-                            placeholder="AAAA-MM-DD" />
+                            pattern="\d{2}-\d{2}-\d{4}"
+                            placeholder="DD/MM/AAAA" />
                     </div>
                 </div>
 
@@ -59,19 +59,8 @@ declare(strict_types=1); ?>
                             name="fecha_cierre"
                             required
                             inputmode="numeric"
-                            pattern="\d{4}-\d{2}-\d{2}"
-                            placeholder="AAAA-MM-DD" />
-                    </div>
-                </div>
-
-
-                <div class="input-group">
-                    <label for="nuevoFechaCierre">Fecha cierre</label>
-                    <div class="input-icon input-icon-name">
-                        <input type="date"
-                            id="nuevoFechaCierre"
-                            name="fecha_cierre"
-                            required />
+                            pattern="\d{2}-\d{2}-\d{4}"
+                            placeholder="DD/MM/AAAA" />
                     </div>
                 </div>
 
@@ -137,7 +126,7 @@ declare(strict_types=1); ?>
                 </div>
             </div>
 
-                        <div class="input-group" style="margin-top: 1rem;">
+            <div class="input-group" style="margin-top: 1rem;">
                 <label for="nuevoDescripcionEditor">Descripción</label>
                 <div class="input-icon input-icon-name">
                     <div id="nuevoDescripcionToolbar">
@@ -180,31 +169,38 @@ declare(strict_types=1); ?>
 <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    var toolbarOptions = [
-        ['bold', 'underline'],
-        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-        [{ 'indent': '-1' }, { 'indent': '+1' }]
-    ];
+    document.addEventListener('DOMContentLoaded', function() {
+        var toolbarOptions = [
+            ['bold', 'underline'],
+            [{
+                'list': 'ordered'
+            }, {
+                'list': 'bullet'
+            }],
+            [{
+                'indent': '-1'
+            }, {
+                'indent': '+1'
+            }]
+        ];
 
-    var editorContainer = document.getElementById('nuevoDescripcionEditor');
-    if (editorContainer) {
-        var quill = new Quill('#nuevoDescripcionEditor', {
-            theme: 'snow',
-            modules: {
-                toolbar: toolbarOptions
-            }
-        });
-
-        var form = document.getElementById('formNuevoContrato');
-        var hiddenTextarea = document.getElementById('nuevoDescripcion');
-
-        if (form && hiddenTextarea) {
-            form.addEventListener('submit', function () {
-                hiddenTextarea.value = quill.root.innerHTML;
+        var editorContainer = document.getElementById('nuevoDescripcionEditor');
+        if (editorContainer) {
+            var quill = new Quill('#nuevoDescripcionEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: toolbarOptions
+                }
             });
-        }
-    }
-});
-</script>
 
+            var form = document.getElementById('formNuevoContrato');
+            var hiddenTextarea = document.getElementById('nuevoDescripcion');
+
+            if (form && hiddenTextarea) {
+                form.addEventListener('submit', function() {
+                    hiddenTextarea.value = quill.root.innerHTML;
+                });
+            }
+        }
+    });
+</script>
