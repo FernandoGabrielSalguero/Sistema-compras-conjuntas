@@ -1,6 +1,8 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+declare(strict_types=1);
+
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
 // Iniciar sesión y configurar parámetros de seguridad
@@ -15,6 +17,7 @@ $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 ?>
 
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -25,12 +28,137 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
+
+    <!-- Estilos específicos Cosecha Mecánica -->
+    <style>
+        /* Altura máxima de la tabla de contratos - ajustar manualmente si es necesario */
+        .tabla-wrapper.cosecha-table {
+            max-height: 480px;
+            overflow-y: auto;
+        }
+
+        .cosecha-filtros-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .cosecha-filtros-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .cosecha-filtros-row .input-group {
+            flex: 1 1 220px;
+        }
+
+        .cosecha-filtros-row .btn-nuevo-contrato {
+            flex: 0 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .cosecha-filtros-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .cosecha-filtros-row .btn-nuevo-contrato {
+                width: 100%;
+            }
+        }
+
+        .cosecha-acciones {
+            display: flex;
+            gap: 0.25rem;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cosecha-btn-icon {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 0.35rem;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out, background-color 0.1s ease-out;
+        }
+
+        .cosecha-btn-icon:focus-visible {
+            outline: 2px solid #4f46e5;
+            outline-offset: 2px;
+        }
+
+        .cosecha-btn-icon:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+        }
+
+        .cosecha-btn-icon.view {
+            color: #2563eb;
+            background-color: rgba(37, 99, 235, 0.06);
+        }
+
+        .cosecha-btn-icon.coop {
+            color: #16a34a;
+            background-color: rgba(22, 163, 74, 0.06);
+        }
+
+        .cosecha-btn-icon.delete {
+            color: #dc2626;
+            background-color: rgba(220, 38, 38, 0.06);
+        }
+
+        .cosecha-btn-icon .material-icons,
+        .cosecha-btn-icon .material-symbols-outlined {
+            font-size: 20px;
+        }
+
+        .badge.estado-borrador {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
+        .badge.estado-abierto {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .badge.estado-cerrado {
+            background-color: #e0f2fe;
+            color: #1d4ed8;
+        }
+
+        .badge.estado-cancelado {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* Modales de Cosecha Mecánica: permiten que el contenido controle el alto */
+        .modal .modal-content {
+            max-width: 720px;
+            width: 100%;
+        }
+
+        @media (max-width: 640px) {
+            .modal .modal-content {
+                max-width: 100%;
+                margin: 1.5rem;
+            }
+        }
+    </style>
 </head>
+
 
 <body>
 
