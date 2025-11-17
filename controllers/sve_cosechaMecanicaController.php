@@ -70,6 +70,12 @@ try {
             $descripcion = isset($input['descripcion']) ? (string)$input['descripcion'] : null;
             $estado = (string)($input['estado'] ?? 'borrador');
 
+            $costoBase = (string)($input['costo_base'] ?? '0');
+            $bonOptima = (string)($input['bon_optima'] ?? '0');
+            $bonMuyBuena = (string)($input['bon_muy_buena'] ?? '0');
+            $bonBuena = (string)($input['bon_buena'] ?? '0');
+            $anticipo = (string)($input['anticipo'] ?? '0');
+
             if ($nombre === '' || $fechaApertura === '' || $fechaCierre === '') {
                 jsonResponse([
                     'ok' => false,
@@ -82,7 +88,12 @@ try {
                 'fecha_apertura' => $fechaApertura,
                 'fecha_cierre' => $fechaCierre,
                 'descripcion' => $descripcion,
-                'estado' => $estado
+                'estado' => $estado,
+                'costo_base' => $costoBase,
+                'bon_optima' => $bonOptima,
+                'bon_muy_buena' => $bonMuyBuena,
+                'bon_buena' => $bonBuena,
+                'anticipo' => $anticipo
             ]);
 
             jsonResponse([
@@ -92,6 +103,7 @@ try {
                 ]
             ], 201);
             break;
+
 
         case 'obtener':
             $id = isset($input['id']) ? (int)$input['id'] : 0;

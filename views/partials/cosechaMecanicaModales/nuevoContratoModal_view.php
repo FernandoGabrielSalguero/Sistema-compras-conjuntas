@@ -57,6 +57,67 @@ declare(strict_types=1); ?>
                             required />
                     </div>
                 </div>
+
+                <div class="input-group">
+                    <label for="nuevoCostoBase">Costo base</label>
+                    <div class="input-icon input-icon-name">
+                        <input type="number"
+                            id="nuevoCostoBase"
+                            name="costo_base"
+                            placeholder="Ej: 1500.00"
+                            step="0.01"
+                            min="0"
+                            required />
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="nuevoBonOptima">Bonificación óptima (%)</label>
+                    <div class="input-icon input-icon-name">
+                        <input type="number"
+                            id="nuevoBonOptima"
+                            name="bon_optima"
+                            placeholder="Ej: 10.00"
+                            step="0.01"
+                            min="0" />
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="nuevoBonMuyBuena">Bonificación muy buena (%)</label>
+                    <div class="input-icon input-icon-name">
+                        <input type="number"
+                            id="nuevoBonMuyBuena"
+                            name="bon_muy_buena"
+                            placeholder="Ej: 7.50"
+                            step="0.01"
+                            min="0" />
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="nuevoBonBuena">Bonificación buena (%)</label>
+                    <div class="input-icon input-icon-name">
+                        <input type="number"
+                            id="nuevoBonBuena"
+                            name="bon_buena"
+                            placeholder="Ej: 5.00"
+                            step="0.01"
+                            min="0" />
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="nuevoAnticipo">Anticipo</label>
+                    <div class="input-icon input-icon-name">
+                        <input type="number"
+                            id="nuevoAnticipo"
+                            name="anticipo"
+                            placeholder="Ej: 500.00"
+                            step="0.01"
+                            min="0" />
+                    </div>
+                </div>
             </div>
 
             <div class="input-group" style="margin-top: 1rem;">
@@ -82,3 +143,18 @@ declare(strict_types=1); ?>
         </form>
     </div>
 </div>
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof tinymce !== 'undefined') {
+            tinymce.init({
+                selector: '#nuevoDescripcion',
+                menubar: false,
+                plugins: 'lists',
+                toolbar: 'undo redo | bold underline | bullist numlist outdent indent | bold underline',
+                branding: false,
+                height: 200
+            });
+        }
+    });
+</script>

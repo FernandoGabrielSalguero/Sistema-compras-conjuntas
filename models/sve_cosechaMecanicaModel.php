@@ -30,9 +30,19 @@ class cosechaMecanicaModel
          * Lista contratos con filtros opcionales.
          * @return array<int, array<string, mixed>>
          */
-        public function listarContratos(?string $nombre = null, ?string $estado = null): array
+                public function listarContratos(?string $nombre = null, ?string $estado = null): array
         {
-                $sql = "SELECT id, nombre, fecha_apertura, fecha_cierre, estado
+                $sql = "SELECT
+                        id,
+                        nombre,
+                        fecha_apertura,
+                        fecha_cierre,
+                        estado,
+                        costo_base,
+                        bon_optima,
+                        bon_muy_buena,
+                        bon_buena,
+                        anticipo
                 FROM CosechaMecanica
                 WHERE 1";
                 $params = [];
@@ -55,14 +65,36 @@ class cosechaMecanicaModel
                 return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
         }
 
+
         /**
          * Crea un nuevo contrato.
          * @param array<string, mixed> $data
          */
-        public function crearContrato(array $data): int
+                public function crearContrato(array $data): int
         {
-                $sql = "INSERT INTO CosechaMecanica (nombre, fecha_apertura, fecha_cierre, descripcion, estado)
-                VALUES (:nombre, :fecha_apertura, :fecha_cierre, :descripcion, :estado)";
+                $sql = "INSERT INTO CosechaMecanica (
+                        nombre,
+                        fecha_apertura,
+                        fecha_cierre,
+                        descripcion,
+                        estado,
+                        costo_base,
+                        bon_optima,
+                        bon_muy_buena,
+                        bon_buena,
+                        anticipo
+                ) VALUES (
+                        :nombre,
+                        :fecha_apertura,
+                        :fecha_cierre,
+                        :descripcion,
+                        :estado,
+                        :costo_base,
+                        :bon_optima,
+                        :bon_muy_buena,
+                        :bon_buena,
+                        :anticipo
+                )";
 
                 $stmt = $this->pdo->prepare($sql);
 
@@ -72,24 +104,48 @@ class cosechaMecanicaModel
                 $descripcion = $data['descripcion'] ?? null;
                 $estado = (string)($data['estado'] ?? 'borrador');
 
+                $costoBase = (string)($data['costo_base'] ?? '0');
+                $bonOptima = (string)($data['bon_optima'] ?? '0');
+                $bonMuyBuena = (string)($data['bon_muy_buena'] ?? '0');
+                $bonBuena = (string)($data['bon_buena'] ?? '0');
+                $anticipo = (string)($data['anticipo'] ?? '0');
+
                 $stmt->bindValue(':nombre', $nombre, PDO::PARAM_STR);
                 $stmt->bindValue(':fecha_apertura', $fechaApertura, PDO::PARAM_STR);
                 $stmt->bindValue(':fecha_cierre', $fechaCierre, PDO::PARAM_STR);
                 $stmt->bindValue(':descripcion', $descripcion, $descripcion === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
                 $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
 
+                $stmt->bindValue(':costo_base', $costoBase, PDO::PARAM_STR);
+                $stmt->bindValue(':bon_optima', $bonOptima, PDO::PARAM_STR);
+                $stmt->bindValue(':bon_muy_buena', $bonMuyBuena, PDO::PARAM_STR);
+                $stmt->bindValue(':bon_buena', $bonBuena, PDO::PARAM_STR);
+                $stmt->bindValue(':anticipo', $anticipo, PDO::PARAM_STR);
+
                 $stmt->execute();
 
                 return (int)$this->pdo->lastInsertId();
         }
 
+
         /**
          * Obtiene un contrato por ID.
          * @return array<string, mixed>|null
          */
-        public function obtenerContratoPorId(int $id): ?array
+                public function obtenerContratoPorId(int $id): ?array
         {
-                $sql = "SELECT id, nombre, fecha_apertura, fecha_cierre, descripcion, estado
+                $sql = "SELECT
+                        id,
+                        nombre,
+                        fecha_apertura,
+                        fecha_cierre,
+                        descripcion,
+                        estado,
+                        costo_base,
+                        bon_optima,
+                        bon_muy_buena,
+                        bon_buena,
+                        anticipo
                 FROM CosechaMecanica
                 WHERE id = :id
                 LIMIT 1";
@@ -102,6 +158,7 @@ class cosechaMecanicaModel
 
                 return $row !== false ? $row : null;
         }
+
 
         /**
          * Participaciones (cooperativas + productores) por contrato.
