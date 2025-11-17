@@ -59,7 +59,7 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 
             <!-- Condiciones (si existen en reporte) -->
             <div id="fito-condiciones" class="card" style="margin-top:12px; padding:12px; border:1px solid #e5e7eb; border-radius:12px; display:none;">
-                <div style="font-weight:600; margin-bottom:8px;">Condiciones meteorológicas al momento del vuelo</div>
+                <div style="font-weight:600; margin-bottom:8px;">Condiciones meteorológicas y detalles de la visita</div>
                 <div class="grid-4" style="display:grid; grid-template-columns: repeat(4,1fr); gap:8px;">
                     <div>Hora Ingreso: <span id="fito-hora-in"></span></div>
                     <div>Hora Salida: <span id="fito-hora-out"></span></div>
