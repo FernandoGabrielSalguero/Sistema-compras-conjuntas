@@ -751,8 +751,6 @@ unset($_SESSION['cierre_info']);
                                 humedad: payload.humedad || '—',
                                 vel_viento: payload.vel_viento || '—',
                                 vol_aplicado: payload.vol_aplicado || '—',
-                                lavado_dron_miner: payload.lavado_dron_miner || '—',
-                                triple_lavado_envases: payload.triple_lavado_envases || '—',
                                 productos: (payload.productos || []).map(p => ({
                                     nombre: p.nombre || '',
                                     principio: p.principio || '',
@@ -764,7 +762,6 @@ unset($_SESSION['cierre_info']);
                                 fotos: payload.fotos || [],
                                 firma_cliente: payload.firma_cliente || null,
                                 firma_prestador: payload.firma_prestador || null
-
                             };
                         }
                         const s = payload.solicitud || {};
@@ -791,8 +788,6 @@ unset($_SESSION['cierre_info']);
                             humedad: r.humedad_relativa || '—',
                             vel_viento: r.vel_viento || '—',
                             vol_aplicado: r.vol_aplicado || '—',
-                            lavado_dron_miner: r.lavado_dron_miner || '—',
-                            triple_lavado_envases: r.triple_lavado_envases || '—',
                             productos: prods.map(p => ({
                                 nombre: p.nombre_comercial || '',
                                 principio: p.principio_activo || '',
@@ -848,7 +843,7 @@ unset($_SESSION['cierre_info']);
       </div>
     </div>
 
-       <div class="rf-pill rf-section">
+    <div class="rf-pill rf-section">
       <div class="rf-title">Condiciones meteorológicas al momento del vuelo</div>
       <div class="grid grid-cols-3 gap-2">
         <div><strong>Hora Ingreso:</strong> ${esc(d.hora_ingreso || '—')}</div>
@@ -857,11 +852,8 @@ unset($_SESSION['cierre_info']);
         <div><strong>Humedad Relativa (%):</strong> ${esc(d.humedad || '—')}</div>
         <div><strong>Vel. Viento (m/s):</strong> ${esc(d.vel_viento || '—')}</div>
         <div><strong>Volumen aplicado (l/ha):</strong> ${esc(d.vol_aplicado || '—')}</div>
-        <div><strong>Lavado dron (miner):</strong> ${esc(d.lavado_dron_miner || '—')}</div>
-        <div><strong>Triple lavado envases:</strong> ${esc(d.triple_lavado_envases || '—')}</div>
       </div>
     </div>
-
 
     <div class="rf-section">
       <div class="rf-title" style="margin-bottom:.4rem;">Productos utilizados</div>
