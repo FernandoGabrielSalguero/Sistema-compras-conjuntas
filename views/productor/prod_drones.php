@@ -304,15 +304,17 @@ $sesion_payload = [
             }
         }
 
-        .gform-question {
-            display: flex;
-            flex-direction: column;
-            gap: .4rem;
-            margin-bottom: 1rem;
-            font-size: .95rem;
-            background-color: #fafafa;
-            border-color: #111;
-        }
+.gform-question {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    margin-bottom: 1rem;
+    font-size: .95rem;
+    background-color: #fafafa;
+    border: 2px solid #000000ff; 
+    border-radius: 12px;       
+    padding: 1rem;
+}
 
         .gform-label,
         .gform-legend {
