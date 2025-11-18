@@ -15,10 +15,11 @@ declare(strict_types=1); ?>
         </div>
 
         <form id="formNuevoContrato">
-            <div class="form-grid grid-2">
+            <div class="form-grid grid-3">
                 <div class="input-group">
                     <label for="nuevoNombre">Nombre del contrato</label>
                     <div class="input-icon input-icon-name">
+                        <span class="material-icons input-leading-icon">description</span>
                         <input type="text"
                             id="nuevoNombre"
                             name="nombre"
@@ -30,6 +31,7 @@ declare(strict_types=1); ?>
                 <div class="input-group">
                     <label for="nuevoEstado">Estado</label>
                     <div class="input-icon input-icon-name">
+                        <span class="material-icons input-leading-icon">flag_circle</span>
                         <select id="nuevoEstado" name="estado">
                             <option value="borrador">Borrador</option>
                             <option value="abierto">Abierto</option>
@@ -63,6 +65,7 @@ declare(strict_types=1); ?>
                 <div class="input-group">
                     <label for="nuevoCostoBase">Costo base</label>
                     <div class="input-icon input-icon-name">
+                        <span class="material-icons input-leading-icon">attach_money</span>
                         <input type="number"
                             id="nuevoCostoBase"
                             name="costo_base"
@@ -73,9 +76,11 @@ declare(strict_types=1); ?>
                     </div>
                 </div>
 
+
                 <div class="input-group">
                     <label for="nuevoBonOptima">Bonificación óptima (%)</label>
                     <div class="input-icon input-icon-name">
+                        <span class="material-icons input-leading-icon">percent</span>
                         <input type="number"
                             id="nuevoBonOptima"
                             name="bon_optima"
@@ -88,6 +93,7 @@ declare(strict_types=1); ?>
                 <div class="input-group">
                     <label for="nuevoBonMuyBuena">Bonificación muy buena (%)</label>
                     <div class="input-icon input-icon-name">
+                        <span class="material-icons input-leading-icon">percent</span>
                         <input type="number"
                             id="nuevoBonMuyBuena"
                             name="bon_muy_buena"
@@ -97,9 +103,12 @@ declare(strict_types=1); ?>
                     </div>
                 </div>
 
+
+
                 <div class="input-group">
                     <label for="nuevoBonBuena">Bonificación buena (%)</label>
                     <div class="input-icon input-icon-name">
+                        <span class="material-icons input-leading-icon">percent</span>
                         <input type="number"
                             id="nuevoBonBuena"
                             name="bon_buena"
@@ -109,9 +118,11 @@ declare(strict_types=1); ?>
                     </div>
                 </div>
 
+
                 <div class="input-group">
                     <label for="nuevoAnticipo">Anticipo</label>
                     <div class="input-icon input-icon-name">
+                        <span class="material-icons input-leading-icon">attach_money</span>
                         <input type="number"
                             id="nuevoAnticipo"
                             name="anticipo"
@@ -218,7 +229,48 @@ declare(strict_types=1); ?>
         color: #6b7280;
         cursor: pointer;
     }
+
+    /* Grid 3 columnas y modal más ancho */
+    #modalNuevoContrato .modal-content {
+        max-width: 1100px;
+        width: 95%;
+    }
+
+    #modalNuevoContrato .form-grid.grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    /* Iconos en inputs de texto/número/select */
+    #modalNuevoContrato .input-icon {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    #modalNuevoContrato .input-icon .input-leading-icon {
+        font-size: 20px;
+        color: #6b7280;
+    }
+
+    #modalNuevoContrato .input-icon input,
+    #modalNuevoContrato .input-icon select {
+        flex: 1 1 auto;
+    }
+
+    /* Ocultar ícono nativo del date para dejar sólo el de Material Icons */
+    #modalNuevoContrato input[type="date"]::-webkit-calendar-picker-indicator {
+        opacity: 0;
+    }
+
+    #modalNuevoContrato input[type="date"] {
+        position: relative;
+        z-index: 1;
+        background-color: transparent;
+    }
 </style>
+
 
 
 <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
