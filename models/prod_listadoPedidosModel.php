@@ -170,7 +170,8 @@ LIMIT :limit OFFSET :offset";
                    r.fecha_visita, r.hora_ingreso, r.hora_egreso,
                    r.nombre_finca, r.cultivo_pulverizado, r.cuadro_cuartel,
                    r.sup_pulverizada, r.vol_aplicado, r.vel_viento,
-                   r.temperatura, r.humedad_relativa, r.observaciones
+                   r.temperatura, r.humedad_relativa, r.observaciones,
+                   r.lavado_dron_miner, r.triple_lavado_envases
             FROM drones_solicitud_Reporte r
             WHERE r.solicitud_id = :id
             LIMIT 1

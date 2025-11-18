@@ -859,7 +859,7 @@ cont.innerHTML = `
   </div>
 
   <!-- Condiciones (solo si hay datos) -->
-  <div class="card" style="margin-top:12px; padding:12px; border:1px solid #e5e7eb; border-radius:12px; ${(r.hora_ingreso||r.hora_egreso||r.temperatura||r.humedad_relativa||r.vel_viento||r.vol_aplicado)?'':'display:none;'}">
+  <div class="card" style="margin-top:12px; padding:12px; border:1px solid #e5e7eb; border-radius:12px; ${(r.hora_ingreso||r.hora_egreso||r.temperatura||r.humedad_relativa||r.vel_viento||r.vol_aplicado||r.lavado_dron_miner||r.triple_lavado_envases)?'':'display:none;'}">
     <div style="font-weight:600; margin-bottom:8px;">Condiciones meteorológicas al momento del vuelo</div>
     <div class="grid-4" style="display:grid; grid-template-columns: repeat(4,1fr); gap:8px;">
       <div>Hora Ingreso: <span>${f(r.hora_ingreso)}</span></div>
@@ -869,7 +869,12 @@ cont.innerHTML = `
       <div>Vel. Viento (m/s): <span>${f(r.vel_viento)}</span></div>
       <div>Volumen aplicado (l/ha): <span>${f(r.vol_aplicado)}</span></div>
     </div>
+    <div class="grid-2" style="display:grid; grid-template-columns: repeat(2,1fr); gap:8px; margin-top:8px;">
+      <div>Lavado del dron (miner): <span>${f(r.lavado_dron_miner)}</span></div>
+      <div>Triple lavado de envases: <span>${f(r.triple_lavado_envases)}</span></div>
+    </div>
   </div>
+
 
   <!-- Tabla de productos -->
   <div class="card" style="margin-top:12px; padding:12px; border:1px solid #e5e7eb; border-radius:12px;">
