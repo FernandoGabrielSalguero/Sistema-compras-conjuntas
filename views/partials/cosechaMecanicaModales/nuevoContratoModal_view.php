@@ -44,8 +44,7 @@ declare(strict_types=1); ?>
                         <input type="date"
                             id="nuevoFechaApertura"
                             name="fecha_apertura"
-                            required
-                            readonly />
+                            required />
                         <span class="material-icons calendar-icon">calendar_today</span>
                     </div>
                 </div>
@@ -56,12 +55,10 @@ declare(strict_types=1); ?>
                         <input type="date"
                             id="nuevoFechaCierre"
                             name="fecha_cierre"
-                            required
-                            readonly />
+                            required />
                         <span class="material-icons calendar-icon">calendar_today</span>
                     </div>
                 </div>
-
 
                 <div class="input-group">
                     <label for="nuevoCostoBase">Costo base</label>
@@ -123,45 +120,60 @@ declare(strict_types=1); ?>
                             min="0" />
                     </div>
                 </div>
+            </div>
 
-
-                <div class="input-group" style="margin-top: 1rem;">
-                    <label for="nuevoDescripcionEditor">Descripción</label>
-                    <div id="nuevoDescripcionContainer" class="editor-card">
-                        <div id="nuevoDescripcionEditor" class="quill-editor"></div>
-                        <!-- textarea oculta donde se envía el HTML al backend -->
-                        <textarea id="nuevoDescripcion"
-                            name="descripcion"
-                            style="display: none;"></textarea>
-                    </div>
+            <div class="input-group input-group-descripcion">
+                <label for="nuevoDescripcionEditor">Descripción</label>
+                <div id="nuevoDescripcionContainer" class="editor-card editor-card-full">
+                    <div id="nuevoDescripcionEditor" class="quill-editor"></div>
+                    <!-- textarea oculta donde se envía el HTML al backend -->
+                    <textarea id="nuevoDescripcion"
+                        name="descripcion"
+                        style="display: none;"></textarea>
                 </div>
+            </div>
 
-
-
-                <div class="modal-footer">
-                    <button type="button"
-                        class="btn btn-cancelar"
-                        data-close-modal="modalNuevoContrato">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-aceptar">
-                        Guardar contrato
-                    </button>
-                </div>
+            <div class="modal-footer">
+                <button type="button"
+                    class="btn btn-cancelar"
+                    data-close-modal="modalNuevoContrato">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-aceptar">
+                    Guardar contrato
+                </button>
+            </div>
         </form>
+
     </div>
 </div>
 <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 
 <style>
     /* Estilos modernos para el editor de descripción */
+    #modalNuevoContrato .input-group-descripcion {
+        margin-top: 1rem;
+        width: 100%;
+    }
+
+    #modalNuevoContrato .input-group-descripcion label {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-weight: 500;
+    }
+
     #modalNuevoContrato .editor-card {
-        margin-top: 0.5rem;
+        margin-top: 0.25rem;
         background: #ffffff;
         border-radius: 0.75rem;
         border: 1px solid #e2e8f0;
         box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
         overflow: hidden;
+        width: 100%;
+    }
+
+    #modalNuevoContrato .editor-card-full {
+        max-width: 100%;
     }
 
     #modalNuevoContrato .editor-card .ql-toolbar.ql-snow {
@@ -196,6 +208,7 @@ declare(strict_types=1); ?>
     #modalNuevoContrato .input-icon-calendar input[type="date"] {
         width: 100%;
         padding-right: 2.5rem;
+        cursor: pointer;
     }
 
     #modalNuevoContrato .input-icon-calendar .calendar-icon {
@@ -203,10 +216,10 @@ declare(strict_types=1); ?>
         right: 1rem;
         font-size: 20px;
         color: #6b7280;
-        pointer-events: none;
-        /* clic pasa al input para abrir el calendario */
+        cursor: pointer;
     }
 </style>
+
 
 <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 
@@ -251,6 +264,28 @@ declare(strict_types=1); ?>
             input.setAttribute('inputmode', 'decimal');
             input.addEventListener('input', function() {
                 this.value = this.value.replace(/[^0-9.]/g, '');
+            });
+        });
+
+        // Evitar escritura manual en fechas y abrir el calendario con el icono
+        var dateInputs = document.querySelectorAll('#modalNuevoContrato input[type="date"]');
+        dateInputs.forEach(function(input) {
+            input.addEventListener('keydown', function(e) {
+                e.preventDefault(); // bloquea teclado
+            });
+        });
+
+        var calendarIcons = document.querySelectorAll('#modalNuevoContrato .calendar-icon');
+        calendarIcons.forEach(function(icon) {
+            icon.addEventListener('click', function() {
+                var input = this.previousElementSibling;
+                if (input && input.type === 'date') {
+                    if (typeof input.showPicker === 'function') {
+                        input.showPicker(); // navegadores compatibles
+                    } else {
+                        input.focus(); // fallback
+                    }
+                }
             });
         });
     });
