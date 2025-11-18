@@ -78,9 +78,9 @@ declare(strict_types=1); ?>
 
 
                 <div class="input-group">
-                    <label for="nuevoBonOptima">Bonificación óptima (%)</label>
+                    <label for="nuevoBonOptima">Bonificación óptima</label>
                     <div class="input-icon input-icon-name">
-                        <span class="material-icons input-leading-icon">percent</span>
+                        <span class="material-icons input-leading-icon">attach_money</span>
                         <input type="number"
                             id="nuevoBonOptima"
                             name="bon_optima"
@@ -91,9 +91,9 @@ declare(strict_types=1); ?>
                 </div>
 
                 <div class="input-group">
-                    <label for="nuevoBonMuyBuena">Bonificación muy buena (%)</label>
+                    <label for="nuevoBonMuyBuena">Bonificación muy buena</label>
                     <div class="input-icon input-icon-name">
-                        <span class="material-icons input-leading-icon">percent</span>
+                        <span class="material-icons input-leading-icon">attach_money</span>
                         <input type="number"
                             id="nuevoBonMuyBuena"
                             name="bon_muy_buena"
@@ -106,9 +106,9 @@ declare(strict_types=1); ?>
 
 
                 <div class="input-group">
-                    <label for="nuevoBonBuena">Bonificación buena (%)</label>
+                    <label for="nuevoBonBuena">Bonificación buena</label>
                     <div class="input-icon input-icon-name">
-                        <span class="material-icons input-leading-icon">percent</span>
+                        <span class="material-icons input-leading-icon">attach_money</span>
                         <input type="number"
                             id="nuevoBonBuena"
                             name="bon_buena"
