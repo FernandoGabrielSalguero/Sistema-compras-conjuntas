@@ -235,8 +235,7 @@ unset($_SESSION['cierre_info']);
 
         /* Opcional: impedir scroll horizontal por contenidos anchos */
         #modal .modal-content,
-        #modal-detalle .modal-content,
-        #registro-container {
+        #modal-detalle .modal-content {
             overflow-x: auto;
             overflow-y: auto;
             max-height: 80vh;
@@ -244,6 +243,15 @@ unset($_SESSION['cierre_info']);
             overscroll-behavior: contain;
             scrollbar-gutter: stable both-edges;
             /* evita saltos */
+        }
+
+        /* El contenido del registro crece dentro del modal; sólo el modal tiene scroll */
+        #registro-container {
+            overflow-x: visible;
+            overflow-y: visible;
+            max-height: none;
+            overscroll-behavior: contain;
+            scrollbar-gutter: stable both-edges;
         }
 
         .rf-row {
@@ -751,6 +759,8 @@ unset($_SESSION['cierre_info']);
                                 humedad: payload.humedad || '—',
                                 vel_viento: payload.vel_viento || '—',
                                 vol_aplicado: payload.vol_aplicado || '—',
+                                lavado_dron_miner: payload.lavado_dron_miner || '—',
+                                triple_lavado_envases: payload.triple_lavado_envases || '—',
                                 productos: (payload.productos || []).map(p => ({
                                     nombre: p.nombre || '',
                                     principio: p.principio || '',
@@ -764,6 +774,7 @@ unset($_SESSION['cierre_info']);
                                 firma_prestador: payload.firma_prestador || null
                             };
                         }
+
                         const s = payload.solicitud || {};
                         const r = payload.reporte || {};
                         const prods = Array.isArray(payload.productos) ? payload.productos : [];
@@ -788,6 +799,8 @@ unset($_SESSION['cierre_info']);
                             humedad: r.humedad_relativa || '—',
                             vel_viento: r.vel_viento || '—',
                             vol_aplicado: r.vol_aplicado || '—',
+                            lavado_dron_miner: r.lavado_dron_miner || '—',
+                            triple_lavado_envases: r.triple_lavado_envases || '—',
                             productos: prods.map(p => ({
                                 nombre: p.nombre_comercial || '',
                                 principio: p.principio_activo || '',
@@ -800,6 +813,7 @@ unset($_SESSION['cierre_info']);
                             firma_cliente: firmaCliente,
                             firma_prestador: firmaPiloto
                         };
+
                     })();
 
                     // console.log('[RegistroFitosanitario] normalizado:', d);
@@ -852,6 +866,8 @@ unset($_SESSION['cierre_info']);
         <div><strong>Humedad Relativa (%):</strong> ${esc(d.humedad || '—')}</div>
         <div><strong>Vel. Viento (m/s):</strong> ${esc(d.vel_viento || '—')}</div>
         <div><strong>Volumen aplicado (l/ha):</strong> ${esc(d.vol_aplicado || '—')}</div>
+        <div><strong>Lavado dron (agua mineralizada):</strong> ${esc(d.lavado_dron_miner || '—')}</div>
+        <div><strong>Triple lavado de envases:</strong> ${esc(d.triple_lavado_envases || '—')}</div>
       </div>
     </div>
 
