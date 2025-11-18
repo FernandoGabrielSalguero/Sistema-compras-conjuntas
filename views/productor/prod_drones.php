@@ -25,6 +25,10 @@ $sesion_payload = [
 
 // Lo dejamos disponible como JSON embebido para que el JS lo lea sin riesgos de XSS
 ?>
+<script id="session-data" type="application/json">
+    <?= json_encode($sesion_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
+</script>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -32,11 +36,6 @@ $sesion_payload = [
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE - Productor</title>
-
-
-    <script id="session-data" type="application/json">
-    <?= json_encode($sesion_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
-</script>
 
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
@@ -276,7 +275,120 @@ $sesion_payload = [
             outline: 2px solid #dc2626;
             outline-offset: 2px
         }
+
+        /* --- GForm base styles (no vienen del CDN) --- */
+        .gform-grid {
+            display: grid;
+            gap: 1rem 1.5rem;
+        }
+
+        .gform-grid.cols-2 {
+            grid-template-columns: 1fr;
+        }
+
+        .gform-grid.cols-4 {
+            grid-template-columns: 1fr;
+        }
+
+        .gform-grid .span-2 {
+            grid-column: 1 / -1;
+        }
+
+        @media (min-width: 768px) {
+            .gform-grid.cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .gform-grid.cols-4 {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        .gform-question {
+            display: flex;
+            flex-direction: column;
+            gap: .4rem;
+            margin-bottom: 1rem;
+            font-size: .95rem;
+        }
+
+        .gform-label,
+        .gform-legend {
+            font-weight: 600;
+        }
+
+        .gform-helper {
+            font-size: .85rem;
+            color: #555;
+        }
+
+        .gform-options {
+            display: flex;
+            flex-direction: column;
+            gap: .25rem;
+        }
+
+        .gform-option {
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
+
+        .gform-option input[type="radio"],
+        .gform-option input[type="checkbox"] {
+            accent-color: #0284c7;
+        }
+
+        .gform-input,
+        .gform-input-inline,
+        .gform-textarea {
+            display: block;
+            width: 100%;
+            padding: .45rem .6rem;
+            border-radius: .5rem;
+            border: 1px solid #d4d4d4;
+            font: inherit;
+            background-color: #fff;
+        }
+
+        .gform-input:focus,
+        .gform-input-inline:focus,
+        .gform-textarea:focus {
+            outline: 2px solid #0284c7;
+            outline-offset: 2px;
+            border-color: #0284c7;
+        }
+
+        .gform-miniopts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .75rem;
+            font-size: .9rem;
+        }
+
+        .gform-miniopts label {
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+        }
+
+        .gform-actions {
+            margin-top: 1rem;
+        }
+
+        .gform-btn.gform-primary {
+            min-width: 200px;
+        }
+
+        .gform-option-otros .gform-input-inline {
+            max-width: 240px;
+        }
+
+        .oculto {
+            display: none !important;
+        }
     </style>
+
 </head>
 
 <body>
