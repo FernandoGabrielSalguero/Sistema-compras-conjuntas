@@ -45,7 +45,7 @@ declare(strict_types=1); ?>
                             id="nuevoFechaApertura"
                             name="fecha_apertura"
                             required />
-                        <!-- <span class="material-icons calendar-icon">calendar_today</span> -->
+                        <span class="material-icons calendar-icon">calendar_today</span>
                     </div>
                 </div>
 
