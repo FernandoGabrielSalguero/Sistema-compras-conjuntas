@@ -259,10 +259,6 @@ declare(strict_types=1); ?>
         flex: 1 1 auto;
     }
 
-    /* Ocultar ícono nativo del date para dejar sólo el de Material Icons */
-    #modalNuevoContrato input[type="date"]::-webkit-calendar-picker-indicator {
-        opacity: 0;
-    }
 
     #modalNuevoContrato input[type="date"] {
         position: relative;
@@ -319,26 +315,20 @@ declare(strict_types=1); ?>
             });
         });
 
-        // Evitar escritura manual en fechas y abrir el calendario con el icono
-        var dateInputs = document.querySelectorAll('#modalNuevoContrato input[type="date"]');
-        dateInputs.forEach(function(input) {
-            input.addEventListener('keydown', function(e) {
-                e.preventDefault(); // bloquea teclado
-            });
-        });
-
         var calendarIcons = document.querySelectorAll('#modalNuevoContrato .calendar-icon');
-        calendarIcons.forEach(function(icon) {
-            icon.addEventListener('click', function() {
-                var input = this.previousElementSibling;
-                if (input && input.type === 'date') {
-                    if (typeof input.showPicker === 'function') {
-                        input.showPicker(); // navegadores compatibles
-                    } else {
-                        input.focus(); // fallback
-                    }
-                }
-            });
-        });
+calendarIcons.forEach(function(icon) {
+    icon.addEventListener('click', function() {
+        var input = this.previousElementSibling;
+        if (input && input.type === 'date') {
+            if (typeof input.showPicker === 'function') {
+                input.showPicker();
+            } else {
+                // En navegadores sin showPicker, simplemente enfoca
+                // y el usuario escribe la fecha.
+                input.focus();
+            }
+        }
+    });
+});
     });
 </script>
