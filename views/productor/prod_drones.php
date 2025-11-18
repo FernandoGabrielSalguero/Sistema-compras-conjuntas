@@ -1160,13 +1160,21 @@ $sesion_payload = [
                         data = JSON.parse(raw);
                     } catch {}
 
-                    if (!res.ok || !data?.ok) {
+                                        if (!res.ok || !data?.ok) {
                         const msg = data?.error || `Error ${res.status} al registrar la solicitud.`;
                         window.showToast?.('error', msg);
                         return;
                     }
 
+                    // La solicitud se registró correctamente
                     window.showToast?.('success', `Solicitud registrada (#${data.id}).`);
+
+                    // Si el backend indica que el correo falló, mostramos el motivo
+                    if (data.mail_ok === false) {
+                        const mailMsg = data.mail_error ? ` Detalle: ${data.mail_error}` : '';
+                        window.showToast?.('error', 'El correo de notificación NO se pudo enviar.' + mailMsg);
+                    }
+
                     cerrarModal();
                     form.reset();
 
@@ -1175,6 +1183,9 @@ $sesion_payload = [
                         const cmp = document.querySelector(cb.dataset.complement);
                         if (cmp) cmp.hidden = true;
                     });
+
+
+
                     const otrosChk = document.getElementById('motivo_otros_chk');
                     const otrosTxt = document.getElementById('motivo_otros');
                     if (otrosChk && otrosTxt) {

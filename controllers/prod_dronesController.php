@@ -238,6 +238,10 @@ try {
         $mailResp = DronSolicitudMailer::enviarSolicitudDron($mailPayload);
         $mailOk = (bool)($mailResp['ok'] ?? false);
         $mailErr = $mailResp['error'] ?? null;
+        // Si Brevo devolvió error, lo dejamos logueado para poder depurarlo en el servidor
+        if ($mailOk === false && $mailErr) {
+            error_log('Brevo - error al enviar correo de solicitud dron #' . $id . ': ' . $mailErr);
+        }
     } catch (Throwable $me) {
         $mailOk = false;
         $mailErr = $me->getMessage();
