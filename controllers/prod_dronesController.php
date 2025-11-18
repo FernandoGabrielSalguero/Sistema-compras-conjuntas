@@ -27,9 +27,9 @@ if (file_exists($mwPath)) {
 
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/prod_dronesModel.php';
-require_once __DIR__ . '/../mail/Mail.php';
+require_once __DIR__ . '/../mail/brevo/DronSolicitudMailer.php';
 
-use SVE\Mail\Maill;
+use SVE\Brevo\DronSolicitudMailer;
 
 try {
     $model = new prodDronesModel($pdo);
@@ -119,7 +119,7 @@ try {
         $prodNombre = (string)($_SESSION['nombre'] ?? '');
         $prodCorreo = (string)($_SESSION['correo'] ?? '');
 
-                // ¿Pago por cooperativa? (id = 6)
+        // ¿Pago por cooperativa? (id = 6)
         $formaPagoId = (int)($data['forma_pago_id'] ?? 0);
         $esPagoCoop  = ($formaPagoId === 6);
 
@@ -209,7 +209,7 @@ try {
         $direccion = (array)($data['direccion'] ?? []);
         $ubicacion = (array)($data['ubicacion'] ?? []);
 
-                $mailPayload = [
+        $mailPayload = [
             'solicitud_id'    => (int)$id,
             'productor'       => ['nombre' => $prodNombre, 'correo' => $prodCorreo],
             'cooperativa'     => ['nombre' => (string)($coop['coop_nombre'] ?? ''), 'correo' => (string)($coop['coop_correo'] ?? '')],
@@ -232,10 +232,10 @@ try {
             // URL de destino para los botones del correo de cooperativa
             'cta_url'         => 'https://compraconjunta.sve.com.ar/index.php',
             // Texto extra requerido por negocio (se usa sólo en el cuerpo para cooperativa/drones)
-            'coop_texto_extra'=> "Estimada cooperativa. Por el presente correo se les informa que un productor vinculado a su cooperativa a manifestado la intención de tomar el servicio de dron y de pagarlo a través del descuento por la cuota de vino. \nSi este productor productor posee los fondos necesarios para llevar a cabo el pago por favor apruébelo seleccionado el botón que dice Aprobar Solicitud el cual se encuentra al final de este correo. \nEn caso de que el productor no este en condiciones de pagarlo por esta vía por favor haga click en el botón que dice Declinar Solicitud el cual se encuentra al final de este correo. \nAnte cualquier duda por favor comuníquese al 2612072518.",
+            'coop_texto_extra' => "Estimada cooperativa. Por el presente correo se les informa que un productor vinculado a su cooperativa a manifestado la intención de tomar el servicio de dron y de pagarlo a través del descuento por la cuota de vino. \nSi este productor productor posee los fondos necesarios para llevar a cabo el pago por favor apruébelo seleccionado el botón que dice Aprobar Solicitud el cual se encuentra al final de este correo. \nEn caso de que el productor no este en condiciones de pagarlo por esta vía por favor haga click en el botón que dice Declinar Solicitud el cual se encuentra al final de este correo. \nAnte cualquier duda por favor comuníquese al 2612072518.",
         ];
 
-        $mailResp = Maill::enviarSolicitudDron($mailPayload);
+        $mailResp = DronSolicitudMailer::enviarSolicitudDron($mailPayload);
         $mailOk = (bool)($mailResp['ok'] ?? false);
         $mailErr = $mailResp['error'] ?? null;
     } catch (Throwable $me) {
