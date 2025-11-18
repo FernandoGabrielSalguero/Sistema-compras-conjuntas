@@ -36,3 +36,10 @@ if (!defined('MAIL_HOST')) {
     define('MAIL_FROM', 'contacto@sve.com.ar');   // igual a MAIL_USER
     define('MAIL_FROM_NAME', 'SVE Notificaciones');
 }
+
+// ==== Brevo API ====
+if (!defined('BREVO_API_KEY')) {
+    define('BREVO_API_KEY', getenv('BREVO_API_KEY') ?: '');
+}
+
+// Se llama así desde cualquier lado de la aplicación para obtener la clave API de Brevo: " $apiKey = BREVO_API_KEY; "

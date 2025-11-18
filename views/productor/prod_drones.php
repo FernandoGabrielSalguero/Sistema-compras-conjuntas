@@ -25,10 +25,6 @@ $sesion_payload = [
 
 // Lo dejamos disponible como JSON embebido para que el JS lo lea sin riesgos de XSS
 ?>
-<script id="session-data" type="application/json">
-    <?= json_encode($sesion_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
-</script>
-
 <!DOCTYPE html>
 <html lang="es">
 
@@ -36,6 +32,11 @@ $sesion_payload = [
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE - Productor</title>
+
+
+    <script id="session-data" type="application/json">
+    <?= json_encode($sesion_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
+</script>
 
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
@@ -579,11 +580,11 @@ $sesion_payload = [
                     </div>
 
                     <!-- observaciones -->
-<div class="gform-question span-2" id="q_observaciones">
-    <label class="gform-label" for="observaciones">OBSERVACIONES</label>
-    <div class="gform-helper">Opcional: dejá tu comentario o consulta aquí.</div>
-    <textarea class="gform-input gform-textarea" id="observaciones" name="observaciones" rows="3" placeholder="Tu respuesta (opcional)"></textarea>
-</div>
+                    <div class="gform-question span-2" id="q_observaciones">
+                        <label class="gform-label" for="observaciones">OBSERVACIONES</label>
+                        <div class="gform-helper">Opcional: dejá tu comentario o consulta aquí.</div>
+                        <textarea class="gform-input gform-textarea" id="observaciones" name="observaciones" rows="3" placeholder="Tu respuesta (opcional)"></textarea>
+                    </div>
 
                     <!-- Resumen de costos dinámico -->
                     <div id="resumen-costos-inline" class="card" style="margin-top:1rem;">
@@ -1010,7 +1011,7 @@ $sesion_payload = [
                 $('#btn_solicitar')?.focus();
             };
             // Exponer a los botones con onclick=""
-window.cerrarModal = cerrarModal;
+            window.cerrarModal = cerrarModal;
 
             modal?.addEventListener('click', (e) => {
                 if (e.target === modal) cerrarModal();
@@ -1482,8 +1483,8 @@ window.cerrarModal = cerrarModal;
                 }
                 must(document.getElementById('q_productos'), prodOk);
 
-// Observaciones (opcional)
-flag(document.getElementById('q_observaciones'), true);
+                // Observaciones (opcional)
+                flag(document.getElementById('q_observaciones'), true);
 
                 // Dirección requerida si no está en la finca
                 const enFincaVal = getRadioValue('en_finca');
