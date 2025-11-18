@@ -311,7 +311,7 @@ $sesion_payload = [
     margin-bottom: 1rem;
     font-size: .95rem;
     background-color: #fafafa;
-    border: 2px solid #000000ff; 
+    border: 2px solid #e5e7eb; 
     border-radius: 12px;       
     padding: 1rem;
 }
