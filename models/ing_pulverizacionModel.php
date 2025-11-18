@@ -159,16 +159,18 @@ class ingPulverizacionModel
     $h->execute([':sid' => $solicitudId]);
     $head = $h->fetch() ?: [];
 
-    // Reporte operativo (último)
+        // Reporte operativo (último)
     $sqlRep = "
             SELECT nom_cliente, nom_piloto, nom_encargado,
                    fecha_visita, hora_ingreso, hora_egreso,
                    nombre_finca, cultivo_pulverizado, sup_pulverizada,
-                   vol_aplicado, vel_viento, temperatura, humedad_relativa
+                   vol_aplicado, vel_viento, temperatura, humedad_relativa,
+                   lavado_dron_miner, triple_lavado_envases
             FROM drones_solicitud_Reporte
             WHERE solicitud_id = :sid
             ORDER BY id DESC
             LIMIT 1";
+
     $r = $this->pdo->prepare($sqlRep);
     $r->execute([':sid' => $solicitudId]);
     $rep = $r->fetch() ?: [];
@@ -220,7 +222,7 @@ class ingPulverizacionModel
       if ($row['tipo'] === 'firma_piloto') $firmaPrestador = $row['ruta'];
     }
 
-    return [
+        return [
       'solicitud_id'  => $head['solicitud_id'] ?? $solicitudId,
       'fecha_visita'  => $rep['fecha_visita'] ?? ($head['fecha_visita'] ?? null),
       'productor_nombre' => $head['productor_nombre'] ?? null,
@@ -235,11 +237,14 @@ class ingPulverizacionModel
       'humedad'       => $rep['humedad_relativa'] ?? null,
       'vel_viento'    => $rep['vel_viento'] ?? null,
       'vol_aplicado'  => $rep['vol_aplicado'] ?? null,
+      'lavado_dron_miner'      => $rep['lavado_dron_miner'] ?? null,
+      'triple_lavado_envases'  => $rep['triple_lavado_envases'] ?? null,
       'productos'     => $prods,
       'fotos'         => $fotos,
       'firma_cliente' => $firmaCliente,
       'firma_prestador' => $firmaPrestador
     ];
+
   }
 
   /**
