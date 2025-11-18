@@ -27,9 +27,9 @@ if (file_exists($mwPath)) {
 
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/prod_dronesModel.php';
-require_once __DIR__ . '/../mail/brevo/DronSolicitudMailer.php';
+require_once __DIR__ . '/../mail/Mail.php';
 
-use SVE\Brevo\DronSolicitudMailer;
+use SVE\Mail\Maill;
 
 try {
     $model = new prodDronesModel($pdo);
@@ -235,13 +235,9 @@ try {
             'coop_texto_extra' => "Estimada cooperativa. Por el presente correo se les informa que un productor vinculado a su cooperativa a manifestado la intención de tomar el servicio de dron y de pagarlo a través del descuento por la cuota de vino. \nSi este productor productor posee los fondos necesarios para llevar a cabo el pago por favor apruébelo seleccionado el botón que dice Aprobar Solicitud el cual se encuentra al final de este correo. \nEn caso de que el productor no este en condiciones de pagarlo por esta vía por favor haga click en el botón que dice Declinar Solicitud el cual se encuentra al final de este correo. \nAnte cualquier duda por favor comuníquese al 2612072518.",
         ];
 
-        $mailResp = DronSolicitudMailer::enviarSolicitudDron($mailPayload);
+        $mailResp = Maill::enviarSolicitudDron($mailPayload);
         $mailOk = (bool)($mailResp['ok'] ?? false);
         $mailErr = $mailResp['error'] ?? null;
-        // Si Brevo devolvió error, lo dejamos logueado para poder depurarlo en el servidor
-        if ($mailOk === false && $mailErr) {
-            error_log('Brevo - error al enviar correo de solicitud dron #' . $id . ': ' . $mailErr);
-        }
     } catch (Throwable $me) {
         $mailOk = false;
         $mailErr = $me->getMessage();
