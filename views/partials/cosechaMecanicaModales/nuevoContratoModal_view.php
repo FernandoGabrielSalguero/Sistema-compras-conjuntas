@@ -209,28 +209,6 @@ declare(strict_types=1); ?>
         outline: none;
     }
 
-    /* Input fecha con icono de calendario integrado (un solo icono) */
-    #modalNuevoContrato .input-icon-date {
-        position: relative;
-        display: flex;
-        align-items: center;
-        padding-left: 2.5rem;
-    }
-
-    #modalNuevoContrato .input-icon-date::before {
-        content: "event";
-        font-family: "Material Icons";
-        position: absolute;
-        left: 0.75rem;
-        font-size: 20px;
-        color: #6b7280;
-        pointer-events: none;
-    }
-
-    #modalNuevoContrato .input-icon-date input[type="date"] {
-        width: 100%;
-        cursor: pointer;
-    }
 
 
     /* Grid 3 columnas y modal más ancho */
