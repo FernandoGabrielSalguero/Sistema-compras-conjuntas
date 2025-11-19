@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
-ini_set('display_errors', 1);
+// En el modelo tampoco mostramos errores en pantalla para no contaminar la salida JSON del controlador
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
+
 
 require_once __DIR__ . '/../config.php';
 
@@ -30,7 +33,7 @@ class cosechaMecanicaModel
          * Lista contratos con filtros opcionales.
          * @return array<int, array<string, mixed>>
          */
-                public function listarContratos(?string $nombre = null, ?string $estado = null): array
+        public function listarContratos(?string $nombre = null, ?string $estado = null): array
         {
                 $sql = "SELECT
                         id,
@@ -70,7 +73,7 @@ class cosechaMecanicaModel
          * Crea un nuevo contrato.
          * @param array<string, mixed> $data
          */
-                public function crearContrato(array $data): int
+        public function crearContrato(array $data): int
         {
                 $sql = "INSERT INTO CosechaMecanica (
                         nombre,
@@ -132,7 +135,7 @@ class cosechaMecanicaModel
          * Obtiene un contrato por ID.
          * @return array<string, mixed>|null
          */
-                public function obtenerContratoPorId(int $id): ?array
+        public function obtenerContratoPorId(int $id): ?array
         {
                 $sql = "SELECT
                         id,

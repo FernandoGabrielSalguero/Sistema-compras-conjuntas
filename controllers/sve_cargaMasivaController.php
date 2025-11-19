@@ -1,6 +1,12 @@
 <?php
-ini_set('display_errors', 1);
+
+declare(strict_types=1);
+
+// En el controlador API NO mostramos errores en pantalla para no romper el JSON
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
+
 
 // Limpia cualquier salida previa (espacios, errores, etc.)
 ob_clean();
