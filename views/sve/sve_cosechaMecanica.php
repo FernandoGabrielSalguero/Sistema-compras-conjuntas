@@ -605,41 +605,58 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 }
             }
 
-            async function abrirModalVerContrato(id) {
-                try {
-                    modalVerContratoBody.innerHTML = 'Cargando contrato...';
-                    abrirModal(modalVerContrato);
+            function abrirModalVerContrato(contratoId) {
+    console.log('[CosechaMecanica] Acción en contrato: ver-contrato ID:', contratoId);
 
-                    const data = await apiRequest('obtener', {
-                        id: id
-                    });
+    if (!contratoId || Number.isNaN(Number(contratoId))) {
+        alert('ID de contrato inválido.');
+        return;
+    }
 
-                    const html = `
-                        <p class="modal-section-title">Nombre</p>
-                        <div class="modal-readonly-field">${data.nombre || ''}</div>
+    var CONTRATO_ENDPOINT = 'controllers/sve_cosechaMecanicaController.php';
 
-                        <p class="modal-section-title">Fechas</p>
-                        <div class="modal-readonly-field">
-                            Apertura: ${formatearFecha(data.fecha_apertura)}<br>
-                            Cierre: ${formatearFecha(data.fecha_cierre)}
-                        </div>
-
-                        <p class="modal-section-title">Estado</p>
-                        <div class="modal-readonly-field">
-                            ${(data.estado || '').charAt(0).toUpperCase() + (data.estado || '').slice(1)}
-                        </div>
-
-                        <p class="modal-section-title">Descripción</p>
-                        <div class="modal-readonly-field">
-                            ${data.descripcion ? data.descripcion.replace(/\n/g, '<br>') : 'Sin descripción'}
-                        </div>
-                    `;
-                    modalVerContratoBody.innerHTML = html;
-                } catch (err) {
-                    console.error('[CosechaMecanica] Error al abrir modal ver contrato:', err);
-                    modalVerContratoBody.innerHTML = 'No se pudo cargar la información del contrato.';
-                }
+    fetch(CONTRATO_ENDPOINT, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify({
+            action: 'obtener',
+            id: Number(contratoId)
+        })
+    })
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (resp) {
+            if (!resp.ok) {
+                console.error('[CosechaMecanica] Error al obtener contrato:', resp.error);
+                alert(resp.error || 'No se pudo obtener el contrato.');
+                return;
             }
+
+            var contrato = resp.data || {};
+
+            // Usamos la función definida en verContratoModal_view.php
+            if (typeof window.cargarContratoEnModal === 'function') {
+                window.cargarContratoEnModal(contrato);
+            } else {
+                console.warn('[CosechaMecanica] window.cargarContratoEnModal no está definida.');
+            }
+
+            // Mostrar el modal (usa tu función utilitaria si ya existe)
+            var modal = document.getElementById('modalVerContrato');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.setAttribute('aria-hidden', 'false');
+            }
+        })
+        .catch(function (error) {
+            console.error('[CosechaMecanica] Error al abrir modal ver contrato:', error);
+            alert('Error de conexión al obtener el contrato.');
+        });
+}
+
 
             async function abrirModalCoopProd(id) {
                 try {
