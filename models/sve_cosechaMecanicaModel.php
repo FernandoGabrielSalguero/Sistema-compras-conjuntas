@@ -130,6 +130,58 @@ class cosechaMecanicaModel
                 return (int)$this->pdo->lastInsertId();
         }
 
+        /**
+         * Actualiza un contrato existente.
+         *
+         * @param int $id
+         * @param array<string, mixed> $data
+         */
+        public function actualizarContrato(int $id, array $data): bool
+        {
+                $sql = "UPDATE CosechaMecanica SET
+                        nombre = :nombre,
+                        fecha_apertura = :fecha_apertura,
+                        fecha_cierre = :fecha_cierre,
+                        descripcion = :descripcion,
+                        estado = :estado,
+                        costo_base = :costo_base,
+                        bon_optima = :bon_optima,
+                        bon_muy_buena = :bon_muy_buena,
+                        bon_buena = :bon_buena,
+                        anticipo = :anticipo
+                    WHERE id = :id";
+
+                $stmt = $this->pdo->prepare($sql);
+
+                $nombre = (string)($data['nombre'] ?? '');
+                $fechaApertura = (string)($data['fecha_apertura'] ?? '');
+                $fechaCierre = (string)($data['fecha_cierre'] ?? '');
+                $descripcion = $data['descripcion'] ?? null;
+                $estado = (string)($data['estado'] ?? 'borrador');
+
+                $costoBase = (string)($data['costo_base'] ?? '0');
+                $bonOptima = (string)($data['bon_optima'] ?? '0');
+                $bonMuyBuena = (string)($data['bon_muy_buena'] ?? '0');
+                $bonBuena = (string)($data['bon_buena'] ?? '0');
+                $anticipo = (string)($data['anticipo'] ?? '0');
+
+                $stmt->bindValue(':nombre', $nombre, PDO::PARAM_STR);
+                $stmt->bindValue(':fecha_apertura', $fechaApertura, PDO::PARAM_STR);
+                $stmt->bindValue(':fecha_cierre', $fechaCierre, PDO::PARAM_STR);
+                $stmt->bindValue(':descripcion', $descripcion, $descripcion === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+                $stmt->bindValue(':estado', $estado, PDO::PARAM_STR);
+
+                $stmt->bindValue(':costo_base', $costoBase, PDO::PARAM_STR);
+                $stmt->bindValue(':bon_optima', $bonOptima, PDO::PARAM_STR);
+                $stmt->bindValue(':bon_muy_buena', $bonMuyBuena, PDO::PARAM_STR);
+                $stmt->bindValue(':bon_buena', $bonBuena, PDO::PARAM_STR);
+                $stmt->bindValue(':anticipo', $anticipo, PDO::PARAM_STR);
+
+                $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+
+                return $stmt->execute();
+        }
+
 
         /**
          * Obtiene un contrato por ID.

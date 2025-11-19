@@ -128,6 +128,65 @@ try {
             ]);
             break;
 
+        case 'actualizar':
+            $id = isset($input['id']) ? (int)$input['id'] : 0;
+            if ($id <= 0) {
+                jsonResponse([
+                    'ok' => false,
+                    'error' => 'ID inválido.'
+                ], 422);
+            }
+
+            // Verificar que el contrato exista antes de actualizar
+            $contratoExistente = $modelo->obtenerContratoPorId($id);
+            if ($contratoExistente === null) {
+                jsonResponse([
+                    'ok' => false,
+                    'error' => 'Contrato no encontrado.'
+                ], 404);
+            }
+
+            $nombre = trim((string)($input['nombre'] ?? ''));
+            $fechaApertura = (string)($input['fecha_apertura'] ?? '');
+            $fechaCierre = (string)($input['fecha_cierre'] ?? '');
+            $descripcion = isset($input['descripcion']) ? (string)$input['descripcion'] : null;
+            $estado = (string)($input['estado'] ?? 'borrador');
+
+            $costoBase = (string)($input['costo_base'] ?? '0');
+            $bonOptima = (string)($input['bon_optima'] ?? '0');
+            $bonMuyBuena = (string)($input['bon_muy_buena'] ?? '0');
+            $bonBuena = (string)($input['bon_buena'] ?? '0');
+            $anticipo = (string)($input['anticipo'] ?? '0');
+
+            if ($nombre === '' || $fechaApertura === '' || $fechaCierre === '') {
+                jsonResponse([
+                    'ok' => false,
+                    'error' => 'Nombre, fecha de apertura y fecha de cierre son obligatorios.'
+                ], 422);
+            }
+
+            $modelo->actualizarContrato($id, [
+                'nombre' => $nombre,
+                'fecha_apertura' => $fechaApertura,
+                'fecha_cierre' => $fechaCierre,
+                'descripcion' => $descripcion,
+                'estado' => $estado,
+                'costo_base' => $costoBase,
+                'bon_optima' => $bonOptima,
+                'bon_muy_buena' => $bonMuyBuena,
+                'bon_buena' => $bonBuena,
+                'anticipo' => $anticipo
+            ]);
+
+            jsonResponse([
+                'ok' => true,
+                'data' => [
+                    'id' => $id
+                ]
+            ]);
+            break;
+
+
         case 'participaciones':
             $id = isset($input['id']) ? (int)$input['id'] : 0;
             if ($id <= 0) {
