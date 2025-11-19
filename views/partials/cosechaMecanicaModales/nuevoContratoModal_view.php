@@ -211,11 +211,12 @@ declare(strict_types=1); ?>
 
 
 
-    /* Grid 3 columnas y modal más ancho */
+    /* Grid 3 columnas y modal con ancho máximo del 60% de la pantalla */
     #modalNuevoContrato .modal-content {
-        max-width: 1100px;
         width: 95%;
+        max-width: 60vw;
     }
+
 
     #modalNuevoContrato .form-grid.grid-3 {
         display: grid;
