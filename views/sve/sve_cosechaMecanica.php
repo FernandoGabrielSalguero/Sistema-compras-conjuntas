@@ -609,7 +609,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     console.log('[CosechaMecanica] Acción en contrato: ver-contrato ID:', contratoId);
 
     if (!contratoId || Number.isNaN(Number(contratoId))) {
-        alert('ID de contrato inválido.');
+         showAlert('error', 'ID de contrato inválido.');
         return;
     }
 
@@ -632,7 +632,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         .then(function (resp) {
             if (!resp.ok) {
                 console.error('[CosechaMecanica] Error al obtener contrato:', resp.error);
-                alert(resp.error || 'No se pudo obtener el contrato.');
+                showAlert('error', resp.error || 'No se pudo obtener el contrato.');
                 return;
             }
 
@@ -654,7 +654,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         })
         .catch(function (error) {
             console.error('[CosechaMecanica] Error al abrir modal ver contrato:', error);
-            alert('Error de conexión al obtener el contrato.');
+            showAlert('error', 'Error de conexión al obtener el contrato.');
         });
 }
 

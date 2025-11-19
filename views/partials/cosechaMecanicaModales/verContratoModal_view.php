@@ -141,7 +141,7 @@ declare(strict_types=1); ?>
 
             <div class="modal-footer">
                 <button type="button"
-                    class="btn btn-secundario"
+                    class="btn btn-info"
                     id="btnEditarContrato">
                     Modificar
                 </button>
@@ -341,13 +341,13 @@ declare(strict_types=1); ?>
                     .then(function(resp) {
                         if (resp.ok) {
                             setEditable(false);
-                            alert('Contrato actualizado correctamente.');
+                            showAlert('success', 'Contrato actualizado correctamente.');
                         } else {
-                            alert(resp.error || 'No se pudo actualizar el contrato.');
+                            showAlert('error', resp.error || 'No se pudo actualizar el contrato.');
                         }
                     })
                     .catch(function() {
-                        alert('Error de conexión al actualizar el contrato.');
+                        showAlert('error', 'Error de conexión al actualizar el contrato.');
                     });
             });
         }
