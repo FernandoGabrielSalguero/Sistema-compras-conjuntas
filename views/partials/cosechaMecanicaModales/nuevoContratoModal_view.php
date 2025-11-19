@@ -42,25 +42,25 @@ declare(strict_types=1); ?>
 
                 <div class="input-group">
                     <label for="nuevoFechaApertura">Fecha apertura</label>
-                    <div class="input-icon input-icon-calendar">
+                    <div class="input-icon input-icon-date">
                         <input type="date"
                             id="nuevoFechaApertura"
                             name="fecha_apertura"
                             required />
-                        <span class="material-icons calendar-icon">calendar_today</span>
                     </div>
                 </div>
 
+
                 <div class="input-group">
                     <label for="nuevoFechaCierre">Fecha cierre</label>
-                    <div class="input-icon input-icon-calendar">
+                    <div class="input-icon input-icon-date">
                         <input type="date"
                             id="nuevoFechaCierre"
                             name="fecha_cierre"
                             required />
-                        <span class="material-icons calendar-icon">calendar_today</span>
                     </div>
                 </div>
+
 
                 <div class="input-group">
                     <label for="nuevoCostoBase">Costo base</label>
@@ -209,26 +209,29 @@ declare(strict_types=1); ?>
         outline: none;
     }
 
-    /* Input fecha con icono de calendario a la derecha */
-    #modalNuevoContrato .input-icon-calendar {
+    /* Input fecha con icono de calendario integrado (un solo icono) */
+    #modalNuevoContrato .input-icon-date {
         position: relative;
         display: flex;
         align-items: center;
+        padding-left: 2.5rem;
     }
 
-    #modalNuevoContrato .input-icon-calendar input[type="date"] {
-        width: 100%;
-        padding-right: 2.5rem;
-        cursor: pointer;
-    }
-
-    #modalNuevoContrato .input-icon-calendar .calendar-icon {
+    #modalNuevoContrato .input-icon-date::before {
+        content: "event";
+        font-family: "Material Icons";
         position: absolute;
-        right: 1rem;
+        left: 0.75rem;
         font-size: 20px;
         color: #6b7280;
+        pointer-events: none;
+    }
+
+    #modalNuevoContrato .input-icon-date input[type="date"] {
+        width: 100%;
         cursor: pointer;
     }
+
 
     /* Grid 3 columnas y modal más ancho */
     #modalNuevoContrato .modal-content {
@@ -315,20 +318,21 @@ declare(strict_types=1); ?>
             });
         });
 
-        var calendarIcons = document.querySelectorAll('#modalNuevoContrato .calendar-icon');
-calendarIcons.forEach(function(icon) {
-    icon.addEventListener('click', function() {
-        var input = this.previousElementSibling;
-        if (input && input.type === 'date') {
-            if (typeof input.showPicker === 'function') {
-                input.showPicker();
-            } else {
-                // En navegadores sin showPicker, simplemente enfoca
-                // y el usuario escribe la fecha.
-                input.focus();
+        var dateWrappers = document.querySelectorAll('#modalNuevoContrato .input-icon-date');
+        dateWrappers.forEach(function(wrapper) {
+            var input = wrapper.querySelector('input[type="date"]');
+            if (input) {
+                wrapper.addEventListener('click', function() {
+                    if (typeof input.showPicker === 'function') {
+                        input.showPicker();
+                    } else {
+                        // En navegadores sin showPicker, simplemente enfoca
+                        // y el usuario escribe la fecha.
+                        input.focus();
+                    }
+                });
             }
-        }
-    });
-});
+        });
+
     });
 </script>
