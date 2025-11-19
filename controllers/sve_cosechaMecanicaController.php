@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
-// Limpia cualquier salida previa (espacios, errores, etc.)
-if (function_exists('ob_get_length') && ob_get_length()) {
-    ob_clean();
+// Limpiar TODOS los buffers antes de enviar JSON
+while (ob_get_level()) {
+    ob_end_clean();
 }
 
-// Indicar que devolvemos JSON
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../models/sve_cosechaMecanicaModel.php';
