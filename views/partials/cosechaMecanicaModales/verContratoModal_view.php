@@ -329,8 +329,7 @@ declare(strict_types=1); ?>
                 formData.set('id', id);
                 formData.set('action', 'actualizar');
 
-                // Ajustar la ruta si tu controlador está en otra ubicación
-                var CONTRATO_ENDPOINT = 'controllers/sve_cosechaMecanicaController.php';
+                var CONTRATO_ENDPOINT = '../../controllers/sve_cosechaMecanicaController.php';
 
                 fetch(CONTRATO_ENDPOINT, {
                         method: 'POST',

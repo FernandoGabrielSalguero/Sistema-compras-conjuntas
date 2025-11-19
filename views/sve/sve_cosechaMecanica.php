@@ -613,7 +613,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         return;
     }
 
-    var CONTRATO_ENDPOINT = 'controllers/sve_cosechaMecanicaController.php';
+    // Ruta correcta al controlador (desde /views/sve/)
+    var CONTRATO_ENDPOINT = '../../controllers/sve_cosechaMecanicaController.php';
 
     fetch(CONTRATO_ENDPOINT, {
         method: 'POST',
@@ -656,7 +657,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             alert('Error de conexión al obtener el contrato.');
         });
 }
-
 
             async function abrirModalCoopProd(id) {
                 try {
