@@ -31,6 +31,272 @@ require_once __DIR__ . '/../mail/Mail.php';
 
 use SVE\Mail\Maill;
 
+/**
+ * Envía un correo transaccional usando la API de Brevo.
+ *
+ * @return array [bool $ok, ?string $error]
+ */
+function sve_sendBrevoEmail(string $toEmail, string $toName, string $subject, string $htmlContent, array $params = []): array
+{
+    if (!defined('BREVO_API_KEY') || !BREVO_API_KEY) {
+        return [false, 'BREVO_API_KEY no definida o vacía'];
+    }
+
+    $senderEmail = defined('MAIL_FROM') ? MAIL_FROM : 'no-reply@sve.com.ar';
+    $senderName  = defined('MAIL_FROM_NAME') ? MAIL_FROM_NAME : 'SVE';
+
+    $payload = [
+        'sender' => [
+            'email' => $senderEmail,
+            'name'  => $senderName,
+        ],
+        'to' => [
+            [
+                'email' => $toEmail,
+                'name'  => $toName,
+            ],
+        ],
+        'subject'     => $subject,
+        'htmlContent' => '<html><body>' . $htmlContent . '</body></html>',
+    ];
+
+    if (!empty($params)) {
+        $payload['params'] = $params;
+    }
+
+    $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+    curl_setopt_array($ch, [
+        CURLOPT_HTTPHEADER => [
+            'accept: application/json',
+            'api-key: ' . BREVO_API_KEY,
+            'content-type: application/json',
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        CURLOPT_TIMEOUT        => 15,
+    ]);
+
+    $response = curl_exec($ch);
+    $curlErr  = curl_error($ch);
+    $status   = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($response === false) {
+        return [false, 'Error cURL: ' . $curlErr];
+    }
+
+    if ($status < 200 || $status >= 300) {
+        return [false, 'HTTP ' . $status . ' - ' . $response];
+    }
+
+    return [true, null];
+}
+
+/**
+ * Arma los cuerpos de correo para productor y cooperativa
+ * y los envía usando Brevo.
+ *
+ * @return array [bool $okGlobal, ?string $errorMsg]
+ */
+function sve_enviarSolicitudDronViaBrevo(array $mailPayload): array
+{
+    $esc = static function (string $v): string {
+        return htmlspecialchars($v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    };
+
+    $okGlobal = true;
+    $errors   = [];
+
+    $solicitudId   = (int)($mailPayload['solicitud_id'] ?? 0);
+    $productor     = $mailPayload['productor'] ?? [];
+    $cooperativa   = $mailPayload['cooperativa'] ?? [];
+    $motivos       = $mailPayload['motivos'] ?? [];
+    $rangos        = $mailPayload['rangos'] ?? [];
+    $productos     = $mailPayload['productos'] ?? [];
+    $direccion     = $mailPayload['direccion'] ?? [];
+    $ubicacion     = $mailPayload['ubicacion'] ?? [];
+    $costos        = $mailPayload['costos'] ?? [];
+    $pagoPorCoop   = !empty($mailPayload['pago_por_coop']);
+    $ctaUrlBase    = (string)($mailPayload['cta_url'] ?? '');
+    $coopTextoExtra= (string)($mailPayload['coop_texto_extra'] ?? '');
+
+    $moneda     = (string)($costos['moneda'] ?? 'Pesos');
+    $base       = (float)($costos['base'] ?? 0);
+    $prodCosto  = (float)($costos['productos'] ?? 0);
+    $total      = (float)($costos['total'] ?? 0);
+    $costoHa    = (float)($costos['costo_ha'] ?? 0);
+    $supHa      = (float)($mailPayload['superficie_ha'] ?? 0);
+
+    $fmt = static function (float $n): string {
+        return number_format($n, 2, ',', '.');
+    };
+
+    // Motivos
+    $motivosHtml = '';
+    foreach ($motivos as $m) {
+        $motivosHtml .= '<li>' . $esc((string)$m) . '</li>';
+    }
+
+    // Rangos
+    $rangosHtml = '';
+    if (!empty($rangos)) {
+        $rangosHtml = $esc(implode(', ', array_map('strval', $rangos)));
+    }
+
+    // Productos
+    $productosHtml = '';
+    foreach ($productos as $p) {
+        $line = trim(
+            (string)($p['patologia'] ?? '') . ' - ' .
+            (string)($p['fuente'] ?? '') . ' - ' .
+            (string)($p['detalle'] ?? '')
+        );
+        if ($line === '') {
+            continue;
+        }
+        $productosHtml .= '<li>' . $esc($line) . '</li>';
+    }
+
+    // Dirección
+    $dirParts = [];
+    if (!empty($direccion['calle'])) {
+        $calleComp = (string)$direccion['calle'];
+        if (!empty($direccion['numero'])) {
+            $calleComp .= ' ' . $direccion['numero'];
+        }
+        $dirParts[] = $calleComp;
+    }
+    if (!empty($direccion['localidad'])) {
+        $dirParts[] = (string)$direccion['localidad'];
+    }
+    if (!empty($direccion['provincia'])) {
+        $dirParts[] = (string)$direccion['provincia'];
+    }
+    $direccionTexto = $esc($dirParts ? implode(', ', $dirParts) : 'No informada');
+
+    // Ubicación
+    $ubicacionTexto = 'No informada';
+    if (!empty($ubicacion['lat']) && !empty($ubicacion['lng'])) {
+        $ubicacionTexto = 'Lat: ' . $esc((string)$ubicacion['lat']) .
+            ' - Lng: ' . $esc((string)$ubicacion['lng']);
+    }
+
+    /** ========== CORREO A PRODUCTOR ========== */
+    $prodEmail = trim((string)($productor['correo'] ?? ''));
+    if ($prodEmail !== '') {
+        $prodNombre   = (string)($productor['nombre'] ?? '');
+        $subjectProd  = 'Solicitud de servicio de dron #' . $solicitudId;
+
+        $htmlProd = ''
+            . '<h2>Confirmación de solicitud de servicio de dron</h2>'
+            . '<p>Hola ' . $esc($prodNombre) . ',</p>'
+            . '<p>Hemos recibido tu solicitud de servicio de pulverización con dron.</p>'
+            . '<p><strong>Número de solicitud:</strong> ' . $esc((string)$solicitudId) . '</p>'
+            . '<h3>Resumen</h3>'
+            . '<ul>'
+            . '<li><strong>Superficie:</strong> ' . $esc($fmt($supHa)) . ' ha</li>'
+            . '<li><strong>Forma de pago:</strong> ' . $esc((string)($mailPayload['forma_pago'] ?? '')) . '</li>'
+            . '<li><strong>Motivos:</strong><ul>' . $motivosHtml . '</ul></li>'
+            . '<li><strong>Momento deseado:</strong> ' . $rangosHtml . '</li>'
+            . '<li><strong>Dirección finca:</strong> ' . $direccionTexto . '</li>'
+            . '<li><strong>Ubicación GPS (si se capturó):</strong> ' . $esc($ubicacionTexto) . '</li>'
+            . '</ul>'
+            . '<h3>Productos</h3>'
+            . '<ul>' . ($productosHtml ?: '<li>No informados</li>') . '</ul>'
+            . '<h3>Costos estimados</h3>'
+            . '<ul>'
+            . '<li><strong>Moneda:</strong> ' . $esc($moneda) . '</li>'
+            . '<li><strong>Costo base por ha:</strong> ' . $esc($fmt($costoHa)) . '</li>'
+            . '<li><strong>Costo base total:</strong> ' . $esc($fmt($base)) . '</li>'
+            . '<li><strong>Costo productos SVE:</strong> ' . $esc($fmt($prodCosto)) . '</li>'
+            . '<li><strong>Total estimado:</strong> ' . $esc($fmt($total)) . '</li>'
+            . '</ul>'
+            . '<p>Este correo es solo informativo. Ante cualquier duda, comunicate con SVE.</p>';
+
+        [$okProd, $errProd] = sve_sendBrevoEmail(
+            $prodEmail,
+            $prodNombre,
+            $subjectProd,
+            $htmlProd,
+            [
+                'solicitud_id' => $solicitudId,
+                'tipo'         => 'productor',
+            ]
+        );
+
+        if (!$okProd) {
+            $okGlobal  = false;
+            $errors[] = 'Productor: ' . $errProd;
+        }
+    }
+
+    /** ========== CORREO A COOPERATIVA (SI CORRESPONDE) ========== */
+    if ($pagoPorCoop) {
+        $coopEmail = trim((string)($cooperativa['correo'] ?? ''));
+        if ($coopEmail !== '') {
+            $coopNombre  = (string)($cooperativa['nombre'] ?? '');
+            $subjectCoop = 'Solicitud de servicio de dron para aprobación #' . $solicitudId;
+
+            $approveUrl = '';
+            $declineUrl = '';
+            if ($ctaUrlBase !== '') {
+                $sep        = (strpos($ctaUrlBase, '?') === false) ? '?' : '&';
+                $approveUrl = $ctaUrlBase . $sep . 'accion=aprobar_solicitud_dron&id=' . urlencode((string)$solicitudId);
+                $declineUrl = $ctaUrlBase . $sep . 'accion=declinar_solicitud_dron&id=' . urlencode((string)$solicitudId);
+            }
+
+            $htmlCoop = ''
+                . '<h2>Solicitud de servicio de dron para aprobación</h2>'
+                . '<p>Productor: <strong>' . $esc((string)$productor['nombre'] ?? '') . '</strong></p>'
+                . '<p>Superficie solicitada: <strong>' . $esc($fmt($supHa)) . ' ha</strong></p>'
+                . '<p>Forma de pago: <strong>' . $esc((string)($mailPayload['forma_pago'] ?? '')) . '</strong></p>'
+                . '<h3>Motivos</h3>'
+                . '<ul>' . $motivosHtml . '</ul>'
+                . '<h3>Costos estimados</h3>'
+                . '<ul>'
+                . '<li><strong>Moneda:</strong> ' . $esc($moneda) . '</li>'
+                . '<li><strong>Costo base total:</strong> ' . $esc($fmt($base)) . '</li>'
+                . '<li><strong>Costo productos SVE:</strong> ' . $esc($fmt($prodCosto)) . '</li>'
+                . '<li><strong>Total estimado:</strong> ' . $esc($fmt($total)) . '</li>'
+                . '</ul>'
+                . '<p>' . nl2br($esc($coopTextoExtra)) . '</p>';
+
+            if ($approveUrl !== '' && $declineUrl !== '') {
+                $htmlCoop .= ''
+                    . '<p style="margin-top:20px;">'
+                    . '<a href="' . $esc($approveUrl) . '" '
+                    . 'style="display:inline-block;margin-right:10px;padding:10px 16px;background-color:#16a34a;color:#fff;text-decoration:none;border-radius:4px;">'
+                    . 'Aprobar solicitud'
+                    . '</a>'
+                    . '<a href="' . $esc($declineUrl) . '" '
+                    . 'style="display:inline-block;padding:10px 16px;background-color:#dc2626;color:#fff;text-decoration:none;border-radius:4px;">'
+                    . 'Declinar solicitud'
+                    . '</a>'
+                    . '</p>';
+            }
+
+            [$okCoop, $errCoop] = sve_sendBrevoEmail(
+                $coopEmail,
+                $coopNombre,
+                $subjectCoop,
+                $htmlCoop,
+                [
+                    'solicitud_id' => $solicitudId,
+                    'tipo'         => 'cooperativa',
+                ]
+            );
+
+            if (!$okCoop) {
+                $okGlobal  = false;
+                $errors[] = 'Cooperativa: ' . $errCoop;
+            }
+        }
+    }
+
+    return [$okGlobal, $okGlobal ? null : implode(' | ', $errors)];
+}
+
 try {
     $model = new prodDronesModel($pdo);
 
@@ -235,9 +501,15 @@ try {
             'coop_texto_extra' => "Estimada cooperativa. Por el presente correo se les informa que un productor vinculado a su cooperativa a manifestado la intención de tomar el servicio de dron y de pagarlo a través del descuento por la cuota de vino. \nSi este productor productor posee los fondos necesarios para llevar a cabo el pago por favor apruébelo seleccionado el botón que dice Aprobar Solicitud el cual se encuentra al final de este correo. \nEn caso de que el productor no este en condiciones de pagarlo por esta vía por favor haga click en el botón que dice Declinar Solicitud el cual se encuentra al final de este correo. \nAnte cualquier duda por favor comuníquese al 2612072518.",
         ];
 
-        $mailResp = Maill::enviarSolicitudDron($mailPayload);
-        $mailOk = (bool)($mailResp['ok'] ?? false);
-        $mailErr = $mailResp['error'] ?? null;
+// ===== Envío de correo con sistema anterior (SMTP / Mail.php) =====
+        // Se deja comentado temporalmente para poder probar el envío con Brevo.
+        //
+        // $mailResp = Maill::enviarSolicitudDron($mailPayload);
+        // $mailOk = (bool)($mailResp['ok'] ?? false);
+        // $mailErr = $mailResp['error'] ?? null;
+
+        // ===== Nuevo envío de correo usando Brevo API =====
+        [$mailOk, $mailErr] = sve_enviarSolicitudDronViaBrevo($mailPayload);
     } catch (Throwable $me) {
         $mailOk = false;
         $mailErr = $me->getMessage();
