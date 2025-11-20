@@ -40,7 +40,64 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
 <body>
 
-                <!-- 📦 CONTENIDO -->
+    <!-- 🔲 CONTENEDOR PRINCIPAL -->
+    <div class="layout">
+
+        <!-- 🧭 SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span class="material-icons logo-icon">dashboard</span>
+                <span class="logo-text">SVE</span>
+            </div>
+
+            <nav class="sidebar-menu">
+                <ul>
+                    <li onclick="location.href='coop_dashboard.php'">
+                        <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
+                    </li>
+                    <li onclick="location.href='coop_mercadoDigital.php'">
+                        <span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
+                    </li>
+                    <li onclick="location.href='coop_listadoPedidos.php'">
+                        <span class="material-icons" style="color: #5b21b6;">receipt_long</span><span class="link-text">Listado Pedidos</span>
+                    </li>
+                    <li onclick="location.href='coop_consolidado.php'">
+                        <span class="material-icons" style="color: #5b21b6;">analytics</span><span class="link-text">Consolidado</span>
+                    </li>
+                    <li onclick="location.href='coop_pulverizacion.php'">
+                        <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span><span class="link-text">Pulverización con Drone</span>
+                    </li>
+                    <li onclick="location.href='coop_usuarioInformacion.php'">
+                        <ure class="material-icons" style="color: #5b21b6;">person</ure><span class="link-text">Productores</span>
+                    </li>
+                    <li onclick="location.href='coop_cosechaMecanicaView.php'">
+                        <ure class="material-icons" style="color: #5b21b6;">agriculture</ure><span class="link-text">Cosecha Mecanica</span>
+                    </li>
+                    <li onclick="location.href='../../../logout.php'">
+                        <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn-icon" onclick="toggleSidebar()">
+                    <span class="material-icons" id="collapseIcon">chevron_left</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- 🧱 MAIN -->
+        <div class="main">
+
+            <!-- 🟪 NAVBAR -->
+            <header class="navbar">
+                <button class="btn-icon" onclick="toggleSidebar()">
+                    <span class="material-icons">menu</span>
+                </button>
+                <div class="navbar-title">Cosecha Mecanica</div>
+            </header>
+
+            <!-- 📦 CONTENIDO -->
             <section class="content">
 
                 <!-- Bienvenida -->
@@ -53,118 +110,8 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         Tutorial
                     </button> -->
                 </div>
-
-                <!-- Listado de operativos de Cosecha Mecánica -->
-                <div class="card">
-                    <h4>Operativos de cosecha mecánica</h4>
-                    <p>Seleccioná un operativo para ver el detalle y cargar la participación de tus productores.</p>
-                    <div id="operativosContainer" class="card-grid">
-                        <!-- Las tarjetas se inyectan por JS -->
-                    </div>
-                </div>
-
-                <!-- Modal de participación -->
-                <div id="modalParticipacion" class="modal hidden">
-                    <div class="modal-content">
-                        <h3 id="modalNombre">Operativo</h3>
-                        <p>
-                            <strong>Fecha apertura:</strong>
-                            <span id="modalFechaApertura"></span>
-                        </p>
-                        <p>
-                            <strong>Fecha cierre:</strong>
-                            <span id="modalFechaCierre"></span>
-                        </p>
-                        <p>
-                            <strong>Estado:</strong>
-                            <span id="modalEstado"></span>
-                        </p>
-                        <p>
-                            <strong>Descripción:</strong>
-                            <span id="modalDescripcion"></span>
-                        </p>
-
-                        <!-- Tabla de participación (productor, superficie, etc.) -->
-                        <div class="card tabla-card" style="margin-top: 1rem;">
-                            <h4>Participación de la cooperativa</h4>
-                            <div class="tabla-wrapper">
-                                <table class="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Productor</th>
-                                            <th>Superficie (ha)</th>
-                                            <th>Variedad</th>
-                                            <th>Prod. estimada (tn)</th>
-                                            <th>Fecha estimada</th>
-                                            <th>Km a la finca</th>
-                                            <th>Flete</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tablaParticipacionBody">
-                                        <tr>
-                                            <td>
-                                                <div class="input-group">
-                                                    <div class="input-icon input-icon-name">
-                                                        <input type="text" name="productor[]" placeholder="Nombre del productor" />
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group">
-                                                    <div class="input-icon input-icon-name">
-                                                        <input type="number" step="0.01" min="0" name="superficie[]" placeholder="0.00" />
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group">
-                                                    <div class="input-icon input-icon-name">
-                                                        <input type="text" name="variedad[]" placeholder="Variedad" />
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group">
-                                                    <div class="input-icon input-icon-name">
-                                                        <input type="number" step="0.01" min="0" name="prod_estimada[]" placeholder="0.00" />
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group">
-                                                    <div class="input-icon input-icon-name">
-                                                        <input type="date" name="fecha_estimada[]" />
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group">
-                                                    <div class="input-icon input-icon-name">
-                                                        <input type="number" step="0.01" min="0" name="km_finca[]" placeholder="0.00" />
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td style="text-align: center;">
-                                                <input type="checkbox" name="flete[]" value="1" />
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="form-buttons" style="margin-top: 1rem;">
-                            <button type="button" class="btn btn-info" onclick="agregarFilaParticipacion()">
-                                Agregar fila
-                            </button>
-                            <button type="button" class="btn btn-cancelar" onclick="cerrarModalParticipacion()">
-                                Cerrar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
         </div>
+
 
         <!-- contenedor del toastify -->
         <div id="toast-container"></div>
@@ -172,171 +119,13 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
         <!-- Spinner Global -->
         <script src="../../views/partials/spinner-global.js"></script>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                cargarOperativos();
-            });
-
-            function cargarOperativos() {
-                const container = document.getElementById('operativosContainer');
-                if (!container) return;
-
-                container.innerHTML = '<p>Cargando operativos...</p>';
-
-                fetch('../../controllers/coop_cosechaMecanicaController.php?action=listar_operativos')
-                    .then(response => response.json())
-                    .then(json => {
-                        if (!json.success) {
-                            container.innerHTML = '<p>No se pudieron cargar los operativos.</p>';
-                            if (typeof showAlert === 'function') {
-                                showAlert('error', json.message || 'No se pudieron cargar los operativos.');
-                            }
-                            return;
-                        }
-
-                        const operativos = json.data || [];
-                        if (operativos.length === 0) {
-                            container.innerHTML = '<p>No hay operativos disponibles.</p>';
-                            return;
-                        }
-
-                        container.innerHTML = '';
-
-                        operativos.forEach(op => {
-                            const dias = op.dias_restantes;
-                            let textoDias = '';
-
-                            if (dias === null || typeof dias === 'undefined') {
-                                textoDias = 'Sin información de cierre';
-                            } else if (dias <= 0 || op.estado === 'cerrado') {
-                                textoDias = 'Operativo cerrado';
-                            } else if (dias === 1) {
-                                textoDias = 'Cierra en 1 día';
-                            } else {
-                                textoDias = `Cierra en ${dias} días`;
-                            }
-
-                            const card = document.createElement('div');
-                            card.className = 'card';
-
-                            card.innerHTML = `
-                                <h4>${escapeHtml(op.nombre)}</h4>
-                                <p><strong>Fecha apertura:</strong> ${escapeHtml(op.fecha_apertura)}</p>
-                                <p><strong>Fecha cierre:</strong> ${escapeHtml(op.fecha_cierre)}</p>
-                                <p><strong>Estado:</strong> <span class="badge ${getEstadoBadgeClass(op.estado)}">${escapeHtml(op.estado)}</span></p>
-                                <p><strong>${textoDias}</strong></p>
-                                <div class="form-buttons">
-                                    <button type="button" class="btn btn-aceptar">Participar</button>
-                                </div>
-                            `;
-
-                            const btn = card.querySelector('button');
-                            btn.addEventListener('click', function () {
-                                abrirModalParticipacion(op);
-                            });
-
-                            container.appendChild(card);
-                        });
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        container.innerHTML = '<p>No se pudieron cargar los operativos.</p>';
-                        if (typeof showAlert === 'function') {
-                            showAlert('error', 'No se pudieron cargar los operativos.');
-                        }
-                    });
-            }
-
-            function escapeHtml(text) {
-                if (text === null || typeof text === 'undefined') return '';
-                return String(text)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#039;');
-            }
-
-            function getEstadoBadgeClass(estado) {
-                switch (estado) {
-                    case 'abierto':
-                        return 'success';
-                    case 'cerrado':
-                        return 'danger';
-                    case 'borrador':
-                    default:
-                        return 'warning';
-                }
-            }
-
-            function abrirModalParticipacion(operativo) {
-                const modal = document.getElementById('modalParticipacion');
-                if (!modal) return;
-
-                const nombreEl = document.getElementById('modalNombre');
-                const aperturaEl = document.getElementById('modalFechaApertura');
-                const cierreEl = document.getElementById('modalFechaCierre');
-                const estadoEl = document.getElementById('modalEstado');
-                const descEl = document.getElementById('modalDescripcion');
-
-                if (nombreEl) nombreEl.textContent = operativo.nombre || '';
-                if (aperturaEl) aperturaEl.textContent = operativo.fecha_apertura || '';
-                if (cierreEl) cierreEl.textContent = operativo.fecha_cierre || '';
-                if (estadoEl) estadoEl.textContent = operativo.estado || '';
-                if (descEl) descEl.textContent = operativo.descripcion || '';
-
-                const tbody = document.getElementById('tablaParticipacionBody');
-                if (tbody) {
-                    const primeraFila = tbody.querySelector('tr');
-                    if (primeraFila) {
-                        tbody.innerHTML = '';
-                        const nuevaFila = primeraFila.cloneNode(true);
-                        nuevaFila.querySelectorAll('input').forEach(input => {
-                            if (input.type === 'checkbox') {
-                                input.checked = false;
-                            } else {
-                                input.value = '';
-                            }
-                        });
-                        tbody.appendChild(nuevaFila);
-                    }
-                }
-
-                modal.classList.remove('hidden');
-            }
-
-            function cerrarModalParticipacion() {
-                const modal = document.getElementById('modalParticipacion');
-                if (!modal) return;
-                modal.classList.add('hidden');
-            }
-
-            function agregarFilaParticipacion() {
-                const tbody = document.getElementById('tablaParticipacionBody');
-                if (!tbody) return;
-
-                const filas = tbody.querySelectorAll('tr');
-                if (filas.length === 0) return;
-
-                const ultima = filas[filas.length - 1];
-                const nueva = ultima.cloneNode(true);
-
-                nueva.querySelectorAll('input').forEach(input => {
-                    if (input.type === 'checkbox') {
-                        input.checked = false;
-                    } else {
-                        input.value = '';
-                    }
-                });
-
-                tbody.appendChild(nueva);
-            }
-        </script>
-
         </section>
 
     </div>
     </div>
+
+
+
 
 </body>
 
