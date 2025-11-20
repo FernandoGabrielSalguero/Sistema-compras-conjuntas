@@ -117,10 +117,13 @@ unset($_SESSION['cierre_info']);
                         <span class="material-icons" style="color: #5b21b6;">analytics</span><span class="link-text">Consolidado</span>
                     </li>
                     <li onclick="location.href='coop_pulverizacion.php'">
-                        <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span><span class="link-text">Pulverización con Drone</span>
+                    <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span><span class="link-text">Pulverización con Drone</span>
                     </li>
                     <li onclick="location.href='coop_usuarioInformacion.php'">
-                        <span class="material-icons" style="color: #5b21b6;">agriculture</span><span class="link-text">Productores</span>
+                        <ure class="material-icons" style="color: #5b21b6;">person</ure><span class="link-text">Productores</span>
+                    </li>
+                    <li onclick="location.href='coop_cosechaMecanicaView.php'">
+                        <ure class="material-icons" style="color: #5b21b6;">agriculture</ure><span class="link-text">Cosecha Mecanica</span>
                     </li>
                     <li onclick="location.href='../../../logout.php'">
                         <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
