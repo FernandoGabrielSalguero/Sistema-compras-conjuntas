@@ -866,7 +866,7 @@ unset($_SESSION['cierre_info']);
         <div><strong>Humedad Relativa (%):</strong> ${esc(d.humedad || '—')}</div>
         <div><strong>Vel. Viento (m/s):</strong> ${esc(d.vel_viento || '—')}</div>
         <div><strong>Volumen aplicado (l/ha):</strong> ${esc(d.vol_aplicado || '—')}</div>
-        <div><strong>Lavado dron (agua mineralizada):</strong> ${esc(d.lavado_dron_miner || '—')}</div>
+        <div><strong>Lavado dron MIXER:</strong> ${esc(d.lavado_dron_miner || '—')}</div>
         <div><strong>Triple lavado de envases:</strong> ${esc(d.triple_lavado_envases || '—')}</div>
       </div>
     </div>
