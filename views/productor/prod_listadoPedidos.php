@@ -870,7 +870,7 @@ cont.innerHTML = `
       <div>Volumen aplicado (l/ha): <span>${f(r.vol_aplicado)}</span></div>
     </div>
     <div class="grid-2" style="display:grid; grid-template-columns: repeat(2,1fr); gap:8px; margin-top:8px;">
-      <div>Lavado del dron (miner): <span>${f(r.lavado_dron_miner)}</span></div>
+      <div>Lavado del dron MIXER: <span>${f(r.lavado_dron_miner)}</span></div>
       <div>Triple lavado de envases: <span>${f(r.triple_lavado_envases)}</span></div>
     </div>
   </div>

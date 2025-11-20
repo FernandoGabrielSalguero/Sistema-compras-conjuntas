@@ -63,7 +63,7 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                 <div class="grid-4" style="display:grid; grid-template-columns: repeat(4,1fr); gap:8px;">
                     <div>Hora Ingreso: <span id="fito-hora-in"></span></div>
                     <div>Hora Salida: <span id="fito-hora-out"></span></div>
-                    <div>Lavado dron MINER: <span id="fito-lavado-dron"></span></div>
+                    <div>Lavado dron MIXER: <span id="fito-lavado-dron"></span></div>
                     <div>Triple lavado envases: <span id="fito-triple-lavado"></span></div>
                     <div>Temperatura (°C): <span id="fito-temp"></span></div>
                     <div>Humedad Relativa (%): <span id="fito-hr"></span></div>

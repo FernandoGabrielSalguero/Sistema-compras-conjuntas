@@ -634,7 +634,7 @@ $sesionDebug = [
                                     </div>
 
                                     <div class="input-group">
-                                        <label for="lavado_dron_miner">¿Se realizó lavado del dron y del Miner al finalizar la operación de pulverización?</label>
+                                        <label for="lavado_dron_miner">¿Se realizó lavado del dron y del Mixer al finalizar la operación de pulverización?</label>
                                         <div class="input-icon input-icon-chevron-down">
                                             <select id="lavado_dron_miner" name="lavado_dron_miner">
                                                 <option value="Seleccionar" selected>Seleccionar</option>
