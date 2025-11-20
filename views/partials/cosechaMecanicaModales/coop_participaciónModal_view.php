@@ -4,14 +4,25 @@
 
         <div class="card">
             <h4>Información del operativo</h4>
-            <p><strong>ID contrato:</strong> <span id="modalContratoId"></span></p>
-            <p><strong>Nombre:</strong> <span id="modalNombre"></span></p>
-            <p><strong>Fecha de apertura:</strong> <span id="modalFechaApertura"></span></p>
-            <p><strong>Fecha de cierre:</strong> <span id="modalFechaCierre"></span></p>
-            <p><strong>Estado:</strong> <span id="modalEstado"></span></p>
+
+            <div class="operativo-info-grid">
+                <div>
+                    <p><strong>ID contrato:</strong> <span id="modalContratoId"></span></p>
+                    <p><strong>Estado:</strong> <span id="modalEstado"></span></p>
+                </div>
+                <div>
+                    <p><strong>Nombre:</strong> <span id="modalNombre"></span></p>
+                    <p><strong>Fecha de apertura:</strong> <span id="modalFechaApertura"></span></p>
+                </div>
+                <div>
+                    <p><strong>Fecha de cierre:</strong> <span id="modalFechaCierre"></span></p>
+                </div>
+            </div>
+
             <p><strong>Descripción:</strong></p>
-            <p id="modalDescripcion"></p>
+            <div id="modalDescripcion" class="descripcion-contrato"></div>
         </div>
+
 
         <div class="card tabla-card">
             <h4>Productores participantes</h4>
@@ -37,6 +48,10 @@
                 </table>
             </div>
 
+            <datalist id="productoresDatalist">
+                <!-- Opciones de productores agregadas dinámicamente por JS -->
+            </datalist>
+
             <div class="form-buttons" style="margin-top: 1rem;">
                 <button type="button" class="btn btn-info" onclick="agregarFilaParticipacion()">
                     Agregar fila
@@ -45,14 +60,14 @@
         </div>
 
         <div class="form-buttons">
-            <button type="button" class="btn btn-aceptar"
-                onclick="showAlert('info', 'La lógica de guardado se implementará en el siguiente paso.')">
+            <button type="button" class="btn btn-aceptar" onclick="guardarParticipacion()">
                 Guardar participación
             </button>
             <button type="button" class="btn btn-cancelar" onclick="cerrarParticipacionModal()">
                 Cerrar
             </button>
         </div>
+
     </div>
 </div>
 
@@ -84,5 +99,22 @@
     .btn-sm {
         padding: 0.25rem 0.5rem;
         font-size: 0.8rem;
+    }
+
+    .operativo-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .operativo-info-grid p {
+        margin: 0.25rem 0;
+    }
+
+    .descripcion-contrato {
+        margin-top: 0.5rem;
+        white-space: pre-wrap;
     }
 </style>
