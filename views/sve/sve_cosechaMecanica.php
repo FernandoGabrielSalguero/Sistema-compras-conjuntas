@@ -777,7 +777,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 }
             }
 
-            function initEventos() {
+                        function initEventos() {
                 if (filtroNombreInput) {
                     filtroNombreInput.addEventListener('input', function(e) {
                         filtros.nombre = e.target.value || '';
@@ -824,9 +824,19 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     });
                 });
 
+                // 🔄 Función global para refrescar la tabla desde el modal (AJAX)
+                window.sveCosechaRefrescarContratos = async function() {
+                    try {
+                        console.log('[CosechaMecanica] Refrescando contratos desde modal...');
+                        await cargarContratos();
+                    } catch (err) {
+                        console.error('[CosechaMecanica] Error al refrescar contratos desde modal:', err);
+                    }
+                };
+
                 console.log('[CosechaMecanica] Eventos inicializados');
             }
-
+            
             document.addEventListener('DOMContentLoaded', function() {
                 console.log('[CosechaMecanica] DOMContentLoaded');
                 initEventos();

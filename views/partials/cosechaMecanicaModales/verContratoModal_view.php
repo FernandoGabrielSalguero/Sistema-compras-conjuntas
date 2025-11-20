@@ -315,7 +315,7 @@ declare(strict_types=1); ?>
             });
         }
 
-        if (btnActualizar) {
+                if (btnActualizar) {
             btnActualizar.addEventListener('click', function() {
                 if (!formVerContrato) return;
 
@@ -342,6 +342,11 @@ declare(strict_types=1); ?>
                         if (resp.ok) {
                             setEditable(false);
                             showAlert('success', 'Contrato actualizado correctamente.');
+
+                            // 🔄 Avisar a la pantalla principal para refrescar la tabla vía AJAX
+                            if (typeof window.sveCosechaRefrescarContratos === 'function') {
+                                window.sveCosechaRefrescarContratos();
+                            }
                         } else {
                             showAlert('error', resp.error || 'No se pudo actualizar el contrato.');
                         }
@@ -351,6 +356,7 @@ declare(strict_types=1); ?>
                     });
             });
         }
+
 
         // Restricción de campos numéricos
         var numericInputs = document.querySelectorAll('#modalVerContrato input[type="number"]');
