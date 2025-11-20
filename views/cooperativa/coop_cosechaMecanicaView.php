@@ -421,15 +421,13 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         </div>
                     </div>
                 </td>
-                <td>
+<td>
                     <div class="input-group">
                         <label for="flete_${indice}">Flete</label>
-                        <div class="input-icon input-icon-name">
-                            <select id="flete_${indice}" name="flete[]">
-                                <option value="0">No</option>
-                                <option value="1">Sí</option>
-                            </select>
-                        </div>
+                        <select id="flete_${indice}" name="flete[]" class="select-standard">
+                            <option value="0">No</option>
+                            <option value="1">Sí</option>
+                        </select>
                     </div>
                 </td>
                 <td>

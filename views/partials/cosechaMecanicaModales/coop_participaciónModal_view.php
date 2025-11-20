@@ -74,12 +74,13 @@
 <style>
     /* Ajustes específicos para este modal de participación */
     #participacionModal .modal-content {
-        width: 60vw;
-        max-width: 1000px;
+        width: 90vw;
+        max-width: 1200px;
         height: 80vh;
         max-height: 80vh;
         overflow-y: auto;
     }
+
 
     .operativos-grid {
         display: grid;
@@ -116,5 +117,23 @@
     .descripcion-contrato {
         margin-top: 0.5rem;
         white-space: pre-wrap;
+    }
+
+    .tabla-card .data-table th,
+    .tabla-card .data-table td {
+        min-width: 140px;
+        vertical-align: top;
+    }
+
+    .tabla-card .input-group {
+        width: 100%;
+    }
+
+    .tabla-card .input-group .input-icon,
+    .tabla-card .input-group input,
+    .tabla-card .input-group select,
+    .tabla-card .select-standard {
+        width: 100%;
+        box-sizing: border-box;
     }
 </style>
