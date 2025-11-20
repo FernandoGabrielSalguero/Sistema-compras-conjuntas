@@ -3,26 +3,44 @@
         <h3>Participar en operativo de Cosecha Mecánica</h3>
 
         <div class="card">
-            <h4>Información del operativo</h4>
-
-            <div class="operativo-info-grid">
-                <div>
-                    <p><strong>ID contrato:</strong> <span id="modalContratoId"></span></p>
-                    <p><strong>Estado:</strong> <span id="modalEstado"></span></p>
-                </div>
-                <div>
-                    <p><strong>Nombre:</strong> <span id="modalNombre"></span></p>
-                    <p><strong>Fecha de apertura:</strong> <span id="modalFechaApertura"></span></p>
-                </div>
-                <div>
-                    <p><strong>Fecha de cierre:</strong> <span id="modalFechaCierre"></span></p>
-                </div>
+            <div class="accordion-header" id="accordionContratoHeader">
+                <h4>Información del operativo</h4>
+                <button type="button" class="btn btn-info btn-sm" id="toggleContratoDetalle">
+                    Ver / ocultar contrato
+                </button>
             </div>
 
-            <p><strong>Descripción:</strong></p>
-            <div id="modalDescripcion" class="descripcion-contrato"></div>
-        </div>
+            <div id="accordionContratoBody" class="accordion-body hidden">
+                <div class="operativo-info-grid">
+                    <div>
+                        <p><strong>ID contrato:</strong> <span id="modalContratoId"></span></p>
+                        <p><strong>Estado:</strong> <span id="modalEstado"></span></p>
+                    </div>
+                    <div>
+                        <p><strong>Nombre:</strong> <span id="modalNombre"></span></p>
+                        <p><strong>Fecha de apertura:</strong> <span id="modalFechaApertura"></span></p>
+                    </div>
+                    <div>
+                        <p><strong>Fecha de cierre:</strong> <span id="modalFechaCierre"></span></p>
+                    </div>
+                </div>
 
+                <p><strong>Descripción:</strong></p>
+                <div id="modalDescripcion" class="descripcion-contrato"></div>
+
+                <div class="firma-contrato-aviso">
+                    <label class="checkbox-firma">
+                        <input type="checkbox" id="aceptaContratoCheckbox">
+                        <span>
+                            Acepto los términos del contrato y firmo digitalmente en representación de los productores que cargue en la tabla.
+                        </span>
+                    </label>
+                    <small>
+                        La firma queda asociada a esta cooperativa y a este operativo de cosecha mecánica.
+                    </small>
+                </div>
+            </div>
+        </div>
 
         <div class="card tabla-card">
             <h4>Productores participantes</h4>
@@ -53,14 +71,14 @@
             </datalist>
 
             <div class="form-buttons" style="margin-top: 1rem;">
-                <button type="button" class="btn btn-info" onclick="agregarFilaParticipacion()">
+                <button type="button" id="btnAgregarFilaParticipacion" class="btn btn-info" onclick="agregarFilaParticipacion()">
                     Agregar fila
                 </button>
             </div>
         </div>
 
         <div class="form-buttons">
-            <button type="button" class="btn btn-aceptar" onclick="guardarParticipacion()">
+            <button type="button" id="btnGuardarParticipacion" class="btn btn-aceptar" onclick="guardarParticipacion()">
                 Guardar participación
             </button>
             <button type="button" class="btn btn-cancelar" onclick="cerrarParticipacionModal()">
@@ -135,5 +153,41 @@
     .tabla-card .select-standard {
         width: 100%;
         box-sizing: border-box;
+    }
+
+    .accordion-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    .accordion-body {
+        margin-top: 0.75rem;
+    }
+
+    .firma-contrato-aviso {
+        margin-top: 0.75rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .checkbox-firma {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .checkbox-firma input[type="checkbox"] {
+        margin-top: 0.2rem;
+    }
+
+    .firma-contrato-aviso small {
+        font-size: 0.8rem;
+        color: #6b7280;
     }
 </style>

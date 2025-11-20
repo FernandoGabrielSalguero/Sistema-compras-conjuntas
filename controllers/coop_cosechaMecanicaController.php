@@ -38,7 +38,7 @@ if ($action === 'listar_operativos') {
     exit;
 }
 
-// Obtener un operativo puntual (opcional, útil para futuras ampliaciones)
+// Obtener un operativo puntual junto con la participación de la cooperativa
 if ($action === 'obtener_operativo') {
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
@@ -53,7 +53,18 @@ if ($action === 'obtener_operativo') {
         if (!$operativo) {
             echo json_encode(['success' => false, 'message' => 'Operativo no encontrado.']);
         } else {
-            echo json_encode(['success' => true, 'data' => $operativo]);
+            $nomCooperativa = $_SESSION['nombre'] ?? 'Cooperativa';
+            $participaciones = $model->obtenerParticipacionesPorContratoYCoop($id, $nomCooperativa);
+            $contratoFirmado = !empty($participaciones);
+
+            echo json_encode([
+                'success' => true,
+                'data'    => [
+                    'operativo'        => $operativo,
+                    'participaciones'  => $participaciones,
+                    'contrato_firmado' => $contratoFirmado
+                ]
+            ]);
         }
     } catch (Throwable $e) {
         error_log('Error obtener_operativo: ' . $e->getMessage());
@@ -106,10 +117,10 @@ if ($action === 'guardar_participacion') {
         exit;
     }
 
-    if (!is_array($filas) || empty($filas)) {
+    if (!is_array($filas)) {
         echo json_encode([
             'success' => false,
-            'message' => 'No se recibieron productores para guardar.'
+            'message' => 'Formato inválido de productores.'
         ]);
         exit;
     }

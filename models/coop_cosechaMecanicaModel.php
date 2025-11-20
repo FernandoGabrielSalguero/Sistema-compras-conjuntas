@@ -97,34 +97,81 @@ class CoopCosechaMecanicaModel
     }
 
     /**
+     * Obtiene las participaciones de una cooperativa en un contrato de cosecha mecánica.
+     */
+    public function obtenerParticipacionesPorContratoYCoop(int $contratoId, string $nomCooperativa): array
+    {
+        $sql = "SELECT productor, superficie, variedad, prod_estimada, fecha_estimada, km_finca, flete
+                FROM cosechaMecanica_cooperativas_participacion
+                WHERE contrato_id = :contrato_id
+                    AND nom_cooperativa = :nom_cooperativa
+                ORDER BY id ASC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':contrato_id', $contratoId, PDO::PARAM_INT);
+        $stmt->bindValue(':nom_cooperativa', $nomCooperativa, PDO::PARAM_STR);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    /**
      * Guarda las participaciones de productores para un contrato de cosecha mecánica.
-     * La columna firma se guarda siempre en 1 (productor acepta el contrato).
+     * La columna firma se guarda siempre en 1 indicando que la cooperativa firmó digitalmente
+     * el contrato en representación del productor cargado en cada fila.
      */
     public function guardarParticipaciones(int $contratoId, string $nomCooperativa, array $filas): void
     {
-        $sql = "INSERT INTO cosechaMecanica_cooperativas_participacion
-                    (contrato_id, nom_cooperativa, firma, productor, superficie, variedad, prod_estimada, fecha_estimada, km_finca, flete)
-                VALUES
-                    (:contrato_id, :nom_cooperativa, :firma, :productor, :superficie, :variedad, :prod_estimada, :fecha_estimada, :km_finca, :flete)";
+        // Primero eliminamos todas las participaciones actuales de esta cooperativa para el contrato
+        $sqlDelete = "DELETE FROM cosechaMecanica_cooperativas_participacion
+                      WHERE contrato_id = :contrato_id
+                        AND nom_cooperativa = :nom_cooperativa";
 
-        $stmt = $this->pdo->prepare($sql);
+        $stmtDelete = $this->pdo->prepare($sqlDelete);
+        $stmtDelete->execute([
+            ':contrato_id'     => $contratoId,
+            ':nom_cooperativa' => $nomCooperativa,
+        ]);
+
+        // Si no hay filas, simplemente dejamos el contrato sin productores asociados
+        if (empty($filas)) {
+            return;
+        }
+
+        // Insertamos el nuevo estado de participación
+        $sqlInsert = "INSERT INTO cosechaMecanica_cooperativas_participacion
+                        (contrato_id, nom_cooperativa, firma, productor, superficie, variedad, prod_estimada, fecha_estimada, km_finca, flete)
+                      VALUES
+                        (:contrato_id, :nom_cooperativa, :firma, :productor, :superficie, :variedad, :prod_estimada, :fecha_estimada, :km_finca, :flete)";
+
+        $stmtInsert = $this->pdo->prepare($sqlInsert);
 
         foreach ($filas as $fila) {
-            if (empty($fila['productor'])) {
+            $productor = isset($fila['productor']) ? trim((string) $fila['productor']) : '';
+
+            if ($productor === '') {
                 continue;
             }
 
-            $stmt->execute([
+            $superficie = ($fila['superficie'] ?? '') !== '' ? $fila['superficie'] : 0;
+            $prodEstimada = ($fila['prod_estimada'] ?? '') !== '' ? $fila['prod_estimada'] : 0;
+            $kmFinca = ($fila['km_finca'] ?? '') !== '' ? $fila['km_finca'] : 0;
+            $fechaEstimada = $fila['fecha_estimada'] ?? null;
+            $variedad = $fila['variedad'] ?? '';
+            $flete = isset($fila['flete']) ? (int) $fila['flete'] : 0;
+
+            $stmtInsert->execute([
                 ':contrato_id'     => $contratoId,
                 ':nom_cooperativa' => $nomCooperativa,
                 ':firma'           => 1,
-                ':productor'       => $fila['productor'],
-                ':superficie'      => $fila['superficie'] !== '' ? $fila['superficie'] : 0,
-                ':variedad'        => $fila['variedad'] ?? '',
-                ':prod_estimada'   => $fila['prod_estimada'] !== '' ? $fila['prod_estimada'] : 0,
-                ':fecha_estimada'  => $fila['fecha_estimada'] ?: null,
-                ':km_finca'        => $fila['km_finca'] !== '' ? $fila['km_finca'] : 0,
-                ':flete'           => isset($fila['flete']) ? (int) $fila['flete'] : 0,
+                ':productor'       => $productor,
+                ':superficie'      => $superficie,
+                ':variedad'        => $variedad,
+                ':prod_estimada'   => $prodEstimada,
+                ':fecha_estimada'  => $fechaEstimada,
+                ':km_finca'        => $kmFinca,
+                ':flete'           => $flete,
             ]);
         }
     }

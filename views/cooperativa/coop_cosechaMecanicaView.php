@@ -153,11 +153,32 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             cargarOperativos();
+
+            const chkContrato = document.getElementById('aceptaContratoCheckbox');
+            if (chkContrato) {
+                chkContrato.addEventListener('change', function() {
+                    contratoAceptado = this.checked;
+                    actualizarEstadoEdicionParticipacion();
+                });
+            }
+
+            const btnToggleContrato = document.getElementById('toggleContratoDetalle');
+            const bodyContrato = document.getElementById('accordionContratoBody');
+            if (btnToggleContrato && bodyContrato) {
+                btnToggleContrato.addEventListener('click', function() {
+                    if (bodyContrato.classList.contains('hidden')) {
+                        bodyContrato.classList.remove('hidden');
+                    } else {
+                        bodyContrato.classList.add('hidden');
+                    }
+                });
+            }
         });
 
         let filaParticipacionIndex = 0;
         let productoresCoop = [];
         let anioOperativoActivo = (new Date()).getFullYear();
+        let contratoAceptado = false;
 
         function cargarOperativos() {
             const url = '../../controllers/coop_cosechaMecanicaController.php?action=listar_operativos';
@@ -286,7 +307,10 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         return;
                     }
 
-                    const op = json.data;
+                    const data = json.data;
+                    const op = data.operativo || data;
+                    const participaciones = Array.isArray(data.participaciones) ? data.participaciones : [];
+                    contratoAceptado = data.contrato_firmado === true;
 
                     const modal = document.getElementById('participacionModal');
                     if (!modal) return;
@@ -297,6 +321,8 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     const spanFechaCierre = document.getElementById('modalFechaCierre');
                     const spanEstado = document.getElementById('modalEstado');
                     const spanDescripcion = document.getElementById('modalDescripcion');
+                    const chkContrato = document.getElementById('aceptaContratoCheckbox');
+                    const bodyContrato = document.getElementById('accordionContratoBody');
 
                     if (spanId) spanId.textContent = op.id;
                     if (spanNombre) spanNombre.textContent = op.nombre || '';
@@ -305,9 +331,18 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     if (spanEstado) spanEstado.textContent = op.estado || '';
                     if (spanDescripcion) spanDescripcion.innerHTML = op.descripcion || '';
 
+                    if (chkContrato) {
+                        chkContrato.checked = contratoAceptado;
+                    }
+
+                    if (bodyContrato && !bodyContrato.classList.contains('hidden')) {
+                        // lo dejamos como esté (visible u oculto) según último estado
+                    }
+
                     anioOperativoActivo = obtenerAnioDesdeOperativo(op);
-                    inicializarTablaParticipacion();
+                    inicializarTablaParticipacion(participaciones);
                     cargarProductores();
+                    actualizarEstadoEdicionParticipacion();
 
                     modal.classList.remove('hidden');
                 })
@@ -322,18 +357,31 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             if (modal) {
                 modal.classList.add('hidden');
             }
+            contratoAceptado = false;
+            const chkContrato = document.getElementById('aceptaContratoCheckbox');
+            if (chkContrato) {
+                chkContrato.checked = false;
+            }
+            actualizarEstadoEdicionParticipacion();
         }
 
-        function inicializarTablaParticipacion() {
+        function inicializarTablaParticipacion(participaciones) {
             const tbody = document.getElementById('participacionBody');
             if (!tbody) return;
 
             tbody.innerHTML = '';
             filaParticipacionIndex = 0;
-            agregarFilaParticipacion();
+
+            if (Array.isArray(participaciones) && participaciones.length > 0) {
+                participaciones.forEach(function(p) {
+                    agregarFilaParticipacion(p);
+                });
+            } else {
+                agregarFilaParticipacion();
+            }
         }
 
-        function agregarFilaParticipacion() {
+        function agregarFilaParticipacion(datos) {
             const tbody = document.getElementById('participacionBody');
             if (!tbody) return;
 
@@ -421,7 +469,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         </div>
                     </div>
                 </td>
-<td>
+                <td>
                     <div class="input-group">
                         <label for="flete_${indice}">Flete</label>
                         <select id="flete_${indice}" name="flete[]" class="select-standard">
@@ -434,7 +482,49 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     <button type="button" class="btn btn-cancelar btn-sm" onclick="eliminarFilaParticipacion(this)">Eliminar</button>
                 </td>
             `;
+
             tbody.appendChild(fila);
+
+            // Setear valores si vienen desde la BD
+            if (datos && typeof datos === 'object') {
+                const productorInput = fila.querySelector(`#productor_${indice}`);
+                const superficieInput = fila.querySelector(`#superficie_${indice}`);
+                const variedadInput = fila.querySelector(`#variedad_${indice}`);
+                const prodEstimadaInput = fila.querySelector(`#prod_estimada_${indice}`);
+                const fechaSelect = fila.querySelector(`#fecha_estimada_${indice}`);
+                const kmFincaInput = fila.querySelector(`#km_finca_${indice}`);
+                const fleteSelect = fila.querySelector(`#flete_${indice}`);
+
+                if (productorInput) productorInput.value = datos.productor || '';
+                if (superficieInput) superficieInput.value = datos.superficie !== undefined ? datos.superficie : '';
+                if (variedadInput) variedadInput.value = datos.variedad || '';
+                if (prodEstimadaInput) prodEstimadaInput.value = datos.prod_estimada !== undefined ? datos.prod_estimada : '';
+                if (fechaSelect && datos.fecha_estimada) fechaSelect.value = datos.fecha_estimada;
+                if (kmFincaInput) kmFincaInput.value = datos.km_finca !== undefined ? datos.km_finca : '';
+                if (fleteSelect && datos.flete !== undefined) fleteSelect.value = String(datos.flete);
+            }
+
+            actualizarEstadoEdicionParticipacion();
+        }
+
+        function actualizarEstadoEdicionParticipacion() {
+            const tbody = document.getElementById('participacionBody');
+            const btnAgregar = document.getElementById('btnAgregarFilaParticipacion');
+            const btnGuardar = document.getElementById('btnGuardarParticipacion');
+
+            const inputs = tbody ? tbody.querySelectorAll('input, select') : [];
+
+            inputs.forEach(function(input) {
+                input.disabled = !contratoAceptado;
+            });
+
+            if (btnAgregar) {
+                btnAgregar.disabled = !contratoAceptado;
+            }
+
+            if (btnGuardar) {
+                btnGuardar.disabled = !contratoAceptado;
+            }
         }
 
         function getQuincenasOptionsHtml() {
@@ -560,11 +650,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     flete: fleteSelect ? fleteSelect.value : '0'
                 });
             });
-
-            if (!filas.length) {
-                showAlert('error', 'Debes cargar al menos un productor con datos válidos.');
-                return;
-            }
 
             const url = '../../controllers/coop_cosechaMecanicaController.php';
             const formData = new FormData();
