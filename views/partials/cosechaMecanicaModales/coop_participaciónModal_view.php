@@ -10,7 +10,7 @@
                 </button>
             </div>
 
-            <div id="accordionContratoBody" class="accordion-body hidden">
+            <div id="accordionContratoBody" class="accordion-body">
                 <div class="operativo-info-grid">
                     <div>
                         <p><strong>ID contrato:</strong> <span id="modalContratoId"></span></p>
@@ -45,6 +45,13 @@
         <div class="card tabla-card">
             <h4>Productores participantes</h4>
             <p>Cargá los productores que van a participar en este operativo.</p>
+            <p class="aviso-aceptacion-contrato">
+                Al cargar o modificar productores estás aceptando los términos del contrato en representación de ellos.
+            </p>
+            <p class="estado-firma-contrato">
+                Estado del contrato: <span id="estadoFirmaTexto" class="no-firmado">No firmado</span>
+            </p>
+
 
             <div class="tabla-wrapper">
                 <table class="data-table">
@@ -189,5 +196,26 @@
     .firma-contrato-aviso small {
         font-size: 0.8rem;
         color: #6b7280;
+    }
+
+    .estado-firma-contrato {
+        margin-top: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .estado-firma-contrato .firmado {
+        font-weight: 600;
+        color: #16a34a;
+    }
+
+    .estado-firma-contrato .no-firmado {
+        font-weight: 600;
+        color: #dc2626;
+    }
+
+    .aviso-aceptacion-contrato {
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        color: #4b5563;
     }
 </style>

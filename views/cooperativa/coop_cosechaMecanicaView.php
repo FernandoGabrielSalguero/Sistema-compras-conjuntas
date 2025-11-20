@@ -392,21 +392,19 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             fila.innerHTML = `
                 <td>
                     <div class="input-group">
-                        <label for="productor_${indice}">Productor</label>
                         <div class="input-icon input-icon-name">
                             <input
                                 type="text"
                                 id="productor_${indice}"
                                 name="productor[]"
                                 list="productoresDatalist"
-                                placeholder="Buscar productor..."
+                                placeholder="Productor"
                             />
                         </div>
                     </div>
                 </td>
                 <td>
                     <div class="input-group">
-                        <label for="superficie_${indice}">Superficie (ha)</label>
                         <div class="input-icon input-icon-name">
                             <input
                                 type="number"
@@ -420,7 +418,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </td>
                 <td>
                     <div class="input-group">
-                        <label for="variedad_${indice}">Variedad</label>
                         <div class="input-icon input-icon-name">
                             <input
                                 type="text"
@@ -433,7 +430,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </td>
                 <td>
                     <div class="input-group">
-                        <label for="prod_estimada_${indice}">Prod. estimada</label>
                         <div class="input-icon input-icon-name">
                             <input
                                 type="number"
@@ -447,7 +443,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </td>
                 <td>
                     <div class="input-group">
-                        <label for="fecha_estimada_${indice}">Fecha estimada</label>
                         <div class="input-icon input-icon-name">
                             <select id="fecha_estimada_${indice}" name="fecha_estimada[]">
                                 ${getQuincenasOptionsHtml()}
@@ -457,7 +452,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </td>
                 <td>
                     <div class="input-group">
-                        <label for="km_finca_${indice}">Km a finca</label>
                         <div class="input-icon input-icon-name">
                             <input
                                 type="number"
@@ -471,7 +465,6 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 </td>
                 <td>
                     <div class="input-group">
-                        <label for="flete_${indice}">Flete</label>
                         <select id="flete_${indice}" name="flete[]" class="select-standard">
                             <option value="0">No</option>
                             <option value="1">Sí</option>
@@ -507,10 +500,12 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             actualizarEstadoEdicionParticipacion();
         }
 
+
         function actualizarEstadoEdicionParticipacion() {
             const tbody = document.getElementById('participacionBody');
             const btnAgregar = document.getElementById('btnAgregarFilaParticipacion');
             const btnGuardar = document.getElementById('btnGuardarParticipacion');
+            const estadoFirmaSpan = document.getElementById('estadoFirmaTexto');
 
             const inputs = tbody ? tbody.querySelectorAll('input, select') : [];
 
@@ -525,7 +520,14 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             if (btnGuardar) {
                 btnGuardar.disabled = !contratoAceptado;
             }
+
+            if (estadoFirmaSpan) {
+                estadoFirmaSpan.textContent = contratoAceptado ? 'Firmado' : 'No firmado';
+                estadoFirmaSpan.classList.toggle('firmado', contratoAceptado);
+                estadoFirmaSpan.classList.toggle('no-firmado', !contratoAceptado);
+            }
         }
+
 
         function getQuincenasOptionsHtml() {
             const year = anioOperativoActivo;
