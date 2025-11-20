@@ -506,6 +506,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             const btnAgregar = document.getElementById('btnAgregarFilaParticipacion');
             const btnGuardar = document.getElementById('btnGuardarParticipacion');
             const estadoFirmaSpan = document.getElementById('estadoFirmaTexto');
+            const cardTabla = document.getElementById('tablaParticipacionCard');
 
             const inputs = tbody ? tbody.querySelectorAll('input, select') : [];
 
@@ -521,12 +522,22 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 btnGuardar.disabled = !contratoAceptado;
             }
 
+            // Mostrar/ocultar la card de la tabla completa
+            if (cardTabla) {
+                if (contratoAceptado) {
+                    cardTabla.classList.remove('hidden');
+                } else {
+                    cardTabla.classList.add('hidden');
+                }
+            }
+
             if (estadoFirmaSpan) {
                 estadoFirmaSpan.textContent = contratoAceptado ? 'Firmado' : 'No firmado';
                 estadoFirmaSpan.classList.toggle('firmado', contratoAceptado);
                 estadoFirmaSpan.classList.toggle('no-firmado', !contratoAceptado);
             }
         }
+
 
 
         function getQuincenasOptionsHtml() {

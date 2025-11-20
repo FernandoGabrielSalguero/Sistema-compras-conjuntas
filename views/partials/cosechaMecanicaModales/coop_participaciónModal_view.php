@@ -42,7 +42,7 @@
             </div>
         </div>
 
-        <div class="card tabla-card">
+        <div class="card tabla-card" id="tablaParticipacionCard">
             <h4>Productores participantes</h4>
             <p>Cargá los productores que van a participar en este operativo.</p>
             <p class="aviso-aceptacion-contrato">
