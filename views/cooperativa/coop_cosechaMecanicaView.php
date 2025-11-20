@@ -94,7 +94,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="navbar-title">Consolidado</div>
+                <div class="navbar-title">Cosecha Mecanica</div>
             </header>
 
             <!-- 📦 CONTENIDO -->
@@ -103,19 +103,13 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 <!-- Bienvenida -->
                 <div class="card">
                     <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
-                    <p>En esta página, vas a ver el resumen de la cantidad de productos pedidos. Podes además descargar la información en un archivo Excel.</p>
+                    <p>En esta página, vas a poder visualizar los servicios disponibles para cosecha mecanizada e inscribir a tus productores</p>
                     <br>
-                    <!-- Boton de tutorial -->
+                    <!-- Boton de tutorial
                     <button id="btnIniciarTutorial" class="btn btn-aceptar">
                         Tutorial
-                    </button>
+                    </button> -->
                 </div>
-
-
-
-
-
-
         </div>
 
 
