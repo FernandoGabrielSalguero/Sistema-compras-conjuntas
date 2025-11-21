@@ -139,8 +139,11 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     <!-- /layout -->
 
     <?php
-    // Modal de participación (información del contrato + tabla de productores)
+    // Modal de participación (tabla de productores)
     require_once __DIR__ . '/../partials/cosechaMecanicaModales/coop_participaciónModal_view.php';
+
+    // Modal de contrato (detalle + firma en conformidad)
+    require_once __DIR__ . '/../partials/cosechaMecanicaModales/coop_firmaContratoModal_view.php';
     ?>
 
     <!-- contenedor del toastify -->
