@@ -14,6 +14,9 @@ class CoopCosechaMecanicaModel
      */
     public function obtenerOperativos(string $cooperativaIdReal): array
     {
+        // Normalizamos al largo real de la columna en BD (varchar(11))
+        $coopId = substr($cooperativaIdReal, 0, 11);
+
         $sql = "SELECT
                     c.id,
                     c.nombre,
@@ -32,7 +35,7 @@ class CoopCosechaMecanicaModel
                 ORDER BY c.fecha_apertura DESC";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':coop_id', $cooperativaIdReal, PDO::PARAM_STR);
+        $stmt->bindValue(':coop_id', $coopId, PDO::PARAM_STR);
         $stmt->execute();
         $operativos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -94,17 +97,20 @@ class CoopCosechaMecanicaModel
     /**
      * Obtiene los productores asociados a una cooperativa (id_real).
      */
-    public function obtenerProductoresPorCooperativa(string $cooperativaIdReal): array
+        public function obtenerProductoresPorCooperativa(string $cooperativaIdReal): array
     {
+        // También aquí la columna es varchar(11)
+        $coopId = substr($cooperativaIdReal, 0, 11);
+
         $sql = "SELECT u.id_real, COALESCE(ui.nombre, u.usuario) AS nombre
                 FROM rel_productor_coop rpc
                 INNER JOIN usuarios u ON u.id_real = rpc.productor_id_real
                 LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
                 WHERE rpc.cooperativa_id_real = :coop_id
                 ORDER BY nombre ASC";
-
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':coop_id', $cooperativaIdReal, PDO::PARAM_STR);
+        $stmt->bindValue(':coop_id', $coopId, PDO::PARAM_STR);
+
         $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -194,6 +200,8 @@ class CoopCosechaMecanicaModel
      */
     public function obtenerFirmaContrato(int $contratoId, string $cooperativaIdReal): ?array
     {
+        $coopId = substr($cooperativaIdReal, 0, 11);
+
         $sql = "SELECT id, contrato_id, cooperativa_id_real, acepto, fecha_firma
                 FROM cosechaMecanica_coop_contrato_firma
                 WHERE contrato_id = :contrato_id
@@ -202,7 +210,8 @@ class CoopCosechaMecanicaModel
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue(':contrato_id', $contratoId, PDO::PARAM_INT);
-        $stmt->bindValue(':coop_id', $cooperativaIdReal, PDO::PARAM_STR);
+        $stmt->bindValue(':coop_id', $coopId, PDO::PARAM_STR);
+
         $stmt->execute();
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -224,6 +233,9 @@ class CoopCosechaMecanicaModel
      */
     public function firmarContrato(int $contratoId, string $cooperativaIdReal): void
     {
+        // Nos aseguramos de guardar el mismo formato/largo que usan las tablas relacionadas
+        $coopId = substr($cooperativaIdReal, 0, 11);
+
         $sql = "INSERT INTO cosechaMecanica_coop_contrato_firma
                     (contrato_id, cooperativa_id_real, acepto, fecha_firma)
                 VALUES
@@ -235,7 +247,8 @@ class CoopCosechaMecanicaModel
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':contrato_id' => $contratoId,
-            ':coop_id'     => $cooperativaIdReal,
+            ':coop_id'     => $coopId,
         ]);
     }
+
 }
