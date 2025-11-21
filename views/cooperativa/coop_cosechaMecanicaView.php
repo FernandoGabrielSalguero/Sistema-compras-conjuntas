@@ -206,9 +206,9 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
                 const estadoClase = obtenerClaseEstado(estado);
 
-                const contratoFirmado = op.contrato_firmado === 1 ||
-                    op.contrato_firmado === '1' ||
-                    op.contrato_firmado === true;
+                // Lo convertimos a número y luego a booleano: maneja 0/1, '0'/'1', true/false
+                const contratoFirmado = !!Number(op.contrato_firmado);
+                console.log('Operativo', op.id, 'contrato_firmado =', op.contrato_firmado, '=>', contratoFirmado);
 
                 const textoContrato = contratoFirmado ? 'Ver contrato' : 'Contrato';
                 const claseInscribirOculta = contratoFirmado ? '' : 'hidden';

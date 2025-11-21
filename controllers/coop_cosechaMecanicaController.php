@@ -31,6 +31,16 @@ if ($action === 'listar_operativos') {
     try {
         $operativos = $model->obtenerOperativos($cooperativa_id);
 
+        // Normalizamos contrato_firmado a entero 0/1 para que el front lo lea sin problemas
+        foreach ($operativos as &$op) {
+            if (isset($op['contrato_firmado'])) {
+                $op['contrato_firmado'] = (int) $op['contrato_firmado'];
+            } else {
+                $op['contrato_firmado'] = 0;
+            }
+        }
+        unset($op);
+
         echo json_encode([
             'success' => true,
             'data'    => $operativos
