@@ -203,6 +203,13 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
                 const estadoClase = obtenerClaseEstado(estado);
 
+                const contratoFirmado = op.contrato_firmado === 1 ||
+                    op.contrato_firmado === '1' ||
+                    op.contrato_firmado === true;
+
+                const textoContrato = contratoFirmado ? 'Ver contrato' : 'Contrato';
+                const claseInscribirOculta = contratoFirmado ? '' : 'hidden';
+
                 card.innerHTML = `
                     <h4>${escapeHtml(op.nombre || '')}</h4>
                     <p><strong>Apertura:</strong> ${formatearFecha(op.fecha_apertura)}</p>
@@ -212,10 +219,17 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     <div class="form-buttons">
                         <button
                             type="button"
-                            class="btn btn-aceptar btn-participar"
+                            class="btn btn-info btn-contrato"
                             data-id="${op.id}"
                         >
-                            Participar
+                            ${textoContrato}
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-aceptar btn-inscribir ${claseInscribirOculta}"
+                            data-id="${op.id}"
+                        >
+                            Inscribir productores
                         </button>
                     </div>
                 `;
@@ -223,13 +237,27 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 contenedor.appendChild(card);
             });
 
-            const botonesParticipar = contenedor.querySelectorAll('.btn-participar');
-            botonesParticipar.forEach(function(btn) {
+            const botonesContrato = contenedor.querySelectorAll('.btn-contrato');
+            botonesContrato.forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     const contratoId = this.getAttribute('data-id');
                     if (!contratoId) return;
 
-                    // La lógica de apertura y carga del modal vive en coop_participaciónModal_view.php
+                    if (typeof abrirContratoModal === 'function') {
+                        abrirContratoModal(contratoId);
+                    } else {
+                        console.error('Función abrirContratoModal no disponible.');
+                        showAlert('error', 'No se pudo abrir el modal de contrato.');
+                    }
+                });
+            });
+
+            const botonesInscribir = contenedor.querySelectorAll('.btn-inscribir');
+            botonesInscribir.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const contratoId = this.getAttribute('data-id');
+                    if (!contratoId) return;
+
                     if (typeof abrirParticipacionModal === 'function') {
                         abrirParticipacionModal(contratoId);
                     } else {

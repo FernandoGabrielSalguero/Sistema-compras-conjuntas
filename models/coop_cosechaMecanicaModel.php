@@ -9,16 +9,30 @@ class CoopCosechaMecanicaModel
     }
 
     /**
-     * Obtiene los operativos de cosecha mecánica.
-     * Por ahora devuelve todos los operativos sin filtrar por cooperativa.
+     * Obtiene los operativos de cosecha mecánica para una cooperativa,
+     * incluyendo si el contrato ya fue firmado por esa cooperativa.
      */
-    public function obtenerOperativos(): array
+    public function obtenerOperativos(string $cooperativaIdReal): array
     {
-        $sql = "SELECT id, nombre, fecha_apertura, fecha_cierre, descripcion, estado
-                FROM CosechaMecanica
-                ORDER BY fecha_apertura DESC";
+        $sql = "SELECT
+                    c.id,
+                    c.nombre,
+                    c.fecha_apertura,
+                    c.fecha_cierre,
+                    c.descripcion,
+                    c.estado,
+                    CASE
+                        WHEN f.id IS NULL THEN 0
+                        ELSE 1
+                    END AS contrato_firmado
+                FROM CosechaMecanica c
+                LEFT JOIN cosechaMecanica_coop_contrato_firma f
+                    ON f.contrato_id = c.id
+                    AND f.cooperativa_id_real = :coop_id
+                ORDER BY c.fecha_apertura DESC";
 
         $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':coop_id', $cooperativaIdReal, PDO::PARAM_STR);
         $stmt->execute();
         $operativos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -33,7 +47,6 @@ class CoopCosechaMecanicaModel
             }
 
             if ($fechaCierre < $hoy) {
-                // Ya cerró
                 $operativo['dias_restantes'] = 0;
             } else {
                 $diff = $hoy->diff($fechaCierre);
@@ -44,6 +57,7 @@ class CoopCosechaMecanicaModel
 
         return $operativos;
     }
+
 
     /**
      * Obtiene un operativo puntual por ID.
@@ -174,5 +188,54 @@ class CoopCosechaMecanicaModel
                 ':flete'           => $flete,
             ]);
         }
+    }
+    /**
+     * Obtiene el registro de firma de contrato para una cooperativa y contrato.
+     */
+    public function obtenerFirmaContrato(int $contratoId, string $cooperativaIdReal): ?array
+    {
+        $sql = "SELECT id, contrato_id, cooperativa_id_real, acepto, fecha_firma
+                FROM cosechaMecanica_coop_contrato_firma
+                WHERE contrato_id = :contrato_id
+                  AND cooperativa_id_real = :coop_id
+                LIMIT 1";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':contrato_id', $contratoId, PDO::PARAM_INT);
+        $stmt->bindValue(':coop_id', $cooperativaIdReal, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
+
+    /**
+     * Indica si el contrato está firmado por la cooperativa.
+     */
+    public function estaContratoFirmado(int $contratoId, string $cooperativaIdReal): bool
+    {
+        $firma = $this->obtenerFirmaContrato($contratoId, $cooperativaIdReal);
+        return $firma !== null && (int) $firma['acepto'] === 1;
+    }
+
+    /**
+     * Guarda/actualiza la firma de contrato de la cooperativa para un contrato.
+     */
+    public function firmarContrato(int $contratoId, string $cooperativaIdReal): void
+    {
+        $sql = "INSERT INTO cosechaMecanica_coop_contrato_firma
+                    (contrato_id, cooperativa_id_real, acepto, fecha_firma)
+                VALUES
+                    (:contrato_id, :coop_id, 1, NOW())
+                ON DUPLICATE KEY UPDATE
+                    acepto = VALUES(acepto),
+                    fecha_firma = VALUES(fecha_firma)";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':contrato_id' => $contratoId,
+            ':coop_id'     => $cooperativaIdReal,
+        ]);
     }
 }

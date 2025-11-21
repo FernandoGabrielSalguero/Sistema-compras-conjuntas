@@ -1,57 +1,14 @@
 <div id="participacionModal" class="modal hidden">
     <div class="modal-content">
-        <h3>Participar en operativo de Cosecha Mecánica</h3>
+        <h3>Inscribir productores en operativo de Cosecha Mecánica</h3>
 
-        <div class="card">
-            <div class="accordion-header" id="accordionContratoHeader">
-                <h4>Información del operativo</h4>
-                <button type="button" class="btn btn-info btn-sm" id="toggleContratoDetalle">
-                    Ver / ocultar contrato
-                </button>
-            </div>
-
-            <div id="accordionContratoBody" class="accordion-body">
-                <div class="operativo-info-grid">
-                    <div>
-                        <p><strong>ID contrato:</strong> <span id="modalContratoId"></span></p>
-                        <p><strong>Estado:</strong> <span id="modalEstado"></span></p>
-                    </div>
-                    <div>
-                        <p><strong>Nombre:</strong> <span id="modalNombre"></span></p>
-                        <p><strong>Fecha de apertura:</strong> <span id="modalFechaApertura"></span></p>
-                    </div>
-                    <div>
-                        <p><strong>Fecha de cierre:</strong> <span id="modalFechaCierre"></span></p>
-                    </div>
-                </div>
-
-                <p><strong>Descripción:</strong></p>
-                <div id="modalDescripcion" class="descripcion-contrato"></div>
-
-                <div class="firma-contrato-aviso">
-                    <label class="checkbox-firma">
-                        <input type="checkbox" id="aceptaContratoCheckbox">
-                        <span>
-                            Acepto los términos del contrato y firmo digitalmente en representación de los productores que cargue en la tabla.
-                        </span>
-                    </label>
-                    <small>
-                        La firma queda asociada a esta cooperativa y a este operativo de cosecha mecánica.
-                    </small>
-                </div>
-            </div>
-        </div>
+        <!-- ID de contrato (oculto) para guardar participación -->
+        <span id="modalContratoId" class="hidden"></span>
 
         <div class="card tabla-card" id="tablaParticipacionCard">
             <h4>Productores participantes</h4>
-            <p>Cargá los productores que van a participar en este operativo.</p>
-            <p class="aviso-aceptacion-contrato">
-                Al cargar o modificar productores estás aceptando los términos del contrato en representación de ellos.
-            </p>
-            <p class="estado-firma-contrato">
-                Estado del contrato: <span id="estadoFirmaTexto" class="no-firmado">No firmado</span>
-            </p>
 
+            <p>Cargá los productores que van a participar en este operativo.</p>
 
             <div class="tabla-wrapper">
                 <table class="data-table">
@@ -127,21 +84,8 @@
         font-size: 0.8rem;
     }
 
-    .operativo-info-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 1rem;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-
     .operativo-info-grid p {
         margin: 0.25rem 0;
-    }
-
-    .descripcion-contrato {
-        margin-top: 0.5rem;
-        white-space: pre-wrap;
     }
 
     .tabla-card .data-table th,
@@ -162,33 +106,6 @@
         box-sizing: border-box;
     }
 
-    .accordion-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-    }
-
-    .accordion-body {
-        margin-top: 0.75rem;
-    }
-
-    .firma-contrato-aviso {
-        margin-top: 0.75rem;
-        padding-top: 0.5rem;
-        border-top: 1px solid #e5e7eb;
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-
-    .checkbox-firma {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.5rem;
-        font-size: 0.9rem;
-    }
-
     .checkbox-firma input[type="checkbox"] {
         margin-top: 0.2rem;
     }
@@ -196,11 +113,6 @@
     .firma-contrato-aviso small {
         font-size: 0.8rem;
         color: #6b7280;
-    }
-
-    .estado-firma-contrato {
-        margin-top: 0.25rem;
-        font-size: 0.9rem;
     }
 
     .estado-firma-contrato .firmado {
@@ -212,12 +124,6 @@
         font-weight: 600;
         color: #dc2626;
     }
-
-    .aviso-aceptacion-contrato {
-        margin-top: 0.5rem;
-        font-size: 0.9rem;
-        color: #4b5563;
-    }
 </style>
 
 <script>
@@ -225,26 +131,9 @@
     let filaParticipacionIndex = 0;
     let productoresCoop = [];
     let anioOperativoActivo = (new Date()).getFullYear();
-    let contratoAceptado = false;
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Manejo del checkbox de aceptación de contrato
-        const chkContrato = document.getElementById('aceptaContratoCheckbox');
-        if (chkContrato) {
-            chkContrato.addEventListener('change', function() {
-                contratoAceptado = this.checked;
-                actualizarEstadoEdicionParticipacion();
-            });
-        }
 
-        // Botón para mostrar/ocultar el detalle del contrato
-        const btnToggleContrato = document.getElementById('toggleContratoDetalle');
-        const bodyContrato = document.getElementById('accordionContratoBody');
-        if (btnToggleContrato && bodyContrato) {
-            btnToggleContrato.addEventListener('click', function() {
-                bodyContrato.classList.toggle('hidden');
-            });
-        }
     });
 
     /**
@@ -272,36 +161,27 @@
                 const data = json.data;
                 const op = data.operativo || data;
                 const participaciones = Array.isArray(data.participaciones) ? data.participaciones : [];
-                contratoAceptado = data.contrato_firmado === true;
+
+                // Por seguridad, si el contrato no está firmado, no permitimos abrir el modal
+                if (!data.contrato_firmado) {
+                    showAlert('error', 'Debés firmar el contrato antes de inscribir productores.');
+                    return;
+                }
 
                 const modal = document.getElementById('participacionModal');
                 if (!modal) return;
 
                 const spanId = document.getElementById('modalContratoId');
-                const spanNombre = document.getElementById('modalNombre');
-                const spanFechaApertura = document.getElementById('modalFechaApertura');
-                const spanFechaCierre = document.getElementById('modalFechaCierre');
-                const spanEstado = document.getElementById('modalEstado');
-                const spanDescripcion = document.getElementById('modalDescripcion');
-                const chkContrato = document.getElementById('aceptaContratoCheckbox');
-
-                if (spanId) spanId.textContent = op.id;
-                if (spanNombre) spanNombre.textContent = op.nombre || '';
-                if (spanFechaApertura) spanFechaApertura.textContent = formatearFechaModal(op.fecha_apertura);
-                if (spanFechaCierre) spanFechaCierre.textContent = formatearFechaModal(op.fecha_cierre);
-                if (spanEstado) spanEstado.textContent = op.estado || '';
-                if (spanDescripcion) spanDescripcion.innerHTML = op.descripcion || '';
-
-                if (chkContrato) {
-                    chkContrato.checked = contratoAceptado;
+                if (spanId) {
+                    spanId.textContent = op.id;
                 }
 
                 anioOperativoActivo = obtenerAnioDesdeOperativo(op);
                 inicializarTablaParticipacion(participaciones);
                 cargarProductores();
-                actualizarEstadoEdicionParticipacion();
 
                 modal.classList.remove('hidden');
+
             })
             .catch(function(error) {
                 console.error('Error al obtener operativo:', error);
@@ -314,12 +194,6 @@
         if (modal) {
             modal.classList.add('hidden');
         }
-        contratoAceptado = false;
-        const chkContrato = document.getElementById('aceptaContratoCheckbox');
-        if (chkContrato) {
-            chkContrato.checked = false;
-        }
-        actualizarEstadoEdicionParticipacion();
     }
 
     function inicializarTablaParticipacion(participaciones) {
@@ -458,39 +332,8 @@
     }
 
     function actualizarEstadoEdicionParticipacion() {
-        const tbody = document.getElementById('participacionBody');
-        const btnAgregar = document.getElementById('btnAgregarFilaParticipacion');
-        const btnGuardar = document.getElementById('btnGuardarParticipacion');
-        const estadoFirmaSpan = document.getElementById('estadoFirmaTexto');
-        const cardTabla = document.getElementById('tablaParticipacionCard');
-
-        const inputs = tbody ? tbody.querySelectorAll('input, select') : [];
-
-        inputs.forEach(function(input) {
-            input.disabled = !contratoAceptado;
-        });
-
-        if (btnAgregar) {
-            btnAgregar.disabled = !contratoAceptado;
-        }
-
-        if (btnGuardar) {
-            btnGuardar.disabled = !contratoAceptado;
-        }
-
-        if (cardTabla) {
-            if (contratoAceptado) {
-                cardTabla.classList.remove('hidden');
-            } else {
-                cardTabla.classList.add('hidden');
-            }
-        }
-
-        if (estadoFirmaSpan) {
-            estadoFirmaSpan.textContent = contratoAceptado ? 'Firmado' : 'No firmado';
-            estadoFirmaSpan.classList.toggle('firmado', contratoAceptado);
-            estadoFirmaSpan.classList.toggle('no-firmado', !contratoAceptado);
-        }
+        // El contrato ya viene firmado desde el otro modal,
+        // acá siempre se permite editar mientras el modal esté abierto.
     }
 
     function getQuincenasOptionsHtml() {
