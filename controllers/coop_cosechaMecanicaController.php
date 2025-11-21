@@ -13,6 +13,7 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'cooperativa') {
     exit;
 }
 
+error_log('DEBUG coop id_real: ' . ($_SESSION['id_real'] ?? 'NULL'));
 $cooperativa_id = $_SESSION['id_real'] ?? null;
 
 $model = new CoopCosechaMecanicaModel($pdo);
