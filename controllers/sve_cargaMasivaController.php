@@ -88,6 +88,37 @@ try {
             ]);
             exit;
 
+        case 'familia':
+            $resultado = $modelo->insertarDatosFamilia($datosProcesados);
+            $conflictos = isset($resultado['conflictos']) ? $resultado['conflictos'] : [];
+            $stats = isset($resultado['stats']) ? $resultado['stats'] : null;
+
+            if (count($conflictos)) {
+                $mensaje = '⚠️ Carga de Datos Familia completada con advertencias.';
+            } else {
+                $mensaje = '✅ Datos Familia cargados exitosamente.';
+            }
+
+            if (is_array($stats)) {
+                $mensaje .= ' Filas procesadas: ' . $stats['procesados']
+                    . ', sin usuario: ' . $stats['sin_usuario']
+                    . ', sin cooperativa: ' . $stats['sin_cooperativa']
+                    . ', usuarios actualizados: ' . $stats['actualizados_usuario']
+                    . ', info productor (usuarios_info): ' . $stats['upsert_usuarios_info']
+                    . ', contactos alternos: ' . $stats['upsert_contactos_alternos']
+                    . ', info_productor: ' . $stats['upsert_info_productor']
+                    . ', colaboradores: ' . $stats['upsert_colaboradores']
+                    . ', hijos cargados: ' . $stats['insert_hijos']
+                    . ', conflictos: ' . $stats['conflictos'] . '.';
+            }
+
+            echo json_encode([
+                'mensaje'    => $mensaje,
+                'conflictos' => $conflictos,
+                'stats'      => $stats
+            ]);
+            exit;
+
         default:
             throw new Exception("Tipo de carga desconocido.");
     }

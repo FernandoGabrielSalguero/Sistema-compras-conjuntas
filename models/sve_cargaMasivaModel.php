@@ -165,4 +165,510 @@ class CargaMasivaModel
                         'stats'      => $stats
                 ];
         }
+
+        public function insertarDatosFamilia(array $datos)
+        {
+                // Ajustá este año según necesites (ej: configurable)
+                $anioReferencia = 2025;
+
+                $conflictos = [];
+                $stats = [
+                        'procesados'              => 0,
+                        'sin_usuario'             => 0,
+                        'sin_cooperativa'         => 0,
+                        'actualizados_usuario'    => 0,
+                        'upsert_usuarios_info'    => 0,
+                        'upsert_contactos_alternos' => 0,
+                        'upsert_info_productor'   => 0,
+                        'upsert_colaboradores'    => 0,
+                        'insert_hijos'            => 0,
+                        'conflictos'              => 0
+                ];
+
+                // Para no borrar hijos más de una vez por productor/año
+                $productoresHijosLimpiados = [];
+
+                // --- Preparar sentencias reutilizables ---
+                $sqlBuscarUsuario = "SELECT id, id_real, cuit, razon_social 
+                                     FROM usuarios 
+                                     WHERE id_real = :id_real 
+                                     LIMIT 1";
+                $stmtBuscarUsuario = $this->pdo->prepare($sqlBuscarUsuario);
+
+                $sqlActualizarUsuario = "UPDATE usuarios 
+                                         SET cuit = :cuit, razon_social = :razon_social 
+                                         WHERE id = :id";
+                $stmtActualizarUsuario = $this->pdo->prepare($sqlActualizarUsuario);
+
+                // usuarios_info
+                $sqlBuscarUsuarioInfo = "SELECT id 
+                                         FROM usuarios_info 
+                                         WHERE usuario_id = :usuario_id 
+                                         LIMIT 1";
+                $stmtBuscarUsuarioInfo = $this->pdo->prepare($sqlBuscarUsuarioInfo);
+
+                $sqlInsertUsuarioInfo = "INSERT INTO usuarios_info 
+                        (usuario_id, nombre, direccion, telefono, correo, fecha_nacimiento, categorizacion, tipo_relacion, zona_asignada)
+                        VALUES 
+                        (:usuario_id, :nombre, :direccion, :telefono, :correo, :fecha_nacimiento, :categorizacion, :tipo_relacion, :zona_asignada)";
+                $stmtInsertUsuarioInfo = $this->pdo->prepare($sqlInsertUsuarioInfo);
+
+                $sqlUpdateUsuarioInfo = "UPDATE usuarios_info 
+                        SET nombre = :nombre,
+                            telefono = :telefono,
+                            correo = :correo,
+                            fecha_nacimiento = :fecha_nacimiento,
+                            categorizacion = :categorizacion,
+                            tipo_relacion = :tipo_relacion,
+                            zona_asignada = :zona_asignada
+                        WHERE id = :id";
+                $stmtUpdateUsuarioInfo = $this->pdo->prepare($sqlUpdateUsuarioInfo);
+
+                // productores_contactos_alternos
+                $sqlBuscarContactosAlternos = "SELECT id 
+                                               FROM productores_contactos_alternos 
+                                               WHERE productor_id = :productor_id 
+                                               LIMIT 1";
+                $stmtBuscarContactosAlternos = $this->pdo->prepare($sqlBuscarContactosAlternos);
+
+                $sqlInsertContactosAlternos = "INSERT INTO productores_contactos_alternos 
+                        (productor_id, contacto_preferido, celular_alternativo, telefono_fijo, mail_alternativo)
+                        VALUES 
+                        (:productor_id, :contacto_preferido, :celular_alternativo, :telefono_fijo, :mail_alternativo)";
+                $stmtInsertContactosAlternos = $this->pdo->prepare($sqlInsertContactosAlternos);
+
+                $sqlUpdateContactosAlternos = "UPDATE productores_contactos_alternos 
+                        SET contacto_preferido = :contacto_preferido,
+                            celular_alternativo = :celular_alternativo,
+                            telefono_fijo = :telefono_fijo,
+                            mail_alternativo = :mail_alternativo
+                        WHERE id = :id";
+                $stmtUpdateContactosAlternos = $this->pdo->prepare($sqlUpdateContactosAlternos);
+
+                // info_productor
+                $sqlBuscarInfoProductor = "SELECT id 
+                                           FROM info_productor 
+                                           WHERE productor_id = :productor_id AND anio = :anio 
+                                           LIMIT 1";
+                $stmtBuscarInfoProductor = $this->pdo->prepare($sqlBuscarInfoProductor);
+
+                $sqlInsertInfoProductor = "INSERT INTO info_productor 
+                        (productor_id, anio, acceso_internet, vive_en_finca, tiene_otra_finca, condicion_cooperativa, anio_asociacion, actividad_principal, actividad_secundaria, porcentaje_aporte_vitivinicola)
+                        VALUES 
+                        (:productor_id, :anio, :acceso_internet, :vive_en_finca, :tiene_otra_finca, :condicion_cooperativa, :anio_asociacion, :actividad_principal, :actividad_secundaria, :porcentaje_aporte_vitivinicola)";
+                $stmtInsertInfoProductor = $this->pdo->prepare($sqlInsertInfoProductor);
+
+                $sqlUpdateInfoProductor = "UPDATE info_productor 
+                        SET acceso_internet = :acceso_internet,
+                            vive_en_finca = :vive_en_finca,
+                            tiene_otra_finca = :tiene_otra_finca,
+                            condicion_cooperativa = :condicion_cooperativa,
+                            anio_asociacion = :anio_asociacion,
+                            actividad_principal = :actividad_principal,
+                            actividad_secundaria = :actividad_secundaria,
+                            porcentaje_aporte_vitivinicola = :porcentaje_aporte_vitivinicola
+                        WHERE id = :id";
+                $stmtUpdateInfoProductor = $this->pdo->prepare($sqlUpdateInfoProductor);
+
+                // prod_colaboradores
+                $sqlBuscarColaboradores = "SELECT id 
+                                           FROM prod_colaboradores 
+                                           WHERE productor_id = :productor_id AND anio = :anio 
+                                           LIMIT 1";
+                $stmtBuscarColaboradores = $this->pdo->prepare($sqlBuscarColaboradores);
+
+                $sqlInsertColaboradores = "INSERT INTO prod_colaboradores 
+                        (productor_id, anio, hijos_sobrinos_participan, mujeres_tc, hombres_tc, mujeres_tp, hombres_tp, prob_hijos_trabajen)
+                        VALUES 
+                        (:productor_id, :anio, :hijos_sobrinos_participan, :mujeres_tc, :hombres_tc, :mujeres_tp, :hombres_tp, :prob_hijos_trabajen)";
+                $stmtInsertColaboradores = $this->pdo->prepare($sqlInsertColaboradores);
+
+                $sqlUpdateColaboradores = "UPDATE prod_colaboradores 
+                        SET hijos_sobrinos_participan = :hijos_sobrinos_participan,
+                            mujeres_tc = :mujeres_tc,
+                            hombres_tc = :hombres_tc,
+                            mujeres_tp = :mujeres_tp,
+                            hombres_tp = :hombres_tp,
+                            prob_hijos_trabajen = :prob_hijos_trabajen
+                        WHERE id = :id";
+                $stmtUpdateColaboradores = $this->pdo->prepare($sqlUpdateColaboradores);
+
+                // prod_hijos
+                $sqlDeleteHijos = "DELETE FROM prod_hijos 
+                                   WHERE productor_id = :productor_id AND anio = :anio";
+                $stmtDeleteHijos = $this->pdo->prepare($sqlDeleteHijos);
+
+                $sqlInsertHijo = "INSERT INTO prod_hijos 
+                        (productor_id, anio, motivo_no_trabajar, rango_etario, sexo, cantidad, nivel_estudio)
+                        VALUES 
+                        (:productor_id, :anio, :motivo_no_trabajar, :rango_etario, :sexo, :cantidad, :nivel_estudio)";
+                $stmtInsertHijo = $this->pdo->prepare($sqlInsertHijo);
+
+                foreach ($datos as $fila) {
+                        $stats['procesados']++;
+
+                        // --- A) Identificación básica ---
+                        $idPpCsv = isset($fila['ID PP']) ? trim((string)$fila['ID PP']) : '';
+                        $coopCsv = isset($fila['Cooperativa']) ? trim((string)$fila['Cooperativa']) : '';
+
+                        if ($idPpCsv === '') {
+                                $conflictos[] = [
+                                        'id_pp'  => $idPpCsv,
+                                        'motivo' => 'ID PP vacío (no se puede identificar productor)'
+                                ];
+                                $stats['sin_usuario']++;
+                                continue;
+                        }
+
+                        // Normalizar id_real productor: agregar prefijo p si no viene
+                        $idRealProductor = stripos($idPpCsv, 'p') === 0 ? $idPpCsv : 'p' . $idPpCsv;
+
+                        // Normalizar id_real cooperativa: agregar prefijo c si no viene
+                        $idRealCooperativa = '';
+                        if ($coopCsv !== '') {
+                                $idRealCooperativa = stripos($coopCsv, 'c') === 0 ? $coopCsv : 'c' . $coopCsv;
+                        }
+
+                        // Buscar productor en usuarios
+                        $stmtBuscarUsuario->execute([':id_real' => $idRealProductor]);
+                        $usuario = $stmtBuscarUsuario->fetch(PDO::FETCH_ASSOC);
+
+                        if (!$usuario) {
+                                $conflictos[] = [
+                                        'id_pp'         => $idPpCsv,
+                                        'id_real_pp'    => $idRealProductor,
+                                        'motivo'        => 'Productor no encontrado en usuarios.id_real'
+                                ];
+                                $stats['sin_usuario']++;
+                                continue;
+                        }
+
+                        $productorId = (int)$usuario['id'];
+
+                        // Verificar cooperativa si viene
+                        if ($idRealCooperativa !== '') {
+                                $stmtBuscarUsuario->execute([':id_real' => $idRealCooperativa]);
+                                $coop = $stmtBuscarUsuario->fetch(PDO::FETCH_ASSOC);
+                                if (!$coop) {
+                                        $conflictos[] = [
+                                                'id_pp'          => $idPpCsv,
+                                                'id_real_coop'   => $idRealCooperativa,
+                                                'motivo'         => 'Cooperativa no encontrada en usuarios.id_real'
+                                        ];
+                                        $stats['sin_cooperativa']++;
+                                }
+                        }
+
+                        // --- B) Actualizar datos básicos de usuarios (CUIT, Razón Social) ---
+                        $debeActualizarUsuario = false;
+                        $nuevoCuit = $usuario['cuit'];
+                        $nuevaRazonSocial = $usuario['razon_social'];
+
+                        if (isset($fila['CUIT']) && trim((string)$fila['CUIT']) !== '') {
+                                $nuevoCuit = preg_replace('/\D/', '', (string)$fila['CUIT']);
+                                $debeActualizarUsuario = true;
+                        }
+
+                        if (isset($fila['RAZÓN SOCIAL']) && trim((string)$fila['RAZÓN SOCIAL']) !== '') {
+                                $nuevaRazonSocial = trim((string)$fila['RAZÓN SOCIAL']);
+                                $debeActualizarUsuario = true;
+                        }
+
+                        if ($debeActualizarUsuario) {
+                                $stmtActualizarUsuario->execute([
+                                        ':cuit'         => $nuevoCuit !== '' ? $nuevoCuit : null,
+                                        ':razon_social' => $nuevaRazonSocial,
+                                        ':id'           => $productorId
+                                ]);
+                                $stats['actualizados_usuario']++;
+                        }
+
+                        // --- B) Datos de contacto del productor (usuarios_info) ---
+                        $stmtBuscarUsuarioInfo->execute([':usuario_id' => $productorId]);
+                        $usuarioInfoId = $stmtBuscarUsuarioInfo->fetchColumn();
+
+                        $nombreProductor = isset($fila['Productor']) ? trim((string)$fila['Productor']) : null;
+                        $telefono = isset($fila['Nº Celular']) ? trim((string)$fila['Nº Celular']) : null;
+                        $correo = isset($fila['Mail']) ? trim((string)$fila['Mail']) : null;
+                        $fechaNacimiento = isset($fila['Fecha de nacimiento']) ? $this->parsearFechaExcel((string)$fila['Fecha de nacimiento']) : null;
+                        $categorizacion = isset($fila['Categorización A, B o C']) ? strtoupper(substr(trim((string)$fila['Categorización A, B o C']), 0, 1)) : null;
+                        $tipoRelacion = isset($fila['tipo de Relacion']) ? trim((string)$fila['tipo de Relacion']) : null;
+
+                        // zona_asignada es NOT NULL en la tabla, usamos algo razonable
+                        $zonaAsignada = $coopCsv !== '' ? ('Coop ' . $coopCsv) : 'Sin asignar';
+
+                        if ($usuarioInfoId) {
+                                $stmtUpdateUsuarioInfo->execute([
+                                        ':nombre'           => $nombreProductor,
+                                        ':telefono'         => $telefono,
+                                        ':correo'           => $correo,
+                                        ':fecha_nacimiento' => $fechaNacimiento,
+                                        ':categorizacion'   => $categorizacion,
+                                        ':tipo_relacion'    => $tipoRelacion,
+                                        ':zona_asignada'    => $zonaAsignada,
+                                        ':id'               => $usuarioInfoId
+                                ]);
+                        } else {
+                                $stmtInsertUsuarioInfo->execute([
+                                        ':usuario_id'       => $productorId,
+                                        ':nombre'           => $nombreProductor,
+                                        ':direccion'        => null,
+                                        ':telefono'         => $telefono,
+                                        ':correo'           => $correo,
+                                        ':fecha_nacimiento' => $fechaNacimiento,
+                                        ':categorizacion'   => $categorizacion,
+                                        ':tipo_relacion'    => $tipoRelacion,
+                                        ':zona_asignada'    => $zonaAsignada
+                                ]);
+                        }
+                        $stats['upsert_usuarios_info']++;
+
+                        // --- C) Contactos alternativos del productor ---
+                        $contactoPreferido = isset($fila['Contacto Preferido']) ? trim((string)$fila['Contacto Preferido']) : '';
+                        $celularAlternativo = isset($fila['Nº Celular Alternativo']) ? trim((string)$fila['Nº Celular Alternativo']) : '';
+                        $telefonoFijo = isset($fila['Nº telef fijo']) ? trim((string)$fila['Nº telef fijo']) : '';
+                        $mailAlternativo = isset($fila['Mail Alternativo']) ? trim((string)$fila['Mail Alternativo']) : '';
+
+                        $tieneDatosAlternos = ($contactoPreferido !== '' ||
+                                $celularAlternativo !== '' ||
+                                $telefonoFijo !== '' ||
+                                $mailAlternativo !== '');
+
+                        if ($tieneDatosAlternos) {
+                                $stmtBuscarContactosAlternos->execute([':productor_id' => $productorId]);
+                                $contactosAlternosId = $stmtBuscarContactosAlternos->fetchColumn();
+
+                                if ($contactosAlternosId) {
+                                        $stmtUpdateContactosAlternos->execute([
+                                                ':contacto_preferido'   => $contactoPreferido,
+                                                ':celular_alternativo'  => $celularAlternativo,
+                                                ':telefono_fijo'        => $telefonoFijo,
+                                                ':mail_alternativo'     => $mailAlternativo,
+                                                ':id'                   => $contactosAlternosId
+                                        ]);
+                                } else {
+                                        $stmtInsertContactosAlternos->execute([
+                                                ':productor_id'         => $productorId,
+                                                ':contacto_preferido'   => $contactoPreferido,
+                                                ':celular_alternativo'  => $celularAlternativo,
+                                                ':telefono_fijo'        => $telefonoFijo,
+                                                ':mail_alternativo'     => $mailAlternativo
+                                        ]);
+                                }
+                                $stats['upsert_contactos_alternos']++;
+                        }
+
+                        // --- D) Info general del productor (info_productor) ---
+                        $accesoInternet = isset($fila['Tiene acceso a Internet']) ? $this->normalizarSiNoNsnc((string)$fila['Tiene acceso a Internet']) : null;
+                        $viveEnFinca = isset($fila['¿Vive en la finca?']) ? $this->normalizarSiNoNsnc((string)$fila['¿Vive en la finca?']) : null;
+                        $tieneOtraFinca = isset($fila['¿Tiene otra Finca?']) ? $this->normalizarSiNoNsnc((string)$fila['¿Tiene otra Finca?']) : null;
+                        $condicionCooperativa = isset($fila['Condición en la Cooperativa']) ? trim((string)$fila['Condición en la Cooperativa']) : null;
+                        $anioAsociacion = isset($fila['Año Asoc. Cooperativa']) ? (int)preg_replace('/\D/', '', (string)$fila['Año Asoc. Cooperativa']) : null;
+                        $actividadPrincipal = isset($fila['Actividad Ppal']) ? trim((string)$fila['Actividad Ppal']) : null;
+                        $actividadSecundaria = isset($fila['Actividad Secundaria']) ? trim((string)$fila['Actividad Secundaria']) : null;
+                        $porcentajeAporte = isset($fila['Porc. Aporte de la Actividad Vitivinicola'])
+                                ? $this->limpiarPorcentaje((string)$fila['Porc. Aporte de la Actividad Vitivinicola'])
+                                : null;
+
+                        $stmtBuscarInfoProductor->execute([
+                                ':productor_id' => $productorId,
+                                ':anio'         => $anioReferencia
+                        ]);
+                        $infoProductorId = $stmtBuscarInfoProductor->fetchColumn();
+
+                        if ($infoProductorId) {
+                                $stmtUpdateInfoProductor->execute([
+                                        ':acceso_internet'               => $accesoInternet,
+                                        ':vive_en_finca'                 => $viveEnFinca,
+                                        ':tiene_otra_finca'              => $tieneOtraFinca,
+                                        ':condicion_cooperativa'         => $condicionCooperativa,
+                                        ':anio_asociacion'               => $anioAsociacion,
+                                        ':actividad_principal'           => $actividadPrincipal,
+                                        ':actividad_secundaria'          => $actividadSecundaria,
+                                        ':porcentaje_aporte_vitivinicola' => $porcentajeAporte,
+                                        ':id'                            => $infoProductorId
+                                ]);
+                        } else {
+                                $stmtInsertInfoProductor->execute([
+                                        ':productor_id'                  => $productorId,
+                                        ':anio'                          => $anioReferencia,
+                                        ':acceso_internet'               => $accesoInternet,
+                                        ':vive_en_finca'                 => $viveEnFinca,
+                                        ':tiene_otra_finca'              => $tieneOtraFinca,
+                                        ':condicion_cooperativa'         => $condicionCooperativa,
+                                        ':anio_asociacion'               => $anioAsociacion,
+                                        ':actividad_principal'           => $actividadPrincipal,
+                                        ':actividad_secundaria'          => $actividadSecundaria,
+                                        ':porcentaje_aporte_vitivinicola' => $porcentajeAporte
+                                ]);
+                        }
+                        $stats['upsert_info_productor']++;
+
+                        // --- E) Colaboradores / familiares en la actividad (prod_colaboradores) ---
+                        $hijosSobrinos = isset($fila['¿Tiene hijos/sobrinos involcuadros en la actividad?'])
+                                ? $this->normalizarSiNoNsnc((string)$fila['¿Tiene hijos/sobrinos involcuadros en la actividad?'])
+                                : null;
+                        $mujeresTc = isset($fila['Mujeres trabajan Tpo Completo']) ? (int)preg_replace('/\D/', '', (string)$fila['Mujeres trabajan Tpo Completo']) : null;
+                        $hombresTc = isset($fila['Hombres trabajan Tpo Completo']) ? (int)preg_replace('/\D/', '', (string)$fila['Hombres trabajan Tpo Completo']) : null;
+                        $mujeresTp = isset($fila['Mujeres trabajan Tpo Parcial']) ? (int)preg_replace('/\D/', '', (string)$fila['Mujeres trabajan Tpo Parcial']) : null;
+                        $hombresTp = isset($fila['Hombres trabajan Tpo Parcial']) ? (int)preg_replace('/\D/', '', (string)$fila['Hombres trabajan Tpo Parcial']) : null;
+                        $probHijosTrabajen = isset($fila['Ctos de sus hijos es probable q trabajen en la finca?']) ? trim((string)$fila['Ctos de sus hijos es probable q trabajen en la finca?']) : null;
+
+                        $stmtBuscarColaboradores->execute([
+                                ':productor_id' => $productorId,
+                                ':anio'         => $anioReferencia
+                        ]);
+                        $colaboradoresId = $stmtBuscarColaboradores->fetchColumn();
+
+                        if ($colaboradoresId) {
+                                $stmtUpdateColaboradores->execute([
+                                        ':hijos_sobrinos_participan' => $hijosSobrinos,
+                                        ':mujeres_tc'                => $mujeresTc,
+                                        ':hombres_tc'                => $hombresTc,
+                                        ':mujeres_tp'                => $mujeresTp,
+                                        ':hombres_tp'                => $hombresTp,
+                                        ':prob_hijos_trabajen'       => $probHijosTrabajen,
+                                        ':id'                        => $colaboradoresId
+                                ]);
+                        } else {
+                                $stmtInsertColaboradores->execute([
+                                        ':productor_id'               => $productorId,
+                                        ':anio'                       => $anioReferencia,
+                                        ':hijos_sobrinos_participan'  => $hijosSobrinos,
+                                        ':mujeres_tc'                 => $mujeresTc,
+                                        ':hombres_tc'                 => $hombresTc,
+                                        ':mujeres_tp'                 => $mujeresTp,
+                                        ':hombres_tp'                 => $hombresTp,
+                                        ':prob_hijos_trabajen'        => $probHijosTrabajen
+                                ]);
+                        }
+                        $stats['upsert_colaboradores']++;
+
+                        // --- F) Descendencia (hijos) ---
+                        // Borramos una sola vez los hijos existentes para ese productor/año
+                        if (!isset($productoresHijosLimpiados[$productorId])) {
+                                $stmtDeleteHijos->execute([
+                                        ':productor_id' => $productorId,
+                                        ':anio'         => $anioReferencia
+                                ]);
+                                $productoresHijosLimpiados[$productorId] = true;
+                        }
+
+                        $motivoNoTrabajar = isset($fila['motivos por lo que no trabajarían']) ? trim((string)$fila['motivos por lo que no trabajarían']) : null;
+
+                        for ($i = 1; $i <= 3; $i++) {
+                                $rangoKey = 'Rango Etario ' . $i;
+                                $sexoKey = 'Sexo ' . $i;
+                                $cantKey = 'Cantidad ' . $i;
+                                $nivelKey = 'Nivel de Estudio ' . $i;
+
+                                $rangoEtario = isset($fila[$rangoKey]) ? trim((string)$fila[$rangoKey]) : '';
+                                $sexo = isset($fila[$sexoKey]) ? trim((string)$fila[$sexoKey]) : '';
+                                $cantidad = isset($fila[$cantKey]) ? trim((string)$fila[$cantKey]) : '';
+                                $nivelEstudio = isset($fila[$nivelKey]) ? trim((string)$fila[$nivelKey]) : '';
+
+                                // Si el bloque está completamente vacío, lo salteamos
+                                if ($rangoEtario === '' && $sexo === '' && $cantidad === '' && $nivelEstudio === '') {
+                                        continue;
+                                }
+
+                                $stmtInsertHijo->execute([
+                                        ':productor_id'      => $productorId,
+                                        ':anio'              => $anioReferencia,
+                                        ':motivo_no_trabajar' => $motivoNoTrabajar,
+                                        ':rango_etario'      => $rangoEtario,
+                                        ':sexo'              => $sexo,
+                                        ':cantidad'          => $cantidad === '' ? null : (int)preg_replace('/\D/', '', $cantidad),
+                                        ':nivel_estudio'     => $nivelEstudio
+                                ]);
+                                $stats['insert_hijos']++;
+                        }
+                }
+
+                $stats['conflictos'] = count($conflictos);
+
+                return [
+                        'conflictos' => $conflictos,
+                        'stats'      => $stats
+                ];
+        }
+
+        private function normalizarSiNoNsnc(?string $valor): ?string
+        {
+                if ($valor === null) {
+                        return null;
+                }
+
+                $v = strtolower(trim($valor));
+                if ($v === '') {
+                        return null;
+                }
+
+                if (strpos($v, 'si') === 0 || strpos($v, 'sí') === 0) {
+                        return 'si';
+                }
+
+                if (strpos($v, 'no') === 0) {
+                        return 'no';
+                }
+
+                if (strpos($v, 'nsnc') === 0) {
+                        return 'nsnc';
+                }
+
+                return $v;
+        }
+
+        private function limpiarPorcentaje(?string $valor): ?float
+        {
+                if ($valor === null) {
+                        return null;
+                }
+
+                $v = trim($valor);
+                if ($v === '') {
+                        return null;
+                }
+
+                // Quitar % y espacios, reemplazar coma por punto
+                $v = str_replace(['%', ' '], '', $v);
+                $v = str_replace(',', '.', $v);
+
+                if ($v === '') {
+                        return null;
+                }
+
+                return (float)$v;
+        }
+
+        private function parsearFechaExcel(?string $valor): ?string
+        {
+                if ($valor === null) {
+                        return null;
+                }
+
+                $v = trim($valor);
+                if ($v === '') {
+                        return null;
+                }
+
+                // Formato YYYY-MM-DD ya compatible
+                if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $v)) {
+                        return $v;
+                }
+
+                // Intentar DD/MM/AAAA o DD/MM/AA
+                if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/', $v, $m)) {
+                        $dia = (int)$m[1];
+                        $mes = (int)$m[2];
+                        $anio = (int)$m[3];
+                        if ($anio < 100) {
+                                $anio += 2000;
+                        }
+                        return sprintf('%04d-%02d-%02d', $anio, $mes, $dia);
+                }
+
+                // Si no se reconoce, la devolvemos cruda (evitamos romper la carga)
+                return $v;
+        }
 }
