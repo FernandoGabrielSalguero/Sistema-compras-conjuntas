@@ -109,6 +109,9 @@ try {
                     . ', info_productor: ' . $stats['upsert_info_productor']
                     . ', colaboradores: ' . $stats['upsert_colaboradores']
                     . ', hijos cargados: ' . $stats['insert_hijos']
+                    . ', rel prod-coop (nuevas/act): ' . $stats['rel_prod_coop_insertados'] . '/' . $stats['rel_prod_coop_actualizados']
+                    . ', fincas creadas: ' . $stats['fincas_creadas']
+                    . ', rel prod-finca (nuevas/reemp): ' . $stats['rel_prod_finca_insertados'] . '/' . $stats['rel_prod_finca_reemplazados']
                     . ', conflictos: ' . $stats['conflictos'] . '.';
             }
 

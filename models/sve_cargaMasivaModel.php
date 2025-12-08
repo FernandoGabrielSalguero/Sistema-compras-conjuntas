@@ -173,20 +173,26 @@ class CargaMasivaModel
 
                 $conflictos = [];
                 $stats = [
-                        'procesados'              => 0,
-                        'sin_usuario'             => 0,
-                        'sin_cooperativa'         => 0,
-                        'actualizados_usuario'    => 0,
-                        'upsert_usuarios_info'    => 0,
-                        'upsert_contactos_alternos' => 0,
-                        'upsert_info_productor'   => 0,
-                        'upsert_colaboradores'    => 0,
-                        'insert_hijos'            => 0,
-                        'conflictos'              => 0
+                        'procesados'                 => 0,
+                        'sin_usuario'                => 0,
+                        'sin_cooperativa'            => 0,
+                        'actualizados_usuario'       => 0,
+                        'upsert_usuarios_info'       => 0,
+                        'upsert_contactos_alternos'  => 0,
+                        'upsert_info_productor'      => 0,
+                        'upsert_colaboradores'       => 0,
+                        'insert_hijos'               => 0,
+                        'rel_prod_coop_insertados'   => 0,
+                        'rel_prod_coop_actualizados' => 0,
+                        'fincas_creadas'             => 0,
+                        'rel_prod_finca_insertados'  => 0,
+                        'rel_prod_finca_reemplazados' => 0,
+                        'conflictos'                 => 0
                 ];
 
-                // Para no borrar hijos más de una vez por productor/año
+                // Para no borrar hijos / relaciones finca más de una vez por productor/año
                 $productoresHijosLimpiados = [];
+                $productoresFincasLimpiados = [];
 
                 // --- Preparar sentencias reutilizables ---
                 $sqlBuscarUsuario = "SELECT id, id_real, cuit, razon_social 
@@ -304,6 +310,49 @@ class CargaMasivaModel
                         (:productor_id, :anio, :motivo_no_trabajar, :rango_etario, :sexo, :cantidad, :nivel_estudio)";
                 $stmtInsertHijo = $this->pdo->prepare($sqlInsertHijo);
 
+                // rel_productor_coop (ajuste desde Datos Familia)
+                $sqlSelectRelProdCoop = "SELECT id, cooperativa_id_real 
+                                         FROM rel_productor_coop 
+                                         WHERE productor_id_real = :productor_id_real";
+                $stmtSelectRelProdCoop = $this->pdo->prepare($sqlSelectRelProdCoop);
+
+                $sqlInsertRelProdCoop = "INSERT INTO rel_productor_coop (productor_id_real, cooperativa_id_real)
+                                         VALUES (:productor_id_real, :cooperativa_id_real)";
+                $stmtInsertRelProdCoop = $this->pdo->prepare($sqlInsertRelProdCoop);
+
+                $sqlUpdateRelProdCoop = "UPDATE rel_productor_coop 
+                                         SET cooperativa_id_real = :cooperativa_id_real
+                                         WHERE productor_id_real = :productor_id_real";
+                $stmtUpdateRelProdCoop = $this->pdo->prepare($sqlUpdateRelProdCoop);
+
+                // prod_fincas (buscar/crear finca por cooperativa + código)
+                $sqlBuscarFinca = "SELECT id 
+                                   FROM prod_fincas 
+                                   WHERE codigo_finca = :codigo_finca 
+                                     AND cooperativa_id_real = :cooperativa_id_real
+                                   LIMIT 1";
+                $stmtBuscarFinca = $this->pdo->prepare($sqlBuscarFinca);
+
+                $sqlInsertFinca = "INSERT INTO prod_fincas (codigo_finca, cooperativa_id_real, nombre_finca)
+                                   VALUES (:codigo_finca, :cooperativa_id_real, :nombre_finca)";
+                $stmtInsertFinca = $this->pdo->prepare($sqlInsertFinca);
+
+                // rel_productor_finca
+                $sqlBuscarRelProdFinca = "SELECT id 
+                                          FROM rel_productor_finca 
+                                          WHERE productor_id = :productor_id 
+                                            AND finca_id = :finca_id
+                                          LIMIT 1";
+                $stmtBuscarRelProdFinca = $this->pdo->prepare($sqlBuscarRelProdFinca);
+
+                $sqlDeleteRelProdFincaByProductor = "DELETE FROM rel_productor_finca 
+                                                     WHERE productor_id = :productor_id";
+                $stmtDeleteRelProdFincaByProductor = $this->pdo->prepare($sqlDeleteRelProdFincaByProductor);
+
+                $sqlInsertRelProdFinca = "INSERT INTO rel_productor_finca (productor_id, productor_id_real, finca_id)
+                                          VALUES (:productor_id, :productor_id_real, :finca_id)";
+                $stmtInsertRelProdFinca = $this->pdo->prepare($sqlInsertRelProdFinca);
+
                 foreach ($datos as $fila) {
                         $stats['procesados']++;
 
@@ -344,6 +393,99 @@ class CargaMasivaModel
                         }
 
                         $productorId = (int)$usuario['id'];
+
+                        // --- NUEVO: Ajustar relación productor–cooperativa en rel_productor_coop ---
+                        if ($idRealCooperativa !== '') {
+                                $stmtSelectRelProdCoop->execute([':productor_id_real' => $idRealProductor]);
+                                $relacionesCoop = $stmtSelectRelProdCoop->fetchAll(PDO::FETCH_ASSOC);
+
+                                if (empty($relacionesCoop)) {
+                                        // No hay relación aún -> crear
+                                        $stmtInsertRelProdCoop->execute([
+                                                ':productor_id_real'   => $idRealProductor,
+                                                ':cooperativa_id_real' => $idRealCooperativa
+                                        ]);
+                                        $stats['rel_prod_coop_insertados']++;
+                                } else {
+                                        // Ya hay relaciones -> si ninguna coincide, actualizamos a la cooperativa del CSV
+                                        $yaMismaCoop = false;
+                                        foreach ($relacionesCoop as $rel) {
+                                                if ($rel['cooperativa_id_real'] === $idRealCooperativa) {
+                                                        $yaMismaCoop = true;
+                                                        break;
+                                                }
+                                        }
+
+                                        if (!$yaMismaCoop) {
+                                                $stmtUpdateRelProdCoop->execute([
+                                                        ':productor_id_real'   => $idRealProductor,
+                                                        ':cooperativa_id_real' => $idRealCooperativa
+                                                ]);
+                                                $stats['rel_prod_coop_actualizados']++;
+                                        }
+                                }
+                        }
+
+                        // --- NUEVO: Crear finca (si corresponde) y relacionar productor–finca ---
+                        // Soportamos dos posibles encabezados: "Código Finca" o "Codigo Finca"
+                        $codigoFinca = '';
+                        if (isset($fila['Código Finca'])) {
+                                $codigoFinca = trim((string)$fila['Código Finca']);
+                        } elseif (isset($fila['Codigo Finca'])) {
+                                $codigoFinca = trim((string)$fila['Codigo Finca']);
+                        }
+
+                        if ($codigoFinca !== '' && $idRealCooperativa !== '') {
+                                // Borramos relaciones anteriores de ese productor una sola vez
+                                if (!isset($productoresFincasLimpiados[$productorId])) {
+                                        $stmtDeleteRelProdFincaByProductor->execute([
+                                                ':productor_id' => $productorId
+                                        ]);
+                                        $productoresFincasLimpiados[$productorId] = true;
+                                }
+
+                                // Buscar/crear finca por cooperativa + código
+                                $stmtBuscarFinca->execute([
+                                        ':codigo_finca'        => $codigoFinca,
+                                        ':cooperativa_id_real' => $idRealCooperativa
+                                ]);
+                                $fincaId = $stmtBuscarFinca->fetchColumn();
+
+                                if (!$fincaId) {
+                                        // Si viene un posible "Nombre Finca" en el Excel, lo usamos; si no, null
+                                        $nombreFinca = null;
+                                        if (isset($fila['Nombre Finca']) && trim((string)$fila['Nombre Finca']) !== '') {
+                                                $nombreFinca = trim((string)$fila['Nombre Finca']);
+                                        }
+
+                                        $stmtInsertFinca->execute([
+                                                ':codigo_finca'        => $codigoFinca,
+                                                ':cooperativa_id_real' => $idRealCooperativa,
+                                                ':nombre_finca'        => $nombreFinca
+                                        ]);
+                                        $fincaId = $this->pdo->lastInsertId();
+                                        $stats['fincas_creadas']++;
+                                }
+
+                                // Relación productor–finca
+                                $stmtBuscarRelProdFinca->execute([
+                                        ':productor_id' => $productorId,
+                                        ':finca_id'     => $fincaId
+                                ]);
+                                $relProdFincaId = $stmtBuscarRelProdFinca->fetchColumn();
+
+                                if (!$relProdFincaId) {
+                                        $stmtInsertRelProdFinca->execute([
+                                                ':productor_id'      => $productorId,
+                                                ':productor_id_real' => $idRealProductor,
+                                                ':finca_id'          => $fincaId
+                                        ]);
+                                        $stats['rel_prod_finca_insertados']++;
+                                } else {
+                                        // Ya existía esa relación, lo contamos como "reemplazado" para monitoreo
+                                        $stats['rel_prod_finca_reemplazados']++;
+                                }
+                        }
 
                         // Verificar cooperativa si viene
                         if ($idRealCooperativa !== '') {
