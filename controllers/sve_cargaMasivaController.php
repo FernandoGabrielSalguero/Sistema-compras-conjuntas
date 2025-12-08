@@ -63,17 +63,30 @@ try {
             exit;
 
         case 'relaciones':
-            $conflictos = $modelo->insertarRelaciones($datosProcesados);
+            $resultado = $modelo->insertarRelaciones($datosProcesados);
+            $conflictos = isset($resultado['conflictos']) ? $resultado['conflictos'] : [];
+            $stats = isset($resultado['stats']) ? $resultado['stats'] : null;
+
             if (count($conflictos)) {
-                echo json_encode([
-                    'mensaje' => '⚠️ Carga completada con advertencias.',
-                    'conflictos' => $conflictos
-                ]);
-                exit;
+                $mensaje = '⚠️ Carga completada con advertencias.';
             } else {
-                echo json_encode(['mensaje' => '✅ Relaciones cargadas exitosamente.']);
-                exit;
+                $mensaje = '✅ Relaciones cargadas exitosamente.';
             }
+
+            if (is_array($stats)) {
+                $mensaje .= ' Procesadas: ' . $stats['procesados']
+                    . '. Nuevas: ' . $stats['insertados']
+                    . ', actualizadas: ' . $stats['actualizados']
+                    . ', sin cambios: ' . $stats['sin_cambios']
+                    . ', conflictos: ' . $stats['conflictos'] . '.';
+            }
+
+            echo json_encode([
+                'mensaje'    => $mensaje,
+                'conflictos' => $conflictos,
+                'stats'      => $stats
+            ]);
+            exit;
 
         default:
             throw new Exception("Tipo de carga desconocido.");
