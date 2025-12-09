@@ -14,9 +14,40 @@ checkAccess('ingeniero');
 
 /** @var PDO $pdo viene desde config.php */
 
-$productorIdReal = isset($_GET['productor_id_real']) ? (string)$_GET['productor_id_real'] : '';
-
 $model = new RelevamientoFamiliaModel($pdo);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // ======== GUARDAR (JSON) ========
+    header('Content-Type: application/json; charset=UTF-8');
+
+    $productorIdReal = isset($_POST['productor_id_real']) ? (string)$_POST['productor_id_real'] : '';
+
+    try {
+        if ($productorIdReal === '') {
+            throw new InvalidArgumentException('productor_id_real es requerido');
+        }
+
+        $model->guardarDatosFamiliaPorProductorIdReal($productorIdReal, $_POST);
+
+        echo json_encode([
+            'ok'     => true,
+            'message' => 'Datos de familia guardados correctamente',
+        ]);
+    } catch (Throwable $e) {
+        error_log('[relevamiento_familia::POST] ' . $e->getMessage());
+        error_log($e->getTraceAsString());
+
+        http_response_code(500);
+        echo json_encode([
+            'ok'    => false,
+            'error' => $e->getMessage(),
+        ]);
+    }
+    exit;
+}
+
+// ======== CARGAR (GET, HTML parcial) ========
+$productorIdReal = isset($_GET['productor_id_real']) ? (string)$_GET['productor_id_real'] : '';
 
 $datosFamilia  = null;
 $errorBackend  = null;
@@ -26,8 +57,7 @@ try {
         $datosFamilia = $model->getDatosFamiliaPorProductorIdReal($productorIdReal);
     }
 } catch (Throwable $e) {
-    // Log interno para que puedas revisar en el servidor
-    error_log('[relevamiento_familia] ' . $e->getMessage());
+    error_log('[relevamiento_familia::GET] ' . $e->getMessage());
     error_log($e->getTraceAsString());
     $errorBackend = $e->getMessage();
 }

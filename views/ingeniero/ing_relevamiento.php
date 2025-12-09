@@ -461,6 +461,8 @@ unset($_SESSION['cierre_info']);
             if (!body) return;
 
             body.innerHTML = '<p>Cargando datos de familia...</p>';
+            // Guardamos el id_real también en el dataset del modal
+            modal.dataset.productorIdReal = productorIdReal;
 
             try {
                 const params = new URLSearchParams({
@@ -487,7 +489,9 @@ unset($_SESSION['cierre_info']);
             }
         }
 
+
         function initFamiliaModal(productorIdReal) {
+
             const modal = relevamientoGetModalElement('familia');
             if (!modal) return;
 
@@ -513,6 +517,64 @@ unset($_SESSION['cierre_info']);
             toggle.checked = false;
             applyVisibility();
         }
+
+        async function guardarFamilia() {
+            const modal = relevamientoGetModalElement('familia');
+            if (!modal) {
+                return;
+            }
+
+            const form = modal.querySelector('#familia-form');
+            if (!form) {
+                // Si no hay formulario, simplemente cerramos
+                relevamientoCloseModal('familia');
+                return;
+            }
+
+            const productorIdReal =
+                (modal.dataset.productorIdReal) ||
+                (currentProductor && currentProductor.id_real) ||
+                '';
+
+            const formData = new FormData(form);
+            formData.append('productor_id_real', productorIdReal);
+
+            try {
+                const resp = await fetch(
+                    `${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_familia_controller.php`, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        body: formData
+                    }
+                );
+
+                const data = await resp.json();
+
+                if (!data.ok) {
+                    throw new Error(data.error || 'Error al guardar datos de familia');
+                }
+
+                // Si tenés showToastBoton / showToast podés usarlo:
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('success', 'Datos de familia guardados correctamente');
+                } else {
+                    alert('Datos de familia guardados correctamente');
+                }
+
+                relevamientoCloseModal('familia');
+            } catch (e) {
+                console.error('[Relevamiento] Error al guardar familia:', e);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', 'Error al guardar datos de familia: ' + e.message);
+                } else {
+                    alert('Error al guardar datos de familia: ' + e.message);
+                }
+            }
+        }
+
+        // Exponer también en window por el onclick del botón
+        window.guardarFamilia = guardarFamilia;
+
 
         function relevamientoOpenModal(tipo, productorIdReal) {
             console.log('[Relevamiento] relevamientoOpenModal', {
@@ -570,11 +632,12 @@ unset($_SESSION['cierre_info']);
                 <p>Cargando formulario de familia...</p>
             </div>
             <div class="form-buttons">
-                <button class="btn btn-aceptar" onclick="relevamientoCloseModal('familia')">Aceptar</button>
+                <button class="btn btn-aceptar" onclick="guardarFamilia()">Aceptar</button>
                 <button class="btn btn-cancelar" onclick="relevamientoCloseModal('familia')">Cancelar</button>
             </div>
         </div>
     </div>
+
 
 
 
