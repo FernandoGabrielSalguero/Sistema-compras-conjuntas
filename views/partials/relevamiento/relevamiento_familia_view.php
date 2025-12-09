@@ -156,7 +156,7 @@ if (is_array($datosFamilia)) {
 
         <hr>
 
-        <h4>Contactos alternos (productores_contactos_alternos)</h4>
+        <h4 class="Contactos alternos (productores_contactos_alternos)">Contactos alternos (productores_contactos_alternos)</h4>
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="telefono_fijo">Teléfono fijo</label>
