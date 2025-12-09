@@ -316,8 +316,8 @@ unset($_SESSION['cierre_info']);
                 <p><strong>CUIT:</strong> ${prod.cuit ?? 'Sin CUIT'}</p>
                 <div class="card-actions">
                     <button class="btn btn-info" data-action="familia">Familia</button>
-                    <button class="btn btn-sm" data-action="produccion">Producción</button>
-                    <button class="btn btn-sm" data-action="cuarteles">Cuarteles</button>
+                    <button class="btn btn-info" data-action="produccion">Producción</button>
+                    <button class="btn btn-info" data-action="cuarteles">Cuarteles</button>
                 </div>
             `;
 
