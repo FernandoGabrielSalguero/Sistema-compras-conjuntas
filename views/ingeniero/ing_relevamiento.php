@@ -324,14 +324,15 @@ unset($_SESSION['cierre_info']);
         <p><strong>ID real:</strong> ${prod.id_real}</p>
         <p><strong>CUIT:</strong> ${prod.cuit ?? 'Sin CUIT'}</p>
         <div class="card-actions">
-            <button class="btn btn-info" onclick="openModal('familia','${prod.id_real}')">Familia</button>
-            <button class="btn btn-info" onclick="openModal('produccion','${prod.id_real}')">Producción</button>
-            <button class="btn btn-info" onclick="openModal('cuarteles','${prod.id_real}')">Cuarteles</button>
+            <button class="btn btn-info" onclick="relevamientoOpenModal('familia','${prod.id_real}')">Familia</button>
+            <button class="btn btn-info" onclick="relevamientoOpenModal('produccion','${prod.id_real}')">Producción</button>
+            <button class="btn btn-info" onclick="relevamientoOpenModal('cuarteles','${prod.id_real}')">Cuarteles</button>
         </div>
     `;
 
             return card;
         }
+
 
         async function cargarCooperativas() {
             const container = document.getElementById('cards-container');
@@ -413,8 +414,9 @@ unset($_SESSION['cierre_info']);
         }
 
         // ===== Helpers simples de modales =====
+        // Usamos nombres específicos para evitar conflicto con funciones globales del framework.
 
-        function getModalElement(tipo) {
+        function relevamientoGetModalElement(tipo) {
             const modalId = MODAL_IDS[tipo];
             if (!modalId) {
                 console.warn('[Relevamiento] Tipo de modal desconocido:', tipo);
@@ -427,15 +429,15 @@ unset($_SESSION['cierre_info']);
             return modal;
         }
 
-        function closeModal(tipo) {
-            const modal = getModalElement(tipo);
+        function relevamientoCloseModal(tipo) {
+            const modal = relevamientoGetModalElement(tipo);
             if (modal) {
                 modal.classList.add('hidden');
             }
         }
 
-        function openModal(tipo, productorIdReal) {
-            console.log('[Relevamiento] openModal SIMPLE', {
+        function relevamientoOpenModal(tipo, productorIdReal) {
+            console.log('[Relevamiento] relevamientoOpenModal', {
                 tipo,
                 productorIdReal
             });
@@ -448,15 +450,20 @@ unset($_SESSION['cierre_info']);
                 currentProductor = productor;
             }
 
-            const modal = getModalElement(tipo);
+            const modal = relevamientoGetModalElement(tipo);
             if (!modal) {
                 alert('No se encontró el modal para: ' + tipo);
                 return;
             }
 
-            // Por ahora solo mostramos el modal, sin cargar nada extra
+            // Mostramos el modal
             modal.classList.remove('hidden');
         }
+
+        // Nos aseguramos de que estén disponibles en window (por si el navegador cambia el comportamiento)
+        window.relevamientoOpenModal = relevamientoOpenModal;
+        window.relevamientoCloseModal = relevamientoCloseModal;
+
 
         // Cargar cooperativas una vez que el DOM esté listo
         window.addEventListener('DOMContentLoaded', () => {
@@ -474,11 +481,12 @@ unset($_SESSION['cierre_info']);
                 <p>Cargando formulario de familia...</p>
             </div>
             <div class="form-buttons">
-                <button class="btn btn-aceptar" onclick="closeModal('familia')">Aceptar</button>
-                <button class="btn btn-cancelar" onclick="closeModal('familia')">Cancelar</button>
+                <button class="btn btn-aceptar" onclick="relevamientoCloseModal('familia')">Aceptar</button>
+                <button class="btn btn-cancelar" onclick="relevamientoCloseModal('familia')">Cancelar</button>
             </div>
         </div>
     </div>
+
 
     <!-- Modal Producción -->
     <div id="modal-produccion" class="modal hidden">
@@ -488,11 +496,12 @@ unset($_SESSION['cierre_info']);
                 <p>Cargando formulario de producción...</p>
             </div>
             <div class="form-buttons">
-                <button class="btn btn-aceptar" onclick="closeModal('produccion')">Aceptar</button>
-                <button class="btn btn-cancelar" onclick="closeModal('produccion')">Cancelar</button>
+                <button class="btn btn-aceptar" onclick="relevamientoCloseModal('produccion')">Aceptar</button>
+                <button class="btn btn-cancelar" onclick="relevamientoCloseModal('produccion')">Cancelar</button>
             </div>
         </div>
     </div>
+
 
     <!-- Modal Cuarteles -->
     <div id="modal-cuarteles" class="modal hidden">
@@ -502,11 +511,12 @@ unset($_SESSION['cierre_info']);
                 <p>Cargando formulario de cuarteles...</p>
             </div>
             <div class="form-buttons">
-                <button class="btn btn-aceptar" onclick="closeModal('cuarteles')">Aceptar</button>
-                <button class="btn btn-cancelar" onclick="closeModal('cuarteles')">Cancelar</button>
+                <button class="btn btn-aceptar" onclick="relevamientoCloseModal('cuarteles')">Aceptar</button>
+                <button class="btn btn-cancelar" onclick="relevamientoCloseModal('cuarteles')">Cancelar</button>
             </div>
         </div>
     </div>
+
 
 </body>
 
