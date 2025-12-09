@@ -174,7 +174,8 @@ class CargaMasivaModel
                 $conflictos = [];
                 $stats = [
                         'procesados'                 => 0,
-                        'sin_usuario'                => 0,
+                        'sin_usuario'                => 0,  // filas que realmente no se pueden procesar (ID PP vacío, por ejemplo)
+                        'usuarios_creados'           => 0,  // productores creados automáticamente
                         'sin_cooperativa'            => 0,
                         'actualizados_usuario'       => 0,
                         'upsert_usuarios_info'       => 0,
@@ -205,6 +206,14 @@ class CargaMasivaModel
                                          SET cuit = :cuit, razon_social = :razon_social 
                                          WHERE id = :id";
                 $stmtActualizarUsuario = $this->pdo->prepare($sqlActualizarUsuario);
+
+                // Insertar nuevo productor en usuarios cuando no exista
+                $sqlInsertUsuarioProductor = "INSERT INTO usuarios 
+                        (usuario, contrasena, rol, permiso_ingreso, cuit, razon_social, id_real)
+                        VALUES 
+                        (:usuario, :contrasena, :rol, :permiso_ingreso, :cuit, :razon_social, :id_real)";
+                $stmtInsertUsuarioProductor = $this->pdo->prepare($sqlInsertUsuarioProductor);
+
 
                 // usuarios_info
                 $sqlBuscarUsuarioInfo = "SELECT id 
@@ -383,13 +392,51 @@ class CargaMasivaModel
                         $usuario = $stmtBuscarUsuario->fetch(PDO::FETCH_ASSOC);
 
                         if (!$usuario) {
-                                $conflictos[] = [
-                                        'id_pp'         => $idPpCsv,
-                                        'id_real_pp'    => $idRealProductor,
-                                        'motivo'        => 'Productor no encontrado en usuarios.id_real'
+                                // Si no existe, lo creamos automáticamente como productor
+                                // Tomamos CUIT y Razón Social desde el CSV si vienen
+                                $cuitNuevo = null;
+                                if (isset($fila['CUIT']) && trim((string)$fila['CUIT']) !== '') {
+                                        $cuitNuevo = preg_replace('/\D/', '', (string)$fila['CUIT']);
+                                        if ($cuitNuevo === '') {
+                                                $cuitNuevo = null;
+                                        }
+                                }
+
+                                if (isset($fila['RAZÓN SOCIAL']) && trim((string)$fila['RAZÓN SOCIAL']) !== '') {
+                                        $razonSocialNuevo = trim((string)$fila['RAZÓN SOCIAL']);
+                                } elseif (isset($fila['Productor']) && trim((string)$fila['Productor']) !== '') {
+                                        $razonSocialNuevo = trim((string)$fila['Productor']);
+                                } else {
+                                        $razonSocialNuevo = 'Productor ' . $idRealProductor;
+                                }
+
+                                // Usuario de login: usamos id_real para garantizar unicidad
+                                $usuarioLogin = $idRealProductor;
+
+                                // Password inicial (podés cambiar la lógica si querés)
+                                $passwordHash = password_hash($idRealProductor, PASSWORD_DEFAULT);
+
+                                $stmtInsertUsuarioProductor->execute([
+                                        ':usuario'        => $usuarioLogin,
+                                        ':contrasena'     => $passwordHash,
+                                        ':rol'            => 'productor',
+                                        ':permiso_ingreso' => 'Habilitado',
+                                        ':cuit'           => $cuitNuevo,
+                                        ':razon_social'   => $razonSocialNuevo,
+                                        ':id_real'        => $idRealProductor
+                                ]);
+
+                                $nuevoId = (int)$this->pdo->lastInsertId();
+
+                                // Armamos $usuario para que el resto del flujo funcione igual
+                                $usuario = [
+                                        'id'           => $nuevoId,
+                                        'id_real'      => $idRealProductor,
+                                        'cuit'         => $cuitNuevo ?? '',
+                                        'razon_social' => $razonSocialNuevo
                                 ];
-                                $stats['sin_usuario']++;
-                                continue;
+
+                                $stats['usuarios_creados']++;
                         }
 
                         $productorId = (int)$usuario['id'];

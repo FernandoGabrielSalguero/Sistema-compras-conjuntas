@@ -102,6 +102,7 @@ try {
             if (is_array($stats)) {
                 $mensaje .= ' Filas procesadas: ' . $stats['procesados']
                     . ', sin usuario: ' . $stats['sin_usuario']
+                    . ', usuarios creados: ' . $stats['usuarios_creados']
                     . ', sin cooperativa: ' . $stats['sin_cooperativa']
                     . ', usuarios actualizados: ' . $stats['actualizados_usuario']
                     . ', info productor (usuarios_info): ' . $stats['upsert_usuarios_info']
