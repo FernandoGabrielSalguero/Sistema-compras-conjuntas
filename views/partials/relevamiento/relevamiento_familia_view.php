@@ -18,6 +18,20 @@ function h($value): string
     return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
+/**
+ * Normaliza fechas para el input type="date".
+ * - Si viene null, vacío o '0000-00-00' => devuelve cadena vacía (no rompe el input).
+ * - Caso contrario, devuelve la fecha tal cual (se espera formato YYYY-MM-DD desde la BD).
+ */
+function hDate($value): string
+{
+    $v = (string)($value ?? '');
+    if ($v === '' || $v === '0000-00-00') {
+        return '';
+    }
+    return htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
+}
+
 // Evitamos errores cuando $datosFamilia es null o no es array
 $usuario       = [];
 $usuariosInfo  = [];
@@ -25,6 +39,7 @@ $contactosAlt  = [];
 $infoProd      = [];
 $colaboradores = [];
 $hijos         = [];
+
 
 if (is_array($datosFamilia)) {
     $usuario       = $datosFamilia['usuario']            ?? [];
@@ -35,7 +50,31 @@ if (is_array($datosFamilia)) {
     $hijos         = $datosFamilia['hijos']              ?? [];
 }
 ?>
+?>
+<style>
+    /* Títulos de secciones del relevamiento */
+    .relevamiento-section-title {
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        color: var(--sve-primary-color, #0d6efd);
+        /* Color primario configurable */
+    }
+
+    /* Separadores visualmente más agradables */
+    .relevamiento-section-divider {
+        border: 0;
+        height: 1px;
+        margin: 0.75rem 0 1.25rem;
+        background: linear-gradient(to right,
+                transparent,
+                rgba(0, 0, 0, 0.18),
+                transparent);
+    }
+</style>
+
 <div>
+
     <?php if (!empty($errorBackend)): ?>
         <p class="text-danger">
             Error al cargar datos de familia (backend): <?= h($errorBackend) ?>
@@ -56,7 +95,10 @@ if (is_array($datosFamilia)) {
     </div>
 
     <form id="familia-form">
-        <h4>Datos personales (usuarios / usuarios_info)</h4>
+        <h4 class="relevamiento-section-title">
+            Datos personales (usuarios / usuarios_info)
+        </h4>
+
 
         <div class="input-group">
             <label for="nombre">Nombre</label>
@@ -101,10 +143,11 @@ if (is_array($datosFamilia)) {
                     type="date"
                     id="fecha_nacimiento"
                     name="fecha_nacimiento"
-                    placeholder="…"
-                    value="<?= h($usuariosInfo['fecha_nacimiento'] ?? '') ?>" />
+                    placeholder="dd/mm/aaaa"
+                    value="<?= hDate($usuariosInfo['fecha_nacimiento'] ?? '') ?>" />
             </div>
         </div>
+
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="categorizacion">Categorización</label>
@@ -154,10 +197,13 @@ if (is_array($datosFamilia)) {
             </div>
         </div>
 
-        
-        <hr>
-        <h4 class="relevamiento-advanced-hidden" data-advanced="1">Contactos alternos (productores_contactos_alternos)</h4>
-        <hr>
+
+        <hr class="relevamiento-section-divider">
+        <h4 class="relevamiento-section-title relevamiento-advanced-hidden" data-advanced="1">
+            Contactos alternos (productores_contactos_alternos)
+        </h4>
+        <hr class="relevamiento-section-divider">
+
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="telefono_fijo">Teléfono fijo</label>
@@ -167,7 +213,7 @@ if (is_array($datosFamilia)) {
                     id="telefono_fijo"
                     name="telefono_fijo"
                     placeholder="…"
-                    value="<?= h($contactosAlt['telefono_fijo'] ?? '') ?>"/>
+                    value="<?= h($contactosAlt['telefono_fijo'] ?? '') ?>" />
             </div>
         </div>
 
@@ -183,18 +229,7 @@ if (is_array($datosFamilia)) {
             </div>
         </div>
 
-        <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
-            <label for="telefono_fijo">Teléfono fijo</label>
-            <div class="input-icon input-icon-name">
-                <input
-                    type="text"
-                    id="telefono_fijo"
-                    name="telefono_fijo"
-                    placeholder="…"
-                    value><?= h($contactosAlt['telefono_fijo'] ?? '') ?>"
-                />
-            </div>
-        </div>
+
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="mail_alternativo">Mail alternativo</label>
@@ -208,11 +243,14 @@ if (is_array($datosFamilia)) {
             </div>
         </div>
 
-        
-        <hr>
-        <h4>Información del productor (info_productor)</h4>
-        <hr>
-        
+
+        <hr class="relevamiento-section-divider">
+        <h4 class="relevamiento-section-title">
+            Información del productor (info_productor)
+        </h4>
+        <hr class="relevamiento-section-divider">
+
+
         <div class="input-group">
             <label for="acceso_internet">Acceso a internet</label>
             <div class="input-icon input-icon-name">
@@ -309,12 +347,13 @@ if (is_array($datosFamilia)) {
             </div>
         </div>
 
-        
-        <hr>
-        <h4 class="relevamiento-advanced-hidden" data-advanced="1">
+
+        <hr class="relevamiento-section-divider">
+        <h4 class="relevamiento-section-title relevamiento-advanced-hidden" data-advanced="1">
             Colaboradores (prod_colaboradores)
         </h4>
-        <hr>
+        <hr class="relevamiento-section-divider">
+
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="hijos_sobrinos_participan">Hijos/sobrinos participan</label>
@@ -388,12 +427,13 @@ if (is_array($datosFamilia)) {
             </div>
         </div>
 
-        
-        <hr>
-        <h4 class="relevamiento-advanced-hidden" data-advanced="1">
+
+        <hr class="relevamiento-section-divider">
+        <h4 class="relevamiento-section-title relevamiento-advanced-hidden" data-advanced="1">
             Hijos (prod_hijos)
         </h4>
-        <hr>
+        <hr class="relevamiento-section-divider">
+
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="motivo_no_trabajar">Motivo de no trabajar</label>
@@ -475,10 +515,11 @@ if (is_array($datosFamilia)) {
                     type="date"
                     id="fecha_nacimiento_1"
                     name="fecha_nacimiento_1"
-                    placeholder="…"
-                    value="<?= h($hijos['fecha_nacimiento_1'] ?? '') ?>" />
+                    placeholder="dd/mm/aaaa"
+                    value="<?= hDate($hijos['fecha_nacimiento_1'] ?? '') ?>" />
             </div>
         </div>
+
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="sexo1">Sexo hijo 1</label>
@@ -524,10 +565,11 @@ if (is_array($datosFamilia)) {
                     type="date"
                     id="fecha_nacimiento_2"
                     name="fecha_nacimiento_2"
-                    placeholder="…"
-                    value="<?= h($hijos['fecha_nacimiento_2'] ?? '') ?>" />
+                    placeholder="dd/mm/aaaa"
+                    value="<?= hDate($hijos['fecha_nacimiento_2'] ?? '') ?>" />
             </div>
         </div>
+
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="sexo2">Sexo hijo 2</label>
@@ -542,16 +584,17 @@ if (is_array($datosFamilia)) {
         </div>
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
-            <label for="nive_estudio2">Nivel estudio hijo 2</label>
+            <label for="nivel_estudio2">Nivel estudio hijo 2</label>
             <div class="input-icon input-icon-name">
                 <input
                     type="text"
-                    id="nive_estudio2"
-                    name="nive_estudio2"
+                    id="nivel_estudio2"
+                    name="nivel_estudio2"
                     placeholder="…"
-                    value="<?= h($hijos['nive_estudio2'] ?? '') ?>" />
+                    value="<?= h($hijos['nivel_estudio2'] ?? '') ?>" />
             </div>
         </div>
+
 
         <!-- Hijo 3 -->
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
@@ -573,10 +616,11 @@ if (is_array($datosFamilia)) {
                     type="date"
                     id="fecha_nacimiento_3"
                     name="fecha_nacimiento_3"
-                    placeholder="…"
-                    value="<?= h($hijos['fecha_nacimiento_3'] ?? '') ?>" />
+                    placeholder="dd/mm/aaaa"
+                    value="<?= hDate($hijos['fecha_nacimiento_3'] ?? '') ?>" />
             </div>
         </div>
+
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="sexo3">Sexo hijo 3</label>

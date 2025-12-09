@@ -12,7 +12,54 @@ class RelevamientoFamiliaModel
     }
 
     /**
+     * Normaliza un campo de texto opcional.
+     * - Si la clave no existe en $data => devuelve null (para inserts/updates completos).
+     * - Si viene cadena vacía => null (evitamos valores tipo '' en columnas DATE).
+     * - Si viene con valor => trimmed.
+     */
+    private function normalizeNullableString(array $data, string $key): ?string
+    {
+        if (!array_key_exists($key, $data)) {
+            return null;
+        }
+
+        $value = trim((string)$data[$key]);
+        if ($value === '') {
+            return null;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Normaliza un campo de fecha opcional:
+     * - '' => null
+     * - dd/mm/yyyy => yyyy-mm-dd
+     * - yyyy-mm-dd => se deja igual
+     */
+    private function normalizeNullableDate(array $data, string $key): ?string
+    {
+        if (!array_key_exists($key, $data)) {
+            return null;
+        }
+
+        $value = trim((string)$data[$key]);
+        if ($value === '') {
+            return null;
+        }
+
+        // dd/mm/yyyy -> yyyy-mm-dd
+        if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $value, $m)) {
+            return sprintf('%04d-%02d-%02d', (int)$m[3], (int)$m[2], (int)$m[1]);
+        }
+
+        // Si ya viene yyyy-mm-dd (form input type="date"), se devuelve igual
+        return $value;
+    }
+
+    /**
      * Obtiene todos los datos de familia para un productor (por id_real).
+
      * Tablas involucradas:
      *  - usuarios / usuarios_info
      *  - productores_contactos_alternos
@@ -250,12 +297,12 @@ class RelevamientoFamiliaModel
                 ";
                 $st = $this->pdo->prepare($sqlUpdInfo);
                 $st->execute([
-                    ':nombre'           => $data['nombre'] ?? null,
-                    ':telefono'         => $data['telefono'] ?? null,
-                    ':correo'           => $data['correo'] ?? null,
-                    ':fecha_nacimiento' => $data['fecha_nacimiento'] ?? null,
-                    ':categorizacion'   => $data['categorizacion'] ?? null,
-                    ':tipo_relacion'    => $data['tipo_relacion'] ?? null,
+                    ':nombre'           => $this->normalizeNullableString($data, 'nombre'),
+                    ':telefono'         => $this->normalizeNullableString($data, 'telefono'),
+                    ':correo'           => $this->normalizeNullableString($data, 'correo'),
+                    ':fecha_nacimiento' => $this->normalizeNullableDate($data, 'fecha_nacimiento'),
+                    ':categorizacion'   => $this->normalizeNullableString($data, 'categorizacion'),
+                    ':tipo_relacion'    => $this->normalizeNullableString($data, 'tipo_relacion'),
                     ':id'               => $rowInfo['id'],
                 ]);
             } else {
@@ -271,12 +318,12 @@ class RelevamientoFamiliaModel
                 $st = $this->pdo->prepare($sqlInsInfo);
                 $st->execute([
                     ':usuario_id'       => $usuarioId,
-                    ':nombre'           => $data['nombre'] ?? null,
-                    ':telefono'         => $data['telefono'] ?? null,
-                    ':correo'           => $data['correo'] ?? null,
-                    ':fecha_nacimiento' => $data['fecha_nacimiento'] ?? null,
-                    ':categorizacion'   => $data['categorizacion'] ?? null,
-                    ':tipo_relacion'    => $data['tipo_relacion'] ?? null,
+                    ':nombre'           => $this->normalizeNullableString($data, 'nombre'),
+                    ':telefono'         => $this->normalizeNullableString($data, 'telefono'),
+                    ':correo'           => $this->normalizeNullableString($data, 'correo'),
+                    ':fecha_nacimiento' => $this->normalizeNullableDate($data, 'fecha_nacimiento'),
+                    ':categorizacion'   => $this->normalizeNullableString($data, 'categorizacion'),
+                    ':tipo_relacion'    => $this->normalizeNullableString($data, 'tipo_relacion'),
                 ]);
             }
 
@@ -488,23 +535,23 @@ class RelevamientoFamiliaModel
                 ";
                 $st = $this->pdo->prepare($sqlUpdHijos);
                 $st->execute([
-                    ':motivo_no_trabajar' => $data['motivo_no_trabajar'] ?? null,
-                    ':rango_etario'       => $data['rango_etario'] ?? null,
-                    ':sexo'               => $data['sexo'] ?? null,
-                    ':cantidad'           => $data['cantidad'] ?? null,
-                    ':nivel_estudio'      => $data['nivel_estudio'] ?? null,
-                    ':nom_hijo_1'         => $data['nom_hijo_1'] ?? null,
-                    ':fecha_nacimiento_1' => $data['fecha_nacimiento_1'] ?? null,
-                    ':sexo1'              => $data['sexo1'] ?? null,
-                    ':nivel_estudio1'     => $data['nivel_estudio1'] ?? null,
-                    ':nom_hijo_2'         => $data['nom_hijo_2'] ?? null,
-                    ':fecha_nacimiento_2' => $data['fecha_nacimiento_2'] ?? null,
-                    ':sexo2'              => $data['sexo2'] ?? null,
-                    ':nivel_estudio2'     => $data['nivel_estudio2'] ?? null,
-                    ':nom_hijo_3'         => $data['nom_hijo_3'] ?? null,
-                    ':fecha_nacimiento_3' => $data['fecha_nacimiento_3'] ?? null,
-                    ':sexo3'              => $data['sexo3'] ?? null,
-                    ':nivel_estudio3'     => $data['nivel_estudio3'] ?? null,
+                    ':motivo_no_trabajar' => $this->normalizeNullableString($data, 'motivo_no_trabajar'),
+                    ':rango_etario'       => $this->normalizeNullableString($data, 'rango_etario'),
+                    ':sexo'               => $this->normalizeNullableString($data, 'sexo'),
+                    ':cantidad'           => $this->normalizeNullableString($data, 'cantidad'),
+                    ':nivel_estudio'      => $this->normalizeNullableString($data, 'nivel_estudio'),
+                    ':nom_hijo_1'         => $this->normalizeNullableString($data, 'nom_hijo_1'),
+                    ':fecha_nacimiento_1' => $this->normalizeNullableDate($data, 'fecha_nacimiento_1'),
+                    ':sexo1'              => $this->normalizeNullableString($data, 'sexo1'),
+                    ':nivel_estudio1'     => $this->normalizeNullableString($data, 'nivel_estudio1'),
+                    ':nom_hijo_2'         => $this->normalizeNullableString($data, 'nom_hijo_2'),
+                    ':fecha_nacimiento_2' => $this->normalizeNullableDate($data, 'fecha_nacimiento_2'),
+                    ':sexo2'              => $this->normalizeNullableString($data, 'sexo2'),
+                    ':nivel_estudio2'     => $this->normalizeNullableString($data, 'nivel_estudio2'),
+                    ':nom_hijo_3'         => $this->normalizeNullableString($data, 'nom_hijo_3'),
+                    ':fecha_nacimiento_3' => $this->normalizeNullableDate($data, 'fecha_nacimiento_3'),
+                    ':sexo3'              => $this->normalizeNullableString($data, 'sexo3'),
+                    ':nivel_estudio3'     => $this->normalizeNullableString($data, 'nivel_estudio3'),
                     ':id'                 => $rowHijos['id'],
                 ]);
             } else {
@@ -527,23 +574,23 @@ class RelevamientoFamiliaModel
                 $st->execute([
                     ':productor_id'       => $usuarioId,
                     ':anio'              => $anioActual,
-                    ':motivo_no_trabajar' => $data['motivo_no_trabajar'] ?? null,
-                    ':rango_etario'       => $data['rango_etario'] ?? null,
-                    ':sexo'               => $data['sexo'] ?? null,
-                    ':cantidad'           => $data['cantidad'] ?? null,
-                    ':nivel_estudio'      => $data['nivel_estudio'] ?? null,
-                    ':nom_hijo_1'         => $data['nom_hijo_1'] ?? null,
-                    ':fecha_nacimiento_1' => $data['fecha_nacimiento_1'] ?? null,
-                    ':sexo1'              => $data['sexo1'] ?? null,
-                    ':nivel_estudio1'     => $data['nivel_estudio1'] ?? null,
-                    ':nom_hijo_2'         => $data['nom_hijo_2'] ?? null,
-                    ':fecha_nacimiento_2' => $data['fecha_nacimiento_2'] ?? null,
-                    ':sexo2'              => $data['sexo2'] ?? null,
-                    ':nivel_estudio2'     => $data['nivel_estudio2'] ?? null,
-                    ':nom_hijo_3'         => $data['nom_hijo_3'] ?? null,
-                    ':fecha_nacimiento_3' => $data['fecha_nacimiento_3'] ?? null,
-                    ':sexo3'              => $data['sexo3'] ?? null,
-                    ':nivel_estudio3'     => $data['nivel_estudio3'] ?? null,
+                    ':motivo_no_trabajar' => $this->normalizeNullableString($data, 'motivo_no_trabajar'),
+                    ':rango_etario'       => $this->normalizeNullableString($data, 'rango_etario'),
+                    ':sexo'               => $this->normalizeNullableString($data, 'sexo'),
+                    ':cantidad'           => $this->normalizeNullableString($data, 'cantidad'),
+                    ':nivel_estudio'      => $this->normalizeNullableString($data, 'nivel_estudio'),
+                    ':nom_hijo_1'         => $this->normalizeNullableString($data, 'nom_hijo_1'),
+                    ':fecha_nacimiento_1' => $this->normalizeNullableDate($data, 'fecha_nacimiento_1'),
+                    ':sexo1'              => $this->normalizeNullableString($data, 'sexo1'),
+                    ':nivel_estudio1'     => $this->normalizeNullableString($data, 'nivel_estudio1'),
+                    ':nom_hijo_2'         => $this->normalizeNullableString($data, 'nom_hijo_2'),
+                    ':fecha_nacimiento_2' => $this->normalizeNullableDate($data, 'fecha_nacimiento_2'),
+                    ':sexo2'              => $this->normalizeNullableString($data, 'sexo2'),
+                    ':nivel_estudio2'     => $this->normalizeNullableString($data, 'nivel_estudio2'),
+                    ':nom_hijo_3'         => $this->normalizeNullableString($data, 'nom_hijo_3'),
+                    ':fecha_nacimiento_3' => $this->normalizeNullableDate($data, 'fecha_nacimiento_3'),
+                    ':sexo3'              => $this->normalizeNullableString($data, 'sexo3'),
+                    ':nivel_estudio3'     => $this->normalizeNullableString($data, 'nivel_estudio3'),
                 ]);
             }
 
