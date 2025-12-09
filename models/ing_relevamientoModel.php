@@ -39,7 +39,7 @@ class ingRelevamientoModel
 
   /**
    * Productores asociados a una cooperativa específica, restringidos al ingeniero.
-   * Usa rel_prod_coop + rel_coop_ingeniero para garantizar que la coop pertenece al ingeniero.
+   * Usa rel_productor_coop + rel_coop_ingeniero para garantizar que la coop pertenece al ingeniero.
    * Devuelve: id_real, nombre, cuit del productor.
    */
   public function getProductoresByCooperativa(string $coopIdReal, string $ingenieroIdReal): array
@@ -49,7 +49,7 @@ class ingRelevamientoModel
         u.id_real,
         COALESCE(ui.nombre, u.usuario) AS nombre,
         u.cuit
-      FROM rel_prod_coop rpc
+      FROM rel_productor_coop rpc
       JOIN usuarios u
         ON u.id_real = rpc.productor_id_real
        AND u.rol = 'productor'
