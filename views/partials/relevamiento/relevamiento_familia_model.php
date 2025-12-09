@@ -89,7 +89,7 @@ class RelevamientoFamiliaModel
                 telefono_fijo,
                 mail_alternativo
             FROM productores_contactos_alternos
-            WHERE usuario_id = :uid
+            WHERE productor_id = :uid
             LIMIT 1
         ";
 
@@ -109,7 +109,7 @@ class RelevamientoFamiliaModel
                 actividad_secundaria,
                 porcentaje_aporte_vitivinicola
             FROM info_productor
-            WHERE usuario_id = :uid
+            WHERE productor_id = :uid
             LIMIT 1
         ";
 
@@ -127,7 +127,7 @@ class RelevamientoFamiliaModel
                 hombres_tp,
                 prob_hijos_trabajen
             FROM prod_colaboradores
-            WHERE usuario_id = :uid
+            WHERE productor_id = :uid
             LIMIT 1
         ";
 
@@ -156,7 +156,7 @@ class RelevamientoFamiliaModel
                 sexo3,
                 nivel_estudio3
             FROM prod_hijos
-            WHERE usuario_id = :uid
+            WHERE productor_id = :uid
             LIMIT 1
         ";
 
