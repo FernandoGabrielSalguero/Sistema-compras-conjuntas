@@ -252,16 +252,19 @@ class CargaMasivaModel
                          WHERE productor_id_real = :productor_id_real"
                 );
 
+                // IMPORTANTE: a partir de ahora usamos cooperativa_id_real como "id_real del dueño",
+                // que en este caso es el PRODUCTOR (id_real del productor).
                 $stmtFincaSelect = $this->pdo->prepare(
                         "SELECT id FROM prod_fincas
-                          WHERE codigo_finca = :codigo_finca
-                            AND cooperativa_id_real = :cooperativa_id_real
-                          LIMIT 1"
+          WHERE codigo_finca = :codigo_finca
+            AND productor_id_real = :duenio_id_real
+          LIMIT 1"
                 );
                 $stmtFincaInsert = $this->pdo->prepare(
-                        "INSERT INTO prod_fincas (codigo_finca, cooperativa_id_real, nombre_finca)
-                         VALUES (:codigo_finca, :cooperativa_id_real, :nombre_finca)"
+                        "INSERT INTO prod_fincas (codigo_finca, productor_id_real, nombre_finca)
+         VALUES (:codigo_finca, :duenio_id_real, :nombre_finca)"
                 );
+
 
                 $stmtRelProdFincaSelect = $this->pdo->prepare(
                         "SELECT id FROM rel_productor_finca
@@ -438,25 +441,33 @@ class CargaMasivaModel
                                 }
                         }
 
-                        // Fincas (prod_fincas + rel_productor_finca), Código Finca puede tener varios separados por "-"
+                        // Fincas (prod_fincas + rel_productor_finca)
+                        // - "Código Finca" puede traer varios códigos en la misma celda, separados por "-".
+                        // - Cada código debe terminar en una fila distinta en prod_fincas.
+                        // - El dueño de la finca es el PRODUCTOR: usamos su id_real ($idPP) en productor_id_real.
                         if ($codFincaCell !== '') {
-                                $codigos = array_filter(array_map('trim', explode('-', $codFincaCell)), function ($v) {
-                                        return $v !== '';
-                                });
+                                $codigos = array_filter(
+                                        array_map('trim', explode('-', $codFincaCell)),
+                                        function ($v) {
+                                                return $v !== '';
+                                        }
+                                );
 
                                 foreach ($codigos as $codigoFinca) {
+                                        // Buscar finca existente para ESTE productor + código
                                         $stmtFincaSelect->execute([
-                                                ':codigo_finca'        => $codigoFinca,
-                                                ':cooperativa_id_real' => $coopIdReal
+                                                ':codigo_finca'   => $codigoFinca,
+                                                ':duenio_id_real' => $idPP
                                         ]);
                                         $finca = $stmtFincaSelect->fetch(PDO::FETCH_ASSOC);
                                         $fincaId = null;
 
                                         if (!$finca) {
+                                                // Crear finca a nombre del productor (id_real del productor)
                                                 $stmtFincaInsert->execute([
-                                                        ':codigo_finca'        => $codigoFinca,
-                                                        ':cooperativa_id_real' => $coopIdReal,
-                                                        ':nombre_finca'        => null
+                                                        ':codigo_finca'   => $codigoFinca,
+                                                        ':duenio_id_real' => $idPP,
+                                                        ':nombre_finca'   => null
                                                 ]);
                                                 $fincaId = (int) $this->pdo->lastInsertId();
                                                 $stats['fincas_creadas']++;
@@ -464,12 +475,14 @@ class CargaMasivaModel
                                                 $fincaId = (int) $finca['id'];
                                         }
 
+                                        // Relacionar productor ↔ finca
                                         if ($fincaId) {
                                                 $stmtRelProdFincaSelect->execute([
                                                         ':productor_id_real' => $idPP,
                                                         ':finca_id'          => $fincaId
                                                 ]);
                                                 $relPF = $stmtRelProdFincaSelect->fetch(PDO::FETCH_ASSOC);
+
                                                 if (!$relPF) {
                                                         $stmtRelProdFincaInsert->execute([
                                                                 ':productor_id'      => $productorId,
@@ -481,6 +494,7 @@ class CargaMasivaModel
                                         }
                                 }
                         }
+
 
                         // usuarios_info
                         $stmtUsuarioInfoSelect->execute([':usuario_id' => $productorId]);
