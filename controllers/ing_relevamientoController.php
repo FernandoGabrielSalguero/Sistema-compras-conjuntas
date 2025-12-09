@@ -93,8 +93,17 @@ try {
     echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
     exit;
 } catch (Throwable $e) {
+    // Log para el servidor
+    error_log('[ing_relevamientoController] ' . $e->getMessage());
+    error_log($e->getTraceAsString());
+
+    // Devolver detalle al frontend mientras depuramos
     http_response_code(500);
     ob_clean();
-    echo json_encode(['ok' => false, 'error' => 'Error inesperado']);
+    echo json_encode([
+        'ok'    => false,
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(), // opcional, útil mientras desarrollás
+    ]);
     exit;
 }
