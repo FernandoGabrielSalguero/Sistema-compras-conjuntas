@@ -36,7 +36,7 @@ unset($_SESSION['cierre_info']);
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 
-        <style>
+    <style>
         /* Título pequeño de sección (similar a “APPS”) */
         .sidebar-section-title {
             margin: 12px 16px 6px;
@@ -274,7 +274,7 @@ unset($_SESSION['cierre_info']);
         });
     </script>
 
-   <script>
+    <script>
         const API_RELEVAMIENTO = "../../controllers/ing_relevamientoController.php";
         const RELEVAMIENTO_PARTIAL_BASE = "../../views/partials/relevamiento";
         const MODAL_IDS = {
@@ -310,7 +310,7 @@ unset($_SESSION['cierre_info']);
         function createProductorCard(prod) {
             const card = document.createElement('div');
             card.className = 'card';
-                        card.innerHTML = `
+            card.innerHTML = `
                 <h3>${prod.nombre}</h3>
                 <p><strong>ID real:</strong> ${prod.id_real}</p>
                 <p><strong>CUIT:</strong> ${prod.cuit ?? 'Sin CUIT'}</p>
@@ -426,25 +426,42 @@ unset($_SESSION['cierre_info']);
             }
         }
 
-                function getModalElements(tipo) {
+        function getModalElements(tipo) {
             const modalId = MODAL_IDS[tipo];
-            if (!modalId) return { modal: null, body: null };
+            if (!modalId) {
+                console.warn('[Relevamiento] Tipo de modal desconocido:', tipo);
+                return {
+                    modal: null,
+                    body: null
+                };
+            }
 
             const modal = document.getElementById(modalId);
             const body = document.querySelector(`.modal-body[data-modal-body="${tipo}"]`);
-            return { modal, body };
+
+            return {
+                modal,
+                body
+            };
         }
 
         function closeModal(tipo) {
-            const { modal } = getModalElements(tipo);
+            const {
+                modal
+            } = getModalElements(tipo);
             if (modal) {
                 modal.classList.add('hidden');
             }
         }
 
         async function loadModalContent(tipo, productorIdReal) {
-            const { body } = getModalElements(tipo);
-            if (!body) return;
+            const {
+                body
+            } = getModalElements(tipo);
+            if (!body) {
+                console.warn('[Relevamiento] No se encontró body para modal', tipo);
+                return;
+            }
 
             let url = '';
             switch (tipo) {
@@ -458,29 +475,66 @@ unset($_SESSION['cierre_info']);
                     url = `${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_cuarteles_controller.php?productor_id_real=${encodeURIComponent(productorIdReal)}`;
                     break;
                 default:
+                    console.warn('[Relevamiento] Tipo de modal no soportado en loadModalContent:', tipo);
                     return;
             }
 
             body.innerHTML = '<p>Cargando...</p>';
 
             try {
-                const resp = await fetch(url, { credentials: 'same-origin' });
+                const resp = await fetch(url, {
+                    credentials: 'same-origin'
+                });
                 const html = await resp.text();
                 body.innerHTML = html;
             } catch (e) {
-                console.error(e);
+                console.error('[Relevamiento] Error al cargar contenido del modal', tipo, e);
                 body.innerHTML = `<p>Error al cargar el contenido del modal (${tipo}).</p>`;
             }
         }
 
         function openModal(tipo, productor) {
+            console.log('[Relevamiento] openModal()', {
+                tipo,
+                productor
+            });
+
             currentProductor = productor;
-            const { modal } = getModalElements(tipo);
-            if (!modal) return;
+
+            let {
+                modal,
+                body
+            } = getModalElements(tipo);
+
+            // Si el modal no existe en el DOM por algún motivo, lo creamos simple
+            if (!modal) {
+                console.warn('[Relevamiento] Modal no encontrado en el DOM, creando uno básico para', tipo);
+
+                modal = document.createElement('div');
+                modal.id = MODAL_IDS[tipo] || `modal-${tipo}`;
+                modal.className = 'modal';
+
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <h3>Modal ${tipo}</h3>
+                        <div class="modal-body" data-modal-body="${tipo}">
+                            <p>Modal generado dinámicamente. Después lo reemplazamos por el definitivo.</p>
+                        </div>
+                        <div class="form-buttons">
+                            <button class="btn btn-aceptar" onclick="closeModal('${tipo}')">Aceptar</button>
+                            <button class="btn btn-cancelar" onclick="closeModal('${tipo}')">Cancelar</button>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(modal);
+                body = modal.querySelector(`.modal-body[data-modal-body="${tipo}"]`);
+            }
 
             modal.classList.remove('hidden');
             loadModalContent(tipo, productor.id_real);
         }
+
 
         // Cargar cooperativas una vez que el DOM esté listo
         window.addEventListener('DOMContentLoaded', () => {
