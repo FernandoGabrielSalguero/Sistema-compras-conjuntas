@@ -90,7 +90,7 @@ unset($_SESSION['cierre_info']);
                     </li>
                 </ul>
 
-                                <!-- Título de sección -->
+                <!-- Título de sección -->
                 <div class="sidebar-section-title">Drones</div>
 
                 <!-- Lista directa de páginas de Drones (sin acordeón) -->

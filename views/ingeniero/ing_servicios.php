@@ -254,6 +254,19 @@ unset($_SESSION['cierre_info']);
                     <!-- Agregá más ítems aquí cuando existan nuevas hojas de Drones -->
                 </ul>
 
+                <!-- Título de sección -->
+                <div class="sidebar-section-title">Relevamiento</div>
+
+                <!-- Lista directa de páginas de Relevamiento -->
+                <ul class="submenu-root">
+                    <li>
+                        <a href="ing_relevamiento.php">
+                            <span class="material-symbols-outlined">map</span>
+                            <span class="link-text">Relevamiento</span>
+                        </a>
+                    </li>
+                </ul>
+
                 <!-- Resto de opciones -->
                 <ul>
                     <li onclick="location.href='../../../logout.php'">
@@ -332,7 +345,7 @@ unset($_SESSION['cierre_info']);
 
                     <br>
                     <h3 style="margin:0;">Listado de productores</h3>
-                    
+
                     <!-- Grid dinámico de productores -->
                     <div id="gridProductores" class="cards-grid" role="list" aria-label="Productores de la cooperativa seleccionada" style="margin-top:12px;"></div>
                 </div>

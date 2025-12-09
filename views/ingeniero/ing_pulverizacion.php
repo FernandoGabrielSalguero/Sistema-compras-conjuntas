@@ -536,6 +536,19 @@ unset($_SESSION['cierre_info']);
                     <!-- Agregá más ítems aquí cuando existan nuevas hojas de Drones -->
                 </ul>
 
+                <!-- Título de sección -->
+                <div class="sidebar-section-title">Relevamiento</div>
+
+                <!-- Lista directa de páginas de Relevamiento -->
+                <ul class="submenu-root">
+                    <li>
+                        <a href="ing_relevamiento.php">
+                            <span class="material-symbols-outlined">map</span>
+                            <span class="link-text">Relevamiento</span>
+                        </a>
+                    </li>
+                </ul>
+
                 <!-- Resto de opciones -->
                 <ul>
                     <li onclick="location.href='../../../logout.php'">
