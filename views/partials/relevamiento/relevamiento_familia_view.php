@@ -13,19 +13,35 @@
  * mediante data-advanced="1" y la clase CSS .relevamiento-advanced-hidden.
  */
 
-$usuario        = $datosFamilia['usuario'] ?? [];
-$usuariosInfo   = $datosFamilia['usuarios_info'] ?? [];
-$contactosAlt   = $datosFamilia['contactos_alternos'] ?? [];
-$infoProd       = $datosFamilia['info_productor'] ?? [];
-$colaboradores  = $datosFamilia['colaboradores'] ?? [];
-$hijos          = $datosFamilia['hijos'] ?? [];
-
 function h($value): string
 {
     return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
+
+// Evitamos errores cuando $datosFamilia es null o no es array
+$usuario       = [];
+$usuariosInfo  = [];
+$contactosAlt  = [];
+$infoProd      = [];
+$colaboradores = [];
+$hijos         = [];
+
+if (is_array($datosFamilia)) {
+    $usuario       = $datosFamilia['usuario']            ?? [];
+    $usuariosInfo  = $datosFamilia['usuarios_info']      ?? [];
+    $contactosAlt  = $datosFamilia['contactos_alternos'] ?? [];
+    $infoProd      = $datosFamilia['info_productor']     ?? [];
+    $colaboradores = $datosFamilia['colaboradores']      ?? [];
+    $hijos         = $datosFamilia['hijos']              ?? [];
+}
 ?>
 <div>
+    <?php if (!empty($errorBackend)): ?>
+        <p class="text-danger">
+            Error al cargar datos de familia (backend): <?= h($errorBackend) ?>
+        </p>
+    <?php endif; ?>
+
     <p>
         Formulario de <strong>Familia</strong> para el productor
         <strong><?= h($productorIdReal) ?></strong>.
