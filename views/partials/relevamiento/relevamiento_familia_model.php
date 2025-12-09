@@ -110,8 +110,10 @@ class RelevamientoFamiliaModel
                 porcentaje_aporte_vitivinicola
             FROM info_productor
             WHERE productor_id = :uid
+            ORDER BY anio DESC
             LIMIT 1
         ";
+
 
         $st = $this->pdo->prepare($sqlInfoProd);
         $st->execute([':uid' => $usuarioId]);
@@ -128,6 +130,7 @@ class RelevamientoFamiliaModel
                 prob_hijos_trabajen
             FROM prod_colaboradores
             WHERE productor_id = :uid
+            ORDER BY anio DESC
             LIMIT 1
         ";
 
@@ -150,15 +153,17 @@ class RelevamientoFamiliaModel
                 nom_hijo_2,
                 fecha_nacimiento_2,
                 sexo2,
-                nive_estudio2,
+                nivel_estudio2,
                 nom_hijo_3,
                 fecha_nacimiento_3,
                 sexo3,
                 nivel_estudio3
             FROM prod_hijos
             WHERE productor_id = :uid
+            ORDER BY anio DESC
             LIMIT 1
         ";
+
 
         $st = $this->pdo->prepare($sqlHijos);
         $st->execute([':uid' => $usuarioId]);

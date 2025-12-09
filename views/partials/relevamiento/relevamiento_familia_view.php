@@ -159,14 +159,15 @@ if (is_array($datosFamilia)) {
         <h4>Contactos alternos (productores_contactos_alternos)</h4>
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
-            <label for="contacto_preferido">Contacto preferido</label>
+            <label for="telefono_fijo">Teléfono fijo</label>
             <div class="input-icon input-icon-name">
                 <input
                     type="text"
-                    id="contacto_preferido"
-                    name="contacto_preferido"
+                    id="telefono_fijo"
+                    name="telefono_fijo"
                     placeholder="…"
-                    value="<?= h($contactosAlt['contacto_preferido'] ?? '') ?>" />
+                    value="<?= h($contactosAlt['telefono_fijo'] ?? '') ?>"
+                />
             </div>
         </div>
 
