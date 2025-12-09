@@ -282,7 +282,12 @@ unset($_SESSION['cierre_info']);
             produccion: 'modal-produccion',
             cuarteles: 'modal-cuarteles'
         };
+
+        // Mapa global para recuperar el productor por id_real
+        const PRODUCTORES_MAP = {};
         let currentProductor = null;
+
+        console.log('[Relevamiento] Script cargado');
 
         function setCardsTitle(text) {
             const titleEl = document.getElementById('cards-title');
@@ -310,39 +315,20 @@ unset($_SESSION['cierre_info']);
         function createProductorCard(prod) {
             const card = document.createElement('div');
             card.className = 'card';
+
+            // Guardamos el productor en el mapa global
+            PRODUCTORES_MAP[prod.id_real] = prod;
+
             card.innerHTML = `
                 <h3>${prod.nombre}</h3>
                 <p><strong>ID real:</strong> ${prod.id_real}</p>
                 <p><strong>CUIT:</strong> ${prod.cuit ?? 'Sin CUIT'}</p>
                 <div class="card-actions">
-                    <button class="btn btn-info" data-action="familia">Familia</button>
-                    <button class="btn btn-info" data-action="produccion">Producción</button>
-                    <button class="btn btn-info" data-action="cuarteles">Cuarteles</button>
+                    <button class="btn btn-info" onclick="openModal('familia','${prod.id_real}')">Familia</button>
+                    <button class="btn btn-info" onclick="openModal('produccion','${prod.id_real}')">Producción</button>
+                    <button class="btn btn-info" onclick="openModal('cuarteles','${prod.id_real}')">Cuarteles</button>
                 </div>
             `;
-
-            const btnFamilia = card.querySelector('[data-action="familia"]');
-            const btnProduccion = card.querySelector('[data-action="produccion"]');
-            const btnCuarteles = card.querySelector('[data-action="cuarteles"]');
-
-            if (btnFamilia) {
-                btnFamilia.addEventListener('click', (ev) => {
-                    ev.stopPropagation();
-                    openModal('familia', prod);
-                });
-            }
-            if (btnProduccion) {
-                btnProduccion.addEventListener('click', (ev) => {
-                    ev.stopPropagation();
-                    openModal('produccion', prod);
-                });
-            }
-            if (btnCuarteles) {
-                btnCuarteles.addEventListener('click', (ev) => {
-                    ev.stopPropagation();
-                    openModal('cuarteles', prod);
-                });
-            }
 
             return card;
         }
@@ -493,13 +479,19 @@ unset($_SESSION['cierre_info']);
             }
         }
 
-        function openModal(tipo, productor) {
+        function openModal(tipo, productorIdReal) {
             console.log('[Relevamiento] openModal()', {
                 tipo,
-                productor
+                productorIdReal
             });
 
-            currentProductor = productor;
+            const productor = PRODUCTORES_MAP[productorIdReal];
+
+            if (!productor) {
+                console.warn('[Relevamiento] No se encontró productor en PRODUCTORES_MAP para', productorIdReal);
+            } else {
+                currentProductor = productor;
+            }
 
             let {
                 modal,
@@ -532,9 +524,8 @@ unset($_SESSION['cierre_info']);
             }
 
             modal.classList.remove('hidden');
-            loadModalContent(tipo, productor.id_real);
+            loadModalContent(tipo, productorIdReal);
         }
-
 
         // Cargar cooperativas una vez que el DOM esté listo
         window.addEventListener('DOMContentLoaded', () => {
