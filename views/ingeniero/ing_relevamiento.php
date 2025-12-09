@@ -276,7 +276,7 @@ unset($_SESSION['cierre_info']);
 
     <script>
         const API_RELEVAMIENTO = "../../controllers/ing_relevamientoController.php";
-        const RELEVAMIENTO_PARTIAL_BASE = "../../views/partials/relevamiento";
+        const RELEVAMIENTO_PARTIAL_BASE = "../partials/relevamiento";
         const MODAL_IDS = {
             familia: 'modal-familia',
             produccion: 'modal-produccion',
@@ -320,15 +320,15 @@ unset($_SESSION['cierre_info']);
             PRODUCTORES_MAP[prod.id_real] = prod;
 
             card.innerHTML = `
-                <h3>${prod.nombre}</h3>
-                <p><strong>ID real:</strong> ${prod.id_real}</p>
-                <p><strong>CUIT:</strong> ${prod.cuit ?? 'Sin CUIT'}</p>
-                <div class="card-actions">
-                    <button class="btn btn-info" onclick="openModal('familia','${prod.id_real}')">Familia</button>
-                    <button class="btn btn-info" onclick="openModal('produccion','${prod.id_real}')">Producción</button>
-                    <button class="btn btn-info" onclick="openModal('cuarteles','${prod.id_real}')">Cuarteles</button>
-                </div>
-            `;
+        <h3>${prod.nombre}</h3>
+        <p><strong>ID real:</strong> ${prod.id_real}</p>
+        <p><strong>CUIT:</strong> ${prod.cuit ?? 'Sin CUIT'}</p>
+        <div class="card-actions">
+            <button class="btn btn-info" onclick="openModal('familia','${prod.id_real}')">Familia</button>
+            <button class="btn btn-info" onclick="openModal('produccion','${prod.id_real}')">Producción</button>
+            <button class="btn btn-info" onclick="openModal('cuarteles','${prod.id_real}')">Cuarteles</button>
+        </div>
+    `;
 
             return card;
         }
@@ -412,119 +412,50 @@ unset($_SESSION['cierre_info']);
             }
         }
 
-        function getModalElements(tipo) {
+        // ===== Helpers simples de modales =====
+
+        function getModalElement(tipo) {
             const modalId = MODAL_IDS[tipo];
             if (!modalId) {
                 console.warn('[Relevamiento] Tipo de modal desconocido:', tipo);
-                return {
-                    modal: null,
-                    body: null
-                };
+                return null;
             }
-
             const modal = document.getElementById(modalId);
-            const body = document.querySelector(`.modal-body[data-modal-body="${tipo}"]`);
-
-            return {
-                modal,
-                body
-            };
+            if (!modal) {
+                console.warn('[Relevamiento] No se encontró el elemento modal con id', modalId);
+            }
+            return modal;
         }
 
         function closeModal(tipo) {
-            const {
-                modal
-            } = getModalElements(tipo);
+            const modal = getModalElement(tipo);
             if (modal) {
                 modal.classList.add('hidden');
             }
         }
 
-        async function loadModalContent(tipo, productorIdReal) {
-            const {
-                body
-            } = getModalElements(tipo);
-            if (!body) {
-                console.warn('[Relevamiento] No se encontró body para modal', tipo);
-                return;
-            }
-
-            let url = '';
-            switch (tipo) {
-                case 'familia':
-                    url = `${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_familia_controller.php?productor_id_real=${encodeURIComponent(productorIdReal)}`;
-                    break;
-                case 'produccion':
-                    url = `${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_produccion_controller.php?productor_id_real=${encodeURIComponent(productorIdReal)}`;
-                    break;
-                case 'cuarteles':
-                    url = `${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_cuarteles_controller.php?productor_id_real=${encodeURIComponent(productorIdReal)}`;
-                    break;
-                default:
-                    console.warn('[Relevamiento] Tipo de modal no soportado en loadModalContent:', tipo);
-                    return;
-            }
-
-            body.innerHTML = '<p>Cargando...</p>';
-
-            try {
-                const resp = await fetch(url, {
-                    credentials: 'same-origin'
-                });
-                const html = await resp.text();
-                body.innerHTML = html;
-            } catch (e) {
-                console.error('[Relevamiento] Error al cargar contenido del modal', tipo, e);
-                body.innerHTML = `<p>Error al cargar el contenido del modal (${tipo}).</p>`;
-            }
-        }
-
         function openModal(tipo, productorIdReal) {
-            console.log('[Relevamiento] openModal()', {
+            console.log('[Relevamiento] openModal SIMPLE', {
                 tipo,
                 productorIdReal
             });
 
+            // Guardamos referencia por si después queremos usarla
             const productor = PRODUCTORES_MAP[productorIdReal];
-
             if (!productor) {
-                console.warn('[Relevamiento] No se encontró productor en PRODUCTORES_MAP para', productorIdReal);
+                console.warn('[Relevamiento] PRODUCTORES_MAP sin entrada para', productorIdReal);
             } else {
                 currentProductor = productor;
             }
 
-            let {
-                modal,
-                body
-            } = getModalElements(tipo);
-
-            // Si el modal no existe en el DOM por algún motivo, lo creamos simple
+            const modal = getModalElement(tipo);
             if (!modal) {
-                console.warn('[Relevamiento] Modal no encontrado en el DOM, creando uno básico para', tipo);
-
-                modal = document.createElement('div');
-                modal.id = MODAL_IDS[tipo] || `modal-${tipo}`;
-                modal.className = 'modal';
-
-                modal.innerHTML = `
-                    <div class="modal-content">
-                        <h3>Modal ${tipo}</h3>
-                        <div class="modal-body" data-modal-body="${tipo}">
-                            <p>Modal generado dinámicamente. Después lo reemplazamos por el definitivo.</p>
-                        </div>
-                        <div class="form-buttons">
-                            <button class="btn btn-aceptar" onclick="closeModal('${tipo}')">Aceptar</button>
-                            <button class="btn btn-cancelar" onclick="closeModal('${tipo}')">Cancelar</button>
-                        </div>
-                    </div>
-                `;
-
-                document.body.appendChild(modal);
-                body = modal.querySelector(`.modal-body[data-modal-body="${tipo}"]`);
+                alert('No se encontró el modal para: ' + tipo);
+                return;
             }
 
+            // Por ahora solo mostramos el modal, sin cargar nada extra
             modal.classList.remove('hidden');
-            loadModalContent(tipo, productorIdReal);
         }
 
         // Cargar cooperativas una vez que el DOM esté listo
