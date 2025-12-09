@@ -93,27 +93,26 @@ try {
             $conflictos = isset($resultado['conflictos']) ? $resultado['conflictos'] : [];
             $stats = isset($resultado['stats']) ? $resultado['stats'] : null;
 
-            if (count($conflictos)) {
+            if (!empty($conflictos)) {
                 $mensaje = '⚠️ Carga de Datos Familia completada con advertencias.';
             } else {
-                $mensaje = '✅ Datos Familia cargados exitosamente.';
+                $mensaje = '✅ Carga de Datos Familia completada.';
             }
 
             if (is_array($stats)) {
-                $mensaje .= ' Filas procesadas: ' . $stats['procesados']
-                    . ', sin usuario: ' . $stats['sin_usuario']
-                    . ', usuarios creados: ' . $stats['usuarios_creados']
-                    . ', sin cooperativa: ' . $stats['sin_cooperativa']
-                    . ', usuarios actualizados: ' . $stats['actualizados_usuario']
-                    . ', info productor (usuarios_info): ' . $stats['upsert_usuarios_info']
-                    . ', contactos alternos: ' . $stats['upsert_contactos_alternos']
-                    . ', info_productor: ' . $stats['upsert_info_productor']
-                    . ', colaboradores: ' . $stats['upsert_colaboradores']
-                    . ', hijos cargados: ' . $stats['insert_hijos']
-                    . ', rel prod-coop (nuevas/act): ' . $stats['rel_prod_coop_insertados'] . '/' . $stats['rel_prod_coop_actualizados']
-                    . ', fincas creadas: ' . $stats['fincas_creadas']
-                    . ', rel prod-finca (nuevas/reemp): ' . $stats['rel_prod_finca_insertados'] . '/' . $stats['rel_prod_finca_reemplazados']
-                    . ', conflictos: ' . $stats['conflictos'] . '.';
+                $mensaje .= ' Filas procesadas: ' . ($stats['filas_procesadas'] ?? 0)
+                    . ', usuarios creados: ' . ($stats['usuarios_creados'] ?? 0)
+                    . ', usuarios actualizados: ' . ($stats['usuarios_actualizados'] ?? 0)
+                    . ', usuarios_info: ' . ($stats['usuarios_info_upsert'] ?? 0)
+                    . ', contactos alternos: ' . ($stats['contactos_alternos_upsert'] ?? 0)
+                    . ', info_productor: ' . ($stats['info_productor_upsert'] ?? 0)
+                    . ', colaboradores: ' . ($stats['colaboradores_upsert'] ?? 0)
+                    . ', hijos cargados: ' . ($stats['hijos_upsert'] ?? 0)
+                    . ', rel prod-coop (nuevas/act): ' . ($stats['rel_prod_coop_nuevas'] ?? 0) . '/' . ($stats['rel_prod_coop_actualizadas'] ?? 0)
+                    . ', fincas creadas: ' . ($stats['fincas_creadas'] ?? 0)
+                    . ', rel prod-finca (nuevas): ' . ($stats['rel_prod_finca_nuevas'] ?? 0)
+                    . ', sin cooperativa: ' . ($stats['sin_cooperativa'] ?? 0)
+                    . ', conflictos: ' . ($stats['conflictos'] ?? 0) . '.';
             }
 
             echo json_encode([

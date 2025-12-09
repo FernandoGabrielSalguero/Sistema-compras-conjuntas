@@ -139,13 +139,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <button class="btn btn-aceptar" onclick="confirmarCarga('relaciones')">Confirmar carga</button>
                     </div>
 
-                    <!-- Tarjeta: Datos Familia -->
+                    <!-- Tarjeta: Carga de Datos de familia -->
                     <div class="card">
-                        <h3>Cargar Datos Familia</h3>
-                        <p>
-                            Usá el CSV de la hoja <strong>Datos Familia</strong>.
-                            Claves mínimas: <strong>ID PP</strong>, <strong>Cooperativa</strong>, resto de columnas según mapeo.
-                        </p>
+                        <h3>Cargar Datos de familia</h3>
                         <input type="file" id="csvFamilia" accept=".csv" />
                         <button class="btn btn-info" onclick="previewCSV('familia')">Previsualizar</button>
                         <div id="previewFamilia" class="csv-preview"></div>
@@ -187,48 +183,22 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 return;
             }
 
-            // Encabezados
-            const encabezados = filas[0];
-            let filasDatos = [];
-
-            for (let i = 1; i < filas.length; i++) {
-                // Saltear filas totalmente vacías
-                const vacia = filas[i].every(col => (col || '').trim() === '');
-                if (vacia) {
-                    continue;
-                }
-                filasDatos.push(filas[i]);
-            }
-
-            const totalFilas = filasDatos.length;
-            const totalColumnas = encabezados.length;
-
-            let html = '';
-            html += '<div class="csv-meta" style="margin-bottom:8px;font-size:0.9rem;">';
-            html += 'Filas de datos: <strong>' + totalFilas + '</strong> · ';
-            html += 'Columnas: <strong>' + totalColumnas + '</strong>';
-            html += '</div>';
-
-            html += '<div class="table-responsive">';
-            html += '<table class="table"><thead><tr>';
-
-            encabezados.forEach(col => {
+            let html = '<table class="table"><thead><tr>';
+            filas[0].forEach(col => {
                 html += '<th>' + escapeHtml(col) + '</th>';
             });
-
             html += '</tr></thead><tbody>';
 
-            filasDatos.forEach(fila => {
+            for (let i = 1; i < filas.length; i++) {
+                if (filas[i].length === 1 && filas[i][0].trim() === '') continue;
                 html += '<tr>';
-                fila.forEach(col => {
+                filas[i].forEach(col => {
                     html += '<td>' + escapeHtml(col) + '</td>';
                 });
                 html += '</tr>';
-            });
+            }
 
             html += '</tbody></table>';
-            html += '</div>';
-
             container.innerHTML = html;
         }
 
