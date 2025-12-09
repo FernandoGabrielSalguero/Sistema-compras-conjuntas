@@ -903,6 +903,7 @@ class CargaMasivaModel
         {
                 $anioReferencia = 2025;
 
+                // Normaliza valores tipo SI/NO/NSNC
                 $normalizarSiNo = function ($valor) {
                         $v = strtolower(trim((string) $valor));
                         if ($v === '') {
@@ -920,6 +921,7 @@ class CargaMasivaModel
                         return null;
                 };
 
+                // Convierte números que vienen con coma/porcentaje
                 $parseDecimal = function ($valor) {
                         $v = trim((string) $valor);
                         if ($v === '') {
@@ -933,28 +935,60 @@ class CargaMasivaModel
                         return $v;
                 };
 
+                // ⚠️ NUEVO: convierte "33°35'1.21\"S" / "-69° 9'58.25\"O" a decimal
+                $parseLatLon = function ($valor) {
+                        $v = trim((string) $valor);
+                        if ($v === '') {
+                                return null;
+                        }
+
+                        // reemplazo coma por punto para segundos decimales
+                        $v = str_replace(',', '.', $v);
+
+                        // determinar signo por hemisferio o signo explícito
+                        $sign = 1;
+                        if (preg_match('/[swo]/i', $v)) {
+                                $sign = -1; // Sur / Oeste
+                        }
+                        if (preg_match('/^\s*-/', $v)) {
+                                $sign = -1;
+                        }
+
+                        // tomar todos los números que aparezcan (grados, minutos, segundos)
+                        if (!preg_match_all('/\d+(?:\.\d+)?/', $v, $m)) {
+                                return null;
+                        }
+                        $nums = $m[0];
+                        $deg = isset($nums[0]) ? (float)$nums[0] : 0.0;
+                        $min = isset($nums[1]) ? (float)$nums[1] : 0.0;
+                        $sec = isset($nums[2]) ? (float)$nums[2] : 0.0;
+
+                        $decimal = $deg + $min / 60 + $sec / 3600;
+                        return $sign * $decimal;
+                };
+
                 $this->pdo->beginTransaction();
 
                 $stmtFincaSelect = $this->pdo->prepare(
                         "SELECT id, nombre_finca
-                         FROM prod_fincas
-                         WHERE codigo_finca = :codigo_finca
-                         LIMIT 1"
+                 FROM prod_fincas
+                 WHERE codigo_finca = :codigo_finca
+                 LIMIT 1"
                 );
                 $stmtFincaUpdateNombre = $this->pdo->prepare(
                         "UPDATE prod_fincas
-                         SET nombre_finca = :nombre_finca
-                         WHERE id = :id"
+                 SET nombre_finca = :nombre_finca
+                 WHERE id = :id"
                 );
                 $stmtFincaInsert = $this->pdo->prepare(
                         "INSERT INTO prod_fincas (codigo_finca, cooperativa_id_real, nombre_finca)
-                         VALUES (:codigo_finca, :cooperativa_id_real, :nombre_finca)"
+                 VALUES (:codigo_finca, :cooperativa_id_real, :nombre_finca)"
                 );
                 $stmtCoopFromCuartel = $this->pdo->prepare(
                         "SELECT cooperativa_id_real
-                           FROM prod_cuartel
-                          WHERE codigo_finca = :codigo_finca
-                          LIMIT 1"
+                   FROM prod_cuartel
+                  WHERE codigo_finca = :codigo_finca
+                  LIMIT 1"
                 );
 
                 $stmtDirSelect = $this->pdo->prepare(
@@ -1117,31 +1151,24 @@ class CargaMasivaModel
                                 $stmtCoopFromCuartel->execute([':codigo_finca' => $codigoFinca]);
                                 $coopRow = $stmtCoopFromCuartel->fetch(PDO::FETCH_ASSOC);
 
+                                $cooperativaIdReal = null;
                                 if ($coopRow && !empty($coopRow['cooperativa_id_real'])) {
                                         $cooperativaIdReal = $coopRow['cooperativa_id_real'];
-
-                                        $stmtFincaInsert->execute([
-                                                ':codigo_finca'       => $codigoFinca,
-                                                ':cooperativa_id_real' => $cooperativaIdReal,
-                                                ':nombre_finca'       => $nombreFincaCsv !== '' ? $nombreFincaCsv : null
-                                        ]);
-
-                                        $fincaId = (int) $this->pdo->lastInsertId();
-                                        $finca = [
-                                                'id'           => $fincaId,
-                                                'nombre_finca' => $nombreFincaCsv
-                                        ];
-                                        $stats['fincas_creadas']++;
-                                } else {
-                                        // No tenemos forma de asociarla correctamente -> conflicto
-                                        $stats['fincas_no_encontradas']++;
-                                        $stats['conflictos']++;
-                                        $conflictos[] = [
-                                                'codigo_finca' => $codigoFinca,
-                                                'motivo'       => 'Finca no encontrada y no se pudo deducir cooperativa desde prod_cuartel'
-                                        ];
-                                        continue;
                                 }
+
+                                // ✅ Siempre creamos la finca, aunque no se pueda deducir cooperativa
+                                $stmtFincaInsert->execute([
+                                        ':codigo_finca'        => $codigoFinca,
+                                        ':cooperativa_id_real' => $cooperativaIdReal,
+                                        ':nombre_finca'        => $nombreFincaCsv !== '' ? $nombreFincaCsv : null
+                                ]);
+
+                                $fincaId = (int) $this->pdo->lastInsertId();
+                                $finca = [
+                                        'id'           => $fincaId,
+                                        'nombre_finca' => $nombreFincaCsv
+                                ];
+                                $stats['fincas_creadas']++;
                         } else {
                                 $fincaId = (int) $finca['id'];
                         }
@@ -1162,22 +1189,27 @@ class CargaMasivaModel
                         $numero       = isset($fila['Número']) ? trim((string) $fila['Número']) : '';
 
                         // latitud / longitud pueden venir en minúsculas en el CSV
-                        $latitud = '';
+                        $latitudRaw = '';
                         if (isset($fila['Latitud'])) {
-                                $latitud = trim((string) $fila['Latitud']);
+                                $latitudRaw = trim((string) $fila['Latitud']);
                         } elseif (isset($fila['latitud'])) {
-                                $latitud = trim((string) $fila['latitud']);
+                                $latitudRaw = trim((string) $fila['latitud']);
                         }
 
-                        $longitud = '';
+                        $longitudRaw = '';
                         if (isset($fila['Longitud'])) {
-                                $longitud = trim((string) $fila['Longitud']);
+                                $longitudRaw = trim((string) $fila['Longitud']);
                         } elseif (isset($fila['longitud'])) {
-                                $longitud = trim((string) $fila['longitud']);
+                                $longitudRaw = trim((string) $fila['longitud']);
                         }
 
+                        // Para decidir si hay dirección, usamos los valores "raw" del CSV
                         $tieneDireccion = ($departamento !== '' || $localidad !== '' || $calle !== '' ||
-                                $numero !== '' || $latitud !== '' || $longitud !== '');
+                                $numero !== '' || $latitudRaw !== '' || $longitudRaw !== '');
+
+                        // ✅ Convertimos a decimal SOLO si vienen valores
+                        $latitud  = $latitudRaw  !== '' ? $parseLatLon($latitudRaw)   : null;
+                        $longitud = $longitudRaw !== '' ? $parseLatLon($longitudRaw) : null;
 
                         if ($tieneDireccion) {
                                 $stmtDirSelect->execute([':finca_id' => $fincaId]);
@@ -1185,13 +1217,13 @@ class CargaMasivaModel
 
                                 if (!$dirRow) {
                                         $stmtDirInsert->execute([
-                                                ':finca_id'    => $fincaId,
+                                                ':finca_id'     => $fincaId,
                                                 ':departamento' => $departamento !== '' ? $departamento : null,
-                                                ':localidad'   => $localidad !== '' ? $localidad : null,
-                                                ':calle'       => $calle !== '' ? $calle : null,
-                                                ':numero'      => $numero !== '' ? $numero : null,
-                                                ':latitud'     => $latitud !== '' ? $latitud : null,
-                                                ':longitud'    => $longitud !== '' ? $longitud : null
+                                                ':localidad'    => $localidad !== '' ? $localidad : null,
+                                                ':calle'        => $calle !== '' ? $calle : null,
+                                                ':numero'       => $numero !== '' ? $numero : null,
+                                                ':latitud'      => $latitud,
+                                                ':longitud'     => $longitud
                                         ]);
                                 } else {
                                         $setParts = [];
@@ -1213,11 +1245,11 @@ class CargaMasivaModel
                                                 $setParts[] = "numero = :numero";
                                                 $params[':numero'] = $numero;
                                         }
-                                        if ($latitud !== '') {
+                                        if ($latitud !== null) {
                                                 $setParts[] = "latitud = :latitud";
                                                 $params[':latitud'] = $latitud;
                                         }
-                                        if ($longitud !== '') {
+                                        if ($longitud !== null) {
                                                 $setParts[] = "longitud = :longitud";
                                                 $params[':longitud'] = $longitud;
                                         }
@@ -1230,6 +1262,7 @@ class CargaMasivaModel
                                 }
                                 $stats['direccion_upsert']++;
                         }
+
 
                         $supTotal            = isset($fila['Sup Total (ha.)']) ? $parseDecimal($fila['Sup Total (ha.)']) : null;
                         $supCultivada        = isset($fila['Sup Total Cultivada (ha.)']) ? $parseDecimal($fila['Sup Total Cultivada (ha.)']) : null;
