@@ -980,15 +980,18 @@ class CargaMasivaModel
                  SET nombre_finca = :nombre_finca
                  WHERE id = :id"
                 );
+
                 $stmtFincaInsert = $this->pdo->prepare(
-                        "INSERT INTO prod_fincas (codigo_finca, cooperativa_id_real, nombre_finca)
-                 VALUES (:codigo_finca, :cooperativa_id_real, :nombre_finca)"
+                        "INSERT INTO prod_fincas (codigo_finca, productor_id_real, nombre_finca)
+         VALUES (:codigo_finca, :productor_id_real, :nombre_finca)"
                 );
+                // Podés dejar este SELECT aunque ahora no lo usamos para el INSERT,
+                // o eliminarlo si no te interesa deducir la cooperativa.
                 $stmtCoopFromCuartel = $this->pdo->prepare(
                         "SELECT cooperativa_id_real
-                   FROM prod_cuartel
-                  WHERE codigo_finca = :codigo_finca
-                  LIMIT 1"
+           FROM prod_cuartel
+          WHERE codigo_finca = :codigo_finca
+          LIMIT 1"
                 );
 
                 $stmtDirSelect = $this->pdo->prepare(
@@ -1147,20 +1150,18 @@ class CargaMasivaModel
                         $finca = $stmtFincaSelect->fetch(PDO::FETCH_ASSOC);
 
                         if (!$finca) {
-                                // Intentar deducir la cooperativa desde prod_cuartel
+                                // Podés seguir usando este SELECT si después querés loguear la cooperativa,
+                                // pero NO lo guardamos en prod_fincas porque la tabla no tiene esa columna.
                                 $stmtCoopFromCuartel->execute([':codigo_finca' => $codigoFinca]);
                                 $coopRow = $stmtCoopFromCuartel->fetch(PDO::FETCH_ASSOC);
+                                // $coopRow puede servir solo para diagnóstico / logs si lo necesitás.
 
-                                $cooperativaIdReal = null;
-                                if ($coopRow && !empty($coopRow['cooperativa_id_real'])) {
-                                        $cooperativaIdReal = $coopRow['cooperativa_id_real'];
-                                }
-
-                                // ✅ Siempre creamos la finca, aunque no se pueda deducir cooperativa
+                                // ✅ Siempre creamos la finca. No conocemos el productor acá,
+                                // así que dejamos productor_id_real en NULL (o 0 si tu columna no admite NULL).
                                 $stmtFincaInsert->execute([
-                                        ':codigo_finca'        => $codigoFinca,
-                                        ':cooperativa_id_real' => $cooperativaIdReal,
-                                        ':nombre_finca'        => $nombreFincaCsv !== '' ? $nombreFincaCsv : null
+                                        ':codigo_finca'     => $codigoFinca,
+                                        ':productor_id_real' => null,
+                                        ':nombre_finca'     => $nombreFincaCsv !== '' ? $nombreFincaCsv : null
                                 ]);
 
                                 $fincaId = (int) $this->pdo->lastInsertId();
@@ -1174,6 +1175,7 @@ class CargaMasivaModel
                         }
 
                         $stats['fincas_encontradas']++;
+
 
                         // Actualizar nombre de finca si cambió
                         if ($nombreFincaCsv !== '' && $nombreFincaCsv !== $finca['nombre_finca']) {
