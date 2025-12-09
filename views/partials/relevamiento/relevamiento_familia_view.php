@@ -167,8 +167,7 @@ if (is_array($datosFamilia)) {
                     id="telefono_fijo"
                     name="telefono_fijo"
                     placeholder="…"
-                    value="<?= h($contactosAlt['telefono_fijo'] ?? '') ?>"
-                />
+                    value="<?= h($contactosAlt['telefono_fijo'] ?? '') ?>"/>
             </div>
         </div>
 
