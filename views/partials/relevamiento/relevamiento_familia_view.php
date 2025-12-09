@@ -50,7 +50,7 @@ if (is_array($datosFamilia)) {
     $hijos         = $datosFamilia['hijos']              ?? [];
 }
 ?>
-?>
+
 <style>
     /* Títulos de secciones del relevamiento */
     .relevamiento-section-title {
