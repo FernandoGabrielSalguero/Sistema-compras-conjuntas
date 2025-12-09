@@ -61,8 +61,36 @@ unset($_SESSION['cierre_info']);
             padding: .4rem 1.5rem;
             text-decoration: none;
         }
-    </style>
 
+        /* Grid para las tarjetas dinámicas */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .card-clickable {
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .card-clickable:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.15);
+        }
+
+        .card-actions {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .card-error {
+            border: 1px solid #ef4444;
+        }
+    </style>
 
 </head>
 
@@ -79,7 +107,7 @@ unset($_SESSION['cierre_info']);
             </div>
             <nav class="sidebar-menu">
 
-            <!-- Título de sección -->
+                <!-- Título de sección -->
                 <div class="sidebar-section-title">Menú</div>
 
                 <!-- Grupo superior -->
@@ -157,12 +185,14 @@ unset($_SESSION['cierre_info']);
             <!-- 📦 CONTENIDO -->
             <section class="content">
 
-                <!-- Bienvenida -->
+                <!-- Encabezado del módulo de relevamiento -->
                 <div class="card">
-                    <h2>Hola</h2>
-                    <p>Te presentamos el tablero Power BI. Vas a poder consultar todas las metricas desde esta página</p>
+                    <h2 id="cards-title">Relevamiento</h2>
+                    <p>Seleccioná una cooperativa para ver sus productores asociados.</p>
                 </div>
 
+                <!-- Contenedor donde se renderizan dinámicamente las tarjetas -->
+                <div id="cards-container" class="cards-grid"></div>
 
                 <!-- contenedor del toastify -->
                 <div id="toast-container"></div>
@@ -194,6 +224,134 @@ unset($_SESSION['cierre_info']);
             <?php endif; ?>
         });
     </script>
+
+    <script>
+        const API_RELEVAMIENTO = "../../controllers/ing_relevamientoController.php";
+
+        function setCardsTitle(text) {
+            const titleEl = document.getElementById('cards-title');
+            if (titleEl) {
+                titleEl.textContent = text;
+            }
+        }
+
+        function createCoopCard(coop) {
+            const card = document.createElement('div');
+            card.className = 'card card-clickable';
+            card.innerHTML = `
+                <h3>${coop.nombre}</h3>
+                <p><strong>ID real:</strong> ${coop.id_real}</p>
+                <p><strong>CUIT:</strong> ${coop.cuit ?? 'Sin CUIT'}</p>
+            `;
+
+            card.addEventListener('click', () => {
+                cargarProductores(coop);
+            });
+
+            return card;
+        }
+
+        function createProductorCard(prod) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <h3>${prod.nombre}</h3>
+                <p><strong>ID real:</strong> ${prod.id_real}</p>
+                <p><strong>CUIT:</strong> ${prod.cuit ?? 'Sin CUIT'}</p>
+                <div class="card-actions">
+                    <button class="btn btn-sm" data-action="accion1">Acción 1</button>
+                    <button class="btn btn-sm" data-action="accion2">Acción 2</button>
+                    <button class="btn btn-sm" data-action="accion3">Acción 3</button>
+                </div>
+            `;
+            return card;
+        }
+
+        async function cargarCooperativas() {
+            const container = document.getElementById('cards-container');
+            if (!container) return;
+
+            container.innerHTML = '<div class="card">Cargando cooperativas...</div>';
+
+            try {
+                const resp = await fetch(`${API_RELEVAMIENTO}?action=cooperativas`, {
+                    credentials: 'same-origin'
+                });
+
+                const data = await resp.json();
+
+                if (!data.ok) {
+                    throw new Error(data.error || 'Error al cargar cooperativas');
+                }
+
+                const coops = Array.isArray(data.data) ? data.data : [];
+
+                if (coops.length === 0) {
+                    setCardsTitle('No tenés cooperativas asociadas');
+                    container.innerHTML = '<div class="card">No se encontraron cooperativas.</div>';
+                    return;
+                }
+
+                setCardsTitle('Seleccioná una cooperativa');
+                container.innerHTML = '';
+
+                coops.forEach((coop) => {
+                    const card = createCoopCard(coop);
+                    container.appendChild(card);
+                });
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = `<div class="card card-error">Error al cargar cooperativas: ${e.message}</div>`;
+            }
+        }
+
+        async function cargarProductores(coop) {
+            const container = document.getElementById('cards-container');
+            if (!container) return;
+
+            setCardsTitle(`Productores de ${coop.nombre}`);
+            container.innerHTML = '<div class="card">Cargando productores...</div>';
+
+            try {
+                const params = new URLSearchParams({
+                    action: 'productores',
+                    coop_id_real: coop.id_real
+                });
+
+                const resp = await fetch(`${API_RELEVAMIENTO}?${params.toString()}`, {
+                    credentials: 'same-origin'
+                });
+
+                const data = await resp.json();
+
+                if (!data.ok) {
+                    throw new Error(data.error || 'Error al cargar productores');
+                }
+
+                const productores = Array.isArray(data.data) ? data.data : [];
+
+                if (productores.length === 0) {
+                    container.innerHTML = '<div class="card">No se encontraron productores para esta cooperativa.</div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                productores.forEach((prod) => {
+                    const card = createProductorCard(prod);
+                    container.appendChild(card);
+                });
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = `<div class="card card-error">Error al cargar productores: ${e.message}</div>`;
+            }
+        }
+
+        // Cargar cooperativas una vez que el DOM esté listo
+        window.addEventListener('DOMContentLoaded', () => {
+            cargarCooperativas();
+        });
+    </script>
+
 
 </body>
 
