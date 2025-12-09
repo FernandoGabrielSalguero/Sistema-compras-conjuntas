@@ -156,7 +156,7 @@ if (is_array($datosFamilia)) {
 
         <hr>
 
-        <h4 class="Contactos alternos (productores_contactos_alternos)">Contactos alternos (productores_contactos_alternos)</h4>
+        <h4 class="relevamiento-advanced-hidden" data-advanced="1">Contactos alternos (productores_contactos_alternos)</h4>
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="telefono_fijo">Teléfono fijo</label>
@@ -310,7 +310,9 @@ if (is_array($datosFamilia)) {
 
         <hr>
 
-        <h4>Colaboradores (prod_colaboradores)</h4>
+        <h4 class="relevamiento-advanced-hidden" data-advanced="1">
+            Colaboradores (prod_colaboradores)
+        </h4>
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="hijos_sobrinos_participan">Hijos/sobrinos participan</label>
@@ -386,7 +388,9 @@ if (is_array($datosFamilia)) {
 
         <hr>
 
-        <h4>Hijos (prod_hijos)</h4>
+        <h4 class="relevamiento-advanced-hidden" data-advanced="1">
+            Hijos (prod_hijos)
+        </h4>
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="motivo_no_trabajar">Motivo de no trabajar</label>
