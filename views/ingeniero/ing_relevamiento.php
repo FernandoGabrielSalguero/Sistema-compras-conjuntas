@@ -36,7 +36,7 @@ unset($_SESSION['cierre_info']);
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 
-    <style>
+        <style>
         /* Título pequeño de sección (similar a “APPS”) */
         .sidebar-section-title {
             margin: 12px 16px 6px;
@@ -90,7 +90,56 @@ unset($_SESSION['cierre_info']);
         .card-error {
             border: 1px solid #ef4444;
         }
+
+        /* ===== Modales Relevamiento ===== */
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 23, 42, 0.4);
+            z-index: 999;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            max-width: 720px;
+            width: 100%;
+            margin: 1rem;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 0.75rem;
+        }
+
+        .modal-body {
+            margin-top: 0.75rem;
+        }
+
+        .form-buttons {
+            margin-top: 1.25rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .btn-aceptar,
+        .btn-cancelar {
+            min-width: 96px;
+        }
     </style>
+
 
 </head>
 
@@ -225,8 +274,15 @@ unset($_SESSION['cierre_info']);
         });
     </script>
 
-    <script>
+   <script>
         const API_RELEVAMIENTO = "../../controllers/ing_relevamientoController.php";
+        const RELEVAMIENTO_PARTIAL_BASE = "../../views/partials/relevamiento";
+        const MODAL_IDS = {
+            familia: 'modal-familia',
+            produccion: 'modal-produccion',
+            cuarteles: 'modal-cuarteles'
+        };
+        let currentProductor = null;
 
         function setCardsTitle(text) {
             const titleEl = document.getElementById('cards-title');
@@ -254,16 +310,40 @@ unset($_SESSION['cierre_info']);
         function createProductorCard(prod) {
             const card = document.createElement('div');
             card.className = 'card';
-            card.innerHTML = `
+                        card.innerHTML = `
                 <h3>${prod.nombre}</h3>
                 <p><strong>ID real:</strong> ${prod.id_real}</p>
                 <p><strong>CUIT:</strong> ${prod.cuit ?? 'Sin CUIT'}</p>
                 <div class="card-actions">
-                    <button class="btn btn-sm" data-action="accion1">Acción 1</button>
-                    <button class="btn btn-sm" data-action="accion2">Acción 2</button>
-                    <button class="btn btn-sm" data-action="accion3">Acción 3</button>
+                    <button class="btn btn-info" data-action="familia">Familia</button>
+                    <button class="btn btn-sm" data-action="produccion">Producción</button>
+                    <button class="btn btn-sm" data-action="cuarteles">Cuarteles</button>
                 </div>
             `;
+
+            const btnFamilia = card.querySelector('[data-action="familia"]');
+            const btnProduccion = card.querySelector('[data-action="produccion"]');
+            const btnCuarteles = card.querySelector('[data-action="cuarteles"]');
+
+            if (btnFamilia) {
+                btnFamilia.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    openModal('familia', prod);
+                });
+            }
+            if (btnProduccion) {
+                btnProduccion.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    openModal('produccion', prod);
+                });
+            }
+            if (btnCuarteles) {
+                btnCuarteles.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    openModal('cuarteles', prod);
+                });
+            }
+
             return card;
         }
 
@@ -346,12 +426,111 @@ unset($_SESSION['cierre_info']);
             }
         }
 
+                function getModalElements(tipo) {
+            const modalId = MODAL_IDS[tipo];
+            if (!modalId) return { modal: null, body: null };
+
+            const modal = document.getElementById(modalId);
+            const body = document.querySelector(`.modal-body[data-modal-body="${tipo}"]`);
+            return { modal, body };
+        }
+
+        function closeModal(tipo) {
+            const { modal } = getModalElements(tipo);
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        async function loadModalContent(tipo, productorIdReal) {
+            const { body } = getModalElements(tipo);
+            if (!body) return;
+
+            let url = '';
+            switch (tipo) {
+                case 'familia':
+                    url = `${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_familia_controller.php?productor_id_real=${encodeURIComponent(productorIdReal)}`;
+                    break;
+                case 'produccion':
+                    url = `${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_produccion_controller.php?productor_id_real=${encodeURIComponent(productorIdReal)}`;
+                    break;
+                case 'cuarteles':
+                    url = `${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_cuarteles_controller.php?productor_id_real=${encodeURIComponent(productorIdReal)}`;
+                    break;
+                default:
+                    return;
+            }
+
+            body.innerHTML = '<p>Cargando...</p>';
+
+            try {
+                const resp = await fetch(url, { credentials: 'same-origin' });
+                const html = await resp.text();
+                body.innerHTML = html;
+            } catch (e) {
+                console.error(e);
+                body.innerHTML = `<p>Error al cargar el contenido del modal (${tipo}).</p>`;
+            }
+        }
+
+        function openModal(tipo, productor) {
+            currentProductor = productor;
+            const { modal } = getModalElements(tipo);
+            if (!modal) return;
+
+            modal.classList.remove('hidden');
+            loadModalContent(tipo, productor.id_real);
+        }
+
         // Cargar cooperativas una vez que el DOM esté listo
         window.addEventListener('DOMContentLoaded', () => {
             cargarCooperativas();
         });
     </script>
 
+    <!-- ===== Modales Relevamiento ===== -->
+
+    <!-- Modal Familia -->
+    <div id="modal-familia" class="modal hidden">
+        <div class="modal-content">
+            <h3>Familia del productor</h3>
+            <div class="modal-body" data-modal-body="familia">
+                <p>Cargando formulario de familia...</p>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-aceptar" onclick="closeModal('familia')">Aceptar</button>
+                <button class="btn btn-cancelar" onclick="closeModal('familia')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Producción -->
+    <div id="modal-produccion" class="modal hidden">
+        <div class="modal-content">
+            <h3>Producción del productor</h3>
+            <div class="modal-body" data-modal-body="produccion">
+                <p>Cargando formulario de producción...</p>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-aceptar" onclick="closeModal('produccion')">Aceptar</button>
+                <button class="btn btn-cancelar" onclick="closeModal('produccion')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cuarteles -->
+    <div id="modal-cuarteles" class="modal hidden">
+        <div class="modal-content">
+            <h3>Cuarteles del productor</h3>
+            <div class="modal-body" data-modal-body="cuarteles">
+                <p>Cargando formulario de cuarteles...</p>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-aceptar" onclick="closeModal('cuarteles')">Aceptar</button>
+                <button class="btn btn-cancelar" onclick="closeModal('cuarteles')">Cancelar</button>
+            </div>
+        </div>
+    </div>
 
 </body>
 
