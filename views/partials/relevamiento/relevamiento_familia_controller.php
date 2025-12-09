@@ -14,7 +14,9 @@ $productorIdReal = isset($_GET['productor_id_real']) ? (string)$_GET['productor_
 
 $model = new RelevamientoFamiliaModel($pdo);
 
-// En el futuro usaremos el modelo, por ahora dejamos el stub:
-$datosFamilia = $productorIdReal !== '' ? $model->getDatosFamiliaPorProductorIdReal($productorIdReal) : null;
+$datosFamilia = null;
+if ($productorIdReal !== '') {
+    $datosFamilia = $model->getDatosFamiliaPorProductorIdReal($productorIdReal);
+}
 
 include __DIR__ . '/relevamiento_familia_view.php';

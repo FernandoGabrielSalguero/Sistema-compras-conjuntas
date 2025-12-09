@@ -138,6 +138,22 @@ unset($_SESSION['cierre_info']);
         .btn-cancelar {
             min-width: 96px;
         }
+
+        /* Campos avanzados (ocultos por defecto) */
+        .relevamiento-advanced-hidden {
+            display: none;
+        }
+
+        .form-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-switch input[type="checkbox"] {
+            cursor: pointer;
+        }
     </style>
 
 
@@ -334,6 +350,7 @@ unset($_SESSION['cierre_info']);
         }
 
 
+
         async function cargarCooperativas() {
             const container = document.getElementById('cards-container');
             if (!container) return;
@@ -436,6 +453,67 @@ unset($_SESSION['cierre_info']);
             }
         }
 
+        async function loadFamiliaForm(productorIdReal) {
+            const modal = relevamientoGetModalElement('familia');
+            if (!modal) return;
+
+            const body = modal.querySelector('[data-modal-body="familia"]');
+            if (!body) return;
+
+            body.innerHTML = '<p>Cargando datos de familia...</p>';
+
+            try {
+                const params = new URLSearchParams({
+                    productor_id_real: productorIdReal
+                });
+
+                const resp = await fetch(
+                    `${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_familia_controller.php?${params.toString()}`, {
+                        credentials: 'same-origin'
+                    }
+                );
+
+                if (!resp.ok) {
+                    throw new Error(`Error HTTP ${resp.status}`);
+                }
+
+                const html = await resp.text();
+                body.innerHTML = html;
+
+                initFamiliaModal(productorIdReal);
+            } catch (e) {
+                console.error('[Relevamiento] Error al cargar familia:', e);
+                body.innerHTML = `<p class="text-danger">Error al cargar datos de familia: ${e.message}</p>`;
+            }
+        }
+
+        function initFamiliaModal(productorIdReal) {
+            const modal = relevamientoGetModalElement('familia');
+            if (!modal) return;
+
+            const toggle = modal.querySelector('[data-role="familia-advanced-toggle"]');
+            const advancedFields = modal.querySelectorAll('[data-advanced="1"]');
+
+            if (!toggle || !advancedFields.length) {
+                return;
+            }
+
+            const applyVisibility = () => {
+                advancedFields.forEach((el) => {
+                    if (toggle.checked) {
+                        el.classList.remove('relevamiento-advanced-hidden');
+                    } else {
+                        el.classList.add('relevamiento-advanced-hidden');
+                    }
+                });
+            };
+
+            toggle.addEventListener('change', applyVisibility);
+            // Estado inicial: ocultos
+            toggle.checked = false;
+            applyVisibility();
+        }
+
         function relevamientoOpenModal(tipo, productorIdReal) {
             console.log('[Relevamiento] relevamientoOpenModal', {
                 tipo,
@@ -458,7 +536,18 @@ unset($_SESSION['cierre_info']);
 
             // Mostramos el modal
             modal.classList.remove('hidden');
+
+            // Cargar contenido específico
+            if (tipo === 'familia') {
+                loadFamiliaForm(productorIdReal);
+            }
+            // En el futuro podemos hacer algo similar para 'produccion' y 'cuarteles'
         }
+
+        // Exponer en window por si hace falta desde HTML inline
+        window.relevamientoOpenModal = relevamientoOpenModal;
+        window.relevamientoCloseModal = relevamientoCloseModal;
+
 
         // Nos aseguramos de que estén disponibles en window (por si el navegador cambia el comportamiento)
         window.relevamientoOpenModal = relevamientoOpenModal;
@@ -486,6 +575,7 @@ unset($_SESSION['cierre_info']);
             </div>
         </div>
     </div>
+
 
 
     <!-- Modal Producción -->
