@@ -154,9 +154,10 @@ if (is_array($datosFamilia)) {
             </div>
         </div>
 
+        
         <hr>
-
         <h4 class="relevamiento-advanced-hidden" data-advanced="1">Contactos alternos (productores_contactos_alternos)</h4>
+        <hr>
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="telefono_fijo">Teléfono fijo</label>
@@ -208,10 +209,11 @@ if (is_array($datosFamilia)) {
             </div>
         </div>
 
+        
         <hr>
-
         <h4>Información del productor (info_productor)</h4>
-
+        <hr>
+        
         <div class="input-group">
             <label for="acceso_internet">Acceso a internet</label>
             <div class="input-icon input-icon-name">
@@ -308,11 +310,12 @@ if (is_array($datosFamilia)) {
             </div>
         </div>
 
+        
         <hr>
-
         <h4 class="relevamiento-advanced-hidden" data-advanced="1">
             Colaboradores (prod_colaboradores)
         </h4>
+        <hr>
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="hijos_sobrinos_participan">Hijos/sobrinos participan</label>
@@ -386,11 +389,12 @@ if (is_array($datosFamilia)) {
             </div>
         </div>
 
+        
         <hr>
-
         <h4 class="relevamiento-advanced-hidden" data-advanced="1">
             Hijos (prod_hijos)
         </h4>
+        <hr>
 
         <div class="input-group campo-avanzado relevamiento-advanced-hidden" data-advanced="1">
             <label for="motivo_no_trabajar">Motivo de no trabajar</label>
