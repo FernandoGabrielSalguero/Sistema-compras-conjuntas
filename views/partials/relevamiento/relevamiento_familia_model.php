@@ -38,6 +38,7 @@ class RelevamientoFamiliaModel
         // ---------- usuarios + usuarios_info ----------
         $sqlUsuario = "
             SELECT
+                u.id              AS usuario_id,
                 u.cuit,
                 u.razon_social,
                 ui.nombre,
@@ -57,20 +58,28 @@ class RelevamientoFamiliaModel
         $st->execute([':id_real' => $productorIdReal]);
         $rowUsuario = $st->fetch();
 
-        if ($rowUsuario) {
-            $resultado['usuario'] = [
-                'cuit'         => $rowUsuario['cuit'] ?? null,
-                'razon_social' => $rowUsuario['razon_social'] ?? null,
-            ];
-            $resultado['usuarios_info'] = [
-                'nombre'           => $rowUsuario['nombre'] ?? null,
-                'telefono'         => $rowUsuario['telefono'] ?? null,
-                'correo'           => $rowUsuario['correo'] ?? null,
-                'fecha_nacimiento' => $rowUsuario['fecha_nacimiento'] ?? null,
-                'categorizacion'   => $rowUsuario['categorizacion'] ?? null,
-                'tipo_relacion'    => $rowUsuario['tipo_relacion'] ?? null,
-            ];
+        if (!$rowUsuario) {
+            // No encontramos al productor: devolvemos todo null
+            return $resultado;
         }
+
+        $usuarioId = (int)($rowUsuario['usuario_id'] ?? 0);
+        if ($usuarioId <= 0) {
+            return $resultado;
+        }
+
+        $resultado['usuario'] = [
+            'cuit'         => $rowUsuario['cuit'] ?? null,
+            'razon_social' => $rowUsuario['razon_social'] ?? null,
+        ];
+        $resultado['usuarios_info'] = [
+            'nombre'           => $rowUsuario['nombre'] ?? null,
+            'telefono'         => $rowUsuario['telefono'] ?? null,
+            'correo'           => $rowUsuario['correo'] ?? null,
+            'fecha_nacimiento' => $rowUsuario['fecha_nacimiento'] ?? null,
+            'categorizacion'   => $rowUsuario['categorizacion'] ?? null,
+            'tipo_relacion'    => $rowUsuario['tipo_relacion'] ?? null,
+        ];
 
         // ---------- productores_contactos_alternos ----------
         $sqlContactos = "
@@ -80,12 +89,12 @@ class RelevamientoFamiliaModel
                 telefono_fijo,
                 mail_alternativo
             FROM productores_contactos_alternos
-            WHERE productor_id_real = :id_real
+            WHERE usuario_id = :uid
             LIMIT 1
         ";
 
         $st = $this->pdo->prepare($sqlContactos);
-        $st->execute([':id_real' => $productorIdReal]);
+        $st->execute([':uid' => $usuarioId]);
         $resultado['contactos_alternos'] = $st->fetch() ?: null;
 
         // ---------- info_productor ----------
@@ -100,12 +109,12 @@ class RelevamientoFamiliaModel
                 actividad_secundaria,
                 porcentaje_aporte_vitivinicola
             FROM info_productor
-            WHERE productor_id_real = :id_real
+            WHERE usuario_id = :uid
             LIMIT 1
         ";
 
         $st = $this->pdo->prepare($sqlInfoProd);
-        $st->execute([':id_real' => $productorIdReal]);
+        $st->execute([':uid' => $usuarioId]);
         $resultado['info_productor'] = $st->fetch() ?: null;
 
         // ---------- prod_colaboradores ----------
@@ -118,12 +127,12 @@ class RelevamientoFamiliaModel
                 hombres_tp,
                 prob_hijos_trabajen
             FROM prod_colaboradores
-            WHERE productor_id_real = :id_real
+            WHERE usuario_id = :uid
             LIMIT 1
         ";
 
         $st = $this->pdo->prepare($sqlColaboradores);
-        $st->execute([':id_real' => $productorIdReal]);
+        $st->execute([':uid' => $usuarioId]);
         $resultado['colaboradores'] = $st->fetch() ?: null;
 
         // ---------- prod_hijos ----------
@@ -147,12 +156,12 @@ class RelevamientoFamiliaModel
                 sexo3,
                 nivel_estudio3
             FROM prod_hijos
-            WHERE productor_id_real = :id_real
+            WHERE usuario_id = :uid
             LIMIT 1
         ";
 
         $st = $this->pdo->prepare($sqlHijos);
-        $st->execute([':id_real' => $productorIdReal]);
+        $st->execute([':uid' => $usuarioId]);
         $resultado['hijos'] = $st->fetch() ?: null;
 
         return $resultado;
