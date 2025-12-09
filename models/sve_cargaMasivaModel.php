@@ -903,6 +903,9 @@ class CargaMasivaModel
         {
                 $anioReferencia = 2025;
 
+                // Productor por defecto para fincas nuevas cuando no conocemos al dueño real
+                $productorDefaultIdReal = '77777777787777';
+
                 // Normaliza valores tipo SI/NO/NSNC
                 $normalizarSiNo = function ($valor) {
                         $v = strtolower(trim((string) $valor));
@@ -985,8 +988,7 @@ class CargaMasivaModel
                         "INSERT INTO prod_fincas (codigo_finca, productor_id_real, nombre_finca)
          VALUES (:codigo_finca, :productor_id_real, :nombre_finca)"
                 );
-                // Podés dejar este SELECT aunque ahora no lo usamos para el INSERT,
-                // o eliminarlo si no te interesa deducir la cooperativa.
+                // Lo dejamos por si querés usarlo para diagnósticos/reportes, pero ya no se guarda en prod_fincas
                 $stmtCoopFromCuartel = $this->pdo->prepare(
                         "SELECT cooperativa_id_real
            FROM prod_cuartel
@@ -1150,18 +1152,16 @@ class CargaMasivaModel
                         $finca = $stmtFincaSelect->fetch(PDO::FETCH_ASSOC);
 
                         if (!$finca) {
-                                // Podés seguir usando este SELECT si después querés loguear la cooperativa,
-                                // pero NO lo guardamos en prod_fincas porque la tabla no tiene esa columna.
+                                // Podés seguir usando este SELECT para logs o diagnósticos si querés
                                 $stmtCoopFromCuartel->execute([':codigo_finca' => $codigoFinca]);
                                 $coopRow = $stmtCoopFromCuartel->fetch(PDO::FETCH_ASSOC);
-                                // $coopRow puede servir solo para diagnóstico / logs si lo necesitás.
+                                // $coopRow['cooperativa_id_real'] disponible si lo necesitás, pero no lo guardamos acá
 
-                                // ✅ Siempre creamos la finca. No conocemos el productor acá,
-                                // así que dejamos productor_id_real en NULL (o 0 si tu columna no admite NULL).
+                                // ✅ Siempre creamos la finca, asociándola al productor por defecto
                                 $stmtFincaInsert->execute([
-                                        ':codigo_finca'     => $codigoFinca,
-                                        ':productor_id_real' => null,
-                                        ':nombre_finca'     => $nombreFincaCsv !== '' ? $nombreFincaCsv : null
+                                        ':codigo_finca'      => $codigoFinca,
+                                        ':productor_id_real' => $productorDefaultIdReal,
+                                        ':nombre_finca'      => $nombreFincaCsv !== '' ? $nombreFincaCsv : null
                                 ]);
 
                                 $fincaId = (int) $this->pdo->lastInsertId();
@@ -1175,7 +1175,6 @@ class CargaMasivaModel
                         }
 
                         $stats['fincas_encontradas']++;
-
 
                         // Actualizar nombre de finca si cambió
                         if ($nombreFincaCsv !== '' && $nombreFincaCsv !== $finca['nombre_finca']) {
