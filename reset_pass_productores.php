@@ -14,7 +14,10 @@ $TOKEN   = 'SVEtokenSeguro2025';     // cambiá por algo fuerte (solo letras/nú
 $ROLE    = 'productor';
 $PERPAGE = 100;
 
-function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
+function h($s)
+{
+  return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
+}
 
 // ---------- parámetros ----------
 $tokenInput = isset($_GET['token']) ? (string)$_GET['token'] : '';
@@ -30,37 +33,84 @@ $syncPass   = isset($_GET['sync']) && $_GET['sync'] === '1';
 
 // ---------- acceso por token ----------
 if ($tokenInput === '' || $tokenInput !== $TOKEN) {
-    $err = ($tokenInput !== '' && $tokenInput !== $TOKEN) ? 'Token inválido' : '';
-    ?>
-    <!doctype html>
-    <html lang="es">
-    <head>
-      <meta charset="utf-8">
-      <title>Acceso – herramienta por bloques</title>
-      <style>
-        body{font-family:system-ui,Arial;background:#f6f7fb;margin:0;padding:40px;color:#111}
-        .card{max-width:420px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:20px}
-        h1{margin:0 0 12px;color:#4c1d95}
-        .error{background:#fee2e2;color:#991b1b;padding:10px;border-radius:8px;margin:8px 0}
-        input,button{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd}
-        button{background:#4c1d95;border:none;color:#fff;margin-top:10px;cursor:pointer}
-        .help{font-size:12px;color:#666;margin-top:6px}
-      </style>
-    </head>
-    <body>
-      <div class="card">
-        <h1>Validar token</h1>
-        <?php if($err): ?><div class="error"><?=h($err)?></div><?php endif; ?>
-        <form method="get">
-          <input type="text" name="token" placeholder="Ingresá el token exacto" required>
-          <button type="submit">Entrar</button>
-          <div class="help">Luego podés navegar entre “Bloques” y “Limpieza”.</div>
-        </form>
-      </div>
-    </body>
-    </html>
-    <?php
-    exit;
+  $err = ($tokenInput !== '' && $tokenInput !== $TOKEN) ? 'Token inválido' : '';
+?>
+  <!doctype html>
+  <html lang="es">
+
+  <head>
+    <meta charset="utf-8">
+    <title>Acceso – herramienta por bloques</title>
+    <style>
+      body {
+        font-family: system-ui, Arial;
+        background: #f6f7fb;
+        margin: 0;
+        padding: 40px;
+        color: #111
+      }
+
+      .card {
+        max-width: 420px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, .08);
+        padding: 20px
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        color: #4c1d95
+      }
+
+      .error {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 10px;
+        border-radius: 8px;
+        margin: 8px 0
+      }
+
+      input,
+      button {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd
+      }
+
+      button {
+        background: #4c1d95;
+        border: none;
+        color: #fff;
+        margin-top: 10px;
+        cursor: pointer
+      }
+
+      .help {
+        font-size: 12px;
+        color: #666;
+        margin-top: 6px
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="card">
+      <h1>Validar token</h1>
+      <?php if ($err): ?><div class="error"><?= h($err) ?></div><?php endif; ?>
+      <form method="get">
+        <input type="text" name="token" placeholder="Ingresá el token exacto" required>
+        <button type="submit">Entrar</button>
+        <div class="help">Luego podés navegar entre “Bloques” y “Limpieza”.</div>
+      </form>
+    </div>
+  </body>
+
+  </html>
+<?php
+  exit;
 }
 
 // ---------- estilo base ----------
@@ -89,93 +139,150 @@ input[type=text]{padding:6px 8px;border:1px solid #ddd;border-radius:6px;width:1
 CSS;
 
 // ---------- helpers ----------
-function paga($q){ echo $q; }
+function paga($q)
+{
+  echo $q;
+}
 
 // ---------- VISTA BLOQUES ----------
 if ($view === 'blocks') {
-    $total = (int)$pdo->query("SELECT COUNT(*) FROM usuarios WHERE rol='productor'")->fetchColumn();
-    $pages = max(1, (int)ceil($total / $PERPAGE));
-    $offset = ($page - 1) * $PERPAGE;
+  $total = (int)$pdo->query("SELECT COUNT(*) FROM usuarios WHERE rol='productor'")->fetchColumn();
+  $pages = max(1, (int)ceil($total / $PERPAGE));
+  $offset = ($page - 1) * $PERPAGE;
 
-    $stmt = $pdo->prepare("
+  $stmt = $pdo->prepare("
       SELECT id, usuario, contrasena
       FROM usuarios
       WHERE rol=:rol
       ORDER BY id ASC
       LIMIT :lim OFFSET :off
     ");
-    $stmt->bindValue(':rol', $ROLE, PDO::PARAM_STR);
-    $stmt->bindValue(':lim', $PERPAGE, PDO::PARAM_INT);
-    $stmt->bindValue(':off', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $stmt->bindValue(':rol', $ROLE, PDO::PARAM_STR);
+  $stmt->bindValue(':lim', $PERPAGE, PDO::PARAM_INT);
+  $stmt->bindValue(':off', $offset, PDO::PARAM_INT);
+  $stmt->execute();
+  $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $updated = 0; $skipped = 0;
-    if ($applyBlock) {
-        $pdo->beginTransaction();
-        $upd = $pdo->prepare("UPDATE usuarios SET contrasena=:hash WHERE id=:id");
-        foreach ($rows as $r) {
-            $usuario = (string)$r['usuario'];
-            $hashDB  = (string)$r['contrasena'];
-            if (password_verify($usuario, $hashDB)) { $skipped++; }
-            else {
-                $newHash = password_hash($usuario, PASSWORD_DEFAULT);
-                $upd->execute([':hash'=>$newHash, ':id'=>(int)$r['id']]);
-                $updated++;
-            }
-        }
-        $pdo->commit();
+  $updated = 0;
+  $skipped = 0;
+  if ($applyBlock) {
+    $pdo->beginTransaction();
+    $upd = $pdo->prepare("UPDATE usuarios SET contrasena=:hash WHERE id=:id");
+    foreach ($rows as $r) {
+      $usuario = (string)$r['usuario'];
+      $hashDB  = (string)$r['contrasena'];
+      if (password_verify($usuario, $hashDB)) {
+        $skipped++;
+      } else {
+        $newHash = password_hash($usuario, PASSWORD_DEFAULT);
+        $upd->execute([':hash' => $newHash, ':id' => (int)$r['id']]);
+        $updated++;
+      }
     }
+    $pdo->commit();
+  }
 
-    ?>
-    <!doctype html>
-    <html lang="es">
-    <head><meta charset="utf-8"><title>Reset contraseñas – Bloques</title><style><?=$style?></style></head>
-    <body>
-      <h1>Reset de contraseñas - Productores</h1>
+?>
+  <!doctype html>
+  <html lang="es">
 
-      <div class="tabs">
-        <a class="active" href="?token=<?=urlencode($tokenInput)?>&view=blocks">Bloques</a>
-        <a href="?token=<?=urlencode($tokenInput)?>&view=cleanup">Limpieza</a>
-      </div>
+  <head>
+    <meta charset="utf-8">
+    <title>Reset contraseñas – Bloques</title>
+    <style>
+      <?= $style ?>
+    </style>
+  </head>
 
-      <p>Total productores: <strong><?=number_format($total,0,',','.')?></strong>. Mostrando página <?=$page?> de <?=$pages?> (<?=$PERPAGE?> por bloque).</p>
+  <body>
+    <h1>Reset de contraseñas - Productores</h1>
 
-      <?php if($applyBlock): ?>
-        <div class="summary">✅ Bloque actualizado. Cambiados: <?=$updated?> — Omitidos (ya ok): <?=$skipped?></div>
-      <?php endif; ?>
+    <div class="tabs">
+      <a class="active" href="?token=<?= urlencode($tokenInput) ?>&view=blocks">Bloques</a>
+      <a href="?token=<?= urlencode($tokenInput) ?>&view=cleanup">Limpieza</a>
+    </div>
 
-      <div class="controls">
-        <a class="btn" href="?token=<?=urlencode($tokenInput)?>&view=blocks&page=<?=$page?>&apply=1">Aplicar cambios a este bloque</a>
-        <span class="small">Esto solo re-hashea <em>contraseñas</em> para que sean iguales al usuario en esta página (<?=$PERPAGE?> registros).</span>
-      </div>
+    <p>Total productores: <strong><?= number_format($total, 0, ',', '.') ?></strong>. Mostrando página <?= $page ?> de <?= $pages ?> (<?= $PERPAGE ?> por bloque).</p>
 
-      <table>
-        <thead><tr><th>ID</th><th>Usuario</th><th>Estado contraseña</th></tr></thead>
-        <tbody>
-          <?php foreach($rows as $r):
-              $ok = password_verify($r['usuario'],$r['contrasena']);
-          ?>
+    <?php if ($applyBlock): ?>
+      <div class="summary">✅ Bloque actualizado. Cambiados: <?= $updated ?> — Omitidos (ya ok): <?= $skipped ?></div>
+    <?php endif; ?>
+
+    <div class="controls">
+      <a class="btn" href="?token=<?= urlencode($tokenInput) ?>&view=blocks&page=<?= $page ?>&apply=1">Aplicar cambios a este bloque</a>
+      <span class="small">Esto solo re-hashea <em>contraseñas</em> para que sean iguales al usuario en esta página (<?= $PERPAGE ?> registros).</span>
+    </div>
+
+    <div class="controls">
+      <label class="small" for="searchUsuarioBlocks">Buscar por usuario:</label>
+      <input type="text" id="searchUsuarioBlocks" placeholder="Escribí para filtrar por usuario">
+    </div>
+
+    <table id="tablaBloques">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Usuario</th>
+          <th>Estado contraseña</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($rows as $r):
+          $ok = password_verify($r['usuario'], $r['contrasena']);
+        ?>
           <tr>
-            <td><?=h($r['id'])?></td>
-            <td><?=h($r['usuario'])?></td>
-            <td class="<?=$ok?'ok':'miss'?>"><?=$ok?'✔ ya coincide':'✘ distinta'?></td>
+            <td><?= h($r['id']) ?></td>
+            <td><?= h($r['usuario']) ?></td>
+            <td class="<?= $ok ? 'ok' : 'miss' ?>"><?= $ok ? '✔ ya coincide' : '✘ distinta' ?></td>
           </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
 
-      <nav>
-        <?php for($i=1;$i<=$pages;$i++): ?>
-          <a href="?token=<?=urlencode($tokenInput)?>&view=blocks&page=<?=$i?>" class="<?=$i===$page?'active':''?>"><?=$i?></a>
-        <?php endfor; ?>
-      </nav>
+    <nav>
+      <?php for ($i = 1; $i <= $pages; $i++): ?>
+        <a href="?token=<?= urlencode($tokenInput) ?>&view=blocks&page=<?= $i ?>" class="<?= $i === $page ? 'active' : '' ?>"><?= $i ?></a>
+      <?php endfor; ?>
+    </nav>
 
-      <p class="warn">⚠️ Al finalizar, borrá este archivo del servidor.</p>
-    </body>
-    </html>
-    <?php
-    exit;
+    <p class="warn">⚠️ Al finalizar, borrá este archivo del servidor.</p>
+
+    <script>
+      (function() {
+        function setupFilter(inputId, tableId, colIndex) {
+          var input = document.getElementById(inputId);
+          var table = document.getElementById(tableId);
+          if (!input || !table || !table.tBodies || !table.tBodies.length) {
+            return;
+          }
+
+          input.addEventListener('input', function() {
+            var filtro = (input.value || '').toLowerCase();
+            var cuerpo = table.tBodies[0];
+            var filas = cuerpo.rows;
+            for (var i = 0; i < filas.length; i++) {
+              var celda = filas[i].cells[colIndex];
+              if (!celda) {
+                continue;
+              }
+              var txt = (celda.textContent || celda.innerText || '').toLowerCase();
+              filas[i].style.display = txt.indexOf(filtro) !== -1 ? '' : 'none';
+            }
+          });
+        }
+
+        // Filtro para vista Bloques (columna "Usuario" = índice 1)
+        setupFilter('searchUsuarioBlocks', 'tablaBloques', 1);
+        // Filtro para vista Limpieza (columna "Usuario (actual)" = índice 1)
+        setupFilter('searchUsuarioCleanup', 'tablaCleanup', 1);
+      })();
+    </script>
+  </body>
+
+  </html>
+
+<?php
+  exit;
 }
 
 // ---------- VISTA LIMPIEZA (usuarios con "?" o caracteres fuera del set común) ----------
@@ -188,7 +295,7 @@ $offset = ($page - 1) * $PERPAGE;
 $whereBad = "usuario LIKE '%?%' OR usuario REGEXP '[^0-9A-Za-z ÁÉÍÓÚÜÑáéíóúüñ._-]'";
 
 $totalStmt = $pdo->prepare("SELECT COUNT(*) FROM usuarios WHERE rol=:rol AND ($whereBad)");
-$totalStmt->execute([':rol'=>$ROLE]);
+$totalStmt->execute([':rol' => $ROLE]);
 $totalBad = (int)$totalStmt->fetchColumn();
 
 $pagesBad = max(1, (int)ceil($totalBad / $PERPAGE));
@@ -211,77 +318,98 @@ $errMsg = '';
 
 // Guardar un registro individual (cambio de usuario y opcionalmente contraseña)
 if ($saveOne && $editId > 0 && $newUser !== '') {
-    try {
-        // ¿existe otro igual?
-        $chk = $pdo->prepare("SELECT COUNT(*) FROM usuarios WHERE usuario=:u AND id<>:id");
-        $chk->execute([':u'=>$newUser, ':id'=>$editId]);
-        if ((int)$chk->fetchColumn() > 0) {
-            $errMsg = "El usuario '{$newUser}' ya existe. Elegí otro.";
-        } else {
-            $pdo->beginTransaction();
-            // actualizar nombre
-            $updU = $pdo->prepare("UPDATE usuarios SET usuario=:u WHERE id=:id");
-            $updU->execute([':u'=>$newUser, ':id'=>$editId]);
+  try {
+    // ¿existe otro igual?
+    $chk = $pdo->prepare("SELECT COUNT(*) FROM usuarios WHERE usuario=:u AND id<>:id");
+    $chk->execute([':u' => $newUser, ':id' => $editId]);
+    if ((int)$chk->fetchColumn() > 0) {
+      $errMsg = "El usuario '{$newUser}' ya existe. Elegí otro.";
+    } else {
+      $pdo->beginTransaction();
+      // actualizar nombre
+      $updU = $pdo->prepare("UPDATE usuarios SET usuario=:u WHERE id=:id");
+      $updU->execute([':u' => $newUser, ':id' => $editId]);
 
-            // opcional: sincronizar contraseña
-            if ($syncPass) {
-                $updP = $pdo->prepare("UPDATE usuarios SET contrasena=:h WHERE id=:id");
-                $updP->execute([':h'=>password_hash($newUser, PASSWORD_DEFAULT), ':id'=>$editId]);
-            }
-            $pdo->commit();
-            $flash = "Usuario ID {$editId} actualizado correctamente".($syncPass?" (y contraseña sincronizada)":"").".";
-        }
-    } catch (Exception $e) {
-        if ($pdo->inTransaction()) $pdo->rollBack();
-        $errMsg = "Error al actualizar: ".$e->getMessage();
+      // opcional: sincronizar contraseña
+      if ($syncPass) {
+        $updP = $pdo->prepare("UPDATE usuarios SET contrasena=:h WHERE id=:id");
+        $updP->execute([':h' => password_hash($newUser, PASSWORD_DEFAULT), ':id' => $editId]);
+      }
+      $pdo->commit();
+      $flash = "Usuario ID {$editId} actualizado correctamente" . ($syncPass ? " (y contraseña sincronizada)" : "") . ".";
     }
+  } catch (Exception $e) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
+    $errMsg = "Error al actualizar: " . $e->getMessage();
+  }
 
-    // volver a recalcular la página (el registro pudo salir del filtro)
-    $listStmt->execute();
-    $badRows = $listStmt->fetchAll(PDO::FETCH_ASSOC);
+  // volver a recalcular la página (el registro pudo salir del filtro)
+  $listStmt->execute();
+  $badRows = $listStmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 ?>
 <!doctype html>
 <html lang="es">
-<head><meta charset="utf-8"><title>Limpieza de nombres – Productores</title><style><?=$style?></style></head>
+
+<head>
+  <meta charset="utf-8">
+  <title>Limpieza de nombres – Productores</title>
+  <style>
+    <?= $style ?>
+  </style>
+</head>
+
 <body>
   <h1>Limpieza de nombres (caracteres rotos)</h1>
 
   <div class="tabs">
-    <a href="?token=<?=urlencode($tokenInput)?>&view=blocks" >Bloques</a>
-    <a class="active" href="?token=<?=urlencode($tokenInput)?>&view=cleanup">Limpieza</a>
+    <a href="?token=<?= urlencode($tokenInput) ?>&view=blocks">Bloques</a>
+    <a class="active" href="?token=<?= urlencode($tokenInput) ?>&view=cleanup">Limpieza</a>
   </div>
 
-  <p>Detectados con posibles caracteres dañados: <strong><?=number_format($totalBad,0,',','.')?></strong>. Mostrando página <?=$page?> de <?=$pagesBad?> (<?=$PERPAGE?> por bloque).</p>
+  <p>Detectados con posibles caracteres dañados: <strong><?= number_format($totalBad, 0, ',', '.') ?></strong>. Mostrando página <?= $page ?> de <?= $pagesBad ?> (<?= $PERPAGE ?> por bloque).</p>
 
-  <?php if($flash): ?><div class="summary">✅ <?=h($flash)?></div><?php endif; ?>
-  <?php if($errMsg): ?><div class="error">❌ <?=h($errMsg)?></div><?php endif; ?>
+  <?php if ($flash): ?><div class="summary">✅ <?= h($flash) ?></div><?php endif; ?>
+  <?php if ($errMsg): ?><div class="error">❌ <?= h($errMsg) ?></div><?php endif; ?>
 
-  <table>
+  <div class="controls">
+    <label class="small" for="searchUsuarioCleanup">Buscar por usuario:</label>
+    <input type="text" id="searchUsuarioCleanup" placeholder="Escribí para filtrar por usuario">
+  </div>
+
+  <table id="tablaCleanup">
     <thead>
-      <tr><th style="width:80px">ID</th><th>Usuario (actual)</th><th style="width:360px">Nuevo usuario</th><th style="width:180px">Acción</th></tr>
+      <tr>
+        <th style="width:80px">ID</th>
+        <th>Usuario (actual)</th>
+        <th style="width:360px">Nuevo usuario</th>
+        <th style="width:180px">Acción</th>
+      </tr>
     </thead>
+
     <tbody>
       <?php if (!$badRows): ?>
-        <tr><td colspan="4">No hay usuarios con “?” u otros caracteres fuera del set esperado en esta página.</td></tr>
-      <?php endif; ?>
-      <?php foreach($badRows as $r): ?>
         <tr>
-          <td><?=h($r['id'])?></td>
-          <td><?=h($r['usuario'])?></td>
+          <td colspan="4">No hay usuarios con “?” u otros caracteres fuera del set esperado en esta página.</td>
+        </tr>
+      <?php endif; ?>
+      <?php foreach ($badRows as $r): ?>
+        <tr>
+          <td><?= h($r['id']) ?></td>
+          <td><?= h($r['usuario']) ?></td>
           <td>
             <form class="controls" method="get" style="margin:0;">
-              <input type="hidden" name="token" value="<?=h($tokenInput)?>">
+              <input type="hidden" name="token" value="<?= h($tokenInput) ?>">
               <input type="hidden" name="view" value="cleanup">
-              <input type="hidden" name="page" value="<?=h($page)?>">
+              <input type="hidden" name="page" value="<?= h($page) ?>">
               <input type="hidden" name="save" value="1">
-              <input type="hidden" name="id" value="<?=h($r['id'])?>">
-              <input type="text" name="new_usuario" placeholder="Escribí el nuevo usuario" value="<?=h($r['usuario'])?>" required>
+              <input type="hidden" name="id" value="<?= h($r['id']) ?>">
+              <input type="text" name="new_usuario" placeholder="Escribí el nuevo usuario" value="<?= h($r['usuario']) ?>" required>
           </td>
           <td>
-              <label><input type="checkbox" name="sync" value="1" checked> sincronizar contraseña</label>
-              <button type="submit" class="btn">Guardar</button>
+            <label><input type="checkbox" name="sync" value="1" checked> sincronizar contraseña</label>
+            <button type="submit" class="btn">Guardar</button>
             </form>
           </td>
         </tr>
@@ -290,11 +418,43 @@ if ($saveOne && $editId > 0 && $newUser !== '') {
   </table>
 
   <nav>
-    <?php for($i=1;$i<=$pagesBad;$i++): ?>
-      <a href="?token=<?=urlencode($tokenInput)?>&view=cleanup&page=<?=$i?>" class="<?=$i===$page?'active':''?>"><?=$i?></a>
+    <?php for ($i = 1; $i <= $pagesBad; $i++): ?>
+      <a href="?token=<?= urlencode($tokenInput) ?>&view=cleanup&page=<?= $i ?>" class="<?= $i === $page ? 'active' : '' ?>"><?= $i ?></a>
     <?php endfor; ?>
   </nav>
 
   <p class="warn">Sugerencia: corregí y sincronizá de a pocos para minimizar carga. Al terminar, borra este archivo.</p>
+
+  <script>
+    (function() {
+      function setupFilter(inputId, tableId, colIndex) {
+        var input = document.getElementById(inputId);
+        var table = document.getElementById(tableId);
+        if (!input || !table || !table.tBodies || !table.tBodies.length) {
+          return;
+        }
+
+        input.addEventListener('input', function() {
+          var filtro = (input.value || '').toLowerCase();
+          var cuerpo = table.tBodies[0];
+          var filas = cuerpo.rows;
+          for (var i = 0; i < filas.length; i++) {
+            var celda = filas[i].cells[colIndex];
+            if (!celda) {
+              continue;
+            }
+            var txt = (celda.textContent || celda.innerText || '').toLowerCase();
+            filas[i].style.display = txt.indexOf(filtro) !== -1 ? '' : 'none';
+          }
+        });
+      }
+
+      // Filtro para vista Bloques (columna "Usuario" = índice 1)
+      setupFilter('searchUsuarioBlocks', 'tablaBloques', 1);
+      // Filtro para vista Limpieza (columna "Usuario (actual)" = índice 1)
+      setupFilter('searchUsuarioCleanup', 'tablaCleanup', 1);
+    })();
+  </script>
 </body>
+
 </html>
