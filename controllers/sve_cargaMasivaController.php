@@ -136,9 +136,9 @@ try {
             if (is_array($stats)) {
                 $mensaje .= ' Filas procesadas: ' . ($stats['filas_procesadas'] ?? 0)
                     . ', fincas encontradas: ' . ($stats['fincas_encontradas'] ?? 0)
+                    . ', fincas creadas: ' . ($stats['fincas_creadas'] ?? 0)
                     . ', fincas no encontradas: ' . ($stats['fincas_no_encontradas'] ?? 0)
                     . ', dirección (upsert): ' . ($stats['direccion_upsert'] ?? 0)
-                    . ', superficie (upsert): ' . ($stats['superficie_upsert'] ?? 0)
                     . ', cultivos (upsert): ' . ($stats['cultivos_upsert'] ?? 0)
                     . ', agua (upsert): ' . ($stats['agua_upsert'] ?? 0)
                     . ', maquinaria (upsert): ' . ($stats['maquinaria_upsert'] ?? 0)

@@ -946,6 +946,16 @@ class CargaMasivaModel
                          SET nombre_finca = :nombre_finca
                          WHERE id = :id"
                 );
+                $stmtFincaInsert = $this->pdo->prepare(
+                        "INSERT INTO prod_fincas (codigo_finca, cooperativa_id_real, nombre_finca)
+                         VALUES (:codigo_finca, :cooperativa_id_real, :nombre_finca)"
+                );
+                $stmtCoopFromCuartel = $this->pdo->prepare(
+                        "SELECT cooperativa_id_real
+                           FROM prod_cuartel
+                          WHERE codigo_finca = :codigo_finca
+                          LIMIT 1"
+                );
 
                 $stmtDirSelect = $this->pdo->prepare(
                         "SELECT id
@@ -1063,6 +1073,7 @@ class CargaMasivaModel
                 $stats = [
                         'filas_procesadas'        => 0,
                         'fincas_encontradas'      => 0,
+                        'fincas_creadas'          => 0,
                         'fincas_no_encontradas'   => 0,
                         'direccion_upsert'        => 0,
                         'superficie_upsert'       => 0,
@@ -1072,6 +1083,7 @@ class CargaMasivaModel
                         'gerencia_upsert'         => 0,
                         'conflictos'              => 0
                 ];
+
                 $conflictos = [];
 
                 foreach ($datos as $fila) {
@@ -1093,23 +1105,50 @@ class CargaMasivaModel
                                 continue;
                         }
 
+                        // Nombre de finca desde CSV (si viene)
+                        $nombreFincaCsv = isset($fila['Nombre finca']) ? trim((string) $fila['Nombre finca']) : '';
+
+                        // Buscar finca existente por codigo_finca
                         $stmtFincaSelect->execute([':codigo_finca' => $codigoFinca]);
                         $finca = $stmtFincaSelect->fetch(PDO::FETCH_ASSOC);
 
                         if (!$finca) {
-                                $stats['fincas_no_encontradas']++;
-                                $stats['conflictos']++;
-                                $conflictos[] = [
-                                        'codigo_finca' => $codigoFinca,
-                                        'motivo'       => 'Finca no encontrada en prod_fincas.codigo_finca'
-                                ];
-                                continue;
+                                // Intentar deducir la cooperativa desde prod_cuartel
+                                $stmtCoopFromCuartel->execute([':codigo_finca' => $codigoFinca]);
+                                $coopRow = $stmtCoopFromCuartel->fetch(PDO::FETCH_ASSOC);
+
+                                if ($coopRow && !empty($coopRow['cooperativa_id_real'])) {
+                                        $cooperativaIdReal = $coopRow['cooperativa_id_real'];
+
+                                        $stmtFincaInsert->execute([
+                                                ':codigo_finca'       => $codigoFinca,
+                                                ':cooperativa_id_real' => $cooperativaIdReal,
+                                                ':nombre_finca'       => $nombreFincaCsv !== '' ? $nombreFincaCsv : null
+                                        ]);
+
+                                        $fincaId = (int) $this->pdo->lastInsertId();
+                                        $finca = [
+                                                'id'           => $fincaId,
+                                                'nombre_finca' => $nombreFincaCsv
+                                        ];
+                                        $stats['fincas_creadas']++;
+                                } else {
+                                        // No tenemos forma de asociarla correctamente -> conflicto
+                                        $stats['fincas_no_encontradas']++;
+                                        $stats['conflictos']++;
+                                        $conflictos[] = [
+                                                'codigo_finca' => $codigoFinca,
+                                                'motivo'       => 'Finca no encontrada y no se pudo deducir cooperativa desde prod_cuartel'
+                                        ];
+                                        continue;
+                                }
+                        } else {
+                                $fincaId = (int) $finca['id'];
                         }
 
                         $stats['fincas_encontradas']++;
-                        $fincaId = (int) $finca['id'];
 
-                        $nombreFincaCsv = isset($fila['Nombre finca']) ? trim((string) $fila['Nombre finca']) : '';
+                        // Actualizar nombre de finca si cambió
                         if ($nombreFincaCsv !== '' && $nombreFincaCsv !== $finca['nombre_finca']) {
                                 $stmtFincaUpdateNombre->execute([
                                         ':nombre_finca' => $nombreFincaCsv,
@@ -1121,8 +1160,21 @@ class CargaMasivaModel
                         $localidad    = isset($fila['Localidad']) ? trim((string) $fila['Localidad']) : '';
                         $calle        = isset($fila['Calle']) ? trim((string) $fila['Calle']) : '';
                         $numero       = isset($fila['Número']) ? trim((string) $fila['Número']) : '';
-                        $latitud      = isset($fila['Latitud']) ? trim((string) $fila['Latitud']) : '';
-                        $longitud     = isset($fila['Longitud']) ? trim((string) $fila['Longitud']) : '';
+
+                        // latitud / longitud pueden venir en minúsculas en el CSV
+                        $latitud = '';
+                        if (isset($fila['Latitud'])) {
+                                $latitud = trim((string) $fila['Latitud']);
+                        } elseif (isset($fila['latitud'])) {
+                                $latitud = trim((string) $fila['latitud']);
+                        }
+
+                        $longitud = '';
+                        if (isset($fila['Longitud'])) {
+                                $longitud = trim((string) $fila['Longitud']);
+                        } elseif (isset($fila['longitud'])) {
+                                $longitud = trim((string) $fila['longitud']);
+                        }
 
                         $tieneDireccion = ($departamento !== '' || $localidad !== '' || $calle !== '' ||
                                 $numero !== '' || $latitud !== '' || $longitud !== '');
