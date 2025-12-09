@@ -122,6 +122,37 @@ try {
             ]);
             exit;
 
+        case 'fincas':
+            $resultado = $modelo->insertarDiagnosticoFincas($datosProcesados);
+            $conflictos = isset($resultado['conflictos']) ? $resultado['conflictos'] : [];
+            $stats = isset($resultado['stats']) ? $resultado['stats'] : null;
+
+            if (!empty($conflictos)) {
+                $mensaje = '⚠️ Carga de diagnóstico de fincas completada con advertencias.';
+            } else {
+                $mensaje = '✅ Carga de diagnóstico de fincas completada.';
+            }
+
+            if (is_array($stats)) {
+                $mensaje .= ' Filas procesadas: ' . ($stats['filas_procesadas'] ?? 0)
+                    . ', fincas encontradas: ' . ($stats['fincas_encontradas'] ?? 0)
+                    . ', fincas no encontradas: ' . ($stats['fincas_no_encontradas'] ?? 0)
+                    . ', dirección (upsert): ' . ($stats['direccion_upsert'] ?? 0)
+                    . ', superficie (upsert): ' . ($stats['superficie_upsert'] ?? 0)
+                    . ', cultivos (upsert): ' . ($stats['cultivos_upsert'] ?? 0)
+                    . ', agua (upsert): ' . ($stats['agua_upsert'] ?? 0)
+                    . ', maquinaria (upsert): ' . ($stats['maquinaria_upsert'] ?? 0)
+                    . ', gerencia (upsert): ' . ($stats['gerencia_upsert'] ?? 0)
+                    . ', conflictos: ' . ($stats['conflictos'] ?? 0) . '.';
+            }
+
+            echo json_encode([
+                'mensaje'    => $mensaje,
+                'conflictos' => $conflictos,
+                'stats'      => $stats
+            ]);
+            exit;
+
         default:
             throw new Exception("Tipo de carga desconocido.");
     }

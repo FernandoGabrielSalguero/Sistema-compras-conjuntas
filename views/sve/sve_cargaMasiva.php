@@ -147,6 +147,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <div id="previewFamilia" class="csv-preview"></div>
                         <button class="btn btn-aceptar" onclick="confirmarCarga('familia')">Confirmar carga</button>
                     </div>
+
+                    <!-- Tarjeta: Carga de diagnóstico de fincas -->
+                    <div class="card">
+                        <h3>Cargar diagnóstico de fincas</h3>
+                        <p>Usa un CSV con las columnas mapeadas por <strong>codigo finca</strong> a las tablas de fincas.</p>
+                        <input type="file" id="csvFincas" accept=".csv" />
+                        <button class="btn btn-info" onclick="previewCSV('fincas')">Previsualizar</button>
+                        <div id="previewFincas" class="csv-preview"></div>
+                        <button class="btn btn-aceptar" onclick="confirmarCarga('fincas')">Confirmar carga</button>
+                    </div>
                 </div>
 
             </section>
