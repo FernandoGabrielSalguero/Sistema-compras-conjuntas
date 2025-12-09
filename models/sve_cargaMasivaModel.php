@@ -967,7 +967,7 @@ class CargaMasivaModel
                 );
                 $stmtSupInsert = $this->pdo->prepare(
                         "INSERT INTO prod_finca_superficie (finca_id, anio, sup_total_ha, sup_total_cultivada_ha, sup_total_vid_ha,
-                                                           sup_total_vid_destinada_coop_ha, sup_con_otros_cultivos_ha,
+                                                           sup_vid_destinada_coop_ha, sup_con_otros_cultivos_ha,
                                                            clasificacion_riesgo_salinizacion, analisis_suelo_completo)
                          VALUES (:finca_id, :anio, :sup_total_ha, :sup_total_cultivada_ha, :sup_total_vid_ha,
                                  :sup_vid_destinada_coop_ha, :sup_con_otros_cultivos_ha,
