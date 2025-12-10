@@ -634,48 +634,97 @@ unset($_SESSION['cierre_info']);
             }
         }
 
-        // Exponer también en window por el onclick del botón
-        console.log('[Relevamiento] relevamientoOpenModal', {
-            tipo,
-            productorIdReal
-        });
+        async function guardarProduccion() {
+            const modal = relevamientoGetModalElement('produccion');
+            if (!modal) {
+                return;
+            }
 
-        // Guardamos referencia por si después queremos usarla
-        const productor = PRODUCTORES_MAP[productorIdReal];
-        if (!productor) {
-            console.warn('[Relevamiento] PRODUCTORES_MAP sin entrada para', productorIdReal);
-        } else {
-            currentProductor = productor;
+            const form = modal.querySelector('#produccion-form');
+            if (!form) {
+                // Si todavía no hay formulario definido, simplemente cerramos el modal
+                relevamientoCloseModal('produccion');
+                return;
+            }
+
+            const productorIdReal =
+                (modal.dataset.productorIdReal) ||
+                (currentProductor && currentProductor.id_real) ||
+                '';
+
+            const formData = new FormData(form);
+            formData.append('productor_id_real', productorIdReal);
+
+            try {
+                const resp = await fetch(
+                    `${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_produccion_controller.php`, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        body: formData
+                    }
+                );
+
+                const data = await resp.json();
+
+                if (!data.ok) {
+                    throw new Error(data.error || 'Error al guardar datos de producción');
+                }
+
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('success', 'Datos de producción guardados correctamente');
+                } else {
+                    alert('Datos de producción guardados correctamente');
+                }
+
+                relevamientoCloseModal('produccion');
+            } catch (e) {
+                console.error('[Relevamiento] Error al guardar producción:', e);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', 'Error al guardar datos de producción: ' + e.message);
+                } else {
+                    alert('Error al guardar datos de producción: ' + e.message);
+                }
+            }
         }
 
-        const modal = relevamientoGetModalElement(tipo);
-        if (!modal) {
-            alert('No se encontró el modal para: ' + tipo);
-            return;
+        function relevamientoOpenModal(tipo, productorIdReal) {
+            console.log('[Relevamiento] relevamientoOpenModal', {
+                tipo,
+                productorIdReal
+            });
+
+            // Guardamos referencia por si después queremos usarla
+            const productor = PRODUCTORES_MAP[productorIdReal];
+            if (!productor) {
+                console.warn('[Relevamiento] PRODUCTORES_MAP sin entrada para', productorIdReal);
+            } else {
+                currentProductor = productor;
+            }
+
+            const modal = relevamientoGetModalElement(tipo);
+            if (!modal) {
+                alert('No se encontró el modal para: ' + tipo);
+                return;
+            }
+
+            // Mostramos el modal
+            modal.classList.remove('hidden');
+
+            // Cargar contenido específico según tipo
+            if (tipo === 'familia') {
+                loadFamiliaForm(productorIdReal);
+            } else if (tipo === 'produccion') {
+                loadProduccionForm(productorIdReal);
+            } else if (tipo === 'cuarteles') {
+                // futuro: loadCuartelesForm(productorIdReal);
+            }
         }
-
-        // Mostramos el modal
-        modal.classList.remove('hidden');
-
-        // Cargar contenido específico según tipo
-        if (tipo === 'familia') {
-            loadFamiliaForm(productorIdReal);
-        } else if (tipo === 'produccion') {
-            loadProduccionForm(productorIdReal);
-        } else if (tipo === 'cuarteles') {
-            // futuro: loadCuartelesForm(productorIdReal);
-        }
-
 
         // Exponer en window por si hace falta desde HTML inline
+        window.guardarFamilia = guardarFamilia;
+        window.guardarProduccion = guardarProduccion;
         window.relevamientoOpenModal = relevamientoOpenModal;
         window.relevamientoCloseModal = relevamientoCloseModal;
-
-
-        // Nos aseguramos de que estén disponibles en window (por si el navegador cambia el comportamiento)
-        window.relevamientoOpenModal = relevamientoOpenModal;
-        window.relevamientoCloseModal = relevamientoCloseModal;
-
 
         // Cargar cooperativas una vez que el DOM esté listo
         window.addEventListener('DOMContentLoaded', () => {
