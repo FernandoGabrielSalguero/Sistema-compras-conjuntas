@@ -142,7 +142,7 @@ class CoopCosechaMecanicaModel
      */
     public function obtenerParticipacionesPorContratoYCoop(int $contratoId, string $nomCooperativa): array
     {
-        $sql = "SELECT productor, superficie, variedad, prod_estimada, fecha_estimada, km_finca, flete
+        $sql = "SELECT productor, superficie, variedad, prod_estimada, fecha_estimada, km_finca, flete, finca_id
                 FROM cosechaMecanica_cooperativas_participacion
                 WHERE contrato_id = :contrato_id
                     AND nom_cooperativa = :nom_cooperativa
@@ -182,9 +182,9 @@ class CoopCosechaMecanicaModel
 
         // Insertamos el nuevo estado de participación
         $sqlInsert = "INSERT INTO cosechaMecanica_cooperativas_participacion
-                        (contrato_id, nom_cooperativa, firma, productor, superficie, variedad, prod_estimada, fecha_estimada, km_finca, flete)
+                        (contrato_id, nom_cooperativa, firma, productor, superficie, variedad, prod_estimada, fecha_estimada, km_finca, flete, finca_id)
                       VALUES
-                        (:contrato_id, :nom_cooperativa, :firma, :productor, :superficie, :variedad, :prod_estimada, :fecha_estimada, :km_finca, :flete)";
+                        (:contrato_id, :nom_cooperativa, :firma, :productor, :superficie, :variedad, :prod_estimada, :fecha_estimada, :km_finca, :flete, :finca_id)";
 
         $stmtInsert = $this->pdo->prepare($sqlInsert);
 
@@ -195,12 +195,13 @@ class CoopCosechaMecanicaModel
                 continue;
             }
 
-            $superficie = ($fila['superficie'] ?? '') !== '' ? $fila['superficie'] : 0;
+            $superficie   = ($fila['superficie'] ?? '') !== '' ? $fila['superficie'] : 0;
             $prodEstimada = ($fila['prod_estimada'] ?? '') !== '' ? $fila['prod_estimada'] : 0;
-            $kmFinca = ($fila['km_finca'] ?? '') !== '' ? $fila['km_finca'] : 0;
+            $kmFinca      = ($fila['km_finca'] ?? '') !== '' ? $fila['km_finca'] : 0;
             $fechaEstimada = $fila['fecha_estimada'] ?? null;
-            $variedad = $fila['variedad'] ?? '';
-            $flete = isset($fila['flete']) ? (int) $fila['flete'] : 0;
+            $variedad     = $fila['variedad'] ?? '';
+            $flete        = isset($fila['flete']) ? (int) $fila['flete'] : 0;
+            $fincaId      = ($fila['finca_id'] ?? '') !== '' ? (int) $fila['finca_id'] : null;
 
             $stmtInsert->execute([
                 ':contrato_id'     => $contratoId,
@@ -213,6 +214,7 @@ class CoopCosechaMecanicaModel
                 ':fecha_estimada'  => $fechaEstimada,
                 ':km_finca'        => $kmFinca,
                 ':flete'           => $flete,
+                ':finca_id'        => $fincaId,
             ]);
         }
     }

@@ -179,10 +179,13 @@
                 }
 
                 anioOperativoActivo = obtenerAnioDesdeOperativo(op);
-                inicializarTablaParticipacion(participaciones);
-                cargarProductores();
 
-                modal.classList.remove('hidden');
+                // Primero cargamos productores, luego armamos la tabla y abrimos el modal
+                cargarProductores(function() {
+                    inicializarTablaParticipacion(participaciones);
+                    modal.classList.remove('hidden');
+                });
+
 
             })
             .catch(function(error) {
@@ -316,15 +319,15 @@
                 });
 
                 if (!productor) {
-                    poblarSelectFincas(fincaSelect, []);
+                    poblarSelectFincas(fincaSelect, [], null);
                     return;
                 }
 
-                cargarFincasParaProductor(productor.id_real, fincaSelect);
+                cargarFincasParaProductor(productor.id_real, fincaSelect, null);
             });
         }
 
-        // Setear valores si vienen desde la BD (actualmente no se guarda finca en BD)
+        // Setear valores si vienen desde la BD (incluyendo finca_id)
         if (datos && typeof datos === 'object') {
             const superficieInput = fila.querySelector(`#superficie_${indice}`);
             const variedadInput = fila.querySelector(`#variedad_${indice}`);
@@ -332,12 +335,28 @@
             const kmFincaInput = fila.querySelector(`#km_finca_${indice}`);
             const fleteSelect = fila.querySelector(`#flete_${indice}`);
 
-            if (productorInput) productorInput.value = datos.productor || '';
+            const productorNombre = datos.productor || '';
+
+            if (productorInput) productorInput.value = productorNombre;
             if (superficieInput) superficieInput.value = datos.superficie !== undefined ? datos.superficie : '';
             if (variedadInput) variedadInput.value = datos.variedad || '';
             if (fechaSelect && datos.fecha_estimada) fechaSelect.value = datos.fecha_estimada;
             if (kmFincaInput) kmFincaInput.value = datos.km_finca !== undefined ? datos.km_finca : '';
             if (fleteSelect && datos.flete !== undefined) fleteSelect.value = String(datos.flete);
+
+            // Si tenemos finca_id guardada, la precargamos
+            if (fincaSelect && datos.finca_id) {
+                const productorObj = productoresCoop.find(function(p) {
+                    return (p.nombre || '').trim() === productorNombre.trim();
+                });
+
+                if (productorObj && productorObj.id_real) {
+                    cargarFincasParaProductor(productorObj.id_real, fincaSelect, datos.finca_id);
+                } else {
+                    // si no encontramos el productor igual dejamos el select en estado consistente
+                    poblarSelectFincas(fincaSelect, [], null);
+                }
+            }
         }
 
         actualizarEstadoEdicionParticipacion();
@@ -388,7 +407,7 @@
         return (new Date()).getFullYear();
     }
 
-    function cargarProductores() {
+    function cargarProductores(callback) {
         const url = '../../controllers/coop_cosechaMecanicaController.php?action=listar_productores';
 
         fetch(url, {
@@ -403,14 +422,24 @@
             .then(function(json) {
                 if (!json || json.success !== true) {
                     showAlert('error', json && json.message ? json.message : 'No se pudieron obtener los productores.');
+                    if (typeof callback === 'function') {
+                        callback();
+                    }
                     return;
                 }
                 productoresCoop = Array.isArray(json.data) ? json.data : [];
                 actualizarDatalistProductores();
+
+                if (typeof callback === 'function') {
+                    callback();
+                }
             })
             .catch(function(error) {
                 console.error('Error al obtener productores:', error);
                 showAlert('error', 'Error de conexión al obtener los productores.');
+                if (typeof callback === 'function') {
+                    callback();
+                }
             });
     }
 
@@ -472,7 +501,6 @@
             });
         });
 
-
         const url = '../../controllers/coop_cosechaMecanicaController.php';
         const formData = new FormData();
         formData.append('action', 'guardar_participacion');
@@ -509,12 +537,12 @@
         }
     }
 
-    function cargarFincasParaProductor(productorIdReal, selectElement) {
+    function cargarFincasParaProductor(productorIdReal, selectElement, selectedFincaId) {
         if (!productorIdReal || !selectElement) return;
 
         // Cache en memoria para evitar múltiples requests
         if (productorFincasCache[productorIdReal]) {
-            poblarSelectFincas(selectElement, productorFincasCache[productorIdReal]);
+            poblarSelectFincas(selectElement, productorFincasCache[productorIdReal], selectedFincaId);
             return;
         }
 
@@ -533,22 +561,22 @@
             .then(function(json) {
                 if (!json || json.success !== true) {
                     showAlert('error', json && json.message ? json.message : 'No se pudieron obtener las fincas del productor.');
-                    poblarSelectFincas(selectElement, []);
+                    poblarSelectFincas(selectElement, [], selectedFincaId);
                     return;
                 }
 
                 const fincas = Array.isArray(json.data) ? json.data : [];
                 productorFincasCache[productorIdReal] = fincas;
-                poblarSelectFincas(selectElement, fincas);
+                poblarSelectFincas(selectElement, fincas, selectedFincaId);
             })
             .catch(function(error) {
                 console.error('Error al obtener fincas del productor:', error);
                 showAlert('error', 'Error de conexión al obtener las fincas del productor.');
-                poblarSelectFincas(selectElement, []);
+                poblarSelectFincas(selectElement, [], selectedFincaId);
             });
     }
 
-    function poblarSelectFincas(selectElement, fincas) {
+    function poblarSelectFincas(selectElement, fincas, selectedFincaId) {
         if (!selectElement) return;
 
         selectElement.innerHTML = '';
@@ -560,12 +588,19 @@
 
         fincas.forEach(function(finca) {
             const opt = document.createElement('option');
-            opt.value = finca.id;
+            opt.value = String(finca.id);
             const nombre = (finca.nombre_finca || '').trim();
             const codigo = (finca.codigo_finca || '').trim();
             opt.textContent = nombre || codigo || ('Finca ' + finca.id);
+            if (selectedFincaId && String(selectedFincaId) === String(finca.id)) {
+                opt.selected = true;
+            }
             selectElement.appendChild(opt);
         });
+
+        if (!selectedFincaId) {
+            selectElement.value = '';
+        }
     }
 
     function formatearFechaModal(fechaIso) {
