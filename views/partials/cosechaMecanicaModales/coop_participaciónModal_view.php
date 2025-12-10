@@ -1,7 +1,7 @@
 <div id="participacionModal" class="modal hidden">
     <div class="modal-content">
         <h3>Inscribir productores en operativo de Cosecha Mecánica</h3>
-
+<br>
         <!-- ID de contrato (oculto) para guardar participación -->
         <span id="modalContratoId" class="hidden"></span>
 
@@ -15,11 +15,11 @@
                     <thead>
                         <tr>
                             <th>Productor</th>
-                            <th>Superficie (ha)</th>
+                            <th>Superficie<br>(ha)</th>
                             <th>Variedad</th>
                             <th>Finca</th>
-                            <th>Fecha estimada</th>
-                            <th>Km a finca</th>
+                            <th>Fecha<br>estimada</th>
+                            <th>Km<br>a finca</th>
                             <th>Flete</th>
                             <th>Acciones</th>
                         </tr>
@@ -91,8 +91,9 @@
 
     .tabla-card .data-table th,
     .tabla-card .data-table td {
-        min-width: 140px;
+        min-width: 200px;      /* más ancho para ver el texto completo */
         vertical-align: top;
+        white-space: normal;   /* permite saltos de línea en el contenido */
     }
 
     .tabla-card .input-group {
@@ -105,6 +106,16 @@
     .tabla-card .select-standard {
         width: 100%;
         box-sizing: border-box;
+    }
+
+    /* Que los selects se vean como los inputs redondeados */
+    .tabla-card .input-group .input-icon select,
+    .tabla-card .input-group select.select-standard {
+        border-radius: 9999px;
+        border: 1px solid #d1d5db;
+        padding: 0.5rem 0.75rem;
+        height: 38px;
+        background-color: #fff;
     }
 
     .checkbox-firma input[type="checkbox"] {
@@ -266,9 +277,11 @@
             </td>
             <td>
                 <div class="input-group">
-                    <select id="finca_${indice}" name="finca[]" class="select-standard">
-                        <option value="">Seleccionar finca</option>
-                    </select>
+                    <div class="input-icon input-icon-name">
+                        <select id="finca_${indice}" name="finca[]" class="select-standard">
+                            <option value="">Seleccionar finca</option>
+                        </select>
+                    </div>
                 </div>
             </td>
             <td>
@@ -295,10 +308,12 @@
             </td>
             <td>
                 <div class="input-group">
-                    <select id="flete_${indice}" name="flete[]" class="select-standard">
-                        <option value="0">No</option>
-                        <option value="1">Sí</option>
-                    </select>
+                    <div class="input-icon input-icon-name">
+                        <select id="flete_${indice}" name="flete[]" class="select-standard">
+                            <option value="0">No</option>
+                            <option value="1">Sí</option>
+                        </select>
+                    </div>
                 </div>
             </td>
             <td>
