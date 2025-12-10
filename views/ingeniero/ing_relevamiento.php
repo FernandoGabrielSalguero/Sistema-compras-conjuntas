@@ -518,7 +518,7 @@ unset($_SESSION['cierre_info']);
             applyVisibility();
         }
 
-                async function loadProduccionForm(productorIdReal) {
+        async function loadProduccionForm(productorIdReal) {
             const modal = relevamientoGetModalElement('produccion');
             if (!modal) return;
 
@@ -535,8 +535,7 @@ unset($_SESSION['cierre_info']);
                 });
 
                 const resp = await fetch(
-                    `${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_produccion_controller.php?${params.toString()}`,
-                    {
+                    `${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_produccion_controller.php?${params.toString()}`, {
                         credentials: 'same-origin'
                     }
                 );
@@ -636,41 +635,37 @@ unset($_SESSION['cierre_info']);
         }
 
         // Exponer también en window por el onclick del botón
-        window.guardarFamilia = guardarFamilia;
+        console.log('[Relevamiento] relevamientoOpenModal', {
+            tipo,
+            productorIdReal
+        });
 
-
-                function relevamientoOpenModal(tipo, productorIdReal) {
-            console.log('[Relevamiento] relevamientoOpenModal', {
-                tipo,
-                productorIdReal
-            });
-
-            // Guardamos referencia por si después queremos usarla
-            const productor = PRODUCTORES_MAP[productorIdReal];
-            if (!productor) {
-                console.warn('[Relevamiento] PRODUCTORES_MAP sin entrada para', productorIdReal);
-            } else {
-                currentProductor = productor;
-            }
-
-            const modal = relevamientoGetModalElement(tipo);
-            if (!modal) {
-                alert('No se encontró el modal para: ' + tipo);
-                return;
-            }
-
-            // Mostramos el modal
-            modal.classList.remove('hidden');
-
-            // Cargar contenido específico según tipo
-            if (tipo === 'familia') {
-                loadFamiliaForm(productorIdReal);
-            } else if (tipo === 'produccion') {
-                loadProduccionForm(productorIdReal);
-            } else if (tipo === 'cuarteles') {
-                // futuro: loadCuartelesForm(productorIdReal);
-            }
+        // Guardamos referencia por si después queremos usarla
+        const productor = PRODUCTORES_MAP[productorIdReal];
+        if (!productor) {
+            console.warn('[Relevamiento] PRODUCTORES_MAP sin entrada para', productorIdReal);
+        } else {
+            currentProductor = productor;
         }
+
+        const modal = relevamientoGetModalElement(tipo);
+        if (!modal) {
+            alert('No se encontró el modal para: ' + tipo);
+            return;
+        }
+
+        // Mostramos el modal
+        modal.classList.remove('hidden');
+
+        // Cargar contenido específico según tipo
+        if (tipo === 'familia') {
+            loadFamiliaForm(productorIdReal);
+        } else if (tipo === 'produccion') {
+            loadProduccionForm(productorIdReal);
+        } else if (tipo === 'cuarteles') {
+            // futuro: loadCuartelesForm(productorIdReal);
+        }
+
 
         // Exponer en window por si hace falta desde HTML inline
         window.relevamientoOpenModal = relevamientoOpenModal;
@@ -704,9 +699,6 @@ unset($_SESSION['cierre_info']);
         </div>
     </div>
 
-
-
-
     <!-- Modal Producción -->
     <div id="modal-produccion" class="modal hidden">
         <div class="modal-content">
@@ -715,12 +707,11 @@ unset($_SESSION['cierre_info']);
                 <p>Cargando formulario de producción...</p>
             </div>
             <div class="form-buttons">
-                <button class="btn btn-aceptar" onclick="relevamientoCloseModal('produccion')">Aceptar</button>
+                <button class="btn btn-aceptar" onclick="guardarProduccion()">Aceptar</button>
                 <button class="btn btn-cancelar" onclick="relevamientoCloseModal('produccion')">Cancelar</button>
             </div>
         </div>
     </div>
-
 
     <!-- Modal Cuarteles -->
     <div id="modal-cuarteles" class="modal hidden">

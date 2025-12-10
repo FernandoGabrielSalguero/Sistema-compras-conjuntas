@@ -20,21 +20,6 @@ function h($value): string
     return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
-// Estructura esperada:
-// $datosProduccion = [
-//     'fincas' => [
-//         [
-//             'finca'      => [...],
-//             'direccion'  => [...],
-//             'superficie' => [...],
-//             'cultivos'   => [...],
-//             'agua'       => [...],
-//             'maquinaria' => [...],
-//             'gerencia'   => [...],
-//         ],
-//         ...
-//     ],
-// ];
 $fincas = [];
 if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array($datosProduccion['fincas'])) {
     $fincas = $datosProduccion['fincas'];
@@ -78,7 +63,9 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
     }
 </style>
 
-<div>
+<form id="produccion-form">
+    <input type="hidden" name="productor_id_real" value="<?= h($productorIdReal) ?>">
+
     <p>
         Formulario de <strong>Producción</strong> para el productor
         <strong><?= h($productorIdReal) ?></strong>.
@@ -110,6 +97,20 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
 
             <div class="relevamiento-finca-block">
                 <hr class="relevamiento-section-divider">
+
+                <!-- IDs ocultos por finca y tablas relacionadas -->
+                <input type="hidden" name="fincas[<?= $idx ?>][finca_id]" value="<?= h($finca['id'] ?? '') ?>">
+                <input type="hidden" name="fincas[<?= $idx ?>][direccion_id]" value="<?= h($direccion['id'] ?? '') ?>">
+                <input type="hidden" name="fincas[<?= $idx ?>][superficie_id]" value="<?= h($superficie['id'] ?? '') ?>">
+                <input type="hidden" name="fincas[<?= $idx ?>][superficie_anio]" value="<?= h($superficie['anio'] ?? '') ?>">
+                <input type="hidden" name="fincas[<?= $idx ?>][cultivos_id]" value="<?= h($cultivos['id'] ?? '') ?>">
+                <input type="hidden" name="fincas[<?= $idx ?>][cultivos_anio]" value="<?= h($cultivos['anio'] ?? '') ?>">
+                <input type="hidden" name="fincas[<?= $idx ?>][agua_id]" value="<?= h($agua['id'] ?? '') ?>">
+                <input type="hidden" name="fincas[<?= $idx ?>][agua_anio]" value="<?= h($agua['anio'] ?? '') ?>">
+                <input type="hidden" name="fincas[<?= $idx ?>][maquinaria_id]" value="<?= h($maquinaria['id'] ?? '') ?>">
+                <input type="hidden" name="fincas[<?= $idx ?>][maquinaria_anio]" value="<?= h($maquinaria['anio'] ?? '') ?>">
+                <input type="hidden" name="fincas[<?= $idx ?>][gerencia_id]" value="<?= h($gerencia['id'] ?? '') ?>">
+                <input type="hidden" name="fincas[<?= $idx ?>][gerencia_anio]" value="<?= h($gerencia['anio'] ?? '') ?>">
 
                 <div class="relevamiento-finca-header">
                     Finca <?= h($finca['codigo_finca'] ?? '') ?>
@@ -144,7 +145,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="nombre_finca_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][nombre_finca]"
                             value="<?= h($finca['nombre_finca'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -163,7 +163,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="departamento_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][departamento]"
                             value="<?= h($direccion['departamento'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -176,7 +175,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="localidad_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][localidad]"
                             value="<?= h($direccion['localidad'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -189,7 +187,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="calle_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][calle]"
                             value="<?= h($direccion['calle'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -202,7 +199,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="numero_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][numero]"
                             value="<?= h($direccion['numero'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -215,7 +211,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="latitud_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][latitud]"
                             value="<?= h($direccion['latitud'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -228,7 +223,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="longitud_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][longitud]"
                             value="<?= h($direccion['longitud'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -247,7 +241,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="sup_total_ha_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][sup_total_ha]"
                             value="<?= h($superficie['sup_total_ha'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -260,7 +253,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="sup_total_cultivada_ha_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][sup_total_cultivada_ha]"
                             value="<?= h($superficie['sup_total_cultivada_ha'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -273,7 +265,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="sup_total_vid_ha_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][sup_total_vid_ha]"
                             value="<?= h($superficie['sup_total_vid_ha'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -286,7 +277,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="sup_vid_destinada_coop_ha_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][sup_vid_destinada_coop_ha]"
                             value="<?= h($superficie['sup_vid_destinada_coop_ha'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -299,7 +289,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="sup_con_otros_cultivos_ha_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][sup_con_otros_cultivos_ha]"
                             value="<?= h($superficie['sup_con_otros_cultivos_ha'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -312,7 +301,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="clasificacion_riesgo_salinizacion_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][clasificacion_riesgo_salinizacion]"
                             value="<?= h($superficie['clasificacion_riesgo_salinizacion'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -325,7 +313,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="analisis_suelo_completo_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][analisis_suelo_completo]"
                             value="<?= h($superficie['analisis_suelo_completo'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -344,7 +331,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="sup_cultivo_horticola_ha_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][sup_cultivo_horticola_ha]"
                             value="<?= h($cultivos['sup_cultivo_horticola_ha'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -357,7 +343,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="estado_cultivo_horticola_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][estado_cultivo_horticola]"
                             value="<?= h($cultivos['estado_cultivo_horticola'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -370,7 +355,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="sup_cultivo_fruticola_ha_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][sup_cultivo_fruticola_ha]"
                             value="<?= h($cultivos['sup_cultivo_fruticola_ha'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -383,7 +367,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="estado_cultivo_fruticola_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][estado_cultivo_fruticola]"
                             value="<?= h($cultivos['estado_cultivo_fruticola'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -396,7 +379,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="sup_cultivo_forestal_otra_ha_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][sup_cultivo_forestal_otra_ha]"
                             value="<?= h($cultivos['sup_cultivo_forestal_otra_ha'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -409,7 +391,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="estado_cultivo_forestal_otra_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][estado_cultivo_forestal_otra]"
                             value="<?= h($cultivos['estado_cultivo_forestal_otra'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -428,7 +409,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="sup_agua_con_derecho_ha_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][sup_agua_con_derecho_ha]"
                             value="<?= h($agua['sup_agua_con_derecho_ha'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -441,7 +421,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="tipo_riego_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][tipo_riego]"
                             value="<?= h($agua['tipo_riego'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -454,7 +433,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="sup_agua_sin_derecho_ha_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][sup_agua_sin_derecho_ha]"
                             value="<?= h($agua['sup_agua_sin_derecho_ha'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -467,7 +445,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="estado_provision_agua_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][estado_provision_agua]"
                             value="<?= h($agua['estado_provision_agua'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -480,7 +457,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="estado_asignacion_turnado_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][estado_asignacion_turnado]"
                             value="<?= h($agua['estado_asignacion_turnado'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -493,7 +469,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="estado_sistematizacion_vinedo_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][estado_sistematizacion_vinedo]"
                             value="<?= h($agua['estado_sistematizacion_vinedo'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -506,7 +481,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="tiene_flexibilizacion_entrega_agua_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][tiene_flexibilizacion_entrega_agua]"
                             value="<?= h($agua['tiene_flexibilizacion_entrega_agua'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -519,7 +493,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="riego_presurizado_toma_agua_de_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][riego_presurizado_toma_agua_de]"
                             value="<?= h($agua['riego_presurizado_toma_agua_de'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -532,7 +505,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="perforacion_activa_1_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][perforacion_activa_1]"
                             value="<?= h($agua['perforacion_activa_1'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -545,7 +517,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="perforacion_activa_2_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][perforacion_activa_2]"
                             value="<?= h($agua['perforacion_activa_2'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -558,7 +529,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="agua_analizada_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][agua_analizada]"
                             value="<?= h($agua['agua_analizada'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -571,7 +541,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="conductividad_mhos_cm_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][conductividad_mhos_cm]"
                             value="<?= h($agua['conductividad_mhos_cm'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -590,7 +559,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="clasificacion_estado_tractor_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][clasificacion_estado_tractor]"
                             value="<?= h($maquinaria['clasificacion_estado_tractor'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -603,7 +571,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="estado_pulverizadora_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][estado_pulverizadora]"
                             value="<?= h($maquinaria['estado_pulverizadora'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -616,7 +583,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="clasificacion_estado_implementos_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][clasificacion_estado_implementos]"
                             value="<?= h($maquinaria['clasificacion_estado_implementos'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -629,7 +595,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="utiliza_empresa_servicios_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][utiliza_empresa_servicios]"
                             value="<?= h($maquinaria['utiliza_empresa_servicios'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -642,7 +607,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="administracion_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][administracion]"
                             value="<?= h($maquinaria['administracion'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -651,11 +615,10 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                     <label for="trabajadores_permanentes_<?= $idx ?>">Trabajadores permanentes</label>
                     <div class="input-icon input-icon-name">
                         <input
-                            type="text"
+                            type="number"
                             id="trabajadores_permanentes_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][trabajadores_permanentes]"
                             value="<?= h($maquinaria['trabajadores_permanentes'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -668,7 +631,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="posee_deposito_fitosanitarios_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][posee_deposito_fitosanitarios]"
                             value="<?= h($maquinaria['posee_deposito_fitosanitarios'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -687,7 +649,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="problemas_gerencia_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][problemas_gerencia]"
                             value="<?= h($gerencia['problemas_gerencia'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -701,7 +662,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="prob_gerenciamiento_1_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][prob_gerenciamiento_1]"
                             value="<?= h($gerencia['prob_gerenciamiento_1'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -714,7 +674,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="prob_personal_1_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][prob_personal_1]"
                             value="<?= h($gerencia['prob_personal_1'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -727,7 +686,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="prob_tecnologicos_1_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][prob_tecnologicos_1]"
                             value="<?= h($gerencia['prob_tecnologicos_1'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -740,7 +698,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="prob_administracion_1_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][prob_administracion_1]"
                             value="<?= h($gerencia['prob_administracion_1'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -753,7 +710,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="prob_medios_produccion_1_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][prob_medios_produccion_1]"
                             value="<?= h($gerencia['prob_medios_produccion_1'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -766,7 +722,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="prob_observacion_1_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][prob_observacion_1]"
                             value="<?= h($gerencia['prob_observacion_1'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -779,7 +734,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="prob_gerenciamiento_2_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][prob_gerenciamiento_2]"
                             value="<?= h($gerencia['prob_gerenciamiento_2'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -792,7 +746,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="prob_personal_2_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][prob_personal_2]"
                             value="<?= h($gerencia['prob_personal_2'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -805,7 +758,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="prob_tecnologicos_2_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][prob_tecnologicos_2]"
                             value="<?= h($gerencia['prob_tecnologicos_2'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -818,7 +770,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="prob_administracion_2_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][prob_administracion_2]"
                             value="<?= h($gerencia['prob_administracion_2'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -831,7 +782,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="prob_medios_produccion_2_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][prob_medios_produccion_2]"
                             value="<?= h($gerencia['prob_medios_produccion_2'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -844,7 +794,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="prob_observacion_2_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][prob_observacion_2]"
                             value="<?= h($gerencia['prob_observacion_2'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -858,7 +807,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="limitante_1_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][limitante_1]"
                             value="<?= h($gerencia['limitante_1'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -871,7 +819,6 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="limitante_2_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][limitante_2]"
                             value="<?= h($gerencia['limitante_2'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
@@ -884,11 +831,10 @@ if (is_array($datosProduccion) && isset($datosProduccion['fincas']) && is_array(
                             id="limitante_3_<?= $idx ?>"
                             name="fincas[<?= $idx ?>][limitante_3]"
                             value="<?= h($gerencia['limitante_3'] ?? '') ?>"
-                            readonly
                         />
                     </div>
                 </div>
             </div>
         <?php endforeach; ?>
     <?php endif; ?>
-</div>
+</form>
