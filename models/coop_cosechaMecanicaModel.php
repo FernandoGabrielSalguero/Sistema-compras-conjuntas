@@ -97,7 +97,7 @@ class CoopCosechaMecanicaModel
     /**
      * Obtiene los productores asociados a una cooperativa (id_real).
      */
-        public function obtenerProductoresPorCooperativa(string $cooperativaIdReal): array
+    public function obtenerProductoresPorCooperativa(string $cooperativaIdReal): array
     {
         // También aquí la columna es varchar(11)
         $coopId = substr($cooperativaIdReal, 0, 11);
@@ -115,6 +115,27 @@ class CoopCosechaMecanicaModel
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Obtiene las fincas asociadas a un productor (por id_real).
+     */
+    public function obtenerFincasPorProductor(string $productorIdReal): array
+    {
+        // La columna productor_id_real en prod_fincas es varchar(20)
+        $prodId = substr($productorIdReal, 0, 20);
+
+        $sql = "SELECT id, codigo_finca, nombre_finca
+                FROM prod_fincas
+                WHERE productor_id_real = :prod_id
+                ORDER BY nombre_finca ASC, codigo_finca ASC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':prod_id', $prodId, PDO::PARAM_STR);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 
     /**
      * Obtiene las participaciones de una cooperativa en un contrato de cosecha mecánica.
@@ -250,5 +271,4 @@ class CoopCosechaMecanicaModel
             ':coop_id'     => $coopId,
         ]);
     }
-
 }

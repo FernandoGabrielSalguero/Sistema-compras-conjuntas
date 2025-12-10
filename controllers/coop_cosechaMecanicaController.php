@@ -127,6 +127,35 @@ if ($action === 'listar_productores') {
     exit;
 }
 
+// Listar fincas asociadas a un productor (por id_real)
+if ($action === 'listar_fincas_productor') {
+    $productorIdReal = isset($_GET['productor_id_real']) ? trim($_GET['productor_id_real']) : '';
+
+    if ($productorIdReal === '') {
+        echo json_encode([
+            'success' => false,
+            'message' => 'ID de productor inválido.'
+        ]);
+        exit;
+    }
+
+    try {
+        $fincas = $model->obtenerFincasPorProductor($productorIdReal);
+
+        echo json_encode([
+            'success' => true,
+            'data'    => $fincas
+        ]);
+    } catch (Throwable $e) {
+        error_log('Error listar_fincas_productor: ' . $e->getMessage());
+        echo json_encode([
+            'success' => false,
+            'message' => 'No se pudieron obtener las fincas del productor.'
+        ]);
+    }
+    exit;
+}
+
 // Firmar contrato de cosecha mecánica por parte de la cooperativa
 if ($action === 'firmar_contrato') {
     $contratoId = isset($_POST['contrato_id']) ? (int) $_POST['contrato_id'] : 0;

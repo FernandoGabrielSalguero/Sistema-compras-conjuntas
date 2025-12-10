@@ -17,7 +17,7 @@
                             <th>Productor</th>
                             <th>Superficie (ha)</th>
                             <th>Variedad</th>
-                            <th>Prod. estimada</th>
+                            <th>Finca</th>
                             <th>Fecha estimada</th>
                             <th>Km a finca</th>
                             <th>Flete</th>
@@ -56,8 +56,9 @@
 <style>
     /* Ajustes específicos para este modal de participación */
     #participacionModal .modal-content {
-        width: 90vw;
-        max-width: 1200px;
+        width: 95vw;
+        max-width: 1400px;
+        /* Ancho del modal */
         height: 80vh;
         max-height: 80vh;
         overflow-y: auto;
@@ -130,6 +131,7 @@
     // Estado interno del modal de participación
     let filaParticipacionIndex = 0;
     let productoresCoop = [];
+    let productorFincasCache = {};
     let anioOperativoActivo = (new Date()).getFullYear();
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -261,15 +263,9 @@
             </td>
             <td>
                 <div class="input-group">
-                    <div class="input-icon input-icon-name">
-                        <input
-                            type="number"
-                            step="0.01"
-                            id="prod_estimada_${indice}"
-                            name="prod_estimada[]"
-                            placeholder="Prod. estimada"
-                        />
-                    </div>
+                    <select id="finca_${indice}" name="finca[]" class="select-standard">
+                        <option value="">Seleccionar finca</option>
+                    </select>
                 </div>
             </td>
             <td>
@@ -309,12 +305,29 @@
 
         tbody.appendChild(fila);
 
-        // Setear valores si vienen desde la BD
+        const productorInput = fila.querySelector(`#productor_${indice}`);
+        const fincaSelect = fila.querySelector(`#finca_${indice}`);
+
+        if (productorInput && fincaSelect) {
+            productorInput.addEventListener('change', function() {
+                const nombreSeleccionado = this.value.trim();
+                const productor = productoresCoop.find(function(p) {
+                    return (p.nombre || '').trim() === nombreSeleccionado;
+                });
+
+                if (!productor) {
+                    poblarSelectFincas(fincaSelect, []);
+                    return;
+                }
+
+                cargarFincasParaProductor(productor.id_real, fincaSelect);
+            });
+        }
+
+        // Setear valores si vienen desde la BD (actualmente no se guarda finca en BD)
         if (datos && typeof datos === 'object') {
-            const productorInput = fila.querySelector(`#productor_${indice}`);
             const superficieInput = fila.querySelector(`#superficie_${indice}`);
             const variedadInput = fila.querySelector(`#variedad_${indice}`);
-            const prodEstimadaInput = fila.querySelector(`#prod_estimada_${indice}`);
             const fechaSelect = fila.querySelector(`#fecha_estimada_${indice}`);
             const kmFincaInput = fila.querySelector(`#km_finca_${indice}`);
             const fleteSelect = fila.querySelector(`#flete_${indice}`);
@@ -322,7 +335,6 @@
             if (productorInput) productorInput.value = datos.productor || '';
             if (superficieInput) superficieInput.value = datos.superficie !== undefined ? datos.superficie : '';
             if (variedadInput) variedadInput.value = datos.variedad || '';
-            if (prodEstimadaInput) prodEstimadaInput.value = datos.prod_estimada !== undefined ? datos.prod_estimada : '';
             if (fechaSelect && datos.fecha_estimada) fechaSelect.value = datos.fecha_estimada;
             if (kmFincaInput) kmFincaInput.value = datos.km_finca !== undefined ? datos.km_finca : '';
             if (fleteSelect && datos.flete !== undefined) fleteSelect.value = String(datos.flete);
@@ -438,10 +450,10 @@
             const productorInput = row.querySelector('input[name="productor[]"]');
             const superficieInput = row.querySelector('input[name="superficie[]"]');
             const variedadInput = row.querySelector('input[name="variedad[]"]');
-            const prodEstimadaInput = row.querySelector('input[name="prod_estimada[]"]');
             const fechaSelect = row.querySelector('select[name="fecha_estimada[]"]');
             const kmFincaInput = row.querySelector('input[name="km_finca[]"]');
             const fleteSelect = row.querySelector('select[name="flete[]"]');
+            const fincaSelect = row.querySelector('select[name="finca[]"]');
 
             const productor = productorInput ? productorInput.value.trim() : '';
 
@@ -453,12 +465,13 @@
                 productor: productor,
                 superficie: superficieInput ? superficieInput.value : '',
                 variedad: variedadInput ? variedadInput.value : '',
-                prod_estimada: prodEstimadaInput ? prodEstimadaInput.value : '',
                 fecha_estimada: fechaSelect ? fechaSelect.value : '',
                 km_finca: kmFincaInput ? kmFincaInput.value : '',
-                flete: fleteSelect ? fleteSelect.value : '0'
+                flete: fleteSelect ? fleteSelect.value : '0',
+                finca_id: fincaSelect ? fincaSelect.value : ''
             });
         });
+
 
         const url = '../../controllers/coop_cosechaMecanicaController.php';
         const formData = new FormData();
@@ -494,6 +507,65 @@
         if (fila) {
             fila.remove();
         }
+    }
+
+    function cargarFincasParaProductor(productorIdReal, selectElement) {
+        if (!productorIdReal || !selectElement) return;
+
+        // Cache en memoria para evitar múltiples requests
+        if (productorFincasCache[productorIdReal]) {
+            poblarSelectFincas(selectElement, productorFincasCache[productorIdReal]);
+            return;
+        }
+
+        const url = '../../controllers/coop_cosechaMecanicaController.php?action=listar_fincas_productor&productor_id_real=' +
+            encodeURIComponent(productorIdReal);
+
+        fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(json) {
+                if (!json || json.success !== true) {
+                    showAlert('error', json && json.message ? json.message : 'No se pudieron obtener las fincas del productor.');
+                    poblarSelectFincas(selectElement, []);
+                    return;
+                }
+
+                const fincas = Array.isArray(json.data) ? json.data : [];
+                productorFincasCache[productorIdReal] = fincas;
+                poblarSelectFincas(selectElement, fincas);
+            })
+            .catch(function(error) {
+                console.error('Error al obtener fincas del productor:', error);
+                showAlert('error', 'Error de conexión al obtener las fincas del productor.');
+                poblarSelectFincas(selectElement, []);
+            });
+    }
+
+    function poblarSelectFincas(selectElement, fincas) {
+        if (!selectElement) return;
+
+        selectElement.innerHTML = '';
+
+        const opcionDefault = document.createElement('option');
+        opcionDefault.value = '';
+        opcionDefault.textContent = fincas.length ? 'Seleccionar finca' : 'Sin fincas disponibles';
+        selectElement.appendChild(opcionDefault);
+
+        fincas.forEach(function(finca) {
+            const opt = document.createElement('option');
+            opt.value = finca.id;
+            const nombre = (finca.nombre_finca || '').trim();
+            const codigo = (finca.codigo_finca || '').trim();
+            opt.textContent = nombre || codigo || ('Finca ' + finca.id);
+            selectElement.appendChild(opt);
+        });
     }
 
     function formatearFechaModal(fechaIso) {
