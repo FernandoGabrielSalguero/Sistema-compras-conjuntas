@@ -91,7 +91,7 @@
 
     .tabla-card .data-table th,
     .tabla-card .data-table td {
-        min-width: 200px;      /* más ancho para ver el texto completo */
+        min-width: 400px;      /* más ancho para ver el texto completo */
         vertical-align: top;
         white-space: normal;   /* permite saltos de línea en el contenido */
     }
