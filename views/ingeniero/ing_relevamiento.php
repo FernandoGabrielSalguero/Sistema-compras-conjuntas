@@ -518,6 +518,69 @@ unset($_SESSION['cierre_info']);
             applyVisibility();
         }
 
+                async function loadProduccionForm(productorIdReal) {
+            const modal = relevamientoGetModalElement('produccion');
+            if (!modal) return;
+
+            const body = modal.querySelector('[data-modal-body="produccion"]');
+            if (!body) return;
+
+            body.innerHTML = '<p>Cargando formulario de producción...</p>';
+            // Guardamos el id_real también en el dataset del modal (por si luego queremos guardar)
+            modal.dataset.productorIdReal = productorIdReal;
+
+            try {
+                const params = new URLSearchParams({
+                    productor_id_real: productorIdReal
+                });
+
+                const resp = await fetch(
+                    `${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_produccion_controller.php?${params.toString()}`,
+                    {
+                        credentials: 'same-origin'
+                    }
+                );
+
+                if (!resp.ok) {
+                    throw new Error(`Error HTTP ${resp.status}`);
+                }
+
+                const html = await resp.text();
+                body.innerHTML = html;
+
+                initProduccionModal();
+            } catch (e) {
+                console.error('[Relevamiento] Error al cargar producción:', e);
+                body.innerHTML = `<p class="text-danger">Error al cargar datos de producción: ${e.message}</p>`;
+            }
+        }
+
+        function initProduccionModal() {
+            const modal = relevamientoGetModalElement('produccion');
+            if (!modal) return;
+
+            const toggle = modal.querySelector('[data-role="produccion-advanced-toggle"]');
+            const advancedFields = modal.querySelectorAll('[data-advanced="1"]');
+
+            if (!toggle || !advancedFields.length) {
+                return;
+            }
+
+            const applyVisibility = () => {
+                advancedFields.forEach((el) => {
+                    if (toggle.checked) {
+                        el.classList.remove('relevamiento-advanced-hidden');
+                    } else {
+                        el.classList.add('relevamiento-advanced-hidden');
+                    }
+                });
+            };
+
+            toggle.addEventListener('change', applyVisibility);
+            toggle.checked = false;
+            applyVisibility();
+        }
+
         async function guardarFamilia() {
             const modal = relevamientoGetModalElement('familia');
             if (!modal) {
@@ -576,7 +639,7 @@ unset($_SESSION['cierre_info']);
         window.guardarFamilia = guardarFamilia;
 
 
-        function relevamientoOpenModal(tipo, productorIdReal) {
+                function relevamientoOpenModal(tipo, productorIdReal) {
             console.log('[Relevamiento] relevamientoOpenModal', {
                 tipo,
                 productorIdReal
@@ -599,11 +662,14 @@ unset($_SESSION['cierre_info']);
             // Mostramos el modal
             modal.classList.remove('hidden');
 
-            // Cargar contenido específico
+            // Cargar contenido específico según tipo
             if (tipo === 'familia') {
                 loadFamiliaForm(productorIdReal);
+            } else if (tipo === 'produccion') {
+                loadProduccionForm(productorIdReal);
+            } else if (tipo === 'cuarteles') {
+                // futuro: loadCuartelesForm(productorIdReal);
             }
-            // En el futuro podemos hacer algo similar para 'produccion' y 'cuarteles'
         }
 
         // Exponer en window por si hace falta desde HTML inline
