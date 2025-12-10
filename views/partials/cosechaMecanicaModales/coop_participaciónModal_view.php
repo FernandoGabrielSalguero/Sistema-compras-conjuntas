@@ -15,11 +15,11 @@
                     <thead>
                         <tr>
                             <th>Productor</th>
-                            <th>Superficie<br>(ha)</th>
+                            <th>Superficie(ha)</th>
                             <th>Variedad</th>
                             <th>Finca</th>
-                            <th>Fecha<br>estimada</th>
-                            <th>Km<br>a finca</th>
+                            <th>Fecha estimada</th>
+                            <th>Km a finca</th>
                             <th>Flete</th>
                             <th>Acciones</th>
                         </tr>
