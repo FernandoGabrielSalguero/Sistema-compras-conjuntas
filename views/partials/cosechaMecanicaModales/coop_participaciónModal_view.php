@@ -1,7 +1,7 @@
 <div id="participacionModal" class="modal hidden">
     <div class="modal-content">
         <h3>Inscribir productores en operativo de Cosecha Mecánica</h3>
-<br>
+        <br>
         <!-- ID de contrato (oculto) para guardar participación -->
         <span id="modalContratoId" class="hidden"></span>
 
@@ -91,9 +91,11 @@
 
     .tabla-card .data-table th,
     .tabla-card .data-table td {
-        min-width: 220px;      /* más ancho para ver el texto completo */
+        min-width: 220px;
+        /* más ancho para ver el texto completo */
         vertical-align: top;
-        white-space: normal;   /* permite saltos de línea en el contenido */
+        white-space: normal;
+        /* permite saltos de línea en el contenido */
     }
 
     .tabla-card .input-group {
@@ -135,6 +137,33 @@
     .estado-firma-contrato .no-firmado {
         font-weight: 600;
         color: #dc2626;
+    }
+
+    /* Evitar doble borde en selects dentro de input-icon */
+    .input-icon select {
+        border: none !important;
+        /* el select no debe agregar un borde nuevo */
+        background: transparent !important;
+        box-shadow: none !important;
+        padding-left: 0.5rem;
+    }
+
+    /* El wrapper hace el borde general */
+    .input-icon {
+        border: 1px solid #d1d5db;
+        border-radius: 9999px;
+        padding: 0.3rem 0.75rem;
+        background-color: #fff;
+    }
+
+    /* Ajustar altura para que se vea igual que los inputs */
+    .input-icon select {
+        height: 32px !important;
+    }
+
+    /* Quitar estilos duplicados típicos de navegadores */
+    .input-icon select:focus {
+        outline: none !important;
     }
 </style>
 
