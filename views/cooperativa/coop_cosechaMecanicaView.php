@@ -241,7 +241,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                             class="btn btn-aceptar btn-inscribir ${claseInscribirOculta}"
                             data-id="${op.id}"
                         >
-                            Inscribir productores
+                            Anexo 1 - Inscribir productores
                         </button>
                     </div>
                 `;
