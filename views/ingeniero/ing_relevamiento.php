@@ -519,6 +519,156 @@ unset($_SESSION['cierre_info']);
             return getFormValuesAsObject(doc, '#produccion-form');
         }
 
+        function parseBracketKey(key) {
+            // Soporta: fincas[0][campo] / fincas[campo] / fincas[0]
+            const re = /^([^\[]+)\[(.*?)\](?:\[(.*?)\])?$/;
+            const m = String(key).match(re);
+            if (!m) return null;
+
+            const table = m[1];
+            const part2 = m[2];
+            const part3 = m[3];
+
+            const isIndex = part2 !== '' && !Number.isNaN(Number(part2));
+            const index = isIndex ? Number(part2) : null;
+
+            if (index !== null && part3) {
+                return { table, index, field: part3 };
+            }
+
+            if (index !== null && !part3) {
+                return { table, index, field: null };
+            }
+
+            // Caso fincas[campo]
+            return { table, index: null, field: part2 || null };
+        }
+
+        function groupByTables(obj) {
+            // Convierte un objeto plano (con keys bracket) en estructura por "tablas"
+            const grouped = {
+                __flat: {}
+            };
+
+            Object.entries(obj || {}).forEach(([k, v]) => {
+                const parsed = parseBracketKey(k);
+                if (!parsed) {
+                    grouped.__flat[k] = v;
+                    return;
+                }
+
+                const { table, index, field } = parsed;
+
+                if (!grouped[table]) grouped[table] = { rows: {}, flat: {} };
+
+                if (index !== null) {
+                    if (!grouped[table].rows[index]) grouped[table].rows[index] = {};
+                    if (field) grouped[table].rows[index][field] = v;
+                    else grouped[table].rows[index]['__value'] = v;
+                } else {
+                    if (field) grouped[table].flat[field] = v;
+                    else grouped[table].flat['__value'] = v;
+                }
+            });
+
+            if (Object.keys(grouped.__flat).length === 0) delete grouped.__flat;
+            return grouped;
+        }
+
+        function logSectionAsTable(sectionName, data) {
+            // Muestra columnas y valores de una "tabla" (objeto simple o array de filas)
+            console.groupCollapsed(`Tabla: ${sectionName}`);
+
+            if (!data) {
+                console.log('(vacío)');
+                console.groupEnd();
+                return;
+            }
+
+            if (data.__error) {
+                console.error('Error:', data.__error);
+                console.groupEnd();
+                return;
+            }
+
+            // Si es objeto simple:
+            if (!Array.isArray(data)) {
+                const columns = Object.keys(data);
+                console.log('Columnas:', columns);
+                console.table(data);
+                console.groupEnd();
+                return;
+            }
+
+            // Si es array de filas
+            const allCols = new Set();
+            data.forEach(r => Object.keys(r || {}).forEach(k => allCols.add(k)));
+            console.log('Columnas:', Array.from(allCols));
+            console.table(data);
+            console.groupEnd();
+        }
+
+        function prettyConsoleLogConsolidado(payload) {
+            const productor = payload?.productor || null;
+            const familia = payload?.familia || null;
+            const produccion = payload?.produccion || null;
+
+            console.groupCollapsed(`[Relevamiento] Productor consolidado`);
+
+            // "usuarios" (lo que tenés desde el listado)
+            if (productor) {
+                logSectionAsTable('usuarios (productor base)', productor);
+            } else {
+                logSectionAsTable('usuarios (productor base)', null);
+            }
+
+            // "familia" (formulario familia)
+            if (familia) {
+                logSectionAsTable('relevamiento_familia (form)', familia);
+            } else {
+                logSectionAsTable('relevamiento_familia (form)', null);
+            }
+
+            // "produccion": separar por tablas según keys bracket
+            if (produccion && !produccion.__error) {
+                const grouped = groupByTables(produccion);
+
+                // Campos no-bracket
+                if (grouped.__flat) {
+                    logSectionAsTable('relevamiento_produccion (flat)', grouped.__flat);
+                }
+
+                // Cada "tabla" detectada (ej: fincas)
+                Object.keys(grouped).forEach((tableName) => {
+                    if (tableName === '__flat') return;
+
+                    const block = grouped[tableName];
+                    const rows = block?.rows || {};
+                    const flat = block?.flat || {};
+
+                    // flat de esa tabla (si existe)
+                    if (Object.keys(flat).length > 0) {
+                        logSectionAsTable(`${tableName} (flat)`, flat);
+                    }
+
+                    // rows por índice: convertir a array ordenado para console.table
+                    const rowArr = Object.keys(rows)
+                        .map(k => ({ __index: Number(k), ...rows[k] }))
+                        .sort((a, b) => a.__index - b.__index);
+
+                    if (rowArr.length > 0) {
+                        logSectionAsTable(`${tableName} (rows)`, rowArr);
+                    } else {
+                        logSectionAsTable(`${tableName} (rows)`, null);
+                    }
+                });
+            } else {
+                logSectionAsTable('relevamiento_produccion (form)', produccion);
+            }
+
+            console.groupEnd();
+        }
+
         async function relevamientoLogProductorFull(productorIdReal) {
             const prod = PRODUCTORES_MAP[productorIdReal];
             if (!prod) {
@@ -528,12 +678,8 @@ unset($_SESSION['cierre_info']);
 
             try {
                 const [familia, produccion] = await Promise.all([
-                    fetchFamiliaData(productorIdReal).catch((e) => ({
-                        __error: e.message
-                    })),
-                    fetchProduccionData(productorIdReal).catch((e) => ({
-                        __error: e.message
-                    }))
+                    fetchFamiliaData(productorIdReal).catch((e) => ({ __error: e.message })),
+                    fetchProduccionData(productorIdReal).catch((e) => ({ __error: e.message }))
                 ]);
 
                 const payload = {
@@ -542,11 +688,12 @@ unset($_SESSION['cierre_info']);
                     produccion: produccion
                 };
 
-                console.log('[Relevamiento] Productor consolidado (JSON):', JSON.stringify(payload, null, 2));
+                prettyConsoleLogConsolidado(payload);
             } catch (e) {
                 console.error('[Relevamiento] Error al consolidar JSON:', e);
             }
         }
+
 
         async function cargarCooperativas() {
             const container = document.getElementById('cards-container');
@@ -643,7 +790,7 @@ unset($_SESSION['cierre_info']);
 
         // Alias por compatibilidad: apunta al logger consolidado
         window.relevamientoLogProductor = relevamientoLogProductorFull;
-        
+
         async function loadFamiliaForm(productorIdReal) {
             const modal = relevamientoGetModalElement('familia');
             if (!modal) return;
