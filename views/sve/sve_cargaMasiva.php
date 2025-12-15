@@ -150,9 +150,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                         <div style="margin-top:10px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
                             <label style="display:flex; gap:8px; align-items:center;">
-                                <input type="checkbox" id="dryRunFamilia" />
-                                <span>Simulación (no impacta en la base)</span>
-                            </label>
+    <input type="checkbox" id="dryRunFamilia" checked />
+    <span>Simulación (no impacta en la base)</span>
+</label>
 
                             <div id="progressFamilia" style="font-size:14px; opacity:0.9;"></div>
                         </div>
@@ -171,10 +171,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <button class="btn btn-info" onclick="previewCSV('fincas')">Previsualizar</button>
 
                         <div style="margin-top:10px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-                            <label style="display:flex; gap:8px; align-items:center;">
-                                <input type="checkbox" id="dryRunFincas" />
-                                <span>Simulación (no impacta en la base)</span>
-                            </label>
+<label style="display:flex; gap:8px; align-items:center;">
+    <input type="checkbox" id="dryRunFincas" checked />
+    <span>Simulación (no impacta en la base)</span>
+</label>
 
                             <div id="progressFincas" style="font-size:14px; opacity:0.9;"></div>
                         </div>
@@ -344,12 +344,25 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         function parseCsvFile(file) {
-            return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            try {
+                const text = String(reader.result ?? '');
+                const firstLineRaw = text.split(/\r\n|\n|\r/)[0] ?? '';
+                const firstLine = firstLineRaw.replace(/^\uFEFF/, '');
+
+                const commaCount = (firstLine.match(/,/g) || []).length;
+                const semicolonCount = (firstLine.match(/;/g) || []).length;
+
+                const delimiter = commaCount > semicolonCount ? "," : ";";
+
                 Papa.parse(file, {
                     header: true,
-                    delimiter: ";",
+                    delimiter: delimiter,
                     skipEmptyLines: true,
-                    worker: true,
+                    worker: false,
                     transformHeader: (h) => String(h ?? '').replace(/^\uFEFF/, '').trim(),
                     transform: (v) => (typeof v === 'string' ? v.trim() : v),
                     complete: (results) => {
@@ -362,8 +375,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     },
                     error: (err) => reject(err)
                 });
-            });
-        }
+            } catch (e) {
+                reject(e);
+            }
+        };
+
+        reader.onerror = () => reject(reader.error);
+
+        reader.readAsText(file, "utf-8");
+    });
+}
 
         function renderPreviewFromObjects(rows, container, maxRows = 20) {
             if (!rows || !rows.length) {
@@ -559,8 +580,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             logLine(tipo, `Stats tanda: ${JSON.stringify(data.stats)}`);
                         }
 
-                        // Si querés frenar ante conflictos en simulación, descomentá:
-                        // if (dryRun && conflictos > 0) throw new Error(`Simulación detectó ${conflictos} conflictos en la tanda ${i + 1}.`);
+                        // frenar ante conflictos en simulación:
+                        if (dryRun && conflictos > 0) throw new Error(`Simulación detectó ${conflictos} conflictos en la tanda ${i + 1}.`);
                     } catch (e) {
                         totalErrores += 1;
                         throw e;
