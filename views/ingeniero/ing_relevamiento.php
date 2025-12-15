@@ -36,7 +36,7 @@ unset($_SESSION['cierre_info']);
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 
-        <style>
+    <style>
         /* Título pequeño de sección (similar a “APPS”) */
         .sidebar-section-title {
             margin: 12px 16px 6px;
@@ -62,34 +62,10 @@ unset($_SESSION['cierre_info']);
             text-decoration: none;
         }
 
-        /* ===== Tabla Relevamiento ===== */
-        .table-wrapper {
+        /* ===== Tabla Relevamiento (estructura estándar) ===== */
+        .tabla-wrapper {
             margin-top: 1rem;
             overflow-x: auto;
-        }
-
-        table.relevamiento-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table.relevamiento-table th,
-        table.relevamiento-table td {
-            padding: 0.75rem;
-            border-bottom: 1px solid rgba(15, 23, 42, 0.12);
-            vertical-align: middle;
-        }
-
-        table.relevamiento-table thead th {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            opacity: 0.8;
-            text-align: left;
-        }
-
-        table.relevamiento-table tbody tr:hover {
-            background: rgba(15, 23, 42, 0.03);
         }
 
         .row-clickable {
@@ -100,6 +76,7 @@ unset($_SESSION['cierre_info']);
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
+            align-items: center;
         }
 
         .icon-btn {
@@ -116,6 +93,7 @@ unset($_SESSION['cierre_info']);
         .icon-btn:hover {
             background: rgba(15, 23, 42, 0.04);
         }
+
 
         .card-error {
             border: 1px solid #ef4444;
@@ -286,7 +264,7 @@ unset($_SESSION['cierre_info']);
                 </div>
 
                 <!-- Contenedor donde se renderizan dinámicamente las tarjetas -->
-                <div id="cards-container" class="table-wrapper"></div>
+                <div id="cards-container"></div>
 
                 <!-- contenedor del toastify -->
                 <div id="toast-container"></div>
@@ -319,7 +297,7 @@ unset($_SESSION['cierre_info']);
         });
     </script>
 
-        <script>
+    <script>
         const API_RELEVAMIENTO = "../../controllers/ing_relevamientoController.php";
         const RELEVAMIENTO_PARTIAL_BASE = "../partials/relevamiento";
         const MODAL_IDS = {
@@ -354,13 +332,14 @@ unset($_SESSION['cierre_info']);
             const container = document.getElementById('cards-container');
             if (!container) return;
 
-            const rows = coops.map((c) => {
+            const rows = coops.map((c, idx) => {
                 const nombre = escapeHtml(c.nombre);
                 const idReal = escapeHtml(c.id_real);
                 const cuit = escapeHtml(c.cuit ?? 'Sin CUIT');
 
                 return `
                     <tr class="row-clickable" data-coop-id-real="${idReal}">
+                        <td>${idx + 1}</td>
                         <td>${nombre}</td>
                         <td>${idReal}</td>
                         <td>${cuit}</td>
@@ -372,23 +351,31 @@ unset($_SESSION['cierre_info']);
             }).join('');
 
             container.innerHTML = `
-                <table class="relevamiento-table">
-                    <thead>
-                        <tr>
-                            <th>Cooperativa</th>
-                            <th>ID real</th>
-                            <th>CUIT</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${rows}
-                    </tbody>
-                </table>
+                <div class="card tabla-card">
+                    <h2>Cooperativas</h2>
+                    <div class="tabla-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nombre</th>
+                                    <th>ID real</th>
+                                    <th>CUIT</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             `;
 
             const mapCoops = {};
-            coops.forEach(c => { mapCoops[String(c.id_real)] = c; });
+            coops.forEach(c => {
+                mapCoops[String(c.id_real)] = c;
+            });
 
             container.querySelectorAll('[data-action="ver-productores"]').forEach((btn) => {
                 btn.addEventListener('click', (ev) => {
@@ -416,13 +403,14 @@ unset($_SESSION['cierre_info']);
                 PRODUCTORES_MAP[p.id_real] = p;
             });
 
-            const rows = productores.map((p) => {
+            const rows = productores.map((p, idx) => {
                 const nombre = escapeHtml(p.nombre);
                 const idReal = escapeHtml(p.id_real);
                 const cuit = escapeHtml(p.cuit ?? 'Sin CUIT');
 
                 return `
                     <tr>
+                        <td>${idx + 1}</td>
                         <td>${nombre}</td>
                         <td>${idReal}</td>
                         <td>${cuit}</td>
@@ -430,7 +418,7 @@ unset($_SESSION['cierre_info']);
                             <button class="btn btn-info" onclick="relevamientoOpenModal('familia','${idReal}')">Familia</button>
                             <button class="btn btn-info" onclick="relevamientoOpenModal('produccion','${idReal}')">Producción</button>
                             <button class="btn btn-info" onclick="relevamientoOpenModal('cuarteles','${idReal}')">Cuarteles</button>
-                            <button class="icon-btn" title="Imprimir JSON del productor" onclick="relevamientoLogProductor('${idReal}')">
+                            <button class="icon-btn" title="Consolidar JSON (Familia + Producción)" onclick="relevamientoLogProductorFull('${idReal}')">
                                 <span class="material-symbols-outlined">code</span>
                             </button>
                         </td>
@@ -439,29 +427,125 @@ unset($_SESSION['cierre_info']);
             }).join('');
 
             container.innerHTML = `
-                <table class="relevamiento-table">
-                    <thead>
-                        <tr>
-                            <th>Productor</th>
-                            <th>ID real</th>
-                            <th>CUIT</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${rows}
-                    </tbody>
-                </table>
+                <div class="card tabla-card">
+                    <h2>Productores</h2>
+                    <div class="tabla-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nombre</th>
+                                    <th>ID real</th>
+                                    <th>CUIT</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             `;
         }
 
-        function relevamientoLogProductor(productorIdReal) {
+        function getFormValuesAsObject(doc, formSelector) {
+            const form = doc.querySelector(formSelector);
+            if (!form) return null;
+
+            const out = {};
+            const elements = Array.from(form.querySelectorAll('input, select, textarea'));
+
+            elements.forEach((el) => {
+                const name = el.getAttribute('name');
+                if (!name) return;
+
+                const tag = (el.tagName || '').toLowerCase();
+                const type = (el.getAttribute('type') || '').toLowerCase();
+
+                if (type === 'password' || type === 'file') return;
+
+                if (type === 'checkbox') {
+                    if (!out[name]) out[name] = [];
+                    if (el.checked) out[name].push(el.value ?? 'on');
+                    if (out[name].length === 0) out[name] = [];
+                    return;
+                }
+
+                if (type === 'radio') {
+                    if (el.checked) out[name] = el.value;
+                    if (out[name] === undefined) out[name] = null;
+                    return;
+                }
+
+                if (tag === 'select' && el.multiple) {
+                    out[name] = Array.from(el.selectedOptions).map(o => o.value);
+                    return;
+                }
+
+                out[name] = el.value;
+            });
+
+            return out;
+        }
+
+        async function fetchFamiliaData(productorIdReal) {
+            const params = new URLSearchParams({
+                productor_id_real: productorIdReal
+            });
+            const resp = await fetch(`${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_familia_controller.php?${params.toString()}`, {
+                credentials: 'same-origin'
+            });
+            if (!resp.ok) {
+                throw new Error(`Familia: Error HTTP ${resp.status}`);
+            }
+            const html = await resp.text();
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            return getFormValuesAsObject(doc, '#familia-form');
+        }
+
+        async function fetchProduccionData(productorIdReal) {
+            const params = new URLSearchParams({
+                productor_id_real: productorIdReal
+            });
+            const resp = await fetch(`${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_produccion_controller.php?${params.toString()}`, {
+                credentials: 'same-origin'
+            });
+            if (!resp.ok) {
+                throw new Error(`Producción: Error HTTP ${resp.status}`);
+            }
+            const html = await resp.text();
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            return getFormValuesAsObject(doc, '#produccion-form');
+        }
+
+        async function relevamientoLogProductorFull(productorIdReal) {
             const prod = PRODUCTORES_MAP[productorIdReal];
             if (!prod) {
                 console.warn('[Relevamiento] No se encontró productor para log:', productorIdReal);
                 return;
             }
-            console.log('[Relevamiento] Productor seleccionado (JSON):', JSON.stringify(prod, null, 2));
+
+            try {
+                const [familia, produccion] = await Promise.all([
+                    fetchFamiliaData(productorIdReal).catch((e) => ({
+                        __error: e.message
+                    })),
+                    fetchProduccionData(productorIdReal).catch((e) => ({
+                        __error: e.message
+                    }))
+                ]);
+
+                const payload = {
+                    productor: prod,
+                    familia: familia,
+                    produccion: produccion
+                };
+
+                console.log('[Relevamiento] Productor consolidado (JSON):', JSON.stringify(payload, null, 2));
+            } catch (e) {
+                console.error('[Relevamiento] Error al consolidar JSON:', e);
+            }
         }
 
         async function cargarCooperativas() {
@@ -833,7 +917,7 @@ unset($_SESSION['cierre_info']);
         window.guardarProduccion = guardarProduccion;
         window.relevamientoOpenModal = relevamientoOpenModal;
         window.relevamientoCloseModal = relevamientoCloseModal;
-        window.relevamientoLogProductor = relevamientoLogProductor;
+        window.relevamientoLogProductorFull = relevamientoLogProductorFull;
 
         // Cargar cooperativas una vez que el DOM esté listo
         window.addEventListener('DOMContentLoaded', () => {
