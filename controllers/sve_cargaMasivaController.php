@@ -16,41 +16,188 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/../models/sve_cargaMasivaModel.php';
 
-// Validación de entrada
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_FILES['archivo']) || !isset($_POST['tipo'])) {
+function normalize_row_keys(array $row): array
+{
+    // Trim de headers + normalizaciones básicas para variaciones de CSV
+    $out = [];
+    foreach ($row as $k => $v) {
+        $key = trim((string)$k);
+        $out[$key] = $v;
+    }
+
+    // Sinónimos comunes (familia / fincas)
+    if (array_key_exists('CódigoFinca', $out) && !array_key_exists('Código Finca', $out)) {
+        $out['Código Finca'] = $out['CódigoFinca'];
+    }
+    if (array_key_exists('codigo finca', $out) && !array_key_exists('Código Finca', $out)) {
+        $out['Código Finca'] = $out['codigo finca'];
+    }
+    if (array_key_exists('CODIGO FINCA', $out) && !array_key_exists('Código Finca', $out)) {
+        $out['Código Finca'] = $out['CODIGO FINCA'];
+    }
+    if (array_key_exists('tipo de Relacion', $out) && !array_key_exists('Tipo de Relación', $out)) {
+        $out['Tipo de Relación'] = $out['tipo de Relacion'];
+    }
+    if (array_key_exists('Categorización A, B o C', $out) && !array_key_exists('Categorización (A/B/C)', $out)) {
+        $out['Categorización (A/B/C)'] = $out['Categorización A, B o C'];
+    }
+
+    return $out;
+}
+
+function nullify_empty_strings(array $row): array
+{
+    // Convertimos "" o "   " a NULL para que impacte como null en DB,
+    // pero OJO: el modelo NO reescribe con vacíos (ya lo controla).
+    $out = [];
+    foreach ($row as $k => $v) {
+        if (is_string($v)) {
+            $t = trim($v);
+            $out[$k] = ($t === '') ? null : $t;
+        } else {
+            $out[$k] = $v;
+        }
+    }
+    return $out;
+}
+
+function headers_present(array $row, array $candidates): bool
+{
+    foreach ($candidates as $c) {
+        if (array_key_exists($c, $row)) return true;
+    }
+    return false;
+}
+
+function validate_min_headers(string $tipo, array $rows): array
+{
+    if (empty($rows)) return ['ok' => false, 'missing' => ['CSV vacío']];
+
+    $first = $rows[0];
+
+    $required = [
+        'familia' => [
+            ['ID PP', 'Id PP', 'id pp', 'IDPP', 'IdPP'],
+            ['Cooperativa', 'cooperativa']
+        ],
+        'fincas' => [
+            ['codigo finca', 'Código Finca', 'CódigoFinca', 'CODIGO FINCA', 'Codigo finca', 'código finca']
+        ],
+        'cooperativas' => [
+            ['id_real', 'ID REAL', 'Id Real', 'id real'],
+            ['contrasena', 'Contraseña', 'contraseña'],
+            ['rol', 'Rol', 'ROL'],
+            ['cuit', 'CUIT', 'cuit']
+        ],
+        'relaciones' => [
+            ['id_productor', 'ID PRODUCTOR', 'id productor'],
+            ['id_cooperativa', 'ID COOPERATIVA', 'id cooperativa']
+        ]
+    ];
+
+    if (!isset($required[$tipo])) return ['ok' => true, 'missing' => []];
+
+    $missing = [];
+    foreach ($required[$tipo] as $group) {
+        if (!headers_present($first, $group)) {
+            $missing[] = implode(' / ', $group);
+        }
+    }
+
+    return ['ok' => count($missing) === 0, 'missing' => $missing];
+}
+
+// Validación de entrada (acepta JSON batching o upload tradicional)
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['error' => 'Petición inválida']);
     exit;
 }
 
-$tipo = $_POST['tipo'];
-$archivoTmp = $_FILES['archivo']['tmp_name'];
-
-if (!file_exists($archivoTmp)) {
-    echo json_encode(['error' => 'Archivo no encontrado']);
-    exit;
-}
-
-// Leer CSV
-$csv = [];
-if (($handle = fopen($archivoTmp, 'r')) !== false) {
-    while (($data = fgetcsv($handle, 10000, ';')) !== false) {
-        $csv[] = $data;
+$raw = file_get_contents('php://input');
+$payload = null;
+if (is_string($raw) && strlen(trim($raw)) > 0) {
+    $tmp = json_decode($raw, true);
+    if (is_array($tmp)) {
+        $payload = $tmp;
     }
-    fclose($handle);
 }
 
-// Procesar encabezados
-$encabezados = array_map(function ($val) {
-    return trim(preg_replace('/^\xEF\xBB\xBF/', '', $val)); // limpiar BOM
-}, $csv[0]);
-
-$datos = array_slice($csv, 1);
-
-// Convertir filas a array asociativo
+$tipo = null;
+$dryRun = false;
 $datosProcesados = [];
-foreach ($datos as $fila) {
-    if (count($fila) !== count($encabezados)) continue;
-    $datosProcesados[] = array_combine($encabezados, array_map('trim', $fila));
+
+if (is_array($payload)) {
+    // Modo JSON batching (recomendado)
+    if (!isset($payload['tipo']) || !isset($payload['batch']) || !is_array($payload['batch'])) {
+        echo json_encode(['error' => 'Payload JSON inválido (faltan tipo/batch)']);
+        exit;
+    }
+
+    $tipo = (string)$payload['tipo'];
+    $dryRun = !empty($payload['dry_run']);
+    $datosProcesados = $payload['batch'];
+} else {
+    // Modo upload tradicional (compatibilidad)
+    if (!isset($_FILES['archivo']) || !isset($_POST['tipo'])) {
+        echo json_encode(['error' => 'Petición inválida']);
+        exit;
+    }
+
+    $tipo = (string)$_POST['tipo'];
+    $dryRun = !empty($_POST['dry_run']);
+
+    $archivoTmp = $_FILES['archivo']['tmp_name'];
+    if (!file_exists($archivoTmp)) {
+        echo json_encode(['error' => 'Archivo no encontrado']);
+        exit;
+    }
+
+    // Leer CSV
+    $csv = [];
+    if (($handle = fopen($archivoTmp, 'r')) !== false) {
+        while (($data = fgetcsv($handle, 10000, ';')) !== false) {
+            $csv[] = $data;
+        }
+        fclose($handle);
+    }
+
+    if (empty($csv) || empty($csv[0])) {
+        echo json_encode(['error' => 'CSV vacío o inválido']);
+        exit;
+    }
+
+    // Procesar encabezados
+    $encabezados = array_map(function ($val) {
+        return trim(preg_replace('/^\xEF\xBB\xBF/', '', (string)$val)); // limpiar BOM
+    }, $csv[0]);
+
+    $datos = array_slice($csv, 1);
+
+    // Convertir filas a array asociativo
+    foreach ($datos as $fila) {
+        if (count($fila) !== count($encabezados)) continue;
+        $datosProcesados[] = array_combine($encabezados, array_map('trim', $fila));
+    }
+}
+
+// Normalizamos + convertimos vacíos a NULL (sin romper lógica del modelo)
+$normalized = [];
+foreach ($datosProcesados as $r) {
+    if (!is_array($r)) continue;
+    $nr = normalize_row_keys($r);
+    $nr = nullify_empty_strings($nr);
+    $normalized[] = $nr;
+}
+$datosProcesados = $normalized;
+
+// Validación de headers mínimos (no depende del orden)
+$vh = validate_min_headers((string)$tipo, $datosProcesados);
+if (!$vh['ok']) {
+    echo json_encode([
+        'error' => 'Faltan headers mínimos para la carga.',
+        'missing_headers' => $vh['missing']
+    ]);
+    exit;
 }
 
 $modelo = new CargaMasivaModel();
@@ -89,7 +236,7 @@ try {
             exit;
 
         case 'familia':
-            $resultado = $modelo->insertarDatosFamilia($datosProcesados);
+            $resultado = $modelo->insertarDatosFamilia($datosProcesados, $dryRun);
             $conflictos = isset($resultado['conflictos']) ? $resultado['conflictos'] : [];
             $stats = isset($resultado['stats']) ? $resultado['stats'] : null;
 
@@ -123,7 +270,7 @@ try {
             exit;
 
         case 'fincas':
-            $resultado = $modelo->insertarDiagnosticoFincas($datosProcesados);
+            $resultado = $modelo->insertarDiagnosticoFincas($datosProcesados, $dryRun);
             $conflictos = isset($resultado['conflictos']) ? $resultado['conflictos'] : [];
             $stats = isset($resultado['stats']) ? $resultado['stats'] : null;
 

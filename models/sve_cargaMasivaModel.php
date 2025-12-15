@@ -166,7 +166,7 @@ class CargaMasivaModel
                 ];
         }
 
-        public function insertarDatosFamilia($datos)
+        public function insertarDatosFamilia($datos, bool $dryRun = false)
         {
                 $anioReferencia = (int) date('Y');
 
@@ -229,6 +229,7 @@ class CargaMasivaModel
                         return $v;
                 };
 
+                // Transacción por tanda (dry-run por tandas): rollback en simulación, commit en real
                 $this->pdo->beginTransaction();
 
                 // Reutilizamos statements donde tenga sentido
@@ -320,7 +321,14 @@ class CargaMasivaModel
 
                         $idPP         = isset($fila['ID PP']) ? trim((string) $fila['ID PP']) : '';
                         $coopIdReal   = isset($fila['Cooperativa']) ? trim((string) $fila['Cooperativa']) : '';
-                        $codFincaCell = isset($fila['Código Finca']) ? trim((string) $fila['Código Finca']) : '';
+                        $codFincaCell = '';
+                        if (isset($fila['Código Finca'])) {
+                                $codFincaCell = trim((string) $fila['Código Finca']);
+                        } elseif (isset($fila['CódigoFinca'])) {
+                                $codFincaCell = trim((string) $fila['CódigoFinca']);
+                        } elseif (isset($fila['codigo finca'])) {
+                                $codFincaCell = trim((string) $fila['codigo finca']);
+                        }
 
                         if ($idPP === '' || $coopIdReal === '') {
                                 $stats['conflictos']++;
@@ -508,8 +516,22 @@ class CargaMasivaModel
                         $tel = isset($fila['Nº Celular']) ? trim((string) $fila['Nº Celular']) : '';
                         $mail = isset($fila['Mail']) ? trim((string) $fila['Mail']) : '';
                         $fechaNac = isset($fila['Fecha de nacimiento']) ? $parseFecha($fila['Fecha de nacimiento']) : null;
-                        $cat = isset($fila['Categorización (A/B/C)']) ? strtoupper(trim((string) $fila['Categorización (A/B/C)'])) : '';
-                        $tipoRel = isset($fila['Tipo de Relación']) ? trim((string) $fila['Tipo de Relación']) : '';
+                        $cat = '';
+                        if (isset($fila['Categorización (A/B/C)'])) {
+                                $cat = strtoupper(trim((string) $fila['Categorización (A/B/C)']));
+                        } elseif (isset($fila['Categorización A, B o C'])) {
+                                $cat = strtoupper(trim((string) $fila['Categorización A, B o C']));
+                        }
+
+                        $tipoRel = '';
+                        if (isset($fila['Tipo de Relación'])) {
+                                $tipoRel = trim((string) $fila['Tipo de Relación']);
+                        } elseif (isset($fila['tipo de Relacion'])) {
+                                $tipoRel = trim((string) $fila['tipo de Relacion']);
+                        } elseif (isset($fila['tipo de Relación'])) {
+                                $tipoRel = trim((string) $fila['tipo de Relación']);
+                        }
+
 
                         if (!$infoRow) {
                                 $sqlInsertInfo = "INSERT INTO usuarios_info (usuario_id, nombre, direccion, telefono, correo, fecha_nacimiento, categorizacion, tipo_relacion, zona_asignada)
@@ -889,7 +911,11 @@ class CargaMasivaModel
                         }
                 }
 
-                $this->pdo->commit();
+                if ($dryRun) {
+                        $this->pdo->rollBack();
+                } else {
+                        $this->pdo->commit();
+                }
 
                 $stats['conflictos'] = count($conflictos);
 
@@ -899,7 +925,7 @@ class CargaMasivaModel
                 ];
         }
 
-        public function insertarDiagnosticoFincas($datos)
+        public function insertarDiagnosticoFincas($datos, bool $dryRun = false)
         {
                 $anioReferencia = 2025;
 
@@ -1724,7 +1750,11 @@ class CargaMasivaModel
                         }
                 }
 
-                $this->pdo->commit();
+                if ($dryRun) {
+                        $this->pdo->rollBack();
+                } else {
+                        $this->pdo->commit();
+                }
 
                 $stats['conflictos'] = count($conflictos);
 

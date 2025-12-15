@@ -30,6 +30,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
+
+    <!-- CSV Parser robusto (soporta comillas / separadores reales) -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 
 <body>
@@ -144,8 +147,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <h3>Cargar Datos de familia</h3>
                         <input type="file" id="csvFamilia" accept=".csv" />
                         <button class="btn btn-info" onclick="previewCSV('familia')">Previsualizar</button>
-                        <div id="previewFamilia" class="csv-preview"></div>
-                        <button class="btn btn-aceptar" onclick="confirmarCarga('familia')">Confirmar carga</button>
+
+                        <div style="margin-top:10px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                            <label style="display:flex; gap:8px; align-items:center;">
+                                <input type="checkbox" id="dryRunFamilia" />
+                                <span>Simulación (no impacta en la base)</span>
+                            </label>
+
+                            <div id="progressFamilia" style="font-size:14px; opacity:0.9;"></div>
+                        </div>
+
+                        <div id="previewFamilia" class="csv-preview" style="margin-top:10px;"></div>
+                        <div id="logFamilia" class="csv-preview" style="margin-top:10px; max-height:220px; overflow:auto; background:#0b1020; color:#e5e7eb; padding:10px; border-radius:10px;"></div>
+
+                        <button class="btn btn-aceptar" onclick="confirmarCarga('familia')">Confirmar carga (en tandas de 250)</button>
                     </div>
 
                     <!-- Tarjeta: Carga de diagnóstico de fincas -->
@@ -154,9 +169,22 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <p>Usa un CSV con las columnas mapeadas por <strong>codigo finca</strong> a las tablas de fincas.</p>
                         <input type="file" id="csvFincas" accept=".csv" />
                         <button class="btn btn-info" onclick="previewCSV('fincas')">Previsualizar</button>
-                        <div id="previewFincas" class="csv-preview"></div>
-                        <button class="btn btn-aceptar" onclick="confirmarCarga('fincas')">Confirmar carga</button>
+
+                        <div style="margin-top:10px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                            <label style="display:flex; gap:8px; align-items:center;">
+                                <input type="checkbox" id="dryRunFincas" />
+                                <span>Simulación (no impacta en la base)</span>
+                            </label>
+
+                            <div id="progressFincas" style="font-size:14px; opacity:0.9;"></div>
+                        </div>
+
+                        <div id="previewFincas" class="csv-preview" style="margin-top:10px;"></div>
+                        <div id="logFincas" class="csv-preview" style="margin-top:10px; max-height:220px; overflow:auto; background:#0b1020; color:#e5e7eb; padding:10px; border-radius:10px;"></div>
+
+                        <button class="btn btn-aceptar" onclick="confirmarCarga('fincas')">Confirmar carga (en tandas de 250)</button>
                     </div>
+
                 </div>
 
             </section>
@@ -165,96 +193,36 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <!-- script principal  -->
-    <script>
-        window.previewCSV = function(tipo) {
-            const inputFile = document.getElementById('csv' + capitalize(tipo));
-            const previewDiv = document.getElementById('preview' + capitalize(tipo));
+        <script>
+        const BATCH_SIZE = 250;
 
-            if (!inputFile.files.length) {
-                alert("Por favor seleccioná un archivo CSV.");
-                return;
-            }
+        // Robustez de red / server
+        const REQUEST_TIMEOUT_MS = 30000; // 30s por tanda
+        const RETRY_MAX = 3;
+        const RETRY_BASE_MS = 1000; // 1s, 2s, 4s
 
-            const file = inputFile.files[0];
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                const contenido = e.target.result;
-                const filas = contenido.split('\n').map(fila => fila.split(';'));
-                renderPreview(filas, previewDiv);
-            };
-
-            reader.readAsText(file);
-        }
-
-        function renderPreview(filas, container) {
-            if (!filas.length) {
-                container.innerHTML = "<p>No se pudo leer el archivo.</p>";
-                return;
-            }
-
-            let html = '<table class="table"><thead><tr>';
-            filas[0].forEach(col => {
-                html += '<th>' + escapeHtml(col) + '</th>';
-            });
-            html += '</tr></thead><tbody>';
-
-            for (let i = 1; i < filas.length; i++) {
-                if (filas[i].length === 1 && filas[i][0].trim() === '') continue;
-                html += '<tr>';
-                filas[i].forEach(col => {
-                    html += '<td>' + escapeHtml(col) + '</td>';
-                });
-                html += '</tr>';
-            }
-
-            html += '</tbody></table>';
-            container.innerHTML = html;
-        }
-
-        window.confirmarCarga = function(tipo) {
-            const inputFile = document.getElementById('csv' + capitalize(tipo));
-            if (!inputFile.files.length) {
-                alert("Seleccioná un archivo para cargar.");
-                return;
-            }
-
-            const file = inputFile.files[0];
-            const formData = new FormData();
-            formData.append('archivo', file);
-            formData.append('tipo', tipo);
-
-            // 🔍 NUEVO: mostrar contenido del archivo CSV antes de enviar
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                console.log("📦 CSV a enviar (tipo:", tipo, "):");
-                console.log(e.target.result);
-            };
-            reader.readAsText(file);
-
-            // Enviar al servidor
-            fetch('../../controllers/sve_cargaMasivaController.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(async resp => {
-                    const text = await resp.text();
-                    console.log("🔎 Respuesta cruda del servidor:", text);
-                    try {
-                        const data = JSON.parse(text);
-                        alert(data.mensaje || "Carga completada.");
-                    } catch (e) {
-                        console.error("❌ Error al parsear JSON:", e);
-                        alert("El servidor devolvió una respuesta inválida.");
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("Ocurrió un error al subir el archivo.");
-                });
+        // Headers mínimos (no importa el orden)
+        // NOTA: usamos sinónimos porque el CSV puede variar.
+        const REQUIRED_HEADERS = {
+            familia: [
+                ['ID PP', 'Id PP', 'id pp', 'IDPP', 'IdPP'],
+                ['Cooperativa', 'cooperativa']
+            ],
+            fincas: [
+                ['codigo finca', 'Código Finca', 'CódigoFinca', 'CODIGO FINCA', 'Codigo finca', 'código finca']
+            ],
+            // estos dos ya existen pero dejamos estructura por consistencia
+            cooperativas: [
+                ['id_real', 'ID REAL', 'Id Real', 'id real'],
+                ['contrasena', 'Contraseña', 'contraseña'],
+                ['rol', 'Rol', 'ROL'],
+                ['cuit', 'CUIT', 'cuit']
+            ],
+            relaciones: [
+                ['id_productor', 'ID PRODUCTOR', 'id productor'],
+                ['id_cooperativa', 'ID COOPERATIVA', 'id cooperativa']
+            ]
         };
-
-
 
         function capitalize(str) {
             return str.charAt(0).toUpperCase() + str.slice(1);
@@ -268,10 +236,353 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 '"': '&quot;',
                 "'": '&#039;'
             };
-            return text.replace(/[&<>"']/g, function(m) {
+            return String(text ?? '').replace(/[&<>"']/g, function(m) {
                 return map[m];
             });
         }
+
+        function getDryRun(tipo) {
+            const id = 'dryRun' + capitalize(tipo);
+            const el = document.getElementById(id);
+            return el ? !!el.checked : false;
+        }
+
+                function setProgress(tipo, txt, percent = null, extra = null) {
+            const el = document.getElementById('progress' + capitalize(tipo));
+            if (!el) return;
+
+            const safeTxt = escapeHtml(txt ?? '');
+            if (percent === null || percent === undefined) {
+                el.innerHTML = safeTxt;
+                return;
+            }
+
+            const p = Math.max(0, Math.min(100, Number(percent)));
+            const extraHtml = extra ? `<div style="margin-top:6px; opacity:.9;">${escapeHtml(extra)}</div>` : '';
+            el.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <progress value="${p}" max="100" style="width:220px; height:12px;"></progress>
+                    <div style="font-size:14px;">${safeTxt} <strong>${p.toFixed(0)}%</strong></div>
+                </div>
+                ${extraHtml}
+            `;
+        }
+
+        function logLine(tipo, txt) {
+            const el = document.getElementById('log' + capitalize(tipo));
+            if (!el) return;
+            const now = new Date().toLocaleTimeString();
+            el.innerHTML += `<div>[${escapeHtml(now)}] ${escapeHtml(txt)}</div>`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function clearLog(tipo) {
+            const el = document.getElementById('log' + capitalize(tipo));
+            if (el) el.innerHTML = '';
+        }
+
+                function normalizeHeadersRow(obj) {
+            // Normalización suave para variaciones reales detectadas en tus CSVs:
+            // - "CódigoFinca" -> "Código Finca"
+            // - "tipo de Relacion" -> "Tipo de Relación"
+            // - "Categorización A, B o C" -> "Categorización (A/B/C)"
+            // - Trim de keys
+            const out = {};
+            for (const k in obj) {
+                const key = String(k ?? '').trim();
+                out[key] = obj[k];
+            }
+
+            if (out['CódigoFinca'] !== undefined && out['Código Finca'] === undefined) {
+                out['Código Finca'] = out['CódigoFinca'];
+            }
+            if (out['tipo de Relacion'] !== undefined && out['Tipo de Relación'] === undefined) {
+                out['Tipo de Relación'] = out['tipo de Relacion'];
+            }
+            if (out['Categorización A, B o C'] !== undefined && out['Categorización (A/B/C)'] === undefined) {
+                out['Categorización (A/B/C)'] = out['Categorización A, B o C'];
+            }
+
+            // Compatibilidad: algunos CSV usan "Código Finca" sin espacio o con otra capitalización
+            if (out['codigo finca'] !== undefined && out['Código Finca'] === undefined) {
+                out['Código Finca'] = out['codigo finca'];
+            }
+            if (out['CODIGO FINCA'] !== undefined && out['Código Finca'] === undefined) {
+                out['Código Finca'] = out['CODIGO FINCA'];
+            }
+
+            return out;
+        }
+
+        function hasAnyHeader(headers, candidates) {
+            const set = new Set(headers.map(h => String(h ?? '').trim()));
+            for (const c of candidates) {
+                if (set.has(String(c ?? '').trim())) return true;
+            }
+            return false;
+        }
+
+        function validateRequiredHeaders(tipo, rows) {
+            if (!rows || !rows.length) return { ok: false, missingGroups: ['CSV vacío'] };
+
+            const headers = Object.keys(rows[0] || {});
+            const req = REQUIRED_HEADERS[tipo];
+            if (!req) return { ok: true, missingGroups: [] };
+
+            const missingGroups = [];
+            for (const group of req) {
+                if (!hasAnyHeader(headers, group)) {
+                    missingGroups.push(group.join(' / '));
+                }
+            }
+
+            return { ok: missingGroups.length === 0, missingGroups };
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function parseCsvFile(file) {
+            return new Promise((resolve, reject) => {
+                Papa.parse(file, {
+                    header: true,
+                    delimiter: ";",
+                    skipEmptyLines: true,
+                    worker: true,
+                    transformHeader: (h) => String(h ?? '').replace(/^\uFEFF/, '').trim(),
+                    transform: (v) => (typeof v === 'string' ? v.trim() : v),
+                    complete: (results) => {
+                        if (results.errors && results.errors.length) {
+                            reject(results.errors);
+                            return;
+                        }
+                        const rows = (results.data || []).map(normalizeHeadersRow);
+                        resolve(rows);
+                    },
+                    error: (err) => reject(err)
+                });
+            });
+        }
+
+        function renderPreviewFromObjects(rows, container, maxRows = 20) {
+            if (!rows || !rows.length) {
+                container.innerHTML = "<p>No se pudo leer el archivo o está vacío.</p>";
+                return;
+            }
+
+            const headers = Object.keys(rows[0]);
+            let html = '<table class="table"><thead><tr>';
+            headers.forEach(h => html += `<th>${escapeHtml(h)}</th>`);
+            html += '</tr></thead><tbody>';
+
+            const take = Math.min(rows.length, maxRows);
+            for (let i = 0; i < take; i++) {
+                html += '<tr>';
+                headers.forEach(h => {
+                    html += `<td>${escapeHtml(rows[i][h] ?? '')}</td>`;
+                });
+                html += '</tr>';
+            }
+
+            html += '</tbody></table>';
+            html += `<p style="margin-top:8px; opacity:0.8;">Mostrando ${take} de ${rows.length} filas.</p>`;
+            container.innerHTML = html;
+        }
+
+        window.previewCSV = async function(tipo) {
+            const inputFile = document.getElementById('csv' + capitalize(tipo));
+            const previewDiv = document.getElementById('preview' + capitalize(tipo));
+            clearLog(tipo);
+
+            if (!inputFile.files.length) {
+                alert("Por favor seleccioná un archivo CSV.");
+                return;
+            }
+
+            try {
+                setProgress(tipo, 'Parseando CSV...', 0);
+                const file = inputFile.files[0];
+                const rows = await parseCsvFile(file);
+
+                const check = validateRequiredHeaders(tipo, rows);
+                if (!check.ok) {
+                    renderPreviewFromObjects(rows, previewDiv, 10);
+                    const msg = `Faltan headers mínimos para "${tipo}":\n- ${check.missingGroups.join('\n- ')}`;
+                    setProgress(tipo, 'CSV inválido: faltan headers mínimos.', 0, msg);
+                    logLine(tipo, `ERROR headers mínimos: ${check.missingGroups.join(' | ')}`);
+                    alert(msg);
+                    return;
+                }
+
+                renderPreviewFromObjects(rows, previewDiv, 20);
+                setProgress(tipo, `CSV OK: ${rows.length} filas detectadas.`, 100);
+                logLine(tipo, `CSV parseado correctamente (${rows.length} filas). Headers mínimos OK.`);
+            } catch (err) {
+                console.error(err);
+                setProgress(tipo, 'Error parseando CSV.', 0);
+                alert("Error leyendo CSV. Revisá formato/separador/archivo.");
+                logLine(tipo, `ERROR parseo CSV: ${JSON.stringify(err)}`);
+            }
+        }
+
+                async function sendBatch(tipo, batch, batchIndex, totalBatches, dryRun) {
+            const payload = {
+                tipo,
+                dry_run: dryRun ? 1 : 0,
+                batch_index: batchIndex,
+                total_batches: totalBatches,
+                batch
+            };
+
+            let lastErr = null;
+
+            for (let attempt = 1; attempt <= RETRY_MAX; attempt++) {
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+                try {
+                    const resp = await fetch('../../controllers/sve_cargaMasivaController.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        signal: controller.signal
+                    });
+
+                    const text = await resp.text();
+                    let data;
+                    try {
+                        data = JSON.parse(text);
+                    } catch (e) {
+                        throw new Error("Respuesta no-JSON del servidor: " + text);
+                    }
+
+                    if (!resp.ok || data.error) {
+                        const httpRetryable = [502, 503, 504].includes(resp.status);
+                        const msg = data.error || `HTTP ${resp.status}`;
+                        if (httpRetryable && attempt < RETRY_MAX) {
+                            lastErr = new Error(msg);
+                            const wait = RETRY_BASE_MS * Math.pow(2, attempt - 1);
+                            await sleep(wait);
+                            continue;
+                        }
+                        throw new Error(msg);
+                    }
+
+                    return data;
+                } catch (err) {
+                    const isAbort = (err && (err.name === 'AbortError' || String(err.message || err).includes('AbortError')));
+                    const isNetwork = String(err.message || err).toLowerCase().includes('failed to fetch');
+
+                    if ((isAbort || isNetwork) && attempt < RETRY_MAX) {
+                        lastErr = err;
+                        const wait = RETRY_BASE_MS * Math.pow(2, attempt - 1);
+                        await sleep(wait);
+                        continue;
+                    }
+                    throw err;
+                } finally {
+                    clearTimeout(timer);
+                }
+            }
+
+            throw lastErr || new Error('Fallo desconocido enviando tanda.');
+        }
+
+                window.confirmarCarga = async function(tipo) {
+            const inputFile = document.getElementById('csv' + capitalize(tipo));
+            const previewDiv = document.getElementById('preview' + capitalize(tipo));
+            clearLog(tipo);
+
+            if (!inputFile.files.length) {
+                alert("Seleccioná un archivo para cargar.");
+                return;
+            }
+
+            const dryRun = getDryRun(tipo);
+            const modeLabel = dryRun ? 'SIMULACIÓN (rollback)' : 'CARGA REAL (commit)';
+
+            try {
+                setProgress(tipo, 'Parseando CSV...', 0);
+                logLine(tipo, `Inicio ${modeLabel}.`);
+
+                const file = inputFile.files[0];
+                const rows = await parseCsvFile(file);
+
+                renderPreviewFromObjects(rows, previewDiv, 10);
+
+                if (!rows.length) {
+                    alert("El CSV no tiene filas.");
+                    setProgress(tipo, 'Sin filas.', 0);
+                    return;
+                }
+
+                const check = validateRequiredHeaders(tipo, rows);
+                if (!check.ok) {
+                    const msg = `Faltan headers mínimos para "${tipo}":\n- ${check.missingGroups.join('\n- ')}`;
+                    setProgress(tipo, 'CSV inválido: faltan headers mínimos.', 0, msg);
+                    logLine(tipo, `ERROR headers mínimos: ${check.missingGroups.join(' | ')}`);
+                    alert(msg);
+                    return;
+                }
+
+                const totalBatches = Math.ceil(rows.length / BATCH_SIZE);
+                let totalConflictos = 0;
+                let totalOk = 0;
+                let totalErrores = 0;
+
+                for (let i = 0; i < totalBatches; i++) {
+                    const start = i * BATCH_SIZE;
+                    const batch = rows.slice(start, start + BATCH_SIZE);
+
+                    const percent = ((i) / totalBatches) * 100;
+                    setProgress(
+                        tipo,
+                        `Enviando tanda ${i + 1}/${totalBatches} (${batch.length} filas) - ${modeLabel}`,
+                        percent,
+                        `OK: ${totalOk} | Conflictos: ${totalConflictos} | Errores: ${totalErrores}`
+                    );
+                    logLine(tipo, `→ Tanda ${i + 1}/${totalBatches}: enviando ${batch.length} filas...`);
+
+                    try {
+                        const data = await sendBatch(tipo, batch, i + 1, totalBatches, dryRun);
+
+                        const conflictos = Array.isArray(data.conflictos) ? data.conflictos.length : 0;
+                        totalConflictos += conflictos;
+                        totalOk += batch.length;
+
+                        logLine(tipo, `← Tanda ${i + 1}/${totalBatches}: OK. Conflictos en tanda: ${conflictos}.`);
+                        if (data.mensaje) logLine(tipo, `Mensaje: ${data.mensaje}`);
+
+                        // Regla anti-ansiedad: un mini resumen por tanda si viene stats
+                        if (data.stats) {
+                            logLine(tipo, `Stats tanda: ${JSON.stringify(data.stats)}`);
+                        }
+
+                        // Si querés frenar ante conflictos en simulación, descomentá:
+                        // if (dryRun && conflictos > 0) throw new Error(`Simulación detectó ${conflictos} conflictos en la tanda ${i + 1}.`);
+                    } catch (e) {
+                        totalErrores += 1;
+                        throw e;
+                    }
+                }
+
+                setProgress(
+                    tipo,
+                    `Finalizado ${modeLabel}.`,
+                    100,
+                    `OK: ${totalOk} | Conflictos: ${totalConflictos} | Errores: ${totalErrores}`
+                );
+                alert(`Finalizado ${modeLabel}.\nOK: ${totalOk}\nConflictos: ${totalConflictos}\nErrores: ${totalErrores}\nRevisá el panel de log.`);
+
+            } catch (err) {
+                console.error(err);
+                setProgress(tipo, 'ERROR. Proceso detenido.', 0);
+                logLine(tipo, `ERROR: ${String(err.message || err)}`);
+                alert("Se detuvo la carga por error. Revisá el log.");
+            }
+        };
+
     </script>
 
     <!-- Spinner Global -->
