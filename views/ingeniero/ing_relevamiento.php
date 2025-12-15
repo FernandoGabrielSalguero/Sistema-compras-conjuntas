@@ -576,37 +576,50 @@ unset($_SESSION['cierre_info']);
         }
 
 
+        function toKeyValueRows(obj) {
+            const rows = [];
+            Object.entries(obj || {}).forEach(([k, v]) => {
+                rows.push({
+                    columna_sql: k,
+                    valor: v
+                });
+            });
+            return rows;
+        }
 
         function logSectionAsTable(sectionName, data) {
-            // Formato uniforme: "Tabla: X" + "Columnas:" + console.table
             console.log(`Tabla: ${sectionName}`);
 
             if (!data) {
-                console.log('Columnas: []');
-                console.table([{}]);
+                console.table([{ columna_sql: '(vacío)', valor: '' }]);
                 return;
             }
 
             if (data.__error) {
-                console.log('Columnas: []');
-                console.table([{ __error: data.__error }]);
+                console.table([{ columna_sql: '__error', valor: data.__error }]);
                 return;
             }
 
-            // Objeto simple => 1 fila para console.table (más legible que console.table(obj))
+            // Caso 1: objeto simple => columna/valor
             if (!Array.isArray(data)) {
-                const columns = Object.keys(data);
-                console.log('Columnas:', columns);
-                console.table([data]);
+                console.table(toKeyValueRows(data));
                 return;
             }
 
-            // Array de filas
-            const allCols = new Set();
-            data.forEach(r => Object.keys(r || {}).forEach(k => allCols.add(k)));
-            console.log('Columnas:', Array.from(allCols));
-            console.table(data);
+            // Caso 2: array de filas => una tabla columna/valor por fila
+            if (data.length === 0) {
+                console.table([{ columna_sql: '(sin filas)', valor: '' }]);
+                return;
+            }
+
+            data.forEach((rowObj, i) => {
+                const idx = rowObj && rowObj.__index !== undefined ? rowObj.__index : i;
+                console.log(`Tabla: ${sectionName}[${idx}]`);
+                console.table(toKeyValueRows(rowObj || {}));
+            });
         }
+
+
 
         function prettyConsoleLogConsolidado(payload) {
             const productor = payload?.productor || null;
