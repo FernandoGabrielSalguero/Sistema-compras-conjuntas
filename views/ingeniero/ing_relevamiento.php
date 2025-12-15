@@ -575,37 +575,37 @@ unset($_SESSION['cierre_info']);
             return grouped;
         }
 
+
+
         function logSectionAsTable(sectionName, data) {
-            // Muestra columnas y valores de una "tabla" (objeto simple o array de filas)
-            console.groupCollapsed(`Tabla: ${sectionName}`);
+            // Formato uniforme: "Tabla: X" + "Columnas:" + console.table
+            console.log(`Tabla: ${sectionName}`);
 
             if (!data) {
-                console.log('(vacío)');
-                console.groupEnd();
+                console.log('Columnas: []');
+                console.table([{}]);
                 return;
             }
 
             if (data.__error) {
-                console.error('Error:', data.__error);
-                console.groupEnd();
+                console.log('Columnas: []');
+                console.table([{ __error: data.__error }]);
                 return;
             }
 
-            // Si es objeto simple:
+            // Objeto simple => 1 fila para console.table (más legible que console.table(obj))
             if (!Array.isArray(data)) {
                 const columns = Object.keys(data);
                 console.log('Columnas:', columns);
-                console.table(data);
-                console.groupEnd();
+                console.table([data]);
                 return;
             }
 
-            // Si es array de filas
+            // Array de filas
             const allCols = new Set();
             data.forEach(r => Object.keys(r || {}).forEach(k => allCols.add(k)));
             console.log('Columnas:', Array.from(allCols));
             console.table(data);
-            console.groupEnd();
         }
 
         function prettyConsoleLogConsolidado(payload) {
@@ -613,29 +613,23 @@ unset($_SESSION['cierre_info']);
             const familia = payload?.familia || null;
             const produccion = payload?.produccion || null;
 
-            console.groupCollapsed(`[Relevamiento] Productor consolidado`);
+            console.log('[Relevamiento] Productor consolidado');
 
-            // "usuarios" (lo que tenés desde el listado)
-            if (productor) {
-                logSectionAsTable('usuarios (productor base)', productor);
-            } else {
-                logSectionAsTable('usuarios (productor base)', null);
-            }
+            // "usuarios" (base)
+            logSectionAsTable('usuarios (productor base)', productor);
 
-            // "familia" (formulario familia)
-            if (familia) {
-                logSectionAsTable('relevamiento_familia (form)', familia);
-            } else {
-                logSectionAsTable('relevamiento_familia (form)', null);
-            }
+            // "familia" (form)
+            logSectionAsTable('relevamiento_familia (form)', familia);
 
             // "produccion": separar por tablas según keys bracket
             if (produccion && !produccion.__error) {
                 const grouped = groupByTables(produccion);
 
-                // Campos no-bracket
+                // Campos no-bracket (ej: productor_id_real)
                 if (grouped.__flat) {
                     logSectionAsTable('relevamiento_produccion (flat)', grouped.__flat);
+                } else {
+                    logSectionAsTable('relevamiento_produccion (flat)', null);
                 }
 
                 // Cada "tabla" detectada (ej: fincas)
@@ -646,28 +640,26 @@ unset($_SESSION['cierre_info']);
                     const rows = block?.rows || {};
                     const flat = block?.flat || {};
 
-                    // flat de esa tabla (si existe)
                     if (Object.keys(flat).length > 0) {
                         logSectionAsTable(`${tableName} (flat)`, flat);
+                    } else {
+                        logSectionAsTable(`${tableName} (flat)`, null);
                     }
 
-                    // rows por índice: convertir a array ordenado para console.table
                     const rowArr = Object.keys(rows)
                         .map(k => ({ __index: Number(k), ...rows[k] }))
                         .sort((a, b) => a.__index - b.__index);
 
-                    if (rowArr.length > 0) {
-                        logSectionAsTable(`${tableName} (rows)`, rowArr);
-                    } else {
-                        logSectionAsTable(`${tableName} (rows)`, null);
-                    }
+                    logSectionAsTable(`${tableName} (rows)`, rowArr.length ? rowArr : null);
                 });
             } else {
                 logSectionAsTable('relevamiento_produccion (form)', produccion);
             }
-
-            console.groupEnd();
         }
+
+
+
+
 
         async function relevamientoLogProductorFull(productorIdReal) {
             const prod = PRODUCTORES_MAP[productorIdReal];
