@@ -221,13 +221,29 @@ try {
                 ], 404);
             }
 
-            $ok = $modelo->eliminarContrato($id);
+            try {
+                $ok = $modelo->eliminarContrato($id);
+                if (!$ok) {
+                    jsonResponse([
+                        'ok' => false,
+                        'error' => 'No se pudo eliminar el contrato.'
+                    ], 500);
+                }
+            } catch (PDOException $pe) {
+                // Caso típico MySQL: restricción FK (no se puede borrar padre)
+                $msg = $pe->getMessage();
+                if (strpos($msg, 'SQLSTATE[23000]') !== false || strpos($msg, 'Cannot delete or update a parent row') !== false) {
+                    jsonResponse([
+                        'ok' => false,
+                        'error' => 'No se puede eliminar: existen registros relacionados (FK).',
+                        'debug' => [
+                            'type' => 'PDOException',
+                            'message' => $msg
+                        ]
+                    ], 409);
+                }
 
-            if (!$ok) {
-                jsonResponse([
-                    'ok' => false,
-                    'error' => 'No se pudo eliminar el contrato.'
-                ], 500);
+                throw $pe; // lo toma el catch global y devuelve ref + debug
             }
 
             jsonResponse([
@@ -238,7 +254,6 @@ try {
             ]);
             break;
 
-
         default:
             jsonResponse([
                 'ok' => false,
@@ -246,9 +261,22 @@ try {
             ], 400);
     }
 } catch (Throwable $e) {
-    error_log('[CosechaMecanica] Excepción en controlador: ' . $e->getMessage());
+    $errId = bin2hex(random_bytes(6));
+
+    error_log('[CosechaMecanica][' . $errId . '] Excepción en controlador: ' . $e->getMessage());
+    error_log('[CosechaMecanica][' . $errId . '] Trace: ' . $e->getTraceAsString());
+
+    // Devolvemos un mensaje útil para debugging sin romper JSON
+    $debug = [
+        'id' => $errId,
+        'type' => get_class($e),
+        'code' => (string)$e->getCode(),
+        'message' => $e->getMessage(),
+    ];
+
     jsonResponse([
         'ok' => false,
-        'error' => 'Ha ocurrido un error inesperado.'
+        'error' => 'Error interno (ref: ' . $errId . ').',
+        'debug' => $debug
     ], 500);
 }

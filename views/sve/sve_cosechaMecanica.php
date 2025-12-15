@@ -463,32 +463,37 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
 
             async function apiRequest(action, payload = {}) {
-                const body = Object.assign({}, payload, {
-                    action: action
-                });
+                const body = Object.assign({}, payload, { action });
                 console.log('[CosechaMecanica] Llamada API:', action, body);
 
                 try {
                     const response = await fetch(API_URL, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(body)
                     });
 
-                    if (!response.ok) {
-                        console.error('[CosechaMecanica] HTTP error', response.status);
-                        showAlert('error', 'Error de comunicación con el servidor.');
-                        throw new Error('HTTP ' + response.status);
+                    // Intentar leer JSON siempre (aunque sea 4xx/5xx) para mostrar error real
+                    let json = null;
+                    try {
+                        json = await response.json();
+                    } catch (_) {
+                        json = null;
                     }
 
-                    const json = await response.json();
+                    if (!response.ok) {
+                        const msg = (json && (json.error || json.message)) ? (json.error || json.message) : 'Error de comunicación con el servidor.';
+                        console.error('[CosechaMecanica] HTTP error', response.status, json);
+                        showAlert('error', msg);
+                        throw new Error((json && json.error) ? json.error : ('HTTP ' + response.status));
+                    }
+
                     console.log('[CosechaMecanica] Respuesta API:', json);
 
-                    if (!json.ok) {
-                        showAlert('error', json.error || 'Ha ocurrido un error inesperado.');
-                        throw new Error(json.error || 'Error API');
+                    if (!json || !json.ok) {
+                        const msg = (json && json.error) ? json.error : 'Ha ocurrido un error inesperado.';
+                        showAlert('error', msg);
+                        throw new Error(msg);
                     }
 
                     return json.data;
