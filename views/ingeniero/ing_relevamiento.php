@@ -36,7 +36,7 @@ unset($_SESSION['cierre_info']);
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 
-    <style>
+        <style>
         /* Título pequeño de sección (similar a “APPS”) */
         .sidebar-section-title {
             margin: 12px 16px 6px;
@@ -62,29 +62,59 @@ unset($_SESSION['cierre_info']);
             text-decoration: none;
         }
 
-        /* Grid para las tarjetas dinámicas */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 1rem;
+        /* ===== Tabla Relevamiento ===== */
+        .table-wrapper {
             margin-top: 1rem;
+            overflow-x: auto;
         }
 
-        .card-clickable {
+        table.relevamiento-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table.relevamiento-table th,
+        table.relevamiento-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+            vertical-align: middle;
+        }
+
+        table.relevamiento-table thead th {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            opacity: 0.8;
+            text-align: left;
+        }
+
+        table.relevamiento-table tbody tr:hover {
+            background: rgba(15, 23, 42, 0.03);
+        }
+
+        .row-clickable {
             cursor: pointer;
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
 
-        .card-clickable:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.15);
-        }
-
-        .card-actions {
-            margin-top: 0.75rem;
+        .cell-actions {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
+        }
+
+        .icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.35rem 0.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .icon-btn:hover {
+            background: rgba(15, 23, 42, 0.04);
         }
 
         .card-error {
@@ -155,7 +185,6 @@ unset($_SESSION['cierre_info']);
             cursor: pointer;
         }
     </style>
-
 
 </head>
 
@@ -257,7 +286,7 @@ unset($_SESSION['cierre_info']);
                 </div>
 
                 <!-- Contenedor donde se renderizan dinámicamente las tarjetas -->
-                <div id="cards-container" class="cards-grid"></div>
+                <div id="cards-container" class="table-wrapper"></div>
 
                 <!-- contenedor del toastify -->
                 <div id="toast-container"></div>
@@ -290,7 +319,7 @@ unset($_SESSION['cierre_info']);
         });
     </script>
 
-    <script>
+        <script>
         const API_RELEVAMIENTO = "../../controllers/ing_relevamientoController.php";
         const RELEVAMIENTO_PARTIAL_BASE = "../partials/relevamiento";
         const MODAL_IDS = {
@@ -312,44 +341,128 @@ unset($_SESSION['cierre_info']);
             }
         }
 
-        function createCoopCard(coop) {
-            const card = document.createElement('div');
-            card.className = 'card card-clickable';
-            card.innerHTML = `
-                <h3>${coop.nombre}</h3>
-                <p><strong>ID real:</strong> ${coop.id_real}</p>
-                <p><strong>CUIT:</strong> ${coop.cuit ?? 'Sin CUIT'}</p>
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function renderCooperativasTable(coops) {
+            const container = document.getElementById('cards-container');
+            if (!container) return;
+
+            const rows = coops.map((c) => {
+                const nombre = escapeHtml(c.nombre);
+                const idReal = escapeHtml(c.id_real);
+                const cuit = escapeHtml(c.cuit ?? 'Sin CUIT');
+
+                return `
+                    <tr class="row-clickable" data-coop-id-real="${idReal}">
+                        <td>${nombre}</td>
+                        <td>${idReal}</td>
+                        <td>${cuit}</td>
+                        <td>
+                            <button class="btn btn-info" data-action="ver-productores" data-coop-id-real="${idReal}">Ver productores</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <table class="relevamiento-table">
+                    <thead>
+                        <tr>
+                            <th>Cooperativa</th>
+                            <th>ID real</th>
+                            <th>CUIT</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
             `;
 
-            card.addEventListener('click', () => {
-                cargarProductores(coop);
+            const mapCoops = {};
+            coops.forEach(c => { mapCoops[String(c.id_real)] = c; });
+
+            container.querySelectorAll('[data-action="ver-productores"]').forEach((btn) => {
+                btn.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    const id = btn.getAttribute('data-coop-id-real');
+                    const coop = mapCoops[String(id)];
+                    if (coop) cargarProductores(coop);
+                });
             });
 
-            return card;
+            container.querySelectorAll('tr.row-clickable').forEach((tr) => {
+                tr.addEventListener('click', () => {
+                    const id = tr.getAttribute('data-coop-id-real');
+                    const coop = mapCoops[String(id)];
+                    if (coop) cargarProductores(coop);
+                });
+            });
         }
 
-        function createProductorCard(prod) {
-            const card = document.createElement('div');
-            card.className = 'card';
+        function renderProductoresTable(productores) {
+            const container = document.getElementById('cards-container');
+            if (!container) return;
 
-            // Guardamos el productor en el mapa global
-            PRODUCTORES_MAP[prod.id_real] = prod;
+            productores.forEach((p) => {
+                PRODUCTORES_MAP[p.id_real] = p;
+            });
 
-            card.innerHTML = `
-        <h3>${prod.nombre}</h3>
-        <p><strong>ID real:</strong> ${prod.id_real}</p>
-        <p><strong>CUIT:</strong> ${prod.cuit ?? 'Sin CUIT'}</p>
-        <div class="card-actions">
-            <button class="btn btn-info" onclick="relevamientoOpenModal('familia','${prod.id_real}')">Familia</button>
-            <button class="btn btn-info" onclick="relevamientoOpenModal('produccion','${prod.id_real}')">Producción</button>
-            <button class="btn btn-info" onclick="relevamientoOpenModal('cuarteles','${prod.id_real}')">Cuarteles</button>
-        </div>
-    `;
+            const rows = productores.map((p) => {
+                const nombre = escapeHtml(p.nombre);
+                const idReal = escapeHtml(p.id_real);
+                const cuit = escapeHtml(p.cuit ?? 'Sin CUIT');
 
-            return card;
+                return `
+                    <tr>
+                        <td>${nombre}</td>
+                        <td>${idReal}</td>
+                        <td>${cuit}</td>
+                        <td class="cell-actions">
+                            <button class="btn btn-info" onclick="relevamientoOpenModal('familia','${idReal}')">Familia</button>
+                            <button class="btn btn-info" onclick="relevamientoOpenModal('produccion','${idReal}')">Producción</button>
+                            <button class="btn btn-info" onclick="relevamientoOpenModal('cuarteles','${idReal}')">Cuarteles</button>
+                            <button class="icon-btn" title="Imprimir JSON del productor" onclick="relevamientoLogProductor('${idReal}')">
+                                <span class="material-symbols-outlined">code</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <table class="relevamiento-table">
+                    <thead>
+                        <tr>
+                            <th>Productor</th>
+                            <th>ID real</th>
+                            <th>CUIT</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
+            `;
         }
 
-
+        function relevamientoLogProductor(productorIdReal) {
+            const prod = PRODUCTORES_MAP[productorIdReal];
+            if (!prod) {
+                console.warn('[Relevamiento] No se encontró productor para log:', productorIdReal);
+                return;
+            }
+            console.log('[Relevamiento] Productor seleccionado (JSON):', JSON.stringify(prod, null, 2));
+        }
 
         async function cargarCooperativas() {
             const container = document.getElementById('cards-container');
@@ -377,12 +490,7 @@ unset($_SESSION['cierre_info']);
                 }
 
                 setCardsTitle('Seleccioná una cooperativa');
-                container.innerHTML = '';
-
-                coops.forEach((coop) => {
-                    const card = createCoopCard(coop);
-                    container.appendChild(card);
-                });
+                renderCooperativasTable(coops);
             } catch (e) {
                 console.error(e);
                 container.innerHTML = `<div class="card card-error">Error al cargar cooperativas: ${e.message}</div>`;
@@ -419,11 +527,7 @@ unset($_SESSION['cierre_info']);
                     return;
                 }
 
-                container.innerHTML = '';
-                productores.forEach((prod) => {
-                    const card = createProductorCard(prod);
-                    container.appendChild(card);
-                });
+                renderProductoresTable(productores);
             } catch (e) {
                 console.error(e);
                 container.innerHTML = `<div class="card card-error">Error al cargar productores: ${e.message}</div>`;
@@ -452,6 +556,10 @@ unset($_SESSION['cierre_info']);
                 modal.classList.add('hidden');
             }
         }
+
+        // Exponer también el logger (lo usa onclick inline)
+        window.relevamientoLogProductor = relevamientoLogProductor;
+
 
         async function loadFamiliaForm(productorIdReal) {
             const modal = relevamientoGetModalElement('familia');
@@ -725,6 +833,7 @@ unset($_SESSION['cierre_info']);
         window.guardarProduccion = guardarProduccion;
         window.relevamientoOpenModal = relevamientoOpenModal;
         window.relevamientoCloseModal = relevamientoCloseModal;
+        window.relevamientoLogProductor = relevamientoLogProductor;
 
         // Cargar cooperativas una vez que el DOM esté listo
         window.addEventListener('DOMContentLoaded', () => {
