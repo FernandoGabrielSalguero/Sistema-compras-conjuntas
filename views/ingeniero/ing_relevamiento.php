@@ -641,10 +641,9 @@ unset($_SESSION['cierre_info']);
             }
         }
 
-        // Exponer también el logger (lo usa onclick inline)
-        window.relevamientoLogProductor = relevamientoLogProductor;
-
-
+        // Alias por compatibilidad: apunta al logger consolidado
+        window.relevamientoLogProductor = relevamientoLogProductorFull;
+        
         async function loadFamiliaForm(productorIdReal) {
             const modal = relevamientoGetModalElement('familia');
             if (!modal) return;
