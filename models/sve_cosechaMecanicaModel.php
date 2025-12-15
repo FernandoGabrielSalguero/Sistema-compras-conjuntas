@@ -245,15 +245,33 @@ class cosechaMecanicaModel
         }
 
         /**
-         * Elimina un contrato (y sus participaciones por FK ON DELETE CASCADE).
+         * Elimina un contrato y sus participaciones.
+         * (No dependemos de ON DELETE CASCADE para evitar errores por restricción FK)
          */
         public function eliminarContrato(int $id): bool
         {
-                $sql = "DELETE FROM CosechaMecanica WHERE id = :id";
+                try {
+                        $this->pdo->beginTransaction();
 
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+                        // 1) Borrar dependencias (participaciones) primero
+                        $sqlPart = "DELETE FROM cosechaMecanica_cooperativas_participacion WHERE contrato_id = :id";
+                        $stmtPart = $this->pdo->prepare($sqlPart);
+                        $stmtPart->bindValue(':id', $id, PDO::PARAM_INT);
+                        $stmtPart->execute();
 
-                return $stmt->execute();
+                        // 2) Borrar contrato
+                        $sqlContrato = "DELETE FROM CosechaMecanica WHERE id = :id";
+                        $stmtContrato = $this->pdo->prepare($sqlContrato);
+                        $stmtContrato->bindValue(':id', $id, PDO::PARAM_INT);
+                        $ok = $stmtContrato->execute();
+
+                        $this->pdo->commit();
+                        return (bool)$ok;
+                } catch (PDOException $e) {
+                        if ($this->pdo->inTransaction()) {
+                                $this->pdo->rollBack();
+                        }
+                        throw $e; // lo maneja el controller
+                }
         }
 }

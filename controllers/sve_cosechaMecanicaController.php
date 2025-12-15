@@ -221,7 +221,14 @@ try {
                 ], 404);
             }
 
-            $modelo->eliminarContrato($id);
+            $ok = $modelo->eliminarContrato($id);
+
+            if (!$ok) {
+                jsonResponse([
+                    'ok' => false,
+                    'error' => 'No se pudo eliminar el contrato.'
+                ], 500);
+            }
 
             jsonResponse([
                 'ok' => true,
@@ -230,6 +237,7 @@ try {
                 ]
             ]);
             break;
+
 
         default:
             jsonResponse([

@@ -12,7 +12,7 @@
             </button>
         </div>
 
-        <p>¿Estás seguro de que querés eliminar este contrato de cosecha mecánica? Esta acción no se puede deshacer.</p>
+        <p>¿Estás seguro de que querés eliminar este contrato de cosecha mecánica? Esta acción no se puede deshacer. <br> Al eliminar un contrato, se elimina tambien el historial de participacion de las cooperativas y sus productores asociados.</p>
 
         <div class="modal-footer">
             <button type="button"
