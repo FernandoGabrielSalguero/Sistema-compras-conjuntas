@@ -124,23 +124,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 </div>
 
                 <div class="card-grid grid-2">
-                    <!-- Tarjeta: Carga de Cooperativas -->
-                    <div class="card">
-                        <h3>Cargar Usuarios</h3>
-                        <input type="file" id="csvCooperativas" accept=".csv" />
-                        <button class="btn btn-info" onclick="previewCSV('cooperativas')">Previsualizar</button>
-                        <div id="previewCooperativas" class="csv-preview"></div>
-                        <button class="btn btn-aceptar" onclick="confirmarCarga('cooperativas')">Confirmar carga</button>
-                    </div>
-
-                    <!-- Tarjeta: Carga de relaciones -->
-                    <div class="card">
-                        <h3>Cargar relaciones productores ↔ cooperativas</h3>
-                        <input type="file" id="csvRelaciones" accept=".csv" />
-                        <button class="btn btn-info" onclick="previewCSV('relaciones')">Previsualizar</button>
-                        <div id="previewRelaciones" class="csv-preview"></div>
-                        <button class="btn btn-aceptar" onclick="confirmarCarga('relaciones')">Confirmar carga</button>
-                    </div>
 
                     <!-- Tarjeta: Carga de Datos de familia -->
                     <div class="card">
@@ -150,9 +133,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                         <div style="margin-top:10px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
                             <label style="display:flex; gap:8px; align-items:center;">
-    <input type="checkbox" id="dryRunFamilia" checked />
-    <span>Simulación (no impacta en la base)</span>
-</label>
+                                <input type="checkbox" id="dryRunFamilia" checked />
+                                <span>Simulación (no impacta en la base)</span>
+                            </label>
 
                             <div id="progressFamilia" style="font-size:14px; opacity:0.9;"></div>
                         </div>
@@ -171,10 +154,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <button class="btn btn-info" onclick="previewCSV('fincas')">Previsualizar</button>
 
                         <div style="margin-top:10px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-<label style="display:flex; gap:8px; align-items:center;">
-    <input type="checkbox" id="dryRunFincas" checked />
-    <span>Simulación (no impacta en la base)</span>
-</label>
+                            <label style="display:flex; gap:8px; align-items:center;">
+                                <input type="checkbox" id="dryRunFincas" checked />
+                                <span>Simulación (no impacta en la base)</span>
+                            </label>
 
                             <div id="progressFincas" style="font-size:14px; opacity:0.9;"></div>
                         </div>
@@ -193,7 +176,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <!-- script principal  -->
-        <script>
+    <script>
         const BATCH_SIZE = 250;
 
         // Robustez de red / server
@@ -247,7 +230,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             return el ? !!el.checked : false;
         }
 
-                function setProgress(tipo, txt, percent = null, extra = null) {
+        function setProgress(tipo, txt, percent = null, extra = null) {
             const el = document.getElementById('progress' + capitalize(tipo));
             if (!el) return;
 
@@ -281,7 +264,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             if (el) el.innerHTML = '';
         }
 
-                function normalizeHeadersRow(obj) {
+        function normalizeHeadersRow(obj) {
             // Normalización suave para variaciones reales detectadas en tus CSVs:
             // - "CódigoFinca" -> "Código Finca"
             // - "tipo de Relacion" -> "Tipo de Relación"
@@ -323,11 +306,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         function validateRequiredHeaders(tipo, rows) {
-            if (!rows || !rows.length) return { ok: false, missingGroups: ['CSV vacío'] };
+            if (!rows || !rows.length) return {
+                ok: false,
+                missingGroups: ['CSV vacío']
+            };
 
             const headers = Object.keys(rows[0] || {});
             const req = REQUIRED_HEADERS[tipo];
-            if (!req) return { ok: true, missingGroups: [] };
+            if (!req) return {
+                ok: true,
+                missingGroups: []
+            };
 
             const missingGroups = [];
             for (const group of req) {
@@ -336,7 +325,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 }
             }
 
-            return { ok: missingGroups.length === 0, missingGroups };
+            return {
+                ok: missingGroups.length === 0,
+                missingGroups
+            };
         }
 
         function sleep(ms) {
@@ -344,47 +336,47 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         function parseCsvFile(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
 
-        reader.onload = () => {
-            try {
-                const text = String(reader.result ?? '');
-                const firstLineRaw = text.split(/\r\n|\n|\r/)[0] ?? '';
-                const firstLine = firstLineRaw.replace(/^\uFEFF/, '');
+                reader.onload = () => {
+                    try {
+                        const text = String(reader.result ?? '');
+                        const firstLineRaw = text.split(/\r\n|\n|\r/)[0] ?? '';
+                        const firstLine = firstLineRaw.replace(/^\uFEFF/, '');
 
-                const commaCount = (firstLine.match(/,/g) || []).length;
-                const semicolonCount = (firstLine.match(/;/g) || []).length;
+                        const commaCount = (firstLine.match(/,/g) || []).length;
+                        const semicolonCount = (firstLine.match(/;/g) || []).length;
 
-                const delimiter = commaCount > semicolonCount ? "," : ";";
+                        const delimiter = commaCount > semicolonCount ? "," : ";";
 
-                Papa.parse(file, {
-                    header: true,
-                    delimiter: delimiter,
-                    skipEmptyLines: true,
-                    worker: false,
-                    transformHeader: (h) => String(h ?? '').replace(/^\uFEFF/, '').trim(),
-                    transform: (v) => (typeof v === 'string' ? v.trim() : v),
-                    complete: (results) => {
-                        if (results.errors && results.errors.length) {
-                            reject(results.errors);
-                            return;
-                        }
-                        const rows = (results.data || []).map(normalizeHeadersRow);
-                        resolve(rows);
-                    },
-                    error: (err) => reject(err)
-                });
-            } catch (e) {
-                reject(e);
-            }
-        };
+                        Papa.parse(file, {
+                            header: true,
+                            delimiter: delimiter,
+                            skipEmptyLines: true,
+                            worker: false,
+                            transformHeader: (h) => String(h ?? '').replace(/^\uFEFF/, '').trim(),
+                            transform: (v) => (typeof v === 'string' ? v.trim() : v),
+                            complete: (results) => {
+                                if (results.errors && results.errors.length) {
+                                    reject(results.errors);
+                                    return;
+                                }
+                                const rows = (results.data || []).map(normalizeHeadersRow);
+                                resolve(rows);
+                            },
+                            error: (err) => reject(err)
+                        });
+                    } catch (e) {
+                        reject(e);
+                    }
+                };
 
-        reader.onerror = () => reject(reader.error);
+                reader.onerror = () => reject(reader.error);
 
-        reader.readAsText(file, "utf-8");
-    });
-}
+                reader.readAsText(file, "utf-8");
+            });
+        }
 
         function renderPreviewFromObjects(rows, container, maxRows = 20) {
             if (!rows || !rows.length) {
@@ -447,7 +439,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
-                async function sendBatch(tipo, batch, batchIndex, totalBatches, dryRun) {
+        async function sendBatch(tipo, batch, batchIndex, totalBatches, dryRun) {
             const payload = {
                 tipo,
                 dry_run: dryRun ? 1 : 0,
@@ -465,7 +457,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 try {
                     const resp = await fetch('../../controllers/sve_cargaMasivaController.php', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
                         body: JSON.stringify(payload),
                         signal: controller.signal
                     });
@@ -510,7 +504,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             throw lastErr || new Error('Fallo desconocido enviando tanda.');
         }
 
-                window.confirmarCarga = async function(tipo) {
+        window.confirmarCarga = async function(tipo) {
             const inputFile = document.getElementById('csv' + capitalize(tipo));
             const previewDiv = document.getElementById('preview' + capitalize(tipo));
             clearLog(tipo);
@@ -603,7 +597,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 alert("Se detuvo la carga por error. Revisá el log.");
             }
         };
-
     </script>
 
     <!-- Spinner Global -->
