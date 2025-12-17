@@ -1,22 +1,23 @@
-<!-- sve_cargaMasivaController.php -->
-
 <?php
-
 declare(strict_types=1);
 
 // En el controlador API NO mostramos errores en pantalla para no romper el JSON
-ini_set('display_errors', 0);
-ini_set('display_startup_errors', 0);
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
 error_reporting(E_ALL);
 
-
-// Limpia cualquier salida previa (espacios, errores, etc.)
-ob_clean();
+// Limpia cualquier salida previa (si hubiera) y asegura buffering
+if (ob_get_level() > 0) {
+    ob_clean();
+} else {
+    ob_start();
+}
 
 // Indicar que devolvemos JSON
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../models/sve_cargaMasivaModel.php';
+
 
 function normalize_row_keys(array $row): array
 {
