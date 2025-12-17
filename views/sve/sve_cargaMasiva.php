@@ -1,3 +1,5 @@
+<!-- sve_cargaMasiva.php -->
+
 <?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -124,6 +126,23 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 </div>
 
                 <div class="card-grid grid-2">
+                    <!-- Tarjeta: Carga de Cooperativas -->
+                    <div class="card">
+                        <h3>Cargar Usuarios</h3>
+                        <input type="file" id="csvCooperativas" accept=".csv" />
+                        <button class="btn btn-info" onclick="previewCSV('cooperativas')">Previsualizar</button>
+                        <div id="previewCooperativas" class="csv-preview"></div>
+                        <button class="btn btn-aceptar" onclick="confirmarCarga('cooperativas')">Confirmar carga</button>
+                    </div>
+
+                    <!-- Tarjeta: Carga de relaciones -->
+                    <div class="card">
+                        <h3>Cargar relaciones productores ↔ cooperativas</h3>
+                        <input type="file" id="csvRelaciones" accept=".csv" />
+                        <button class="btn btn-info" onclick="previewCSV('relaciones')">Previsualizar</button>
+                        <div id="previewRelaciones" class="csv-preview"></div>
+                        <button class="btn btn-aceptar" onclick="confirmarCarga('relaciones')">Confirmar carga</button>
+                    </div>
 
                     <!-- Tarjeta: Carga de Datos de familia -->
                     <div class="card">
@@ -146,7 +165,30 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <button class="btn btn-aceptar" onclick="confirmarCarga('familia')">Confirmar carga (en tandas de 250)</button>
                     </div>
 
+                                      <!-- Tarjeta: Carga de datos de cuarteles -->
+                    <div class="card">
+                        <h3>Cargar datos de cuarteles</h3>
+                        <p>Usa un CSV con columnas de <strong>cuarteles</strong> (y su <strong>codigo_finca</strong>) para impactar en prod_cuartel y tablas asociadas.</p>
+                        <input type="file" id="csvCuarteles" accept=".csv" />
+                        <button class="btn btn-info" onclick="previewCSV('cuarteles')">Previsualizar</button>
+
+                        <div style="margin-top:10px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                            <label style="display:flex; gap:8px; align-items:center;">
+                                <input type="checkbox" id="dryRunCuarteles" checked />
+                                <span>Simulación (no impacta en la base)</span>
+                            </label>
+
+                            <div id="progressCuarteles" style="font-size:14px; opacity:0.9;"></div>
+                        </div>
+
+                        <div id="previewCuarteles" class="csv-preview" style="margin-top:10px;"></div>
+                        <div id="logCuarteles" class="csv-preview" style="white-space:pre-wrap; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:12px; max-height:220px; overflow:auto; background:#0b1020; color:#e5e7eb; padding:10px; border-radius:10px;"></div>
+
+                        <button class="btn btn-aceptar" onclick="confirmarCarga('cuarteles')">Confirmar carga (en tandas de 250)</button>
+                    </div>
+
                     <!-- Tarjeta: Carga de diagnóstico de fincas -->
+
                     <div class="card">
                         <h3>Cargar diagnóstico de fincas</h3>
                         <p>Usa un CSV con las columnas mapeadas por <strong>codigo finca</strong> a las tablas de fincas.</p>
@@ -192,7 +234,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 ['Cooperativa', 'cooperativa']
             ],
             fincas: [
-                ['codigo finca', 'Código Finca', 'CódigoFinca', 'CODIGO FINCA', 'Codigo finca', 'código finca']
+                ['codigo_finca', 'codigo finca', 'Código Finca', 'CódigoFinca', 'CODIGO FINCA', 'Codigo finca', 'código finca']
+            ],
+            cuarteles: [
+                ['codigo_finca', 'codigo finca', 'Código Finca', 'CódigoFinca', 'CODIGO FINCA', 'Codigo finca', 'código finca'],
+                ['codigo_cuartel', 'codigo cuartel', 'Código Cuartel', 'CódigoCuartel', 'CODIGO CUARTEL', 'Codigo cuartel', 'código cuartel']
             ],
             // estos dos ya existen pero dejamos estructura por consistencia
             cooperativas: [
@@ -206,6 +252,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 ['id_cooperativa', 'ID COOPERATIVA', 'id cooperativa']
             ]
         };
+
 
         function capitalize(str) {
             return str.charAt(0).toUpperCase() + str.slice(1);

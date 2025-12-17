@@ -1,3 +1,5 @@
+<!-- sve_cargaMasivaController.php -->
+
 <?php
 
 declare(strict_types=1);
@@ -38,11 +40,65 @@ function normalize_row_keys(array $row): array
     if (array_key_exists('tipo de Relacion', $out) && !array_key_exists('Tipo de Relación', $out)) {
         $out['Tipo de Relación'] = $out['tipo de Relacion'];
     }
+    // --- Aliases para CSV nuevos (snake_case) ---
+    if (array_key_exists('codigo_finca', $out) && !array_key_exists('Código Finca', $out)) {
+        $out['Código Finca'] = $out['codigo_finca'];
+    }
+    if (array_key_exists('codigo_cuartel', $out) && !array_key_exists('Código Cuartel', $out)) {
+        $out['Código Cuartel'] = $out['codigo_cuartel'];
+    }
+
+    // Familia (CSV nuevo)
+    if (array_key_exists('nombre', $out) && !array_key_exists('Productor', $out)) {
+        $out['Productor'] = $out['nombre'];
+    }
+    if (array_key_exists('telefono', $out) && !array_key_exists('Nº Celular', $out)) {
+        $out['Nº Celular'] = $out['telefono'];
+    }
+    if (array_key_exists('correo', $out) && !array_key_exists('Mail', $out)) {
+        $out['Mail'] = $out['correo'];
+    }
+    if (array_key_exists('fecha_nacimiento', $out) && !array_key_exists('Fecha de nacimiento', $out)) {
+        $out['Fecha de nacimiento'] = $out['fecha_nacimiento'];
+    }
+    if (array_key_exists('razon_social', $out) && !array_key_exists('Razón Social', $out)) {
+        $out['Razón Social'] = $out['razon_social'];
+    }
+    if (array_key_exists('cuit', $out) && !array_key_exists('CUIT', $out)) {
+        $out['CUIT'] = $out['cuit'];
+    }
+    if (array_key_exists('tipo_relacion', $out) && !array_key_exists('Tipo de relación', $out)) {
+        $out['Tipo de relación'] = $out['tipo_relacion'];
+    }
+    if (array_key_exists('contacto_preferido', $out) && !array_key_exists('Contacto preferido', $out)) {
+        $out['Contacto preferido'] = $out['contacto_preferido'];
+    }
+    if (array_key_exists('acceso_internet', $out) && !array_key_exists('Acceso a internet', $out)) {
+        $out['Acceso a internet'] = $out['acceso_internet'];
+    }
+    if (array_key_exists('mail_alternativo', $out) && !array_key_exists('Mail alternativo', $out)) {
+        $out['Mail alternativo'] = $out['mail_alternativo'];
+    }
+    if (array_key_exists('vive_en_finca', $out) && !array_key_exists('Vive en la finca', $out)) {
+        $out['Vive en la finca'] = $out['vive_en_finca'];
+    }
+    if (array_key_exists('celular_alternativo', $out) && !array_key_exists('Celular alternativo', $out)) {
+        $out['Celular alternativo'] = $out['celular_alternativo'];
+    }
+    if (array_key_exists('telefono_fijo', $out) && !array_key_exists('Teléfono fijo', $out)) {
+        $out['Teléfono fijo'] = $out['telefono_fijo'];
+    }
+
+    // Categorización
+    if (array_key_exists('categorizacion_abc', $out) && !array_key_exists('Categorización (A/B/C)', $out)) {
+        $out['Categorización (A/B/C)'] = $out['categorizacion_abc'];
+    }
     if (array_key_exists('Categorización A, B o C', $out) && !array_key_exists('Categorización (A/B/C)', $out)) {
         $out['Categorización (A/B/C)'] = $out['Categorización A, B o C'];
     }
 
     return $out;
+
 }
 
 function nullify_empty_strings(array $row): array
@@ -81,7 +137,11 @@ function validate_min_headers(string $tipo, array $rows): array
             ['Cooperativa', 'cooperativa']
         ],
         'fincas' => [
-            ['codigo finca', 'Código Finca', 'CódigoFinca', 'CODIGO FINCA', 'Codigo finca', 'código finca']
+            ['codigo_finca', 'codigo finca', 'Código Finca', 'CódigoFinca', 'CODIGO FINCA', 'Codigo finca', 'código finca']
+        ],
+        'cuarteles' => [
+            ['codigo_finca', 'codigo finca', 'Código Finca', 'CódigoFinca', 'CODIGO FINCA', 'Codigo finca', 'código finca'],
+            ['codigo_cuartel', 'codigo cuartel', 'Código Cuartel', 'CódigoCuartel', 'CODIGO CUARTEL', 'Codigo cuartel', 'código cuartel']
         ],
         'cooperativas' => [
             ['id_real', 'ID REAL', 'Id Real', 'id real'],
@@ -106,6 +166,7 @@ function validate_min_headers(string $tipo, array $rows): array
 
     return ['ok' => count($missing) === 0, 'missing' => $missing];
 }
+
 
 // Validación de entrada (acepta JSON batching o upload tradicional)
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -301,8 +362,38 @@ try {
             ]);
             exit;
 
+        case 'cuarteles':
+            $resultado = $modelo->insertarCuarteles($datosProcesados, $dryRun);
+            $conflictos = isset($resultado['conflictos']) ? $resultado['conflictos'] : [];
+            $stats = isset($resultado['stats']) ? $resultado['stats'] : null;
+
+            if (!empty($conflictos)) {
+                $mensaje = '⚠️ Carga de datos de cuarteles completada con advertencias.';
+            } else {
+                $mensaje = '✅ Carga de datos de cuarteles completada.';
+            }
+
+            if (is_array($stats)) {
+                $mensaje .= ' Filas procesadas: ' . ($stats['filas_procesadas'] ?? 0)
+                    . ', fincas encontradas: ' . ($stats['fincas_encontradas'] ?? 0)
+                    . ', fincas creadas: ' . ($stats['fincas_creadas'] ?? 0)
+                    . ', cuarteles creados: ' . ($stats['cuarteles_creados'] ?? 0)
+                    . ', cuarteles actualizados: ' . ($stats['cuarteles_actualizados'] ?? 0)
+                    . ', rendimientos (upsert): ' . ($stats['rendimientos_upsert'] ?? 0)
+                    . ', limitantes (upsert): ' . ($stats['limitantes_upsert'] ?? 0)
+                    . ', conflictos: ' . ($stats['conflictos'] ?? 0) . '.';
+            }
+
+            echo json_encode([
+                'mensaje'    => $mensaje,
+                'conflictos' => $conflictos,
+                'stats'      => $stats
+            ]);
+            exit;
+
         default:
             throw new Exception("Tipo de carga desconocido.");
+
     }
 } catch (Exception $e) {
     echo json_encode(['error' => $e->getMessage()]);
