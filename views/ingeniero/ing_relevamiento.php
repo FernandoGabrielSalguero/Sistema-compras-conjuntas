@@ -418,7 +418,7 @@ unset($_SESSION['cierre_info']);
                             <button class="btn btn-info" onclick="relevamientoOpenModal('familia','${idReal}')">Familia</button>
                             <button class="btn btn-info" onclick="relevamientoOpenModal('produccion','${idReal}')">Producción</button>
                             <button class="btn btn-info" onclick="relevamientoOpenModal('cuarteles','${idReal}')">Cuarteles</button>
-                            <button class="icon-btn" title="Consolidar JSON (Familia + Producción)" onclick="relevamientoLogProductorFull('${idReal}')">
+                            <button style="display: none" class="icon-btn" title="Consolidar JSON (Familia + Producción)" onclick="relevamientoLogProductorFull('${idReal}')">
                                 <span class="material-symbols-outlined">code</span>
                             </button>
                         </td>
