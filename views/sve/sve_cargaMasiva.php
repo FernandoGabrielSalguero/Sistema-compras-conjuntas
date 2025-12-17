@@ -165,7 +165,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <button class="btn btn-aceptar" onclick="confirmarCarga('familia')">Confirmar carga (en tandas de 250)</button>
                     </div>
 
-                                      <!-- Tarjeta: Carga de datos de cuarteles -->
+                    <!-- Tarjeta: Carga de datos de cuarteles -->
                     <div class="card">
                         <h3>Cargar datos de cuarteles</h3>
                         <p>Usa un CSV con columnas de <strong>cuarteles</strong> (y su <strong>codigo_finca</strong>) para impactar en prod_cuartel y tablas asociadas.</p>
