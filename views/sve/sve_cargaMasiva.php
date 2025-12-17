@@ -233,12 +233,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 ['ID PP', 'Id PP', 'id pp', 'IDPP', 'IdPP'],
                 ['Cooperativa', 'cooperativa']
             ],
+            // "Cargar diagnóstico de fincas" (nivel cuartel) - exige Cooperativa en el CSV
             fincas: [
-                ['codigo_finca', 'codigo finca', 'Código Finca', 'CódigoFinca', 'CODIGO FINCA', 'Codigo finca', 'código finca']
-            ],
-            cuarteles: [
+                ['Cooperativa', 'cooperativa', 'cooperativa_id_real', 'id_cooperativa', 'ID COOPERATIVA', 'ID Cooperativa'],
                 ['codigo_finca', 'codigo finca', 'Código Finca', 'CódigoFinca', 'CODIGO FINCA', 'Codigo finca', 'código finca'],
                 ['codigo_cuartel', 'codigo cuartel', 'Código Cuartel', 'CódigoCuartel', 'CODIGO CUARTEL', 'Codigo cuartel', 'código cuartel']
+            ],
+            // "Cargar datos de cuarteles" en realidad carga datos de FINCA (no requiere codigo_cuartel)
+            cuarteles: [
+                ['codigo_finca', 'codigo finca', 'Código Finca', 'CódigoFinca', 'CODIGO FINCA', 'Codigo finca', 'código finca']
             ],
             // estos dos ya existen pero dejamos estructura por consistencia
             cooperativas: [
@@ -252,6 +255,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 ['id_cooperativa', 'ID COOPERATIVA', 'id cooperativa']
             ]
         };
+
 
 
         function capitalize(str) {

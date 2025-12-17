@@ -164,7 +164,8 @@ class CargaMasivaModel
 
         public function insertarDatosFamilia($datos, bool $dryRun = false)
         {
-                $anioReferencia = (int) date('Y');
+                $anioReferencia = 2025;
+
 
                 $normalizarSiNo = function ($valor) {
                         $v = strtolower(trim((string) $valor));
@@ -921,9 +922,9 @@ class CargaMasivaModel
                 ];
         }
 
-                public function insertarCuarteles($datos, bool $dryRun = false)
+        public function insertarCuarteles($datos, bool $dryRun = false)
         {
-                // Productor por defecto para fincas nuevas cuando no conocemos al dueño real
+                // Este método corresponde a: "Cargar Diagnóstico de fincas" (nivel cuartel)
                 $productorDefaultIdReal = '77777777787777';
 
                 $normalizarSiNo = function ($valor) {
@@ -938,54 +939,78 @@ class CargaMasivaModel
                 $parseDecimal = function ($valor) {
                         $v = trim((string) $valor);
                         if ($v === '') return null;
-                        $v = str_replace('%', '', $v);
+                        $v = str_replace(['.', ' '], ['', ''], $v);
                         $v = str_replace(',', '.', $v);
                         if (!is_numeric($v)) return null;
-                        return $v;
+                        return (float) $v;
                 };
 
-                $this->pdo->beginTransaction();
+                $parseInt = function ($valor) {
+                        $v = trim((string) $valor);
+                        if ($v === '') return null;
+                        if (!is_numeric($v)) return null;
+                        return (int) $v;
+                };
 
                 $stats = [
-                        'filas_procesadas'       => 0,
-                        'fincas_encontradas'     => 0,
-                        'fincas_creadas'         => 0,
-                        'cuarteles_creados'      => 0,
+                        'filas_procesadas' => 0,
+                        'coops_ok' => 0,
+                        'fincas_encontradas' => 0,
+                        'fincas_creadas' => 0,
+                        'cuarteles_creados' => 0,
                         'cuarteles_actualizados' => 0,
-                        'rendimientos_upsert'    => 0,
-                        'limitantes_upsert'      => 0,
-                        'conflictos'             => 0
+                        'rendimientos_upsert' => 0,
+                        'riesgos_upsert' => 0,
+                        'limitantes_upsert' => 0,
+                        'sin_cooperativa' => 0,
+                        'conflictos' => 0
                 ];
+
                 $conflictos = [];
 
-                // Fincas
+                if (!is_array($datos) || empty($datos)) {
+                        return ['conflictos' => [['fila' => 0, 'error' => 'CSV vacío o formato inválido']], 'stats' => $stats];
+                }
+
+                $stmtCoopExists = $this->pdo->prepare(
+                        "SELECT id_real
+                           FROM usuarios
+                          WHERE id_real = :id_real
+                            AND rol = 'cooperativa'
+                          LIMIT 1"
+                );
+
                 $stmtFincaSelect = $this->pdo->prepare(
-                        "SELECT id, nombre_finca
-                         FROM prod_fincas
-                         WHERE codigo_finca = :codigo_finca
-                         LIMIT 1"
+                        "SELECT id, productor_id_real, nombre_finca
+                           FROM prod_fincas
+                          WHERE codigo_finca = :codigo_finca
+                          LIMIT 1"
                 );
                 $stmtFincaInsert = $this->pdo->prepare(
                         "INSERT INTO prod_fincas (codigo_finca, productor_id_real, nombre_finca)
-                         VALUES (:codigo_finca, :productor_id_real, :nombre_finca)"
+                          VALUES (:codigo_finca, :productor_id_real, :nombre_finca)"
                 );
                 $stmtFincaUpdateNombre = $this->pdo->prepare(
                         "UPDATE prod_fincas
-                         SET nombre_finca = :nombre_finca
-                         WHERE id = :id"
+                            SET nombre_finca = :nombre_finca
+                          WHERE id = :id"
                 );
 
-                // Cuartel (principal)
                 $stmtCuartelSelect = $this->pdo->prepare(
                         "SELECT id
-                         FROM prod_cuartel
-                         WHERE finca_id = :finca_id AND codigo_cuartel = :codigo_cuartel
-                         LIMIT 1"
+                           FROM prod_cuartel
+                          WHERE cooperativa_id_real = :cooperativa_id_real
+                            AND codigo_finca = :codigo_finca
+                            AND codigo_cuartel = :codigo_cuartel
+                          LIMIT 1"
                 );
 
                 $stmtCuartelInsert = $this->pdo->prepare(
                         "INSERT INTO prod_cuartel (
-                                finca_id,
+                                id_responsable_real,
+                                cooperativa_id_real,
+                                codigo_finca,
+                                nombre_finca,
                                 codigo_cuartel,
                                 variedad,
                                 numero_inv,
@@ -993,20 +1018,16 @@ class CargaMasivaModel
                                 superficie_ha,
                                 porcentaje_cepas_produccion,
                                 forma_cosecha_actual,
-                                rend_promedio_5anios_qq_ha,
                                 porcentaje_malla_buen_estado,
                                 edad_promedio_encepado_anios,
                                 estado_estructura_sistema,
                                 labores_mecanizables,
-                                tiene_seguro_agricola,
-                                porcentaje_dano_granizo,
-                                heladas_dano_promedio_5anios,
-                                presencia_freatica,
-                                plagas_no_convencionales,
-                                limitantes_suelo,
-                                observaciones
+                                finca_id
                          ) VALUES (
-                                :finca_id,
+                                :id_responsable_real,
+                                :cooperativa_id_real,
+                                :codigo_finca,
+                                :nombre_finca,
                                 :codigo_cuartel,
                                 :variedad,
                                 :numero_inv,
@@ -1014,28 +1035,40 @@ class CargaMasivaModel
                                 :superficie_ha,
                                 :porcentaje_cepas_produccion,
                                 :forma_cosecha_actual,
-                                :rend_promedio_5anios_qq_ha,
                                 :porcentaje_malla_buen_estado,
                                 :edad_promedio_encepado_anios,
                                 :estado_estructura_sistema,
                                 :labores_mecanizables,
-                                :tiene_seguro_agricola,
-                                :porcentaje_dano_granizo,
-                                :heladas_dano_promedio_5anios,
-                                :presencia_freatica,
-                                :plagas_no_convencionales,
-                                :limitantes_suelo,
-                                :observaciones
+                                :finca_id
                          )"
                 );
 
-                // Rendimientos (1 fila por cuartel)
-                $stmtRendSelect = $this->pdo->prepare(
-                        "SELECT id
-                         FROM prod_cuartel_rendimientos
-                         WHERE cuartel_id = :cuartel_id
-                         LIMIT 1"
+                $stmtCuartelUpdate = $this->pdo->prepare(
+                        "UPDATE prod_cuartel SET
+                                id_responsable_real = :id_responsable_real,
+                                nombre_finca = :nombre_finca,
+                                variedad = :variedad,
+                                numero_inv = :numero_inv,
+                                sistema_conduccion = :sistema_conduccion,
+                                superficie_ha = :superficie_ha,
+                                porcentaje_cepas_produccion = :porcentaje_cepas_produccion,
+                                forma_cosecha_actual = :forma_cosecha_actual,
+                                porcentaje_malla_buen_estado = :porcentaje_malla_buen_estado,
+                                edad_promedio_encepado_anios = :edad_promedio_encepado_anios,
+                                estado_estructura_sistema = :estado_estructura_sistema,
+                                labores_mecanizables = :labores_mecanizables,
+                                finca_id = :finca_id
+                          WHERE id = :id"
                 );
+
+                $stmtByCuartelId = function (string $table) {
+                        return $this->pdo->prepare("SELECT id FROM {$table} WHERE cuartel_id = :cuartel_id LIMIT 1");
+                };
+
+                $stmtRendSelect = $stmtByCuartelId('prod_cuartel_rendimientos');
+                $stmtRiesSelect = $stmtByCuartelId('prod_cuartel_riesgos');
+                $stmtLimSelect  = $stmtByCuartelId('prod_cuartel_limitantes');
+
                 $stmtRendInsert = $this->pdo->prepare(
                         "INSERT INTO prod_cuartel_rendimientos (
                                 cuartel_id,
@@ -1047,7 +1080,8 @@ class CargaMasivaModel
                                 ing_2024_kg,
                                 rend_2024_qq_ha,
                                 ing_2025_kg,
-                                rend_2025_qq_ha
+                                rend_2025_qq_ha,
+                                rend_promedio_5anios_qq_ha
                          ) VALUES (
                                 :cuartel_id,
                                 :rend_2020_qq_ha,
@@ -1058,20 +1092,34 @@ class CargaMasivaModel
                                 :ing_2024_kg,
                                 :rend_2024_qq_ha,
                                 :ing_2025_kg,
-                                :rend_2025_qq_ha
+                                :rend_2025_qq_ha,
+                                :rend_promedio_5anios_qq_ha
                          )"
                 );
 
-                // Limitantes (1 fila por cuartel)
-                $stmtLimSelect = $this->pdo->prepare(
-                        "SELECT id
-                         FROM prod_cuartel_limitantes
-                         WHERE cuartel_id = :cuartel_id
-                         LIMIT 1"
+                $stmtRiesInsert = $this->pdo->prepare(
+                        "INSERT INTO prod_cuartel_riesgos (
+                                cuartel_id,
+                                tiene_seguro_agricola,
+                                porcentaje_dano_granizo,
+                                heladas_dano_promedio_5anios,
+                                presencia_freatica,
+                                plagas_no_convencionales
+                         ) VALUES (
+                                :cuartel_id,
+                                :tiene_seguro_agricola,
+                                :porcentaje_dano_granizo,
+                                :heladas_dano_promedio_5anios,
+                                :presencia_freatica,
+                                :plagas_no_convencionales
+                         )"
                 );
+
                 $stmtLimInsert = $this->pdo->prepare(
                         "INSERT INTO prod_cuartel_limitantes (
                                 cuartel_id,
+                                limitantes_suelo,
+                                observaciones,
                                 categoria_1,
                                 limitante_1,
                                 inversion_accion1_1,
@@ -1090,6 +1138,8 @@ class CargaMasivaModel
                                 ciclo_agricola2_2
                          ) VALUES (
                                 :cuartel_id,
+                                :limitantes_suelo,
+                                :observaciones,
                                 :categoria_1,
                                 :limitante_1,
                                 :inversion_accion1_1,
@@ -1109,226 +1159,211 @@ class CargaMasivaModel
                          )"
                 );
 
-                foreach ($datos as $fila) {
-                        $stats['filas_procesadas']++;
+                $this->pdo->beginTransaction();
 
-                        $codigoFinca = isset($fila['codigo_finca']) ? trim((string) $fila['codigo_finca']) : '';
-                        if ($codigoFinca === '' && isset($fila['Código Finca'])) $codigoFinca = trim((string) $fila['Código Finca']);
+                try {
+                        foreach ($datos as $idx => $fila) {
+                                $stats['filas_procesadas']++;
 
-                        $codigoCuartel = isset($fila['codigo_cuartel']) ? trim((string) $fila['codigo_cuartel']) : '';
-                        if ($codigoCuartel === '' && isset($fila['Código Cuartel'])) $codigoCuartel = trim((string) $fila['Código Cuartel']);
+                                $coop = trim((string)($fila['Cooperativa'] ?? $fila['cooperativa'] ?? $fila['cooperativa_id_real'] ?? ''));
+                                $codigoFinca = trim((string)($fila['codigo_finca'] ?? $fila['Código Finca'] ?? $fila['CódigoFinca'] ?? ''));
+                                $codigoCuartel = trim((string)($fila['codigo_cuartel'] ?? $fila['Código Cuartel'] ?? $fila['CódigoCuartel'] ?? ''));
 
-                        if ($codigoFinca === '' || $codigoCuartel === '') {
-                                $stats['conflictos']++;
-                                $conflictos[] = [
-                                        'codigo_finca'   => $codigoFinca,
-                                        'codigo_cuartel' => $codigoCuartel,
-                                        'motivo'         => 'Faltan codigo_finca y/o codigo_cuartel'
-                                ];
-                                continue;
-                        }
+                                if ($coop === '') {
+                                        $stats['sin_cooperativa']++;
+                                        $conflictos[] = ['fila' => $idx + 1, 'error' => 'Falta columna/valor Cooperativa (id_real).'];
+                                        continue;
+                                }
+                                if ($codigoFinca === '' || $codigoCuartel === '') {
+                                        $conflictos[] = ['fila' => $idx + 1, 'error' => 'Falta codigo_finca o codigo_cuartel.'];
+                                        continue;
+                                }
 
-                        // Finca
-                        $stmtFincaSelect->execute([':codigo_finca' => $codigoFinca]);
-                        $finca = $stmtFincaSelect->fetch(PDO::FETCH_ASSOC);
+                                // Validar que exista la cooperativa (para no romper FK de prod_cuartel)
+                                $stmtCoopExists->execute([':id_real' => $coop]);
+                                if (!$stmtCoopExists->fetch(\PDO::FETCH_ASSOC)) {
+                                        $conflictos[] = ['fila' => $idx + 1, 'error' => "Cooperativa inexistente (id_real={$coop}). Cargar cooperativas primero."];
+                                        continue;
+                                }
+                                $stats['coops_ok']++;
 
-                        $fincaId = null;
-                        $nombreFincaCsv = isset($fila['nombre_finca']) ? trim((string) $fila['nombre_finca']) : null;
+                                // Asegurar finca
+                                $stmtFincaSelect->execute([':codigo_finca' => $codigoFinca]);
+                                $finca = $stmtFincaSelect->fetch(\PDO::FETCH_ASSOC);
 
-                        if (!$finca) {
-                                $stmtFincaInsert->execute([
-                                        ':codigo_finca'       => $codigoFinca,
-                                        ':productor_id_real'  => $productorDefaultIdReal,
-                                        ':nombre_finca'       => ($nombreFincaCsv !== '' ? $nombreFincaCsv : null)
-                                ]);
-                                $fincaId = (int) $this->pdo->lastInsertId();
-                                $stats['fincas_creadas']++;
-                        } else {
-                                $fincaId = (int) $finca['id'];
-                                $stats['fincas_encontradas']++;
+                                $nombreFinca = trim((string)($fila['nombre_finca'] ?? $fila['Nombre finca'] ?? $fila['Nombre Finca'] ?? ''));
 
-                                if ($nombreFincaCsv !== null && $nombreFincaCsv !== '' && (string)$finca['nombre_finca'] !== (string)$nombreFincaCsv) {
-                                        $stmtFincaUpdateNombre->execute([
-                                                ':id'          => $fincaId,
-                                                ':nombre_finca'=> $nombreFincaCsv
+                                if (!$finca) {
+                                        $stmtFincaInsert->execute([
+                                                ':codigo_finca' => $codigoFinca,
+                                                ':productor_id_real' => $productorDefaultIdReal,
+                                                ':nombre_finca' => ($nombreFinca !== '' ? $nombreFinca : null),
                                         ]);
+                                        $fincaId = (int)$this->pdo->lastInsertId();
+                                        $fincaProdIdReal = $productorDefaultIdReal;
+                                        $stats['fincas_creadas']++;
+                                } else {
+                                        $fincaId = (int)$finca['id'];
+                                        $fincaProdIdReal = (string)$finca['productor_id_real'];
+                                        $stats['fincas_encontradas']++;
+                                        if (($finca['nombre_finca'] === null || trim((string)$finca['nombre_finca']) === '') && $nombreFinca !== '') {
+                                                $stmtFincaUpdateNombre->execute([':nombre_finca' => $nombreFinca, ':id' => $fincaId]);
+                                        }
                                 }
-                        }
 
-                        // Cuartel
-                        $stmtCuartelSelect->execute([
-                                ':finca_id'       => $fincaId,
-                                ':codigo_cuartel' => $codigoCuartel
-                        ]);
-                        $cu = $stmtCuartelSelect->fetch(PDO::FETCH_ASSOC);
+                                $idResponsableReal = $fincaProdIdReal !== '' ? $fincaProdIdReal : $productorDefaultIdReal;
 
-                        $paramsCu = [
-                                ':finca_id'                    => $fincaId,
-                                ':codigo_cuartel'              => $codigoCuartel,
-                                ':variedad'                    => $fila['variedad'] ?? null,
-                                ':numero_inv'                  => $fila['numero_inv'] ?? null,
-                                ':sistema_conduccion'          => $fila['sistema_conduccion'] ?? null,
-                                ':superficie_ha'               => $parseDecimal($fila['superficie_ha'] ?? null),
-                                ':porcentaje_cepas_produccion' => $parseDecimal($fila['porcentaje_cepas_produccion'] ?? null),
-                                ':forma_cosecha_actual'        => $fila['forma_cosecha_actual'] ?? null,
-                                ':rend_promedio_5anios_qq_ha'  => $parseDecimal($fila['rend_promedio_5anios_qq_ha'] ?? null),
-                                ':porcentaje_malla_buen_estado'=> $parseDecimal($fila['porcentaje_malla_buen_estado'] ?? null),
-                                ':edad_promedio_encepado_anios'=> $parseDecimal($fila['edad_promedio_encepado_anios'] ?? null),
-                                ':estado_estructura_sistema'   => $fila['estado_estructura_sistema'] ?? null,
-                                ':labores_mecanizables'        => $fila['labores_mecanizables'] ?? null,
-                                ':tiene_seguro_agricola'       => $normalizarSiNo($fila['tiene_seguro_agricola'] ?? null),
-                                ':porcentaje_dano_granizo'     => $parseDecimal($fila['porcentaje_dano_granizo'] ?? null),
-                                ':heladas_dano_promedio_5anios'=> $fila['heladas_dano_promedio_5anios'] ?? null,
-                                ':presencia_freatica'          => $normalizarSiNo($fila['presencia_freatica'] ?? null),
-                                ':plagas_no_convencionales'    => $fila['plagas_no_convencionales'] ?? null,
-                                ':limitantes_suelo'            => $fila['limitantes_suelo'] ?? null,
-                                ':observaciones'               => $fila['observaciones'] ?? null
-                        ];
+                                // Upsert prod_cuartel
+                                $stmtCuartelSelect->execute([
+                                        ':cooperativa_id_real' => $coop,
+                                        ':codigo_finca' => $codigoFinca,
+                                        ':codigo_cuartel' => $codigoCuartel
+                                ]);
+                                $cu = $stmtCuartelSelect->fetch(\PDO::FETCH_ASSOC);
 
-                        if (!$cu) {
-                                $stmtCuartelInsert->execute($paramsCu);
-                                $cuartelId = (int) $this->pdo->lastInsertId();
-                                $stats['cuarteles_creados']++;
-                        } else {
-                                $cuartelId = (int) $cu['id'];
-
-                                // Update dinámico: solo pisa si viene valor no vacío
-                                $set = [];
-                                $up = [':id' => $cuartelId];
-
-                                $fields = [
-                                        'variedad','numero_inv','sistema_conduccion','forma_cosecha_actual',
-                                        'estado_estructura_sistema','labores_mecanizables','heladas_dano_promedio_5anios',
-                                        'plagas_no_convencionales','limitantes_suelo','observaciones'
+                                $cuartelData = [
+                                        ':id_responsable_real' => $idResponsableReal,
+                                        ':cooperativa_id_real' => $coop,
+                                        ':codigo_finca' => $codigoFinca,
+                                        ':nombre_finca' => ($nombreFinca !== '' ? $nombreFinca : null),
+                                        ':codigo_cuartel' => $codigoCuartel,
+                                        ':variedad' => trim((string)($fila['variedad'] ?? '')) ?: null,
+                                        ':numero_inv' => trim((string)($fila['numero_inv'] ?? '')) ?: null,
+                                        ':sistema_conduccion' => trim((string)($fila['sistema_conduccion'] ?? '')) ?: null,
+                                        ':superficie_ha' => $parseDecimal($fila['superficie_ha'] ?? null),
+                                        ':porcentaje_cepas_produccion' => $parseDecimal($fila['porcentaje_cepas_produccion'] ?? null),
+                                        ':forma_cosecha_actual' => trim((string)($fila['forma_cosecha_actual'] ?? '')) ?: null,
+                                        ':porcentaje_malla_buen_estado' => $parseDecimal($fila['porcentaje_malla_buen_estado'] ?? null),
+                                        ':edad_promedio_encepado_anios' => $parseInt($fila['edad_promedio_encepado_anios'] ?? null),
+                                        ':estado_estructura_sistema' => trim((string)($fila['estado_estructura_sistema'] ?? '')) ?: null,
+                                        ':labores_mecanizables' => trim((string)($fila['labores_mecanizables'] ?? '')) ?: null,
+                                        ':finca_id' => $fincaId
                                 ];
 
-                                foreach ($fields as $f) {
-                                        if (isset($fila[$f]) && trim((string)$fila[$f]) !== '') {
-                                                $set[] = "$f = :$f";
-                                                $up[":$f"] = trim((string)$fila[$f]);
-                                        }
-                                }
-
-                                $numFields = [
-                                        'superficie_ha','porcentaje_cepas_produccion','rend_promedio_5anios_qq_ha',
-                                        'porcentaje_malla_buen_estado','edad_promedio_encepado_anios','porcentaje_dano_granizo'
-                                ];
-                                foreach ($numFields as $f) {
-                                        $val = $parseDecimal($fila[$f] ?? null);
-                                        if ($val !== null) {
-                                                $set[] = "$f = :$f";
-                                                $up[":$f"] = $val;
-                                        }
-                                }
-
-                                $ynFields = ['tiene_seguro_agricola','presencia_freatica'];
-                                foreach ($ynFields as $f) {
-                                        $val = $normalizarSiNo($fila[$f] ?? null);
-                                        if ($val !== null) {
-                                                $set[] = "$f = :$f";
-                                                $up[":$f"] = $val;
-                                        }
-                                }
-
-                                if (!empty($set)) {
-                                        $sql = "UPDATE prod_cuartel SET " . implode(', ', $set) . " WHERE id = :id";
-                                        $st = $this->pdo->prepare($sql);
-                                        $st->execute($up);
+                                if (!$cu) {
+                                        $stmtCuartelInsert->execute($cuartelData);
+                                        $cuartelId = (int)$this->pdo->lastInsertId();
+                                        $stats['cuarteles_creados']++;
+                                } else {
+                                        $cuartelId = (int)$cu['id'];
+                                        $cuartelData[':id'] = $cuartelId;
+                                        $stmtCuartelUpdate->execute($cuartelData);
                                         $stats['cuarteles_actualizados']++;
                                 }
-                        }
 
-                        // Rendimientos upsert (si viene algo)
-                        $rendKeys = [
-                                'rend_2020_qq_ha','rend_2021_qq_ha','rend_2022_qq_ha',
-                                'ing_2023_kg','rend_2023_qq_ha',
-                                'ing_2024_kg','rend_2024_qq_ha',
-                                'ing_2025_kg','rend_2025_qq_ha'
-                        ];
-
-                        $hasR = false;
-                        foreach ($rendKeys as $k) {
-                                $v = $fila[$k] ?? null;
-                                if ($v !== null && trim((string)$v) !== '') { $hasR = true; break; }
-                        }
-
-                        if ($hasR) {
+                                // Rendimientos
                                 $stmtRendSelect->execute([':cuartel_id' => $cuartelId]);
-                                $rr = $stmtRendSelect->fetch(PDO::FETCH_ASSOC);
-
-                                $pR = [':cuartel_id' => $cuartelId];
-                                foreach ($rendKeys as $k) {
-                                        $pR[":$k"] = $parseDecimal($fila[$k] ?? null);
-                                }
-
-                                if (!$rr) {
-                                        $stmtRendInsert->execute($pR);
+                                $rendRow = $stmtRendSelect->fetch(\PDO::FETCH_ASSOC);
+                                $rendData = [
+                                        ':cuartel_id' => $cuartelId,
+                                        ':rend_2020_qq_ha' => $parseDecimal($fila['rend_2020_qq_ha'] ?? null),
+                                        ':rend_2021_qq_ha' => $parseDecimal($fila['rend_2021_qq_ha'] ?? null),
+                                        ':rend_2022_qq_ha' => $parseDecimal($fila['rend_2022_qq_ha'] ?? null),
+                                        ':ing_2023_kg' => $parseDecimal($fila['ing_2023_kg'] ?? null),
+                                        ':rend_2023_qq_ha' => $parseDecimal($fila['rend_2023_qq_ha'] ?? null),
+                                        ':ing_2024_kg' => $parseDecimal($fila['ing_2024_kg'] ?? null),
+                                        ':rend_2024_qq_ha' => $parseDecimal($fila['rend_2024_qq_ha'] ?? null),
+                                        ':ing_2025_kg' => $parseDecimal($fila['ing_2025_kg'] ?? null),
+                                        ':rend_2025_qq_ha' => $parseDecimal($fila['rend_2025_qq_ha'] ?? null),
+                                        ':rend_promedio_5anios_qq_ha' => $parseDecimal($fila['rend_promedio_5anios_qq_ha'] ?? null)
+                                ];
+                                if (!$rendRow) {
+                                        $stmtRendInsert->execute($rendData);
                                 } else {
                                         $set = [];
-                                        $up = [':id' => (int)$rr['id']];
-                                        foreach ($rendKeys as $k) {
-                                                $val = $parseDecimal($fila[$k] ?? null);
-                                                if ($val !== null) {
-                                                        $set[] = "$k = :$k";
-                                                        $up[":$k"] = $val;
-                                                }
+                                        $up = [':id' => (int)$rendRow['id']];
+                                        foreach ($rendData as $k => $v) {
+                                                if ($k === ':cuartel_id') continue;
+                                                $col = ltrim($k, ':');
+                                                $set[] = "{$col} = {$k}";
+                                                $up[$k] = $v;
                                         }
-                                        if (!empty($set)) {
-                                                $sql = "UPDATE prod_cuartel_rendimientos SET " . implode(', ', $set) . " WHERE id = :id";
-                                                $st = $this->pdo->prepare($sql);
-                                                $st->execute($up);
-                                        }
+                                        $sql = "UPDATE prod_cuartel_rendimientos SET " . implode(', ', $set) . " WHERE id = :id";
+                                        $st = $this->pdo->prepare($sql);
+                                        $st->execute($up);
                                 }
                                 $stats['rendimientos_upsert']++;
-                        }
 
-                        // Limitantes upsert (si viene algo)
-                        $limKeys = [
-                                'categoria_1','limitante_1','inversion_accion1_1','obs_inversion_accion1_1','ciclo_agricola1_1',
-                                'inversion_accion2_1','obs_inversion_accion2_1','ciclo_agricola2_1',
-                                'categoria_2','limitante_2','inversion_accion1_2','obs_inversion_accion1_2','ciclo_agricola1_2',
-                                'inversion_accion2_2','obs_inversion_accion2_2','ciclo_agricola2_2'
-                        ];
-                        $hasL = false;
-                        foreach ($limKeys as $k) {
-                                $v = $fila[$k] ?? null;
-                                if ($v !== null && trim((string)$v) !== '') { $hasL = true; break; }
-                        }
-
-                        if ($hasL) {
-                                $stmtLimSelect->execute([':cuartel_id' => $cuartelId]);
-                                $ll = $stmtLimSelect->fetch(PDO::FETCH_ASSOC);
-
-                                $pL = [':cuartel_id' => $cuartelId];
-                                foreach ($limKeys as $k) {
-                                        $pL[":$k"] = (isset($fila[$k]) && trim((string)$fila[$k]) !== '') ? trim((string)$fila[$k]) : null;
-                                }
-
-                                if (!$ll) {
-                                        $stmtLimInsert->execute($pL);
+                                // Riesgos
+                                $stmtRiesSelect->execute([':cuartel_id' => $cuartelId]);
+                                $riesRow = $stmtRiesSelect->fetch(\PDO::FETCH_ASSOC);
+                                $riesData = [
+                                        ':cuartel_id' => $cuartelId,
+                                        ':tiene_seguro_agricola' => $normalizarSiNo($fila['tiene_seguro_agricola'] ?? null),
+                                        ':porcentaje_dano_granizo' => $parseDecimal($fila['porcentaje_dano_granizo'] ?? null),
+                                        ':heladas_dano_promedio_5anios' => $parseDecimal($fila['heladas_dano_promedio_5anios'] ?? null),
+                                        ':presencia_freatica' => trim((string)($fila['presencia_freatica'] ?? '')) ?: null,
+                                        ':plagas_no_convencionales' => trim((string)($fila['plagas_no_convencionales'] ?? '')) ?: null
+                                ];
+                                if (!$riesRow) {
+                                        $stmtRiesInsert->execute($riesData);
                                 } else {
                                         $set = [];
-                                        $up = [':id' => (int)$ll['id']];
-                                        foreach ($limKeys as $k) {
-                                                if (isset($fila[$k]) && trim((string)$fila[$k]) !== '') {
-                                                        $set[] = "$k = :$k";
-                                                        $up[":$k"] = trim((string)$fila[$k]);
-                                                }
+                                        $up = [':id' => (int)$riesRow['id']];
+                                        foreach ($riesData as $k => $v) {
+                                                if ($k === ':cuartel_id') continue;
+                                                $col = ltrim($k, ':');
+                                                $set[] = "{$col} = {$k}";
+                                                $up[$k] = $v;
                                         }
-                                        if (!empty($set)) {
-                                                $sql = "UPDATE prod_cuartel_limitantes SET " . implode(', ', $set) . " WHERE id = :id";
-                                                $st = $this->pdo->prepare($sql);
-                                                $st->execute($up);
+                                        $sql = "UPDATE prod_cuartel_riesgos SET " . implode(', ', $set) . " WHERE id = :id";
+                                        $st = $this->pdo->prepare($sql);
+                                        $st->execute($up);
+                                }
+                                $stats['riesgos_upsert']++;
+
+                                // Limitantes
+                                $stmtLimSelect->execute([':cuartel_id' => $cuartelId]);
+                                $limRow = $stmtLimSelect->fetch(\PDO::FETCH_ASSOC);
+                                $limData = [
+                                        ':cuartel_id' => $cuartelId,
+                                        ':limitantes_suelo' => trim((string)($fila['limitantes_suelo'] ?? '')) ?: null,
+                                        ':observaciones' => trim((string)($fila['observaciones'] ?? '')) ?: null,
+                                        ':categoria_1' => trim((string)($fila['categoria_1'] ?? '')) ?: null,
+                                        ':limitante_1' => trim((string)($fila['limitante_1'] ?? '')) ?: null,
+                                        ':inversion_accion1_1' => trim((string)($fila['inversion_accion1_1'] ?? '')) ?: null,
+                                        ':obs_inversion_accion1_1' => trim((string)($fila['obs_inversion_accion1_1'] ?? '')) ?: null,
+                                        ':ciclo_agricola1_1' => trim((string)($fila['ciclo_agricola1_1'] ?? '')) ?: null,
+                                        ':inversion_accion2_1' => trim((string)($fila['inversion_accion2_1'] ?? '')) ?: null,
+                                        ':obs_inversion_accion2_1' => trim((string)($fila['obs_inversion_accion2_1'] ?? '')) ?: null,
+                                        ':ciclo_agricola2_1' => trim((string)($fila['ciclo_agricola2_1'] ?? '')) ?: null,
+                                        ':categoria_2' => trim((string)($fila['categoria_2'] ?? '')) ?: null,
+                                        ':limitante_2' => trim((string)($fila['limitante_2'] ?? '')) ?: null,
+                                        ':inversion_accion1_2' => trim((string)($fila['inversion_accion1_2'] ?? '')) ?: null,
+                                        ':obs_inversion_accion1_2' => trim((string)($fila['obs_inversion_accion1_2'] ?? '')) ?: null,
+                                        ':ciclo_agricola1_2' => trim((string)($fila['ciclo_agricola1_2'] ?? '')) ?: null,
+                                        ':inversion_accion2_2' => trim((string)($fila['inversion_accion2_2'] ?? '')) ?: null,
+                                        ':obs_inversion_accion2_2' => trim((string)($fila['obs_inversion_accion2_2'] ?? '')) ?: null,
+                                        ':ciclo_agricola2_2' => trim((string)($fila['ciclo_agricola2_2'] ?? '')) ?: null
+                                ];
+                                if (!$limRow) {
+                                        $stmtLimInsert->execute($limData);
+                                } else {
+                                        $set = [];
+                                        $up = [':id' => (int)$limRow['id']];
+                                        foreach ($limData as $k => $v) {
+                                                if ($k === ':cuartel_id') continue;
+                                                $col = ltrim($k, ':');
+                                                $set[] = "{$col} = {$k}";
+                                                $up[$k] = $v;
                                         }
+                                        $sql = "UPDATE prod_cuartel_limitantes SET " . implode(', ', $set) . " WHERE id = :id";
+                                        $st = $this->pdo->prepare($sql);
+                                        $st->execute($up);
                                 }
                                 $stats['limitantes_upsert']++;
                         }
-                }
 
-                if ($dryRun) {
-                        $this->pdo->rollBack();
-                } else {
-                        $this->pdo->commit();
+                        if ($dryRun) {
+                                $this->pdo->rollBack();
+                        } else {
+                                $this->pdo->commit();
+                        }
+                } catch (\Throwable $e) {
+                        if ($this->pdo->inTransaction()) {
+                                $this->pdo->rollBack();
+                        }
+                        $conflictos[] = ['fila' => 0, 'error' => 'Excepción: ' . $e->getMessage()];
                 }
 
                 $stats['conflictos'] = count($conflictos);

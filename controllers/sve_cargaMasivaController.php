@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 // En el controlador API NO mostramos errores en pantalla para no romper el JSON
@@ -99,7 +100,6 @@ function normalize_row_keys(array $row): array
     }
 
     return $out;
-
 }
 
 function nullify_empty_strings(array $row): array
@@ -137,12 +137,15 @@ function validate_min_headers(string $tipo, array $rows): array
             ['ID PP', 'Id PP', 'id pp', 'IDPP', 'IdPP'],
             ['Cooperativa', 'cooperativa']
         ],
+        // "Cargar diagnóstico de fincas" (nivel cuartel) - exige Cooperativa en el CSV
         'fincas' => [
-            ['codigo_finca', 'codigo finca', 'Código Finca', 'CódigoFinca', 'CODIGO FINCA', 'Codigo finca', 'código finca']
-        ],
-        'cuarteles' => [
+            ['Cooperativa', 'cooperativa', 'cooperativa_id_real', 'id_cooperativa', 'ID COOPERATIVA', 'ID Cooperativa'],
             ['codigo_finca', 'codigo finca', 'Código Finca', 'CódigoFinca', 'CODIGO FINCA', 'Codigo finca', 'código finca'],
             ['codigo_cuartel', 'codigo cuartel', 'Código Cuartel', 'CódigoCuartel', 'CODIGO CUARTEL', 'Codigo cuartel', 'código cuartel']
+        ],
+        // "Cargar datos de cuarteles" en realidad carga datos de FINCA (no requiere codigo_cuartel)
+        'cuarteles' => [
+            ['codigo_finca', 'codigo finca', 'Código Finca', 'CódigoFinca', 'CODIGO FINCA', 'Codigo finca', 'código finca']
         ],
         'cooperativas' => [
             ['id_real', 'ID REAL', 'Id Real', 'id real'],
@@ -155,6 +158,7 @@ function validate_min_headers(string $tipo, array $rows): array
             ['id_cooperativa', 'ID COOPERATIVA', 'id cooperativa']
         ]
     ];
+
 
     if (!isset($required[$tipo])) return ['ok' => true, 'missing' => []];
 
@@ -332,7 +336,8 @@ try {
             exit;
 
         case 'fincas':
-            $resultado = $modelo->insertarDiagnosticoFincas($datosProcesados, $dryRun);
+            // "Cargar diagnóstico de fincas" (nivel cuartel)
+            $resultado = $modelo->insertarCuarteles($datosProcesados, $dryRun);
             $conflictos = isset($resultado['conflictos']) ? $resultado['conflictos'] : [];
             $stats = isset($resultado['stats']) ? $resultado['stats'] : null;
 
@@ -340,6 +345,40 @@ try {
                 $mensaje = '⚠️ Carga de diagnóstico de fincas completada con advertencias.';
             } else {
                 $mensaje = '✅ Carga de diagnóstico de fincas completada.';
+            }
+
+            if (is_array($stats)) {
+                $mensaje .= ' Filas procesadas: ' . ($stats['filas_procesadas'] ?? 0)
+                    . ', cooperativas OK: ' . ($stats['coops_ok'] ?? 0)
+                    . ', sin cooperativa: ' . ($stats['sin_cooperativa'] ?? 0)
+                    . ', fincas encontradas: ' . ($stats['fincas_encontradas'] ?? 0)
+                    . ', fincas creadas: ' . ($stats['fincas_creadas'] ?? 0)
+                    . ', cuarteles creados: ' . ($stats['cuarteles_creados'] ?? 0)
+                    . ', cuarteles actualizados: ' . ($stats['cuarteles_actualizados'] ?? 0)
+                    . ', rendimientos (upsert): ' . ($stats['rendimientos_upsert'] ?? 0)
+                    . ', riesgos (upsert): ' . ($stats['riesgos_upsert'] ?? 0)
+                    . ', limitantes (upsert): ' . ($stats['limitantes_upsert'] ?? 0)
+                    . ', conflictos: ' . ($stats['conflictos'] ?? 0) . '.';
+            }
+
+            echo json_encode([
+                'mensaje'    => $mensaje,
+                'conflictos' => $conflictos,
+                'stats'      => $stats
+            ]);
+            exit;
+
+
+        case 'cuarteles':
+            // "Cargar datos de cuarteles" => carga datos de FINCA (dirección/superficie/cultivos/agua/maquinaria/gerencia)
+            $resultado = $modelo->insertarDiagnosticoFincas($datosProcesados, $dryRun);
+            $conflictos = isset($resultado['conflictos']) ? $resultado['conflictos'] : [];
+            $stats = isset($resultado['stats']) ? $resultado['stats'] : null;
+
+            if (!empty($conflictos)) {
+                $mensaje = '⚠️ Carga de datos de cuarteles completada con advertencias.';
+            } else {
+                $mensaje = '✅ Carga de datos de cuarteles completada.';
             }
 
             if (is_array($stats)) {
@@ -363,38 +402,9 @@ try {
             ]);
             exit;
 
-        case 'cuarteles':
-            $resultado = $modelo->insertarCuarteles($datosProcesados, $dryRun);
-            $conflictos = isset($resultado['conflictos']) ? $resultado['conflictos'] : [];
-            $stats = isset($resultado['stats']) ? $resultado['stats'] : null;
-
-            if (!empty($conflictos)) {
-                $mensaje = '⚠️ Carga de datos de cuarteles completada con advertencias.';
-            } else {
-                $mensaje = '✅ Carga de datos de cuarteles completada.';
-            }
-
-            if (is_array($stats)) {
-                $mensaje .= ' Filas procesadas: ' . ($stats['filas_procesadas'] ?? 0)
-                    . ', fincas encontradas: ' . ($stats['fincas_encontradas'] ?? 0)
-                    . ', fincas creadas: ' . ($stats['fincas_creadas'] ?? 0)
-                    . ', cuarteles creados: ' . ($stats['cuarteles_creados'] ?? 0)
-                    . ', cuarteles actualizados: ' . ($stats['cuarteles_actualizados'] ?? 0)
-                    . ', rendimientos (upsert): ' . ($stats['rendimientos_upsert'] ?? 0)
-                    . ', limitantes (upsert): ' . ($stats['limitantes_upsert'] ?? 0)
-                    . ', conflictos: ' . ($stats['conflictos'] ?? 0) . '.';
-            }
-
-            echo json_encode([
-                'mensaje'    => $mensaje,
-                'conflictos' => $conflictos,
-                'stats'      => $stats
-            ]);
-            exit;
 
         default:
             throw new Exception("Tipo de carga desconocido.");
-
     }
 } catch (Exception $e) {
     echo json_encode(['error' => $e->getMessage()]);
