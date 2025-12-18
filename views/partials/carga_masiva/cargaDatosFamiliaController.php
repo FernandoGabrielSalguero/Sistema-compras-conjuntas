@@ -7,10 +7,12 @@ set_time_limit(0);
 
 header('Content-Type: application/json; charset=utf-8');
 
+require_once __DIR__ . '/../../../config.php';
 require_once __DIR__ . '/../../../middleware/authMiddleware.php';
 checkAccess('sve');
 
 require_once __DIR__ . '/cargaDatosFamiliaModel.php';
+
 
 function familia_json_response(int $code, array $payload): void
 {
@@ -24,12 +26,21 @@ try {
         @ob_clean();
     }
 
+    if (!($pdo instanceof PDO)) {
+        familia_json_response(500, [
+            'ok'    => false,
+            'error' => 'PDO no disponible en CargaDatosFamilia'
+        ]);
+    }
+
     $raw = file_get_contents('php://input');
     $payload = json_decode($raw, true);
     if (!is_array($payload)) $payload = [];
 
     $action = isset($payload['action']) ? trim((string)$payload['action']) : 'ping';
     $model = new CargaDatosFamiliaModel();
+    $model->pdo = $pdo;
+
 
     switch ($action) {
         case 'ping': {

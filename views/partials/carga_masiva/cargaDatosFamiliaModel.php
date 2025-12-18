@@ -1,23 +1,21 @@
 <?php
 class CargaDatosFamiliaModel
 {
-    private ?PDO $pdo = null;
+    /** @var PDO */
+    public PDO $pdo;
     private array $columnsCache = [];
 
     private function getPdo(): PDO
     {
-        if ($this->pdo) return $this->pdo;
-
-        require_once __DIR__ . '/../../../../config.php';
-        global $pdo;
-
-        if (!isset($pdo)) {
-            throw new Exception('PDO no inicializado (revisar config.php).');
+        if (!($this->pdo instanceof PDO)) {
+            throw new Exception(
+                'PDO no disponible en CargaDatosFamiliaModel (inyectar $pdo desde el controlador).'
+            );
         }
 
-        $this->pdo = $pdo;
         return $this->pdo;
     }
+
 
     public function pingDb(): array
     {

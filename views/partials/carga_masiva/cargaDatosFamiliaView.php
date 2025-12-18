@@ -42,7 +42,6 @@
         const fileEl = document.getElementById('familiaCsvFile');
         const anioEl = document.getElementById('familiaAnio');
 
-        const pingBtn = document.getElementById('familiaPingBtn');
         const schemaBtn = document.getElementById('familiaSchemaBtn');
         const simBtn = document.getElementById('familiaSimBtn');
         const runBtn = document.getElementById('familiaRunBtn');
@@ -52,11 +51,16 @@
         const progressPct = document.getElementById('familiaProgressPct');
         const progressBar = document.getElementById('familiaProgressBar');
 
-        if (!fileEl || !anioEl || !pingBtn || !schemaBtn || !simBtn || !runBtn || !out) return;
+        if (!fileEl || !anioEl || !schemaBtn || !simBtn || !runBtn || !out) return;
 
         function setBusy(busy) {
-            [pingBtn, schemaBtn, simBtn, runBtn, fileEl, anioEl].forEach(el => el.disabled = !!busy);
+            [schemaBtn, simBtn, runBtn, fileEl, anioEl].forEach(el => {
+                if (el) {
+                    el.disabled = !!busy;
+                }
+            });
         }
+
 
         function setProgress(done, total) {
             const pct = total > 0 ? Math.round((done / total) * 100) : 0;
@@ -274,21 +278,6 @@
                 setBusy(false);
             }
         }
-
-        pingBtn.addEventListener('click', async () => {
-            setBusy(true);
-            try {
-                out.textContent = 'Consultando...';
-                const json = await postJson({
-                    action: 'ping'
-                });
-                out.textContent = JSON.stringify(json, null, 2);
-            } catch (err) {
-                out.textContent = 'ERROR: ' + (err && err.message ? err.message : String(err));
-            } finally {
-                setBusy(false);
-            }
-        });
 
         schemaBtn.addEventListener('click', async () => {
             setBusy(true);
