@@ -15,11 +15,11 @@
         </div>
 
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn btn-info" type="button" id="familiaPingBtn">Probar conexión</button>
-            <button class="btn btn-secondary" type="button" id="familiaSchemaBtn">Verificar esquema</button>
-            <button class="btn btn-warning" type="button" id="familiaSimBtn">Simular (rollback)</button>
-            <button class="btn btn-success" type="button" id="familiaRunBtn">Cargar (commit)</button>
+            <button class="btn btn-acces" type="button" id="familiaSchemaBtn">Verificar esquema</button>
+            <button class="btn btn-info" type="button" id="familiaSimBtn">Simular (rollback)</button>
+            <button class="btn btn-acces" type="button" id="familiaRunBtn">Cargar (commit)</button>
         </div>
+
     </div>
 
     <div style="display:flex;flex-direction:column;gap:6px;">

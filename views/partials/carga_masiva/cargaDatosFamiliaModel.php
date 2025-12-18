@@ -8,7 +8,7 @@ class CargaDatosFamiliaModel
     {
         if ($this->pdo) return $this->pdo;
 
-        require_once __DIR__ . '/../../../config.php';
+        require_once __DIR__ . '/../../../../config.php';
         global $pdo;
 
         if (!isset($pdo)) {
