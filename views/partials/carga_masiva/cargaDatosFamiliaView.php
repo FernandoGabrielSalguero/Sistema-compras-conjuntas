@@ -17,7 +17,7 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-acces" type="button" id="familiaSchemaBtn">Verificar esquema</button>
             <button class="btn btn-info" type="button" id="familiaSimBtn">Simular (rollback)</button>
-            <button class="btn btn-acces" type="button" id="familiaRunBtn">Cargar (commit)</button>
+            <button class="btn btn-info" type="button" id="familiaRunBtn">Cargar (commit)</button>
         </div>
 
     </div>
