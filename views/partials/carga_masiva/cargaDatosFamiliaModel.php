@@ -459,37 +459,61 @@ class CargaDatosFamiliaModel
                     }
 
                     // ===== 8) Finca + relación =====
+                    // codigo_finca puede venir como "123-456-789" (múltiples fincas).
                     if ($codigoFinca) {
-                        $fincaId = null;
-                        if (isset($cacheFincaIdByCodigo[$codigoFinca])) {
-                            $fincaId = (int)$cacheFincaIdByCodigo[$codigoFinca];
-                        } else {
-                            $f = $this->fetchOne("SELECT id FROM prod_fincas WHERE codigo_finca = ? LIMIT 1", [$codigoFinca]);
-                            if ($f) {
-                                $fincaId = (int)$f['id'];
-                            } else {
-                                $fincaId = $this->insert('prod_fincas', [
-                                    'codigo_finca' => $codigoFinca,
-                                    'productor_id_real' => $idReal,
-                                ]);
-                                $stats['fincas_creadas']++;
+                        // Split por "-" tolerando espacios alrededor.
+                        $parts = preg_split('/\s*-\s*/', (string)$codigoFinca) ?: [];
+                        $codes = [];
+
+                        foreach ($parts as $p) {
+                            $c = $this->normalizeStr($p);
+                            if ($c === null) continue;
+
+                            // Validación según tu esquema (varchar(20))
+                            if (strlen($c) > 20) {
+                                throw new Exception('codigo_finca excede 20 caracteres: ' . $c);
                             }
-                            $cacheFincaIdByCodigo[$codigoFinca] = $fincaId;
+
+                            $codes[] = $c;
                         }
 
-                        $rf = $this->fetchOne(
-                            "SELECT id FROM rel_productor_finca WHERE productor_id = ? AND finca_id = ? LIMIT 1",
-                            [$userId, $fincaId]
-                        );
-                        if (!$rf) {
-                            $this->insert('rel_productor_finca', [
-                                'productor_id' => $userId,
-                                'productor_id_real' => $idReal,
-                                'finca_id' => $fincaId,
-                            ]);
-                            $stats['rel_prod_finca_creadas']++;
+                        // Unificar / evitar duplicados dentro de la misma fila
+                        $codes = array_values(array_unique($codes));
+
+                        foreach ($codes as $cf) {
+                            $fincaId = null;
+
+                            if (isset($cacheFincaIdByCodigo[$cf])) {
+                                $fincaId = (int)$cacheFincaIdByCodigo[$cf];
+                            } else {
+                                $f = $this->fetchOne("SELECT id FROM prod_fincas WHERE codigo_finca = ? LIMIT 1", [$cf]);
+                                if ($f) {
+                                    $fincaId = (int)$f['id'];
+                                } else {
+                                    $fincaId = $this->insert('prod_fincas', [
+                                        'codigo_finca' => $cf,
+                                        'productor_id_real' => $idReal,
+                                    ]);
+                                    $stats['fincas_creadas']++;
+                                }
+                                $cacheFincaIdByCodigo[$cf] = $fincaId;
+                            }
+
+                            $rf = $this->fetchOne(
+                                "SELECT id FROM rel_productor_finca WHERE productor_id = ? AND finca_id = ? LIMIT 1",
+                                [$userId, $fincaId]
+                            );
+                            if (!$rf) {
+                                $this->insert('rel_productor_finca', [
+                                    'productor_id' => $userId,
+                                    'productor_id_real' => $idReal,
+                                    'finca_id' => $fincaId,
+                                ]);
+                                $stats['rel_prod_finca_creadas']++;
+                            }
                         }
                     }
+
 
                     $camposTotal = $camposUsuarios + $camposUsuariosInfo + $camposPca + $camposIp + $camposPc + $camposPh;
                     $stats['campos_escritos'] += $camposTotal;
