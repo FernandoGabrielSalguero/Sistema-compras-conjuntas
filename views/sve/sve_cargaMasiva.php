@@ -144,7 +144,26 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <button class="btn btn-aceptar" onclick="confirmarCarga('relaciones')">Confirmar carga</button>
                     </div>
 
+                    <!-- Tarjeta: Cargar datos de familia -->
+                    <div class="card">
+                        <h3>Cargar datos de familia</h3>
+                        <?php require_once __DIR__ . '/../partials/carga_masiva/cargaDatosFamiliaView.php'; ?>
+                    </div>
+
+                    <!-- Tarjeta: Cargar diagnóstico de fincas -->
+                    <div class="card">
+                        <h3>Cargar diagnóstico de fincas</h3>
+                        <?php require_once __DIR__ . '/../partials/carga_masiva/cargaDatosFincasView.php'; ?>
+                    </div>
+
+                    <!-- Tarjeta: Cargar datos de cuarteles -->
+                    <div class="card">
+                        <h3>Cargar datos de cuarteles</h3>
+                        <?php require_once __DIR__ . '/../partials/carga_masiva/cargaDatosCuartelesView.php'; ?>
+                    </div>
+
                 </div>
+
 
             </section>
 
