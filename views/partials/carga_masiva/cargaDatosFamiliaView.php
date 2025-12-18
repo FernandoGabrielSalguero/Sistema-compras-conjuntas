@@ -136,14 +136,14 @@
                 action: 'schema_check'
             });
 
-if (json.data && json.data.missing && json.data.missing.length) {
-            out.textContent =
-                '⚠️ FALTAN COLUMNAS/ TABLAS PARA TU MAPEO.\n\n' +
-                'Missing:\n' + JSON.stringify(json.data.missing, null, 2) + '\n\n' +
-                'Ejecutá el SQL que te pasé por chat en phpMyAdmin (solo lo que falte) y volvé a verificar.\n';
-        } else {
-            out.textContent = '✅ Esquema OK para el mapeo.\n' + JSON.stringify(json.data, null, 2);
-        }
+            if (json.data && json.data.missing && json.data.missing.length) {
+                out.textContent =
+                    '⚠️ FALTAN COLUMNAS/ TABLAS PARA TU MAPEO.\n\n' +
+                    'Missing:\n' + JSON.stringify(json.data.missing, null, 2) + '\n\n' +
+                    'Ejecutá el SQL que te pasé por chat en phpMyAdmin (solo lo que falte) y volvé a verificar.\n';
+            } else {
+                out.textContent = '✅ Esquema OK para el mapeo.\n' + JSON.stringify(json.data, null, 2);
+            }
         }
 
         async function run(mode) {
@@ -176,14 +176,16 @@ if (json.data && json.data.missing && json.data.missing.length) {
 
                 // (Opcional) chequeo de esquema antes de avanzar
                 progressLabel.textContent = 'Verificando esquema (pre-check)...';
-                const schema = await postJson({ action: 'schema_check' });
-            if (schema.data && schema.data.missing && schema.data.missing.length) {
-                out.textContent =
-                    '⚠️ No avanzo porque faltan columnas/tablas para el mapeo.\n\n' +
-                    'Missing:\n' + JSON.stringify(schema.data.missing, null, 2) + '\n\n' +
-                    'Ejecutá el SQL que te pasé por chat en phpMyAdmin (solo lo que falte) y reintentá.\n';
-                return;
-            }
+                const schema = await postJson({
+                    action: 'schema_check'
+                });
+                if (schema.data && schema.data.missing && schema.data.missing.length) {
+                    out.textContent =
+                        '⚠️ No avanzo porque faltan columnas/tablas para el mapeo.\n\n' +
+                        'Missing:\n' + JSON.stringify(schema.data.missing, null, 2) + '\n\n' +
+                        'Ejecutá el SQL que te pasé por chat en phpMyAdmin (solo lo que falte) y reintentá.\n';
+                    return;
+                }
 
                 const batches = chunk(rows, 250);
                 const total = batches.length;
