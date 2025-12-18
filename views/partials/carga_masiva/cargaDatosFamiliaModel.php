@@ -284,9 +284,12 @@ class CargaDatosFamiliaModel
                     if ($coopReal !== null && strlen($coopReal) > 20) {
                         throw new Exception('Cooperativa (id_real) excede 20 caracteres: ' . $coopReal);
                     }
-                    if ($codigoFinca !== null && strlen($codigoFinca) > 20) {
-                        throw new Exception('codigo_finca excede 20 caracteres: ' . $codigoFinca);
+                    // codigo_finca "crudo" puede venir con múltiples fincas separadas por "-"
+                    // Permitimos hasta 255 caracteres en el string completo.
+                    if ($codigoFinca !== null && strlen($codigoFinca) > 255) {
+                        throw new Exception('codigo_finca (lista) excede 255 caracteres: ' . $codigoFinca);
                     }
+
 
 
                     // ===== 1) PRODUCTOR (usuarios) =====
@@ -469,10 +472,11 @@ class CargaDatosFamiliaModel
                             $c = $this->normalizeStr($p);
                             if ($c === null) continue;
 
-                            // Validación según tu esquema (varchar(20))
+                            // Validación por finca individual (si la columna prod_fincas.codigo_finca sigue siendo varchar(20))
                             if (strlen($c) > 20) {
-                                throw new Exception('codigo_finca excede 20 caracteres: ' . $c);
+                                throw new Exception('codigo_finca individual excede 20 caracteres: ' . $c);
                             }
+
 
                             $codes[] = $c;
                         }
