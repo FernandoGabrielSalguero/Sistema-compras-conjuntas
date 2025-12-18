@@ -205,19 +205,19 @@ class CargaDatosFamiliaModel
         return $campos; // “campos escritos” (aprox: campos con valor no nulo enviados)
     }
 
-        public function schemaCheck(): array
+    public function schemaCheck(): array
     {
         // Solo reporta faltantes. El SQL se entrega por separado (fuera del código).
         $expected = [
-            'usuarios' => ['usuario','contrasena','rol','permiso_ingreso','cuit','razon_social','id_real'],
-            'usuarios_info' => ['usuario_id','nombre','telefono','correo','fecha_nacimiento','categorizacion','tipo_relacion','zona_asignada'],
-            'productores_contactos_alternos' => ['productor_id','contacto_preferido','celular_alternativo','telefono_fijo','mail_alternativo'],
-            'info_productor' => ['productor_id','anio','acceso_internet','vive_en_finca','tiene_otra_finca','condicion_cooperativa','anio_asociacion','actividad_principal','actividad_secundaria','porcentaje_aporte_vitivinicola'],
-            'prod_colaboradores' => ['productor_id','anio','hijos_sobrinos_participan','mujeres_tc','hombres_tc','mujeres_tp','hombres_tp','prob_hijos_trabajen'],
-            'prod_hijos' => ['productor_id','anio','motivo_no_trabajar','nom_hijo_1','fecha_nacimiento_1','sexo1','nivel_estudio1','nom_hijo_2','fecha_nacimiento_2','sexo2','nivel_estudio2','nom_hijo_3','fecha_nacimiento_3','sexo3','nivel_estudio3'],
-            'rel_productor_coop' => ['productor_id_real','cooperativa_id_real'],
-            'prod_fincas' => ['codigo_finca','productor_id_real'],
-            'rel_productor_finca' => ['productor_id','productor_id_real','finca_id'],
+            'usuarios' => ['usuario', 'contrasena', 'rol', 'permiso_ingreso', 'cuit', 'razon_social', 'id_real'],
+            'usuarios_info' => ['usuario_id', 'nombre', 'telefono', 'correo', 'fecha_nacimiento', 'categorizacion', 'tipo_relacion', 'zona_asignada'],
+            'productores_contactos_alternos' => ['productor_id', 'contacto_preferido', 'celular_alternativo', 'telefono_fijo', 'mail_alternativo'],
+            'info_productor' => ['productor_id', 'anio', 'acceso_internet', 'vive_en_finca', 'tiene_otra_finca', 'condicion_cooperativa', 'anio_asociacion', 'actividad_principal', 'actividad_secundaria', 'porcentaje_aporte_vitivinicola'],
+            'prod_colaboradores' => ['productor_id', 'anio', 'hijos_sobrinos_participan', 'mujeres_tc', 'hombres_tc', 'mujeres_tp', 'hombres_tp', 'prob_hijos_trabajen'],
+            'prod_hijos' => ['productor_id', 'anio', 'motivo_no_trabajar', 'nom_hijo_1', 'fecha_nacimiento_1', 'sexo1', 'nivel_estudio1', 'nom_hijo_2', 'fecha_nacimiento_2', 'sexo2', 'nivel_estudio2', 'nom_hijo_3', 'fecha_nacimiento_3', 'sexo3', 'nivel_estudio3'],
+            'rel_productor_coop' => ['productor_id_real', 'cooperativa_id_real'],
+            'prod_fincas' => ['codigo_finca', 'productor_id_real'],
+            'rel_productor_finca' => ['productor_id', 'productor_id_real', 'finca_id'],
         ];
 
         $missing = [];
@@ -259,6 +259,9 @@ class CargaDatosFamiliaModel
         $cacheFincaIdByCodigo = [];
         $cacheCoopRealExists = [];
 
+        // Para no contar 2+ veces el mismo productor como "actualizado" dentro del batch
+        $updatedUserIds = [];
+
         $pdo->beginTransaction();
 
         try {
@@ -276,8 +279,22 @@ class CargaDatosFamiliaModel
                     $coopReal = $this->normalizeStr($r['cooperativa'] ?? null);
                     $codigoFinca = $this->normalizeStr($r['codigo_finca'] ?? null);
 
+                    // Validaciones según tu esquema (varchar(20))
+                    if (strlen($idReal) > 20) {
+                        throw new Exception('ID PP (id_real) excede 20 caracteres: ' . $idReal);
+                    }
+                    if ($coopReal !== null && strlen($coopReal) > 20) {
+                        throw new Exception('Cooperativa (id_real) excede 20 caracteres: ' . $coopReal);
+                    }
+                    if ($codigoFinca !== null && strlen($codigoFinca) > 20) {
+                        throw new Exception('codigo_finca excede 20 caracteres: ' . $codigoFinca);
+                    }
+
+
                     // ===== 1) PRODUCTOR (usuarios) =====
                     $userId = null;
+                    $createdProducer = false;
+
                     if (isset($cacheUserIdByReal[$idReal])) {
                         $userId = (int)$cacheUserIdByReal[$idReal];
                     } else {
@@ -307,6 +324,7 @@ class CargaDatosFamiliaModel
                             ]);
 
                             $userId = $newId;
+                            $createdProducer = true;
                             $stats['productores_creados']++;
                         }
 
@@ -478,8 +496,11 @@ class CargaDatosFamiliaModel
                     $camposTotal = $camposUsuarios + $camposUsuariosInfo + $camposPca + $camposIp + $camposPc + $camposPh;
                     $stats['campos_escritos'] += $camposTotal;
 
-                    if ($camposTotal > 0) {
-                        $stats['productores_actualizados']++;
+                    if ($camposTotal > 0 && !$createdProducer) {
+                        if (!isset($updatedUserIds[$userId])) {
+                            $updatedUserIds[$userId] = true;
+                            $stats['productores_actualizados']++;
+                        }
                     }
                 } catch (Throwable $rowE) {
                     $stats['errores'][] = [
