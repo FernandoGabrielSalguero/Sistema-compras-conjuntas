@@ -43,14 +43,14 @@ try {
             }
 
         case 'schema_check': {
-            $data = $model->schemaCheck();
-            familia_json_response(200, [
-                'ok' => true,
-                'module' => 'familia',
-                'action' => 'schema_check',
-                'data' => $data
-            ]);
-        }
+                $data = $model->schemaCheck();
+                familia_json_response(200, [
+                    'ok' => true,
+                    'module' => 'familia',
+                    'action' => 'schema_check',
+                    'data' => $data
+                ]);
+            }
 
         case 'ingest_batch': {
                 $mode = isset($payload['mode']) ? trim((string)$payload['mode']) : 'simulate';
