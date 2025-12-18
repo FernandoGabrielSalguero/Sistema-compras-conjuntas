@@ -27,6 +27,9 @@ La columna hombres_tc de mi CSV, va en la tabla	prod_colaboradores columna	hombr
 La columna mujeres_tp de mi CSV, va en la tabla	prod_colaboradores columna	mujeres_tp
 La columna hombres_tp de mi CSV, va en la tabla	prod_colaboradores columna	hombres_tp
 La columna prob_hijos_trabajen de mi CSV, va en la tabla	prod_colaboradores columna	prob_hijos_trabajen
+
+
+
 La columna motivo_no_trabajar de mi CSV, va en la tabla	prod_hijos columna	motivo_no_trabajar
 La columna nom_hijo_1 de mi CSV, va en la tabla	prod_hijos columna	nom_hijo_1
 La columna fecha_nacimiento_1 de mi CSV, va en la tabla	prod_hijos columna	fecha_nacimiento_1
