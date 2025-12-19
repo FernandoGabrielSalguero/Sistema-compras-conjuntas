@@ -172,16 +172,15 @@ class CargaDatosCuartelesModel
         return ['id' => $id, 'created' => false];
     }
 
-    public function schemaCheck(): array
+        public function schemaCheck(): array
     {
         $expected = [
-            'usuarios' => ['id_real', 'usuario', 'contrasena', 'rol', 'permiso_ingreso', 'cuit', 'razon_social'],
-
-            'prod_fincas' => ['codigo_finca', 'productor_id_real', 'nombre_finca'],
+            'prod_fincas' => [
+                'codigo_finca',
+                'nombre_finca'
+            ],
 
             'prod_cuartel' => [
-                'id_responsable_real',
-                'cooperativa_id_real',
                 'codigo_finca',
                 'nombre_finca',
                 'codigo_cuartel',
@@ -262,7 +261,7 @@ class CargaDatosCuartelesModel
         return ['missing' => $missing];
     }
 
-    public function ingestBatch(array $rows, string $mode): array
+        public function ingestBatch(array $rows, string $mode): array
     {
         $pdo = $this->getPdo();
 
@@ -279,8 +278,7 @@ class CargaDatosCuartelesModel
             'errores' => []
         ];
 
-        $cacheCoopExists = [];
-        $cacheFincaByCodigo = [];     // codigo_finca => ['id'=>int, 'productor_id_real'=>string|null]
+        $cacheFincaByCodigo = [];     // codigo_finca => ['id'=>int]
         $cacheCuartelIdByKey = [];    // key => cuartel_id
 
         $updatedCuartelIds = [];
@@ -297,17 +295,7 @@ class CargaDatosCuartelesModel
                 try {
                     $codigoFinca = $this->normalizeStr($r['codigo_finca'] ?? null);
                     $nombreFinca = $this->normalizeStr($r['nombre_finca'] ?? null);
-
                     $codigoCuartel = $this->normalizeStr($r['codigo_cuartel'] ?? null);
-
-                    // cooperativa_id_real es opcional para ACTUALIZAR (si viene, se usa).
-                    // Para CREAR un cuartel nuevo, se requerirá más abajo.
-                    $coopReal = $this->normalizeStr($r['cooperativa_id_real'] ?? ($r['cooperativa'] ?? null));
-
-                    // Opcional (solo se escribe si viene)
-                    $idResponsableReal = $this->normalizeStr(
-                        $r['id_responsable_real'] ?? $r['productor_id_real'] ?? $r['id_pp'] ?? $r['id_real'] ?? null
-                    );
 
                     if (!$codigoFinca) {
                         $stats['errores'][] = ['fila' => $i + 1, 'error' => 'Falta codigo_finca.'];
@@ -320,32 +308,8 @@ class CargaDatosCuartelesModel
 
                     if (strlen($codigoFinca) > 20) throw new Exception('codigo_finca excede 20 caracteres: ' . $codigoFinca);
                     if (strlen($codigoCuartel) > 20) throw new Exception('codigo_cuartel excede 20 caracteres: ' . $codigoCuartel);
-                    if ($coopReal !== null && strlen($coopReal) > 20) throw new Exception('cooperativa_id_real excede 20 caracteres: ' . $coopReal);
-                    if ($idResponsableReal !== null && strlen($idResponsableReal) > 20) throw new Exception('id_responsable_real excede 20 caracteres: ' . $idResponsableReal);
 
-                    // ===== 1) Asegurar cooperativa (usuarios) SOLO si viene cooperativa_id_real =====
-                    if ($coopReal !== null) {
-                        if (!isset($cacheCoopExists[$coopReal])) {
-                            $u = $this->fetchOne("SELECT id FROM usuarios WHERE id_real = ? LIMIT 1", [$coopReal]);
-                            if (!$u) {
-                                $tmpPassHash = password_hash(bin2hex(random_bytes(8)), PASSWORD_DEFAULT);
-                                $this->insert('usuarios', [
-                                    'usuario' => $coopReal,
-                                    'contrasena' => $tmpPassHash,
-                                    'rol' => 'cooperativa',
-                                    'permiso_ingreso' => 'Deshabilitado',
-                                    'cuit' => 0,
-                                    'razon_social' => $coopReal,
-                                    'id_real' => $coopReal,
-                                ]);
-                                $stats['cooperativas_creadas']++;
-                            }
-                            $cacheCoopExists[$coopReal] = true;
-                        }
-                    }
-
-                    // ===== 2) Buscar finca EXISTENTE por codigo_finca (prod_fincas) =====
-                    // Regla: para esta actualización, si la finca NO existe, no se crea (se reporta error).
+                    // ===== 1) FINCA: buscar por codigo_finca. Si no existe, saltear y loguear =====
                     $fincaId = null;
 
                     if (isset($cacheFincaByCodigo[$codigoFinca])) {
@@ -356,18 +320,26 @@ class CargaDatosCuartelesModel
                             $stats['errores'][] = [
                                 'fila' => $i + 1,
                                 'codigo_finca' => $codigoFinca,
-                                'codigo_cuartel' => $codigoCuartel,
-                                'error' => 'La finca no existe en prod_fincas para codigo_finca=' . $codigoFinca
+                                'error' => 'Finca inexistente (prod_fincas) para codigo_finca=' . $codigoFinca
                             ];
                             continue;
                         }
                         $fincaId = (int)$f['id'];
-                        $cacheFincaByCodigo[$codigoFinca] = ['id' => $fincaId, 'productor_id_real' => null];
+                        $cacheFincaByCodigo[$codigoFinca] = ['id' => $fincaId];
                     }
 
-                    // ===== 3) Upsert cuartel (prod_cuartel) =====
-                    // Regla: la actualización se basa en codigo_finca (ya validado contra prod_fincas)
-                    // y codigo_cuartel. Primero intentamos por finca_id (más robusto), y si no, fallback por codigo_finca.
+                    // Actualizar prod_fincas.nombre_finca si viene
+                    if ($nombreFinca !== null) {
+                        $camposFinca = $this->updateById('prod_fincas', (int)$fincaId, [
+                            'nombre_finca' => $nombreFinca
+                        ]);
+                        if ($camposFinca > 0) {
+                            $stats['campos_escritos'] += $camposFinca;
+                            $stats['fincas_actualizadas']++;
+                        }
+                    }
+
+                    // ===== 2) CUARTEL: buscar por (finca_id, codigo_cuartel). Si no existe, saltear y loguear =====
                     $key = $codigoFinca . '|' . $codigoCuartel;
                     $cuartelId = $cacheCuartelIdByKey[$key] ?? null;
 
@@ -384,56 +356,33 @@ class CargaDatosCuartelesModel
                             );
                         }
 
-                        if ($rowCu) {
-                            $cuartelId = (int)$rowCu['id'];
-                        } else {
-                            // Para CREAR un cuartel nuevo exigimos cooperativa_id_real (si no, no podemos completar el registro de forma segura)
-                            if ($coopReal === null) {
-                                $stats['errores'][] = [
-                                    'fila' => $i + 1,
-                                    'codigo_finca' => $codigoFinca,
-                                    'codigo_cuartel' => $codigoCuartel,
-                                    'error' => 'No existe el cuartel y no viene cooperativa_id_real para poder crearlo.'
-                                ];
-                                continue;
-                            }
-
-                            $cuartelId = $this->insert('prod_cuartel', [
-                                'id_responsable_real' => $idResponsableReal,
-                                'cooperativa_id_real' => $coopReal,
+                        if (!$rowCu) {
+                            $stats['errores'][] = [
+                                'fila' => $i + 1,
                                 'codigo_finca' => $codigoFinca,
-                                'nombre_finca' => $nombreFinca,
-                                'codigo_cuartel' => $codigoCuartel,
-
-                                'variedad' => $this->normalizeStr($r['variedad'] ?? null),
-                                'numero_inv' => $this->normalizeStr($r['numero_inv'] ?? null),
-                                'sistema_conduccion' => $this->normalizeStr($r['sistema_conduccion'] ?? null),
-                                'superficie_ha' => $this->normalizeDecimal($r['superficie_ha'] ?? null),
-                                'porcentaje_cepas_produccion' => $this->normalizeDecimal($r['porcentaje_cepas_produccion'] ?? null),
-                                'forma_cosecha_actual' => $this->normalizeStr($r['forma_cosecha_actual'] ?? null),
-                                'porcentaje_malla_buen_estado' => $this->normalizeDecimal($r['porcentaje_malla_buen_estado'] ?? null),
-                                'edad_promedio_encepado_anios' => $this->normalizeInt($r['edad_promedio_encepado_anios'] ?? null),
-                                'estado_estructura_sistema' => $this->normalizeStr($r['estado_estructura_sistema'] ?? null),
-                                'labores_mecanizables' => $this->normalizeStr($r['labores_mecanizables'] ?? null),
-
                                 'finca_id' => (int)$fincaId,
-                            ]);
-                            $stats['cuarteles_creados']++;
+                                'codigo_cuartel' => $codigoCuartel,
+                                'error' => 'Cuartel inexistente (prod_cuartel) para finca/cuartel indicado'
+                            ];
+                            continue;
                         }
 
+                        $cuartelId = (int)$rowCu['id'];
                         $cacheCuartelIdByKey[$key] = $cuartelId;
                     }
 
-                    // updates en prod_cuartel (si vienen valores)
+                    // ===== 3) Actualizar prod_cuartel con SOLO columnas del CSV =====
                     $cuUpdate = [
-                        'id_responsable_real' => $idResponsableReal,
+                        'codigo_finca' => $codigoFinca,
                         'nombre_finca' => $nombreFinca,
+                        'codigo_cuartel' => $codigoCuartel,
 
                         'variedad' => $this->normalizeStr($r['variedad'] ?? null),
                         'numero_inv' => $this->normalizeStr($r['numero_inv'] ?? null),
                         'sistema_conduccion' => $this->normalizeStr($r['sistema_conduccion'] ?? null),
                         'superficie_ha' => $this->normalizeDecimal($r['superficie_ha'] ?? null),
                         'porcentaje_cepas_produccion' => $this->normalizeDecimal($r['porcentaje_cepas_produccion'] ?? null),
+
                         'forma_cosecha_actual' => $this->normalizeStr($r['forma_cosecha_actual'] ?? null),
                         'porcentaje_malla_buen_estado' => $this->normalizeDecimal($r['porcentaje_malla_buen_estado'] ?? null),
                         'edad_promedio_encepado_anios' => $this->normalizeInt($r['edad_promedio_encepado_anios'] ?? null),
@@ -443,13 +392,7 @@ class CargaDatosCuartelesModel
                         'finca_id' => (int)$fincaId,
                     ];
 
-                    // Si viene cooperativa_id_real, la actualizamos; si no viene, no tocamos el valor existente.
-                    if ($coopReal !== null) {
-                        $cuUpdate['cooperativa_id_real'] = $coopReal;
-                    }
-
                     $camposCu = $this->updateById('prod_cuartel', (int)$cuartelId, $cuUpdate);
-
 
                     if ($camposCu > 0) {
                         $stats['campos_escritos'] += $camposCu;
@@ -559,4 +502,5 @@ class CargaDatosCuartelesModel
             throw $e;
         }
     }
+
 }
