@@ -463,13 +463,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
 
             async function apiRequest(action, payload = {}) {
-                const body = Object.assign({}, payload, { action });
+                const body = Object.assign({}, payload, {
+                    action
+                });
                 console.log('[CosechaMecanica] Llamada API:', action, body);
 
                 try {
                     const response = await fetch(API_URL, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
                         body: JSON.stringify(body)
                     });
 
@@ -611,57 +615,57 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
 
             function abrirModalVerContrato(contratoId) {
-    console.log('[CosechaMecanica] Acción en contrato: ver-contrato ID:', contratoId);
+                console.log('[CosechaMecanica] Acción en contrato: ver-contrato ID:', contratoId);
 
-    if (!contratoId || Number.isNaN(Number(contratoId))) {
-         showAlert('error', 'ID de contrato inválido.');
-        return;
-    }
+                if (!contratoId || Number.isNaN(Number(contratoId))) {
+                    showAlert('error', 'ID de contrato inválido.');
+                    return;
+                }
 
-    // Ruta correcta al controlador (desde /views/sve/)
-    var CONTRATO_ENDPOINT = '../../controllers/sve_cosechaMecanicaController.php';
+                // Ruta correcta al controlador (desde /views/sve/)
+                var CONTRATO_ENDPOINT = '../../controllers/sve_cosechaMecanicaController.php';
 
-    fetch(CONTRATO_ENDPOINT, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json;charset=utf-8'
-        },
-        body: JSON.stringify({
-            action: 'obtener',
-            id: Number(contratoId)
-        })
-    })
-        .then(function (response) {
-            return response.json();
-        })
-        .then(function (resp) {
-            if (!resp.ok) {
-                console.error('[CosechaMecanica] Error al obtener contrato:', resp.error);
-                showAlert('error', resp.error || 'No se pudo obtener el contrato.');
-                return;
+                fetch(CONTRATO_ENDPOINT, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json;charset=utf-8'
+                        },
+                        body: JSON.stringify({
+                            action: 'obtener',
+                            id: Number(contratoId)
+                        })
+                    })
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(resp) {
+                        if (!resp.ok) {
+                            console.error('[CosechaMecanica] Error al obtener contrato:', resp.error);
+                            showAlert('error', resp.error || 'No se pudo obtener el contrato.');
+                            return;
+                        }
+
+                        var contrato = resp.data || {};
+
+                        // Usamos la función definida en verContratoModal_view.php
+                        if (typeof window.cargarContratoEnModal === 'function') {
+                            window.cargarContratoEnModal(contrato);
+                        } else {
+                            console.warn('[CosechaMecanica] window.cargarContratoEnModal no está definida.');
+                        }
+
+                        // Mostrar el modal (usa tu función utilitaria si ya existe)
+                        var modal = document.getElementById('modalVerContrato');
+                        if (modal) {
+                            modal.classList.remove('hidden');
+                            modal.setAttribute('aria-hidden', 'false');
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('[CosechaMecanica] Error al abrir modal ver contrato:', error);
+                        showAlert('error', 'Error de conexión al obtener el contrato.');
+                    });
             }
-
-            var contrato = resp.data || {};
-
-            // Usamos la función definida en verContratoModal_view.php
-            if (typeof window.cargarContratoEnModal === 'function') {
-                window.cargarContratoEnModal(contrato);
-            } else {
-                console.warn('[CosechaMecanica] window.cargarContratoEnModal no está definida.');
-            }
-
-            // Mostrar el modal (usa tu función utilitaria si ya existe)
-            var modal = document.getElementById('modalVerContrato');
-            if (modal) {
-                modal.classList.remove('hidden');
-                modal.setAttribute('aria-hidden', 'false');
-            }
-        })
-        .catch(function (error) {
-            console.error('[CosechaMecanica] Error al abrir modal ver contrato:', error);
-            showAlert('error', 'Error de conexión al obtener el contrato.');
-        });
-}
 
             async function abrirModalCoopProd(id) {
                 try {
@@ -678,7 +682,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         return;
                     }
 
-                                        const filas = items.map((row, index) => `
+                    const filas = items.map((row, index) => `
                         <tr>
                             <td>${index + 1}</td>
 
@@ -698,7 +702,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                             <td>${row.firma ? 'Sí' : 'No'}</td>
                             <td>${row.flete ? 'Sí' : 'No'}</td>
-                            <td>${row.seguro_flete ? 'Sí' : 'No'}</td>
+                            <td>${
+    (String(row.seguro_flete || '').toLowerCase() === 'si') ? 'Sí'
+  : (String(row.seguro_flete || '').toLowerCase() === 'no') ? 'No'
+  : 'Sin definir'
+}</td>
                         </tr>
                     `).join('');
 
@@ -801,7 +809,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 }
             }
 
-                        function initEventos() {
+            function initEventos() {
                 if (filtroNombreInput) {
                     filtroNombreInput.addEventListener('input', function(e) {
                         filtros.nombre = e.target.value || '';
@@ -860,7 +868,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 console.log('[CosechaMecanica] Eventos inicializados');
             }
-            
+
             document.addEventListener('DOMContentLoaded', function() {
                 console.log('[CosechaMecanica] DOMContentLoaded');
                 initEventos();

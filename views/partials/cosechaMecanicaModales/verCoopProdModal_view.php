@@ -191,12 +191,6 @@
                 var celdas = fila.querySelectorAll('td');
                 if (!celdas.length) return;
 
-                // Se asumen columnas (según la tabla renderizada en sve_cosechaMecanica.php):
-                // 0=#,
-                // 1=Cooperativa, 2=ID Real (Coop), 3=CUIT (Coop),
-                // 4=Productor,   5=ID Real (Prod), 6=CUIT (Prod),
-                // 7=Superficie,  8=Variedad, 9=Prod. estimada, 10=Fecha estimada, 11=Km finca,
-                // 12=Firma, 13=Flete, 14=Seguro flete
                 var txtCoop = normalizarTexto(
                     (celdas[1] ? celdas[1].textContent : '') + ' ' +
                     (celdas[2] ? celdas[2].textContent : '') + ' ' +
