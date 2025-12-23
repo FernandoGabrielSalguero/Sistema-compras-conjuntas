@@ -104,7 +104,7 @@ final class DroneDrawerListadoModel
             $prod = $st->fetch() ?: null;
 
             if ($prod) {
-                 $st2 = $this->pdo->prepare("
+                $st2 = $this->pdo->prepare("
                 SELECT rpc.*, 
                        u.usuario AS cooperativa_usuario,
                        ui2.correo AS cooperativa_correo
@@ -212,9 +212,9 @@ final class DroneDrawerListadoModel
         if (empty($p['id']) || !is_numeric($p['id'])) {
             throw new InvalidArgumentException('ID inválido');
         }
-        $p['id'] = (int)$p['id'];
         $id         = $p['id'];
         $s          = $p['solicitud']  ?? [];
+        $prodPayload = $p['productor'] ?? null;
         $c          = $p['costos']     ?? null;
         $motivos    = $p['motivos']    ?? [];
         $items      = $p['items']      ?? [];
@@ -294,8 +294,38 @@ final class DroneDrawerListadoModel
                 ':id'                  => $id
             ]);
 
+            // === Teléfono del productor (usuarios_info.telefono) ===
+            if (is_array($prodPayload)) {
+                $prodIdReal = self::n($prodPayload['id_real'] ?? ($s['productor_id_real'] ?? null));
+                $tel = self::n($prodPayload['telefono'] ?? null);
+
+                if ($prodIdReal !== null) {
+                    $stU = $this->pdo->prepare("SELECT id FROM usuarios WHERE id_real = :idr LIMIT 1");
+                    $stU->execute([':idr' => $prodIdReal]);
+                    $uRow = $stU->fetch();
+
+                    if ($uRow && !empty($uRow['id'])) {
+                        $uid = (int)$uRow['id'];
+
+                        $stUi = $this->pdo->prepare("SELECT id FROM usuarios_info WHERE usuario_id = :uid LIMIT 1");
+                        $stUi->execute([':uid' => $uid]);
+                        $uiRow = $stUi->fetch();
+
+                        if ($uiRow) {
+                            $this->pdo->prepare("UPDATE usuarios_info SET telefono = :tel WHERE usuario_id = :uid")
+                                ->execute([':tel' => $tel, ':uid' => $uid]);
+                        } else {
+                            // usuarios_info.zona_asignada es NOT NULL en tu esquema
+                            $this->pdo->prepare("INSERT INTO usuarios_info (usuario_id, telefono, zona_asignada) VALUES (:uid, :tel, '')")
+                                ->execute([':uid' => $uid, ':tel' => $tel]);
+                        }
+                    }
+                }
+            }
+
             // costos
             if ($c !== null) {
+
                 // 1) Traemos el registro actual (si existe)
                 $stC = $this->pdo->prepare("SELECT * FROM drones_solicitud_costos WHERE solicitud_id = :id LIMIT 1");
                 $stC->execute([':id' => $id]);

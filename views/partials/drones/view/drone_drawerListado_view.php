@@ -17,7 +17,18 @@ $__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
 
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
-    <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
+    <script>
+        (function() {
+            const SRC = 'https://framework.impulsagroup.com/assets/javascript/framework.js';
+            // Evitar doble carga (causa: "Identifier '$' has already been declared")
+            const already = document.querySelector('script[src*="framework.impulsagroup.com/assets/javascript/framework.js"]');
+            if (already) return;
+            const s = document.createElement('script');
+            s.src = SRC;
+            s.defer = true;
+            document.head.appendChild(s);
+        })();
+    </script>
 </head>
 <style>
     /* Drawer */
@@ -319,6 +330,14 @@ $__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
                             <div class="input-icon input-icon-hashtag">
                                 <input type="number" step="0.01" min="0" id="superficie_ha" name="superficie_ha" placeholder="0.00" />
                             </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="productor_telefono">Teléfono productor</label>
+                            <div class="input-icon input-icon-phone">
+                                <input type="tel" id="productor_telefono" name="productor_telefono" placeholder="2613477160" />
+                            </div>
+                            <small class="helper-text">Se guarda en usuarios_info.telefono del productor.</small>
                         </div>
                     </div>
 
@@ -708,7 +727,43 @@ $__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
 
         const API = '../partials/drones/controller/drone_drawerListado_controller.php';
 
+        // Fallback de alertas (si framework.js no está listo todavía)
+        function showAlert(type, msg) {
+            if (typeof window.showAlert === 'function') return window.showAlert(type, msg);
+            const c = document.getElementById('alertContainer');
+            if (!c) return alert(msg);
+            const div = document.createElement('div');
+            div.style.margin = '8px 0';
+            div.style.padding = '10px 12px';
+            div.style.borderRadius = '10px';
+            div.style.background = (type === 'success') ? '#DCFCE7' : (type === 'error') ? '#FEE2E2' : '#DBEAFE';
+            div.style.color = '#111827';
+            div.textContent = msg;
+            c.appendChild(div);
+            setTimeout(() => div.remove(), 4000);
+        }
+
+        // Esperar a que el framework esté cargado (si no lo está ya)
+        function ensureFrameworkLoaded() {
+            if (window.__SVE_FW_READY__) return window.__SVE_FW_READY__;
+            window.__SVE_FW_READY__ = new Promise((resolve) => {
+                if (typeof window.showAlert === 'function') return resolve(true);
+                const s = document.querySelector('script[src*="framework.impulsagroup.com/assets/javascript/framework.js"]');
+                if (!s) return resolve(false);
+                s.addEventListener('load', () => resolve(true), {
+                    once: true
+                });
+                s.addEventListener('error', () => resolve(false), {
+                    once: true
+                });
+                // Si ya está en DOM pero cargó antes, resolvemos igual
+                setTimeout(() => resolve(typeof window.showAlert === 'function'), 0);
+            });
+            return window.__SVE_FW_READY__;
+        }
+
         const drawer = document.getElementById('drawerListado');
+
         const panel = drawer.querySelector('.sv-drawer__panel');
         const overlay = drawer.querySelector('.sv-drawer__overlay');
         const btnClose = document.getElementById('drawerListado-close');
@@ -817,6 +872,8 @@ $__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
         async function open({
             id
         }) {
+            await ensureFrameworkLoaded();
+
             lastFocus = document.activeElement;
             __ID__ = Number(id); // <— coerción aquí
             lblId.textContent = `#${__ID__}`;
@@ -828,6 +885,7 @@ $__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
             await loadCatalogs();
             await loadDetalle(__ID__);
         }
+
 
 
         function close() {
@@ -1111,6 +1169,7 @@ $__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
             setV('productor_id_real', s.productor_id_real);
             setV('ses_usuario_edit', s.ses_usuario ?? d?.productor?.usuario ?? '');
             setV('superficie_ha', fmtNumInput(s.superficie_ha));
+            setV('productor_telefono', d?.productor?.telefono ?? '');
             setV('fecha_visita_edit', s.fecha_visita);
             setV('hora_visita_desde', s.hora_visita_desde);
             setV('hora_visita_hasta', s.hora_visita_hasta);
@@ -1408,6 +1467,10 @@ $__SV_ROLE__ = strtolower((string)($_SESSION['rol'] ?? ''));
                     piloto_id: getV('piloto_id') ? parseInt(getV('piloto_id'), 10) : null,
                     forma_pago_id: getV('forma_pago_id') ? parseInt(getV('forma_pago_id'), 10) : null,
                     coop_descuento_nombre: getV('coop_descuento_nombre')
+                },
+                productor: {
+                    id_real: getV('productor_id_real'),
+                    telefono: getV('productor_telefono')
                 },
                 costos: (function() {
                     const obj = {
