@@ -581,7 +581,7 @@ $sesion_payload = [
                     <div class="gform-question span-2" id="q_contacto_telefono">
                         <label class="gform-label" for="contacto_telefono">TELÉFONO DE CONTACTO</label>
                         <div class="gform-helper">
-                            Se toma desde tu perfil (usuarios_info.telefono). Podés editarlo; si lo cambiás, lo actualizaremos en tu perfil.
+                            Es el telefono que tenemos registrado a tu nombre. Podés editarlo; si lo cambiás, lo actualizaremos en tu perfil.
                         </div>
                         <input class="gform-input" id="contacto_telefono" name="contacto_telefono" type="tel" inputmode="tel" placeholder="Ej.: 261 555-5555" />
                     </div>
