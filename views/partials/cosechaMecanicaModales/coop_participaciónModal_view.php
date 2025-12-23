@@ -397,7 +397,10 @@
             if (productorInput) productorInput.value = productorNombre;
             if (superficieInput) superficieInput.value = datos.superficie !== undefined ? datos.superficie : '';
             if (variedadInput) variedadInput.value = datos.variedad || '';
-            if (fechaSelect && datos.fecha_estimada) fechaSelect.value = datos.fecha_estimada;
+            if (fechaSelect && datos.fecha_estimada) {
+                const valorNormalizado = normalizarFechaEstimadaGuardada(datos.fecha_estimada);
+                fechaSelect.value = valorNormalizado;
+            }
             if (kmFincaInput) kmFincaInput.value = datos.km_finca !== undefined ? datos.km_finca : '';
             if (fleteSelect && datos.flete !== undefined) fleteSelect.value = String(datos.flete);
             if (seguroFleteSelect) seguroFleteSelect.value = (datos.seguro_flete ? String(datos.seguro_flete) : 'sin_definir');
@@ -427,33 +430,63 @@
     }
 
     function getQuincenasOptionsHtml() {
-        const year = anioOperativoActivo;
+        // Mantener: el value debe ser el texto que se muestra (esto es lo que se guarda en BD)
         return `
-            <option value="${year}-01-01">Primera quincena de enero</option>
-            <option value="${year}-01-16">Segunda quincena de enero</option>
-            <option value="${year}-02-01">Primera quincena de febrero</option>
-            <option value="${year}-02-16">Segunda quincena de febrero</option>
-            <option value="${year}-03-01">Primera quincena de marzo</option>
-            <option value="${year}-03-16">Segunda quincena de marzo</option>
-            <option value="${year}-04-01">Primera quincena de abril</option>
-            <option value="${year}-04-16">Segunda quincena de abril</option>
-            <option value="${year}-05-01">Primera quincena de mayo</option>
-            <option value="${year}-05-16">Segunda quincena de mayo</option>
-            <option value="${year}-06-01">Primera quincena de junio</option>
-            <option value="${year}-06-16">Segunda quincena de junio</option>
-            <option value="${year}-07-01">Primera quincena de julio</option>
-            <option value="${year}-07-16">Segunda quincena de julio</option>
-            <option value="${year}-08-01">Primera quincena de agosto</option>
-            <option value="${year}-08-16">Segunda quincena de agosto</option>
-            <option value="${year}-09-01">Primera quincena de septiembre</option>
-            <option value="${year}-09-16">Segunda quincena de septiembre</option>
-            <option value="${year}-10-01">Primera quincena de octubre</option>
-            <option value="${year}-10-16">Segunda quincena de octubre</option>
-            <option value="${year}-11-01">Primera quincena de noviembre</option>
-            <option value="${year}-11-16">Segunda quincena de noviembre</option>
-            <option value="${year}-12-01">Primera quincena de diciembre</option>
-            <option value="${year}-12-16">Segunda quincena de diciembre</option>
+            <option value="Primera quincena de enero">Primera quincena de enero</option>
+            <option value="Segunda quincena de enero">Segunda quincena de enero</option>
+            <option value="Primera quincena de febrero">Primera quincena de febrero</option>
+            <option value="Segunda quincena de febrero">Segunda quincena de febrero</option>
+            <option value="Primera quincena de marzo">Primera quincena de marzo</option>
+            <option value="Segunda quincena de marzo">Segunda quincena de marzo</option>
+            <option value="Primera quincena de abril">Primera quincena de abril</option>
+            <option value="Segunda quincena de abril">Segunda quincena de abril</option>
+            <option value="Primera quincena de mayo">Primera quincena de mayo</option>
+            <option value="Segunda quincena de mayo">Segunda quincena de mayo</option>
+            <option value="Primera quincena de junio">Primera quincena de junio</option>
+            <option value="Segunda quincena de junio">Segunda quincena de junio</option>
+            <option value="Primera quincena de julio">Primera quincena de julio</option>
+            <option value="Segunda quincena de julio">Segunda quincena de julio</option>
+            <option value="Primera quincena de agosto">Primera quincena de agosto</option>
+            <option value="Segunda quincena de agosto">Segunda quincena de agosto</option>
+            <option value="Primera quincena de septiembre">Primera quincena de septiembre</option>
+            <option value="Segunda quincena de septiembre">Segunda quincena de septiembre</option>
+            <option value="Primera quincena de octubre">Primera quincena de octubre</option>
+            <option value="Segunda quincena de octubre">Segunda quincena de octubre</option>
+            <option value="Primera quincena de noviembre">Primera quincena de noviembre</option>
+            <option value="Segunda quincena de noviembre">Segunda quincena de noviembre</option>
+            <option value="Primera quincena de diciembre">Primera quincena de diciembre</option>
+            <option value="Segunda quincena de diciembre">Segunda quincena de diciembre</option>
         `;
+    }
+
+    function normalizarFechaEstimadaGuardada(valor) {
+        if (!valor) return '';
+
+        // Si ya viene como etiqueta (nuevo formato), lo devolvemos tal cual
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(String(valor))) {
+            return String(valor);
+        }
+
+        // Formato viejo: YYYY-MM-DD -> map a quincena
+        const partes = String(valor).split('-');
+        if (partes.length !== 3) return String(valor);
+
+        const mes = parseInt(partes[1], 10);
+        const dia = parseInt(partes[2], 10);
+
+        const meses = [
+            'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+            'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+        ];
+
+        if (!mes || mes < 1 || mes > 12) return String(valor);
+        const nombreMes = meses[mes - 1];
+
+        if (dia === 1) return `Primera quincena de ${nombreMes}`;
+        if (dia === 16) return `Segunda quincena de ${nombreMes}`;
+
+        // Si no coincide con 1 o 16, devolvemos el valor original para no romper
+        return String(valor);
     }
 
     function obtenerAnioDesdeOperativo(op) {
