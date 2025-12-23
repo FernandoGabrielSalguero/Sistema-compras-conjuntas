@@ -219,23 +219,63 @@ class cosechaMecanicaModel
          * Participaciones (cooperativas + productores) por contrato.
          * @return array<int, array<string, mixed>>
          */
-        public function obtenerParticipacionesPorContrato(int $contratoId): array
+                public function obtenerParticipacionesPorContrato(int $contratoId): array
         {
                 $sql = "SELECT
-                    id,
-                    contrato_id,
-                    nom_cooperativa,
-                    firma,
-                    productor,
-                    superficie,
-                    variedad,
-                    prod_estimada,
-                    fecha_estimada,
-                    km_finca,
-                    flete
-                FROM cosechaMecanica_cooperativas_participacion
-                WHERE contrato_id = :contrato_id
-                ORDER BY nom_cooperativa ASC, productor ASC, id ASC";
+                    p.id,
+                    p.contrato_id,
+                    p.nom_cooperativa,
+                    COALESCE(u_coop_name.id_real, u_coop_ui.id_real) AS coop_id_real,
+                    COALESCE(u_coop_name.cuit, u_coop_ui.cuit) AS coop_cuit,
+                    p.firma,
+                    p.productor,
+                    COALESCE(u_prod_name.id_real, u_prod_ui.id_real) AS prod_id_real,
+                    COALESCE(u_prod_name.cuit, u_prod_ui.cuit) AS prod_cuit,
+                    p.superficie,
+                    p.variedad,
+                    p.prod_estimada,
+                    p.fecha_estimada,
+                    p.km_finca,
+                    p.flete,
+                    p.seguro_flete
+                FROM cosechaMecanica_cooperativas_participacion p
+
+                LEFT JOIN usuarios u_coop_name
+                    ON u_coop_name.rol = 'cooperativa'
+                    AND (
+                        u_coop_name.razon_social = p.nom_cooperativa
+                        OR u_coop_name.usuario = p.nom_cooperativa
+                        OR u_coop_name.id_real = p.nom_cooperativa
+                    )
+                LEFT JOIN (
+                    SELECT ui.nombre, MIN(ui.usuario_id) AS usuario_id
+                    FROM usuarios_info ui
+                    GROUP BY ui.nombre
+                ) ui_coop_match
+                    ON ui_coop_match.nombre = p.nom_cooperativa
+                LEFT JOIN usuarios u_coop_ui
+                    ON u_coop_ui.id = ui_coop_match.usuario_id
+                    AND u_coop_ui.rol = 'cooperativa'
+
+                LEFT JOIN usuarios u_prod_name
+                    ON u_prod_name.rol = 'productor'
+                    AND (
+                        u_prod_name.razon_social = p.productor
+                        OR u_prod_name.usuario = p.productor
+                        OR u_prod_name.id_real = p.productor
+                    )
+                LEFT JOIN (
+                    SELECT ui.nombre, MIN(ui.usuario_id) AS usuario_id
+                    FROM usuarios_info ui
+                    GROUP BY ui.nombre
+                ) ui_prod_match
+                    ON ui_prod_match.nombre = p.productor
+                LEFT JOIN usuarios u_prod_ui
+                    ON u_prod_ui.id = ui_prod_match.usuario_id
+                    AND u_prod_ui.rol = 'productor'
+
+                WHERE p.contrato_id = :contrato_id
+                ORDER BY p.nom_cooperativa ASC, p.productor ASC, p.id ASC";
 
                 $stmt = $this->pdo->prepare($sql);
                 $stmt->bindValue(':contrato_id', $contratoId, PDO::PARAM_INT);
@@ -243,6 +283,7 @@ class cosechaMecanicaModel
 
                 return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
         }
+
 
         /**
          * Elimina un contrato y sus participaciones.

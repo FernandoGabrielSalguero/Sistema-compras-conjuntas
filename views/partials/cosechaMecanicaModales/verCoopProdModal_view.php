@@ -1,8 +1,9 @@
 <?php declare(strict_types=1); ?>
+<!-- Este es el modal que muestra las cooperativas y los productores que firmaron el contrato de cosecha mecánica.-->
 <style>
     /* Ajuste de tamaño del modal y comportamiento responsive */
     #modalCoopProd .modal-content {
-        width: min(960px, 95vw);
+        width: min(1200px, 98vw); /* AJUSTAR ANCHO MANUALMENTE AQUÍ */
         max-height: 90vh;
         display: flex;
         flex-direction: column;
@@ -190,12 +191,24 @@
                 var celdas = fila.querySelectorAll('td');
                 if (!celdas.length) return;
 
-                // Se asumen columnas:
-                // 0 = #, 1 = Cooperativa, 2 = Productor, 3 = Superficie, 4 = Variedad, 5 = Flete
-                var txtCoop = normalizarTexto(celdas[1] ? celdas[1].textContent : '');
-                var txtProd = normalizarTexto(celdas[2] ? celdas[2].textContent : '');
-                var txtVar  = normalizarTexto(celdas[4] ? celdas[4].textContent : '');
-                var txtFlete = normalizarTexto(celdas[5] ? celdas[5].textContent : '');
+                // Se asumen columnas (según la tabla renderizada en sve_cosechaMecanica.php):
+                // 0=#,
+                // 1=Cooperativa, 2=ID Real (Coop), 3=CUIT (Coop),
+                // 4=Productor,   5=ID Real (Prod), 6=CUIT (Prod),
+                // 7=Superficie,  8=Variedad, 9=Prod. estimada, 10=Fecha estimada, 11=Km finca,
+                // 12=Firma, 13=Flete, 14=Seguro flete
+                var txtCoop = normalizarTexto(
+                    (celdas[1] ? celdas[1].textContent : '') + ' ' +
+                    (celdas[2] ? celdas[2].textContent : '') + ' ' +
+                    (celdas[3] ? celdas[3].textContent : '')
+                );
+                var txtProd = normalizarTexto(
+                    (celdas[4] ? celdas[4].textContent : '') + ' ' +
+                    (celdas[5] ? celdas[5].textContent : '') + ' ' +
+                    (celdas[6] ? celdas[6].textContent : '')
+                );
+                var txtVar  = normalizarTexto(celdas[8] ? celdas[8].textContent : '');
+                var txtFlete = normalizarTexto(celdas[13] ? celdas[13].textContent : '');
 
                 var visible = true;
 

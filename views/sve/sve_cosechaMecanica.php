@@ -678,18 +678,27 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         return;
                     }
 
-                    const filas = items.map((row, index) => `
+                                        const filas = items.map((row, index) => `
                         <tr>
                             <td>${index + 1}</td>
+
                             <td>${row.nom_cooperativa || ''}</td>
+                            <td>${row.coop_id_real || ''}</td>
+                            <td>${row.coop_cuit || ''}</td>
+
                             <td>${row.productor || ''}</td>
+                            <td>${row.prod_id_real || ''}</td>
+                            <td>${row.prod_cuit || ''}</td>
+
                             <td>${row.superficie ?? ''}</td>
                             <td>${row.variedad || ''}</td>
                             <td>${row.prod_estimada ?? ''}</td>
                             <td>${row.fecha_estimada ? formatearFecha(row.fecha_estimada) : ''}</td>
                             <td>${row.km_finca ?? ''}</td>
+
                             <td>${row.firma ? 'Sí' : 'No'}</td>
                             <td>${row.flete ? 'Sí' : 'No'}</td>
+                            <td>${row.seguro_flete ? 'Sí' : 'No'}</td>
                         </tr>
                     `).join('');
 
@@ -699,15 +708,24 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <thead>
                                     <tr>
                                         <th>#</th>
+
                                         <th>Cooperativa</th>
+                                        <th>ID Real (Coop)</th>
+                                        <th>CUIT (Coop)</th>
+
                                         <th>Productor</th>
+                                        <th>ID Real (Prod)</th>
+                                        <th>CUIT (Prod)</th>
+
                                         <th>Superficie (ha)</th>
                                         <th>Variedad</th>
                                         <th>Prod. estimada</th>
                                         <th>Fecha estimada</th>
                                         <th>Km finca</th>
+
                                         <th>Firma</th>
                                         <th>Flete</th>
+                                        <th>Seguro flete</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -716,6 +734,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             </table>
                         </div>
                     `;
+
                 } catch (err) {
                     console.error('[CosechaMecanica] Error al abrir modal coop/prod:', err);
                     modalCoopProdBody.innerHTML = 'No se pudo cargar la información de cooperativas y productores.';
