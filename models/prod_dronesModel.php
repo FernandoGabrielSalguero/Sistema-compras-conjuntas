@@ -66,6 +66,21 @@ class prodDronesModel
         return $row ?: ['costo' => 0.00, 'moneda' => 'Pesos'];
     }
 
+    public function getTelefonoContactoPorIdReal(string $idReal): ?string
+    {
+        $sql = "SELECT ui.telefono
+                  FROM usuarios u
+             LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+                 WHERE u.id_real = :id_real
+                 LIMIT 1";
+        $st = $this->pdo->prepare($sql);
+        $st->execute([':id_real' => $idReal]);
+        $tel = $st->fetchColumn();
+        if ($tel === false) return null;
+        $tel = trim((string)$tel);
+        return $tel === '' ? null : $tel;
+    }
+
     /* =======================
      *   Crear Solicitud (NEW)
      * ======================= */
@@ -76,6 +91,18 @@ class prodDronesModel
         if (!$productorIdReal) {
             throw new RuntimeException('Sesión inválida (id_real ausente).');
         }
+
+        // usuario_id del productor (para poder actualizar usuarios_info.telefono)
+        $stUid = $this->pdo->prepare("SELECT id FROM usuarios WHERE id_real = ? LIMIT 1");
+        $stUid->execute([(string)$productorIdReal]);
+        $usuarioId = (int)($stUid->fetchColumn() ?: 0);
+        if ($usuarioId <= 0) {
+            throw new RuntimeException('Productor inválido (usuario no encontrado).');
+        }
+
+        // Teléfono de contacto (si cambia, actualiza usuarios_info.telefono)
+        $telNuevo = trim((string)($data['telefono_contacto'] ?? ''));
+        $telNuevo = ($telNuevo === '') ? null : $telNuevo;
 
         $nn = fn($v) => $v === '' ? null : $v;
         $siNo = fn($v) => in_array(strtolower((string)$v), $this->yesNo, true) ? strtolower($v) : null;
@@ -308,7 +335,7 @@ class prodDronesModel
                         $validItems[] = [
                             'patologia_id'   => $pid,
                             'fuente'         => 'productor',
-                            'nombre_producto'=> $nombre
+                            'nombre_producto' => $nombre
                         ];
                     }
                 }
@@ -343,13 +370,32 @@ class prodDronesModel
             $stC->execute([
                 ':sid'              => $solicitudId,
                 ':moneda'           => $moneda,
-                ':costo_base_por_ha'=> $costoBaseHa,
+                ':costo_base_por_ha' => $costoBaseHa,
                 ':base_ha'          => $sup,
                 ':base_total'       => $baseTotal,
                 ':productos_total'  => $productosTotal,
                 ':total'            => $total,
                 ':desglose_json'    => json_encode($desglose, JSON_UNESCAPED_UNICODE),
             ]);
+
+            // F) Actualizar teléfono de contacto en perfil SOLO si cambió
+            $stTel = $this->pdo->prepare("SELECT id, telefono FROM usuarios_info WHERE usuario_id = ? LIMIT 1");
+            $stTel->execute([$usuarioId]);
+            $rowTel = $stTel->fetch() ?: null;
+
+            $telActual = $rowTel ? trim((string)($rowTel['telefono'] ?? '')) : '';
+            $telActual = ($telActual === '') ? null : $telActual;
+
+            if ($telNuevo !== $telActual) {
+                if ($rowTel) {
+                    $stUpd = $this->pdo->prepare("UPDATE usuarios_info SET telefono = :tel WHERE usuario_id = :uid");
+                    $stUpd->execute([':tel' => $telNuevo, ':uid' => $usuarioId]);
+                } else {
+                    // Fallback: crear fila mínima (zona_asignada es NOT NULL en tu esquema)
+                    $stIns = $this->pdo->prepare("INSERT INTO usuarios_info (usuario_id, telefono, zona_asignada) VALUES (:uid, :tel, '')");
+                    $stIns->execute([':uid' => $usuarioId, ':tel' => $telNuevo]);
+                }
+            }
 
             $this->pdo->commit();
             return $solicitudId;

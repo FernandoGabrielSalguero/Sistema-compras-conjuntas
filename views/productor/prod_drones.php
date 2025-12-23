@@ -304,17 +304,17 @@ $sesion_payload = [
             }
         }
 
-.gform-question {
-    display: flex;
-    flex-direction: column;
-    gap: .4rem;
-    margin-bottom: 1rem;
-    font-size: .95rem;
-    background-color: #fafafa;
-    border: 2px solid #e5e7eb; 
-    border-radius: 12px;       
-    padding: 1rem;
-}
+        .gform-question {
+            display: flex;
+            flex-direction: column;
+            gap: .4rem;
+            margin-bottom: 1rem;
+            font-size: .95rem;
+            background-color: #fafafa;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1rem;
+        }
 
         .gform-label,
         .gform-legend {
@@ -575,6 +575,15 @@ $sesion_payload = [
                         <div class="gform-helper">Ingresá sólo el número de hectáreas a pulverizar. Máximo 20 héctareas por mes por productor.</div>
                         <input class="gform-input" id="superficie_ha" name="superficie_ha" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="Ej.: 3.5" />
                         <div class="gform-error">Debe ser un número &gt; 0.</div>
+                    </div>
+
+                    <!-- teléfono de contacto -->
+                    <div class="gform-question span-2" id="q_contacto_telefono">
+                        <label class="gform-label" for="contacto_telefono">TELÉFONO DE CONTACTO</label>
+                        <div class="gform-helper">
+                            Se toma desde tu perfil (usuarios_info.telefono). Podés editarlo; si lo cambiás, lo actualizaremos en tu perfil.
+                        </div>
+                        <input class="gform-input" id="contacto_telefono" name="contacto_telefono" type="tel" inputmode="tel" placeholder="Ej.: 261 555-5555" />
                     </div>
 
                     <!-- método de pago -->
@@ -1105,6 +1114,29 @@ $sesion_payload = [
                 }
             })();
 
+            // ---- Teléfono de contacto (precarga desde usuarios_info.telefono)
+            async function cargarTelefonoContacto() {
+                const input = document.getElementById('contacto_telefono');
+                if (!input) return;
+
+                try {
+                    const data = await apiGet({
+                        action: 'telefono_contacto'
+                    });
+                    const tel = (data && typeof data.telefono !== 'undefined') ? String(data.telefono || '') : '';
+                    input.value = tel;
+                    input.dataset.original = tel;
+                } catch {
+                    // fallback suave (por si existe en sesión)
+                    const tel = String(sessionData.telefono || '');
+                    input.value = tel;
+                    input.dataset.original = tel;
+                }
+            }
+
+            cargarTelefonoContacto();
+
+
             // -------- Modal
             const modal = $('#modalConfirmacion');
             const resumenModal = $('#resumenModal');
@@ -1464,6 +1496,9 @@ $sesion_payload = [
                       <dt>Superficie (ha)</dt>
                       <dd>${escapeHTML(payload.superficie_ha ?? '—')}</dd>
 
+                      <dt>Teléfono de contacto</dt>
+                      <dd>${escapeHTML(payload.telefono_contacto ?? '—')}</dd>
+
                       <dt>Dirección</dt>
                       <dd>${formatDireccion(payload.direccion)}</dd>
 
@@ -1651,6 +1686,7 @@ $sesion_payload = [
                     libre_obstaculos: getRadioValue('libre_obstaculos'),
                     area_despegue: getRadioValue('area_despegue'),
                     superficie_ha: $('#superficie_ha')?.value?.trim() || null,
+                    telefono_contacto: $('#contacto_telefono')?.value?.trim() || null,
                     forma_pago_id: (() => {
                         const v = $('#metodo_pago')?.value;
                         return v ? parseInt(v, 10) : null;

@@ -85,6 +85,21 @@ try {
             exit;
         }
 
+        if ($action === 'telefono_contacto') {
+            $idReal = (string)($_SESSION['id_real'] ?? '');
+            if ($idReal === '') {
+                http_response_code(403);
+                ob_clean();
+                echo json_encode(['ok' => false, 'error' => 'Sesión inválida']);
+                exit;
+            }
+            $tel = $model->getTelefonoContactoPorIdReal($idReal);
+            http_response_code(200);
+            ob_clean();
+            echo json_encode(['ok' => true, 'data' => ['telefono' => $tel]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            exit;
+        }
+
         http_response_code(400);
         ob_clean();
         echo json_encode(['ok' => false, 'error' => 'Acción GET no soportada']);
