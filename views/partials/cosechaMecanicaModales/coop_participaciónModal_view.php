@@ -21,6 +21,7 @@
                             <th>Fecha estimada</th>
                             <th>Km a finca</th>
                             <th>Flete</th>
+                            <th>Seguro flete</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -346,6 +347,17 @@
                 </div>
             </td>
             <td>
+                <div class="input-group">
+                    <div class="input-icon input-icon-name">
+                        <select id="seguro_flete_${indice}" name="seguro_flete[]" class="select-standard">
+                            <option value="sin_definir">Sin definir</option>
+                            <option value="si">Sí</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+                </div>
+            </td>
+            <td>
                 <button type="button" class="btn btn-cancelar btn-sm" onclick="eliminarFilaParticipacion(this)">Eliminar</button>
             </td>
         `;
@@ -378,6 +390,7 @@
             const fechaSelect = fila.querySelector(`#fecha_estimada_${indice}`);
             const kmFincaInput = fila.querySelector(`#km_finca_${indice}`);
             const fleteSelect = fila.querySelector(`#flete_${indice}`);
+            const seguroFleteSelect = fila.querySelector(`#seguro_flete_${indice}`);
 
             const productorNombre = datos.productor || '';
 
@@ -387,6 +400,8 @@
             if (fechaSelect && datos.fecha_estimada) fechaSelect.value = datos.fecha_estimada;
             if (kmFincaInput) kmFincaInput.value = datos.km_finca !== undefined ? datos.km_finca : '';
             if (fleteSelect && datos.flete !== undefined) fleteSelect.value = String(datos.flete);
+            if (seguroFleteSelect) seguroFleteSelect.value = (datos.seguro_flete ? String(datos.seguro_flete) : 'sin_definir');
+
 
             // Si tenemos finca_id guardada, la precargamos
             if (fincaSelect && datos.finca_id) {
@@ -526,6 +541,7 @@
             const fechaSelect = row.querySelector('select[name="fecha_estimada[]"]');
             const kmFincaInput = row.querySelector('input[name="km_finca[]"]');
             const fleteSelect = row.querySelector('select[name="flete[]"]');
+            const seguroFleteSelect = row.querySelector('select[name="seguro_flete[]"]');
             const fincaSelect = row.querySelector('select[name="finca[]"]');
 
             const productor = productorInput ? productorInput.value.trim() : '';
@@ -541,6 +557,7 @@
                 fecha_estimada: fechaSelect ? fechaSelect.value : '',
                 km_finca: kmFincaInput ? kmFincaInput.value : '',
                 flete: fleteSelect ? fleteSelect.value : '0',
+                seguro_flete: seguroFleteSelect ? seguroFleteSelect.value : 'sin_definir',
                 finca_id: fincaSelect ? fincaSelect.value : ''
             });
         });

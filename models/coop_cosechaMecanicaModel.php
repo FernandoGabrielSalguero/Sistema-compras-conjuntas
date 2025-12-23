@@ -142,7 +142,7 @@ class CoopCosechaMecanicaModel
      */
     public function obtenerParticipacionesPorContratoYCoop(int $contratoId, string $nomCooperativa): array
     {
-        $sql = "SELECT productor, superficie, variedad, prod_estimada, fecha_estimada, km_finca, flete, finca_id
+        $sql = "SELECT productor, superficie, variedad, prod_estimada, fecha_estimada, km_finca, flete, seguro_flete, finca_id
                 FROM cosechaMecanica_cooperativas_participacion
                 WHERE contrato_id = :contrato_id
                     AND nom_cooperativa = :nom_cooperativa
@@ -166,7 +166,7 @@ class CoopCosechaMecanicaModel
     {
         // Primero eliminamos todas las participaciones actuales de esta cooperativa para el contrato
         $sqlDelete = "DELETE FROM cosechaMecanica_cooperativas_participacion
-                      WHERE contrato_id = :contrato_id
+                WHERE contrato_id = :contrato_id
                         AND nom_cooperativa = :nom_cooperativa";
 
         $stmtDelete = $this->pdo->prepare($sqlDelete);
@@ -182,9 +182,9 @@ class CoopCosechaMecanicaModel
 
         // Insertamos el nuevo estado de participación
         $sqlInsert = "INSERT INTO cosechaMecanica_cooperativas_participacion
-                        (contrato_id, nom_cooperativa, firma, productor, superficie, variedad, prod_estimada, fecha_estimada, km_finca, flete, finca_id)
-                      VALUES
-                        (:contrato_id, :nom_cooperativa, :firma, :productor, :superficie, :variedad, :prod_estimada, :fecha_estimada, :km_finca, :flete, :finca_id)";
+                        (contrato_id, nom_cooperativa, firma, productor, superficie, variedad, prod_estimada, fecha_estimada, km_finca, flete, seguro_flete, finca_id)
+                        VALUES
+                        (:contrato_id, :nom_cooperativa, :firma, :productor, :superficie, :variedad, :prod_estimada, :fecha_estimada, :km_finca, :flete, :seguro_flete, :finca_id)";
 
         $stmtInsert = $this->pdo->prepare($sqlInsert);
 
@@ -201,6 +201,22 @@ class CoopCosechaMecanicaModel
             $fechaEstimada = $fila['fecha_estimada'] ?? null;
             $variedad     = $fila['variedad'] ?? '';
             $flete        = isset($fila['flete']) ? (int) $fila['flete'] : 0;
+
+            $seguroFleteRaw = isset($fila['seguro_flete']) ? trim((string) $fila['seguro_flete']) : '';
+            $seguroFleteRawLower = strtolower($seguroFleteRaw);
+
+            if ($seguroFleteRawLower === '' || $seguroFleteRawLower === 'sin definir') {
+                $seguroFlete = 'sin_definir';
+            } elseif ($seguroFleteRawLower === '1') {
+                $seguroFlete = 'si';
+            } elseif ($seguroFleteRawLower === '0') {
+                $seguroFlete = 'no';
+            } elseif (in_array($seguroFleteRawLower, ['sin_definir', 'si', 'no'], true)) {
+                $seguroFlete = $seguroFleteRawLower;
+            } else {
+                $seguroFlete = 'sin_definir';
+            }
+
             $fincaId      = ($fila['finca_id'] ?? '') !== '' ? (int) $fila['finca_id'] : null;
 
             $stmtInsert->execute([
@@ -214,6 +230,7 @@ class CoopCosechaMecanicaModel
                 ':fecha_estimada'  => $fechaEstimada,
                 ':km_finca'        => $kmFinca,
                 ':flete'           => $flete,
+                ':seguro_flete'    => $seguroFlete,
                 ':finca_id'        => $fincaId,
             ]);
         }
