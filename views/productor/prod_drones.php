@@ -732,7 +732,7 @@ $sesion_payload = [
 
                     <!-- Acciones-->
                     <div class="gform-actions span-1">
-                        <button type="submit" id="btn_solicitar" class="gform-btn gform-primary">Solicitar el servicio</button>
+                        <button type="submit" id="btn_solicitar" class="btn btn-aceptar">Solicitar el servicio</button>
                     </div>
                 </form>
 
