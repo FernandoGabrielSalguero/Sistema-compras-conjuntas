@@ -410,7 +410,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             return 'Sin definir';
         }
 
-        function formatearFechaFlexible(fechaIso) {
+                function formatearFechaFlexible(fechaIso) {
             if (!fechaIso) return '-';
             if (typeof fechaIso !== 'string') return String(fechaIso);
 
@@ -419,6 +419,41 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             const partes = soloFecha.split('-');
             if (partes.length !== 3) return fechaIso;
             return partes[2] + '/' + partes[1] + '/' + partes[0];
+        }
+
+        function htmlATextoPlano(html) {
+            if (!html) return '';
+            const tmp = document.createElement('div');
+
+            // agregamos saltos para que el texto no quede todo pegado
+            const normalizado = String(html)
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<\/p>/gi, '\n')
+                .replace(/<\/div>/gi, '\n')
+                .replace(/<\/li>/gi, '\n');
+
+            tmp.innerHTML = normalizado;
+
+            const texto = (tmp.textContent || tmp.innerText || '')
+                .replace(/\u00A0/g, ' ')       // nbsp -> espacio normal
+                .replace(/[ \t]+\n/g, '\n')    // limpia espacios antes de salto
+                .replace(/\n{3,}/g, '\n\n')    // evita demasiados saltos
+                .trim();
+
+            return texto;
+        }
+
+        function esperarCargaImagenes(root) {
+            const imgs = Array.from(root.querySelectorAll('img'));
+            return Promise.all(
+                imgs.map(function(img) {
+                    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+                    return new Promise(function(resolve) {
+                        img.onload = function() { resolve(); };
+                        img.onerror = function() { resolve(); };
+                    });
+                })
+            );
         }
 
         function construirTablaParticipaciones(participaciones) {
@@ -465,23 +500,35 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             `;
         }
 
-        function construirHtmlPdf(payload) {
+                function construirHtmlPdf(payload) {
             const op = (payload && payload.operativo) ? payload.operativo : {};
             const participaciones = payload && payload.participaciones ? payload.participaciones : [];
             const firma = payload && payload.firma_contrato ? payload.firma_contrato : null;
             const contratoFirmado = payload && payload.contrato_firmado ? true : false;
 
+            const logoSrc = '../../assets/png/logo_con_color_original.png';
+
             const titulo = `Contrato Cosecha Mecánica - ${escapeHtml(op.nombre ?? '')}`;
             const fechaApertura = formatearFechaFlexible(op.fecha_apertura);
             const fechaCierre = formatearFechaFlexible(op.fecha_cierre);
             const estado = escapeHtml(op.estado ?? '-');
-            const descripcion = escapeHtml(op.descripcion ?? '');
+
+            const descripcionPlano = htmlATextoPlano(op.descripcion ?? '');
+            const descripcionSegura = escapeHtml(descripcionPlano);
+
             const fechaFirma = firma && firma.fecha_firma ? formatearFechaFlexible(firma.fecha_firma) : '-';
 
             return `
                 <div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                        <img src="${logoSrc}" alt="SVE" style="height:42px; width:auto;" />
+                        <div style="text-align:right;">
+                            <div class="pdf-muted">SVE</div>
+                            <div class="pdf-muted">Generado desde el sistema</div>
+                        </div>
+                    </div>
+
                     <h1 style="font-size:18px;">${titulo}</h1>
-                    <p class="pdf-muted">Generado desde SVE</p>
 
                     <h2 style="font-size:14px; margin-top:14px;">Datos del contrato</h2>
                     <table>
@@ -490,7 +537,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                             <tr><th>Apertura</th><td>${escapeHtml(fechaApertura)}</td></tr>
                             <tr><th>Cierre</th><td>${escapeHtml(fechaCierre)}</td></tr>
                             <tr><th>Estado</th><td>${estado}</td></tr>
-                            <tr><th>Descripción</th><td>${descripcion || '-'}</td></tr>
+                            <tr><th>Descripción</th><td style="white-space:pre-wrap;">${descripcionSegura || '-'}</td></tr>
                             <tr><th>Contrato firmado</th><td>${contratoFirmado ? 'Sí' : 'No'}</td></tr>
                             <tr><th>Fecha firma</th><td>${escapeHtml(fechaFirma)}</td></tr>
                         </tbody>
@@ -528,11 +575,14 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
 
                 container.innerHTML = construirHtmlPdf(json.data);
 
+                await esperarCargaImagenes(container);
+
                 const canvas = await window.html2canvas(container, {
                     scale: 2,
                     useCORS: true,
                     backgroundColor: '#ffffff'
                 });
+
 
                 const imgData = canvas.toDataURL('image/png');
                 const { jsPDF } = window.jspdf;
