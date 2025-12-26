@@ -39,6 +39,79 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     <!-- Descarga de consolidado (no se usa directamente aquí, pero se deja por consistencia) -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
+    <!-- PDF: html2canvas + jsPDF (CDN gratuitos) -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        .operativo-card { position: relative; }
+
+        .btn-print-pdf {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: #fff;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-print-pdf:hover {
+            background: rgba(91, 33, 182, 0.06);
+            border-color: rgba(91, 33, 182, 0.25);
+        }
+
+        .btn-print-pdf .material-icons {
+            font-size: 20px;
+            color: #5b21b6;
+        }
+
+        /* Contenedor offscreen para render PDF */
+        #pdfRenderContainer {
+            position: fixed;
+            left: -99999px;
+            top: 0;
+            width: 800px;
+            background: #fff;
+            padding: 24px;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            color: #111;
+        }
+
+        #pdfRenderContainer h1, #pdfRenderContainer h2, #pdfRenderContainer h3 {
+            margin: 0 0 10px 0;
+            padding: 0;
+        }
+
+        #pdfRenderContainer .pdf-muted {
+            color: #555;
+            font-size: 12px;
+        }
+
+        #pdfRenderContainer table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        #pdfRenderContainer th, #pdfRenderContainer td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            vertical-align: top;
+        }
+
+        #pdfRenderContainer th {
+            background: #f6f6f6;
+            text-align: left;
+        }
+    </style>
 </head>
 
 <body>
@@ -223,6 +296,15 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 const claseInscribirOculta = contratoFirmado ? '' : 'hidden';
 
                 card.innerHTML = `
+                    <button
+                        type="button"
+                        class="btn-print-pdf"
+                        title="Descargar contrato en PDF"
+                        data-id="${op.id}"
+                    >
+                        <span class="material-icons">print</span>
+                    </button>
+
                     <h4>${escapeHtml(op.nombre || '')}</h4>
                     <p><strong>Apertura:</strong> ${formatearFecha(op.fecha_apertura)}</p>
                     <p><strong>Cierre:</strong> ${formatearFecha(op.fecha_cierre)}</p>
@@ -264,6 +346,16 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 });
             });
 
+            const botonesPrint = contenedor.querySelectorAll('.btn-print-pdf');
+            botonesPrint.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const contratoId = this.getAttribute('data-id');
+                    if (!contratoId) return;
+
+                    descargarPdfContratoYAnexo(contratoId);
+                });
+            });
+
             const botonesInscribir = contenedor.querySelectorAll('.btn-inscribir');
             botonesInscribir.forEach(function(btn) {
                 btn.addEventListener('click', function() {
@@ -300,7 +392,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             return partes[2] + '/' + partes[1] + '/' + partes[0];
         }
 
-        function escapeHtml(texto) {
+                function escapeHtml(texto) {
             if (texto === null || texto === undefined) return '';
             return String(texto)
                 .replace(/&/g, '&amp;')
@@ -308,6 +400,170 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
+        }
+
+        function normalizarSeguroFlete(v) {
+            const raw = (v ?? '').toString().trim().toLowerCase();
+            if (raw === '' || raw === 'sin definir' || raw === 'sin_definir') return 'Sin definir';
+            if (raw === 'si' || raw === '1') return 'Sí';
+            if (raw === 'no' || raw === '0') return 'No';
+            return 'Sin definir';
+        }
+
+        function formatearFechaFlexible(fechaIso) {
+            if (!fechaIso) return '-';
+            if (typeof fechaIso !== 'string') return String(fechaIso);
+
+            // soporta 'YYYY-MM-DD' y también 'YYYY-MM-DD HH:MM:SS'
+            const soloFecha = fechaIso.split(' ')[0];
+            const partes = soloFecha.split('-');
+            if (partes.length !== 3) return fechaIso;
+            return partes[2] + '/' + partes[1] + '/' + partes[0];
+        }
+
+        function construirTablaParticipaciones(participaciones) {
+            if (!Array.isArray(participaciones) || participaciones.length === 0) {
+                return `<p class="pdf-muted">No hay productores inscriptos en este operativo.</p>`;
+            }
+
+            let rowsHtml = '';
+            participaciones.forEach(function(p) {
+                rowsHtml += `
+                    <tr>
+                        <td>${escapeHtml(p.productor ?? '')}</td>
+                        <td>${escapeHtml(p.finca_id ?? '-') }</td>
+                        <td>${escapeHtml(p.superficie ?? 0)}</td>
+                        <td>${escapeHtml(p.variedad ?? '')}</td>
+                        <td>${escapeHtml(p.prod_estimada ?? 0)}</td>
+                        <td>${escapeHtml(formatearFechaFlexible(p.fecha_estimada))}</td>
+                        <td>${escapeHtml(p.km_finca ?? 0)}</td>
+                        <td>${escapeHtml(p.flete ?? 0)}</td>
+                        <td>${escapeHtml(normalizarSeguroFlete(p.seguro_flete))}</td>
+                    </tr>
+                `;
+            });
+
+            return `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Productor</th>
+                            <th>Finca ID</th>
+                            <th>Superficie</th>
+                            <th>Variedad</th>
+                            <th>Prod. estimada</th>
+                            <th>Fecha estimada</th>
+                            <th>KM finca</th>
+                            <th>Flete</th>
+                            <th>Seguro flete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function construirHtmlPdf(payload) {
+            const op = (payload && payload.operativo) ? payload.operativo : {};
+            const participaciones = payload && payload.participaciones ? payload.participaciones : [];
+            const firma = payload && payload.firma_contrato ? payload.firma_contrato : null;
+            const contratoFirmado = payload && payload.contrato_firmado ? true : false;
+
+            const titulo = `Contrato Cosecha Mecánica - ${escapeHtml(op.nombre ?? '')}`;
+            const fechaApertura = formatearFechaFlexible(op.fecha_apertura);
+            const fechaCierre = formatearFechaFlexible(op.fecha_cierre);
+            const estado = escapeHtml(op.estado ?? '-');
+            const descripcion = escapeHtml(op.descripcion ?? '');
+            const fechaFirma = firma && firma.fecha_firma ? formatearFechaFlexible(firma.fecha_firma) : '-';
+
+            return `
+                <div>
+                    <h1 style="font-size:18px;">${titulo}</h1>
+                    <p class="pdf-muted">Generado desde SVE</p>
+
+                    <h2 style="font-size:14px; margin-top:14px;">Datos del contrato</h2>
+                    <table>
+                        <tbody>
+                            <tr><th style="width:220px;">Operativo</th><td>${escapeHtml(op.nombre ?? '')}</td></tr>
+                            <tr><th>Apertura</th><td>${escapeHtml(fechaApertura)}</td></tr>
+                            <tr><th>Cierre</th><td>${escapeHtml(fechaCierre)}</td></tr>
+                            <tr><th>Estado</th><td>${estado}</td></tr>
+                            <tr><th>Descripción</th><td>${descripcion || '-'}</td></tr>
+                            <tr><th>Contrato firmado</th><td>${contratoFirmado ? 'Sí' : 'No'}</td></tr>
+                            <tr><th>Fecha firma</th><td>${escapeHtml(fechaFirma)}</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h2 style="font-size:14px; margin-top:16px;">Anexo 1 - Productores inscriptos</h2>
+                    ${construirTablaParticipaciones(participaciones)}
+                </div>
+            `;
+        }
+
+        async function descargarPdfContratoYAnexo(contratoId) {
+            try {
+                if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
+                    showAlert('error', 'No se cargaron las librerías para generar el PDF.');
+                    return;
+                }
+
+                const url = '../../controllers/coop_cosechaMecanicaController.php?action=obtener_operativo&id=' + encodeURIComponent(contratoId);
+
+                const resp = await fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } });
+                const json = await resp.json();
+
+                if (!json || json.success !== true || !json.data) {
+                    showAlert('error', (json && json.message) ? json.message : 'No se pudo obtener el detalle del operativo.');
+                    return;
+                }
+
+                let container = document.getElementById('pdfRenderContainer');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'pdfRenderContainer';
+                    document.body.appendChild(container);
+                }
+
+                container.innerHTML = construirHtmlPdf(json.data);
+
+                const canvas = await window.html2canvas(container, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+
+                const imgWidth = pageWidth;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                const nombreOp = (json.data.operativo && json.data.operativo.nombre) ? json.data.operativo.nombre : 'operativo';
+                const safeName = String(nombreOp).replace(/[^\w\-]+/g, '_').substring(0, 60);
+                pdf.save(`Contrato_CosechaMecanica_${safeName}_ID${contratoId}.pdf`);
+            } catch (e) {
+                console.error('Error PDF:', e);
+                showAlert('error', 'Ocurrió un error al generar el PDF.');
+            }
         }
     </script>
 
