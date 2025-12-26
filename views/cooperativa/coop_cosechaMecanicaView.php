@@ -43,8 +43,13 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+    <!-- Tablas con saltos de página prolijos (autoTable) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
     <style>
-        .operativo-card { position: relative; }
+        .operativo-card {
+            position: relative;
+        }
 
         .btn-print-pdf {
             position: absolute;
@@ -53,7 +58,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             width: 38px;
             height: 38px;
             border-radius: 10px;
-            border: 1px solid rgba(0,0,0,0.08);
+            border: 1px solid rgba(0, 0, 0, 0.08);
             background: #fff;
             cursor: pointer;
             display: inline-flex;
@@ -84,7 +89,9 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             color: #111;
         }
 
-        #pdfRenderContainer h1, #pdfRenderContainer h2, #pdfRenderContainer h3 {
+        #pdfRenderContainer h1,
+        #pdfRenderContainer h2,
+        #pdfRenderContainer h3 {
             margin: 0 0 10px 0;
             padding: 0;
         }
@@ -101,7 +108,8 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             font-size: 12px;
         }
 
-        #pdfRenderContainer th, #pdfRenderContainer td {
+        #pdfRenderContainer th,
+        #pdfRenderContainer td {
             border: 1px solid #ddd;
             padding: 8px;
             vertical-align: top;
@@ -228,12 +236,12 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     <!-- Spinner Global -->
     <script src="../../views/partials/spinner-global.js"></script>
 
-<script>
-    console.log(
-        'id_real en sesión:',
-        '<?php echo addslashes($_SESSION["id_real"] ?? "NULL"); ?>'
-    );
-</script>
+    <script>
+        console.log(
+            'id_real en sesión:',
+            '<?php echo addslashes($_SESSION["id_real"] ?? "NULL"); ?>'
+        );
+    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -392,7 +400,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             return partes[2] + '/' + partes[1] + '/' + partes[0];
         }
 
-                function escapeHtml(texto) {
+        function escapeHtml(texto) {
             if (texto === null || texto === undefined) return '';
             return String(texto)
                 .replace(/&/g, '&amp;')
@@ -410,7 +418,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             return 'Sin definir';
         }
 
-                function formatearFechaFlexible(fechaIso) {
+        function formatearFechaFlexible(fechaIso) {
             if (!fechaIso) return '-';
             if (typeof fechaIso !== 'string') return String(fechaIso);
 
@@ -435,9 +443,9 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             tmp.innerHTML = normalizado;
 
             const texto = (tmp.textContent || tmp.innerText || '')
-                .replace(/\u00A0/g, ' ')       // nbsp -> espacio normal
-                .replace(/[ \t]+\n/g, '\n')    // limpia espacios antes de salto
-                .replace(/\n{3,}/g, '\n\n')    // evita demasiados saltos
+                .replace(/\u00A0/g, ' ') // nbsp -> espacio normal
+                .replace(/[ \t]+\n/g, '\n') // limpia espacios antes de salto
+                .replace(/\n{3,}/g, '\n\n') // evita demasiados saltos
                 .trim();
 
             return texto;
@@ -449,8 +457,12 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 imgs.map(function(img) {
                     if (img.complete && img.naturalWidth > 0) return Promise.resolve();
                     return new Promise(function(resolve) {
-                        img.onload = function() { resolve(); };
-                        img.onerror = function() { resolve(); };
+                        img.onload = function() {
+                            resolve();
+                        };
+                        img.onerror = function() {
+                            resolve();
+                        };
                     });
                 })
             );
@@ -500,7 +512,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             `;
         }
 
-                function construirHtmlPdf(payload) {
+        function construirHtmlPdf(payload) {
             const op = (payload && payload.operativo) ? payload.operativo : {};
             const participaciones = payload && payload.participaciones ? payload.participaciones : [];
             const firma = payload && payload.firma_contrato ? payload.firma_contrato : null;
@@ -549,16 +561,94 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             `;
         }
 
+        async function cargarImagenComoDataURL(url) {
+            const resp = await fetch(url, {
+                cache: 'no-store'
+            });
+            if (!resp.ok) throw new Error('No se pudo cargar el logo.');
+
+            const blob = await resp.blob();
+
+            return await new Promise(function(resolve, reject) {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    resolve(reader.result);
+                };
+                reader.onerror = function() {
+                    reject(new Error('No se pudo leer el logo.'));
+                };
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        function dibujarEncabezadoPDF(doc, logoDataUrl, subtitulo) {
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const marginX = 10;
+            const topY = 8;
+
+            const logoW = 40;
+            const logoH = 12;
+
+            if (logoDataUrl) {
+                doc.addImage(logoDataUrl, 'PNG', marginX, topY, logoW, logoH);
+            }
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text('SVE', pageWidth - marginX, topY + 5, {
+                align: 'right'
+            });
+
+            if (subtitulo) {
+                doc.setFontSize(9);
+                doc.text(subtitulo, pageWidth - marginX, topY + 10, {
+                    align: 'right'
+                });
+            }
+
+            doc.setDrawColor(200);
+            doc.line(marginX, topY + logoH + 4, pageWidth - marginX, topY + logoH + 4);
+
+            return topY + logoH + 8; // Y recomendado para empezar contenido
+        }
+
+        function formatearFechaParaPdf(v) {
+            if (!v) return '-';
+            const s = String(v);
+
+            // si es 'YYYY-MM-DD' o 'YYYY-MM-DD HH:MM:SS', formatea; si no, devuelve tal cual
+            const soloFecha = s.split(' ')[0];
+            const partes = soloFecha.split('-');
+            if (partes.length === 3 && partes[0].length === 4 && partes[1].length === 2 && partes[2].length === 2) {
+                return partes[2] + '/' + partes[1] + '/' + partes[0];
+            }
+            return s;
+        }
+
         async function descargarPdfContratoYAnexo(contratoId) {
             try {
-                if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
-                    showAlert('error', 'No se cargaron las librerías para generar el PDF.');
+                if (!window.jspdf || !window.jspdf.jsPDF) {
+                    showAlert('error', 'No se cargó jsPDF.');
+                    return;
+                }
+
+                const {
+                    jsPDF
+                } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+
+                if (typeof doc.autoTable !== 'function') {
+                    showAlert('error', 'No se cargó el plugin de tablas (autoTable).');
                     return;
                 }
 
                 const url = '../../controllers/coop_cosechaMecanicaController.php?action=obtener_operativo&id=' + encodeURIComponent(contratoId);
-
-                const resp = await fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } });
+                const resp = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
                 const json = await resp.json();
 
                 if (!json || json.success !== true || !json.data) {
@@ -566,50 +656,138 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     return;
                 }
 
-                let container = document.getElementById('pdfRenderContainer');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'pdfRenderContainer';
-                    document.body.appendChild(container);
-                }
+                const payload = json.data;
+                const op = payload.operativo || {};
+                const participaciones = Array.isArray(payload.participaciones) ? payload.participaciones : [];
+                const firma = payload.firma_contrato || null;
+                const contratoFirmado = payload.contrato_firmado ? true : false;
 
-                container.innerHTML = construirHtmlPdf(json.data);
+                const logoUrl = '../../assets/png/logo_con_color_original.png';
+                const logoDataUrl = await cargarImagenComoDataURL(logoUrl);
 
-                await esperarCargaImagenes(container);
+                const headerY = 28; // mismo valor que devuelve dibujarEncabezadoPDF aprox.
+                const marginX = 10;
 
-                const canvas = await window.html2canvas(container, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
+                // =========================
+                // HOJA(S) CONTRATO
+                // =========================
+                const tituloContrato = 'Contrato Cosecha Mecánica - ' + (op.nombre ? String(op.nombre) : '');
+                const descripcionPlano = htmlATextoPlano(op.descripcion ?? '') || '-';
+                const fechaFirma = (firma && firma.fecha_firma) ? formatearFechaParaPdf(firma.fecha_firma) : '-';
+
+                const filasContrato = [
+                    ['Operativo', op.nombre ? String(op.nombre) : '-'],
+                    ['Apertura', formatearFechaParaPdf(op.fecha_apertura)],
+                    ['Cierre', formatearFechaParaPdf(op.fecha_cierre)],
+                    ['Estado', op.estado ? String(op.estado) : '-'],
+                    ['Descripción', descripcionPlano],
+                    ['Contrato firmado', contratoFirmado ? 'Sí' : 'No'],
+                    ['Fecha firma', fechaFirma],
+                ];
+
+                doc.autoTable({
+                    head: [
+                        ['Campo', 'Valor']
+                    ],
+                    body: filasContrato,
+                    margin: {
+                        top: headerY + 14,
+                        left: marginX,
+                        right: marginX
+                    },
+                    startY: headerY + 14,
+                    styles: {
+                        fontSize: 10,
+                        cellPadding: 2,
+                        overflow: 'linebreak',
+                        valign: 'top'
+                    },
+                    columnStyles: {
+                        0: {
+                            cellWidth: 45
+                        },
+                        1: {
+                            cellWidth: 'auto'
+                        }
+                    },
+                    didDrawPage: function(data) {
+                        const contentStartY = dibujarEncabezadoPDF(doc, logoDataUrl, 'Contrato');
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(13);
+                        doc.text(
+                            data.pageNumber === 1 ? tituloContrato : 'Contrato Cosecha Mecánica (continuación)',
+                            marginX,
+                            contentStartY + 6
+                        );
+                    }
                 });
 
+                // =========================
+                // HOJA(S) ANEXO
+                // =========================
+                doc.addPage();
 
-                const imgData = canvas.toDataURL('image/png');
-                const { jsPDF } = window.jspdf;
+                const filasAnexo = participaciones.map(function(p) {
+                    return [
+                        p.productor ?? '',
+                        (p.finca_id ?? '-') + '',
+                        (p.superficie ?? 0) + '',
+                        p.variedad ?? '',
+                        (p.prod_estimada ?? 0) + '',
+                        formatearFechaParaPdf(p.fecha_estimada),
+                        (p.km_finca ?? 0) + '',
+                        (p.flete ?? 0) + '',
+                        normalizarSeguroFlete(p.seguro_flete),
+                    ];
+                });
 
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pageWidth = pdf.internal.pageSize.getWidth();
-                const pageHeight = pdf.internal.pageSize.getHeight();
+                const tituloAnexo = 'Anexo 1 - Productores inscriptos';
 
-                const imgWidth = pageWidth;
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                if (filasAnexo.length === 0) {
+                    const contentStartY = dibujarEncabezadoPDF(doc, logoDataUrl, 'Anexo 1');
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(13);
+                    doc.text(tituloAnexo, marginX, contentStartY + 6);
 
-                let heightLeft = imgHeight;
-                let position = 0;
-
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-
-                while (heightLeft > 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(11);
+                    doc.text('No hay productores inscriptos en este operativo.', marginX, contentStartY + 16);
+                } else {
+                    doc.autoTable({
+                        head: [
+                            [
+                                'Productor', 'Finca ID', 'Superficie', 'Variedad',
+                                'Prod. estimada', 'Fecha estimada', 'KM finca', 'Flete', 'Seguro flete'
+                            ]
+                        ],
+                        body: filasAnexo,
+                        margin: {
+                            top: headerY + 14,
+                            left: marginX,
+                            right: marginX
+                        },
+                        startY: headerY + 14,
+                        styles: {
+                            fontSize: 9,
+                            cellPadding: 2,
+                            overflow: 'linebreak',
+                            valign: 'top'
+                        },
+                        headStyles: {
+                            fontStyle: 'bold'
+                        },
+                        didDrawPage: function() {
+                            const contentStartY = dibujarEncabezadoPDF(doc, logoDataUrl, 'Anexo 1');
+                            doc.setFont('helvetica', 'bold');
+                            doc.setFontSize(13);
+                            doc.text(tituloAnexo, marginX, contentStartY + 6);
+                        }
+                    });
                 }
 
-                const nombreOp = (json.data.operativo && json.data.operativo.nombre) ? json.data.operativo.nombre : 'operativo';
+                const nombreOp = (op && op.nombre) ? op.nombre : 'operativo';
                 const safeName = String(nombreOp).replace(/[^\w\-]+/g, '_').substring(0, 60);
-                pdf.save(`Contrato_CosechaMecanica_${safeName}_ID${contratoId}.pdf`);
+                doc.save(`Contrato_CosechaMecanica_${safeName}_ID${contratoId}.pdf`);
             } catch (e) {
                 console.error('Error PDF:', e);
                 showAlert('error', 'Ocurrió un error al generar el PDF.');
