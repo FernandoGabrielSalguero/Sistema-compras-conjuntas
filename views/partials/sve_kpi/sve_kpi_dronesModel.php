@@ -24,15 +24,16 @@ class SveKpiDronesModel
         ];
     }
 
-    // Lista de productores presentes en solicitudes
+    // Lista de productores presentes en solicitudes (robusta: incluye productor sin usuario registrado)
     public function obtenerProductores(): array
     {
         $pdo = $this->getPdo();
-        $sql = "SELECT DISTINCT ds.productor_id_real AS id, ui.nombre
+        $sql = "SELECT DISTINCT ds.productor_id_real AS id,
+                COALESCE(ui.nombre, ds.ses_usuario, ds.productor_id_real) AS nombre
                 FROM drones_solicitud ds
-                JOIN usuarios u ON u.id_real = ds.productor_id_real
-                JOIN usuarios_info ui ON ui.usuario_id = u.id
-                ORDER BY ui.nombre";
+                LEFT JOIN usuarios u ON u.id_real = ds.productor_id_real
+                LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+                ORDER BY nombre";
         $stmt = $pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

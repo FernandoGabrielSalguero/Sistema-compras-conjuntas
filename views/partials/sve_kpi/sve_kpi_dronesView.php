@@ -35,7 +35,6 @@
     <div class="kpi-left">
         <div style="display:flex;justify-content:space-between;align-items:center">
             <div style="display:flex;align-items:center;gap:8px">
-                <strong style="font-size:14px">Drones</strong>
                 <div class="kpi-filters-inline" role="group" aria-label="Filtros KPI Drones">
                     <select id="kpiProdSelect" class="gform-input" style="min-width:160px">
                         <option value="">Productor (Todos)</option>
@@ -166,7 +165,7 @@
 
 
 
-                // breakdown por estado (doughnut)
+                // breakdown por estado (doughnut) con colores específicos
                 const porEstado = data.por_estado || [];
                 const estadoLabelsMap = {
                     'ingresada': 'Ingresada',
@@ -176,9 +175,15 @@
                     'completada': 'Completada',
                     'visita_realizada': 'Visita realizada'
                 };
+                const estadoColorsMap = {
+                    'completada': '#10b981', // verde
+                    'cancelada': '#ef4444',  // rojo
+                    'ingresada': '#f59e0b',  // amarillo
+                    'visita_realizada': '#60a5fa' // azul
+                };
                 const labelsE = porEstado.map(e => (estadoLabelsMap[e.estado] || e.estado));
                 const valsE = porEstado.map(e => Number(e.count) || 0);
-                const colorsE = ['#f59e0b','#ef4444','#10b981','#60a5fa','#7c3aed','#9ca3af'];
+                const colorsE = porEstado.map(e => (estadoColorsMap[e.estado] ? estadoColorsMap[e.estado] : '#9ca3af'));
                 const canvasE = document.getElementById('chartEstados');
                 const ctxE = canvasE.getContext('2d');
                 const existingE = Chart.getChart(canvasE) || Chart.getChart('chartEstados');
@@ -188,7 +193,7 @@
                     type: 'doughnut',
                     data: {
                         labels: labelsE,
-                        datasets: [{ data: valsE, backgroundColor: colorsE.slice(0, labelsE.length) }]
+                        datasets: [{ data: valsE, backgroundColor: colorsE }]
                     },
                     options: Object.assign({}, chartDefaults(), {
                         plugins: { legend: { display: true, position: 'right' } }
@@ -206,13 +211,8 @@
                 if (chartSolicitudesPorMes) try { chartSolicitudesPorMes.destroy(); } catch(e){}
                 chartSolicitudesPorMes = new Chart(ctxM, { type:'line', data:{ labels:labelsM, datasets:[{ data:valsM, borderColor:'#4b5563', backgroundColor:'rgba(79,70,229,0.12)', tension:0.4, pointRadius:2, fill:true }] }, options: Object.assign({}, chartDefaults(), { scales: { x:{ grid:{ color:'rgba(200,200,200,0.06)'} }, y:{ beginAtZero:true } } }) });
 
-                // calcular top (mes/fecha con más visitas)
-                let topLabel = '';
-                let topCount = 0;
-                for (let i = 0; i < labelsM.length; i++) {
-                    if (valsM[i] > topCount) { topCount = valsM[i]; topLabel = labelsM[i]; }
-                }
-                statusEl.textContent = topLabel ? ('Actualizado — Top: ' + topLabel + ' (' + fmtNum(topCount) + ')') : 'Actualizado';
+                // Top label eliminado: mostramos solo estado básico
+                statusEl.textContent = 'Actualizado';
             } catch (e) {
                 statusEl.textContent = 'Error';
                 console.error(e);
