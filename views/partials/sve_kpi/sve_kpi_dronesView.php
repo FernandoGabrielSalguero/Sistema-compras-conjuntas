@@ -157,8 +157,11 @@
                 const topProds = data.top_products || [];
                 const labelsP = topProds.map(p => p.nombre_producto);
                 const valsP = topProds.map(p => Number(p.usos_count) || 0);
-                const ctxP = document.getElementById('chartTopProductos').getContext('2d');
-                if (chartTopProductos) chartTopProductos.destroy();
+                const canvasP = document.getElementById('chartTopProductos');
+                const ctxP = canvasP.getContext('2d');
+                const existingP = Chart.getChart(canvasP) || Chart.getChart('chartTopProductos');
+                if (existingP) existingP.destroy();
+                if (chartTopProductos) try { chartTopProductos.destroy(); } catch(e){}
                 chartTopProductos = new Chart(ctxP, { type:'bar', data:{ labels:labelsP, datasets:[{ data:valsP, backgroundColor:'rgba(99,102,241,0.9)', borderRadius:6 }] }, options: Object.assign({}, chartDefaults()) });
 
 
@@ -176,8 +179,11 @@
                 const labelsE = porEstado.map(e => (estadoLabelsMap[e.estado] || e.estado));
                 const valsE = porEstado.map(e => Number(e.count) || 0);
                 const colorsE = ['#f59e0b','#ef4444','#10b981','#60a5fa','#7c3aed','#9ca3af'];
-                const ctxE = document.getElementById('chartEstados').getContext('2d');
-                if (chartEstados) chartEstados.destroy();
+                const canvasE = document.getElementById('chartEstados');
+                const ctxE = canvasE.getContext('2d');
+                const existingE = Chart.getChart(canvasE) || Chart.getChart('chartEstados');
+                if (existingE) existingE.destroy();
+                if (chartEstados) try { chartEstados.destroy(); } catch(e){}
                 chartEstados = new Chart(ctxE, {
                     type: 'doughnut',
                     data: {
@@ -193,8 +199,11 @@
                 const porMes = data.por_mes || [];
                 const labelsM = porMes.map(r => r.ym);
                 const valsM = porMes.map(r => Number(r.solicitudes_count) || 0);
-                const ctxM = document.getElementById('chartSolicitudesPorMes').getContext('2d');
-                if (chartSolicitudesPorMes) chartSolicitudesPorMes.destroy();
+                const canvasM = document.getElementById('chartSolicitudesPorMes');
+                const ctxM = canvasM.getContext('2d');
+                const existingM = Chart.getChart(canvasM) || Chart.getChart('chartSolicitudesPorMes');
+                if (existingM) existingM.destroy();
+                if (chartSolicitudesPorMes) try { chartSolicitudesPorMes.destroy(); } catch(e){}
                 chartSolicitudesPorMes = new Chart(ctxM, { type:'line', data:{ labels:labelsM, datasets:[{ data:valsM, borderColor:'#4b5563', backgroundColor:'rgba(79,70,229,0.12)', tension:0.4, pointRadius:2, fill:true }] }, options: Object.assign({}, chartDefaults(), { scales: { x:{ grid:{ color:'rgba(200,200,200,0.06)'} }, y:{ beginAtZero:true } } }) });
 
                 // calcular top (mes/fecha con más visitas)
