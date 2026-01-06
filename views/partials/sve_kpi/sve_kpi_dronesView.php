@@ -22,8 +22,12 @@
 
     .kpi-charts { display:flex; flex-direction:column; gap:8px; height:100% }
     .small-chart { flex:1; background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:6px; box-shadow:0 1px 2px rgba(0,0,0,0.02) }
+    /* Ajusta la altura de los canvas compactos aquí. Para cambiar sólo el doughnut de estados, modifica la regla #chartEstados más abajo. */
     .canvas-small{ width:100%; height:120px !important }
     .canvas-compact{ width:100%; height:120px !important }
+
+    /* Tamaño específico para el doughnut de estados - cambiar este valor para agrandar/achicar */
+    #chartEstados { height:200px !important }
 
     .kpi-filters-inline { display:flex; gap:6px; align-items:center }
     .kpi-filters-inline input, .kpi-filters-inline select { height:28px; padding:4px 6px; font-size:12px; border-radius:6px; border:1px solid #e5e7eb; background:#fff }
@@ -184,6 +188,7 @@
                 const labelsE = porEstado.map(e => (estadoLabelsMap[e.estado] || e.estado));
                 const valsE = porEstado.map(e => Number(e.count) || 0);
                 const colorsE = porEstado.map(e => (estadoColorsMap[e.estado] ? estadoColorsMap[e.estado] : '#9ca3af'));
+                // NOTE: Ajusta el tamaño del doughnut modificando la regla CSS `#chartEstados` en la parte superior del archivo.
                 const canvasE = document.getElementById('chartEstados');
                 const ctxE = canvasE.getContext('2d');
                 const existingE = Chart.getChart(canvasE) || Chart.getChart('chartEstados');
