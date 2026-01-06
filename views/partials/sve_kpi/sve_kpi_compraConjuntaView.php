@@ -12,6 +12,7 @@
         grid-template-columns: 1fr 320px;
         gap: 12px;
         align-items: stretch;
+        position: relative; /* necesario para posicionar filtros */
     }
 
     @media (max-width:900px) {
@@ -93,6 +94,13 @@
         <div style="display:flex;justify-content:space-between;align-items:center">
             <strong style="font-size:14px">Compra Conjunta — Resumen</strong>
             <div id="sveKpiStatus" style="font-size:12px;color:#6b7280">Cargando...</div>
+        </div>
+
+        <!-- compact date filters (small, top-right) -->
+        <div class="kpi-filters" style="position:absolute;top:12px;right:12px;display:flex;gap:6px;align-items:center">
+            <input id="kpiCompactStart" type="date" style="height:28px;padding:4px 6px;font-size:12px;border-radius:6px;border:1px solid #e5e7eb;background:#fff" />
+            <input id="kpiCompactEnd" type="date" style="height:28px;padding:4px 6px;font-size:12px;border-radius:6px;border:1px solid #e5e7eb;background:#fff" />
+            <button id="kpiCompactClear" title="Limpiar" style="height:28px;padding:4px 8px;border-radius:6px;border:1px solid #e5e7eb;background:transparent;color:#6b7280;">✕</button>
         </div>
 
         <div class="mini-stats">
@@ -294,6 +302,38 @@
                 console.error(e);
             }
         }
+
+        // fecha: validacion y eventos (debounce)
+        function debounce(fn, wait = 450){ let t; return function(...args){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,args), wait); }; }
+
+        const startInput = document.getElementById('kpiCompactStart');
+        const endInput = document.getElementById('kpiCompactEnd');
+        const clearBtn = document.getElementById('kpiCompactClear');
+
+        function validateAndApply(){
+            const start = startInput.value || null;
+            const end = endInput.value || null;
+
+            if (start && end && end < start){
+                statusEl.textContent = 'Rango inválido: "Hasta" debe ser >= "Desde"';
+                return;
+            }
+
+            statusEl.textContent = 'Aplicando filtros...';
+            loadKpis({ start_date: start, end_date: end });
+        }
+
+        const applyDebounced = debounce(validateAndApply, 500);
+
+        startInput.addEventListener('change', applyDebounced);
+        endInput.addEventListener('change', applyDebounced);
+
+        clearBtn.addEventListener('click', () => {
+            startInput.value = '';
+            endInput.value = '';
+            statusEl.textContent = 'Filtros eliminados';
+            loadKpis();
+        });
 
         // carga inicial (también pobla cooperativas en background)
         loadKpis();
