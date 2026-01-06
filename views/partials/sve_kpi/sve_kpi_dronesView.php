@@ -81,6 +81,13 @@
                     <div class="label">Superficie total (ha)</div>
                 </div>
             </div>
+
+            <div class="mini-stat" id="mini-total-monto">
+                <div>
+                    <div class="value" id="miniTotalMonto">$0.00</div>
+                    <div class="label">Monto total</div>
+                </div>
+            </div>
         </div>
 
         <div class="kpi-charts">
@@ -96,6 +103,9 @@
         </div>
         <div class="small-chart">
             <canvas id="chartTopPilotos" class="canvas-small"></canvas>
+        </div>
+        <div class="small-chart">
+            <canvas id="chartEstados" class="canvas-small"></canvas>
         </div>
     </div>
 </div>
@@ -155,7 +165,7 @@
                 document.getElementById('miniTotalSolicitudes').textContent = fmtNum(resumen.total_solicitudes || 0);
                 document.getElementById('miniTotalCompletadas').textContent = fmtNum(resumen.completadas_count || 0);
                 document.getElementById('miniTotalSuperficie').textContent = (Number(resumen.total_superficie_ha) ? Number(resumen.total_superficie_ha).toLocaleString('es-AR') + ' ha' : '0 ha');
-
+                document.getElementById('miniTotalMonto').textContent = fmtMoney(resumen.total_monto || 0);
                 // top productos (vertical bar)
                 const topProds = data.top_products || [];
                 const labelsP = topProds.map(p => p.nombre_producto);
@@ -172,6 +182,32 @@
                 if (chartTopPilotos) chartTopPilotos.destroy();
                 chartTopPilotos = new Chart(ctxPil, { type:'bar', data:{ labels:labelsPil, datasets:[{ data:valsPil, backgroundColor:'rgba(79,70,229,0.85)', borderRadius:6 }] }, options: Object.assign({}, chartDefaults(), { indexAxis:'y' }) });
 
+                // breakdown por estado (doughnut)
+                const porEstado = data.por_estado || [];
+                const estadoLabelsMap = {
+                    'ingresada': 'Ingresada',
+                    'procesando': 'Procesando',
+                    'aprobada_coop': 'Aprobada coop',
+                    'cancelada': 'Cancelada',
+                    'completada': 'Completada',
+                    'visita_realizada': 'Visita realizada'
+                };
+                const labelsE = porEstado.map(e => (estadoLabelsMap[e.estado] || e.estado));
+                const valsE = porEstado.map(e => Number(e.count) || 0);
+                const colorsE = ['#f59e0b','#ef4444','#10b981','#60a5fa','#7c3aed','#9ca3af'];
+                const ctxE = document.getElementById('chartEstados').getContext('2d');
+                if (chartEstados) chartEstados.destroy();
+                chartEstados = new Chart(ctxE, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labelsE,
+                        datasets: [{ data: valsE, backgroundColor: colorsE.slice(0, labelsE.length) }]
+                    },
+                    options: Object.assign({}, chartDefaults(), {
+                        plugins: { legend: { display: true, position: 'right' } }
+                    })
+                });
+
                 // solicitudes por mes (line)
                 const porMes = data.por_mes || [];
                 const labelsM = porMes.map(r => r.ym);
@@ -179,7 +215,6 @@
                 const ctxM = document.getElementById('chartSolicitudesPorMes').getContext('2d');
                 if (chartSolicitudesPorMes) chartSolicitudesPorMes.destroy();
                 chartSolicitudesPorMes = new Chart(ctxM, { type:'line', data:{ labels:labelsM, datasets:[{ data:valsM, borderColor:'#4b5563', backgroundColor:'rgba(79,70,229,0.12)', tension:0.4, pointRadius:2, fill:true }] }, options: Object.assign({}, chartDefaults(), { scales: { x:{ grid:{ color:'rgba(200,200,200,0.06)'} }, y:{ beginAtZero:true } } }) });
-
                 statusEl.textContent = 'Actualizado';
             } catch (e) {
                 statusEl.textContent = 'Error';

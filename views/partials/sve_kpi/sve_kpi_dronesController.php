@@ -65,7 +65,8 @@ try {
                 'top_products' => $model->topProductos($limit, $start_date, $end_date, $piloto, $productor, $estado),
                 'top_pilotos' => $model->topPilotos($limit, $start_date, $end_date, $productor, $estado),
                 'resumen' => $model->resumenTotales($start_date, $end_date, $piloto, $productor, $estado),
-                'por_mes' => $model->obtenerSolicitudesPorMes($months, $start_date, $end_date, $piloto, $productor, $estado)
+                'por_mes' => $model->obtenerSolicitudesPorMes($months, $start_date, $end_date, $piloto, $productor, $estado),
+                'por_estado' => $model->solicitudesPorEstado($start_date, $end_date, $piloto, $productor, $estado)
             ];
 
             // incluir pilotos y productores para poblar selects en la UI

@@ -97,6 +97,27 @@ class SveKpiDronesModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Breakdown por estado
+    public function solicitudesPorEstado(?string $start = null, ?string $end = null, ?int $piloto = null, ?string $productor = null, ?string $estado = null): array
+    {
+        $pdo = $this->getPdo();
+        $sql = "SELECT ds.estado, COUNT(*) AS count
+                FROM drones_solicitud ds
+                WHERE 1=1";
+        $params = [];
+        if ($start) { $sql .= " AND ds.fecha_visita >= :start"; $params[':start'] = $start; }
+        if ($end)   { $sql .= " AND ds.fecha_visita <= :end";   $params[':end'] = $end; }
+        if ($piloto) { $sql .= " AND ds.piloto_id = :piloto"; $params[':piloto'] = $piloto; }
+        if ($productor) { $sql .= " AND ds.productor_id_real = :productor"; $params[':productor'] = $productor; }
+        if ($estado) { $sql .= " AND ds.estado = :estado"; $params[':estado'] = $estado; }
+
+        $sql .= " GROUP BY ds.estado ORDER BY count DESC";
+        $stmt = $pdo->prepare($sql);
+        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // Top pilotos por cantidad de solicitudes
     public function topPilotos(int $limit = 10, ?string $start = null, ?string $end = null, ?string $productor = null, ?string $estado = null): array
     {
