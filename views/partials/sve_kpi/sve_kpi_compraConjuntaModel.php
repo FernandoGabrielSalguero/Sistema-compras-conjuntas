@@ -107,7 +107,9 @@ class SveKpiCompraConjuntaModel
         $sql = "SELECT
                 COUNT(*) AS total_pedidos,
                 SUM(total_pedido) AS total_monto,
-                AVG(total_pedido) AS avg_monto
+                AVG(total_pedido) AS avg_monto,
+                COUNT(DISTINCT p.productor) AS unique_productores,
+                COUNT(DISTINCT p.cooperativa) AS unique_cooperativas
              FROM pedidos p
              WHERE 1=1";
         $params = [];

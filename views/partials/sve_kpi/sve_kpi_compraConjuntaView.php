@@ -1,164 +1,301 @@
-﻿<div class="sve-kpi-compra-conjunta" style="padding:10px;border:1px solid rgba(0,0,0,.08);border-radius:8px;background:#fafafa;">
-    <b>KPI Compra Conjunta</b>
-    <div id="sveKpiStatus" style="margin-top:6px;font-size:14px;opacity:.9;">Cargando KPIs...</div>
+﻿<style>
+    /* Compact KPI card style (pantallazo) */
+    .sve-kpi-compra-conjunta.compact {
+        padding: 12px;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        height: 200px;
+        /* altura solicitada */
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 12px;
+        align-items: stretch;
+    }
 
-    <!-- filtros -->
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-        <div style="min-width:150px">
-            <label style="font-size:12px;display:block">Desde</label>
-            <input type="date" id="kpiStartDate" style="width:100%" />
+    @media (max-width:900px) {
+        .sve-kpi-compra-conjunta.compact {
+            grid-template-columns: 1fr;
+            height: auto
+        }
+    }
+
+    .mini-stats {
+        display: flex;
+        gap: 10px;
+    }
+
+    .mini-stat {
+        flex: 1;
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .mini-stat .value {
+        font-weight: 700;
+        font-size: 18px;
+        color: #111;
+    }
+
+    .mini-stat .label {
+        font-size: 12px;
+        color: #6b7280
+    }
+
+    .kpi-charts {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        height: 100%;
+    }
+
+    .kpi-charts .small-chart {
+        flex: 1;
+        background: #fff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    .kpi-left {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .kpi-right {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .canvas-small {
+        width: 100%;
+        height: 86px !important;
+    }
+
+    .canvas-compact {
+        width: 100%;
+        height: 120px !important;
+    }
+</style>
+
+<div class="sve-kpi-compra-conjunta compact">
+    <div class="kpi-left">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong style="font-size:14px">Compra Conjunta — Resumen</strong>
+            <div id="sveKpiStatus" style="font-size:12px;color:#6b7280">Cargando...</div>
         </div>
-        <div style="min-width:150px">
-            <label style="font-size:12px;display:block">Hasta</label>
-            <input type="date" id="kpiEndDate" style="width:100%" />
+
+        <div class="mini-stats">
+            <div class="mini-stat" id="mini-total-pedidos">
+                <div>
+                    <div class="value" id="miniTotalPedidos">0</div>
+                    <div class="label">Total pedidos</div>
+                </div>
+            </div>
+
+            <div class="mini-stat" id="mini-total-monto">
+                <div>
+                    <div class="value" id="miniTotalMonto">$0</div>
+                    <div class="label">Monto total</div>
+                </div>
+            </div>
+
+            <div class="mini-stat" id="mini-unique-productores">
+                <div>
+                    <div class="value" id="miniUniqueProductores">0</div>
+                    <div class="label">Productores</div>
+                </div>
+            </div>
         </div>
-        <div style="min-width:220px">
-            <label style="font-size:12px;display:block">Cooperativa</label>
-            <select id="kpiCoop" style="width:100%"><option value="">Todas</option></select>
-        </div>
-        <div style="display:flex;align-items:end;gap:8px">
-            <button id="kpiApplyBtn" class="btn">Filtrar</button>
-            <button id="kpiClearBtn" class="btn btn-outline">Limpiar</button>
+
+        <div class="kpi-charts">
+            <div class="small-chart" style="padding:6px">
+                <canvas id="chartPedidosPorMes" class="canvas-compact"></canvas>
+            </div>
         </div>
     </div>
 
-    <div id="sveKpiGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px;">
-        <div class="kpi-card" id="kpi-resumen" style="padding:8px;border-radius:6px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);">
-            <h4>Resumen</h4>
-            <div id="kpi-resumen-content">Cargando...</div>
+    <div class="kpi-right">
+        <div class="small-chart">
+            <canvas id="chartTopProductos" class="canvas-small"></canvas>
         </div>
-
-        <div class="kpi-card" style="padding:8px;border-radius:6px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);">
-            <h4>Top Productos</h4>
-            <canvas id="chartTopProductos" style="width:100%;height:200px;"></canvas>
-        </div>
-
-        <div class="kpi-card" style="padding:8px;border-radius:6px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);">
-            <h4>Top Cooperativas</h4>
-            <canvas id="chartTopCooperativas" style="width:100%;height:200px;"></canvas>
-        </div>
-
-        <div class="kpi-card" style="padding:8px;border-radius:6px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);">
-            <h4>Top Productores</h4>
-            <div id="topProductoresList">Cargando...</div>
-        </div>
-
-        <div class="kpi-card" style="padding:8px;border-radius:6px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);grid-column:1 / -1;">
-            <h4>Pedidos por mes</h4>
-            <canvas id="chartPedidosPorMes" style="width:100%;height:260px;"></canvas>
+        <div class="small-chart">
+            <canvas id="chartTopCooperativas" class="canvas-small"></canvas>
         </div>
     </div>
 </div>
 
-<!-- CDN Chart.js -->
+<!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-(async () => {
-  const statusEl = document.getElementById('sveKpiStatus');
-  const apiUrl = '../partials/sve_kpi/sve_kpi_compraConjuntaController.php';
+    (async () => {
+        const statusEl = document.getElementById('sveKpiStatus');
+        const apiUrl = '../partials/sve_kpi/sve_kpi_compraConjuntaController.php';
 
-  let chartTopProductos = null;
-  let chartTopCooperativas = null;
-  let chartPedidosPorMes = null;
+        let chartTopProductos = null;
+        let chartTopCooperativas = null;
+        let chartPedidosPorMes = null;
 
-  function handleError(e) {
-    statusEl.textContent = 'Error: ' + (e && e.message ? e.message : String(e));
-    console.error(e);
-  }
+        const fmtMoney = (v) => (Number(v) ? '$' + Number(v).toLocaleString('es-AR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }) : '$0.00');
+        const fmtNum = (v) => (Number(v) ? Number(v).toLocaleString('es-AR') : '0');
 
-  async function loadKpis(filters = {}) {
-    try {
-      statusEl.textContent = 'Cargando datos...';
-      const payload = Object.assign({ action: 'kpis', limit: 10, months: 6 }, filters);
-      const res = await fetch(apiUrl, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-      });
+        function chartDefaults() {
+            return {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(200,200,200,0.15)',
+                            borderDash: [4, 3]
+                        },
+                        ticks: {
+                            color: '#6b7280',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(200,200,200,0.06)',
+                            borderDash: [4, 3]
+                        },
+                        ticks: {
+                            color: '#6b7280',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            };
+        }
 
-      const json = await res.json();
-      if (!res.ok || !json.ok) throw new Error(json.error || 'Error al obtener KPIs');
+        async function loadKpis(filters = {}) {
+            try {
+                statusEl.textContent = 'Cargando...';
+                const payload = Object.assign({
+                    action: 'kpis',
+                    limit: 6,
+                    months: 6
+                }, filters);
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+                if (!res.ok || !json.ok) throw new Error(json.error || 'Error al obtener KPIs');
 
-      const data = json.data || {};
+                const data = json.data || {};
 
-      // poblar select cooperativas si viene
-      const coopSelect = document.getElementById('kpiCoop');
-      if (data.cooperativas && coopSelect.options.length <= 1) {
-        data.cooperativas.forEach(c => {
-          const opt = document.createElement('option'); opt.value = c.id; opt.textContent = c.nombre; coopSelect.appendChild(opt);
-        });
-      }
+                // actualizar mini-stats
+                const resumen = data.resumen || {};
+                document.getElementById('miniTotalPedidos').textContent = fmtNum(resumen.total_pedidos || 0);
+                document.getElementById('miniTotalMonto').textContent = fmtMoney(resumen.total_monto || 0);
+                document.getElementById('miniUniqueProductores').textContent = fmtNum(resumen.unique_productores || 0);
 
-      // resumen
-      const resumen = data.resumen || {};
-      const resumenEl = document.getElementById('kpi-resumen-content');
-      resumenEl.innerHTML = `
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <div style="min-width:120px">
-            <strong style="font-size:20px">${resumen.total_pedidos ?? 0}</strong><div style="font-size:12px;color:#666">Total pedidos</div>
-          </div>
-          <div style="min-width:140px">
-            <strong style="font-size:20px">$${(parseFloat(resumen.total_monto) || 0).toFixed(2)}</strong><div style="font-size:12px;color:#666">Monto total</div>
-          </div>
-          <div style="min-width:140px">
-            <strong style="font-size:20px">$${(parseFloat(resumen.avg_monto) || 0).toFixed(2)}</strong><div style="font-size:12px;color:#666">Promedio / pedido</div>
-          </div>
-        </div>
-      `;
+                // Top productos (bar vertical, colores pastel)
+                const topProds = data.top_products || [];
+                const labelsP = topProds.map(p => p.nombre_producto);
+                const valsP = topProds.map(p => Number(p.total_cantidad) || 0);
+                const ctxP = document.getElementById('chartTopProductos').getContext('2d');
+                if (chartTopProductos) chartTopProductos.destroy();
+                chartTopProductos = new Chart(ctxP, {
+                    type: 'bar',
+                    data: {
+                        labels: labelsP,
+                        datasets: [{
+                            data: valsP,
+                            backgroundColor: 'rgba(99,102,241,0.9)',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: Object.assign({}, chartDefaults())
+                });
 
-      // Top Productos
-      const topProds = data.top_products || [];
-      const labelsP = topProds.map(p => p.nombre_producto);
-      const qtysP = topProds.map(p => parseFloat(p.total_cantidad) || 0);
-      const ctxP = document.getElementById('chartTopProductos').getContext('2d');
-      if (chartTopProductos) { chartTopProductos.destroy(); }
-      chartTopProductos = new Chart(ctxP, { type: 'bar', data: { labels: labelsP, datasets: [{ label: 'Cantidad', data: qtysP, backgroundColor: '#5b21b6' }] }, options: { responsive: true, plugins: { legend: { display: false } } } });
+                // Top cooperativas (bar horizontal)
+                const topCoops = data.top_cooperativas || [];
+                const labelsC = topCoops.map(c => c.nombre);
+                const valsC = topCoops.map(c => Number(c.pedidos_count) || 0);
+                const ctxC = document.getElementById('chartTopCooperativas').getContext('2d');
+                if (chartTopCooperativas) chartTopCooperativas.destroy();
+                chartTopCooperativas = new Chart(ctxC, {
+                    type: 'bar',
+                    data: {
+                        labels: labelsC,
+                        datasets: [{
+                            data: valsC,
+                            backgroundColor: 'rgba(79,70,229,0.85)',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: Object.assign({}, chartDefaults(), {
+                        indexAxis: 'y'
+                    })
+                });
 
-      // Top Cooperativas
-      const topCoops = data.top_cooperativas || [];
-      const labelsC = topCoops.map(c => c.nombre);
-      const countsC = topCoops.map(c => parseInt(c.pedidos_count) || 0);
-      const ctxC = document.getElementById('chartTopCooperativas').getContext('2d');
-      if (chartTopCooperativas) { chartTopCooperativas.destroy(); }
-      chartTopCooperativas = new Chart(ctxC, { type: 'bar', data: { labels: labelsC, datasets: [{ label: 'Pedidos', data: countsC, backgroundColor: '#059669' }] }, options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } } } });
+                // Pedidos por mes (linea suave)
+                const porMes = data.por_mes || [];
+                const labelsM = porMes.map(r => r.ym);
+                const valsM = porMes.map(r => Number(r.pedidos_count) || 0);
+                const ctxM = document.getElementById('chartPedidosPorMes').getContext('2d');
+                if (chartPedidosPorMes) chartPedidosPorMes.destroy();
+                chartPedidosPorMes = new Chart(ctxM, {
+                    type: 'line',
+                    data: {
+                        labels: labelsM,
+                        datasets: [{
+                            data: valsM,
+                            borderColor: '#4b5563',
+                            backgroundColor: 'rgba(79,70,229,0.12)',
+                            tension: 0.4,
+                            pointRadius: 2,
+                            fill: true
+                        }]
+                    },
+                    options: Object.assign({}, chartDefaults(), {
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(200,200,200,0.06)'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    })
+                });
 
-      // Top Productores list
-      const topProdList = data.top_productores || [];
-      const listEl = document.getElementById('topProductoresList');
-      if (topProdList.length === 0) {
-        listEl.textContent = 'No hay datos';
-      } else {
-        listEl.innerHTML = '<ol style="padding-left:18px;margin:0">' + topProdList.map(p => `<li style="margin-bottom:6px"><strong>${p.nombre}</strong> — ${p.pedidos_count} pedidos</li>`).join('') + '</ol>';
-      }
+                statusEl.textContent = 'Actualizado';
+            } catch (e) {
+                statusEl.textContent = 'Error';
+                console.error(e);
+            }
+        }
 
-      // Pedidos por mes
-      const porMes = data.por_mes || [];
-      const labelsM = porMes.map(r => r.ym);
-      const valsM = porMes.map(r => parseInt(r.pedidos_count) || 0);
-      const ctxM = document.getElementById('chartPedidosPorMes').getContext('2d');
-      if (chartPedidosPorMes) { chartPedidosPorMes.destroy(); }
-      chartPedidosPorMes = new Chart(ctxM, { type: 'line', data: { labels: labelsM, datasets: [{ label: 'Pedidos', data: valsM, borderColor: '#1f2937', backgroundColor: 'rgba(31,41,55,0.06)', fill: true }] }, options: { responsive: true, plugins: { legend: { display: false } } } });
-
-      statusEl.textContent = 'KPIs cargados correctamente';
-    } catch (e) {
-      handleError(e);
-    }
-  }
-
-  // eventos
-  document.getElementById('kpiApplyBtn').addEventListener('click', () => {
-    const start = document.getElementById('kpiStartDate').value || null;
-    const end = document.getElementById('kpiEndDate').value || null;
-    const coop = document.getElementById('kpiCoop').value || null;
-    loadKpis({ start_date: start, end_date: end, cooperativa: coop });
-  });
-
-  document.getElementById('kpiClearBtn').addEventListener('click', () => {
-    document.getElementById('kpiStartDate').value = '';
-    document.getElementById('kpiEndDate').value = '';
-    document.getElementById('kpiCoop').value = '';
-    loadKpis();
-  });
-
-  // carga inicial
-  loadKpis();
-})();
+        // carga inicial (también pobla cooperativas en background)
+        loadKpis();
+    })();
 </script>
