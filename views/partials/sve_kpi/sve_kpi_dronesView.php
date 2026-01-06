@@ -36,9 +36,9 @@
         <div style="display:flex;justify-content:space-between;align-items:center">
             <div style="display:flex;align-items:center;gap:8px">
                 <div class="kpi-filters-inline" role="group" aria-label="Filtros KPI Drones">
-                    <select id="kpiProdSelect" class="gform-input" style="min-width:160px">
+                    <!-- <select id="kpiProdSelect" class="gform-input" style="min-width:160px">
                         <option value="">Productor (Todos)</option>
-                    </select>
+                    </select> -->
                     <select id="kpiGroupBy" class="gform-input" style="min-width:140px">
                         <option value="month">Agrupar por: Mes</option>
                         <option value="date">Agrupar por: Fecha</option>
