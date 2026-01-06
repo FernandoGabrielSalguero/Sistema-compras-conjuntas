@@ -5,7 +5,7 @@
         border-radius: 10px;
         background: #fff;
         box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
-        height: 200px;
+        height: 250px;
         overflow: hidden;
         display: grid;
         grid-template-columns: 1fr 320px;
