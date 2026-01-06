@@ -52,6 +52,56 @@ try {
             ]);
         }
 
+        case 'kpis': {
+            $limit = isset($payload['limit']) ? (int)$payload['limit'] : 6;
+            $months = isset($payload['months']) ? (int)$payload['months'] : 6;
+            $start_date = !empty($payload['start_date']) ? trim((string)$payload['start_date']) : null;
+            $end_date = !empty($payload['end_date']) ? trim((string)$payload['end_date']) : null;
+            $cooperativa = isset($payload['cooperativa']) && $payload['cooperativa'] !== '' ? trim((string)$payload['cooperativa']) : null;
+            $productor = isset($payload['productor']) && $payload['productor'] !== '' ? trim((string)$payload['productor']) : null;
+            $estado = isset($payload['estado']) && $payload['estado'] !== '' ? trim((string)$payload['estado']) : null;
+            $group_by = isset($payload['group_by']) && in_array($payload['group_by'], ['month','date']) ? $payload['group_by'] : 'month';
+
+            $data = [
+                'top_cooperativas' => $model->topCooperativas($limit, $start_date, $end_date, $productor),
+                'top_productores' => $model->topProductores($limit, $start_date, $end_date, $cooperativa),
+                'resumen' => $model->resumenTotales($start_date, $end_date, $cooperativa, $productor, $estado),
+                'por_mes' => $model->obtenerContratosPorMes($months, $start_date, $end_date, $cooperativa, $productor, $group_by),
+                'por_estado' => $model->contratosPorEstado($start_date, $end_date, $cooperativa, $productor)
+            ];
+
+            // incluir listas para poblar selects en la UI
+            $data['cooperativas'] = $model->obtenerCooperativas();
+            $data['productores'] = $model->obtenerProductores();
+
+            sve_kpi_cosecha_json_response(200, [
+                'ok' => true,
+                'module' => 'sve_kpi_cosecha',
+                'action' => 'kpis',
+                'data' => $data
+            ]);
+        }
+
+        case 'cooperativas': {
+            $rows = $model->obtenerCooperativas();
+            sve_kpi_cosecha_json_response(200, [
+                'ok' => true,
+                'module' => 'sve_kpi_cosecha',
+                'action' => 'cooperativas',
+                'data' => $rows
+            ]);
+        }
+
+        case 'productores': {
+            $rows = $model->obtenerProductores();
+            sve_kpi_cosecha_json_response(200, [
+                'ok' => true,
+                'module' => 'sve_kpi_cosecha',
+                'action' => 'productores',
+                'data' => $rows
+            ]);
+        }
+
         default:
             sve_kpi_cosecha_json_response(400, [
                 'ok' => false,
