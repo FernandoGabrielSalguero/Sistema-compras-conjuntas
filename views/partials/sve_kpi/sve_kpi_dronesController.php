@@ -57,20 +57,18 @@ try {
             $months = isset($payload['months']) ? (int)$payload['months'] : 6;
             $start_date = !empty($payload['start_date']) ? trim((string)$payload['start_date']) : null;
             $end_date = !empty($payload['end_date']) ? trim((string)$payload['end_date']) : null;
-            $piloto = isset($payload['piloto']) && $payload['piloto'] !== '' ? (int)$payload['piloto'] : null;
             $productor = isset($payload['productor']) && $payload['productor'] !== '' ? trim((string)$payload['productor']) : null;
             $estado = isset($payload['estado']) && $payload['estado'] !== '' ? trim((string)$payload['estado']) : null;
+            $group_by = isset($payload['group_by']) && in_array($payload['group_by'], ['month','date']) ? $payload['group_by'] : 'month';
 
             $data = [
-                'top_products' => $model->topProductos($limit, $start_date, $end_date, $piloto, $productor, $estado),
-                'top_pilotos' => $model->topPilotos($limit, $start_date, $end_date, $productor, $estado),
-                'resumen' => $model->resumenTotales($start_date, $end_date, $piloto, $productor, $estado),
-                'por_mes' => $model->obtenerSolicitudesPorMes($months, $start_date, $end_date, $piloto, $productor, $estado),
-                'por_estado' => $model->solicitudesPorEstado($start_date, $end_date, $piloto, $productor, $estado)
+                'top_products' => $model->topProductos($limit, $start_date, $end_date, $productor, $estado),
+                'resumen' => $model->resumenTotales($start_date, $end_date, $productor, $estado),
+                'por_mes' => $model->obtenerSolicitudesPorMes($months, $start_date, $end_date, $productor, $estado, $group_by),
+                'por_estado' => $model->solicitudesPorEstado($start_date, $end_date, $productor, $estado)
             ];
 
-            // incluir pilotos y productores para poblar selects en la UI
-            $data['pilotos'] = $model->obtenerPilotos();
+            // incluir productores para poblar selects en la UI
             $data['productores'] = $model->obtenerProductores();
 
             sve_kpi_drones_json_response(200, [
@@ -78,16 +76,6 @@ try {
                 'module' => 'sve_kpi_drones',
                 'action' => 'kpis',
                 'data' => $data
-            ]);
-        }
-
-        case 'pilotos': {
-            $rows = $model->obtenerPilotos();
-            sve_kpi_drones_json_response(200, [
-                'ok' => true,
-                'module' => 'sve_kpi_drones',
-                'action' => 'pilotos',
-                'data' => $rows
             ]);
         }
 

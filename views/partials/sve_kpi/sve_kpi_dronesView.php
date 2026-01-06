@@ -37,11 +37,12 @@
             <div style="display:flex;align-items:center;gap:8px">
                 <strong style="font-size:14px">Drones</strong>
                 <div class="kpi-filters-inline" role="group" aria-label="Filtros KPI Drones">
-                    <select id="kpiPilotoSelect" class="gform-input" style="min-width:160px">
-                        <option value="">Piloto (Todos)</option>
-                    </select>
                     <select id="kpiProdSelect" class="gform-input" style="min-width:160px">
                         <option value="">Productor (Todos)</option>
+                    </select>
+                    <select id="kpiGroupBy" class="gform-input" style="min-width:140px">
+                        <option value="month">Agrupar por: Mes</option>
+                        <option value="date">Agrupar por: Fecha</option>
                     </select>
                     <select id="kpiEstadoSelect" class="gform-input" style="min-width:160px">
                         <option value="">Estado (Todos)</option>
@@ -75,20 +76,13 @@
                 </div>
             </div>
 
-            <div class="mini-stat" id="mini-total-superficie">
+            <div class="mini-stat" id="mini-total-total">
                 <div>
-                    <div class="value" id="miniTotalSuperficie">0 ha</div>
-                    <div class="label">Superficie total (ha)</div>
+                    <div class="value" id="miniTotal">$0.00</div>
+                    <div class="label">Total</div>
                 </div>
             </div>
-
-            <div class="mini-stat" id="mini-total-monto">
-                <div>
-                    <div class="value" id="miniTotalMonto">$0.00</div>
-                    <div class="label">Monto total</div>
-                </div>
-            </div>
-        </div>
+        </div> 
 
         <div class="kpi-charts">
             <div class="small-chart" style="padding:6px">
@@ -102,12 +96,9 @@
             <canvas id="chartTopProductos" class="canvas-small"></canvas>
         </div>
         <div class="small-chart">
-            <canvas id="chartTopPilotos" class="canvas-small"></canvas>
-        </div>
-        <div class="small-chart">
             <canvas id="chartEstados" class="canvas-small"></canvas>
         </div>
-    </div>
+    </div> 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -117,11 +108,11 @@
         const apiUrl = '../partials/sve_kpi/sve_kpi_dronesController.php';
 
         let chartTopProductos = null;
-        let chartTopPilotos = null;
+        let chartEstados = null;
         let chartSolicitudesPorMes = null;
 
-        const pilotoSelect = document.getElementById('kpiPilotoSelect');
         const prodSelect = document.getElementById('kpiProdSelect');
+        const groupSelect = document.getElementById('kpiGroupBy');
         const estadoSelect = document.getElementById('kpiEstadoSelect');
 
         const fmtMoney = (v) => (Number(v) ? '$' + Number(v).toLocaleString('es-AR', { minimumFractionDigits:2, maximumFractionDigits:2 }) : '$0.00');
@@ -148,24 +139,20 @@
 
                 const data = json.data || {};
 
-                // poblar selects pilots/productores (solo primera vez)
+                // poblar select de productores (solo primera vez)
                 try {
-                    if (data.pilotos && pilotoSelect && pilotoSelect.options.length <= 1) {
-                        data.pilotos.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = p.nombre; pilotoSelect.appendChild(o); });
-                        if (filters && filters.piloto) pilotoSelect.value = filters.piloto;
-                    }
                     if (data.productores && prodSelect && prodSelect.options.length <= 1) {
                         data.productores.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = p.nombre; prodSelect.appendChild(o); });
                         if (filters && filters.productor) prodSelect.value = filters.productor;
                     }
+                    if (filters && filters.group_by && groupSelect) groupSelect.value = filters.group_by;
                 } catch (e) { console.error('Error poblando selects', e); }
 
                 // mini-stats
                 const resumen = data.resumen || {};
                 document.getElementById('miniTotalSolicitudes').textContent = fmtNum(resumen.total_solicitudes || 0);
                 document.getElementById('miniTotalCompletadas').textContent = fmtNum(resumen.completadas_count || 0);
-                document.getElementById('miniTotalSuperficie').textContent = (Number(resumen.total_superficie_ha) ? Number(resumen.total_superficie_ha).toLocaleString('es-AR') + ' ha' : '0 ha');
-                document.getElementById('miniTotalMonto').textContent = fmtMoney(resumen.total_monto || 0);
+                document.getElementById('miniTotal').textContent = fmtMoney(resumen.total_monto || 0);
                 // top productos (vertical bar)
                 const topProds = data.top_products || [];
                 const labelsP = topProds.map(p => p.nombre_producto);
@@ -174,13 +161,7 @@
                 if (chartTopProductos) chartTopProductos.destroy();
                 chartTopProductos = new Chart(ctxP, { type:'bar', data:{ labels:labelsP, datasets:[{ data:valsP, backgroundColor:'rgba(99,102,241,0.9)', borderRadius:6 }] }, options: Object.assign({}, chartDefaults()) });
 
-                // top pilotos (horizontal)
-                const topPilotos = data.top_pilotos || [];
-                const labelsPil = topPilotos.map(p => p.nombre);
-                const valsPil = topPilotos.map(p => Number(p.solicitudes_count) || 0);
-                const ctxPil = document.getElementById('chartTopPilotos').getContext('2d');
-                if (chartTopPilotos) chartTopPilotos.destroy();
-                chartTopPilotos = new Chart(ctxPil, { type:'bar', data:{ labels:labelsPil, datasets:[{ data:valsPil, backgroundColor:'rgba(79,70,229,0.85)', borderRadius:6 }] }, options: Object.assign({}, chartDefaults(), { indexAxis:'y' }) });
+
 
                 // breakdown por estado (doughnut)
                 const porEstado = data.por_estado || [];
@@ -208,14 +189,21 @@
                     })
                 });
 
-                // solicitudes por mes (line)
+                // solicitudes por mes/fecha (line)
                 const porMes = data.por_mes || [];
                 const labelsM = porMes.map(r => r.ym);
                 const valsM = porMes.map(r => Number(r.solicitudes_count) || 0);
                 const ctxM = document.getElementById('chartSolicitudesPorMes').getContext('2d');
                 if (chartSolicitudesPorMes) chartSolicitudesPorMes.destroy();
                 chartSolicitudesPorMes = new Chart(ctxM, { type:'line', data:{ labels:labelsM, datasets:[{ data:valsM, borderColor:'#4b5563', backgroundColor:'rgba(79,70,229,0.12)', tension:0.4, pointRadius:2, fill:true }] }, options: Object.assign({}, chartDefaults(), { scales: { x:{ grid:{ color:'rgba(200,200,200,0.06)'} }, y:{ beginAtZero:true } } }) });
-                statusEl.textContent = 'Actualizado';
+
+                // calcular top (mes/fecha con más visitas)
+                let topLabel = '';
+                let topCount = 0;
+                for (let i = 0; i < labelsM.length; i++) {
+                    if (valsM[i] > topCount) { topCount = valsM[i]; topLabel = labelsM[i]; }
+                }
+                statusEl.textContent = topLabel ? ('Actualizado — Top: ' + topLabel + ' (' + fmtNum(topCount) + ')') : 'Actualizado';
             } catch (e) {
                 statusEl.textContent = 'Error';
                 console.error(e);
@@ -231,27 +219,27 @@
         function validateAndApply(){
             const start = startInput.value || null;
             const end = endInput.value || null;
-            const piloto = pilotoSelect.value || null;
             const productor = prodSelect.value || null;
             const estado = estadoSelect.value || null;
+            const group = groupSelect ? groupSelect.value : 'month';
 
             if (start && end && end < start){ statusEl.textContent = 'Rango inválido: "Hasta" debe ser >= "Desde"'; return; }
             statusEl.textContent = 'Aplicando filtros...';
-            loadKpis({ start_date: start, end_date: end, piloto: piloto, productor: productor, estado: estado });
+            loadKpis({ start_date: start, end_date: end, productor: productor, estado: estado, group_by: group });
         }
 
         const applyDebounced = debounce(validateAndApply, 500);
         startInput.addEventListener('change', applyDebounced);
         endInput.addEventListener('change', applyDebounced);
 
-        pilotoSelect.addEventListener('change', applyDebounced);
         prodSelect.addEventListener('change', applyDebounced);
         estadoSelect.addEventListener('change', applyDebounced);
+        if (groupSelect) groupSelect.addEventListener('change', applyDebounced);
 
         clearBtn.addEventListener('click', () => {
             startInput.value = '';
             endInput.value = '';
-            pilotoSelect.value = '';
+            if (groupSelect) groupSelect.value = 'month';
             prodSelect.value = '';
             estadoSelect.value = '';
             statusEl.textContent = 'Filtros eliminados';
@@ -259,6 +247,6 @@
         });
 
         // carga inicial
-        loadKpis();
+        loadKpis({ group_by: (groupSelect ? groupSelect.value : 'month') });
     })();
 </script>

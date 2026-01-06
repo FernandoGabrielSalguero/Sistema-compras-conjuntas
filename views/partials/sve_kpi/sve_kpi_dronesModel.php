@@ -24,14 +24,6 @@ class SveKpiDronesModel
         ];
     }
 
-    // Lista de pilotos
-    public function obtenerPilotos(): array
-    {
-        $pdo = $this->getPdo();
-        $stmt = $pdo->query("SELECT id, nombre FROM dron_pilotos WHERE nombre IS NOT NULL ORDER BY nombre");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
     // Lista de productores presentes en solicitudes
     public function obtenerProductores(): array
     {
@@ -46,7 +38,7 @@ class SveKpiDronesModel
     }
 
     // Resumen general
-    public function resumenTotales(?string $start = null, ?string $end = null, ?int $piloto = null, ?string $productor = null, ?string $estado = null): array
+    public function resumenTotales(?string $start = null, ?string $end = null, ?string $productor = null, ?string $estado = null): array
     {
         $pdo = $this->getPdo();
         $sql = "SELECT
@@ -61,7 +53,6 @@ class SveKpiDronesModel
         $params = [];
         if ($start) { $sql .= " AND ds.fecha_visita >= :start"; $params[':start'] = $start; }
         if ($end)   { $sql .= " AND ds.fecha_visita <= :end";   $params[':end'] = $end; }
-        if ($piloto) { $sql .= " AND ds.piloto_id = :piloto"; $params[':piloto'] = $piloto; }
         if ($productor) { $sql .= " AND ds.productor_id_real = :productor"; $params[':productor'] = $productor; }
         if ($estado) { $sql .= " AND ds.estado = :estado"; $params[':estado'] = $estado; }
 
@@ -72,8 +63,8 @@ class SveKpiDronesModel
         return $row ?: [];
     }
 
-    // Serie temporal: solicitudes por mes
-    public function obtenerSolicitudesPorMes(int $months = 6, ?string $start = null, ?string $end = null, ?int $piloto = null, ?string $productor = null, ?string $estado = null): array
+    // Serie temporal: solicitudes por mes o por fecha
+    public function obtenerSolicitudesPorMes(int $months = 6, ?string $start = null, ?string $end = null, ?string $productor = null, ?string $estado = null, string $group = 'month'): array
     {
         $pdo = $this->getPdo();
 
@@ -81,12 +72,12 @@ class SveKpiDronesModel
             $start = (new DateTime())->modify("-" . max(1, $months) . " months")->format('Y-m-01');
         }
 
-        $sql = "SELECT DATE_FORMAT(fecha_visita, '%Y-%m') AS ym, COUNT(*) AS solicitudes_count
+        $format = ($group === 'date') ? '%Y-%m-%d' : '%Y-%m';
+        $sql = "SELECT DATE_FORMAT(fecha_visita, '{$format}') AS ym, COUNT(*) AS solicitudes_count
                 FROM drones_solicitud ds
                 WHERE ds.fecha_visita >= :start";
         $params = [':start' => $start];
         if ($end) { $sql .= " AND ds.fecha_visita <= :end"; $params[':end'] = $end; }
-        if ($piloto) { $sql .= " AND ds.piloto_id = :piloto"; $params[':piloto'] = $piloto; }
         if ($productor) { $sql .= " AND ds.productor_id_real = :productor"; $params[':productor'] = $productor; }
         if ($estado) { $sql .= " AND ds.estado = :estado"; $params[':estado'] = $estado; }
 
@@ -98,7 +89,7 @@ class SveKpiDronesModel
     }
 
     // Breakdown por estado
-    public function solicitudesPorEstado(?string $start = null, ?string $end = null, ?int $piloto = null, ?string $productor = null, ?string $estado = null): array
+    public function solicitudesPorEstado(?string $start = null, ?string $end = null, ?string $productor = null, ?string $estado = null): array
     {
         $pdo = $this->getPdo();
         $sql = "SELECT ds.estado, COUNT(*) AS count
@@ -107,7 +98,6 @@ class SveKpiDronesModel
         $params = [];
         if ($start) { $sql .= " AND ds.fecha_visita >= :start"; $params[':start'] = $start; }
         if ($end)   { $sql .= " AND ds.fecha_visita <= :end";   $params[':end'] = $end; }
-        if ($piloto) { $sql .= " AND ds.piloto_id = :piloto"; $params[':piloto'] = $piloto; }
         if ($productor) { $sql .= " AND ds.productor_id_real = :productor"; $params[':productor'] = $productor; }
         if ($estado) { $sql .= " AND ds.estado = :estado"; $params[':estado'] = $estado; }
 
@@ -118,31 +108,10 @@ class SveKpiDronesModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Top pilotos por cantidad de solicitudes
-    public function topPilotos(int $limit = 10, ?string $start = null, ?string $end = null, ?string $productor = null, ?string $estado = null): array
-    {
-        $pdo = $this->getPdo();
-        $sql = "SELECT ds.piloto_id AS id, COALESCE(dp.nombre, 'Sin piloto') AS nombre, COUNT(*) AS solicitudes_count, SUM(dsc.total) AS total_monto
-                FROM drones_solicitud ds
-                LEFT JOIN dron_pilotos dp ON dp.id = ds.piloto_id
-                LEFT JOIN drones_solicitud_costos dsc ON dsc.solicitud_id = ds.id
-                WHERE 1=1";
-        $params = [];
-        if ($start) { $sql .= " AND ds.fecha_visita >= :start"; $params[':start'] = $start; }
-        if ($end)   { $sql .= " AND ds.fecha_visita <= :end";   $params[':end'] = $end; }
-        if ($productor) { $sql .= " AND ds.productor_id_real = :productor"; $params[':productor'] = $productor; }
-        if ($estado) { $sql .= " AND ds.estado = :estado"; $params[':estado'] = $estado; }
 
-        $sql .= " GROUP BY ds.piloto_id, dp.nombre ORDER BY solicitudes_count DESC LIMIT :limit";
-        $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
-        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
 
     // Top productos por usos y monto
-    public function topProductos(int $limit = 10, ?string $start = null, ?string $end = null, ?int $piloto = null, ?string $productor = null, ?string $estado = null): array
+    public function topProductos(int $limit = 10, ?string $start = null, ?string $end = null, ?string $productor = null, ?string $estado = null): array
     {
         $pdo = $this->getPdo();
         $sql = "SELECT dsi.producto_id AS id, dsi.nombre_producto AS nombre_producto, COUNT(*) AS usos_count, SUM(dsi.total_producto_snapshot) AS total_monto
@@ -152,7 +121,6 @@ class SveKpiDronesModel
         $params = [];
         if ($start) { $sql .= " AND ds.fecha_visita >= :start"; $params[':start'] = $start; }
         if ($end)   { $sql .= " AND ds.fecha_visita <= :end";   $params[':end'] = $end; }
-        if ($piloto) { $sql .= " AND ds.piloto_id = :piloto"; $params[':piloto'] = $piloto; }
         if ($productor) { $sql .= " AND ds.productor_id_real = :productor"; $params[':productor'] = $productor; }
         if ($estado) { $sql .= " AND ds.estado = :estado"; $params[':estado'] = $estado; }
 
