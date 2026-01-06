@@ -62,14 +62,31 @@ class SveKpiCosechaModel
                 WHERE 1=1";
 
         $params = [];
-        if ($start) { $sql .= " AND cm.fecha_apertura >= :start"; $params[':start'] = $start; }
-        if ($end)   { $sql .= " AND cm.fecha_cierre <= :end";   $params[':end'] = $end; }
-        if ($cooperativa) { $sql .= " AND cp.nom_cooperativa = :coop"; $params[':coop'] = $cooperativa; }
-        if ($productor) { $sql .= " AND cp.productor = :productor"; $params[':productor'] = $productor; }
-        if ($estado) { $sql .= " AND cm.estado = :estado"; $params[':estado'] = $estado; }
+        if ($start) {
+            $sql .= " AND cm.fecha_apertura >= :start";
+            $params[':start'] = $start;
+        }
+        if ($end) {
+            $sql .= " AND cm.fecha_cierre <= :end";
+            $params[':end'] = $end;
+        }
+        if ($cooperativa) {
+            $sql .= " AND cp.nom_cooperativa = :coop";
+            $params[':coop'] = $cooperativa;
+        }
+        if ($productor) {
+            $sql .= " AND cp.productor = :productor";
+            $params[':productor'] = $productor;
+        }
+        if ($estado) {
+            $sql .= " AND cm.estado = :estado";
+            $params[':estado'] = $estado;
+        }
 
         $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ?: [];
@@ -92,13 +109,24 @@ class SveKpiCosechaModel
                 WHERE COALESCE(NULLIF(cp.fecha_estimada,''), cm.fecha_apertura) >= :start";
 
         $params = [':start' => $start];
-        if ($end) { $sql .= " AND COALESCE(NULLIF(cp.fecha_estimada,''), cm.fecha_apertura) <= :end"; $params[':end'] = $end; }
-        if ($cooperativa) { $sql .= " AND cp.nom_cooperativa = :coop"; $params[':coop'] = $cooperativa; }
-        if ($productor) { $sql .= " AND cp.productor = :productor"; $params[':productor'] = $productor; }
+        if ($end) {
+            $sql .= " AND COALESCE(NULLIF(cp.fecha_estimada,''), cm.fecha_apertura) <= :end";
+            $params[':end'] = $end;
+        }
+        if ($cooperativa) {
+            $sql .= " AND cp.nom_cooperativa = :coop";
+            $params[':coop'] = $cooperativa;
+        }
+        if ($productor) {
+            $sql .= " AND cp.productor = :productor";
+            $params[':productor'] = $productor;
+        }
 
         $sql .= " GROUP BY ym ORDER BY ym ASC";
         $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -112,14 +140,28 @@ class SveKpiCosechaModel
                 LEFT JOIN cosechaMecanica_cooperativas_participacion cp ON cp.contrato_id = cm.id
                 WHERE 1=1";
         $params = [];
-        if ($start) { $sql .= " AND cm.fecha_apertura >= :start"; $params[':start'] = $start; }
-        if ($end)   { $sql .= " AND cm.fecha_cierre <= :end";   $params[':end'] = $end; }
-        if ($cooperativa) { $sql .= " AND cp.nom_cooperativa = :coop"; $params[':coop'] = $cooperativa; }
-        if ($productor) { $sql .= " AND cp.productor = :productor"; $params[':productor'] = $productor; }
+        if ($start) {
+            $sql .= " AND cm.fecha_apertura >= :start";
+            $params[':start'] = $start;
+        }
+        if ($end) {
+            $sql .= " AND cm.fecha_cierre <= :end";
+            $params[':end'] = $end;
+        }
+        if ($cooperativa) {
+            $sql .= " AND cp.nom_cooperativa = :coop";
+            $params[':coop'] = $cooperativa;
+        }
+        if ($productor) {
+            $sql .= " AND cp.productor = :productor";
+            $params[':productor'] = $productor;
+        }
 
         $sql .= " GROUP BY cm.estado ORDER BY count DESC";
         $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -133,13 +175,24 @@ class SveKpiCosechaModel
                 JOIN CosechaMecanica cm ON cm.id = cp.contrato_id
                 WHERE 1=1";
         $params = [];
-        if ($start) { $sql .= " AND cm.fecha_apertura >= :start"; $params[':start'] = $start; }
-        if ($end)   { $sql .= " AND cm.fecha_cierre <= :end";   $params[':end'] = $end; }
-        if ($productor) { $sql .= " AND cp.productor = :productor"; $params[':productor'] = $productor; }
+        if ($start) {
+            $sql .= " AND cm.fecha_apertura >= :start";
+            $params[':start'] = $start;
+        }
+        if ($end) {
+            $sql .= " AND cm.fecha_cierre <= :end";
+            $params[':end'] = $end;
+        }
+        if ($productor) {
+            $sql .= " AND cp.productor = :productor";
+            $params[':productor'] = $productor;
+        }
 
         $sql .= " GROUP BY cp.nom_cooperativa ORDER BY total_superficie DESC LIMIT :limit";
         $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
         $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -154,13 +207,24 @@ class SveKpiCosechaModel
                 JOIN CosechaMecanica cm ON cm.id = cp.contrato_id
                 WHERE 1=1";
         $params = [];
-        if ($start) { $sql .= " AND cm.fecha_apertura >= :start"; $params[':start'] = $start; }
-        if ($end)   { $sql .= " AND cm.fecha_cierre <= :end";   $params[':end'] = $end; }
-        if ($cooperativa) { $sql .= " AND cp.nom_cooperativa = :coop"; $params[':coop'] = $cooperativa; }
+        if ($start) {
+            $sql .= " AND cm.fecha_apertura >= :start";
+            $params[':start'] = $start;
+        }
+        if ($end) {
+            $sql .= " AND cm.fecha_cierre <= :end";
+            $params[':end'] = $end;
+        }
+        if ($cooperativa) {
+            $sql .= " AND cp.nom_cooperativa = :coop";
+            $params[':coop'] = $cooperativa;
+        }
 
         $sql .= " GROUP BY cp.productor ORDER BY total_superficie DESC LIMIT :limit";
         $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
         $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

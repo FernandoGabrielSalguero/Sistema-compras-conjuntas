@@ -12,25 +12,109 @@
         align-items: stretch;
         position: relative;
     }
-    @media (max-width:900px) { .sve-kpi-cosecha.compact { grid-template-columns: 1fr; height:auto } }
 
-    .mini-stats { display:flex; gap:10px }
-    .mini-stat { flex:1; background:#f8fafc; border-radius:8px; padding:10px; display:flex; align-items:center; gap:10px }
-    .mini-stat .value { font-weight:700; font-size:18px; color:#111 }
-    .mini-stat .label { font-size:12px; color:#6b7280 }
+    @media (max-width:900px) {
+        .sve-kpi-cosecha.compact {
+            grid-template-columns: 1fr;
+            height: auto
+        }
+    }
 
-    .kpi-charts { display:flex; flex-direction:column; gap:8px; height:100% }
-    .small-chart { flex:1; background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:6px; box-shadow:0 1px 2px rgba(0,0,0,0.02) }
-    .canvas-small{ width:100%; height:120px !important }
-    .canvas-compact{ width:100%; height:120px !important }
+    .mini-stats {
+        display: flex;
+        gap: 10px
+    }
 
-    #chartEstados { height:220px !important }
-    .kpi-right .small-chart:last-child { align-items:flex-start; justify-content:flex-start; padding-top:6px; padding-bottom:8px; }
+    .mini-stat {
+        flex: 1;
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px
+    }
 
-    .kpi-filters-inline { display:flex; gap:6px; align-items:center }
-    .kpi-filters-inline input, .kpi-filters-inline select { height:28px; padding:4px 6px; font-size:12px; border-radius:6px; border:1px solid #e5e7eb; background:#fff }
-    .kpi-filters-inline button { height:28px; padding:4px 8px; border-radius:6px; border:1px solid #e5e7eb; background:transparent; color:#6b7280 }
-    @media (max-width:600px){ .kpi-filters-inline{ display:none } }
+    .mini-stat .value {
+        font-weight: 700;
+        font-size: 18px;
+        color: #111
+    }
+
+    .mini-stat .label {
+        font-size: 12px;
+        color: #6b7280
+    }
+
+    .kpi-charts {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        height: 100%
+    }
+
+    .small-chart {
+        flex: 1;
+        background: #fff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02)
+    }
+
+    .canvas-small {
+        width: 100%;
+        height: 120px !important
+    }
+
+    .canvas-compact {
+        width: 100%;
+        height: 120px !important
+    }
+
+    #chartEstados {
+        height: 220px !important
+    }
+
+    .kpi-right .small-chart:last-child {
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding-top: 6px;
+        padding-bottom: 8px;
+    }
+
+    .kpi-filters-inline {
+        display: flex;
+        gap: 6px;
+        align-items: center
+    }
+
+    .kpi-filters-inline input,
+    .kpi-filters-inline select {
+        height: 28px;
+        padding: 4px 6px;
+        font-size: 12px;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        background: #fff
+    }
+
+    .kpi-filters-inline button {
+        height: 28px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        background: transparent;
+        color: #6b7280
+    }
+
+    @media (max-width:600px) {
+        .kpi-filters-inline {
+            display: none
+        }
+    }
 </style>
 
 <div class="sve-kpi-cosecha compact">
@@ -128,16 +212,45 @@
         const groupSelect = document.getElementById('kpiGroupBy');
         const estadoSelect = document.getElementById('kpiEstadoSelect');
 
-        const fmtMoney = (v) => (Number(v) ? '$' + Number(v).toLocaleString('es-AR', { minimumFractionDigits:2, maximumFractionDigits:2 }) : '$0.00');
+        const fmtMoney = (v) => (Number(v) ? '$' + Number(v).toLocaleString('es-AR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }) : '$0.00');
         const fmtNum = (v) => (Number(v) ? Number(v).toLocaleString('es-AR') : '0');
 
         function chartDefaults() {
             return {
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
                 scales: {
-                    x: { grid: { color: 'rgba(200,200,200,0.15)', borderDash: [4,3] }, ticks: { color:'#6b7280', font:{size:11} } },
-                    y: { grid: { color: 'rgba(200,200,200,0.06)', borderDash:[4,3] }, ticks: { color:'#6b7280', font:{size:11} } }
+                    x: {
+                        grid: {
+                            color: 'rgba(200,200,200,0.15)',
+                            borderDash: [4, 3]
+                        },
+                        ticks: {
+                            color: '#6b7280',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(200,200,200,0.06)',
+                            borderDash: [4, 3]
+                        },
+                        ticks: {
+                            color: '#6b7280',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
                 }
             };
         }
@@ -145,8 +258,18 @@
         async function loadKpis(filters = {}) {
             try {
                 statusEl.textContent = 'Cargando...';
-                const payload = Object.assign({ action: 'kpis', limit: 6, months: 6 }, filters);
-                const res = await fetch(apiUrl, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+                const payload = Object.assign({
+                    action: 'kpis',
+                    limit: 6,
+                    months: 6
+                }, filters);
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
                 const json = await res.json();
                 if (!res.ok || !json.ok) throw new Error(json.error || 'Error al obtener KPIs');
 
@@ -155,15 +278,27 @@
                 // poblar selects
                 try {
                     if (data.cooperativas && coopSelect && coopSelect.options.length <= 1) {
-                        data.cooperativas.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = p.nombre; coopSelect.appendChild(o); });
+                        data.cooperativas.forEach(p => {
+                            const o = document.createElement('option');
+                            o.value = p.id;
+                            o.textContent = p.nombre;
+                            coopSelect.appendChild(o);
+                        });
                         if (filters && filters.cooperativa) coopSelect.value = filters.cooperativa;
                     }
                     if (data.productores && prodSelect && prodSelect.options.length <= 1) {
-                        data.productores.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = p.nombre; prodSelect.appendChild(o); });
+                        data.productores.forEach(p => {
+                            const o = document.createElement('option');
+                            o.value = p.id;
+                            o.textContent = p.nombre;
+                            prodSelect.appendChild(o);
+                        });
                         if (filters && filters.productor) prodSelect.value = filters.productor;
                     }
                     if (filters && filters.group_by && groupSelect) groupSelect.value = filters.group_by;
-                } catch (e) { console.error('Error poblando selects', e); }
+                } catch (e) {
+                    console.error('Error poblando selects', e);
+                }
 
                 // mini-stats
                 const resumen = data.resumen || {};
@@ -179,9 +314,24 @@
                 const canvasC = document.getElementById('chartTopCooperativas');
                 const ctxC = canvasC.getContext('2d');
                 const existingC = Chart.getChart(canvasC) || Chart.getChart('chartTopCooperativas');
-                if (existingC) try { existingC.destroy(); } catch(e){}
-                if (chartTopCoops) try { chartTopCoops.destroy(); } catch(e){}
-                chartTopCoops = new Chart(canvasC, { type:'bar', data:{ labels:labelsC, datasets:[{ data:valsC, backgroundColor:'rgba(16,185,129,0.9)', borderRadius:6 }] }, options: Object.assign({}, chartDefaults()) });
+                if (existingC) try {
+                    existingC.destroy();
+                } catch (e) {}
+                if (chartTopCoops) try {
+                    chartTopCoops.destroy();
+                } catch (e) {}
+                chartTopCoops = new Chart(canvasC, {
+                    type: 'bar',
+                    data: {
+                        labels: labelsC,
+                        datasets: [{
+                            data: valsC,
+                            backgroundColor: 'rgba(16,185,129,0.9)',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: Object.assign({}, chartDefaults())
+                });
 
                 // top productores (bar)
                 const topProds = data.top_productores || [];
@@ -190,9 +340,24 @@
                 const canvasP = document.getElementById('chartTopProductores');
                 const ctxP = canvasP.getContext('2d');
                 const existingP = Chart.getChart(canvasP) || Chart.getChart('chartTopProductores');
-                if (existingP) try { existingP.destroy(); } catch(e){}
-                if (chartTopProds) try { chartTopProds.destroy(); } catch(e){}
-                chartTopProds = new Chart(canvasP, { type:'bar', data:{ labels:labelsP, datasets:[{ data:valsP, backgroundColor:'rgba(99,102,241,0.9)', borderRadius:6 }] }, options: Object.assign({}, chartDefaults()) });
+                if (existingP) try {
+                    existingP.destroy();
+                } catch (e) {}
+                if (chartTopProds) try {
+                    chartTopProds.destroy();
+                } catch (e) {}
+                chartTopProds = new Chart(canvasP, {
+                    type: 'bar',
+                    data: {
+                        labels: labelsP,
+                        datasets: [{
+                            data: valsP,
+                            backgroundColor: 'rgba(99,102,241,0.9)',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: Object.assign({}, chartDefaults())
+                });
 
                 // breakdown por estado (doughnut)
                 const porEstado = data.por_estado || [];
@@ -202,9 +367,30 @@
                 const canvasE = document.getElementById('chartEstados');
                 const ctxE = canvasE.getContext('2d');
                 const existingE = Chart.getChart(canvasE) || Chart.getChart('chartEstados');
-                if (existingE) try { existingE.destroy(); } catch(e){}
-                if (chartEstados) try { chartEstados.destroy(); } catch(e){}
-                chartEstados = new Chart(canvasE, { type:'doughnut', data:{ labels:labelsE, datasets:[{ data:valsE, backgroundColor:colorsE }] }, options: Object.assign({}, chartDefaults(), { plugins: { legend: { display: true, position: 'bottom' } } }) });
+                if (existingE) try {
+                    existingE.destroy();
+                } catch (e) {}
+                if (chartEstados) try {
+                    chartEstados.destroy();
+                } catch (e) {}
+                chartEstados = new Chart(canvasE, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labelsE,
+                        datasets: [{
+                            data: valsE,
+                            backgroundColor: colorsE
+                        }]
+                    },
+                    options: Object.assign({}, chartDefaults(), {
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom'
+                            }
+                        }
+                    })
+                });
 
                 // contratos por mes/fecha (line)
                 const porMes = data.por_mes || [];
@@ -213,14 +399,55 @@
                 const canvasM = document.getElementById('chartContratosPorMes');
                 const ctxM = canvasM.getContext('2d');
                 const existingM = Chart.getChart(canvasM) || Chart.getChart('chartContratosPorMes');
-                if (existingM) try { existingM.destroy(); } catch(e){}
-                if (chartContratosPorMes) try { chartContratosPorMes.destroy(); } catch(e){}
+                if (existingM) try {
+                    existingM.destroy();
+                } catch (e) {}
+                if (chartContratosPorMes) try {
+                    chartContratosPorMes.destroy();
+                } catch (e) {}
                 chartContratosPorMes = new Chart(canvasM, {
-                    type:'line',
-                    data:{ labels:labelsM, datasets:[{ data:valsM, borderColor:'#4b5563', backgroundColor:'rgba(79,70,229,0.12)', tension:0.4, pointRadius:3, pointHoverRadius:6, fill:true }] },
+                    type: 'line',
+                    data: {
+                        labels: labelsM,
+                        datasets: [{
+                            data: valsM,
+                            borderColor: '#4b5563',
+                            backgroundColor: 'rgba(79,70,229,0.12)',
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
+                            fill: true
+                        }]
+                    },
                     options: Object.assign({}, chartDefaults(), {
-                        scales: { x:{ grid:{ color:'rgba(200,200,200,0.06)' }, ticks:{ color:'#6b7280', font:{size:10} } }, y:{ beginAtZero:true } },
-                        plugins: { tooltip: { callbacks: { title: function(items){ return items[0].label; }, label: function(context){ return `Contratos: ${context.formattedValue}`; } } } }
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(200,200,200,0.06)'
+                                },
+                                ticks: {
+                                    color: '#6b7280',
+                                    font: {
+                                        size: 10
+                                    }
+                                }
+                            },
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    title: function(items) {
+                                        return items[0].label;
+                                    },
+                                    label: function(context) {
+                                        return `Contratos: ${context.formattedValue}`;
+                                    }
+                                }
+                            }
+                        }
                     })
                 });
 
@@ -231,13 +458,19 @@
             }
         }
 
-        function debounce(fn, wait = 450){ let t; return function(...args){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,args), wait); }; }
+        function debounce(fn, wait = 450) {
+            let t;
+            return function(...args) {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), wait);
+            };
+        }
 
         const startInput = document.getElementById('kpiCompactStart');
         const endInput = document.getElementById('kpiCompactEnd');
         const clearBtn = document.getElementById('kpiCompactClear');
 
-        function validateAndApply(){
+        function validateAndApply() {
             const start = startInput.value || null;
             const end = endInput.value || null;
             const coop = coopSelect.value || null;
@@ -245,9 +478,19 @@
             const estado = estadoSelect.value || null;
             const group = groupSelect ? groupSelect.value : 'month';
 
-            if (start && end && end < start){ statusEl.textContent = 'Rango inválido: "Hasta" debe ser >= "Desde"'; return; }
+            if (start && end && end < start) {
+                statusEl.textContent = 'Rango inválido: "Hasta" debe ser >= "Desde"';
+                return;
+            }
             statusEl.textContent = 'Aplicando filtros...';
-            loadKpis({ start_date: start, end_date: end, cooperativa: coop, productor: productor, estado: estado, group_by: group });
+            loadKpis({
+                start_date: start,
+                end_date: end,
+                cooperativa: coop,
+                productor: productor,
+                estado: estado,
+                group_by: group
+            });
         }
 
         const applyDebounced = debounce(validateAndApply, 500);
@@ -270,6 +513,8 @@
         });
 
         // carga inicial
-        loadKpis({ group_by: (groupSelect ? groupSelect.value : 'month') });
+        loadKpis({
+            group_by: (groupSelect ? groupSelect.value : 'month')
+        });
     })();
 </script>
