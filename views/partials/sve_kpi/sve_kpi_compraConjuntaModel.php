@@ -25,7 +25,7 @@ class SveKpiCompraConjuntaModel
     }
 
     // TOP productos por cantidad y monto (acepta filtros opcionales: fecha inicio/fin y cooperativa)
-    public function obtenerTopProductos(int $limit = 10, ?string $start = null, ?string $end = null, ?int $cooperativa = null): array
+    public function obtenerTopProductos(int $limit = 10, ?string $start = null, ?string $end = null, ?int $cooperativa = null, ?int $productor = null, ?int $operativo = null): array
     {
         $pdo = $this->getPdo();
         $sql = "SELECT dp.producto_id, dp.nombre_producto, SUM(dp.cantidad) AS total_cantidad, SUM(dp.precio_producto * dp.cantidad) AS total_monto
@@ -37,6 +37,8 @@ class SveKpiCompraConjuntaModel
         if ($start) { $sql .= " AND p.fecha_pedido >= :start"; $params[':start'] = $start; }
         if ($end)   { $sql .= " AND p.fecha_pedido <= :end";   $params[':end']   = $end; }
         if ($cooperativa) { $sql .= " AND p.cooperativa = :coop"; $params[':coop'] = $cooperativa; }
+        if ($productor) { $sql .= " AND p.productor = :productor"; $params[':productor'] = $productor; }
+        if ($operativo) { $sql .= " AND p.operativo_id = :operativo"; $params[':operativo'] = $operativo; }
 
         $sql .= " GROUP BY dp.producto_id, dp.nombre_producto
              ORDER BY total_cantidad DESC
@@ -50,7 +52,7 @@ class SveKpiCompraConjuntaModel
     }
 
     // TOP cooperativas por cantidad de pedidos (acepta filtros por fecha)
-    public function obtenerTopCooperativas(int $limit = 10, ?string $start = null, ?string $end = null): array
+    public function obtenerTopCooperativas(int $limit = 10, ?string $start = null, ?string $end = null, ?int $productor = null, ?int $operativo = null): array
     {
         $pdo = $this->getPdo();
         $sql = "SELECT p.cooperativa AS id, i.nombre AS nombre, COUNT(*) AS pedidos_count, SUM(p.total_pedido) AS total_monto
@@ -62,6 +64,8 @@ class SveKpiCompraConjuntaModel
         $params = [];
         if ($start) { $sql .= " AND p.fecha_pedido >= :start"; $params[':start'] = $start; }
         if ($end)   { $sql .= " AND p.fecha_pedido <= :end";   $params[':end']   = $end; }
+        if ($productor) { $sql .= " AND p.productor = :productor"; $params[':productor'] = $productor; }
+        if ($operativo) { $sql .= " AND p.operativo_id = :operativo"; $params[':operativo'] = $operativo; }
 
         $sql .= " GROUP BY p.cooperativa, i.nombre
              ORDER BY pedidos_count DESC
@@ -75,7 +79,7 @@ class SveKpiCompraConjuntaModel
     }
 
     // TOP productores por cantidad de pedidos (acepta filtros por fecha y cooperativa)
-    public function obtenerTopProductores(int $limit = 10, ?string $start = null, ?string $end = null, ?int $cooperativa = null): array
+    public function obtenerTopProductores(int $limit = 10, ?string $start = null, ?string $end = null, ?int $cooperativa = null, ?int $operativo = null): array
     {
         $pdo = $this->getPdo();
         $sql = "SELECT p.productor AS id, i.nombre AS nombre, COUNT(*) AS pedidos_count, SUM(p.total_pedido) AS total_monto
@@ -88,6 +92,7 @@ class SveKpiCompraConjuntaModel
         if ($start) { $sql .= " AND p.fecha_pedido >= :start"; $params[':start'] = $start; }
         if ($end)   { $sql .= " AND p.fecha_pedido <= :end";   $params[':end']   = $end; }
         if ($cooperativa) { $sql .= " AND p.cooperativa = :coop"; $params[':coop'] = $cooperativa; }
+        if ($operativo) { $sql .= " AND p.operativo_id = :operativo"; $params[':operativo'] = $operativo; }
 
         $sql .= " GROUP BY p.productor, i.nombre
              ORDER BY pedidos_count DESC
@@ -101,7 +106,7 @@ class SveKpiCompraConjuntaModel
     }
 
     // Resumen general de pedidos (acepta filtros por fecha y cooperativa)
-    public function resumenTotales(?string $start = null, ?string $end = null, ?int $cooperativa = null): array
+    public function resumenTotales(?string $start = null, ?string $end = null, ?int $cooperativa = null, ?int $productor = null, ?int $operativo = null): array
     {
         $pdo = $this->getPdo();
         $sql = "SELECT
@@ -116,6 +121,8 @@ class SveKpiCompraConjuntaModel
         if ($start) { $sql .= " AND p.fecha_pedido >= :start"; $params[':start'] = $start; }
         if ($end)   { $sql .= " AND p.fecha_pedido <= :end";   $params[':end']   = $end; }
         if ($cooperativa) { $sql .= " AND p.cooperativa = :coop"; $params[':coop'] = $cooperativa; }
+        if ($productor) { $sql .= " AND p.productor = :productor"; $params[':productor'] = $productor; }
+        if ($operativo) { $sql .= " AND p.operativo_id = :operativo"; $params[':operativo'] = $operativo; }
 
         $stmt = $pdo->prepare($sql);
         foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
@@ -125,7 +132,7 @@ class SveKpiCompraConjuntaModel
     }
 
     // Serie temporal: pedidos por mes (acepta months o rango de fechas y cooperativa)
-    public function obtenerPedidosPorMes(int $months = 6, ?string $start = null, ?string $end = null, ?int $cooperativa = null): array
+    public function obtenerPedidosPorMes(int $months = 6, ?string $start = null, ?string $end = null, ?int $cooperativa = null, ?int $productor = null, ?int $operativo = null): array
     {
         $pdo = $this->getPdo();
 
@@ -139,6 +146,8 @@ class SveKpiCompraConjuntaModel
         $params = [':start' => $start];
         if ($end) { $sql .= " AND p.fecha_pedido <= :end"; $params[':end'] = $end; }
         if ($cooperativa) { $sql .= " AND p.cooperativa = :coop"; $params[':coop'] = $cooperativa; }
+        if ($productor) { $sql .= " AND p.productor = :productor"; $params[':productor'] = $productor; }
+        if ($operativo) { $sql .= " AND p.operativo_id = :operativo"; $params[':operativo'] = $operativo; }
 
         $sql .= " GROUP BY ym ORDER BY ym ASC";
         $stmt = $pdo->prepare($sql);
@@ -152,6 +161,30 @@ class SveKpiCompraConjuntaModel
     {
         $pdo = $this->getPdo();
         $stmt = $pdo->query("SELECT u.id_real AS id, i.nombre FROM usuarios u JOIN usuarios_info i ON i.usuario_id = u.id WHERE u.rol = 'cooperativa' ORDER BY i.nombre");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Lista de productores asociados o con pedidos por cooperativa
+    public function obtenerProductoresPorCooperativa(int $cooperativa_id): array
+    {
+        $pdo = $this->getPdo();
+        $stmt = $pdo->prepare(
+            "SELECT DISTINCT u.id_real AS id, i.nombre
+             FROM pedidos p
+             JOIN usuarios u ON u.id_real = p.productor
+             JOIN usuarios_info i ON i.usuario_id = u.id
+             WHERE p.cooperativa = :coop
+             ORDER BY i.nombre"
+        );
+        $stmt->execute([':coop' => $cooperativa_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Lista de operativos
+    public function obtenerOperativos(): array
+    {
+        $pdo = $this->getPdo();
+        $stmt = $pdo->query("SELECT id, nombre, fecha_inicio, fecha_cierre FROM operativos ORDER BY fecha_inicio DESC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

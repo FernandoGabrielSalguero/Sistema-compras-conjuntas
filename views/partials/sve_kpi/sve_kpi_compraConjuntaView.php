@@ -90,7 +90,7 @@
 
     /* filtros inline junto al título */
     .kpi-filters-inline { display:flex; gap:6px; align-items:center; }
-    .kpi-filters-inline input { height:28px; padding:4px 6px; font-size:12px; border-radius:6px; border:1px solid #e5e7eb; background:#fff; }
+    .kpi-filters-inline input, .kpi-filters-inline select { height:28px; padding:4px 6px; font-size:12px; border-radius:6px; border:1px solid #e5e7eb; background:#fff; }
     .kpi-filters-inline button { height:28px; padding:4px 8px; border-radius:6px; border:1px solid #e5e7eb; background:transparent; color:#6b7280; }
     @media (max-width:600px){ .kpi-filters-inline{ display:none } }
 </style>
@@ -99,8 +99,17 @@
     <div class="kpi-left">
         <div style="display:flex;justify-content:space-between;align-items:center">
             <div style="display:flex;align-items:center;gap:8px">
-                <strong style="font-size:14px">Compra Conjunta — Resumen</strong>
-                <div class="kpi-filters-inline" role="group" aria-label="Filtros fecha">
+                <strong style="font-size:14px">&nbsp;</strong>
+                <div class="kpi-filters-inline" role="group" aria-label="Filtros KPI">
+                    <select id="kpiCoopSelect" class="gform-input" style="min-width:160px">
+                        <option value="">Cooperativa (Todas)</option>
+                    </select>
+                    <select id="kpiProdSelect" class="gform-input" style="min-width:160px">
+                        <option value="">Productor (Todos)</option>
+                    </select>
+                    <select id="kpiOperSelect" class="gform-input" style="min-width:160px">
+                        <option value="">Operativo (Todos)</option>
+                    </select>
                     <input id="kpiCompactStart" type="date" />
                     <input id="kpiCompactEnd" type="date" />
                     <button id="kpiCompactClear" title="Limpiar">✕</button>
@@ -159,6 +168,11 @@
         let chartTopProductos = null;
         let chartTopCooperativas = null;
         let chartPedidosPorMes = null;
+
+        // selects y inputs (declarados antes para que loadKpis pueda acceder a ellos)
+        const coopSelect = document.getElementById('kpiCoopSelect');
+        const prodSelect = document.getElementById('kpiProdSelect');
+        const operSelect = document.getElementById('kpiOperSelect');
 
         const fmtMoney = (v) => (Number(v) ? '$' + Number(v).toLocaleString('es-AR', {
             minimumFractionDigits: 2,
@@ -222,6 +236,28 @@
                 if (!res.ok || !json.ok) throw new Error(json.error || 'Error al obtener KPIs');
 
                 const data = json.data || {};
+
+                // poblar selects si vienen datos (solo la primera vez)
+                try {
+                    if (data.cooperativas && coopSelect && coopSelect.options.length <= 1) {
+                        data.cooperativas.forEach(c => {
+                            const o = document.createElement('option'); o.value = c.id; o.textContent = c.nombre; coopSelect.appendChild(o);
+                        });
+                        // si se pasó filtro inicial, mantenerlo
+                        if (filters && filters.cooperativa) {
+                            coopSelect.value = filters.cooperativa;
+                            // disparar change para cargar productores
+                            coopSelect.dispatchEvent(new Event('change'));
+                        }
+                    }
+
+                    if (data.operativos && operSelect && operSelect.options.length <= 1) {
+                        data.operativos.forEach(o => {
+                            const opt = document.createElement('option'); opt.value = o.id; opt.textContent = o.nombre; operSelect.appendChild(opt);
+                        });
+                        if (filters && filters.operativo) operSelect.value = filters.operativo;
+                    }
+                } catch (e) { console.error('Error poblando selects', e); }
 
                 // actualizar mini-stats
                 const resumen = data.resumen || {};
@@ -309,16 +345,21 @@
             }
         }
 
-        // fecha: validacion y eventos (debounce)
+        // fecha + selects: validacion y eventos (debounce)
         function debounce(fn, wait = 450){ let t; return function(...args){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,args), wait); }; }
 
         const startInput = document.getElementById('kpiCompactStart');
         const endInput = document.getElementById('kpiCompactEnd');
         const clearBtn = document.getElementById('kpiCompactClear');
 
+        // coopSelect/prodSelect/operSelect ya están declarados arriba y disponibles aquí
+
         function validateAndApply(){
             const start = startInput.value || null;
             const end = endInput.value || null;
+            const coop = coopSelect.value || null;
+            const productor = prodSelect.value || null;
+            const operativo = operSelect.value || null;
 
             if (start && end && end < start){
                 statusEl.textContent = 'Rango inválido: "Hasta" debe ser >= "Desde"';
@@ -326,7 +367,7 @@
             }
 
             statusEl.textContent = 'Aplicando filtros...';
-            loadKpis({ start_date: start, end_date: end });
+            loadKpis({ start_date: start, end_date: end, cooperativa: coop, productor: productor, operativo: operativo });
         }
 
         const applyDebounced = debounce(validateAndApply, 500);
@@ -334,14 +375,38 @@
         startInput.addEventListener('change', applyDebounced);
         endInput.addEventListener('change', applyDebounced);
 
+        coopSelect.addEventListener('change', async () => {
+            const coop = coopSelect.value || null;
+            // cargar productores for cooperativa
+            prodSelect.innerHTML = '<option value="">Productor (Todos)</option>';
+            if (coop) {
+                try {
+                    const res = await fetch(apiUrl, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'productores', cooperativa: coop }) });
+                    const json = await res.json();
+                    if (res.ok && json.ok && Array.isArray(json.data)) {
+                        json.data.forEach(p => {
+                            const o = document.createElement('option'); o.value = p.id; o.textContent = p.nombre; prodSelect.appendChild(o);
+                        });
+                    }
+                } catch (e) { console.error('Error cargando productores', e); }
+            }
+            applyDebounced();
+        });
+
+        prodSelect.addEventListener('change', applyDebounced);
+        operSelect.addEventListener('change', applyDebounced);
+
         clearBtn.addEventListener('click', () => {
             startInput.value = '';
             endInput.value = '';
+            coopSelect.value = '';
+            prodSelect.innerHTML = '<option value="">Productor (Todos)</option>';
+            operSelect.value = '';
             statusEl.textContent = 'Filtros eliminados';
             loadKpis();
         });
 
-        // carga inicial (también pobla cooperativas en background)
+        // carga inicial (también pobla cooperativas y operativos en background)
         loadKpis();
     })();
 </script>

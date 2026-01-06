@@ -58,17 +58,20 @@ try {
             $start_date = !empty($payload['start_date']) ? trim((string)$payload['start_date']) : null;
             $end_date = !empty($payload['end_date']) ? trim((string)$payload['end_date']) : null;
             $cooperativa = isset($payload['cooperativa']) && $payload['cooperativa'] !== '' ? (int)$payload['cooperativa'] : null;
+            $productor = isset($payload['productor']) && $payload['productor'] !== '' ? (int)$payload['productor'] : null;
+            $operativo = isset($payload['operativo']) && $payload['operativo'] !== '' ? (int)$payload['operativo'] : null;
 
             $data = [
-                'top_products' => $model->obtenerTopProductos($limit, $start_date, $end_date, $cooperativa),
-                'top_cooperativas' => $model->obtenerTopCooperativas($limit, $start_date, $end_date),
-                'top_productores' => $model->obtenerTopProductores($limit, $start_date, $end_date, $cooperativa),
-                'resumen' => $model->resumenTotales($start_date, $end_date, $cooperativa),
-                'por_mes' => $model->obtenerPedidosPorMes($months, $start_date, $end_date, $cooperativa)
+                'top_products' => $model->obtenerTopProductos($limit, $start_date, $end_date, $cooperativa, $productor, $operativo),
+                'top_cooperativas' => $model->obtenerTopCooperativas($limit, $start_date, $end_date, $productor, $operativo),
+                'top_productores' => $model->obtenerTopProductores($limit, $start_date, $end_date, $cooperativa, $operativo),
+                'resumen' => $model->resumenTotales($start_date, $end_date, $cooperativa, $productor, $operativo),
+                'por_mes' => $model->obtenerPedidosPorMes($months, $start_date, $end_date, $cooperativa, $productor, $operativo)
             ];
 
-            // incluir cooperativas para poblar el select en la UI
+            // incluir cooperativas y operativos para poblar selects en la UI
             $data['cooperativas'] = $model->obtenerCooperativas();
+            $data['operativos'] = $model->obtenerOperativos();
 
             sve_kpi_compra_conjunta_json_response(200, [
                 'ok' => true,
@@ -84,6 +87,27 @@ try {
                 'ok' => true,
                 'module' => 'sve_kpi_compra_conjunta',
                 'action' => 'cooperativas',
+                'data' => $rows
+            ]);
+        }
+
+        case 'productores': {
+            $coop = isset($payload['cooperativa']) ? (int)$payload['cooperativa'] : 0;
+            $rows = $model->obtenerProductoresPorCooperativa($coop);
+            sve_kpi_compra_conjunta_json_response(200, [
+                'ok' => true,
+                'module' => 'sve_kpi_compra_conjunta',
+                'action' => 'productores',
+                'data' => $rows
+            ]);
+        }
+
+        case 'operativos': {
+            $rows = $model->obtenerOperativos();
+            sve_kpi_compra_conjunta_json_response(200, [
+                'ok' => true,
+                'module' => 'sve_kpi_compra_conjunta',
+                'action' => 'operativos',
                 'data' => $rows
             ]);
         }
