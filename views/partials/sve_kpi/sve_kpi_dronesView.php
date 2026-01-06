@@ -27,7 +27,11 @@
     .canvas-compact{ width:100%; height:120px !important }
 
     /* Tamaño específico para el doughnut de estados - cambiar este valor para agrandar/achicar */
-    #chartEstados { height:200px !important }
+    #chartEstados { height:220px !important } /* aumentar si se necesita más espacio */
+
+    /* Alineamos el contenedor del doughnut hacia arriba para que la leyenda quede visible.
+       Para ajustar: modificar `padding-top` aquí o cambiar la altura en `#chartEstados`. */
+    .kpi-right .small-chart:last-child { align-items:flex-start; justify-content:flex-start; padding-top:6px; padding-bottom:8px; }
 
     .kpi-filters-inline { display:flex; gap:6px; align-items:center }
     .kpi-filters-inline input, .kpi-filters-inline select { height:28px; padding:4px 6px; font-size:12px; border-radius:6px; border:1px solid #e5e7eb; background:#fff }
@@ -167,8 +171,6 @@
                 if (chartTopProductos) try { chartTopProductos.destroy(); } catch(e){}
                 chartTopProductos = new Chart(ctxP, { type:'bar', data:{ labels:labelsP, datasets:[{ data:valsP, backgroundColor:'rgba(99,102,241,0.9)', borderRadius:6 }] }, options: Object.assign({}, chartDefaults()) });
 
-
-
                 // breakdown por estado (doughnut) con colores específicos
                 const porEstado = data.por_estado || [];
                 const estadoLabelsMap = {
@@ -189,6 +191,7 @@
                 const valsE = porEstado.map(e => Number(e.count) || 0);
                 const colorsE = porEstado.map(e => (estadoColorsMap[e.estado] ? estadoColorsMap[e.estado] : '#9ca3af'));
                 // NOTE: Ajusta el tamaño del doughnut modificando la regla CSS `#chartEstados` en la parte superior del archivo.
+                // Si la leyenda queda oculta, cambia `padding-top` en `.kpi-right .small-chart:last-child` o aumenta `#chartEstados { height: ... }`.
                 const canvasE = document.getElementById('chartEstados');
                 const ctxE = canvasE.getContext('2d');
                 const existingE = Chart.getChart(canvasE) || Chart.getChart('chartEstados');
