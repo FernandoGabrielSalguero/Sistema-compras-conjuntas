@@ -22,7 +22,7 @@
 
     .kpi-charts { display:flex; flex-direction:column; gap:8px; height:100% }
     .small-chart { flex:1; background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:6px; box-shadow:0 1px 2px rgba(0,0,0,0.02) }
-    .canvas-small{ width:100%; height:86px !important }
+    .canvas-small{ width:100%; height:120px !important }
     .canvas-compact{ width:100%; height:120px !important }
 
     .kpi-filters-inline { display:flex; gap:6px; align-items:center }
@@ -196,7 +196,7 @@
                         datasets: [{ data: valsE, backgroundColor: colorsE }]
                     },
                     options: Object.assign({}, chartDefaults(), {
-                        plugins: { legend: { display: true, position: 'right' } }
+                        plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 8, usePointStyle: true } } }
                     })
                 });
 
