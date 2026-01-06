@@ -52,6 +52,42 @@ try {
             ]);
         }
 
+        case 'kpis': {
+            $limit = isset($payload['limit']) ? (int)$payload['limit'] : 10;
+            $months = isset($payload['months']) ? (int)$payload['months'] : 6;
+            $start_date = !empty($payload['start_date']) ? trim((string)$payload['start_date']) : null;
+            $end_date = !empty($payload['end_date']) ? trim((string)$payload['end_date']) : null;
+            $cooperativa = isset($payload['cooperativa']) && $payload['cooperativa'] !== '' ? (int)$payload['cooperativa'] : null;
+
+            $data = [
+                'top_products' => $model->obtenerTopProductos($limit, $start_date, $end_date, $cooperativa),
+                'top_cooperativas' => $model->obtenerTopCooperativas($limit, $start_date, $end_date),
+                'top_productores' => $model->obtenerTopProductores($limit, $start_date, $end_date, $cooperativa),
+                'resumen' => $model->resumenTotales($start_date, $end_date, $cooperativa),
+                'por_mes' => $model->obtenerPedidosPorMes($months, $start_date, $end_date, $cooperativa)
+            ];
+
+            // incluir cooperativas para poblar el select en la UI
+            $data['cooperativas'] = $model->obtenerCooperativas();
+
+            sve_kpi_compra_conjunta_json_response(200, [
+                'ok' => true,
+                'module' => 'sve_kpi_compra_conjunta',
+                'action' => 'kpis',
+                'data' => $data
+            ]);
+        }
+
+        case 'cooperativas': {
+            $rows = $model->obtenerCooperativas();
+            sve_kpi_compra_conjunta_json_response(200, [
+                'ok' => true,
+                'module' => 'sve_kpi_compra_conjunta',
+                'action' => 'cooperativas',
+                'data' => $rows
+            ]);
+        }
+
         default:
             sve_kpi_compra_conjunta_json_response(400, [
                 'ok' => false,
