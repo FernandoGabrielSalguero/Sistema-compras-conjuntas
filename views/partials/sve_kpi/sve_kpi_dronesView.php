@@ -40,8 +40,8 @@
                         <option value="">Productor (Todos)</option>
                     </select> -->
                     <select id="kpiGroupBy" class="gform-input" style="min-width:140px">
-                        <option value="month">Agrupar por: Mes</option>
-                        <option value="date">Agrupar por: Fecha</option>
+                        <option value="month" >Agrupar por: Mes</option>
+                        <option value="date" selected>Agrupar por: Fecha</option>
                     </select>
                     <select id="kpiEstadoSelect" class="gform-input" style="min-width:160px">
                         <option value="">Estado (Todos)</option>
