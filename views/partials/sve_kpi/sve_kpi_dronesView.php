@@ -208,7 +208,7 @@
                     })
                 });
 
-                // solicitudes por mes/fecha (line)
+                // solicitudes por mes/fecha (line) - tooltip con cantidad y etiquetas de fecha verticales
                 const porMes = data.por_mes || [];
                 const labelsM = porMes.map(r => r.ym);
                 const valsM = porMes.map(r => Number(r.solicitudes_count) || 0);
@@ -217,7 +217,46 @@
                 const existingM = Chart.getChart(canvasM) || Chart.getChart('chartSolicitudesPorMes');
                 if (existingM) existingM.destroy();
                 if (chartSolicitudesPorMes) try { chartSolicitudesPorMes.destroy(); } catch(e){}
-                chartSolicitudesPorMes = new Chart(ctxM, { type:'line', data:{ labels:labelsM, datasets:[{ data:valsM, borderColor:'#4b5563', backgroundColor:'rgba(79,70,229,0.12)', tension:0.4, pointRadius:2, fill:true }] }, options: Object.assign({}, chartDefaults(), { scales: { x:{ grid:{ color:'rgba(200,200,200,0.06)'} }, y:{ beginAtZero:true } } }) });
+
+                // Formatea la etiqueta del eje X en varias líneas: [día, mes, año].
+                // Para cambiar el tamaño de las fechas, modifica `ticks.font.size` más abajo.
+                function formatTickLabel(label){
+                    if(!label) return [''];
+                    const parts = String(label).split('-'); // espera 'YYYY-MM-DD' o 'YYYY-MM'
+                    if(parts.length===3){ const [y,m,d]=parts; return [d, m, y]; }
+                    if(parts.length===2){ const [y,m]=parts; return [m, y]; }
+                    return [label];
+                }
+
+                chartSolicitudesPorMes = new Chart(ctxM, {
+                    type:'line',
+                    data:{ labels:labelsM, datasets:[{ data:valsM, borderColor:'#4b5563', backgroundColor:'rgba(79,70,229,0.12)', tension:0.4, pointRadius:3, pointHoverRadius:6, fill:true }] },
+                    options: Object.assign({}, chartDefaults(), {
+                        scales: {
+                            x: {
+                                grid:{ color:'rgba(200,200,200,0.06)' },
+                                ticks: {
+                                    callback: function(value, index){ const lab = this.chart.data.labels[index]; return formatTickLabel(lab); },
+                                    color: '#6b7280',
+                                    font: { size: 10 },
+                                    maxRotation: 0,
+                                    autoSkip: true
+                                }
+                            },
+                            y: { beginAtZero:true }
+                        },
+                        plugins: {
+                            tooltip: {
+                                enabled: true,
+                                callbacks: {
+                                    title: function(items){ const idx = items[0].dataIndex; const lab = labelsM[idx] || items[0].label; const parts = String(lab).split('-'); if(parts.length===3){ return `${parts[2]}/${parts[1]}/${parts[0]}` } if(parts.length===2){ return `${parts[1]}/${parts[0]}` } return lab; },
+                                    label: function(context){ return `Cantidad: ${context.formattedValue}`; }
+                                }
+                            },
+                            legend: { display: false }
+                        }
+                    })
+                });
 
                 // Top label eliminado: mostramos solo estado básico
                 statusEl.textContent = 'Actualizado';
