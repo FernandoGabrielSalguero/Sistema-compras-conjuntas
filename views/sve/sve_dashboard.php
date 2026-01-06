@@ -124,16 +124,18 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     <h2>Hola</h2>
                     <p>Te presentamos el tablero Power BI. Vas a poder consultar todas las metricas desde esta página</p>
                 </div>
-                <!-- Tablero Power BI -->
-                <div class="card">
-                    <div style="position: relative; width: 100%; padding-top: 56.25%;">
-                        <iframe title="Cooperativa de Servicios Vitícolas y Enológicos"
-                            src="https://app.powerbi.com/view?r=eyJrIjoiODFkOTdlMDEtMDk4Yi00ZGIwLWEzZGYtZDgwODRkMTE3ZTExIiwidCI6ImU0ODIxNjE4LTk3Y2ItNDA4YS05YzkwLWM4MWZlMmM1YjExMiIsImMiOjR9"
-                            frameborder="0"
-                            allowfullscreen="true"
-                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-                        </iframe>
-                    </div>
+                <!-- Métricas principales: 3 tarjetas apiladas (una columna, tres filas) -->
+                <div class="card" style="width:100%; margin-bottom:1rem;">
+                    <h3>Compra conjunta</h3>
+                    <?php include __DIR__ . '/../partials/sve_kpi/sve_kpi_compraConjuntaView.php'; ?>
+                </div>
+                <div class="card" style="width:100%; margin-bottom:1rem;">
+                    <h3>Pulverización con drones</h3>
+                    <?php include __DIR__ . '/../partials/sve_kpi/sve_kpi_dronesView.php'; ?>
+                </div>
+                <div class="card" style="width:100%; margin-bottom:1rem;">
+                    <h3>Cosecha Mecanica</h3>
+                    <?php include __DIR__ . '/../partials/sve_kpi/sve_kpi_cosechaView.php'; ?>
                 </div>
 
                 <!-- contenedor del toastify -->
