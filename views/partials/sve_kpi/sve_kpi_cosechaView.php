@@ -178,8 +178,10 @@
                 const valsC = topCoops.map(p => Number(p.total_superficie) || 0);
                 const canvasC = document.getElementById('chartTopCooperativas');
                 const ctxC = canvasC.getContext('2d');
+                const existingC = Chart.getChart(canvasC) || Chart.getChart('chartTopCooperativas');
+                if (existingC) try { existingC.destroy(); } catch(e){}
                 if (chartTopCoops) try { chartTopCoops.destroy(); } catch(e){}
-                chartTopCoops = new Chart(ctxC, { type:'bar', data:{ labels:labelsC, datasets:[{ data:valsC, backgroundColor:'rgba(16,185,129,0.9)', borderRadius:6 }] }, options: Object.assign({}, chartDefaults()) });
+                chartTopCoops = new Chart(canvasC, { type:'bar', data:{ labels:labelsC, datasets:[{ data:valsC, backgroundColor:'rgba(16,185,129,0.9)', borderRadius:6 }] }, options: Object.assign({}, chartDefaults()) });
 
                 // top productores (bar)
                 const topProds = data.top_productores || [];
@@ -187,8 +189,10 @@
                 const valsP = topProds.map(p => Number(p.total_superficie) || 0);
                 const canvasP = document.getElementById('chartTopProductores');
                 const ctxP = canvasP.getContext('2d');
+                const existingP = Chart.getChart(canvasP) || Chart.getChart('chartTopProductores');
+                if (existingP) try { existingP.destroy(); } catch(e){}
                 if (chartTopProds) try { chartTopProds.destroy(); } catch(e){}
-                chartTopProds = new Chart(ctxP, { type:'bar', data:{ labels:labelsP, datasets:[{ data:valsP, backgroundColor:'rgba(99,102,241,0.9)', borderRadius:6 }] }, options: Object.assign({}, chartDefaults()) });
+                chartTopProds = new Chart(canvasP, { type:'bar', data:{ labels:labelsP, datasets:[{ data:valsP, backgroundColor:'rgba(99,102,241,0.9)', borderRadius:6 }] }, options: Object.assign({}, chartDefaults()) });
 
                 // breakdown por estado (doughnut)
                 const porEstado = data.por_estado || [];
@@ -197,8 +201,10 @@
                 const colorsE = porEstado.map(e => (e.estado === 'cerrado' ? '#10b981' : (e.estado === 'borrador' ? '#f59e0b' : '#60a5fa')));
                 const canvasE = document.getElementById('chartEstados');
                 const ctxE = canvasE.getContext('2d');
+                const existingE = Chart.getChart(canvasE) || Chart.getChart('chartEstados');
+                if (existingE) try { existingE.destroy(); } catch(e){}
                 if (chartEstados) try { chartEstados.destroy(); } catch(e){}
-                chartEstados = new Chart(ctxE, { type:'doughnut', data:{ labels:labelsE, datasets:[{ data:valsE, backgroundColor:colorsE }] }, options: Object.assign({}, chartDefaults(), { plugins: { legend: { display: true, position: 'bottom' } } }) });
+                chartEstados = new Chart(canvasE, { type:'doughnut', data:{ labels:labelsE, datasets:[{ data:valsE, backgroundColor:colorsE }] }, options: Object.assign({}, chartDefaults(), { plugins: { legend: { display: true, position: 'bottom' } } }) });
 
                 // contratos por mes/fecha (line)
                 const porMes = data.por_mes || [];
@@ -206,8 +212,10 @@
                 const valsM = porMes.map(r => Number(r.count_contratos) || 0);
                 const canvasM = document.getElementById('chartContratosPorMes');
                 const ctxM = canvasM.getContext('2d');
+                const existingM = Chart.getChart(canvasM) || Chart.getChart('chartContratosPorMes');
+                if (existingM) try { existingM.destroy(); } catch(e){}
                 if (chartContratosPorMes) try { chartContratosPorMes.destroy(); } catch(e){}
-                chartContratosPorMes = new Chart(ctxM, {
+                chartContratosPorMes = new Chart(canvasM, {
                     type:'line',
                     data:{ labels:labelsM, datasets:[{ data:valsM, borderColor:'#4b5563', backgroundColor:'rgba(79,70,229,0.12)', tension:0.4, pointRadius:3, pointHoverRadius:6, fill:true }] },
                     options: Object.assign({}, chartDefaults(), {
