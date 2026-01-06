@@ -87,20 +87,26 @@
         width: 100%;
         height: 120px !important;
     }
+
+    /* filtros inline junto al título */
+    .kpi-filters-inline { display:flex; gap:6px; align-items:center; }
+    .kpi-filters-inline input { height:28px; padding:4px 6px; font-size:12px; border-radius:6px; border:1px solid #e5e7eb; background:#fff; }
+    .kpi-filters-inline button { height:28px; padding:4px 8px; border-radius:6px; border:1px solid #e5e7eb; background:transparent; color:#6b7280; }
+    @media (max-width:600px){ .kpi-filters-inline{ display:none } }
 </style>
 
 <div class="sve-kpi-compra-conjunta compact">
     <div class="kpi-left">
         <div style="display:flex;justify-content:space-between;align-items:center">
-            <strong style="font-size:14px">Compra Conjunta — Resumen</strong>
+            <div style="display:flex;align-items:center;gap:8px">
+                <strong style="font-size:14px">Compra Conjunta — Resumen</strong>
+                <div class="kpi-filters-inline" role="group" aria-label="Filtros fecha">
+                    <input id="kpiCompactStart" type="date" />
+                    <input id="kpiCompactEnd" type="date" />
+                    <button id="kpiCompactClear" title="Limpiar">✕</button>
+                </div>
+            </div>
             <div id="sveKpiStatus" style="font-size:12px;color:#6b7280">Cargando...</div>
-        </div>
-
-        <!-- compact date filters (small, top-right) -->
-        <div class="kpi-filters" style="position:absolute;top:12px;right:12px;display:flex;gap:6px;align-items:center">
-            <input id="kpiCompactStart" type="date" style="height:28px;padding:4px 6px;font-size:12px;border-radius:6px;border:1px solid #e5e7eb;background:#fff" />
-            <input id="kpiCompactEnd" type="date" style="height:28px;padding:4px 6px;font-size:12px;border-radius:6px;border:1px solid #e5e7eb;background:#fff" />
-            <button id="kpiCompactClear" title="Limpiar" style="height:28px;padding:4px 8px;border-radius:6px;border:1px solid #e5e7eb;background:transparent;color:#6b7280;">✕</button>
         </div>
 
         <div class="mini-stats">
