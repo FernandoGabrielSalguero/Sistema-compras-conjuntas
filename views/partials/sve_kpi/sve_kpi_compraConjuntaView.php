@@ -10,7 +10,7 @@
         /* altura flexible para responsive */
         overflow: visible;
         display: grid;
-        grid-template-columns: 1fr 320px;
+        grid-template-columns: 1fr;
         gap: 12px;
         align-items: stretch;
         position: relative; /* necesario para posicionar filtros */
@@ -158,15 +158,6 @@
             </div>
         </div>
     </div>
-
-    <div class="kpi-right">
-        <div class="small-chart">
-            <canvas id="chartTopProductos" class="canvas-small"></canvas>
-        </div>
-        <div class="small-chart">
-            <canvas id="chartTopCooperativas" class="canvas-small"></canvas>
-        </div>
-    </div>
 </div>
 
 <!-- Chart.js CDN -->
@@ -176,8 +167,6 @@
         const statusEl = document.getElementById('sveKpiStatus');
         const apiUrl = '../partials/sve_kpi/sve_kpi_compraConjuntaController.php';
 
-        let chartTopProductos = null;
-        let chartTopCooperativas = null;
         let chartPedidosPorMes = null;
 
         // selects y inputs (declarados antes para que loadKpis pueda acceder a ellos)
@@ -276,45 +265,9 @@
                 document.getElementById('miniTotalMonto').textContent = fmtMoney(resumen.total_monto || 0);
                 document.getElementById('miniUniqueProductores').textContent = fmtNum(resumen.unique_productores || 0);
 
-                // Top productos (bar vertical, colores pastel)
-                const topProds = data.top_products || [];
-                const labelsP = topProds.map(p => p.nombre_producto);
-                const valsP = topProds.map(p => Number(p.total_cantidad) || 0);
-                const ctxP = document.getElementById('chartTopProductos').getContext('2d');
-                if (chartTopProductos) chartTopProductos.destroy();
-                chartTopProductos = new Chart(ctxP, {
-                    type: 'bar',
-                    data: {
-                        labels: labelsP,
-                        datasets: [{
-                            data: valsP,
-                            backgroundColor: 'rgba(99,102,241,0.9)',
-                            borderRadius: 6
-                        }]
-                    },
-                    options: Object.assign({}, chartDefaults())
-                });
+                // Top productos: gráfico eliminado (removido) - los datos ya no se muestran en esta vista.
 
-                // Top cooperativas (bar horizontal)
-                const topCoops = data.top_cooperativas || [];
-                const labelsC = topCoops.map(c => c.nombre);
-                const valsC = topCoops.map(c => Number(c.pedidos_count) || 0);
-                const ctxC = document.getElementById('chartTopCooperativas').getContext('2d');
-                if (chartTopCooperativas) chartTopCooperativas.destroy();
-                chartTopCooperativas = new Chart(ctxC, {
-                    type: 'bar',
-                    data: {
-                        labels: labelsC,
-                        datasets: [{
-                            data: valsC,
-                            backgroundColor: 'rgba(79,70,229,0.85)',
-                            borderRadius: 6
-                        }]
-                    },
-                    options: Object.assign({}, chartDefaults(), {
-                        indexAxis: 'y'
-                    })
-                });
+                // Top cooperativas: gráfico eliminado (removido) - los datos ya no se muestran en esta vista.
 
                 // Pedidos por mes (linea suave)
                 const porMes = data.por_mes || [];

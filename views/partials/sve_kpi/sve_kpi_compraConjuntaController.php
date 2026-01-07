@@ -62,8 +62,6 @@ try {
             $operativo = isset($payload['operativo']) && $payload['operativo'] !== '' ? (int)$payload['operativo'] : null;
 
             $data = [
-                'top_products' => $model->obtenerTopProductos($limit, $start_date, $end_date, $cooperativa, $productor, $operativo),
-                'top_cooperativas' => $model->obtenerTopCooperativas($limit, $start_date, $end_date, $productor, $operativo),
                 'top_productores' => $model->obtenerTopProductores($limit, $start_date, $end_date, $cooperativa, $operativo),
                 'resumen' => $model->resumenTotales($start_date, $end_date, $cooperativa, $productor, $operativo),
                 'por_mes' => $model->obtenerPedidosPorMes($months, $start_date, $end_date, $cooperativa, $productor, $operativo)
