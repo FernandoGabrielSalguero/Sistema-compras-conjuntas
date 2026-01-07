@@ -117,7 +117,7 @@
     }
 </style>
 
-<div class="sve-kpi-cosecha compact">
+<div id="sveKpiCosechaCompact" class="sve-kpi-cosecha compact">
     <div class="kpi-left">
         <div style="display:flex;justify-content:space-between;align-items:center">
             <div style="display:flex;align-items:center;gap:8px">
@@ -190,17 +190,20 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     (async () => {
-        const statusEl = document.getElementById('sveKpiCosechaStatus');
+        const rootEl = document.getElementById('sveKpiCosechaCompact');
+        if (!rootEl) return;
+
+        const statusEl = rootEl.querySelector('#sveKpiCosechaStatus');
         const apiUrl = '../partials/sve_kpi/sve_kpi_cosechaController.php';
 
         let chartEstados = null;
         let chartContratosPorMes = null;
 
-        const contratoSelect = document.getElementById('kpiContratoSelect');
-        const coopSelect = document.getElementById('kpiCoopSelect');
-        const prodSelect = document.getElementById('kpiProdSelect');
-        const groupSelect = document.getElementById('kpiGroupBy');
-        const estadoSelect = document.getElementById('kpiEstadoSelect');
+        const contratoSelect = rootEl.querySelector('#kpiContratoSelect');
+        const coopSelect = rootEl.querySelector('#kpiCoopSelect');
+        const prodSelect = rootEl.querySelector('#kpiProdSelect');
+        const groupSelect = rootEl.querySelector('#kpiGroupBy');
+        const estadoSelect = rootEl.querySelector('#kpiEstadoSelect');
 
         const fmtMoney = (v) => (Number(v) ? '$' + Number(v).toLocaleString('es-AR', {
             minimumFractionDigits: 2,
@@ -306,7 +309,7 @@
                     console.error('Error poblando selects', e);
                 }
 
-                                // mini-stats
+                // mini-stats
                 const resumen = data.resumen || {};
 
                 if (DEBUG_KPI) {
@@ -324,17 +327,16 @@
                     console.groupEnd();
                 }
 
-                document.getElementById('miniTotalContratos').textContent = fmtNum(resumen.total_contratos || 0);
-                document.getElementById('miniTotalSuperficie').textContent = fmtNum(resumen.total_superficie_ha || 0);
-                document.getElementById('miniTotalMonto').textContent = fmtMoney(resumen.total_monto_estimado || 0);
-
+                rootEl.querySelector('#miniTotalContratos').textContent = fmtNum(resumen.total_contratos || 0);
+                rootEl.querySelector('#miniTotalSuperficie').textContent = fmtNum(resumen.total_superficie_ha || 0);
+                rootEl.querySelector('#miniTotalMonto').textContent = fmtMoney(resumen.total_monto_estimado || 0);
 
                 // breakdown por estado (doughnut)
                 const porEstado = data.por_estado || [];
                 const labelsE = porEstado.map(e => e.estado);
                 const valsE = porEstado.map(e => Number(e.count) || 0);
                 const colorsE = porEstado.map(e => (e.estado === 'cerrado' ? '#10b981' : (e.estado === 'borrador' ? '#f59e0b' : '#60a5fa')));
-                const canvasE = document.getElementById('chartEstados');
+                const canvasE = rootEl.querySelector('#chartEstados');
                 const ctxE = canvasE.getContext('2d');
                 const existingE = Chart.getChart(canvasE) || Chart.getChart('chartEstados');
                 if (existingE) try {
@@ -376,7 +378,7 @@
                 const labelsM = rowsM.map(r => `${r.fecha} (${r.cant})`);
                 const valsM = rowsM.map(r => r.cant);
 
-                const canvasM = document.getElementById('chartContratosPorMes');
+                const canvasM = rootEl.querySelector('#chartContratosPorMes');
                 const ctxM = canvasM.getContext('2d');
                 const existingM = Chart.getChart(canvasM) || Chart.getChart('chartContratosPorMes');
                 if (existingM) try {
@@ -448,9 +450,9 @@
             };
         }
 
-        const startInput = document.getElementById('kpiCompactStart');
-        const endInput = document.getElementById('kpiCompactEnd');
-        const clearBtn = document.getElementById('kpiCompactClear');
+        const startInput = rootEl.querySelector('#kpiCompactStart');
+        const endInput = rootEl.querySelector('#kpiCompactEnd');
+        const clearBtn = rootEl.querySelector('#kpiCompactClear');
 
         function validateAndApply() {
             const start = startInput.value || null;
