@@ -5,8 +5,9 @@
         border-radius: 10px;
         background: #fff;
         box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
-        height: 400px;
-        overflow: hidden;
+        height: auto;
+        min-height: 0;
+        overflow: visible;
         display: grid;
         grid-template-columns: 1fr 320px;
         gap: 12px;
@@ -22,16 +23,11 @@
 
     .kpi-charts { display:flex; flex-direction:column; gap:8px; height:100% }
     .small-chart { flex:1; background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:6px; box-shadow:0 1px 2px rgba(0,0,0,0.02) }
-    /* Ajusta la altura de los canvas compactos aquí. Para cambiar sólo el doughnut de estados, modifica la regla #chartEstados más abajo. */
+    /* Ajusta la altura de los canvas compactos aquí. */
     .canvas-small{ width:100%; height:120px !important }
     .canvas-compact{ width:100%; height:120px !important }
 
-    /* Tamaño específico para el doughnut de estados - cambiar este valor para agrandar/achicar */
-    #chartEstados { height:220px !important } /* aumentar si se necesita más espacio */
 
-    /* Alineamos el contenedor del doughnut hacia arriba para que la leyenda quede visible.
-       Para ajustar: modificar `padding-top` aquí o cambiar la altura en `#chartEstados`. */
-    .kpi-right .small-chart:last-child { align-items:flex-start; justify-content:flex-start; padding-top:6px; padding-bottom:8px; }
 
     .kpi-filters-inline { display:flex; gap:6px; align-items:center }
     .kpi-filters-inline input, .kpi-filters-inline select { height:28px; padding:4px 6px; font-size:12px; border-radius:6px; border:1px solid #e5e7eb; background:#fff }
@@ -102,9 +98,6 @@
         <div class="small-chart">
             <canvas id="chartTopProductos" class="canvas-small"></canvas>
         </div>
-        <div class="small-chart">
-            <canvas id="chartEstados" class="canvas-small"></canvas>
-        </div>
     </div> 
 </div>
 
@@ -115,7 +108,6 @@
         const apiUrl = '../partials/sve_kpi/sve_kpi_dronesController.php';
 
         let chartTopProductos = null;
-        let chartEstados = null;
         let chartSolicitudesPorMes = null;
 
         const prodSelect = document.getElementById('kpiProdSelect');
@@ -171,42 +163,7 @@
                 if (chartTopProductos) try { chartTopProductos.destroy(); } catch(e){}
                 chartTopProductos = new Chart(ctxP, { type:'bar', data:{ labels:labelsP, datasets:[{ data:valsP, backgroundColor:'rgba(99,102,241,0.9)', borderRadius:6 }] }, options: Object.assign({}, chartDefaults()) });
 
-                // breakdown por estado (doughnut) con colores específicos
-                const porEstado = data.por_estado || [];
-                const estadoLabelsMap = {
-                    'ingresada': 'Ingresada',
-                    'procesando': 'Procesando',
-                    'aprobada_coop': 'Aprobada coop',
-                    'cancelada': 'Cancelada',
-                    'completada': 'Completada',
-                    'visita_realizada': 'Visita realizada'
-                };
-                const estadoColorsMap = {
-                    'completada': '#10b981', // verde
-                    'cancelada': '#ef4444',  // rojo
-                    'ingresada': '#f59e0b',  // amarillo
-                    'visita_realizada': '#60a5fa' // azul
-                };
-                const labelsE = porEstado.map(e => (estadoLabelsMap[e.estado] || e.estado));
-                const valsE = porEstado.map(e => Number(e.count) || 0);
-                const colorsE = porEstado.map(e => (estadoColorsMap[e.estado] ? estadoColorsMap[e.estado] : '#9ca3af'));
-                // NOTE: Ajusta el tamaño del doughnut modificando la regla CSS `#chartEstados` en la parte superior del archivo.
-                // Si la leyenda queda oculta, cambia `padding-top` en `.kpi-right .small-chart:last-child` o aumenta `#chartEstados { height: ... }`.
-                const canvasE = document.getElementById('chartEstados');
-                const ctxE = canvasE.getContext('2d');
-                const existingE = Chart.getChart(canvasE) || Chart.getChart('chartEstados');
-                if (existingE) existingE.destroy();
-                if (chartEstados) try { chartEstados.destroy(); } catch(e){}
-                chartEstados = new Chart(ctxE, {
-                    type: 'doughnut',
-                    data: {
-                        labels: labelsE,
-                        datasets: [{ data: valsE, backgroundColor: colorsE }]
-                    },
-                    options: Object.assign({}, chartDefaults(), {
-                        plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 8, usePointStyle: true } } }
-                    })
-                });
+                // doughnut de estados eliminado (removido) - ya no se envía ni se renderiza en esta vista
 
                 // solicitudes por mes/fecha (line) - tooltip con cantidad y etiquetas de fecha verticales
                 const porMes = data.por_mes || [];

@@ -5,9 +5,10 @@
         border-radius: 10px;
         background: #fff;
         box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
-        height: 200px;
-        /* altura solicitada */
-        overflow: hidden;
+        height: auto;
+        min-height: 0;
+        /* altura flexible para responsive */
+        overflow: visible;
         display: grid;
         grid-template-columns: 1fr 320px;
         gap: 12px;
@@ -25,16 +26,26 @@
     .mini-stats {
         display: flex;
         gap: 10px;
+        flex-wrap: wrap;
     }
 
     .mini-stat {
         flex: 1;
+        min-width: 160px;
         background: #f8fafc;
         border-radius: 8px;
         padding: 10px;
         display: flex;
         align-items: center;
         gap: 10px;
+    }
+
+    @media (max-width:900px) {
+        .mini-stat { flex: 1 1 calc(50% - 10px); min-width: 0; }
+    }
+
+    @media (max-width:480px) {
+        .mini-stat { flex: 1 1 100%; }
     }
 
     .mini-stat .value {
