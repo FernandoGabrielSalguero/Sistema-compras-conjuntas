@@ -13,7 +13,8 @@
         grid-template-columns: 1fr;
         gap: 12px;
         align-items: stretch;
-        position: relative; /* necesario para posicionar filtros */
+        position: relative;
+        /* necesario para posicionar filtros */
     }
 
     @media (max-width:900px) {
@@ -41,11 +42,16 @@
     }
 
     @media (max-width:900px) {
-        .mini-stat { flex: 1 1 calc(50% - 10px); min-width: 0; }
+        .mini-stat {
+            flex: 1 1 calc(50% - 10px);
+            min-width: 0;
+        }
     }
 
     @media (max-width:480px) {
-        .mini-stat { flex: 1 1 100%; }
+        .mini-stat {
+            flex: 1 1 100%;
+        }
     }
 
     .mini-stat .value {
@@ -100,10 +106,36 @@
     }
 
     /* filtros inline junto al título */
-    .kpi-filters-inline { display:flex; gap:6px; align-items:center; }
-    .kpi-filters-inline input, .kpi-filters-inline select { height:28px; padding:4px 6px; font-size:12px; border-radius:6px; border:1px solid #e5e7eb; background:#fff; }
-    .kpi-filters-inline button { height:28px; padding:4px 8px; border-radius:6px; border:1px solid #e5e7eb; background:transparent; color:#6b7280; }
-    @media (max-width:600px){ .kpi-filters-inline{ display:none } }
+    .kpi-filters-inline {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .kpi-filters-inline input,
+    .kpi-filters-inline select {
+        height: 28px;
+        padding: 4px 6px;
+        font-size: 12px;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+    }
+
+    .kpi-filters-inline button {
+        height: 28px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        background: transparent;
+        color: #6b7280;
+    }
+
+    @media (max-width:600px) {
+        .kpi-filters-inline {
+            display: none
+        }
+    }
 </style>
 
 <div class="sve-kpi-compra-conjunta compact">
@@ -137,6 +169,12 @@
                 </div>
             </div>
 
+            <div class="mini-stat" id="mini-unique-productores">
+                <div>
+                    <div class="value" id="miniUniqueProductores">0</div>
+                    <div class="label">Productores</div>
+                </div>
+            </div>
             <div class="mini-stat" id="mini-total-monto">
                 <div>
                     <div class="value" id="miniTotalMonto">$0</div>
@@ -144,12 +182,6 @@
                 </div>
             </div>
 
-            <div class="mini-stat" id="mini-unique-productores">
-                <div>
-                    <div class="value" id="miniUniqueProductores">0</div>
-                    <div class="label">Productores</div>
-                </div>
-            </div>
         </div>
 
         <div class="kpi-charts">
@@ -241,7 +273,10 @@
                 try {
                     if (data.cooperativas && coopSelect && coopSelect.options.length <= 1) {
                         data.cooperativas.forEach(c => {
-                            const o = document.createElement('option'); o.value = c.id; o.textContent = c.nombre; coopSelect.appendChild(o);
+                            const o = document.createElement('option');
+                            o.value = c.id;
+                            o.textContent = c.nombre;
+                            coopSelect.appendChild(o);
                         });
                         // si se pasó filtro inicial, mantenerlo
                         if (filters && filters.cooperativa) {
@@ -253,11 +288,16 @@
 
                     if (data.operativos && operSelect && operSelect.options.length <= 1) {
                         data.operativos.forEach(o => {
-                            const opt = document.createElement('option'); opt.value = o.id; opt.textContent = o.nombre; operSelect.appendChild(opt);
+                            const opt = document.createElement('option');
+                            opt.value = o.id;
+                            opt.textContent = o.nombre;
+                            operSelect.appendChild(opt);
                         });
                         if (filters && filters.operativo) operSelect.value = filters.operativo;
                     }
-                } catch (e) { console.error('Error poblando selects', e); }
+                } catch (e) {
+                    console.error('Error poblando selects', e);
+                }
 
                 // actualizar mini-stats
                 const resumen = data.resumen || {};
@@ -310,7 +350,13 @@
         }
 
         // fecha + selects: validacion y eventos (debounce)
-        function debounce(fn, wait = 450){ let t; return function(...args){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,args), wait); }; }
+        function debounce(fn, wait = 450) {
+            let t;
+            return function(...args) {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), wait);
+            };
+        }
 
         const startInput = document.getElementById('kpiCompactStart');
         const endInput = document.getElementById('kpiCompactEnd');
@@ -318,20 +364,26 @@
 
         // coopSelect/prodSelect/operSelect ya están declarados arriba y disponibles aquí
 
-        function validateAndApply(){
+        function validateAndApply() {
             const start = startInput.value || null;
             const end = endInput.value || null;
             const coop = coopSelect.value || null;
             const productor = prodSelect.value || null;
             const operativo = operSelect.value || null;
 
-            if (start && end && end < start){
+            if (start && end && end < start) {
                 statusEl.textContent = 'Rango inválido: "Hasta" debe ser >= "Desde"';
                 return;
             }
 
             statusEl.textContent = 'Aplicando filtros...';
-            loadKpis({ start_date: start, end_date: end, cooperativa: coop, productor: productor, operativo: operativo });
+            loadKpis({
+                start_date: start,
+                end_date: end,
+                cooperativa: coop,
+                productor: productor,
+                operativo: operativo
+            });
         }
 
         const applyDebounced = debounce(validateAndApply, 500);
@@ -345,14 +397,28 @@
             prodSelect.innerHTML = '<option value="">Productor (Todos)</option>';
             if (coop) {
                 try {
-                    const res = await fetch(apiUrl, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'productores', cooperativa: coop }) });
+                    const res = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: 'productores',
+                            cooperativa: coop
+                        })
+                    });
                     const json = await res.json();
                     if (res.ok && json.ok && Array.isArray(json.data)) {
                         json.data.forEach(p => {
-                            const o = document.createElement('option'); o.value = p.id; o.textContent = p.nombre; prodSelect.appendChild(o);
+                            const o = document.createElement('option');
+                            o.value = p.id;
+                            o.textContent = p.nombre;
+                            prodSelect.appendChild(o);
                         });
                     }
-                } catch (e) { console.error('Error cargando productores', e); }
+                } catch (e) {
+                    console.error('Error cargando productores', e);
+                }
             }
             applyDebounced();
         });
