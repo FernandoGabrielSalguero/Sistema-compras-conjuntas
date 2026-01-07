@@ -208,6 +208,8 @@
         }) : '$0.00');
         const fmtNum = (v) => (Number(v) ? Number(v).toLocaleString('es-AR') : '0');
 
+        const DEBUG_KPI = true;
+
         function populateSelect(selectEl, placeholderText, items, selectedValue = '') {
             if (!selectEl) return;
 
@@ -304,11 +306,28 @@
                     console.error('Error poblando selects', e);
                 }
 
-                // mini-stats
+                                // mini-stats
                 const resumen = data.resumen || {};
+
+                if (DEBUG_KPI) {
+                    const sup = Number(resumen.total_superficie_ha ?? 0) || 0;
+                    const base = Number(resumen.costo_base ?? 0) || 0;
+                    const calc = sup * base;
+
+                    console.groupCollapsed('[KPI Cosecha] Debug resumen/monto');
+                    console.log('payload enviado:', payload);
+                    console.log('resumen raw:', resumen);
+                    console.log('superficie(total_superficie_ha):', sup);
+                    console.log('costo_base:', base);
+                    console.log('calc superficie*costo_base:', calc);
+                    console.log('total_monto_estimado (backend):', resumen.total_monto_estimado);
+                    console.groupEnd();
+                }
+
                 document.getElementById('miniTotalContratos').textContent = fmtNum(resumen.total_contratos || 0);
                 document.getElementById('miniTotalSuperficie').textContent = fmtNum(resumen.total_superficie_ha || 0);
                 document.getElementById('miniTotalMonto').textContent = fmtMoney(resumen.total_monto_estimado || 0);
+
 
                 // breakdown por estado (doughnut)
                 const porEstado = data.por_estado || [];
