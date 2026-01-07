@@ -247,12 +247,6 @@
             </div>
         </div>
     </div>
-
-    <div class="kpi-right">
-        <div class="small-chart">
-            <canvas id="chartEstados" class="canvas-small"></canvas>
-        </div>
-    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
