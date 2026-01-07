@@ -4,8 +4,12 @@
         border-radius: 10px;
         background: #fff;
         box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
-        height: 420px;
-        overflow: hidden;
+
+        /* responsive: no cortar contenido */
+        height: auto;
+        min-height: 420px;
+        overflow: visible;
+
         display: grid;
         grid-template-columns: 1fr 320px;
         gap: 12px;
@@ -16,13 +20,31 @@
     @media (max-width:900px) {
         .sve-kpi-cosecha.compact {
             grid-template-columns: 1fr;
-            height: auto
+            min-height: 0;
         }
     }
 
     .mini-stats {
         display: flex;
-        gap: 10px
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .mini-stat {
+        min-width: 180px;
+    }
+
+    @media (max-width:900px) {
+        .mini-stat {
+            flex: 1 1 calc(50% - 10px);
+            min-width: 0;
+        }
+    }
+
+    @media (max-width:480px) {
+        .mini-stat {
+            flex: 1 1 100%;
+        }
     }
 
     .mini-stat {
@@ -71,11 +93,23 @@
 
     .canvas-compact {
         width: 100%;
-        height: 120px !important
+        height: 180px !important;
+    }
+
+    @media (max-width:900px) {
+        .canvas-compact {
+            height: 220px !important;
+        }
     }
 
     #chartEstados {
-        height: 220px !important
+        height: 220px !important;
+    }
+
+    @media (max-width:900px) {
+        #chartEstados {
+            height: 240px !important;
+        }
     }
 
     .kpi-right .small-chart:last-child {
@@ -88,7 +122,8 @@
     .kpi-filters-inline {
         display: flex;
         gap: 6px;
-        align-items: center
+        align-items: center;
+        flex-wrap: wrap;
     }
 
     .kpi-filters-inline input,
@@ -112,14 +147,47 @@
 
     @media (max-width:600px) {
         .kpi-filters-inline {
-            display: none
+            width: 100%;
+            gap: 8px;
+        }
+
+        .kpi-filters-inline select,
+        .kpi-filters-inline input,
+        .kpi-filters-inline button {
+            flex: 1 1 160px;
+            min-width: 160px;
+        }
+
+        .kpi-filters-inline button {
+            flex: 0 0 auto;
+            min-width: 44px;
+        }
+    }
+
+    .kpi-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .kpi-status {
+        font-size: 12px;
+        color: #6b7280;
+        white-space: nowrap;
+    }
+
+    @media (max-width:600px) {
+        .kpi-status {
+            width: 100%;
         }
     }
 </style>
 
 <div id="sveKpiCosechaCompact" class="sve-kpi-cosecha compact">
     <div class="kpi-left">
-        <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="kpi-header">
             <div style="display:flex;align-items:center;gap:8px">
                 <div class="kpi-filters-inline" role="group" aria-label="Filtros KPI Cosecha">
                     <select id="kpiContratoSelect" class="gform-input" style="min-width:180px">
@@ -147,7 +215,7 @@
                     <button id="kpiCompactClear" title="Limpiar">✕</button>
                 </div>
             </div>
-            <div id="sveKpiCosechaStatus" style="font-size:12px;color:#6b7280">Cargando...</div>
+            <div id="sveKpiCosechaStatus" class="kpi-status">Cargando...</div>
         </div>
 
         <div class="mini-stats">
