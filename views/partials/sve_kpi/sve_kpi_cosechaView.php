@@ -122,12 +122,16 @@
         <div style="display:flex;justify-content:space-between;align-items:center">
             <div style="display:flex;align-items:center;gap:8px">
                 <div class="kpi-filters-inline" role="group" aria-label="Filtros KPI Cosecha">
+                    <select id="kpiContratoSelect" class="gform-input" style="min-width:180px">
+                        <option value="">Contrato (Todos)</option>
+                    </select>
                     <select id="kpiCoopSelect" class="gform-input" style="min-width:160px">
                         <option value="">Cooperativa (Todas)</option>
                     </select>
                     <select id="kpiProdSelect" class="gform-input" style="min-width:160px">
                         <option value="">Productor (Todos)</option>
                     </select>
+
                     <select id="kpiGroupBy" class="gform-input" style="min-width:140px">
                         <option value="month">Agrupar por: Mes</option>
                         <option value="date" selected>Agrupar por: Fecha</option>
@@ -185,12 +189,6 @@
 
     <div class="kpi-right">
         <div class="small-chart">
-            <canvas id="chartTopCooperativas" class="canvas-small"></canvas>
-        </div>
-        <div class="small-chart">
-            <canvas id="chartTopProductores" class="canvas-small"></canvas>
-        </div>
-        <div class="small-chart">
             <canvas id="chartEstados" class="canvas-small"></canvas>
         </div>
     </div>
@@ -202,11 +200,10 @@
         const statusEl = document.getElementById('sveKpiCosechaStatus');
         const apiUrl = '../partials/sve_kpi/sve_kpi_cosechaController.php';
 
-        let chartTopCoops = null;
-        let chartTopProds = null;
         let chartEstados = null;
         let chartContratosPorMes = null;
 
+        const contratoSelect = document.getElementById('kpiContratoSelect');
         const coopSelect = document.getElementById('kpiCoopSelect');
         const prodSelect = document.getElementById('kpiProdSelect');
         const groupSelect = document.getElementById('kpiGroupBy');
@@ -217,6 +214,29 @@
             maximumFractionDigits: 2
         }) : '$0.00');
         const fmtNum = (v) => (Number(v) ? Number(v).toLocaleString('es-AR') : '0');
+
+        function populateSelect(selectEl, placeholderText, items, selectedValue = '') {
+            if (!selectEl) return;
+
+            const prev = selectedValue || selectEl.value || '';
+            selectEl.innerHTML = '';
+
+            const ph = document.createElement('option');
+            ph.value = '';
+            ph.textContent = placeholderText;
+            selectEl.appendChild(ph);
+
+            (items || []).forEach(it => {
+                const o = document.createElement('option');
+                o.value = (it.id ?? it.value ?? '');
+                o.textContent = (it.nombre ?? it.label ?? String(o.value));
+                selectEl.appendChild(o);
+            });
+
+            if (prev !== '' && Array.from(selectEl.options).some(o => o.value === prev)) {
+                selectEl.value = prev;
+            }
+        }
 
         function chartDefaults() {
             return {
@@ -275,25 +295,16 @@
 
                 const data = json.data || {};
 
-                // poblar selects
+                // poblar selects (siempre, para que dependan del contrato/filters)
                 try {
-                    if (data.cooperativas && coopSelect && coopSelect.options.length <= 1) {
-                        data.cooperativas.forEach(p => {
-                            const o = document.createElement('option');
-                            o.value = p.id;
-                            o.textContent = p.nombre;
-                            coopSelect.appendChild(o);
-                        });
-                        if (filters && filters.cooperativa) coopSelect.value = filters.cooperativa;
+                    if (data.contratos && contratoSelect) {
+                        populateSelect(contratoSelect, 'Contrato (Todos)', data.contratos, (filters && filters.contrato_id) ? String(filters.contrato_id) : '');
                     }
-                    if (data.productores && prodSelect && prodSelect.options.length <= 1) {
-                        data.productores.forEach(p => {
-                            const o = document.createElement('option');
-                            o.value = p.id;
-                            o.textContent = p.nombre;
-                            prodSelect.appendChild(o);
-                        });
-                        if (filters && filters.productor) prodSelect.value = filters.productor;
+                    if (data.cooperativas && coopSelect) {
+                        populateSelect(coopSelect, 'Cooperativa (Todas)', data.cooperativas, (filters && filters.cooperativa) ? String(filters.cooperativa) : '');
+                    }
+                    if (data.productores && prodSelect) {
+                        populateSelect(prodSelect, 'Productor (Todos)', data.productores, (filters && filters.productor) ? String(filters.productor) : '');
                     }
                     if (filters && filters.group_by && groupSelect) groupSelect.value = filters.group_by;
                 } catch (e) {
@@ -306,58 +317,6 @@
                 document.getElementById('miniTotalSuperficie').textContent = fmtNum(resumen.total_superficie_ha || 0);
                 document.getElementById('miniTotalProd').textContent = fmtNum(resumen.total_prod_estimada || 0);
                 document.getElementById('miniTotalMonto').textContent = fmtMoney(resumen.total_monto_estimado || 0);
-
-                // top cooperativas (bar)
-                const topCoops = data.top_cooperativas || [];
-                const labelsC = topCoops.map(p => p.nombre);
-                const valsC = topCoops.map(p => Number(p.total_superficie) || 0);
-                const canvasC = document.getElementById('chartTopCooperativas');
-                const ctxC = canvasC.getContext('2d');
-                const existingC = Chart.getChart(canvasC) || Chart.getChart('chartTopCooperativas');
-                if (existingC) try {
-                    existingC.destroy();
-                } catch (e) {}
-                if (chartTopCoops) try {
-                    chartTopCoops.destroy();
-                } catch (e) {}
-                chartTopCoops = new Chart(canvasC, {
-                    type: 'bar',
-                    data: {
-                        labels: labelsC,
-                        datasets: [{
-                            data: valsC,
-                            backgroundColor: 'rgba(16,185,129,0.9)',
-                            borderRadius: 6
-                        }]
-                    },
-                    options: Object.assign({}, chartDefaults())
-                });
-
-                // top productores (bar)
-                const topProds = data.top_productores || [];
-                const labelsP = topProds.map(p => p.nombre);
-                const valsP = topProds.map(p => Number(p.total_superficie) || 0);
-                const canvasP = document.getElementById('chartTopProductores');
-                const ctxP = canvasP.getContext('2d');
-                const existingP = Chart.getChart(canvasP) || Chart.getChart('chartTopProductores');
-                if (existingP) try {
-                    existingP.destroy();
-                } catch (e) {}
-                if (chartTopProds) try {
-                    chartTopProds.destroy();
-                } catch (e) {}
-                chartTopProds = new Chart(canvasP, {
-                    type: 'bar',
-                    data: {
-                        labels: labelsP,
-                        datasets: [{
-                            data: valsP,
-                            backgroundColor: 'rgba(99,102,241,0.9)',
-                            borderRadius: 6
-                        }]
-                    },
-                    options: Object.assign({}, chartDefaults())
-                });
 
                 // breakdown por estado (doughnut)
                 const porEstado = data.por_estado || [];
@@ -392,10 +351,20 @@
                     })
                 });
 
-                // contratos por mes/fecha (line)
+                // visitas (participaciones) por fecha_estimada (line)
                 const porMes = data.por_mes || [];
-                const labelsM = porMes.map(r => r.ym);
-                const valsM = porMes.map(r => Number(r.count_contratos) || 0);
+                const rowsM = porMes.map(r => {
+                    const fecha = (r.ym ?? r.fecha ?? '');
+                    const cant = Number(r.count_visitas ?? r.count_contratos ?? r.count ?? 0) || 0;
+                    return {
+                        fecha,
+                        cant
+                    };
+                });
+
+                const labelsM = rowsM.map(r => `${r.fecha} (${r.cant})`);
+                const valsM = rowsM.map(r => r.cant);
+
                 const canvasM = document.getElementById('chartContratosPorMes');
                 const ctxM = canvasM.getContext('2d');
                 const existingM = Chart.getChart(canvasM) || Chart.getChart('chartContratosPorMes');
@@ -405,6 +374,7 @@
                 if (chartContratosPorMes) try {
                     chartContratosPorMes.destroy();
                 } catch (e) {}
+
                 chartContratosPorMes = new Chart(canvasM, {
                     type: 'line',
                     data: {
@@ -440,10 +410,11 @@
                             tooltip: {
                                 callbacks: {
                                     title: function(items) {
-                                        return items[0].label;
+                                        return (rowsM[items[0].dataIndex] && rowsM[items[0].dataIndex].fecha) ? rowsM[items[0].dataIndex].fecha : items[0].label;
                                     },
                                     label: function(context) {
-                                        return `Contratos: ${context.formattedValue}`;
+                                        const v = rowsM[context.dataIndex] ? rowsM[context.dataIndex].cant : Number(context.formattedValue || 0);
+                                        return `Visitas: ${v}`;
                                     }
                                 }
                             }
@@ -473,6 +444,7 @@
         function validateAndApply() {
             const start = startInput.value || null;
             const end = endInput.value || null;
+            const contratoId = contratoSelect ? (contratoSelect.value || null) : null;
             const coop = coopSelect.value || null;
             const productor = prodSelect.value || null;
             const estado = estadoSelect.value || null;
@@ -486,6 +458,7 @@
             loadKpis({
                 start_date: start,
                 end_date: end,
+                contrato_id: contratoId,
                 cooperativa: coop,
                 productor: productor,
                 estado: estado,
@@ -496,6 +469,7 @@
         const applyDebounced = debounce(validateAndApply, 500);
         startInput.addEventListener('change', applyDebounced);
         endInput.addEventListener('change', applyDebounced);
+        if (contratoSelect) contratoSelect.addEventListener('change', applyDebounced);
         coopSelect.addEventListener('change', applyDebounced);
         prodSelect.addEventListener('change', applyDebounced);
         estadoSelect.addEventListener('change', applyDebounced);
@@ -505,6 +479,7 @@
             startInput.value = '';
             endInput.value = '';
             if (groupSelect) groupSelect.value = 'month';
+            if (contratoSelect) contratoSelect.value = '';
             coopSelect.value = '';
             prodSelect.value = '';
             estadoSelect.value = '';

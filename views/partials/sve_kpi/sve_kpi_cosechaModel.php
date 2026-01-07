@@ -24,31 +24,60 @@ class SveKpiCosechaModel
         ];
     }
 
+    // Lista de contratos (para filtro por contrato)
+    public function obtenerContratos(): array
+    {
+        $pdo = $this->getPdo();
+        $sql = "SELECT cm.id AS id, cm.nombre AS nombre
+                FROM CosechaMecanica cm
+                ORDER BY cm.nombre ASC";
+        $stmt = $pdo->query($sql);
+        return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+    }
+
     // Lista de cooperativas que participan en contratos
-    public function obtenerCooperativas(): array
+    public function obtenerCooperativas(?int $contratoId = null): array
     {
         $pdo = $this->getPdo();
         // La tabla de participaciones no tiene un id de cooperativa, guardamos el nombre como id
         $sql = "SELECT DISTINCT cp.nom_cooperativa AS nombre, cp.nom_cooperativa AS id
                 FROM cosechaMecanica_cooperativas_participacion cp
-                ORDER BY nombre";
-        $stmt = $pdo->query($sql);
+                WHERE 1=1";
+        $params = [];
+        if ($contratoId) {
+            $sql .= " AND cp.contrato_id = :contrato_id";
+            $params[':contrato_id'] = (int)$contratoId;
+        }
+        $sql .= " ORDER BY nombre";
+
+        $stmt = $pdo->prepare($sql);
+        foreach ($params as $k => $v) $stmt->bindValue($k, $v);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // Lista de productores presentes en participaciones
-    public function obtenerProductores(): array
+    public function obtenerProductores(?int $contratoId = null): array
     {
         $pdo = $this->getPdo();
         $sql = "SELECT DISTINCT cp.productor AS id, cp.productor AS nombre
                 FROM cosechaMecanica_cooperativas_participacion cp
-                ORDER BY nombre";
-        $stmt = $pdo->query($sql);
+                WHERE 1=1";
+        $params = [];
+        if ($contratoId) {
+            $sql .= " AND cp.contrato_id = :contrato_id";
+            $params[':contrato_id'] = (int)$contratoId;
+        }
+        $sql .= " ORDER BY nombre";
+
+        $stmt = $pdo->prepare($sql);
+        foreach ($params as $k => $v) $stmt->bindValue($k, $v);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // Resumen general: cantidad de contratos, superficie total, produccion estimada, monto estimado (costo_base * superficie)
-    public function resumenTotales(?string $start = null, ?string $end = null, ?string $cooperativa = null, ?string $productor = null, ?string $estado = null): array
+    public function resumenTotales(?string $start = null, ?string $end = null, ?int $contratoId = null, ?string $cooperativa = null, ?string $productor = null, ?string $estado = null): array
     {
         $pdo = $this->getPdo();
 
@@ -69,6 +98,10 @@ class SveKpiCosechaModel
         if ($end) {
             $sql .= " AND cm.fecha_cierre <= :end";
             $params[':end'] = $end;
+        }
+        if ($contratoId) {
+            $sql .= " AND cm.id = :contrato_id";
+            $params[':contrato_id'] = (int)$contratoId;
         }
         if ($cooperativa) {
             $sql .= " AND cp.nom_cooperativa = :coop";
@@ -93,25 +126,44 @@ class SveKpiCosechaModel
     }
 
     // Serie temporal: contratos (o participaciones) por mes o por fecha
-    public function obtenerContratosPorMes(int $months = 6, ?string $start = null, ?string $end = null, ?string $cooperativa = null, ?string $productor = null, string $group = 'month'): array
-    {
+    public function obtenerContratosPorMes(
+        int $months = 6,
+        ?string $start = null,
+        ?string $end = null,
+        ?int $contratoId = null,
+        ?string $cooperativa = null,
+        ?string $productor = null,
+        ?string $estado = null,
+        string $group = 'month'
+    ): array {
         $pdo = $this->getPdo();
 
         if (!$start) {
             $start = (new DateTime())->modify("-" . max(1, $months) . " months")->format('Y-m-01');
         }
 
-        // Usamos la fecha_estimada de participacion si existe, sino fecha_apertura del contrato
+        // fecha_estimada es VARCHAR -> la parseamos; fallback a fecha_apertura para no dejar vacío
         $format = ($group === 'date') ? '%Y-%m-%d' : '%Y-%m';
-        $sql = "SELECT DATE_FORMAT(COALESCE(NULLIF(cp.fecha_estimada,''), cm.fecha_apertura), '{$format}') AS ym, COUNT(*) AS count_contratos, SUM(cp.superficie) AS total_superficie
+        $fechaRef = "COALESCE(STR_TO_DATE(NULLIF(cp.fecha_estimada,''), '%Y-%m-%d'), cm.fecha_apertura)";
+
+        $sql = "SELECT
+                    DATE_FORMAT({$fechaRef}, '{$format}') AS ym,
+                    COUNT(cp.id) AS count_visitas,
+                    COUNT(cp.id) AS count_contratos,
+                    SUM(cp.superficie) AS total_superficie
                 FROM CosechaMecanica cm
                 LEFT JOIN cosechaMecanica_cooperativas_participacion cp ON cp.contrato_id = cm.id
-                WHERE COALESCE(NULLIF(cp.fecha_estimada,''), cm.fecha_apertura) >= :start";
+                WHERE {$fechaRef} >= :start";
 
         $params = [':start' => $start];
+
         if ($end) {
-            $sql .= " AND COALESCE(NULLIF(cp.fecha_estimada,''), cm.fecha_apertura) <= :end";
+            $sql .= " AND {$fechaRef} <= :end";
             $params[':end'] = $end;
+        }
+        if ($contratoId) {
+            $sql .= " AND cm.id = :contrato_id";
+            $params[':contrato_id'] = (int)$contratoId;
         }
         if ($cooperativa) {
             $sql .= " AND cp.nom_cooperativa = :coop";
@@ -121,18 +173,22 @@ class SveKpiCosechaModel
             $sql .= " AND cp.productor = :productor";
             $params[':productor'] = $productor;
         }
+        if ($estado) {
+            $sql .= " AND cm.estado = :estado";
+            $params[':estado'] = $estado;
+        }
 
         $sql .= " GROUP BY ym ORDER BY ym ASC";
+
         $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) {
-            $stmt->bindValue($k, $v);
-        }
+        foreach ($params as $k => $v) $stmt->bindValue($k, $v);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+
     // Breakdown por estado de contrato
-    public function contratosPorEstado(?string $start = null, ?string $end = null, ?string $cooperativa = null, ?string $productor = null): array
+    public function contratosPorEstado(?string $start = null, ?string $end = null, ?int $contratoId = null, ?string $cooperativa = null, ?string $productor = null): array
     {
         $pdo = $this->getPdo();
         $sql = "SELECT cm.estado, COUNT(DISTINCT cm.id) AS count
@@ -147,6 +203,10 @@ class SveKpiCosechaModel
         if ($end) {
             $sql .= " AND cm.fecha_cierre <= :end";
             $params[':end'] = $end;
+        }
+        if ($contratoId) {
+            $sql .= " AND cm.id = :contrato_id";
+            $params[':contrato_id'] = (int)$contratoId;
         }
         if ($cooperativa) {
             $sql .= " AND cp.nom_cooperativa = :coop";
@@ -167,7 +227,7 @@ class SveKpiCosechaModel
     }
 
     // Top cooperativas por superficie o cantidad de participaciones
-    public function topCooperativas(int $limit = 10, ?string $start = null, ?string $end = null, ?string $productor = null): array
+    public function topCooperativas(int $limit = 10, ?string $start = null, ?string $end = null, ?int $contratoId = null, ?string $productor = null): array
     {
         $pdo = $this->getPdo();
         $sql = "SELECT cp.nom_cooperativa AS id, cp.nom_cooperativa AS nombre, COUNT(*) AS participaciones, SUM(cp.superficie) AS total_superficie, SUM(cm.costo_base * cp.superficie) AS total_monto
@@ -182,6 +242,10 @@ class SveKpiCosechaModel
         if ($end) {
             $sql .= " AND cm.fecha_cierre <= :end";
             $params[':end'] = $end;
+        }
+        if ($contratoId) {
+            $sql .= " AND cm.id = :contrato_id";
+            $params[':contrato_id'] = (int)$contratoId;
         }
         if ($productor) {
             $sql .= " AND cp.productor = :productor";
@@ -199,7 +263,7 @@ class SveKpiCosechaModel
     }
 
     // Top productores por superficie o produccion estimada
-    public function topProductores(int $limit = 10, ?string $start = null, ?string $end = null, ?string $cooperativa = null): array
+    public function topProductores(int $limit = 10, ?string $start = null, ?string $end = null, ?int $contratoId = null, ?string $cooperativa = null): array
     {
         $pdo = $this->getPdo();
         $sql = "SELECT cp.productor AS id, cp.productor AS nombre, COUNT(*) AS participaciones, SUM(cp.superficie) AS total_superficie, SUM(cp.prod_estimada) AS total_prod_estimada
@@ -214,6 +278,10 @@ class SveKpiCosechaModel
         if ($end) {
             $sql .= " AND cm.fecha_cierre <= :end";
             $params[':end'] = $end;
+        }
+        if ($contratoId) {
+            $sql .= " AND cm.id = :contrato_id";
+            $params[':contrato_id'] = (int)$contratoId;
         }
         if ($cooperativa) {
             $sql .= " AND cp.nom_cooperativa = :coop";
