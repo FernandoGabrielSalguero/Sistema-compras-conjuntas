@@ -11,7 +11,7 @@
         overflow: visible;
 
         display: grid;
-        grid-template-columns: 1fr 320px;
+        grid-template-columns: 1fr;
         gap: 12px;
         align-items: stretch;
         position: relative;
@@ -93,7 +93,7 @@
 
     .canvas-compact {
         width: 100%;
-        height: 180px !important;
+        height: 260px !important; /* más alto en pantallas grandes para ocupar mejor el ancho */
     }
 
     @media (max-width:900px) {
@@ -116,7 +116,8 @@
         font-size: 12px;
         border-radius: 6px;
         border: 1px solid #e5e7eb;
-        background: #fff
+        background: #fff;
+        min-width: 120px;
     }
 
     .kpi-filters-inline button {
@@ -125,10 +126,10 @@
         border-radius: 6px;
         border: 1px solid #e5e7eb;
         background: transparent;
-        color: #6b7280
+        color: #6b7280;
     }
 
-    @media (max-width:600px) {
+    @media (max-width:900px) {
         .kpi-filters-inline {
             width: 100%;
             gap: 8px;
@@ -138,7 +139,7 @@
         .kpi-filters-inline input,
         .kpi-filters-inline button {
             flex: 1 1 160px;
-            min-width: 160px;
+            min-width: 120px;
         }
 
         .kpi-filters-inline button {
@@ -150,15 +151,26 @@
     .kpi-header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
         gap: 8px;
         flex-wrap: wrap;
+    }
+
+    /* filtros ocupan toda la fila para usar el ancho completo */
+    .kpi-filters-inline {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex: 1 1 100%;
+        width: 100%;
     }
 
     .kpi-status {
         font-size: 12px;
         color: #6b7280;
-        white-space: nowrap;
+        width: 100%;
+        text-align: right;
+        margin-top: 6px;
     }
 
     @media (max-width:600px) {
