@@ -186,44 +186,7 @@ class SveKpiCosechaModel
     }
 
 
-    // Breakdown por estado de contrato
-    public function contratosPorEstado(?string $start = null, ?string $end = null, ?int $contratoId = null, ?string $cooperativa = null, ?string $productor = null): array
-    {
-        $pdo = $this->getPdo();
-        $sql = "SELECT cm.estado, COUNT(DISTINCT cm.id) AS count
-                FROM CosechaMecanica cm
-                LEFT JOIN cosechaMecanica_cooperativas_participacion cp ON cp.contrato_id = cm.id
-                WHERE 1=1";
-        $params = [];
-        if ($start) {
-            $sql .= " AND cm.fecha_apertura >= :start";
-            $params[':start'] = $start;
-        }
-        if ($end) {
-            $sql .= " AND cm.fecha_cierre <= :end";
-            $params[':end'] = $end;
-        }
-        if ($contratoId) {
-            $sql .= " AND cm.id = :contrato_id";
-            $params[':contrato_id'] = (int)$contratoId;
-        }
-        if ($cooperativa) {
-            $sql .= " AND cp.nom_cooperativa = :coop";
-            $params[':coop'] = $cooperativa;
-        }
-        if ($productor) {
-            $sql .= " AND cp.productor = :productor";
-            $params[':productor'] = $productor;
-        }
 
-        $sql .= " GROUP BY cm.estado ORDER BY count DESC";
-        $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) {
-            $stmt->bindValue($k, $v);
-        }
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
 
     // Top cooperativas por superficie o cantidad de participaciones
     public function topCooperativas(int $limit = 10, ?string $start = null, ?string $end = null, ?int $contratoId = null, ?string $productor = null): array

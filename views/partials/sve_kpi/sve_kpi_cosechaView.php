@@ -7,7 +7,7 @@
 
         /* responsive: no cortar contenido */
         height: auto;
-        min-height: 420px;
+        min-height: 0;
         overflow: visible;
 
         display: grid;
@@ -100,23 +100,6 @@
         .canvas-compact {
             height: 220px !important;
         }
-    }
-
-    #chartEstados {
-        height: 220px !important;
-    }
-
-    @media (max-width:900px) {
-        #chartEstados {
-            height: 240px !important;
-        }
-    }
-
-    .kpi-right .small-chart:last-child {
-        align-items: flex-start;
-        justify-content: flex-start;
-        padding-top: 6px;
-        padding-bottom: 8px;
     }
 
     .kpi-filters-inline {
@@ -258,7 +241,6 @@
         const statusEl = rootEl.querySelector('#sveKpiCosechaStatus');
         const apiUrl = '../partials/sve_kpi/sve_kpi_cosechaController.php';
 
-        let chartEstados = null;
         let chartContratosPorMes = null;
 
         const contratoSelect = rootEl.querySelector('#kpiContratoSelect');
@@ -393,38 +375,7 @@
                 rootEl.querySelector('#miniTotalSuperficie').textContent = fmtNum(resumen.total_superficie_ha || 0);
                 rootEl.querySelector('#miniTotalMonto').textContent = fmtMoney(resumen.total_monto_estimado || 0);
 
-                // breakdown por estado (doughnut)
-                const porEstado = data.por_estado || [];
-                const labelsE = porEstado.map(e => e.estado);
-                const valsE = porEstado.map(e => Number(e.count) || 0);
-                const colorsE = porEstado.map(e => (e.estado === 'cerrado' ? '#10b981' : (e.estado === 'borrador' ? '#f59e0b' : '#60a5fa')));
-                const canvasE = rootEl.querySelector('#chartEstados');
-                const ctxE = canvasE.getContext('2d');
-                const existingE = Chart.getChart(canvasE) || Chart.getChart('chartEstados');
-                if (existingE) try {
-                    existingE.destroy();
-                } catch (e) {}
-                if (chartEstados) try {
-                    chartEstados.destroy();
-                } catch (e) {}
-                chartEstados = new Chart(canvasE, {
-                    type: 'doughnut',
-                    data: {
-                        labels: labelsE,
-                        datasets: [{
-                            data: valsE,
-                            backgroundColor: colorsE
-                        }]
-                    },
-                    options: Object.assign({}, chartDefaults(), {
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'bottom'
-                            }
-                        }
-                    })
-                });
+                // doughnut de estados eliminado (removido) - ya no se envía ni se renderiza en esta vista
 
                 // visitas (participaciones) por fecha_estimada (line)
                 const porMes = data.por_mes || [];

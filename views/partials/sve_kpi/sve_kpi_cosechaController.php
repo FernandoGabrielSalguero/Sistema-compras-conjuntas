@@ -72,9 +72,7 @@ try {
                     'resumen' => $model->resumenTotales($start_date, $end_date, $contrato_id, $cooperativa, $productor, $estado),
 
                     // Serie: visitas (participaciones) por fecha_estimada (o fallback)
-                    'por_mes' => $model->obtenerContratosPorMes($months, $start_date, $end_date, $contrato_id, $cooperativa, $productor, $estado, $group_by),
-
-                    'por_estado' => $model->contratosPorEstado($start_date, $end_date, $contrato_id, $cooperativa, $productor)
+                    'por_mes' => $model->obtenerContratosPorMes($months, $start_date, $end_date, $contrato_id, $cooperativa, $productor, $estado, $group_by)
                 ];
 
 
