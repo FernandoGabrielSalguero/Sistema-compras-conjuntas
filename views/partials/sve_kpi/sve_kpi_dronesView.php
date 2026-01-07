@@ -9,7 +9,7 @@
         min-height: 0;
         overflow: visible;
         display: grid;
-        grid-template-columns: 1fr 320px;
+        grid-template-columns: 1fr;
         gap: 12px;
         align-items: stretch;
         position: relative;
@@ -93,12 +93,6 @@
             </div>
         </div>
     </div>
-
-    <div class="kpi-right">
-        <div class="small-chart">
-            <canvas id="chartTopProductos" class="canvas-small"></canvas>
-        </div>
-    </div> 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -107,7 +101,6 @@
         const statusEl = document.getElementById('sveKpiDronesStatus');
         const apiUrl = '../partials/sve_kpi/sve_kpi_dronesController.php';
 
-        let chartTopProductos = null;
         let chartSolicitudesPorMes = null;
 
         const prodSelect = document.getElementById('kpiProdSelect');
@@ -152,16 +145,7 @@
                 document.getElementById('miniTotalSolicitudes').textContent = fmtNum(resumen.total_solicitudes || 0);
                 document.getElementById('miniTotalCompletadas').textContent = fmtNum(resumen.completadas_count || 0);
                 document.getElementById('miniTotal').textContent = fmtMoney(resumen.total_monto || 0);
-                // top productos (vertical bar)
-                const topProds = data.top_products || [];
-                const labelsP = topProds.map(p => p.nombre_producto);
-                const valsP = topProds.map(p => Number(p.usos_count) || 0);
-                const canvasP = document.getElementById('chartTopProductos');
-                const ctxP = canvasP.getContext('2d');
-                const existingP = Chart.getChart(canvasP) || Chart.getChart('chartTopProductos');
-                if (existingP) existingP.destroy();
-                if (chartTopProductos) try { chartTopProductos.destroy(); } catch(e){}
-                chartTopProductos = new Chart(ctxP, { type:'bar', data:{ labels:labelsP, datasets:[{ data:valsP, backgroundColor:'rgba(99,102,241,0.9)', borderRadius:6 }] }, options: Object.assign({}, chartDefaults()) });
+                // Top productos: gráfico eliminado (removido) - los datos ya no se muestran en esta vista.
 
                 // doughnut de estados eliminado (removido) - ya no se envía ni se renderiza en esta vista
 

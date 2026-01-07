@@ -62,7 +62,6 @@ try {
                 $group_by = isset($payload['group_by']) && in_array($payload['group_by'], ['month', 'date']) ? $payload['group_by'] : 'month';
 
                 $data = [
-                    'top_products' => $model->topProductos($limit, $start_date, $end_date, $productor, $estado),
                     'resumen' => $model->resumenTotales($start_date, $end_date, $productor, $estado),
                     'por_mes' => $model->obtenerSolicitudesPorMes($months, $start_date, $end_date, $productor, $estado, $group_by)
                 ];

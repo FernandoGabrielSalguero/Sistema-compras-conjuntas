@@ -93,25 +93,5 @@ class SveKpiDronesModel
 
 
 
-    // Top productos por usos y monto
-    public function topProductos(int $limit = 10, ?string $start = null, ?string $end = null, ?string $productor = null, ?string $estado = null): array
-    {
-        $pdo = $this->getPdo();
-        $sql = "SELECT dsi.producto_id AS id, dsi.nombre_producto AS nombre_producto, COUNT(*) AS usos_count, SUM(dsi.total_producto_snapshot) AS total_monto
-                FROM drones_solicitud_item dsi
-                JOIN drones_solicitud ds ON ds.id = dsi.solicitud_id
-                WHERE 1=1";
-        $params = [];
-        if ($start) { $sql .= " AND ds.fecha_visita >= :start"; $params[':start'] = $start; }
-        if ($end)   { $sql .= " AND ds.fecha_visita <= :end";   $params[':end'] = $end; }
-        if ($productor) { $sql .= " AND ds.productor_id_real = :productor"; $params[':productor'] = $productor; }
-        if ($estado) { $sql .= " AND ds.estado = :estado"; $params[':estado'] = $estado; }
 
-        $sql .= " GROUP BY dsi.producto_id, dsi.nombre_producto ORDER BY usos_count DESC LIMIT :limit";
-        $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
-        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
 }
