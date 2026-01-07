@@ -24,86 +24,11 @@ class SveKpiCompraConjuntaModel
         ];
     }
 
-    // TOP productos por cantidad y monto (acepta filtros opcionales: fecha inicio/fin y cooperativa)
-    public function obtenerTopProductos(int $limit = 10, ?string $start = null, ?string $end = null, ?int $cooperativa = null, ?int $productor = null, ?int $operativo = null): array
-    {
-        $pdo = $this->getPdo();
-        $sql = "SELECT dp.producto_id, dp.nombre_producto, SUM(dp.cantidad) AS total_cantidad, SUM(dp.precio_producto * dp.cantidad) AS total_monto
-             FROM detalle_pedidos dp
-             JOIN pedidos p ON p.id = dp.pedido_id
-             WHERE 1=1";
 
-        $params = [];
-        if ($start) { $sql .= " AND p.fecha_pedido >= :start"; $params[':start'] = $start; }
-        if ($end)   { $sql .= " AND p.fecha_pedido <= :end";   $params[':end']   = $end; }
-        if ($cooperativa) { $sql .= " AND p.cooperativa = :coop"; $params[':coop'] = $cooperativa; }
-        if ($productor) { $sql .= " AND p.productor = :productor"; $params[':productor'] = $productor; }
-        if ($operativo) { $sql .= " AND p.operativo_id = :operativo"; $params[':operativo'] = $operativo; }
 
-        $sql .= " GROUP BY dp.producto_id, dp.nombre_producto
-             ORDER BY total_cantidad DESC
-             LIMIT :limit";
 
-        $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
-        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
 
-    // TOP cooperativas por cantidad de pedidos (acepta filtros por fecha)
-    public function obtenerTopCooperativas(int $limit = 10, ?string $start = null, ?string $end = null, ?int $productor = null, ?int $operativo = null): array
-    {
-        $pdo = $this->getPdo();
-        $sql = "SELECT p.cooperativa AS id, i.nombre AS nombre, COUNT(*) AS pedidos_count, SUM(p.total_pedido) AS total_monto
-             FROM pedidos p
-             JOIN usuarios u ON u.id_real = p.cooperativa
-             JOIN usuarios_info i ON i.usuario_id = u.id
-             WHERE 1=1";
 
-        $params = [];
-        if ($start) { $sql .= " AND p.fecha_pedido >= :start"; $params[':start'] = $start; }
-        if ($end)   { $sql .= " AND p.fecha_pedido <= :end";   $params[':end']   = $end; }
-        if ($productor) { $sql .= " AND p.productor = :productor"; $params[':productor'] = $productor; }
-        if ($operativo) { $sql .= " AND p.operativo_id = :operativo"; $params[':operativo'] = $operativo; }
-
-        $sql .= " GROUP BY p.cooperativa, i.nombre
-             ORDER BY pedidos_count DESC
-             LIMIT :limit";
-
-        $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
-        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    // TOP productores por cantidad de pedidos (acepta filtros por fecha y cooperativa)
-    public function obtenerTopProductores(int $limit = 10, ?string $start = null, ?string $end = null, ?int $cooperativa = null, ?int $operativo = null): array
-    {
-        $pdo = $this->getPdo();
-        $sql = "SELECT p.productor AS id, i.nombre AS nombre, COUNT(*) AS pedidos_count, SUM(p.total_pedido) AS total_monto
-             FROM pedidos p
-             JOIN usuarios u ON u.id_real = p.productor
-             JOIN usuarios_info i ON i.usuario_id = u.id
-             WHERE 1=1";
-
-        $params = [];
-        if ($start) { $sql .= " AND p.fecha_pedido >= :start"; $params[':start'] = $start; }
-        if ($end)   { $sql .= " AND p.fecha_pedido <= :end";   $params[':end']   = $end; }
-        if ($cooperativa) { $sql .= " AND p.cooperativa = :coop"; $params[':coop'] = $cooperativa; }
-        if ($operativo) { $sql .= " AND p.operativo_id = :operativo"; $params[':operativo'] = $operativo; }
-
-        $sql .= " GROUP BY p.productor, i.nombre
-             ORDER BY pedidos_count DESC
-             LIMIT :limit";
-
-        $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
-        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
 
     // Resumen general de pedidos (acepta filtros por fecha y cooperativa)
     public function resumenTotales(?string $start = null, ?string $end = null, ?int $cooperativa = null, ?int $productor = null, ?int $operativo = null): array

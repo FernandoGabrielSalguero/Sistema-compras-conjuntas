@@ -64,9 +64,6 @@ try {
                 $group_by = isset($payload['group_by']) && in_array($payload['group_by'], ['month', 'date']) ? $payload['group_by'] : 'month';
 
                 $data = [
-                    // (aunque los gráficos de barras se eliminaron de la UI, mantenemos estos datos por compatibilidad)
-                    'top_cooperativas' => $model->topCooperativas($limit, $start_date, $end_date, $contrato_id, $productor),
-                    'top_productores' => $model->topProductores($limit, $start_date, $end_date, $contrato_id, $cooperativa),
 
                     // KPIs: prod_estimada = SUM(cp.prod_estimada), monto = SUM(cp.superficie * cm.costo_base)
                     'resumen' => $model->resumenTotales($start_date, $end_date, $contrato_id, $cooperativa, $productor, $estado),
