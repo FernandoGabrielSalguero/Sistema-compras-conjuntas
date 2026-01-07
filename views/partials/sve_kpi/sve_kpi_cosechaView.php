@@ -165,13 +165,6 @@
                 </div>
             </div>
 
-            <div class="mini-stat" id="mini-total-prod">
-                <div>
-                    <div class="value" id="miniTotalProd">0</div>
-                    <div class="label">Prod estimada</div>
-                </div>
-            </div>
-
             <div class="mini-stat" id="mini-total-monto">
                 <div>
                     <div class="value" id="miniTotalMonto">$0.00</div>
@@ -315,7 +308,6 @@
                 const resumen = data.resumen || {};
                 document.getElementById('miniTotalContratos').textContent = fmtNum(resumen.total_contratos || 0);
                 document.getElementById('miniTotalSuperficie').textContent = fmtNum(resumen.total_superficie_ha || 0);
-                document.getElementById('miniTotalProd').textContent = fmtNum(resumen.total_prod_estimada || 0);
                 document.getElementById('miniTotalMonto').textContent = fmtMoney(resumen.total_monto_estimado || 0);
 
                 // breakdown por estado (doughnut)

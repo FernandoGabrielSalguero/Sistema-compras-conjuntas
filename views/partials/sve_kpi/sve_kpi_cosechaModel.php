@@ -83,12 +83,18 @@ class SveKpiCosechaModel
 
         $sql = "SELECT
                     COUNT(DISTINCT cm.id) AS total_contratos,
-                    SUM(cp.superficie) AS total_superficie_ha,
-                    SUM(cp.prod_estimada) AS total_prod_estimada,
-                    SUM(cm.costo_base * cp.superficie) AS total_monto_estimado
+                    COALESCE(SUM(cp.superficie), 0) AS total_superficie_ha,
+                    COALESCE(MAX(cm.costo_base), 0) AS costo_base,
+                    CASE
+                        WHEN COUNT(DISTINCT cm.id) = 1
+                            THEN COALESCE(SUM(cp.superficie), 0) * COALESCE(MAX(cm.costo_base), 0)
+                        ELSE
+                            COALESCE(SUM(cm.costo_base * cp.superficie), 0)
+                    END AS total_monto_estimado
                 FROM CosechaMecanica cm
                 LEFT JOIN cosechaMecanica_cooperativas_participacion cp ON cp.contrato_id = cm.id
                 WHERE 1=1";
+
 
         $params = [];
         if ($start) {
