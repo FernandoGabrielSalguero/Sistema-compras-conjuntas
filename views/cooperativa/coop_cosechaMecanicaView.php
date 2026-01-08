@@ -237,6 +237,10 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
     <script src="../../views/partials/spinner-global.js"></script>
 
     <script>
+        console.log('Sesion:', <?php echo json_encode($_SESSION ?? [], JSON_UNESCAPED_UNICODE); ?>);
+    </script>
+
+    <script>
         console.log(
             'id_real en sesión:',
             '<?php echo addslashes($_SESSION["id_real"] ?? "NULL"); ?>'
