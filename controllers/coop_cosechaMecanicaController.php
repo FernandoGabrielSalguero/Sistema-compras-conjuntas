@@ -108,7 +108,7 @@ if ($action === 'enviar_cierre_pendiente') {
                 continue;
             }
 
-            $model->registrarCorreoCierre($contratoId, $cooperativa_id, $correo, 'manual');
+            $model->registrarCorreoCierre($contratoId, $cooperativa_id, $correo, 'check_pendientes');
             $enviados++;
         }
 

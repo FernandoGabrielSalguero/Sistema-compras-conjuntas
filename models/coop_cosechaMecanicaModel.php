@@ -320,7 +320,7 @@ class CoopCosechaMecanicaModel
     {
         $coopId = substr($cooperativaIdReal, 0, 11);
         $correoNorm = mb_strtolower(trim($correo));
-        $origen = $enviadoPor === 'cron' ? 'cron' : 'manual';
+        $origen = in_array($enviadoPor, ['cron', 'manual', 'check_pendientes'], true) ? $enviadoPor : 'manual';
 
         $sql = "INSERT INTO cosechaMecanica_coop_correo_log
                     (contrato_id, cooperativa_id_real, correo, tipo, enviado_por, created_at)
