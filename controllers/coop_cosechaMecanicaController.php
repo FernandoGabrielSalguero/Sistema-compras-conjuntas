@@ -56,6 +56,70 @@ if ($action === 'listar_operativos') {
 }
 
 // Obtener un operativo puntual junto con la participación de la cooperativa
+// Enviar correos pendientes de cierre al usuario logueado
+if ($action === 'enviar_cierre_pendiente') {
+    if (!$cooperativa_id) {
+        echo json_encode(['success' => false, 'message' => 'No se encontro la cooperativa en la sesion.']);
+        exit;
+    }
+
+    $correo = trim((string) ($_SESSION['correo'] ?? ''));
+    if ($correo === '' || !filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(['success' => false, 'message' => 'Correo de sesion invalido.']);
+        exit;
+    }
+
+    try {
+        require_once __DIR__ . '/../mail/Mail.php';
+
+        $nomCooperativa = $_SESSION['nombre'] ?? 'Cooperativa';
+        $operativos = $model->obtenerOperativos($cooperativa_id);
+        $enviados = 0;
+
+        foreach ($operativos as $op) {
+            if (($op['estado'] ?? '') !== 'cerrado') {
+                continue;
+            }
+
+            $contratoId = (int) ($op['id'] ?? 0);
+            if ($contratoId <= 0) {
+                continue;
+            }
+
+            if ($model->correoCierreEnviado($contratoId, $cooperativa_id)) {
+                continue;
+            }
+
+            $participaciones = $model->obtenerParticipacionesPorContratoYCoop($contratoId, $nomCooperativa);
+            $firma = $model->obtenerFirmaContrato($contratoId, $cooperativa_id);
+            $fechaFirma = $firma['fecha_firma'] ?? null;
+
+            $mailResp = \SVE\Mail\Maill::enviarCierreCosechaMecanica([
+                'cooperativa_nombre' => (string) $nomCooperativa,
+                'cooperativa_correo' => $correo,
+                'operativo'          => $op,
+                'participaciones'    => $participaciones,
+                'firma_fecha'        => $fechaFirma,
+            ]);
+
+            if (!($mailResp['ok'] ?? false)) {
+                $err = $mailResp['error'] ?? 'Error desconocido';
+                error_log('Error enviar_cierre_pendiente: ' . $err);
+                continue;
+            }
+
+            $model->registrarCorreoCierre($contratoId, $cooperativa_id, $correo, 'manual');
+            $enviados++;
+        }
+
+        echo json_encode(['success' => true, 'enviados' => $enviados]);
+    } catch (Throwable $e) {
+        error_log('Error enviar_cierre_pendiente: ' . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Error al enviar correos pendientes.']);
+    }
+    exit;
+}
+
 if ($action === 'obtener_operativo') {
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 

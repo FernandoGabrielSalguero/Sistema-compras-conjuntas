@@ -276,6 +276,7 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
         document.addEventListener('DOMContentLoaded', function() {
             // La vista principal solo se encarga de cargar y mostrar los operativos
             cargarOperativos();
+            revisarEnvioPendiente();
         });
 
         function cargarOperativos() {
@@ -300,6 +301,35 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 .catch(function(error) {
                     console.error('Error al obtener operativos:', error);
                     showAlert('error', 'Error de conexión al obtener los operativos.');
+                });
+        }
+
+        function revisarEnvioPendiente() {
+            const url = '../../controllers/coop_cosechaMecanicaController.php';
+            const body = new URLSearchParams({
+                action: 'enviar_cierre_pendiente'
+            });
+
+            fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: body.toString()
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(json) {
+                    if (!json || json.success !== true) {
+                        return;
+                    }
+                    if ((json.enviados || 0) > 0) {
+                        showAlert('success', 'Se enviaron correos pendientes del operativo.');
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error al revisar correos pendientes:', error);
                 });
         }
 
