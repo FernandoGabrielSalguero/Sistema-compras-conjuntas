@@ -7,12 +7,6 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/coop_cosechaMecanicaModel.php';
-require_once __DIR__ . '/../mail/Mail.php';
-
-use SVE\Mail\Maill;
-require_once __DIR__ . '/../mail/Mail.php';
-
-use SVE\Mail\Maill;
 
 if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'cooperativa') {
     echo json_encode(['success' => false, 'message' => 'Acceso denegado.']);
@@ -127,6 +121,8 @@ if ($action === 'enviar_cierre_manual') {
     }
 
     try {
+        require_once __DIR__ . '/../mail/Mail.php';
+
         if ($model->correoCierreEnviado($contratoId, $cooperativa_id)) {
             echo json_encode(['success' => false, 'message' => 'El correo ya fue enviado para este contrato.']);
             exit;
@@ -143,7 +139,7 @@ if ($action === 'enviar_cierre_manual') {
         $firma           = $model->obtenerFirmaContrato($contratoId, $cooperativa_id);
         $fechaFirma      = $firma['fecha_firma'] ?? null;
 
-        $mailResp = Maill::enviarCierreCosechaMecanica([
+        $mailResp = \SVE\Mail\Maill::enviarCierreCosechaMecanica([
             'cooperativa_nombre' => (string) $nomCooperativa,
             'cooperativa_correo' => $correo,
             'operativo'          => $operativo,
@@ -188,6 +184,8 @@ if ($action === 'enviar_cierre_test') {
     }
 
     try {
+        require_once __DIR__ . '/../mail/Mail.php';
+
         $operativo = $model->obtenerOperativoPorId($contratoId);
         if (!$operativo) {
             echo json_encode(['success' => false, 'message' => 'Operativo no encontrado.']);
@@ -199,7 +197,7 @@ if ($action === 'enviar_cierre_test') {
         $firma           = $model->obtenerFirmaContrato($contratoId, $cooperativa_id);
         $fechaFirma      = $firma['fecha_firma'] ?? null;
 
-        $mailResp = Maill::enviarCierreCosechaMecanica([
+        $mailResp = \SVE\Mail\Maill::enviarCierreCosechaMecanica([
             'cooperativa_nombre' => (string) $nomCooperativa,
             'cooperativa_correo' => $correo,
             'operativo'          => $operativo,
