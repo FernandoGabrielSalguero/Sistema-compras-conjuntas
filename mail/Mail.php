@@ -85,9 +85,12 @@
                 $nombreCoop = (string)($data['cooperativa_nombre'] ?? 'Cooperativa');
 
                 $descripcionRaw = (string)($op['descripcion'] ?? '');
-                $descripcionTexto = trim(htmlspecialchars_decode(strip_tags($descripcionRaw)));
-                if ($descripcionTexto === '') {
-                    $descripcionTexto = '-';
+                $descripcionHtml = trim($descripcionRaw);
+                if ($descripcionHtml !== '') {
+                    $descripcionHtml = html_entity_decode($descripcionHtml, ENT_QUOTES, 'UTF-8');
+                    $descripcionHtml = strip_tags($descripcionHtml, '<p><br><strong><b><em><i><u><ul><ol><li><span><div><table><thead><tbody><tr><th><td>');
+                } else {
+                    $descripcionHtml = '-';
                 }
 
                 $fechaApertura = self::formatDateShort($op['fecha_apertura'] ?? null);
@@ -161,7 +164,7 @@
                     htmlspecialchars($fechaApertura, ENT_QUOTES, 'UTF-8'),
                     htmlspecialchars($fechaCierre, ENT_QUOTES, 'UTF-8'),
                     htmlspecialchars($estado, ENT_QUOTES, 'UTF-8'),
-                    nl2br(htmlspecialchars($descripcionTexto, ENT_QUOTES, 'UTF-8')),
+                    $descripcionHtml,
                     htmlspecialchars($fechaFirma, ENT_QUOTES, 'UTF-8'),
                     $rows
                 );
