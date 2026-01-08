@@ -7,6 +7,7 @@ ini_set('display_startup_errors', '0');
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../models/coop_cosechaMecanicaModel.php';
 require_once __DIR__ . '/../mail/Mail.php';
 
 use SVE\Mail\Maill;
@@ -15,6 +16,8 @@ $now = new DateTimeImmutable('now');
 $hoy = $now->format('Y-m-d');
 
 try {
+    $model = new CoopCosechaMecanicaModel($pdo);
+
     $stmt = $pdo->prepare(
         "SELECT id, nombre, fecha_apertura, fecha_cierre, descripcion, estado
          FROM CosechaMecanica
@@ -65,6 +68,10 @@ try {
                 continue;
             }
 
+            if ($model->correoCierreEnviado((int) $op['id'], (string) $coop['id_real'])) {
+                continue;
+            }
+
             $nombreCoop = trim((string)($coop['nombre'] ?? ''));
             $usuarioCoop = trim((string)($coop['usuario'] ?? ''));
             $idRealCoop = trim((string)($coop['id_real'] ?? ''));
@@ -102,7 +109,10 @@ try {
             if (!($mailResp['ok'] ?? false)) {
                 $err = $mailResp['error'] ?? 'Error desconocido';
                 error_log('[CosechaMecanica] Error enviando cierre a ' . $correo . ': ' . $err);
+                continue;
             }
+
+            $model->registrarCorreoCierre((int) $op['id'], (string) $coop['id_real'], $correo, 'cron');
         }
     }
 } catch (Throwable $e) {

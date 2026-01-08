@@ -76,6 +76,31 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
             color: #5b21b6;
         }
 
+        .btn-mail {
+            position: absolute;
+            top: 10px;
+            right: 54px;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            background: #fff;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-mail:hover {
+            background: rgba(91, 33, 182, 0.06);
+            border-color: rgba(91, 33, 182, 0.25);
+        }
+
+        .btn-mail .material-icons {
+            font-size: 20px;
+            color: #5b21b6;
+        }
+
         /* Contenedor offscreen para render PDF */
         #pdfRenderContainer {
             position: fixed;
@@ -310,6 +335,14 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 card.innerHTML = `
                     <button
                         type="button"
+                        class="btn-mail"
+                        title="Enviar contrato por correo"
+                        data-id="${op.id}"
+                    >
+                        <span class="material-icons">mail</span>
+                    </button>
+                    <button
+                        type="button"
                         class="btn-print-pdf"
                         title="Descargar contrato en PDF"
                         data-id="${op.id}"
@@ -365,6 +398,16 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                     if (!contratoId) return;
 
                     descargarPdfContratoYAnexo(contratoId);
+                });
+            });
+
+            const botonesMail = contenedor.querySelectorAll('.btn-mail');
+            botonesMail.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const contratoId = this.getAttribute('data-id');
+                    if (!contratoId) return;
+
+                    enviarCorreoCierre(contratoId);
                 });
             });
 
@@ -627,6 +670,36 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                 return partes[2] + '/' + partes[1] + '/' + partes[0];
             }
             return s;
+        }
+
+        function enviarCorreoCierre(contratoId) {
+            const url = '../../controllers/coop_cosechaMecanicaController.php';
+            const body = new URLSearchParams({
+                action: 'enviar_cierre_manual',
+                contrato_id: contratoId
+            });
+
+            fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: body.toString()
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(json) {
+                    if (!json || json.success !== true) {
+                        showAlert('error', json && json.message ? json.message : 'No se pudo enviar el correo.');
+                        return;
+                    }
+                    showAlert('success', json.message || 'Correo enviado.');
+                })
+                .catch(function(error) {
+                    console.error('Error al enviar correo:', error);
+                    showAlert('error', 'Error de conexion al enviar el correo.');
+                });
         }
 
         async function descargarPdfContratoYAnexo(contratoId) {

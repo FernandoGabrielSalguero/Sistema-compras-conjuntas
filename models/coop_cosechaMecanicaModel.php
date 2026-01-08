@@ -290,4 +290,49 @@ class CoopCosechaMecanicaModel
             ':coop_id'     => $coopId,
         ]);
     }
+
+    /**
+     * Verifica si ya se envio el correo de cierre para este contrato y cooperativa.
+     */
+    public function correoCierreEnviado(int $contratoId, string $cooperativaIdReal): bool
+    {
+        $coopId = substr($cooperativaIdReal, 0, 11);
+
+        $sql = "SELECT 1
+                FROM cosechaMecanica_coop_correo_log
+                WHERE contrato_id = :contrato_id
+                  AND cooperativa_id_real = :coop_id
+                  AND tipo = 'cierre'
+                LIMIT 1";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':contrato_id', $contratoId, PDO::PARAM_INT);
+        $stmt->bindValue(':coop_id', $coopId, PDO::PARAM_STR);
+        $stmt->execute();
+
+        return (bool) $stmt->fetchColumn();
+    }
+
+    /**
+     * Registra el envio de correo de cierre.
+     */
+    public function registrarCorreoCierre(int $contratoId, string $cooperativaIdReal, string $correo, string $enviadoPor): void
+    {
+        $coopId = substr($cooperativaIdReal, 0, 11);
+        $correoNorm = mb_strtolower(trim($correo));
+        $origen = $enviadoPor === 'cron' ? 'cron' : 'manual';
+
+        $sql = "INSERT INTO cosechaMecanica_coop_correo_log
+                    (contrato_id, cooperativa_id_real, correo, tipo, enviado_por, created_at)
+                VALUES
+                    (:contrato_id, :coop_id, :correo, 'cierre', :enviado_por, NOW())";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':contrato_id' => $contratoId,
+            ':coop_id' => $coopId,
+            ':correo' => $correoNorm,
+            ':enviado_por' => $origen,
+        ]);
+    }
 }

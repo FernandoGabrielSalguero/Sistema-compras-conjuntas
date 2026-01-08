@@ -10,6 +10,9 @@ require_once __DIR__ . '/../models/coop_cosechaMecanicaModel.php';
 require_once __DIR__ . '/../mail/Mail.php';
 
 use SVE\Mail\Maill;
+require_once __DIR__ . '/../mail/Mail.php';
+
+use SVE\Mail\Maill;
 
 if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'cooperativa') {
     echo json_encode(['success' => false, 'message' => 'Acceso denegado.']);
@@ -99,6 +102,67 @@ if ($action === 'obtener_operativo') {
             'success' => false,
             'message' => 'No se pudo obtener el operativo.'
         ]);
+    }
+    exit;
+}
+
+// Enviar correo de cierre manual al usuario logueado
+if ($action === 'enviar_cierre_manual') {
+    $contratoId = isset($_POST['contrato_id']) ? (int) $_POST['contrato_id'] : (int) ($_GET['id'] ?? 0);
+
+    if ($contratoId <= 0) {
+        echo json_encode(['success' => false, 'message' => 'ID de contrato invalido.']);
+        exit;
+    }
+
+    if (!$cooperativa_id) {
+        echo json_encode(['success' => false, 'message' => 'No se encontro la cooperativa en la sesion.']);
+        exit;
+    }
+
+    $correo = trim((string) ($_SESSION['correo'] ?? ''));
+    if ($correo === '' || !filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(['success' => false, 'message' => 'Correo de sesion invalido.']);
+        exit;
+    }
+
+    try {
+        if ($model->correoCierreEnviado($contratoId, $cooperativa_id)) {
+            echo json_encode(['success' => false, 'message' => 'El correo ya fue enviado para este contrato.']);
+            exit;
+        }
+
+        $operativo = $model->obtenerOperativoPorId($contratoId);
+        if (!$operativo) {
+            echo json_encode(['success' => false, 'message' => 'Operativo no encontrado.']);
+            exit;
+        }
+
+        $nomCooperativa  = $_SESSION['nombre'] ?? 'Cooperativa';
+        $participaciones = $model->obtenerParticipacionesPorContratoYCoop($contratoId, $nomCooperativa);
+        $firma           = $model->obtenerFirmaContrato($contratoId, $cooperativa_id);
+        $fechaFirma      = $firma['fecha_firma'] ?? null;
+
+        $mailResp = Maill::enviarCierreCosechaMecanica([
+            'cooperativa_nombre' => (string) $nomCooperativa,
+            'cooperativa_correo' => $correo,
+            'operativo'          => $operativo,
+            'participaciones'    => $participaciones,
+            'firma_fecha'        => $fechaFirma,
+        ]);
+
+        if (!($mailResp['ok'] ?? false)) {
+            $err = $mailResp['error'] ?? 'Error desconocido';
+            echo json_encode(['success' => false, 'message' => 'No se pudo enviar el correo.', 'error' => $err]);
+            exit;
+        }
+
+        $model->registrarCorreoCierre($contratoId, $cooperativa_id, $correo, 'manual');
+
+        echo json_encode(['success' => true, 'message' => 'Correo enviado.']);
+    } catch (Throwable $e) {
+        error_log('Error enviar_cierre_manual: ' . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Error al enviar el correo.']);
     }
     exit;
 }
