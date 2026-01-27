@@ -772,7 +772,7 @@ $sesion_payload = [
 
     <script>
         // ====== API ======
-        const API_URL = '../../controllers/prod_dronesController.php'; // ajustá si tu ruta es distinta
+        const API_URL = '../../controllers/prod_dronesController.php';
 
         function setConfirmBtnLoading(loading = true) {
             const btn = document.getElementById('btnConfirmarModal');
@@ -797,7 +797,7 @@ $sesion_payload = [
                 });
                 const json = await res.json().catch(() => ({}));
                 if (!json?.ok) throw new Error(json?.error || 'Error de red');
-                return json.data || json; // data.items o items
+                return json.data || json;
             };
 
             // Cache de costo por hectárea (servicio base)

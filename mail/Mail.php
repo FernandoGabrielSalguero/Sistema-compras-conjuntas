@@ -385,15 +385,20 @@
 
                 // ¿Pago por cooperativa? Si sí, agregamos bloque extra + botones para cooperativa/drones
                 $esPagoCoop = (bool)($data['pago_por_coop'] ?? false);
-                $ctaUrl     = (string)($data['cta_url'] ?? 'https://compraconjunta.sve.com.ar/index.php');
+                $ctaFallback = (string)($data['cta_url'] ?? 'https://compraconjunta.sve.com.ar/index.php');
+                $ctaApprove  = (string)($data['cta_approve_url'] ?? '');
+                $ctaDecline  = (string)($data['cta_decline_url'] ?? '');
+                $ctaUrlOk    = $ctaApprove !== '' ? $ctaApprove : $ctaFallback;
+                $ctaUrlNo    = $ctaDecline !== '' ? $ctaDecline : $ctaFallback;
                 $coopTexto  = nl2br(htmlspecialchars((string)($data['coop_texto_extra'] ?? ''), ENT_QUOTES, 'UTF-8'));
 
                 $botones = sprintf(
                     '<div style="margin-top:16px;display:flex;gap:12px;">
                         <a href="%1$s" style="background:#10b981;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;display:inline-block;font-weight:600;">Aprobar Solicitud</a>
-                        <a href="%1$s" style="background:#ef4444;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;display:inline-block;font-weight:600;">Declinar Solicitud</a>
+                        <a href="%2$s" style="background:#ef4444;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;display:inline-block;font-weight:600;">Declinar Solicitud</a>
                     </div>',
-                    htmlspecialchars($ctaUrl, ENT_QUOTES, 'UTF-8')
+                    htmlspecialchars($ctaUrlOk, ENT_QUOTES, 'UTF-8'),
+                    htmlspecialchars($ctaUrlNo, ENT_QUOTES, 'UTF-8')
                 );
 
                 $coopBlock = ($esPagoCoop && $coopTexto !== '')

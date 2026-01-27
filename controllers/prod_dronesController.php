@@ -31,6 +31,27 @@ require_once __DIR__ . '/../mail/Mail.php';
 
 use SVE\Mail\Maill;
 
+function base64url_encode(string $data): string
+{
+    return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+}
+
+function signCoopActionToken(array $payload): ?string
+{
+    if (!defined('COOP_ACTION_SECRET') || COOP_ACTION_SECRET === '') {
+        return null;
+    }
+    $payload['v'] = 1;
+    $json = json_encode($payload, JSON_UNESCAPED_SLASHES);
+    if ($json === false) {
+        return null;
+    }
+    $payload64 = base64url_encode($json);
+    $sig = hash_hmac('sha256', $payload64, COOP_ACTION_SECRET, true);
+    $sig64 = base64url_encode($sig);
+    return $payload64 . '.' . $sig64;
+}
+
 try {
     $model = new prodDronesModel($pdo);
 
@@ -141,11 +162,11 @@ try {
         // Cooperativa destino:
         // - Si es pago por cooperativa (id 6), usar la seleccionada por el productor (usuarios.id_real == coop_descuento_nombre).
         // - Si no, usar la primera vinculada al productor (como antes).
-        $coop = ['coop_nombre' => null, 'coop_correo' => null];
+        $coop = ['coop_nombre' => null, 'coop_correo' => null, 'coop_id_real' => null];
 
         if ($esPagoCoop && !empty($data['coop_descuento_nombre'])) {
             $sqlCoopSel = "
-                SELECT ui.nombre AS coop_nombre, ui.correo AS coop_correo
+                SELECT ui.nombre AS coop_nombre, ui.correo AS coop_correo, u.id_real AS coop_id_real
                 FROM usuarios u
                 LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
                 WHERE u.rol='cooperativa' AND u.permiso_ingreso='Habilitado' AND u.id_real = ?
@@ -153,10 +174,10 @@ try {
             ";
             $stCoopSel = $pdo->prepare($sqlCoopSel);
             $stCoopSel->execute([(string)$data['coop_descuento_nombre']]);
-            $coop = $stCoopSel->fetch(PDO::FETCH_ASSOC) ?: ['coop_nombre' => null, 'coop_correo' => null];
+            $coop = $stCoopSel->fetch(PDO::FETCH_ASSOC) ?: ['coop_nombre' => null, 'coop_correo' => null, 'coop_id_real' => null];
         } else {
             $sqlCoop = "
-                SELECT ui.nombre AS coop_nombre, ui.correo AS coop_correo
+                SELECT ui.nombre AS coop_nombre, ui.correo AS coop_correo, u.id_real AS coop_id_real
                 FROM rel_productor_coop rpc
                 INNER JOIN usuarios u ON u.id_real = rpc.cooperativa_id_real
                 LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
@@ -166,7 +187,7 @@ try {
             ";
             $stCoop = $pdo->prepare($sqlCoop);
             $stCoop->execute([$prodIdReal]);
-            $coop = $stCoop->fetch(PDO::FETCH_ASSOC) ?: ['coop_nombre' => null, 'coop_correo' => null];
+            $coop = $stCoop->fetch(PDO::FETCH_ASSOC) ?: ['coop_nombre' => null, 'coop_correo' => null, 'coop_id_real' => null];
         }
 
         // Forma de pago (texto)
@@ -224,6 +245,19 @@ try {
         $direccion = (array)($data['direccion'] ?? []);
         $ubicacion = (array)($data['ubicacion'] ?? []);
 
+        $actionBase = rtrim((string)APP_URL, '/') . '/controllers/dron_coop_action.php';
+        $coopIdReal = (string)($coop['coop_id_real'] ?? '');
+        $ttlSeconds = 7 * 24 * 60 * 60;
+        $approveToken = $esPagoCoop && $coopIdReal !== ''
+            ? signCoopActionToken(['sid' => (int)$id, 'coop' => $coopIdReal, 'act' => 'approve', 'exp' => time() + $ttlSeconds])
+            : null;
+        $declineToken = $esPagoCoop && $coopIdReal !== ''
+            ? signCoopActionToken(['sid' => (int)$id, 'coop' => $coopIdReal, 'act' => 'decline', 'exp' => time() + $ttlSeconds])
+            : null;
+        if ($esPagoCoop && $coopIdReal !== '' && ($approveToken === null || $declineToken === null)) {
+            error_log('⚠️ COOP_ACTION_SECRET ausente o inválido. Se enviarán botones sin acción segura.');
+        }
+
         $mailPayload = [
             'solicitud_id'    => (int)$id,
             'productor'       => ['nombre' => $prodNombre, 'correo' => $prodCorreo],
@@ -244,8 +278,10 @@ try {
             ],
             // Señal para construir versión especial para cooperativa y drones
             'pago_por_coop'   => $esPagoCoop,
-            // URL de destino para los botones del correo de cooperativa
-            'cta_url'         => 'https://compraconjunta.sve.com.ar/index.php',
+            // URLs de acciÃ³n para el correo de cooperativa
+            'cta_url'         => rtrim((string)APP_URL, '/') . '/index.php',
+            'cta_approve_url' => $approveToken ? ($actionBase . '?t=' . urlencode($approveToken)) : null,
+            'cta_decline_url' => $declineToken ? ($actionBase . '?t=' . urlencode($declineToken)) : null,
             // Texto extra requerido por negocio (se usa sólo en el cuerpo para cooperativa/drones)
             'coop_texto_extra' => "Estimada cooperativa. Por el presente correo se les informa que un productor vinculado a su cooperativa a manifestado la intención de tomar el servicio de dron y de pagarlo a través del descuento por la cuota de vino. \nSi este productor productor posee los fondos necesarios para llevar a cabo el pago por favor apruébelo seleccionado el botón que dice Aprobar Solicitud el cual se encuentra al final de este correo. \nEn caso de que el productor no este en condiciones de pagarlo por esta vía por favor haga click en el botón que dice Declinar Solicitud el cual se encuentra al final de este correo. \nAnte cualquier duda por favor comuníquese al 2612072518.",
         ];
