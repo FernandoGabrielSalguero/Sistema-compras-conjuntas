@@ -36,18 +36,3 @@ if (!defined('MAIL_HOST')) {
     define('MAIL_FROM', 'contacto@sve.com.ar');   // igual a MAIL_USER
     define('MAIL_FROM_NAME', 'SVE Notificaciones');
 }
-
-// ==== URLs / Firma acciones cooperativa ====
-if (!defined('APP_URL')) {
-    define('APP_URL', getenv('APP_URL') ?: 'https://compraconjunta.sve.com.ar');
-}
-if (!defined('COOP_ACTION_SECRET')) {
-    define('COOP_ACTION_SECRET', getenv('COOP_ACTION_SECRET') ?: '');
-}
-
-// ==== Brevo API ====
-if (!defined('BREVO_API_KEY')) {
-    define('BREVO_API_KEY', getenv('BREVO_API_KEY') ?: '');
-}
-
-// Se llama así desde cualquier lado de la aplicación para obtener la clave API de Brevo: " $apiKey = BREVO_API_KEY; "

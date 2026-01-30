@@ -188,6 +188,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                         <option value="productor" selected>Productor</option>
                                         <option value="ingeniero">Ingeniero</option>
                                         <option value="piloto_drone">Piloto Drone</option>
+                                        <option value="piloto_tractor">Relevador fincas</option>
                                     </select>
                                 </div>
                             </div>
@@ -321,6 +322,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                             <option value="productor">Productor</option>
                                             <option value="ingeniero">Ingeniero</option>
                                             <option value="piloto_drone">Piloto Drone</option>
+                                            <option value="piloto_tractor">Relevador fincas</option>
                                         </select>
                                     </div>
                                 </div>

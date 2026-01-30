@@ -4,6 +4,14 @@ require_once __DIR__ . '/../config.php';
 class UserModel
 {
     private $pdo;
+    private const ROLES_VALIDOS = [
+        'sve',
+        'cooperativa',
+        'productor',
+        'ingeniero',
+        'piloto_drone',
+        'piloto_tractor',
+    ];
 
     public function __construct($pdo)
     {
@@ -20,6 +28,10 @@ class UserModel
     public function crearUsuario($data)
     {
         try {
+            if (!in_array($data['rol'] ?? '', self::ROLES_VALIDOS, true)) {
+                return ['success' => false, 'message' => 'Rol inválido.'];
+            }
+
             if ($this->existeUsuario($data['usuario'])) {
                 return ['success' => false, 'message' => 'El usuario ya está registrado.'];
             }

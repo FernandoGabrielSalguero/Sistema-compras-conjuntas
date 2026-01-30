@@ -89,6 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'sve'          => '/views/sve/sve_dashboard.php',
                 'ingeniero'    => '/views/ingeniero/ing_dashboard.php',
                 'piloto_drone' => '/views/drone_pilot/drone_pilot_dashboard.php',
+                'piloto_tractor' => '/views/tractor_pilot/tractor_pilot_dashboard.php',
             ];
             $rol = (string)($_SESSION['rol'] ?? '');
             $target = $destinos[$rol] ?? '/';

@@ -818,7 +818,7 @@ Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(11)	NO	PRI		auto_increment
 usuario	varchar(100)	YES			
 contrasena	varchar(255)	NO			
-rol	enum('ingeniero','cooperativa','productor','sve','piloto_drone')	NO			
+rol	enum('ingeniero','cooperativa','productor','sve','piloto_drone','piloto_tractor')	NO			
 permiso_ingreso	enum('Habilitado','Deshabilitado')	NO		Habilitado	
 cuit	bigint(11)	NO			
 razon_social	varchar(150)	YES			
