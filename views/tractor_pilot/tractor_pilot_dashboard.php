@@ -342,7 +342,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     if (fila.finca_id !== null && fila.finca_id !== undefined) {
                         btn.dataset.fincaId = String(fila.finca_id);
                     }
-                    btn.textContent = 'Ver';
+                    btn.textContent = 'Calificar';
                     tdAcciones.appendChild(btn);
                     tr.appendChild(tdAcciones);
                     tbody.appendChild(tr);
