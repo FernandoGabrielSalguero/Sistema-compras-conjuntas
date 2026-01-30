@@ -30,6 +30,9 @@ try {
         if ($action === 'estado') {
             jsonResponse(true, $model->getEstado());
         }
+        if ($action === 'fincas') {
+            jsonResponse(true, $model->obtenerFincasParticipantes());
+        }
         jsonResponse(false, null, 'Acción no soportada.', 400);
     }
 

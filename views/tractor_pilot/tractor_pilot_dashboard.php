@@ -70,7 +70,44 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     <p>Hola, <?php echo htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8'); ?>.</p>
                     <p id="estado-msg">Cargando estado...</p>
                 </div>
+
+                <div class="tabla-card">
+                    <h2>Fincas participantes de operativos</h2>
+                    <div class="tabla-wrapper">
+                        <table class="data-table" aria-label="Fincas participantes de operativos">
+                            <thead>
+                                <tr>
+                                    <th>Contrato</th>
+                                    <th>Cooperativa</th>
+                                    <th>Productor</th>
+                                    <th>Finca</th>
+                                    <th>Superficie (ha)</th>
+                                    <th>Variedad</th>
+                                    <th>Producción estimada</th>
+                                    <th>Fecha estimada</th>
+                                    <th>Flete</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fincas-table-body">
+                                <tr>
+                                    <td colspan="10">Cargando fincas...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </section>
+        </div>
+    </div>
+
+    <div id="fincaModal" class="modal hidden" aria-hidden="true">
+        <div class="modal-content">
+            <h3>Acciones de finca</h3>
+            <p>Modal vacío por el momento.</p>
+            <div class="form-buttons">
+                <button class="btn btn-aceptar" id="fincaModalClose">Cerrar</button>
+            </div>
         </div>
     </div>
 
@@ -92,7 +129,112 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             }
         }
 
-        document.addEventListener('DOMContentLoaded', cargarEstado);
+        function formatearSeguroFlete(valor) {
+            if (!valor) {
+                return 'Sin definir';
+            }
+            const normalizado = String(valor).toLowerCase();
+            if (normalizado === 'si') return 'Sí';
+            if (normalizado === 'no') return 'No';
+            return 'Sin definir';
+        }
+
+        async function cargarFincas() {
+            const tbody = document.getElementById('fincas-table-body');
+            try {
+                const res = await fetch('../../controllers/tractor_pilot_dashboardController.php?action=fincas', {
+                    credentials: 'same-origin'
+                });
+                const payload = await res.json();
+                if (!res.ok || !payload.ok) {
+                    throw new Error(payload.message || 'Error');
+                }
+                const filas = Array.isArray(payload.data) ? payload.data : [];
+
+                if (filas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="10">No hay fincas participantes.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                filas.forEach((fila) => {
+                    const tr = document.createElement('tr');
+
+                    const fincaLabel = fila.nombre_finca || fila.codigo_finca || (fila.finca_id ? `Finca #${fila.finca_id}` : 'Sin finca');
+                    const fleteLabel = String(fila.flete ?? '0') === '1' ? 'Sí' : 'No';
+
+                    const celdas = [
+                        fila.contrato_nombre || '-',
+                        fila.nom_cooperativa || '-',
+                        fila.productor || '-',
+                        fincaLabel,
+                        fila.superficie ?? '-',
+                        fila.variedad || '-',
+                        fila.prod_estimada ?? '-',
+                        fila.fecha_estimada || '-',
+                        `${fleteLabel} (${formatearSeguroFlete(fila.seguro_flete)})`,
+                    ];
+
+                    celdas.forEach((valor) => {
+                        const td = document.createElement('td');
+                        td.textContent = String(valor);
+                        tr.appendChild(td);
+                    });
+
+                    const tdAcciones = document.createElement('td');
+                    const btn = document.createElement('button');
+                    btn.className = 'btn btn-info';
+                    btn.dataset.action = 'abrir-modal';
+                    if (fila.finca_id !== null && fila.finca_id !== undefined) {
+                        btn.dataset.fincaId = String(fila.finca_id);
+                    }
+                    btn.textContent = 'Ver';
+                    tdAcciones.appendChild(btn);
+                    tr.appendChild(tdAcciones);
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="10">No se pudieron cargar las fincas.</td></tr>';
+            }
+        }
+
+        function abrirModalFinca() {
+            const modal = document.getElementById('fincaModal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+
+        function cerrarModalFinca() {
+            const modal = document.getElementById('fincaModal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarEstado();
+            cargarFincas();
+
+            const tbody = document.getElementById('fincas-table-body');
+            const closeBtn = document.getElementById('fincaModalClose');
+            const modal = document.getElementById('fincaModal');
+
+            tbody?.addEventListener('click', (event) => {
+                const target = event.target;
+                if (target instanceof HTMLElement && target.dataset.action === 'abrir-modal') {
+                    abrirModalFinca();
+                }
+            });
+
+            closeBtn?.addEventListener('click', cerrarModalFinca);
+            modal?.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    cerrarModalFinca();
+                }
+            });
+        });
     </script>
 </body>
 
