@@ -126,11 +126,11 @@
                                placeholder="Buscar por variedad">
                     </div>
                     <div class="filter-group">
-                        <label for="filtroCoopProdFlete">Flete</label>
-                        <select id="filtroCoopProdFlete">
+                        <label for="filtroCoopProdRelevamiento">Relevamiento</label>
+                        <select id="filtroCoopProdRelevamiento">
                             <option value="">Todos</option>
-                            <option value="con">Con flete</option>
-                            <option value="sin">Sin flete</option>
+                            <option value="relevado">Relevado</option>
+                            <option value="sin_relevar">Sin relevar</option>
                         </select>
                     </div>
                 </div>
@@ -180,12 +180,12 @@
             var filtroCoop = document.getElementById('filtroCoopProdCoop');
             var filtroProd = document.getElementById('filtroCoopProdProductor');
             var filtroVar  = document.getElementById('filtroCoopProdVariedad');
-            var filtroFlete = document.getElementById('filtroCoopProdFlete');
+            var filtroRelevamiento = document.getElementById('filtroCoopProdRelevamiento');
 
             var valorCoop = normalizarTexto(filtroCoop ? filtroCoop.value : '');
             var valorProd = normalizarTexto(filtroProd ? filtroProd.value : '');
             var valorVar  = normalizarTexto(filtroVar ? filtroVar.value : '');
-            var valorFlete = filtroFlete ? filtroFlete.value : '';
+            var valorRelevamiento = filtroRelevamiento ? filtroRelevamiento.value : '';
 
             var filas = tabla.querySelectorAll('tbody tr');
 
@@ -204,7 +204,7 @@
                     (celdas[6] ? celdas[6].textContent : '')
                 );
                 var txtVar  = normalizarTexto(celdas[8] ? celdas[8].textContent : '');
-                var txtFlete = normalizarTexto(celdas[13] ? celdas[13].textContent : '');
+                var txtRelevamiento = normalizarTexto(celdas[15] ? celdas[15].textContent : '');
 
                 var visible = true;
 
@@ -218,13 +218,12 @@
                     visible = false;
                 }
 
-                if (visible && valorFlete) {
-                    // Considera texto tipo "Sí/No", "Con flete/Sin flete", etc.
-                    var esConFlete = /si|sí|con/.test(txtFlete);
-                    if (valorFlete === 'con' && !esConFlete) {
+                if (visible && valorRelevamiento) {
+                    var esRelevado = /relevada|relevado/.test(txtRelevamiento);
+                    if (valorRelevamiento === 'relevado' && !esRelevado) {
                         visible = false;
                     }
-                    if (valorFlete === 'sin' && esConFlete) {
+                    if (valorRelevamiento === 'sin_relevar' && esRelevado) {
                         visible = false;
                     }
                 }
@@ -258,7 +257,7 @@
             var filtroCoop = document.getElementById('filtroCoopProdCoop');
             var filtroProd = document.getElementById('filtroCoopProdProductor');
             var filtroVar  = document.getElementById('filtroCoopProdVariedad');
-            var filtroFlete = document.getElementById('filtroCoopProdFlete');
+            var filtroRelevamiento = document.getElementById('filtroCoopProdRelevamiento');
             var btnDescargar = document.getElementById('btnDescargarCoopProd');
 
             if (filtroCoop) {
@@ -270,8 +269,8 @@
             if (filtroVar) {
                 filtroVar.addEventListener('input', aplicarFiltrosCoopProd);
             }
-            if (filtroFlete) {
-                filtroFlete.addEventListener('change', aplicarFiltrosCoopProd);
+            if (filtroRelevamiento) {
+                filtroRelevamiento.addEventListener('change', aplicarFiltrosCoopProd);
             }
             if (btnDescargar) {
                 btnDescargar.addEventListener('click', exportarTablaCoopProdExcel);
