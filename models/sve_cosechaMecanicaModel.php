@@ -238,7 +238,19 @@ class cosechaMecanicaModel
                     p.km_finca,
                     p.flete,
                     p.seguro_flete,
-                    CASE WHEN rf.participacion_id IS NULL THEN 0 ELSE 1 END AS relevada
+                    CASE WHEN rf.participacion_id IS NULL THEN 0 ELSE 1 END AS relevada,
+                    rf.id AS relevamiento_id,
+                    rf.participacion_id AS relevamiento_participacion_id,
+                    rf.ancho_callejon,
+                    rf.interfilar,
+                    rf.estructura_postes,
+                    rf.estructura_separadores,
+                    rf.agua_lavado,
+                    rf.preparacion_acequias,
+                    rf.preparacion_obstaculos,
+                    rf.observaciones,
+                    rf.created_at AS relevamiento_creado,
+                    rf.updated_at AS relevamiento_actualizado
                 FROM cosechaMecanica_cooperativas_participacion p
 
                 LEFT JOIN usuarios u_coop_name
@@ -276,8 +288,14 @@ class cosechaMecanicaModel
                     AND u_prod_ui.rol = 'productor'
 
                 LEFT JOIN (
-                    SELECT DISTINCT participacion_id
-                    FROM cosechaMecanica_relevamiento_finca
+                    SELECT r1.*
+                    FROM cosechaMecanica_relevamiento_finca r1
+                    INNER JOIN (
+                        SELECT participacion_id, MAX(id) AS max_id
+                        FROM cosechaMecanica_relevamiento_finca
+                        GROUP BY participacion_id
+                    ) r2
+                        ON r2.max_id = r1.id
                 ) rf
                     ON rf.participacion_id = p.id
 

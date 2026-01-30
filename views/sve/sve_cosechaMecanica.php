@@ -245,6 +245,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             font-size: 0.75rem;
             font-weight: 600;
             white-space: nowrap;
+            cursor: help;
         }
 
         .chip-success {
@@ -730,8 +731,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 }</td>
                             <td>${
     row.relevada
-        ? '<span class="chip chip-success">Relevada</span>'
-        : '<span class="chip chip-danger">Sin relevar</span>'
+        ? '<span class="chip chip-success" title="' + escapeAttribute(buildRelevamientoTooltip(row)) + '">Relevada</span>'
+        : '<span class="chip chip-danger" title="Sin relevar">Sin relevar</span>'
 }</td>
                         </tr>
                     `).join('');
@@ -774,6 +775,40 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     console.error('[CosechaMecanica] Error al abrir modal coop/prod:', err);
                     modalCoopProdBody.innerHTML = 'No se pudo cargar la información de cooperativas y productores.';
                 }
+            }
+
+            function buildRelevamientoTooltip(row) {
+                const fields = [
+                    { label: 'id', value: row.relevamiento_id },
+                    { label: 'participacion_id', value: row.relevamiento_participacion_id },
+                    { label: 'ancho_callejon', value: row.ancho_callejon },
+                    { label: 'interfilar', value: row.interfilar },
+                    { label: 'estructura_postes', value: row.estructura_postes },
+                    { label: 'estructura_separadores', value: row.estructura_separadores },
+                    { label: 'agua_lavado', value: row.agua_lavado },
+                    { label: 'preparacion_acequias', value: row.preparacion_acequias },
+                    { label: 'preparacion_obstaculos', value: row.preparacion_obstaculos },
+                    { label: 'observaciones', value: row.observaciones },
+                    { label: 'created_at', value: row.relevamiento_creado },
+                    { label: 'updated_at', value: row.relevamiento_actualizado }
+                ];
+
+                const lines = fields.map(item => {
+                    const raw = (item.value === null || item.value === undefined || String(item.value).trim() === '')
+                        ? 'Sin dato'
+                        : String(item.value);
+                    return `${item.label}: ${raw}`;
+                });
+
+                return lines.join('\n');
+            }
+
+            function escapeAttribute(value) {
+                return String(value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
             }
 
             function abrirModalEliminar(id) {

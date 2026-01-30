@@ -3,8 +3,10 @@
 <style>
     /* Ajuste de tamaño del modal y comportamiento responsive */
     #modalCoopProd .modal-content {
-        width: min(1200px, 98vw); /* AJUSTAR ANCHO MANUALMENTE AQUÍ */
-        max-height: 90vh;
+        width: 70vw;
+        height: 70vh;
+        max-width: 70vw;
+        max-height: 70vh;
         display: flex;
         flex-direction: column;
     }
@@ -12,7 +14,7 @@
     #modalCoopProd .modal-body {
         padding: 1rem 1.5rem;
         overflow: auto;
-        max-height: calc(90vh - 120px); /* deja espacio para header+footer */
+        max-height: calc(70vh - 120px); /* deja espacio para header+footer */
     }
 
     #modalCoopProd .modal-footer {
