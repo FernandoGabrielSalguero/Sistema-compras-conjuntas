@@ -166,11 +166,103 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
     <div id="fincaModal" class="modal hidden" aria-hidden="true">
         <div class="modal-content">
-            <h3>Acciones de finca</h3>
-            <p>Modal vacío por el momento.</p>
-            <div class="form-buttons">
-                <button class="btn btn-aceptar" id="fincaModalClose">Cerrar</button>
-            </div>
+            <h3>Relevamiento de finca</h3>
+            <form class="form-modern">
+                <div class="form-grid grid-2">
+                    <div class="input-group">
+                        <label for="ancho-callejon">Ancho callejón</label>
+                        <div class="input-icon">
+                            <select id="ancho-callejon" name="ancho_callejon" required>
+                                <option value="">Seleccionar</option>
+                                <option>Mayor a 6 metros</option>
+                                <option>Mayor a 5.7 metros</option>
+                                <option>Mayor a 5.3 metros</option>
+                                <option>Mayor a 5 metros</option>
+                                <option>Menor a 5 metros</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="interfilar">Interfilar</label>
+                        <div class="input-icon">
+                            <select id="interfilar" name="interfilar" required>
+                                <option value="">Seleccionar</option>
+                                <option>Mayor a 2,5 metros</option>
+                                <option>Mayor a 2,3 metros</option>
+                                <option>Mayor a 2.2 metros</option>
+                                <option>Mayor a 2 metros</option>
+                                <option>Menor a 2 metros</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="estructura-postes">Estructura (postes)</label>
+                        <div class="input-icon">
+                            <select id="estructura-postes" name="estructura_postes" required>
+                                <option value="">Seleccionar</option>
+                                <option>Menos del 5%</option>
+                                <option>Menos de 10%</option>
+                                <option>Menos de 25%</option>
+                                <option>Menos de 40%</option>
+                                <option>Más de 40%</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="estructura-separadores">Estructura (separadores)</label>
+                        <div class="input-icon">
+                            <select id="estructura-separadores" name="estructura_separadores" required>
+                                <option value="">Seleccionar</option>
+                                <option>Todos asegurados y tensados firmemente</option>
+                                <option>Asegurados y tensados, algunos olvidados</option>
+                                <option>Sin atar o tensar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="agua-lavado">Agua para el lavado</label>
+                        <div class="input-icon">
+                            <select id="agua-lavado" name="agua_lavado" required>
+                                <option value="">Seleccionar</option>
+                                <option>Suficiente y cercanda</option>
+                                <option>Suficiente a mas de 1km</option>
+                                <option>Insuficiente pero cercana</option>
+                                <option>Insuficiente a mas de 1km</option>
+                                <option>No tiene</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="prep-acequias">Preparación del suelo (acequias)</label>
+                        <div class="input-icon">
+                            <select id="prep-acequias" name="preparacion_acequias" required>
+                                <option value="">Seleccionar</option>
+                                <option>Acequias borradas y sin impedimentos</option>
+                                <option>Acequias suavizadas de facil transito</option>
+                                <option>Acequias con dificultades para el transito</option>
+                                <option>Profundas sin borrar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label for="prep-obstaculos">Preparación del suelo (obstáculos)</label>
+                        <div class="input-icon">
+                            <select id="prep-obstaculos" name="preparacion_obstaculos" required>
+                                <option value="">Seleccionar</option>
+                                <option>Ausencia de malesas</option>
+                                <option>Ausencia en la mayoria de las superficies</option>
+                                <option>Malezas menores a 40cm</option>
+                                <option>Suelo enmalezado</option>
+                                <option>Obstaculos o malesas sobre el alambre</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-buttons">
+                    <button class="btn btn-aceptar" type="button" id="fincaModalGuardar">Guardar</button>
+                    <button class="btn btn-cancelar" type="button" id="fincaModalClose">Cerrar</button>
+                </div>
+            </form>
         </div>
     </div>
 
