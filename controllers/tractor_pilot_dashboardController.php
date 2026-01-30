@@ -31,7 +31,17 @@ try {
             jsonResponse(true, $model->getEstado());
         }
         if ($action === 'fincas') {
-            jsonResponse(true, $model->obtenerFincasParticipantes());
+            $filtros = [
+                'contrato_id' => $_GET['contrato_id'] ?? null,
+                'cooperativa' => $_GET['cooperativa'] ?? null,
+                'productor' => $_GET['productor'] ?? null,
+                'finca_id' => $_GET['finca_id'] ?? null,
+            ];
+            $data = [
+                'items' => $model->obtenerFincasParticipantes($filtros),
+                'filtros' => $model->obtenerOpcionesFiltros($filtros),
+            ];
+            jsonResponse(true, $data);
         }
         jsonResponse(false, null, 'Acción no soportada.', 400);
     }
