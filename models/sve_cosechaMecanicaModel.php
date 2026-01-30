@@ -237,7 +237,8 @@ class cosechaMecanicaModel
                     p.fecha_estimada,
                     p.km_finca,
                     p.flete,
-                    p.seguro_flete
+                    p.seguro_flete,
+                    CASE WHEN rf.participacion_id IS NULL THEN 0 ELSE 1 END AS relevada
                 FROM cosechaMecanica_cooperativas_participacion p
 
                 LEFT JOIN usuarios u_coop_name
@@ -273,6 +274,12 @@ class cosechaMecanicaModel
                 LEFT JOIN usuarios u_prod_ui
                     ON u_prod_ui.id = ui_prod_match.usuario_id
                     AND u_prod_ui.rol = 'productor'
+
+                LEFT JOIN (
+                    SELECT DISTINCT participacion_id
+                    FROM cosechaMecanica_relevamiento_finca
+                ) rf
+                    ON rf.participacion_id = p.id
 
                 WHERE p.contrato_id = :contrato_id
                 ORDER BY p.nom_cooperativa ASC, p.productor ASC, p.id ASC";

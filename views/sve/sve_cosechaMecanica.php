@@ -236,6 +236,27 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             width: 100%;
         }
 
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .chip-success {
+            background-color: rgba(22, 163, 74, 0.15);
+            color: #166534;
+        }
+
+        .chip-danger {
+            background-color: rgba(220, 38, 38, 0.15);
+            color: #b91c1c;
+        }
+
         @media (max-width: 768px) {
             .filters-row {
                 grid-template-columns: minmax(0, 1fr);
@@ -707,6 +728,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
   : (String(row.seguro_flete || '').toLowerCase() === 'no') ? 'No'
   : 'Sin definir'
 }</td>
+                            <td>${
+    row.relevada
+        ? '<span class="chip chip-success">Relevada</span>'
+        : '<span class="chip chip-danger">Sin relevar</span>'
+}</td>
                         </tr>
                     `).join('');
 
@@ -734,6 +760,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                         <th>Firma</th>
                                         <th>Flete</th>
                                         <th>Seguro flete</th>
+                                        <th>Relevamiento</th>
                                     </tr>
                                 </thead>
                                 <tbody>
