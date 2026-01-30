@@ -149,12 +149,13 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                     <th>Variedad</th>
                                     <th>Fecha estimada</th>
                                     <th>Flete</th>
+                                    <th>Observaciones</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="fincas-table-body">
                                 <tr>
-                                    <td colspan="10">Cargando fincas...</td>
+                                    <td colspan="11">Cargando fincas...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -255,6 +256,12 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                 <option>Suelo enmalezado</option>
                                 <option>Obstaculos o malesas sobre el alambre</option>
                             </select>
+                        </div>
+                    </div>
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label for="observaciones">Observaciones</label>
+                        <div class="input-icon">
+                            <textarea id="observaciones" name="observaciones" rows="3" placeholder="Escribí observaciones..."></textarea>
                         </div>
                     </div>
                 </div>
@@ -398,7 +405,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 }
 
                 if (filas.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="10">No hay fincas participantes.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="11">No hay fincas participantes.</td></tr>';
                     return;
                 }
 
@@ -419,6 +426,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         fila.variedad || '-',
                         fila.fecha_estimada || '-',
                         `${fleteLabel} (${formatearSeguroFlete(fila.seguro_flete)})`,
+                        fila.observaciones ?? '-',
                     ];
 
                     celdas.forEach((valor) => {
@@ -441,7 +449,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 });
             } catch (e) {
                 console.error(e);
-                tbody.innerHTML = '<tr><td colspan="10">No se pudieron cargar las fincas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="11">No se pudieron cargar las fincas.</td></tr>';
             }
         }
 
