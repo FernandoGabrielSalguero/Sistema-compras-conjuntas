@@ -74,7 +74,25 @@ created_at	timestamp	NO		current_timestamp()
 
 🔗 Relaciones (salientes):
 Columna contrato_id referencia a CosechaMecanica.id
-🔁 Relaciones (entrantes): CosechaMecanica
+🔁 Relaciones (entrantes): CosechaMecanica, cosechaMecanica_relevamiento_finca
+📄 Tabla: cosechaMecanica_relevamiento_finca
+Columna	Tipo	Nulo	Clave	Default	Extra
+id	bigint(20) unsigned	NO	PRI		auto_increment
+participacion_id	bigint(20) unsigned	NO	MUL		
+ancho_callejon	enum('Mayor a 6 metros','Mayor a 5.7 metros','Mayor a 5.3 metros','Mayor a 5 metros','Menor a 5 metros')	NO			
+interfilar	enum('Mayor a 2,5 metros','Mayor a 2,3 metros','Mayor a 2.2 metros','Mayor a 2 metros','Menor a 2 metros')	NO			
+estructura_postes	enum('Menos del 5%','Menos de 10%','Menos de 25%','Menos de 40%','Más de 40%')	NO			
+estructura_separadores	enum('Todos asegurados y tensados firmemente','Asegurados y tensados, algunos olvidados','Sin atar o tensar')	NO			
+agua_lavado	enum('Suficiente y cercanda','Suficiente a mas de 1km','Insuficiente pero cercana','Insuficiente a mas de 1km','No tiene')	NO			
+preparacion_acequias	enum('Acequias borradas y sin impedimentos','Acequias suavizadas de facil transito','Acequias con dificultades para el transito','Profundas sin borrar')	NO			
+preparacion_obstaculos	enum('Ausencia de malesas','Ausencia en la mayoria de las superficies','Malezas menores a 40cm','Suelo enmalezado','Obstaculos o malesas sobre el alambre')	NO			
+observaciones	text	YES			
+created_at	timestamp	NO		current_timestamp()	
+updated_at	timestamp	YES		current_timestamp()	on update current_timestamp()
+
+🔗 Relaciones (salientes):
+Columna participacion_id referencia a cosechaMecanica_cooperativas_participacion.id
+🔁 Relaciones (entrantes): cosechaMecanica_cooperativas_participacion
 📄 Tabla: detalle_pedidos
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(11)	NO	PRI		auto_increment

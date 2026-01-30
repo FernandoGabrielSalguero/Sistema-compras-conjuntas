@@ -43,6 +43,55 @@ try {
             ];
             jsonResponse(true, $data);
         }
+        if ($action === 'relevamiento') {
+            $participacionId = isset($_GET['participacion_id']) ? (int) $_GET['participacion_id'] : 0;
+            if ($participacionId <= 0) {
+                jsonResponse(false, null, 'participacion_id inválido.', 422);
+            }
+            $relevamiento = $model->obtenerRelevamientoPorParticipacion($participacionId);
+            jsonResponse(true, $relevamiento);
+        }
+        jsonResponse(false, null, 'Acción no soportada.', 400);
+    }
+
+    if ($method === 'POST') {
+        if ($action === 'guardar_relevamiento') {
+            $participacionId = isset($_POST['participacion_id']) ? (int) $_POST['participacion_id'] : 0;
+            if ($participacionId <= 0) {
+                jsonResponse(false, null, 'participacion_id inválido.', 422);
+            }
+
+            $data = [
+                'ancho_callejon' => trim((string) ($_POST['ancho_callejon'] ?? '')),
+                'interfilar' => trim((string) ($_POST['interfilar'] ?? '')),
+                'estructura_postes' => trim((string) ($_POST['estructura_postes'] ?? '')),
+                'estructura_separadores' => trim((string) ($_POST['estructura_separadores'] ?? '')),
+                'agua_lavado' => trim((string) ($_POST['agua_lavado'] ?? '')),
+                'preparacion_acequias' => trim((string) ($_POST['preparacion_acequias'] ?? '')),
+                'preparacion_obstaculos' => trim((string) ($_POST['preparacion_obstaculos'] ?? '')),
+                'observaciones' => trim((string) ($_POST['observaciones'] ?? '')),
+            ];
+
+            $requeridos = [
+                'ancho_callejon',
+                'interfilar',
+                'estructura_postes',
+                'estructura_separadores',
+                'agua_lavado',
+                'preparacion_acequias',
+                'preparacion_obstaculos',
+            ];
+
+            foreach ($requeridos as $campo) {
+                if ($data[$campo] === '') {
+                    jsonResponse(false, null, 'Completá todos los campos obligatorios.', 422);
+                }
+            }
+
+            $resultado = $model->guardarRelevamiento($participacionId, $data);
+            jsonResponse(true, $resultado, 'Relevamiento guardado.');
+        }
+
         jsonResponse(false, null, 'Acción no soportada.', 400);
     }
 

@@ -65,11 +65,14 @@ class TractorPilotDashboardModel
                     p.flete,
                     p.seguro_flete,
                     p.finca_id,
+                    rf.id AS relevamiento_id,
                     f.codigo_finca,
                     f.nombre_finca
                 FROM cosechaMecanica_cooperativas_participacion p
                 INNER JOIN CosechaMecanica c
                     ON c.id = p.contrato_id
+                LEFT JOIN cosechaMecanica_relevamiento_finca rf
+                    ON rf.participacion_id = p.id
                 LEFT JOIN prod_fincas f
                     ON f.id = p.finca_id
                 WHERE p.firma = 1
@@ -90,6 +93,94 @@ class TractorPilotDashboardModel
         $stmt->execute($params);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function obtenerRelevamientoPorParticipacion(int $participacionId): ?array
+    {
+        $sql = "SELECT
+                    id,
+                    participacion_id,
+                    ancho_callejon,
+                    interfilar,
+                    estructura_postes,
+                    estructura_separadores,
+                    agua_lavado,
+                    preparacion_acequias,
+                    preparacion_obstaculos,
+                    observaciones
+                FROM cosechaMecanica_relevamiento_finca
+                WHERE participacion_id = :participacion_id
+                LIMIT 1";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':participacion_id' => $participacionId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
+
+    public function guardarRelevamiento(int $participacionId, array $data): array
+    {
+        $sqlExiste = "SELECT id FROM cosechaMecanica_relevamiento_finca WHERE participacion_id = :participacion_id LIMIT 1";
+        $stmtExiste = $this->pdo->prepare($sqlExiste);
+        $stmtExiste->execute([':participacion_id' => $participacionId]);
+        $existente = $stmtExiste->fetch(PDO::FETCH_ASSOC);
+
+        $payload = [
+            ':participacion_id' => $participacionId,
+            ':ancho_callejon' => $data['ancho_callejon'],
+            ':interfilar' => $data['interfilar'],
+            ':estructura_postes' => $data['estructura_postes'],
+            ':estructura_separadores' => $data['estructura_separadores'],
+            ':agua_lavado' => $data['agua_lavado'],
+            ':preparacion_acequias' => $data['preparacion_acequias'],
+            ':preparacion_obstaculos' => $data['preparacion_obstaculos'],
+            ':observaciones' => $data['observaciones'],
+        ];
+
+        if ($existente) {
+            $sqlUpdate = "UPDATE cosechaMecanica_relevamiento_finca
+                SET ancho_callejon = :ancho_callejon,
+                    interfilar = :interfilar,
+                    estructura_postes = :estructura_postes,
+                    estructura_separadores = :estructura_separadores,
+                    agua_lavado = :agua_lavado,
+                    preparacion_acequias = :preparacion_acequias,
+                    preparacion_obstaculos = :preparacion_obstaculos,
+                    observaciones = :observaciones
+                WHERE participacion_id = :participacion_id";
+            $stmtUpdate = $this->pdo->prepare($sqlUpdate);
+            $stmtUpdate->execute($payload);
+
+            return ['id' => (int) $existente['id'], 'accion' => 'actualizado'];
+        }
+
+        $sqlInsert = "INSERT INTO cosechaMecanica_relevamiento_finca (
+                participacion_id,
+                ancho_callejon,
+                interfilar,
+                estructura_postes,
+                estructura_separadores,
+                agua_lavado,
+                preparacion_acequias,
+                preparacion_obstaculos,
+                observaciones
+            ) VALUES (
+                :participacion_id,
+                :ancho_callejon,
+                :interfilar,
+                :estructura_postes,
+                :estructura_separadores,
+                :agua_lavado,
+                :preparacion_acequias,
+                :preparacion_obstaculos,
+                :observaciones
+            )";
+
+        $stmtInsert = $this->pdo->prepare($sqlInsert);
+        $stmtInsert->execute($payload);
+
+        return ['id' => (int) $this->pdo->lastInsertId(), 'accion' => 'creado'];
     }
 
     public function obtenerOpcionesFiltros(array $filtros = []): array

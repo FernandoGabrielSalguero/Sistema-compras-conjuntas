@@ -273,10 +273,59 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
     </div>
 
     <script>
+        const API_TRACTOR_PILOT = '../../controllers/tractor_pilot_dashboardController.php';
+
+        function showUserAlert(type, message) {
+            if (typeof showAlert === 'function') {
+                showAlert(type, message);
+                return;
+            }
+            console.log(`[${type}] ${message}`);
+        }
+
+        function resetModalForm() {
+            document.getElementById('ancho-callejon').value = '';
+            document.getElementById('interfilar').value = '';
+            document.getElementById('estructura-postes').value = '';
+            document.getElementById('estructura-separadores').value = '';
+            document.getElementById('agua-lavado').value = '';
+            document.getElementById('prep-acequias').value = '';
+            document.getElementById('prep-obstaculos').value = '';
+            document.getElementById('observaciones').value = '';
+        }
+
+        function setModalData(data) {
+            if (!data) {
+                resetModalForm();
+                return;
+            }
+            document.getElementById('ancho-callejon').value = data.ancho_callejon ?? '';
+            document.getElementById('interfilar').value = data.interfilar ?? '';
+            document.getElementById('estructura-postes').value = data.estructura_postes ?? '';
+            document.getElementById('estructura-separadores').value = data.estructura_separadores ?? '';
+            document.getElementById('agua-lavado').value = data.agua_lavado ?? '';
+            document.getElementById('prep-acequias').value = data.preparacion_acequias ?? '';
+            document.getElementById('prep-obstaculos').value = data.preparacion_obstaculos ?? '';
+            document.getElementById('observaciones').value = data.observaciones ?? '';
+        }
+
+        function getModalPayload() {
+            return {
+                ancho_callejon: document.getElementById('ancho-callejon').value.trim(),
+                interfilar: document.getElementById('interfilar').value.trim(),
+                estructura_postes: document.getElementById('estructura-postes').value.trim(),
+                estructura_separadores: document.getElementById('estructura-separadores').value.trim(),
+                agua_lavado: document.getElementById('agua-lavado').value.trim(),
+                preparacion_acequias: document.getElementById('prep-acequias').value.trim(),
+                preparacion_obstaculos: document.getElementById('prep-obstaculos').value.trim(),
+                observaciones: document.getElementById('observaciones').value.trim(),
+            };
+        }
+
         async function cargarEstado() {
             const el = document.getElementById('estado-msg');
             try {
-                const res = await fetch('../../controllers/tractor_pilot_dashboardController.php?action=estado', {
+                const res = await fetch(`${API_TRACTOR_PILOT}?action=estado`, {
                     credentials: 'same-origin'
                 });
                 const payload = await res.json();
@@ -366,7 +415,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const tbody = document.getElementById('fincas-table-body');
             const params = construirQueryFiltros();
             try {
-                const res = await fetch(`../../controllers/tractor_pilot_dashboardController.php?action=fincas&${params.toString()}`, {
+                const res = await fetch(`${API_TRACTOR_PILOT}?action=fincas&${params.toString()}`, {
                     credentials: 'same-origin'
                 });
                 const payload = await res.json();
@@ -437,10 +486,11 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     const btn = document.createElement('button');
                     btn.className = 'btn btn-info';
                     btn.dataset.action = 'abrir-modal';
+                    btn.dataset.participacionId = String(fila.id);
                     if (fila.finca_id !== null && fila.finca_id !== undefined) {
                         btn.dataset.fincaId = String(fila.finca_id);
                     }
-                    btn.textContent = 'Calificar';
+                    btn.textContent = fila.relevamiento_id ? 'Modificar' : 'Calificar';
                     tdAcciones.appendChild(btn);
                     tr.appendChild(tdAcciones);
                     tbody.appendChild(tr);
@@ -448,6 +498,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             } catch (e) {
                 console.error(e);
                 tbody.innerHTML = '<tr><td colspan="10">No se pudieron cargar las fincas.</td></tr>';
+                showUserAlert('error', 'No se pudieron cargar las fincas.');
             }
         }
 
@@ -465,6 +516,59 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             modal.setAttribute('aria-hidden', 'true');
         }
 
+        async function cargarRelevamiento(participacionId) {
+            const params = new URLSearchParams({ action: 'relevamiento', participacion_id: String(participacionId) });
+            const res = await fetch(`${API_TRACTOR_PILOT}?${params.toString()}`, {
+                credentials: 'same-origin'
+            });
+            const payload = await res.json();
+            if (!res.ok || !payload.ok) {
+                throw new Error(payload.message || 'Error');
+            }
+            return payload.data || null;
+        }
+
+        async function guardarRelevamiento(participacionId) {
+            const payload = getModalPayload();
+            const requeridos = [
+                payload.ancho_callejon,
+                payload.interfilar,
+                payload.estructura_postes,
+                payload.estructura_separadores,
+                payload.agua_lavado,
+                payload.preparacion_acequias,
+                payload.preparacion_obstaculos,
+            ];
+
+            if (requeridos.some((valor) => !valor)) {
+                showUserAlert('warning', 'Completá todos los campos obligatorios.');
+                return;
+            }
+
+            const body = new URLSearchParams({
+                action: 'guardar_relevamiento',
+                participacion_id: String(participacionId),
+                ...payload,
+            });
+
+            showUserAlert('info', 'Guardando relevamiento...');
+
+            const res = await fetch(API_TRACTOR_PILOT, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                },
+                body,
+            });
+            const responsePayload = await res.json();
+            if (!res.ok || !responsePayload.ok) {
+                throw new Error(responsePayload.message || 'Error');
+            }
+
+            return responsePayload.data || null;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             cargarEstado();
             cargarFincas();
@@ -472,6 +576,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const tbody = document.getElementById('fincas-table-body');
             const closeBtn = document.getElementById('fincaModalClose');
             const modal = document.getElementById('fincaModal');
+            const guardarBtn = document.getElementById('fincaModalGuardar');
             const filtros = [
                 document.getElementById('filtro-contrato'),
                 document.getElementById('filtro-cooperativa'),
@@ -479,10 +584,27 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 document.getElementById('filtro-finca'),
             ];
 
-            tbody?.addEventListener('click', (event) => {
+            tbody?.addEventListener('click', async (event) => {
                 const target = event.target;
                 if (target instanceof HTMLElement && target.dataset.action === 'abrir-modal') {
+                    const participacionId = Number(target.dataset.participacionId || 0);
+                    if (!participacionId) {
+                        showUserAlert('error', 'No se encontró el ID de participación.');
+                        return;
+                    }
+                    modal.dataset.participacionId = String(participacionId);
                     abrirModalFinca();
+                    showUserAlert('info', 'Cargando relevamiento...');
+                    try {
+                        const relevamiento = await cargarRelevamiento(participacionId);
+                        setModalData(relevamiento);
+                        const msg = relevamiento ? 'Relevamiento cargado.' : 'Sin relevamiento previo.';
+                        showUserAlert('success', msg);
+                    } catch (error) {
+                        console.error(error);
+                        setModalData(null);
+                        showUserAlert('error', 'No se pudo cargar el relevamiento.');
+                    }
                 }
             });
 
@@ -490,6 +612,23 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             modal?.addEventListener('click', (event) => {
                 if (event.target === modal) {
                     cerrarModalFinca();
+                }
+            });
+
+            guardarBtn?.addEventListener('click', async () => {
+                const participacionId = Number(modal?.dataset.participacionId || 0);
+                if (!participacionId) {
+                    showUserAlert('error', 'No se encontró el ID de participación.');
+                    return;
+                }
+                try {
+                    await guardarRelevamiento(participacionId);
+                    showUserAlert('success', 'Relevamiento guardado.');
+                    cerrarModalFinca();
+                    cargarFincas();
+                } catch (error) {
+                    console.error(error);
+                    showUserAlert('error', error.message || 'No se pudo guardar el relevamiento.');
                 }
             });
 
