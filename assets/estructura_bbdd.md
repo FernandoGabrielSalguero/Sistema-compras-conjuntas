@@ -79,9 +79,13 @@ Columna contrato_id referencia a CosechaMecanica.id
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	bigint(20) unsigned	NO	PRI		auto_increment
 participacion_id	bigint(20) unsigned	NO	MUL		
-ancho_callejon	enum('Mayor a 6 metros','Mayor a 5.7 metros','Mayor a 5.3 metros','Mayor a 5 metros','Menor a 5 metros')	NO			
+ancho_callejon_norte	int(11)	NO			
+ancho_callejon_sur	int(11)	NO			
+promedio_callejon	decimal(6,2)	YES			
 interfilar	enum('Mayor a 2,5 metros','Mayor a 2,3 metros','Mayor a 2.2 metros','Mayor a 2 metros','Menor a 2 metros')	NO			
-estructura_postes	enum('Menos del 5%','Menos de 10%','Menos de 25%','Menos de 40%','Más de 40%')	NO			
+cantidad_postes	int(11)	NO			
+postes_mal_estado	int(11)	NO			
+porcentaje_postes_mal_estado	decimal(5,2)	YES			
 estructura_separadores	enum('Todos asegurados y tensados firmemente','Asegurados y tensados, algunos olvidados','Sin atar o tensar')	NO			
 agua_lavado	enum('Suficiente y cercanda','Suficiente a mas de 1km','Insuficiente pero cercana','Insuficiente a mas de 1km','No tiene')	NO			
 preparacion_acequias	enum('Acequias borradas y sin impedimentos','Acequias suavizadas de facil transito','Acequias con dificultades para el transito','Profundas sin borrar')	NO			

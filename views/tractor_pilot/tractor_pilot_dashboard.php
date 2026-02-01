@@ -55,6 +55,14 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             font-weight: 600;
             margin-top: 0.25rem;
         }
+
+        .label-subtext {
+            display: block;
+            color: #7c3aed;
+            font-size: 0.8em;
+            font-weight: 500;
+            margin-top: 0.15rem;
+        }
     </style>
 </head>
 
@@ -199,7 +207,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         </div>
                     </div>
                     <div class="input-group">
-                        <label for="estructura-separadores">Estructura (alambres)</label>
+                        <label for="estructura-separadores">Estructura <span class="label-subtext">Alambres</span></label>
                         <div class="input-icon">
                             <select id="estructura-separadores" name="estructura_separadores" required>
                                 <option value="">Seleccionar</option>
@@ -223,7 +231,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         </div>
                     </div>
                     <div class="input-group">
-                        <label for="prep-acequias">Preparación del suelo (acequias)</label>
+                        <label for="prep-acequias">Preparación del suelo <span class="label-subtext">Acequias</span></label>
                         <div class="input-icon">
                             <select id="prep-acequias" name="preparacion_acequias" required>
                                 <option value="">Seleccionar</option>

@@ -67,12 +67,27 @@ try {
                 'interfilar' => trim((string) ($_POST['interfilar'] ?? '')),
                 'cantidad_postes' => trim((string) ($_POST['cantidad_postes'] ?? '')),
                 'postes_mal_estado' => trim((string) ($_POST['postes_mal_estado'] ?? '')),
+                'promedio_callejon' => '',
+                'porcentaje_postes_mal_estado' => '',
                 'estructura_separadores' => trim((string) ($_POST['estructura_separadores'] ?? '')),
                 'agua_lavado' => trim((string) ($_POST['agua_lavado'] ?? '')),
                 'preparacion_acequias' => trim((string) ($_POST['preparacion_acequias'] ?? '')),
                 'preparacion_obstaculos' => trim((string) ($_POST['preparacion_obstaculos'] ?? '')),
                 'observaciones' => trim((string) ($_POST['observaciones'] ?? '')),
             ];
+
+            $norte = (float) $data['ancho_callejon_norte'];
+            $sur = (float) $data['ancho_callejon_sur'];
+            $totalPostes = (float) $data['cantidad_postes'];
+            $postesMal = (float) $data['postes_mal_estado'];
+
+            if ($norte >= 0 && $sur >= 0) {
+                $data['promedio_callejon'] = (string) round(($norte + $sur) / 2, 2);
+            }
+
+            if ($totalPostes > 0 && $postesMal >= 0) {
+                $data['porcentaje_postes_mal_estado'] = (string) round(($postesMal / $totalPostes) * 100, 2);
+            }
 
             $requeridos = [
                 'ancho_callejon_norte',
