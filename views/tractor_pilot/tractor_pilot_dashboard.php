@@ -182,19 +182,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         </div>
                     </div>
                     <div class="input-group">
-                        <label for="interfilar">Interfilar</label>
-                        <div class="input-icon">
-                            <select id="interfilar" name="interfilar" required>
-                                <option value="">Seleccionar</option>
-                                <option>Mayor a 2,5 metros</option>
-                                <option>Mayor a 2,3 metros</option>
-                                <option>Mayor a 2.2 metros</option>
-                                <option>Mayor a 2 metros</option>
-                                <option>Menor a 2 metros</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-group">
                         <label for="cantidad-postes">Cantidad de postes</label>
                         <div class="input-icon">
                             <input type="number" id="cantidad-postes" name="cantidad_postes" min="0" step="1" inputmode="numeric" placeholder="0" required />
@@ -244,6 +231,19 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                 <option>Acequias suavizadas de facil transito</option>
                                 <option>Acequias con dificultades para el transito</option>
                                 <option>Profundas sin borrar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="interfilar">Interfilar</label>
+                        <div class="input-icon">
+                            <select id="interfilar" name="interfilar" required>
+                                <option value="">Seleccionar</option>
+                                <option>Mayor a 2,5 metros</option>
+                                <option>Mayor a 2,3 metros</option>
+                                <option>Mayor a 2.2 metros</option>
+                                <option>Mayor a 2 metros</option>
+                                <option>Menor a 2 metros</option>
                             </select>
                         </div>
                     </div>
