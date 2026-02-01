@@ -100,14 +100,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     <h2>Filtros</h2>
                     <div class="form-grid grid-4">
                         <div class="input-group">
-                            <label for="filtro-contrato">Contrato</label>
-                            <div class="input-icon">
-                                <select id="filtro-contrato">
-                                    <option value="">Todos</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="input-group">
                             <label for="filtro-cooperativa">Cooperativa</label>
                             <div class="input-icon">
                                 <select id="filtro-cooperativa">
@@ -140,21 +132,18 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         <table class="data-table" aria-label="Fincas participantes de operativos">
                             <thead>
                                 <tr>
+                                    <th>Acciones</th>
                                     <th>ID pedido</th>
-                                    <th>Contrato</th>
                                     <th>Cooperativa</th>
                                     <th>Productor</th>
                                     <th>Finca</th>
                                     <th>Superficie (ha)</th>
                                     <th>Variedad</th>
-                                    <th>Fecha estimada</th>
-                                    <th>Flete</th>
-                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="fincas-table-body">
                                 <tr>
-                                    <td colspan="10">Cargando fincas...</td>
+                                    <td colspan="7">Cargando fincas...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -209,7 +198,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         </div>
                     </div>
                     <div class="input-group">
-                        <label for="estructura-separadores">Estructura (separadores)</label>
+                        <label for="estructura-separadores">Estructura (alambres)</label>
                         <div class="input-icon">
                             <select id="estructura-separadores" name="estructura_separadores" required>
                                 <option value="">Seleccionar</option>
@@ -339,16 +328,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             }
         }
 
-        function formatearSeguroFlete(valor) {
-            if (!valor) {
-                return 'Sin definir';
-            }
-            const normalizado = String(valor).toLowerCase();
-            if (normalizado === 'si') return 'Sí';
-            if (normalizado === 'no') return 'No';
-            return 'Sin definir';
-        }
-
         function aplicarSaltoTerceraPalabra(td, valor) {
             const texto = String(valor ?? '').trim();
             if (!texto) {
@@ -373,12 +352,10 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
         function construirQueryFiltros() {
             const params = new URLSearchParams();
-            const contrato = document.getElementById('filtro-contrato')?.value;
             const cooperativa = document.getElementById('filtro-cooperativa')?.value;
             const productor = document.getElementById('filtro-productor')?.value;
             const finca = document.getElementById('filtro-finca')?.value;
 
-            if (contrato) params.set('contrato_id', contrato);
             if (cooperativa) params.set('cooperativa', cooperativa);
             if (productor) params.set('productor', productor);
             if (finca) params.set('finca_id', finca);
@@ -426,18 +403,10 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 const filas = Array.isArray(data.items) ? data.items : [];
                 const filtros = data.filtros || {};
 
-                const selectContrato = document.getElementById('filtro-contrato');
                 const selectCooperativa = document.getElementById('filtro-cooperativa');
                 const selectProductor = document.getElementById('filtro-productor');
                 const selectFinca = document.getElementById('filtro-finca');
 
-                if (selectContrato) {
-                    const contratos = (filtros.contratos || []).map((item) => ({
-                        value: item.id,
-                        label: item.nombre ? `${item.id} - ${item.nombre}` : String(item.id),
-                    }));
-                    actualizarSelect(selectContrato, contratos, 'Todos');
-                }
                 if (selectCooperativa) {
                     actualizarSelect(selectCooperativa, filtros.cooperativas || [], 'Todas');
                 }
@@ -453,7 +422,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 }
 
                 if (filas.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="10">No hay fincas participantes.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7">No hay fincas participantes.</td></tr>';
                     return;
                 }
 
@@ -462,25 +431,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     const tr = document.createElement('tr');
 
                     const fincaLabel = fila.nombre_finca || fila.codigo_finca || (fila.finca_id ? `Finca #${fila.finca_id}` : 'Sin finca');
-                    const fleteLabel = String(fila.flete ?? '0') === '1' ? 'Sí' : 'No';
-
-                    const celdas = [
-                        fila.id ?? '-',
-                        fila.contrato_nombre || '-',
-                        fila.nom_cooperativa || '-',
-                        fila.productor || '-',
-                        fincaLabel,
-                        fila.superficie ?? '-',
-                        fila.variedad || '-',
-                        fila.fecha_estimada || '-',
-                        `${fleteLabel} (${formatearSeguroFlete(fila.seguro_flete)})`,
-                    ];
-
-                    celdas.forEach((valor) => {
-                        const td = document.createElement('td');
-                        aplicarSaltoTerceraPalabra(td, valor);
-                        tr.appendChild(td);
-                    });
 
                     const tdAcciones = document.createElement('td');
                     const btn = document.createElement('button');
@@ -493,11 +443,26 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     btn.textContent = fila.relevamiento_id ? 'Modificar' : 'Calificar';
                     tdAcciones.appendChild(btn);
                     tr.appendChild(tdAcciones);
+
+                    const celdas = [
+                        fila.id ?? '-',
+                        fila.nom_cooperativa || '-',
+                        fila.productor || '-',
+                        fincaLabel,
+                        fila.superficie ?? '-',
+                        fila.variedad || '-',
+                    ];
+
+                    celdas.forEach((valor) => {
+                        const td = document.createElement('td');
+                        aplicarSaltoTerceraPalabra(td, valor);
+                        tr.appendChild(td);
+                    });
                     tbody.appendChild(tr);
                 });
             } catch (e) {
                 console.error(e);
-                tbody.innerHTML = '<tr><td colspan="10">No se pudieron cargar las fincas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7">No se pudieron cargar las fincas.</td></tr>';
                 showUserAlert('error', 'No se pudieron cargar las fincas.');
             }
         }
@@ -578,7 +543,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const modal = document.getElementById('fincaModal');
             const guardarBtn = document.getElementById('fincaModalGuardar');
             const filtros = [
-                document.getElementById('filtro-contrato'),
                 document.getElementById('filtro-cooperativa'),
                 document.getElementById('filtro-productor'),
                 document.getElementById('filtro-finca'),
