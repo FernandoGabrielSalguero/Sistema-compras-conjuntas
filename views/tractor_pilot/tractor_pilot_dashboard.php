@@ -49,6 +49,12 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
         .filters-card .form-grid {
             margin-top: 0.5rem;
         }
+
+        .ancho-callejon-promedio {
+            color: #7c3aed;
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
     </style>
 </head>
 
@@ -159,16 +165,20 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             <form class="form-modern">
                 <div class="form-grid grid-2">
                     <div class="input-group">
-                        <label for="ancho-callejon">Ancho callejón</label>
+                        <label for="ancho-callejon-norte">Ancho callejon Norte</label>
                         <div class="input-icon">
-                            <select id="ancho-callejon" name="ancho_callejon" required>
-                                <option value="">Seleccionar</option>
-                                <option>Mayor a 6 metros</option>
-                                <option>Mayor a 5.7 metros</option>
-                                <option>Mayor a 5.3 metros</option>
-                                <option>Mayor a 5 metros</option>
-                                <option>Menor a 5 metros</option>
-                            </select>
+                            <input type="number" id="ancho-callejon-norte" name="ancho_callejon_norte" min="0" step="1" inputmode="numeric" placeholder="0" required />
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="ancho-callejon-sur">Ancho callejon Sur</label>
+                        <div class="input-icon">
+                            <input type="number" id="ancho-callejon-sur" name="ancho_callejon_sur" min="0" step="1" inputmode="numeric" placeholder="0" required />
+                        </div>
+                    </div>
+                    <div class="input-group" style="grid-column: span 2;">
+                        <div class="ancho-callejon-promedio">
+                            Promedio ancho callejon <span id="ancho-callejon-promedio-valor">-</span>
                         </div>
                     </div>
                     <div class="input-group">
@@ -273,7 +283,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
         }
 
         function resetModalForm() {
-            document.getElementById('ancho-callejon').value = '';
+            document.getElementById('ancho-callejon-norte').value = '';
+            document.getElementById('ancho-callejon-sur').value = '';
             document.getElementById('interfilar').value = '';
             document.getElementById('estructura-postes').value = '';
             document.getElementById('estructura-separadores').value = '';
@@ -281,6 +292,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             document.getElementById('prep-acequias').value = '';
             document.getElementById('prep-obstaculos').value = '';
             document.getElementById('observaciones').value = '';
+            actualizarPromedioCallejon();
         }
 
         function setModalData(data) {
@@ -288,7 +300,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 resetModalForm();
                 return;
             }
-            document.getElementById('ancho-callejon').value = data.ancho_callejon ?? '';
+            document.getElementById('ancho-callejon-norte').value = data.ancho_callejon_norte ?? '';
+            document.getElementById('ancho-callejon-sur').value = data.ancho_callejon_sur ?? '';
             document.getElementById('interfilar').value = data.interfilar ?? '';
             document.getElementById('estructura-postes').value = data.estructura_postes ?? '';
             document.getElementById('estructura-separadores').value = data.estructura_separadores ?? '';
@@ -296,11 +309,13 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             document.getElementById('prep-acequias').value = data.preparacion_acequias ?? '';
             document.getElementById('prep-obstaculos').value = data.preparacion_obstaculos ?? '';
             document.getElementById('observaciones').value = data.observaciones ?? '';
+            actualizarPromedioCallejon();
         }
 
         function getModalPayload() {
             return {
-                ancho_callejon: document.getElementById('ancho-callejon').value.trim(),
+                ancho_callejon_norte: document.getElementById('ancho-callejon-norte').value.trim(),
+                ancho_callejon_sur: document.getElementById('ancho-callejon-sur').value.trim(),
                 interfilar: document.getElementById('interfilar').value.trim(),
                 estructura_postes: document.getElementById('estructura-postes').value.trim(),
                 estructura_separadores: document.getElementById('estructura-separadores').value.trim(),
@@ -309,6 +324,30 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 preparacion_obstaculos: document.getElementById('prep-obstaculos').value.trim(),
                 observaciones: document.getElementById('observaciones').value.trim(),
             };
+        }
+
+        function actualizarPromedioCallejon() {
+            const norteRaw = document.getElementById('ancho-callejon-norte')?.value.trim() ?? '';
+            const surRaw = document.getElementById('ancho-callejon-sur')?.value.trim() ?? '';
+            const promedioEl = document.getElementById('ancho-callejon-promedio-valor');
+
+            if (!promedioEl) return;
+
+            if (norteRaw === '' || surRaw === '') {
+                promedioEl.textContent = '-';
+                return;
+            }
+
+            const norte = Number(norteRaw);
+            const sur = Number(surRaw);
+
+            if (Number.isFinite(norte) && Number.isFinite(sur) && norte >= 0 && sur >= 0) {
+                const promedio = (norte + sur) / 2;
+                promedioEl.textContent = Number.isInteger(promedio) ? String(promedio) : promedio.toFixed(1);
+                return;
+            }
+
+            promedioEl.textContent = '-';
         }
 
         async function cargarEstado() {
@@ -496,7 +535,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
         async function guardarRelevamiento(participacionId) {
             const payload = getModalPayload();
             const requeridos = [
-                payload.ancho_callejon,
+                payload.ancho_callejon_norte,
+                payload.ancho_callejon_sur,
                 payload.interfilar,
                 payload.estructura_postes,
                 payload.estructura_separadores,
@@ -542,6 +582,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const closeBtn = document.getElementById('fincaModalClose');
             const modal = document.getElementById('fincaModal');
             const guardarBtn = document.getElementById('fincaModalGuardar');
+            const anchoCallejonNorte = document.getElementById('ancho-callejon-norte');
+            const anchoCallejonSur = document.getElementById('ancho-callejon-sur');
             const filtros = [
                 document.getElementById('filtro-cooperativa'),
                 document.getElementById('filtro-productor'),
@@ -578,6 +620,9 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     cerrarModalFinca();
                 }
             });
+
+            anchoCallejonNorte?.addEventListener('input', actualizarPromedioCallejon);
+            anchoCallejonSur?.addEventListener('input', actualizarPromedioCallejon);
 
             guardarBtn?.addEventListener('click', async () => {
                 const participacionId = Number(modal?.dataset.participacionId || 0);

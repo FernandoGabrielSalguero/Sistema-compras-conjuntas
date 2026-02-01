@@ -781,7 +781,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const fields = [
                     { label: 'id', value: row.relevamiento_id },
                     { label: 'participacion_id', value: row.relevamiento_participacion_id },
-                    { label: 'ancho_callejon', value: row.ancho_callejon },
+                    { label: 'ancho_callejon_norte', value: row.ancho_callejon_norte },
+                    { label: 'ancho_callejon_sur', value: row.ancho_callejon_sur },
                     { label: 'interfilar', value: row.interfilar },
                     { label: 'estructura_postes', value: row.estructura_postes },
                     { label: 'estructura_separadores', value: row.estructura_separadores },

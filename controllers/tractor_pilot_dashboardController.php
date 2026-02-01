@@ -62,7 +62,8 @@ try {
             }
 
             $data = [
-                'ancho_callejon' => trim((string) ($_POST['ancho_callejon'] ?? '')),
+                'ancho_callejon_norte' => trim((string) ($_POST['ancho_callejon_norte'] ?? '')),
+                'ancho_callejon_sur' => trim((string) ($_POST['ancho_callejon_sur'] ?? '')),
                 'interfilar' => trim((string) ($_POST['interfilar'] ?? '')),
                 'estructura_postes' => trim((string) ($_POST['estructura_postes'] ?? '')),
                 'estructura_separadores' => trim((string) ($_POST['estructura_separadores'] ?? '')),
@@ -73,7 +74,8 @@ try {
             ];
 
             $requeridos = [
-                'ancho_callejon',
+                'ancho_callejon_norte',
+                'ancho_callejon_sur',
                 'interfilar',
                 'estructura_postes',
                 'estructura_separadores',

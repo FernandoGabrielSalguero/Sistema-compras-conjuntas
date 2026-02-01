@@ -100,7 +100,8 @@ class TractorPilotDashboardModel
         $sql = "SELECT
                     id,
                     participacion_id,
-                    ancho_callejon,
+                    ancho_callejon_norte,
+                    ancho_callejon_sur,
                     interfilar,
                     estructura_postes,
                     estructura_separadores,
@@ -128,7 +129,8 @@ class TractorPilotDashboardModel
 
         $payload = [
             ':participacion_id' => $participacionId,
-            ':ancho_callejon' => $data['ancho_callejon'],
+            ':ancho_callejon_norte' => $data['ancho_callejon_norte'],
+            ':ancho_callejon_sur' => $data['ancho_callejon_sur'],
             ':interfilar' => $data['interfilar'],
             ':estructura_postes' => $data['estructura_postes'],
             ':estructura_separadores' => $data['estructura_separadores'],
@@ -140,7 +142,8 @@ class TractorPilotDashboardModel
 
         if ($existente) {
             $sqlUpdate = "UPDATE cosechaMecanica_relevamiento_finca
-                SET ancho_callejon = :ancho_callejon,
+                SET ancho_callejon_norte = :ancho_callejon_norte,
+                    ancho_callejon_sur = :ancho_callejon_sur,
                     interfilar = :interfilar,
                     estructura_postes = :estructura_postes,
                     estructura_separadores = :estructura_separadores,
@@ -157,7 +160,8 @@ class TractorPilotDashboardModel
 
         $sqlInsert = "INSERT INTO cosechaMecanica_relevamiento_finca (
                 participacion_id,
-                ancho_callejon,
+                ancho_callejon_norte,
+                ancho_callejon_sur,
                 interfilar,
                 estructura_postes,
                 estructura_separadores,
@@ -167,7 +171,8 @@ class TractorPilotDashboardModel
                 observaciones
             ) VALUES (
                 :participacion_id,
-                :ancho_callejon,
+                :ancho_callejon_norte,
+                :ancho_callejon_sur,
                 :interfilar,
                 :estructura_postes,
                 :estructura_separadores,
