@@ -212,8 +212,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                             <select id="prep-acequias" name="preparacion_acequias" required>
                                 <option value="">Seleccionar</option>
                                 <option>Acequias borradas y sin impedimentos</option>
-                                <option>Acequias suavizadas de facil transito</option>
-                                <option>Acequias con dificultades para el transito</option>
+                                <option>Acequias suavizadas de fácil tránsito</option>
+                                <option>Acequias con dificultades para el tránsito</option>
                                 <option>Profundas sin borrar</option>
                             </select>
                         </div>
@@ -247,7 +247,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         <div class="input-icon">
                             <select id="agua-lavado" name="agua_lavado" required>
                                 <option value="">Seleccionar</option>
-                                <option>Suficiente y cercanda</option>
+                                <option>Suficiente y cercana</option>
                                 <option>Suficiente a mas de 1km</option>
                                 <option>Insuficiente pero cercana</option>
                                 <option>Insuficiente a mas de 1km</option>
@@ -256,15 +256,15 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         </div>
                     </div>
                     <div class="input-group" style="grid-column: span 2;">
-                        <label for="prep-obstaculos">Preparación del suelo <span class="label-subtext">Obstaculos</span></label>
+                        <label for="prep-obstaculos">Preparación del suelo <span class="label-subtext">obstáculos</span></label>
                         <div class="input-icon">
                             <select id="prep-obstaculos" name="preparacion_obstaculos" required>
                                 <option value="">Seleccionar</option>
-                                <option>Ausencia de malesas</option>
+                                <option>Ausencia de malezas</option>
                                 <option>Ausencia en la mayoria de las superficies</option>
                                 <option>Malezas menores a 40cm</option>
                                 <option>Suelo enmalezado</option>
-                                <option>Obstaculos o malesas sobre el alambre</option>
+                                <option>Obstáculos o malezas sobre el alambre</option>
                             </select>
                         </div>
                     </div>
