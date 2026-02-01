@@ -195,16 +195,20 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         </div>
                     </div>
                     <div class="input-group">
-                        <label for="estructura-postes">Estructura (postes)</label>
+                        <label for="cantidad-postes">Cantidad de postes</label>
                         <div class="input-icon">
-                            <select id="estructura-postes" name="estructura_postes" required>
-                                <option value="">Seleccionar</option>
-                                <option>Menos del 5%</option>
-                                <option>Menos de 10%</option>
-                                <option>Menos de 25%</option>
-                                <option>Menos de 40%</option>
-                                <option>Más de 40%</option>
-                            </select>
+                            <input type="number" id="cantidad-postes" name="cantidad_postes" min="0" step="1" inputmode="numeric" placeholder="0" required />
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="postes-mal-estado">Postes mal estado</label>
+                        <div class="input-icon">
+                            <input type="number" id="postes-mal-estado" name="postes_mal_estado" min="0" step="1" inputmode="numeric" placeholder="0" required />
+                        </div>
+                    </div>
+                    <div class="input-group" style="grid-column: span 2;">
+                        <div class="ancho-callejon-promedio" id="postes-mal-estado-promedio">
+                            Promedio postes en mal estado <span id="postes-mal-estado-valor">-</span>
                         </div>
                     </div>
                     <div class="input-group">
@@ -286,13 +290,15 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             document.getElementById('ancho-callejon-norte').value = '';
             document.getElementById('ancho-callejon-sur').value = '';
             document.getElementById('interfilar').value = '';
-            document.getElementById('estructura-postes').value = '';
+            document.getElementById('cantidad-postes').value = '';
+            document.getElementById('postes-mal-estado').value = '';
             document.getElementById('estructura-separadores').value = '';
             document.getElementById('agua-lavado').value = '';
             document.getElementById('prep-acequias').value = '';
             document.getElementById('prep-obstaculos').value = '';
             document.getElementById('observaciones').value = '';
             actualizarPromedioCallejon();
+            actualizarPorcentajePostesMalEstado();
         }
 
         function setModalData(data) {
@@ -303,13 +309,15 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             document.getElementById('ancho-callejon-norte').value = data.ancho_callejon_norte ?? '';
             document.getElementById('ancho-callejon-sur').value = data.ancho_callejon_sur ?? '';
             document.getElementById('interfilar').value = data.interfilar ?? '';
-            document.getElementById('estructura-postes').value = data.estructura_postes ?? '';
+            document.getElementById('cantidad-postes').value = data.cantidad_postes ?? '';
+            document.getElementById('postes-mal-estado').value = data.postes_mal_estado ?? '';
             document.getElementById('estructura-separadores').value = data.estructura_separadores ?? '';
             document.getElementById('agua-lavado').value = data.agua_lavado ?? '';
             document.getElementById('prep-acequias').value = data.preparacion_acequias ?? '';
             document.getElementById('prep-obstaculos').value = data.preparacion_obstaculos ?? '';
             document.getElementById('observaciones').value = data.observaciones ?? '';
             actualizarPromedioCallejon();
+            actualizarPorcentajePostesMalEstado();
         }
 
         function getModalPayload() {
@@ -317,7 +325,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 ancho_callejon_norte: document.getElementById('ancho-callejon-norte').value.trim(),
                 ancho_callejon_sur: document.getElementById('ancho-callejon-sur').value.trim(),
                 interfilar: document.getElementById('interfilar').value.trim(),
-                estructura_postes: document.getElementById('estructura-postes').value.trim(),
+                cantidad_postes: document.getElementById('cantidad-postes').value.trim(),
+                postes_mal_estado: document.getElementById('postes-mal-estado').value.trim(),
                 estructura_separadores: document.getElementById('estructura-separadores').value.trim(),
                 agua_lavado: document.getElementById('agua-lavado').value.trim(),
                 preparacion_acequias: document.getElementById('prep-acequias').value.trim(),
@@ -348,6 +357,30 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             }
 
             promedioEl.textContent = '-';
+        }
+
+        function actualizarPorcentajePostesMalEstado() {
+            const totalRaw = document.getElementById('cantidad-postes')?.value.trim() ?? '';
+            const malRaw = document.getElementById('postes-mal-estado')?.value.trim() ?? '';
+            const porcentajeEl = document.getElementById('postes-mal-estado-valor');
+
+            if (!porcentajeEl) return;
+
+            if (totalRaw === '' || malRaw === '') {
+                porcentajeEl.textContent = '-';
+                return;
+            }
+
+            const total = Number(totalRaw);
+            const mal = Number(malRaw);
+
+            if (!Number.isFinite(total) || !Number.isFinite(mal) || total <= 0 || mal < 0) {
+                porcentajeEl.textContent = '-';
+                return;
+            }
+
+            const porcentaje = (mal / total) * 100;
+            porcentajeEl.textContent = `${porcentaje.toFixed(1)}%`;
         }
 
         async function cargarEstado() {
@@ -538,7 +571,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 payload.ancho_callejon_norte,
                 payload.ancho_callejon_sur,
                 payload.interfilar,
-                payload.estructura_postes,
+                payload.cantidad_postes,
+                payload.postes_mal_estado,
                 payload.estructura_separadores,
                 payload.agua_lavado,
                 payload.preparacion_acequias,
@@ -584,6 +618,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const guardarBtn = document.getElementById('fincaModalGuardar');
             const anchoCallejonNorte = document.getElementById('ancho-callejon-norte');
             const anchoCallejonSur = document.getElementById('ancho-callejon-sur');
+            const cantidadPostes = document.getElementById('cantidad-postes');
+            const postesMalEstado = document.getElementById('postes-mal-estado');
             const filtros = [
                 document.getElementById('filtro-cooperativa'),
                 document.getElementById('filtro-productor'),
@@ -623,6 +659,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
             anchoCallejonNorte?.addEventListener('input', actualizarPromedioCallejon);
             anchoCallejonSur?.addEventListener('input', actualizarPromedioCallejon);
+            cantidadPostes?.addEventListener('input', actualizarPorcentajePostesMalEstado);
+            postesMalEstado?.addEventListener('input', actualizarPorcentajePostesMalEstado);
 
             guardarBtn?.addEventListener('click', async () => {
                 const participacionId = Number(modal?.dataset.participacionId || 0);
