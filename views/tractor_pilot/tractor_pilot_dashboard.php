@@ -207,30 +207,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         </div>
                     </div>
                     <div class="input-group">
-                        <label for="estructura-separadores">Estructura <span class="label-subtext">Alambres</span></label>
-                        <div class="input-icon">
-                            <select id="estructura-separadores" name="estructura_separadores" required>
-                                <option value="">Seleccionar</option>
-                                <option>Todos asegurados y tensados firmemente</option>
-                                <option>Asegurados y tensados, algunos olvidados</option>
-                                <option>Sin atar o tensar</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label for="agua-lavado">Agua para el lavado</label>
-                        <div class="input-icon">
-                            <select id="agua-lavado" name="agua_lavado" required>
-                                <option value="">Seleccionar</option>
-                                <option>Suficiente y cercanda</option>
-                                <option>Suficiente a mas de 1km</option>
-                                <option>Insuficiente pero cercana</option>
-                                <option>Insuficiente a mas de 1km</option>
-                                <option>No tiene</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-group">
                         <label for="prep-acequias">Preparación del suelo <span class="label-subtext">Acequias</span></label>
                         <div class="input-icon">
                             <select id="prep-acequias" name="preparacion_acequias" required>
@@ -239,6 +215,17 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                 <option>Acequias suavizadas de facil transito</option>
                                 <option>Acequias con dificultades para el transito</option>
                                 <option>Profundas sin borrar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="estructura-separadores">Estructura <span class="label-subtext">Alambres</span></label>
+                        <div class="input-icon">
+                            <select id="estructura-separadores" name="estructura_separadores" required>
+                                <option value="">Seleccionar</option>
+                                <option>Todos asegurados y tensados firmemente</option>
+                                <option>Asegurados y tensados, algunos olvidados</option>
+                                <option>Sin atar o tensar</option>
                             </select>
                         </div>
                     </div>
@@ -255,8 +242,21 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                             </select>
                         </div>
                     </div>
+                    <div class="input-group">
+                        <label for="agua-lavado">Agua para el lavado</label>
+                        <div class="input-icon">
+                            <select id="agua-lavado" name="agua_lavado" required>
+                                <option value="">Seleccionar</option>
+                                <option>Suficiente y cercanda</option>
+                                <option>Suficiente a mas de 1km</option>
+                                <option>Insuficiente pero cercana</option>
+                                <option>Insuficiente a mas de 1km</option>
+                                <option>No tiene</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="input-group" style="grid-column: span 2;">
-                        <label for="prep-obstaculos">Preparación del suelo (obstáculos)</label>
+                        <label for="prep-obstaculos">Preparación del suelo <span class="label-subtext">Obstaculos</span></label>
                         <div class="input-icon">
                             <select id="prep-obstaculos" name="preparacion_obstaculos" required>
                                 <option value="">Seleccionar</option>
