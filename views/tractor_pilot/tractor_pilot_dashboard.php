@@ -81,6 +81,10 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         <span class="material-symbols-outlined" style="color:#16a34a;">agriculture</span>
                         <span class="link-text">Fincas</span>
                     </li>
+                    <li onclick="location.href='tractor_pilot_actualizaciones.php'">
+                        <span class="material-symbols-outlined" style="color:#2563eb;">update</span>
+                        <span class="link-text">Actualizaciones</span>
+                    </li>
                     <li onclick="location.href='../../../logout.php'">
                         <span class="material-icons" style="color: red;">logout</span>
                         <span class="link-text">Salir</span>
