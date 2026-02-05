@@ -109,7 +109,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
             <section class="content">
                 <div class="card" id="estado-card">
-                    <h2>Panel piloto tractor</h2>
+                    <h2>Panel relevador de fincas</h2>
                     <p>Hola, <?php echo htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8'); ?>.</p>
                     <p id="estado-msg">Cargando estado...</p>
                 </div>
