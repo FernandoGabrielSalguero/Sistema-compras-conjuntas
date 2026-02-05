@@ -63,6 +63,12 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             font-weight: 500;
             margin-top: 0.15rem;
         }
+
+        .form-modern input[readonly] {
+            background-color: #f3f4f6;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
