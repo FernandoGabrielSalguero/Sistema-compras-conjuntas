@@ -43,6 +43,37 @@ class TractorPilotActualizacionesModel
         return [$condiciones, $params];
     }
 
+    private function generarCodigoFincaUnico(): string
+    {
+        for ($i = 0; $i < 25; $i++) {
+            $codigo = 'EXT-' . str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $stmt = $this->pdo->prepare("SELECT 1 FROM prod_fincas WHERE codigo_finca = :codigo LIMIT 1");
+            $stmt->execute([':codigo' => $codigo]);
+            if (!$stmt->fetchColumn()) {
+                return $codigo;
+            }
+        }
+        throw new RuntimeException('No se pudo generar un código de finca único.');
+    }
+
+    private function generarIdRealUnico(): string
+    {
+        for ($i = 0; $i < 25; $i++) {
+            $idReal = (string) random_int(10000000000, 99999999999);
+            $stmt = $this->pdo->prepare("SELECT 1 FROM usuarios WHERE id_real = :id_real LIMIT 1");
+            $stmt->execute([':id_real' => $idReal]);
+            if (!$stmt->fetchColumn()) {
+                return $idReal;
+            }
+        }
+        throw new RuntimeException('No se pudo generar un id_real único.');
+    }
+
+    public function obtenerCodigoFincaDisponible(): array
+    {
+        return ['codigo_finca' => $this->generarCodigoFincaUnico()];
+    }
+
     public function obtenerFincasParticipantes(array $filtros = []): array
     {
         [$condiciones, $params] = $this->construirFiltros($filtros);
@@ -87,6 +118,95 @@ class TractorPilotActualizacionesModel
         $stmt->execute($params);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function crearProductorExterno(string $usuario, string $contrasena, string $nombreFinca, ?string $codigoFinca = null): array
+    {
+        $usuario = trim($usuario);
+        $contrasena = trim($contrasena);
+        $nombreFinca = trim($nombreFinca);
+        $codigoFinca = $codigoFinca ? trim($codigoFinca) : '';
+
+        if ($usuario === '' || $contrasena === '' || $nombreFinca === '') {
+            throw new InvalidArgumentException('Faltan datos obligatorios.');
+        }
+
+        $stmtExiste = $this->pdo->prepare("SELECT 1 FROM usuarios WHERE usuario = :usuario LIMIT 1");
+        $stmtExiste->execute([':usuario' => $usuario]);
+        if ($stmtExiste->fetchColumn()) {
+            throw new RuntimeException('El usuario ya existe.');
+        }
+
+        $idReal = $this->generarIdRealUnico();
+        $cuit = $idReal;
+        $codigoFinal = $codigoFinca;
+        if ($codigoFinal === '') {
+            $codigoFinal = $this->generarCodigoFincaUnico();
+        } else {
+            $stmtCodigo = $this->pdo->prepare("SELECT 1 FROM prod_fincas WHERE codigo_finca = :codigo LIMIT 1");
+            $stmtCodigo->execute([':codigo' => $codigoFinal]);
+            if ($stmtCodigo->fetchColumn()) {
+                $codigoFinal = $this->generarCodigoFincaUnico();
+            }
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $stmtUsuario = $this->pdo->prepare("INSERT INTO usuarios (usuario, contrasena, rol, permiso_ingreso, cuit, id_real)
+                VALUES (:usuario, :contrasena, 'productor', 'Habilitado', :cuit, :id_real)");
+            $stmtUsuario->execute([
+                ':usuario' => $usuario,
+                ':contrasena' => password_hash($contrasena, PASSWORD_DEFAULT),
+                ':cuit' => $cuit,
+                ':id_real' => $idReal,
+            ]);
+
+            $usuarioId = (int) $this->pdo->lastInsertId();
+
+            $stmtInfo = $this->pdo->prepare("INSERT INTO usuarios_info (usuario_id, nombre, direccion, telefono, correo)
+                VALUES (:usuario_id, :nombre, 'Sin dirección', 'Sin teléfono', 'sin-correo@sve.com')");
+            $stmtInfo->execute([
+                ':usuario_id' => $usuarioId,
+                ':nombre' => $usuario,
+            ]);
+
+            $stmtRelCoop = $this->pdo->prepare("INSERT INTO rel_productor_coop (productor_id_real, cooperativa_id_real)
+                VALUES (:productor_id_real, :cooperativa_id_real)");
+            $stmtRelCoop->execute([
+                ':productor_id_real' => $idReal,
+                ':cooperativa_id_real' => '77675558875',
+            ]);
+
+            $stmtFinca = $this->pdo->prepare("INSERT INTO prod_fincas (codigo_finca, productor_id_real, nombre_finca)
+                VALUES (:codigo_finca, :productor_id_real, :nombre_finca)");
+            $stmtFinca->execute([
+                ':codigo_finca' => $codigoFinal,
+                ':productor_id_real' => $idReal,
+                ':nombre_finca' => $nombreFinca,
+            ]);
+
+            $fincaId = (int) $this->pdo->lastInsertId();
+
+            $stmtRelFinca = $this->pdo->prepare("INSERT INTO rel_productor_finca (productor_id, productor_id_real, finca_id)
+                VALUES (:productor_id, :productor_id_real, :finca_id)");
+            $stmtRelFinca->execute([
+                ':productor_id' => $usuarioId,
+                ':productor_id_real' => $idReal,
+                ':finca_id' => $fincaId,
+            ]);
+
+            $this->pdo->commit();
+
+            return [
+                'usuario_id' => $usuarioId,
+                'productor_id_real' => $idReal,
+                'finca_id' => $fincaId,
+                'codigo_finca' => $codigoFinal,
+            ];
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
 
     public function crearFincaBasica(int $productorId, string $productorIdReal, string $codigoFinca, ?string $nombreFinca = null): array

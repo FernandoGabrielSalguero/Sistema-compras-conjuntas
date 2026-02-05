@@ -213,10 +213,38 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
     <div id="productorExternoModal" class="modal hidden" aria-hidden="true">
         <div class="modal-content">
             <h3>Añadir productor externo</h3>
-            <p>Este modal está en construcción.</p>
-            <div class="form-buttons">
-                <button class="btn btn-cancelar" type="button" id="productorExternoClose">Cerrar</button>
-            </div>
+            <form class="form-modern">
+                <div class="form-grid grid-2">
+                    <div class="input-group">
+                        <label for="prod-usuario">Usuario</label>
+                        <div class="input-icon">
+                            <input type="text" id="prod-usuario" name="usuario" placeholder="Usuario productor" required />
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="prod-contrasena">Contraseña</label>
+                        <div class="input-icon">
+                            <input type="password" id="prod-contrasena" name="contrasena" placeholder="Contraseña" required />
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="prod-finca-nombre">Nombre de la finca</label>
+                        <div class="input-icon">
+                            <input type="text" id="prod-finca-nombre" name="nombre_finca" placeholder="Nombre de la finca" required />
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="prod-finca-codigo">Código de la finca</label>
+                        <div class="input-icon">
+                            <input type="text" id="prod-finca-codigo" name="codigo_finca" readonly />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-buttons">
+                    <button class="btn btn-aceptar" type="button" id="productorExternoGuardar">Guardar</button>
+                    <button class="btn btn-cancelar" type="button" id="productorExternoClose">Cerrar</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -289,6 +317,71 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             });
 
             showUserAlert('info', 'Guardando finca...');
+
+            const res = await fetch(API_TRACTOR_PILOT, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                },
+                body,
+            });
+            const responsePayload = await res.json();
+            if (!res.ok || !responsePayload.ok) {
+                throw new Error(responsePayload.message || 'Error');
+            }
+
+            return responsePayload.data || null;
+        }
+
+        function resetProductorExternoForm() {
+            const usuario = document.getElementById('prod-usuario');
+            const contrasena = document.getElementById('prod-contrasena');
+            const fincaNombre = document.getElementById('prod-finca-nombre');
+            if (usuario) usuario.value = '';
+            if (contrasena) contrasena.value = '';
+            if (fincaNombre) fincaNombre.value = '';
+        }
+
+        async function cargarCodigoFinca() {
+            const input = document.getElementById('prod-finca-codigo');
+            if (!input) return;
+            try {
+                const res = await fetch(`${API_TRACTOR_PILOT}?action=generar_codigo_finca`, {
+                    credentials: 'same-origin'
+                });
+                const payload = await res.json();
+                if (!res.ok || !payload.ok) {
+                    throw new Error(payload.message || 'Error');
+                }
+                input.value = payload.data?.codigo_finca || '';
+            } catch (e) {
+                console.error(e);
+                input.value = '';
+                showUserAlert('error', 'No se pudo generar el código de finca.');
+            }
+        }
+
+        async function crearProductorExterno() {
+            const usuario = document.getElementById('prod-usuario')?.value.trim() ?? '';
+            const contrasena = document.getElementById('prod-contrasena')?.value.trim() ?? '';
+            const nombreFinca = document.getElementById('prod-finca-nombre')?.value.trim() ?? '';
+            const codigoFinca = document.getElementById('prod-finca-codigo')?.value.trim() ?? '';
+
+            if (!usuario || !contrasena || !nombreFinca) {
+                showUserAlert('warning', 'Completá usuario, contraseña y nombre de finca.');
+                return null;
+            }
+
+            const body = new URLSearchParams({
+                action: 'crear_productor_externo',
+                usuario,
+                contrasena,
+                nombre_finca: nombreFinca,
+                codigo_finca: codigoFinca,
+            });
+
+            showUserAlert('info', 'Creando productor externo...');
 
             const res = await fetch(API_TRACTOR_PILOT, {
                 method: 'POST',
@@ -476,6 +569,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const btnProductorExterno = document.getElementById('btn-productor-externo');
             const modalProductorExterno = document.getElementById('productorExternoModal');
             const closeProductorExterno = document.getElementById('productorExternoClose');
+            const guardarProductorExterno = document.getElementById('productorExternoGuardar');
             const filtros = [
                 document.getElementById('filtro-cooperativa'),
                 document.getElementById('filtro-productor'),
@@ -513,6 +607,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 if (!modalProductorExterno) return;
                 modalProductorExterno.classList.remove('hidden');
                 modalProductorExterno.setAttribute('aria-hidden', 'false');
+                resetProductorExternoForm();
+                cargarCodigoFinca();
             });
 
             closeProductorExterno?.addEventListener('click', () => {
@@ -525,6 +621,21 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 if (event.target === modalProductorExterno) {
                     modalProductorExterno.classList.add('hidden');
                     modalProductorExterno.setAttribute('aria-hidden', 'true');
+                }
+            });
+
+            guardarProductorExterno?.addEventListener('click', async () => {
+                try {
+                    await crearProductorExterno();
+                    showUserAlert('success', 'Productor externo creado.');
+                    if (modalProductorExterno) {
+                        modalProductorExterno.classList.add('hidden');
+                        modalProductorExterno.setAttribute('aria-hidden', 'true');
+                    }
+                    cargarFincas();
+                } catch (error) {
+                    console.error(error);
+                    showUserAlert('error', error.message || 'No se pudo crear el productor externo.');
                 }
             });
 

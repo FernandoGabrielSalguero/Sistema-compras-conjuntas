@@ -43,6 +43,9 @@ try {
             ];
             jsonResponse(true, $data);
         }
+        if ($action === 'generar_codigo_finca') {
+            jsonResponse(true, $model->obtenerCodigoFincaDisponible());
+        }
         if ($action === 'relevamiento') {
             $productorId = isset($_GET['productor_id']) ? (int) $_GET['productor_id'] : 0;
             $fincaId = isset($_GET['finca_id']) ? (int) $_GET['finca_id'] : 0;
@@ -56,6 +59,20 @@ try {
     }
 
     if ($method === 'POST') {
+        if ($action === 'crear_productor_externo') {
+            $usuario = trim((string) ($_POST['usuario'] ?? ''));
+            $contrasena = trim((string) ($_POST['contrasena'] ?? ''));
+            $nombreFinca = trim((string) ($_POST['nombre_finca'] ?? ''));
+            $codigoFinca = trim((string) ($_POST['codigo_finca'] ?? ''));
+
+            if ($usuario === '' || $contrasena === '' || $nombreFinca === '') {
+                jsonResponse(false, null, 'usuario, contrasena o nombre_finca inválido.', 422);
+            }
+
+            $resultado = $model->crearProductorExterno($usuario, $contrasena, $nombreFinca, $codigoFinca ?: null);
+            jsonResponse(true, $resultado, 'Productor externo creado.');
+        }
+
         if ($action === 'crear_finca') {
             $productorId = isset($_POST['productor_id']) ? (int) $_POST['productor_id'] : 0;
             $productorIdReal = trim((string) ($_POST['productor_id_real'] ?? ''));
