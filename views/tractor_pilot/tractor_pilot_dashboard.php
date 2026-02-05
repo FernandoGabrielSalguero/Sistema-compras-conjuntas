@@ -141,8 +141,9 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 </div>
 
                 <div class="tabla-card">
-                    <h2>Fincas participantes de operativos</h2>
+                    <h2>Listado de Cooperativas con sus productores y las fincas asociadas</h2>
                     <p id="productores-count" style="margin-top: 0.25rem;">Tenemos 0 productores registrados.</p>
+                    <br>
                     <div class="tabla-wrapper table-scroll">
                         <table class="data-table" aria-label="Fincas participantes de operativos">
                             <thead>
