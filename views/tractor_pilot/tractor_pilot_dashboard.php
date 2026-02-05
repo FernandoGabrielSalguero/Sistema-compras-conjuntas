@@ -369,6 +369,13 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             promedioEl.textContent = '-';
         }
 
+        function formatearNumeroSinCeroDecimal(valor) {
+            if (Number.isInteger(valor)) {
+                return String(valor);
+            }
+            return valor.toFixed(1).replace(/\.0$/, '');
+        }
+
         function actualizarPorcentajePostesMalEstado() {
             const totalRaw = document.getElementById('cantidad-postes')?.value.trim() ?? '';
             const malRaw = document.getElementById('postes-mal-estado')?.value.trim() ?? '';
@@ -390,7 +397,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             }
 
             const porcentaje = (mal / total) * 100;
-            porcentajeEl.textContent = `${porcentaje.toFixed(1)}%`;
+            porcentajeEl.textContent = `${formatearNumeroSinCeroDecimal(porcentaje)}%`;
         }
 
         async function cargarEstado() {
