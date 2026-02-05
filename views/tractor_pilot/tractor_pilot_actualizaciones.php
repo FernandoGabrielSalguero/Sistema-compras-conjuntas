@@ -357,6 +357,25 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             }
         }
 
+        async function cargarCodigoFincaModal() {
+            const input = document.getElementById('finca-codigo');
+            if (!input || input.value.trim()) return;
+            try {
+                const res = await fetch(`${API_TRACTOR_PILOT}?action=generar_codigo_finca`, {
+                    credentials: 'same-origin'
+                });
+                const payload = await res.json();
+                if (!res.ok || !payload.ok) {
+                    throw new Error(payload.message || 'Error');
+                }
+                input.value = payload.data?.codigo_finca || '';
+            } catch (e) {
+                console.error(e);
+                input.value = '';
+                showUserAlert('error', 'No se pudo generar el código de finca.');
+            }
+        }
+
         async function crearProductorExterno() {
             const usuario = document.getElementById('prod-usuario')?.value.trim() ?? '';
             const contrasena = usuario;
@@ -588,6 +607,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     });
                     resetModalForm();
                     abrirModalFinca();
+                    cargarCodigoFincaModal();
                 }
             });
 
