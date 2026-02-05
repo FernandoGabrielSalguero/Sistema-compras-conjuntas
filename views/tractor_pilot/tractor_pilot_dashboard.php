@@ -142,6 +142,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
                 <div class="tabla-card">
                     <h2>Fincas participantes de operativos</h2>
+                    <p id="productores-count" style="margin-top: 0.25rem;">Tenemos 0 productores registrados.</p>
                     <div class="tabla-wrapper table-scroll">
                         <table class="data-table" aria-label="Fincas participantes de operativos">
                             <thead>
@@ -500,14 +501,22 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
                 if (filas.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="4">No hay fincas participantes.</td></tr>';
+                    const countEl = document.getElementById('productores-count');
+                    if (countEl) {
+                        countEl.textContent = 'Tenemos 0 productores registrados.';
+                    }
                     return;
                 }
 
                 tbody.innerHTML = '';
+                const productoresSet = new Set();
                 filas.forEach((fila) => {
                     const tr = document.createElement('tr');
 
                     const fincaLabel = fila.nombre_finca || fila.codigo_finca || (fila.finca_id ? `Finca #${fila.finca_id}` : 'Sin finca');
+                    if (fila.productor) {
+                        productoresSet.add(String(fila.productor).trim());
+                    }
 
                     const tdAcciones = document.createElement('td');
                     const btn = document.createElement('button');
@@ -534,6 +543,11 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     });
                     tbody.appendChild(tr);
                 });
+
+                const countEl = document.getElementById('productores-count');
+                if (countEl) {
+                    countEl.textContent = `Tenemos ${productoresSet.size} productores registrados.`;
+                }
             } catch (e) {
                 console.error(e);
                 tbody.innerHTML = '<tr><td colspan="4">No se pudieron cargar las fincas.</td></tr>';
