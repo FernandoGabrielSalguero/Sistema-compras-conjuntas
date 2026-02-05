@@ -56,6 +56,20 @@ try {
     }
 
     if ($method === 'POST') {
+        if ($action === 'crear_finca') {
+            $productorId = isset($_POST['productor_id']) ? (int) $_POST['productor_id'] : 0;
+            $productorIdReal = trim((string) ($_POST['productor_id_real'] ?? ''));
+            $codigoFinca = trim((string) ($_POST['codigo_finca'] ?? ''));
+            $nombreFinca = trim((string) ($_POST['nombre_finca'] ?? ''));
+
+            if ($productorId <= 0 || $productorIdReal === '' || $codigoFinca === '') {
+                jsonResponse(false, null, 'productor_id, productor_id_real o codigo_finca inválido.', 422);
+            }
+
+            $resultado = $model->crearFincaBasica($productorId, $productorIdReal, $codigoFinca, $nombreFinca ?: null);
+            jsonResponse(true, $resultado, 'Finca creada.');
+        }
+
         if ($action === 'guardar_relevamiento') {
             $productorId = isset($_POST['productor_id']) ? (int) $_POST['productor_id'] : 0;
             $fincaId = isset($_POST['finca_id']) ? (int) $_POST['finca_id'] : 0;

@@ -111,6 +111,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 <div class="card" id="estado-card">
                     <h2>Panel relevador de fincas</h2>
                     <p>Hola, <?php echo htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8'); ?>.</p>
+                    <p>Esta página permite asociar fincas a los productores que no la tengan además de generar productores y cooperativas por fuera del circuito de SVE</p>
                     <p id="estado-msg">Cargando estado...</p>
                 </div>
 
@@ -171,109 +172,31 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
     <div id="fincaModal" class="modal hidden" aria-hidden="true">
         <div class="modal-content">
-            <h3>Relevamiento de finca</h3>
+            <h3>Actualizar finca</h3>
             <form class="form-modern">
                 <div class="form-grid grid-2">
                     <div class="input-group">
-                        <label for="ancho-callejon-norte">Ancho callejon Norte</label>
+                        <label for="modal-cooperativa">Cooperativa</label>
                         <div class="input-icon">
-                            <input type="number" id="ancho-callejon-norte" name="ancho_callejon_norte" min="0" step="1" inputmode="numeric" placeholder="0" required />
+                            <input type="text" id="modal-cooperativa" disabled />
                         </div>
                     </div>
                     <div class="input-group">
-                        <label for="ancho-callejon-sur">Ancho callejon Sur</label>
+                        <label for="modal-productor">Productor</label>
                         <div class="input-icon">
-                            <input type="number" id="ancho-callejon-sur" name="ancho_callejon_sur" min="0" step="1" inputmode="numeric" placeholder="0" required />
-                        </div>
-                    </div>
-                    <div class="input-group" style="grid-column: span 2;">
-                        <div class="ancho-callejon-promedio">
-                            Promedio ancho callejon <span id="ancho-callejon-promedio-valor">-</span>
+                            <input type="text" id="modal-productor" disabled />
                         </div>
                     </div>
                     <div class="input-group">
-                        <label for="cantidad-postes">Cantidad de postes</label>
+                        <label for="finca-codigo">Código de finca</label>
                         <div class="input-icon">
-                            <input type="number" id="cantidad-postes" name="cantidad_postes" min="0" step="1" inputmode="numeric" placeholder="0" required />
+                            <input type="text" id="finca-codigo" name="codigo_finca" placeholder="Ej: FN-001" required />
                         </div>
                     </div>
                     <div class="input-group">
-                        <label for="postes-mal-estado">Postes mal estado</label>
+                        <label for="finca-nombre">Nombre de finca</label>
                         <div class="input-icon">
-                            <input type="number" id="postes-mal-estado" name="postes_mal_estado" min="0" step="1" inputmode="numeric" placeholder="0" required />
-                        </div>
-                    </div>
-                    <div class="input-group" style="grid-column: span 2;">
-                        <div class="ancho-callejon-promedio" id="postes-mal-estado-promedio">
-                            Promedio postes en mal estado <span id="postes-mal-estado-valor">-</span>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label for="prep-acequias">Preparación del suelo <span class="label-subtext">Acequias</span></label>
-                        <div class="input-icon">
-                            <select id="prep-acequias" name="preparacion_acequias" required>
-                                <option value="">Seleccionar</option>
-                                <option>Acequias borradas y sin impedimentos</option>
-                                <option>Acequias suavizadas de fácil tránsito</option>
-                                <option>Acequias con dificultades para el tránsito</option>
-                                <option>Profundas sin borrar</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label for="estructura-separadores">Estructura <span class="label-subtext">Alambres</span></label>
-                        <div class="input-icon">
-                            <select id="estructura-separadores" name="estructura_separadores" required>
-                                <option value="">Seleccionar</option>
-                                <option>Todos asegurados y tensados firmemente</option>
-                                <option>Asegurados y tensados, algunos olvidados</option>
-                                <option>Sin atar o tensar</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label for="interfilar">Interfilar</label>
-                        <div class="input-icon">
-                            <select id="interfilar" name="interfilar" required>
-                                <option value="">Seleccionar</option>
-                                <option>Mayor a 2,5 metros</option>
-                                <option>Mayor a 2,3 metros</option>
-                                <option>Mayor a 2.2 metros</option>
-                                <option>Mayor a 2 metros</option>
-                                <option>Menor a 2 metros</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label for="agua-lavado">Agua para el lavado</label>
-                        <div class="input-icon">
-                            <select id="agua-lavado" name="agua_lavado" required>
-                                <option value="">Seleccionar</option>
-                                <option>Suficiente y cercana</option>
-                                <option>Suficiente a mas de 1km</option>
-                                <option>Insuficiente pero cercana</option>
-                                <option>Insuficiente a mas de 1km</option>
-                                <option>No tiene</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-group" style="grid-column: span 2;">
-                        <label for="prep-obstaculos">Preparación del suelo <span class="label-subtext">obstáculos</span></label>
-                        <div class="input-icon">
-                            <select id="prep-obstaculos" name="preparacion_obstaculos" required>
-                                <option value="">Seleccionar</option>
-                                <option>Ausencia de malezas</option>
-                                <option>Ausencia en la mayoria de las superficies</option>
-                                <option>Malezas menores a 40cm</option>
-                                <option>Suelo enmalezado</option>
-                                <option>Obstáculos o malezas sobre el alambre</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-group" style="grid-column: span 2;">
-                        <label for="observaciones">Observaciones</label>
-                        <div class="input-icon">
-                            <textarea id="observaciones" name="observaciones" rows="3" placeholder="Escribí observaciones..."></textarea>
+                            <input type="text" id="finca-nombre" name="nombre_finca" placeholder="Nombre de la finca" />
                         </div>
                     </div>
                 </div>
@@ -297,100 +220,78 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
         }
 
         function resetModalForm() {
-            document.getElementById('ancho-callejon-norte').value = '';
-            document.getElementById('ancho-callejon-sur').value = '';
-            document.getElementById('interfilar').value = '';
-            document.getElementById('cantidad-postes').value = '';
-            document.getElementById('postes-mal-estado').value = '';
-            document.getElementById('estructura-separadores').value = '';
-            document.getElementById('agua-lavado').value = '';
-            document.getElementById('prep-acequias').value = '';
-            document.getElementById('prep-obstaculos').value = '';
-            document.getElementById('observaciones').value = '';
-            actualizarPromedioCallejon();
-            actualizarPorcentajePostesMalEstado();
+            const codigo = document.getElementById('finca-codigo');
+            const nombre = document.getElementById('finca-nombre');
+            if (codigo) codigo.value = '';
+            if (nombre) nombre.value = '';
         }
 
-        function setModalData(data) {
-            if (!data) {
-                resetModalForm();
-                return;
-            }
-            document.getElementById('ancho-callejon-norte').value = data.ancho_callejon_norte ?? '';
-            document.getElementById('ancho-callejon-sur').value = data.ancho_callejon_sur ?? '';
-            document.getElementById('interfilar').value = data.interfilar ?? '';
-            document.getElementById('cantidad-postes').value = data.cantidad_postes ?? '';
-            document.getElementById('postes-mal-estado').value = data.postes_mal_estado ?? '';
-            document.getElementById('estructura-separadores').value = data.estructura_separadores ?? '';
-            document.getElementById('agua-lavado').value = data.agua_lavado ?? '';
-            document.getElementById('prep-acequias').value = data.preparacion_acequias ?? '';
-            document.getElementById('prep-obstaculos').value = data.preparacion_obstaculos ?? '';
-            document.getElementById('observaciones').value = data.observaciones ?? '';
-            actualizarPromedioCallejon();
-            actualizarPorcentajePostesMalEstado();
+        function setModalInfo(info) {
+            const modal = document.getElementById('fincaModal');
+            const cooperativa = document.getElementById('modal-cooperativa');
+            const productor = document.getElementById('modal-productor');
+
+            if (!modal) return;
+
+            if (cooperativa) cooperativa.value = info.cooperativa || '-';
+            if (productor) productor.value = info.productor || '-';
+
+            modal.dataset.productorId = String(info.productorId || '');
+            modal.dataset.productorIdReal = String(info.productorIdReal || '');
         }
 
         function getModalPayload() {
             return {
-                ancho_callejon_norte: document.getElementById('ancho-callejon-norte').value.trim(),
-                ancho_callejon_sur: document.getElementById('ancho-callejon-sur').value.trim(),
-                interfilar: document.getElementById('interfilar').value.trim(),
-                cantidad_postes: document.getElementById('cantidad-postes').value.trim(),
-                postes_mal_estado: document.getElementById('postes-mal-estado').value.trim(),
-                estructura_separadores: document.getElementById('estructura-separadores').value.trim(),
-                agua_lavado: document.getElementById('agua-lavado').value.trim(),
-                preparacion_acequias: document.getElementById('prep-acequias').value.trim(),
-                preparacion_obstaculos: document.getElementById('prep-obstaculos').value.trim(),
-                observaciones: document.getElementById('observaciones').value.trim(),
+                codigo_finca: document.getElementById('finca-codigo')?.value.trim() ?? '',
+                nombre_finca: document.getElementById('finca-nombre')?.value.trim() ?? '',
             };
         }
 
-        function actualizarPromedioCallejon() {
-            const norteRaw = document.getElementById('ancho-callejon-norte')?.value.trim() ?? '';
-            const surRaw = document.getElementById('ancho-callejon-sur')?.value.trim() ?? '';
-            const promedioEl = document.getElementById('ancho-callejon-promedio-valor');
-
-            if (!promedioEl) return;
-
-            if (norteRaw === '' || surRaw === '') {
-                promedioEl.textContent = '-';
-                return;
-            }
-
-            const norte = Number(norteRaw);
-            const sur = Number(surRaw);
-
-            if (Number.isFinite(norte) && Number.isFinite(sur) && norte >= 0 && sur >= 0) {
-                const promedio = (norte + sur) / 2;
-                promedioEl.textContent = Number.isInteger(promedio) ? String(promedio) : promedio.toFixed(1);
-                return;
-            }
-
-            promedioEl.textContent = '-';
+        function abrirModalFinca() {
+            const modal = document.getElementById('fincaModal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            modal.setAttribute('aria-hidden', 'false');
         }
 
-        function actualizarPorcentajePostesMalEstado() {
-            const totalRaw = document.getElementById('cantidad-postes')?.value.trim() ?? '';
-            const malRaw = document.getElementById('postes-mal-estado')?.value.trim() ?? '';
-            const porcentajeEl = document.getElementById('postes-mal-estado-valor');
+        function cerrarModalFinca() {
+            const modal = document.getElementById('fincaModal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+            modal.setAttribute('aria-hidden', 'true');
+        }
 
-            if (!porcentajeEl) return;
-
-            if (totalRaw === '' || malRaw === '') {
-                porcentajeEl.textContent = '-';
-                return;
+        async function crearFinca(participacion) {
+            const payload = getModalPayload();
+            if (!payload.codigo_finca) {
+                showUserAlert('warning', 'Completá el código de finca.');
+                return null;
             }
 
-            const total = Number(totalRaw);
-            const mal = Number(malRaw);
+            const body = new URLSearchParams({
+                action: 'crear_finca',
+                productor_id: String(participacion.productorId),
+                productor_id_real: String(participacion.productorIdReal),
+                codigo_finca: payload.codigo_finca,
+                nombre_finca: payload.nombre_finca,
+            });
 
-            if (!Number.isFinite(total) || !Number.isFinite(mal) || total <= 0 || mal < 0) {
-                porcentajeEl.textContent = '-';
-                return;
+            showUserAlert('info', 'Guardando finca...');
+
+            const res = await fetch(API_TRACTOR_PILOT, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                },
+                body,
+            });
+            const responsePayload = await res.json();
+            if (!res.ok || !responsePayload.ok) {
+                throw new Error(responsePayload.message || 'Error');
             }
 
-            const porcentaje = (mal / total) * 100;
-            porcentajeEl.textContent = `${porcentaje.toFixed(1)}%`;
+            return responsePayload.data || null;
         }
 
         async function cargarEstado() {
@@ -534,13 +435,14 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     const btn = document.createElement('button');
                     btn.className = 'btn btn-info';
                     btn.dataset.action = 'abrir-modal';
-                    if (fila.productor_id !== null && fila.productor_id !== undefined) {
-                        btn.dataset.productorId = String(fila.productor_id);
+                    btn.dataset.cooperativaNombre = fila.cooperativa_nombre || '-';
+                    btn.dataset.productorNombre = fila.productor_nombre || '-';
+                    btn.dataset.productorId = String(fila.productor_id || '');
+                    btn.dataset.productorIdReal = String(fila.productor_id_real || '');
+                    btn.textContent = 'Actualizar';
+                    if (!fila.productor_id || !fila.productor_id_real) {
+                        btn.disabled = true;
                     }
-                    if (fila.finca_id !== null && fila.finca_id !== undefined) {
-                        btn.dataset.fincaId = String(fila.finca_id);
-                    }
-                    btn.textContent = fila.relevamiento_id ? 'Modificar' : 'Calificar';
                     tdAcciones.appendChild(btn);
                     tr.appendChild(tdAcciones);
 
@@ -569,76 +471,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             }
         }
 
-        function abrirModalFinca() {
-            const modal = document.getElementById('fincaModal');
-            if (!modal) return;
-            modal.classList.remove('hidden');
-            modal.setAttribute('aria-hidden', 'false');
-        }
-
-        function cerrarModalFinca() {
-            const modal = document.getElementById('fincaModal');
-            if (!modal) return;
-            modal.classList.add('hidden');
-            modal.setAttribute('aria-hidden', 'true');
-        }
-
-        async function cargarRelevamiento(participacionId) {
-            const params = new URLSearchParams({ action: 'relevamiento', productor_id: String(participacionId.productorId), finca_id: String(participacionId.fincaId) });
-            const res = await fetch(`${API_TRACTOR_PILOT}?${params.toString()}`, {
-                credentials: 'same-origin'
-            });
-            const payload = await res.json();
-            if (!res.ok || !payload.ok) {
-                throw new Error(payload.message || 'Error');
-            }
-            return payload.data || null;
-        }
-
-        async function guardarRelevamiento(participacion) {
-            const payload = getModalPayload();
-            const requeridos = [
-                payload.ancho_callejon_norte,
-                payload.ancho_callejon_sur,
-                payload.interfilar,
-                payload.cantidad_postes,
-                payload.postes_mal_estado,
-                payload.estructura_separadores,
-                payload.agua_lavado,
-                payload.preparacion_acequias,
-                payload.preparacion_obstaculos,
-            ];
-
-            if (requeridos.some((valor) => !valor)) {
-                showUserAlert('warning', 'Completá todos los campos obligatorios.');
-                return;
-            }
-
-            const body = new URLSearchParams({
-                action: 'guardar_relevamiento',
-                productor_id: String(participacion.productorId),
-                finca_id: String(participacion.fincaId),
-                ...payload,
-            });
-
-            showUserAlert('info', 'Guardando relevamiento...');
-
-            const res = await fetch(API_TRACTOR_PILOT, {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-                },
-                body,
-            });
-            const responsePayload = await res.json();
-            if (!res.ok || !responsePayload.ok) {
-                throw new Error(responsePayload.message || 'Error');
-            }
-
-            return responsePayload.data || null;
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             cargarEstado();
             cargarFincas();
@@ -647,39 +479,29 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const closeBtn = document.getElementById('fincaModalClose');
             const modal = document.getElementById('fincaModal');
             const guardarBtn = document.getElementById('fincaModalGuardar');
-            const anchoCallejonNorte = document.getElementById('ancho-callejon-norte');
-            const anchoCallejonSur = document.getElementById('ancho-callejon-sur');
-            const cantidadPostes = document.getElementById('cantidad-postes');
-            const postesMalEstado = document.getElementById('postes-mal-estado');
             const filtros = [
                 document.getElementById('filtro-cooperativa'),
                 document.getElementById('filtro-productor'),
                 document.getElementById('filtro-finca'),
             ];
 
-            tbody?.addEventListener('click', async (event) => {
+            tbody?.addEventListener('click', (event) => {
                 const target = event.target;
                 if (target instanceof HTMLElement && target.dataset.action === 'abrir-modal') {
                     const productorId = Number(target.dataset.productorId || 0);
-                    const fincaId = Number(target.dataset.fincaId || 0);
-                    if (!productorId || !fincaId) {
-                        showUserAlert('error', 'No se encontró el productor o la finca.');
+                    const productorIdReal = String(target.dataset.productorIdReal || '').trim();
+                    if (!productorId || !productorIdReal) {
+                        showUserAlert('error', 'No se encontró el productor.');
                         return;
                     }
-                    modal.dataset.productorId = String(productorId);
-                    modal.dataset.fincaId = String(fincaId);
+                    setModalInfo({
+                        cooperativa: target.dataset.cooperativaNombre || '-',
+                        productor: target.dataset.productorNombre || '-',
+                        productorId,
+                        productorIdReal,
+                    });
+                    resetModalForm();
                     abrirModalFinca();
-                    showUserAlert('info', 'Cargando relevamiento...');
-                    try {
-                        const relevamiento = await cargarRelevamiento({ productorId, fincaId });
-                        setModalData(relevamiento);
-                        const msg = relevamiento ? 'Relevamiento cargado.' : 'Sin relevamiento previo.';
-                        showUserAlert('success', msg);
-                    } catch (error) {
-                        console.error(error);
-                        setModalData(null);
-                        showUserAlert('error', 'No se pudo cargar el relevamiento.');
-                    }
                 }
             });
 
@@ -690,26 +512,21 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 }
             });
 
-            anchoCallejonNorte?.addEventListener('input', actualizarPromedioCallejon);
-            anchoCallejonSur?.addEventListener('input', actualizarPromedioCallejon);
-            cantidadPostes?.addEventListener('input', actualizarPorcentajePostesMalEstado);
-            postesMalEstado?.addEventListener('input', actualizarPorcentajePostesMalEstado);
-
             guardarBtn?.addEventListener('click', async () => {
                 const productorId = Number(modal?.dataset.productorId || 0);
-                const fincaId = Number(modal?.dataset.fincaId || 0);
-                if (!productorId || !fincaId) {
-                    showUserAlert('error', 'No se encontró el productor o la finca.');
+                const productorIdReal = String(modal?.dataset.productorIdReal || '').trim();
+                if (!productorId || !productorIdReal) {
+                    showUserAlert('error', 'No se encontró el productor.');
                     return;
                 }
                 try {
-                    await guardarRelevamiento({ productorId, fincaId });
-                    showUserAlert('success', 'Relevamiento guardado.');
+                    await crearFinca({ productorId, productorIdReal });
+                    showUserAlert('success', 'Finca creada.');
                     cerrarModalFinca();
                     cargarFincas();
                 } catch (error) {
                     console.error(error);
-                    showUserAlert('error', error.message || 'No se pudo guardar el relevamiento.');
+                    showUserAlert('error', error.message || 'No se pudo crear la finca.');
                 }
             });
 
@@ -721,3 +538,5 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 </body>
 
 </html>
+
+

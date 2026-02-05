@@ -13,7 +13,7 @@ class TractorPilotActualizacionesModel
     public function getEstado(): array
     {
         return [
-            'message' => 'Los 3 archivos están funcionando correctamente.',
+            'message' => 'Estado OK.',
             'view' => 'views/tractor_pilot/tractor_pilot_actualizaciones.php',
             'controller' => 'controllers/tractor_pilot_actualizacionesController.php',
             'model' => 'models/tractor_pilot_actualizacionesModel.php'
@@ -49,8 +49,10 @@ class TractorPilotActualizacionesModel
 
         $sql = "SELECT
                     coop.id AS cooperativa_id,
+                    coop.id_real AS cooperativa_id_real,
                     coop_info.nombre AS cooperativa_nombre,
                     prod.id AS productor_id,
+                    prod.id_real AS productor_id_real,
                     prod_info.nombre AS productor_nombre,
                     f.id AS finca_id,
                     f.codigo_finca,
@@ -85,6 +87,56 @@ class TractorPilotActualizacionesModel
         $stmt->execute($params);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function crearFincaBasica(int $productorId, string $productorIdReal, string $codigoFinca, ?string $nombreFinca = null): array
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $sqlFinca = "INSERT INTO prod_fincas (
+                    codigo_finca,
+                    productor_id_real,
+                    nombre_finca
+                ) VALUES (
+                    :codigo_finca,
+                    :productor_id_real,
+                    :nombre_finca
+                )";
+            $stmtFinca = $this->pdo->prepare($sqlFinca);
+            $stmtFinca->execute([
+                ':codigo_finca' => $codigoFinca,
+                ':productor_id_real' => $productorIdReal,
+                ':nombre_finca' => $nombreFinca,
+            ]);
+
+            $fincaId = (int) $this->pdo->lastInsertId();
+
+            $sqlRel = "INSERT INTO rel_productor_finca (
+                    productor_id,
+                    productor_id_real,
+                    finca_id
+                ) VALUES (
+                    :productor_id,
+                    :productor_id_real,
+                    :finca_id
+                )";
+            $stmtRel = $this->pdo->prepare($sqlRel);
+            $stmtRel->execute([
+                ':productor_id' => $productorId,
+                ':productor_id_real' => $productorIdReal,
+                ':finca_id' => $fincaId,
+            ]);
+
+            $this->pdo->commit();
+
+            return [
+                'finca_id' => $fincaId,
+                'accion' => 'creada',
+            ];
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
 
     public function obtenerRelevamientoPorProductorFinca(int $productorId, int $fincaId): ?array
