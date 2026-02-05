@@ -112,7 +112,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     <h2>Panel relevador de fincas</h2>
                     <p>Hola, <?php echo htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8'); ?>.</p>
                     <p>Esta página permite asociar fincas a los productores que no la tengan además de generar productores y cooperativas por fuera del circuito de SVE</p>
-                    <p id="estado-msg">Cargando estado...</p>
                 </div>
 
                 <div class="card filters-card">
@@ -141,6 +140,9 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                     <option value="">Todas</option>
                                 </select>
                             </div>
+                        </div>
+                        <div class="input-group" style="display:flex; align-items:flex-end;">
+                            <button class="btn btn-info" type="button" id="btn-productor-externo">Añadir productor externo</button>
                         </div>
                     </div>
                 </div>
@@ -205,6 +207,16 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     <button class="btn btn-cancelar" type="button" id="fincaModalClose">Cerrar</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="productorExternoModal" class="modal hidden" aria-hidden="true">
+        <div class="modal-content">
+            <h3>Añadir productor externo</h3>
+            <p>Este modal está en construcción.</p>
+            <div class="form-buttons">
+                <button class="btn btn-cancelar" type="button" id="productorExternoClose">Cerrar</button>
+            </div>
         </div>
     </div>
 
@@ -292,23 +304,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             }
 
             return responsePayload.data || null;
-        }
-
-        async function cargarEstado() {
-            const el = document.getElementById('estado-msg');
-            try {
-                const res = await fetch(`${API_TRACTOR_PILOT}?action=estado`, {
-                    credentials: 'same-origin'
-                });
-                const payload = await res.json();
-                if (!res.ok || !payload.ok) {
-                    throw new Error(payload.message || 'Error');
-                }
-                el.textContent = payload.data?.message || 'Estado OK.';
-            } catch (e) {
-                console.error(e);
-                el.textContent = 'No se pudo cargar el estado.';
-            }
         }
 
         function aplicarSaltoTerceraPalabra(td, valor) {
@@ -472,13 +467,15 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            cargarEstado();
             cargarFincas();
 
             const tbody = document.getElementById('fincas-table-body');
             const closeBtn = document.getElementById('fincaModalClose');
             const modal = document.getElementById('fincaModal');
             const guardarBtn = document.getElementById('fincaModalGuardar');
+            const btnProductorExterno = document.getElementById('btn-productor-externo');
+            const modalProductorExterno = document.getElementById('productorExternoModal');
+            const closeProductorExterno = document.getElementById('productorExternoClose');
             const filtros = [
                 document.getElementById('filtro-cooperativa'),
                 document.getElementById('filtro-productor'),
@@ -512,6 +509,25 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 }
             });
 
+            btnProductorExterno?.addEventListener('click', () => {
+                if (!modalProductorExterno) return;
+                modalProductorExterno.classList.remove('hidden');
+                modalProductorExterno.setAttribute('aria-hidden', 'false');
+            });
+
+            closeProductorExterno?.addEventListener('click', () => {
+                if (!modalProductorExterno) return;
+                modalProductorExterno.classList.add('hidden');
+                modalProductorExterno.setAttribute('aria-hidden', 'true');
+            });
+
+            modalProductorExterno?.addEventListener('click', (event) => {
+                if (event.target === modalProductorExterno) {
+                    modalProductorExterno.classList.add('hidden');
+                    modalProductorExterno.setAttribute('aria-hidden', 'true');
+                }
+            });
+
             guardarBtn?.addEventListener('click', async () => {
                 const productorId = Number(modal?.dataset.productorId || 0);
                 const productorIdReal = String(modal?.dataset.productorIdReal || '').trim();
@@ -538,5 +554,3 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 </body>
 
 </html>
-
-
