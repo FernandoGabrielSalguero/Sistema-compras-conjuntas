@@ -147,17 +147,14 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                             <thead>
                                 <tr>
                                     <th>Acciones</th>
-                                    <th>ID pedido</th>
                                     <th>Cooperativa</th>
                                     <th>Productor</th>
                                     <th>Finca</th>
-                                    <th>Superficie (ha)</th>
-                                    <th>Variedad</th>
                                 </tr>
                             </thead>
                             <tbody id="fincas-table-body">
                                 <tr>
-                                    <td colspan="7">Cargando fincas...</td>
+                                    <td colspan="4">Cargando fincas...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -502,7 +499,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 }
 
                 if (filas.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7">No hay fincas participantes.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4">No hay fincas participantes.</td></tr>';
                     return;
                 }
 
@@ -525,12 +522,9 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     tr.appendChild(tdAcciones);
 
                     const celdas = [
-                        fila.id ?? '-',
                         fila.nom_cooperativa || '-',
                         fila.productor || '-',
                         fincaLabel,
-                        fila.superficie ?? '-',
-                        fila.variedad || '-',
                     ];
 
                     celdas.forEach((valor) => {
@@ -542,7 +536,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 });
             } catch (e) {
                 console.error(e);
-                tbody.innerHTML = '<tr><td colspan="7">No se pudieron cargar las fincas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4">No se pudieron cargar las fincas.</td></tr>';
                 showUserAlert('error', 'No se pudieron cargar las fincas.');
             }
         }
