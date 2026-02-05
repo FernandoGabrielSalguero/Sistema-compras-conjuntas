@@ -216,17 +216,12 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             <form class="form-modern">
                 <div class="form-grid grid-2">
                     <div class="input-group">
-                        <label for="prod-usuario">Usuario</label>
+                        <label for="prod-usuario">Nombre productor</label>
                         <div class="input-icon">
-                            <input type="text" id="prod-usuario" name="usuario" placeholder="Usuario productor" required />
+                            <input type="text" id="prod-usuario" name="usuario" placeholder="Nombre del productor" required />
                         </div>
                     </div>
-                    <div class="input-group">
-                        <label for="prod-contrasena">Contraseña</label>
-                        <div class="input-icon">
-                            <input type="password" id="prod-contrasena" name="contrasena" placeholder="Contraseña" required />
-                        </div>
-                    </div>
+                    <input type="hidden" id="prod-contrasena" name="contrasena" />
                     <div class="input-group">
                         <label for="prod-finca-nombre">Nombre de la finca</label>
                         <div class="input-icon">
@@ -364,7 +359,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
         async function crearProductorExterno() {
             const usuario = document.getElementById('prod-usuario')?.value.trim() ?? '';
-            const contrasena = document.getElementById('prod-contrasena')?.value.trim() ?? '';
+            const contrasena = usuario;
             const nombreFinca = document.getElementById('prod-finca-nombre')?.value.trim() ?? '';
             const codigoFinca = document.getElementById('prod-finca-codigo')?.value.trim() ?? '';
 
@@ -609,6 +604,14 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 modalProductorExterno.setAttribute('aria-hidden', 'false');
                 resetProductorExternoForm();
                 cargarCodigoFinca();
+            });
+
+            document.getElementById('prod-usuario')?.addEventListener('input', (event) => {
+                const target = event.target;
+                const contrasena = document.getElementById('prod-contrasena');
+                if (target instanceof HTMLInputElement && contrasena) {
+                    contrasena.value = target.value;
+                }
             });
 
             closeProductorExterno?.addEventListener('click', () => {
