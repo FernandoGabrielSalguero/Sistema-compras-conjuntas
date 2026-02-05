@@ -192,7 +192,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     <div class="input-group">
                         <label for="finca-codigo">Código de finca</label>
                         <div class="input-icon">
-                            <input type="text" id="finca-codigo" name="codigo_finca" placeholder="Ej: FN-001" required />
+                            <input type="text" id="finca-codigo" name="codigo_finca" placeholder="Ej: FN-001" readonly required />
                         </div>
                     </div>
                     <div class="input-group">
