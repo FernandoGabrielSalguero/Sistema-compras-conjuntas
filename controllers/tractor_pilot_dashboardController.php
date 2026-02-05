@@ -32,9 +32,8 @@ try {
         }
         if ($action === 'fincas') {
             $filtros = [
-                'contrato_id' => $_GET['contrato_id'] ?? null,
-                'cooperativa' => $_GET['cooperativa'] ?? null,
-                'productor' => $_GET['productor'] ?? null,
+                'cooperativa_id' => $_GET['cooperativa_id'] ?? null,
+                'productor_id' => $_GET['productor_id'] ?? null,
                 'finca_id' => $_GET['finca_id'] ?? null,
             ];
             $data = [
@@ -44,11 +43,12 @@ try {
             jsonResponse(true, $data);
         }
         if ($action === 'relevamiento') {
-            $participacionId = isset($_GET['participacion_id']) ? (int) $_GET['participacion_id'] : 0;
-            if ($participacionId <= 0) {
-                jsonResponse(false, null, 'participacion_id inválido.', 422);
+            $productorId = isset($_GET['productor_id']) ? (int) $_GET['productor_id'] : 0;
+            $fincaId = isset($_GET['finca_id']) ? (int) $_GET['finca_id'] : 0;
+            if ($productorId <= 0 || $fincaId <= 0) {
+                jsonResponse(false, null, 'productor_id o finca_id inválido.', 422);
             }
-            $relevamiento = $model->obtenerRelevamientoPorParticipacion($participacionId);
+            $relevamiento = $model->obtenerRelevamientoPorProductorFinca($productorId, $fincaId);
             jsonResponse(true, $relevamiento);
         }
         jsonResponse(false, null, 'Acción no soportada.', 400);
@@ -56,9 +56,10 @@ try {
 
     if ($method === 'POST') {
         if ($action === 'guardar_relevamiento') {
-            $participacionId = isset($_POST['participacion_id']) ? (int) $_POST['participacion_id'] : 0;
-            if ($participacionId <= 0) {
-                jsonResponse(false, null, 'participacion_id inválido.', 422);
+            $productorId = isset($_POST['productor_id']) ? (int) $_POST['productor_id'] : 0;
+            $fincaId = isset($_POST['finca_id']) ? (int) $_POST['finca_id'] : 0;
+            if ($productorId <= 0 || $fincaId <= 0) {
+                jsonResponse(false, null, 'productor_id o finca_id inválido.', 422);
             }
 
             $data = [
@@ -107,7 +108,7 @@ try {
                 }
             }
 
-            $resultado = $model->guardarRelevamiento($participacionId, $data);
+            $resultado = $model->guardarRelevamiento($productorId, $fincaId, $data);
             jsonResponse(true, $resultado, 'Relevamiento guardado.');
         }
 

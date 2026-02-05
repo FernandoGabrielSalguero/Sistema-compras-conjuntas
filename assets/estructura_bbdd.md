@@ -1,4 +1,4 @@
-📄 Tabla: CosechaMecanica
+Tabla: CosechaMecanica
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(10) unsigned	NO	PRI		auto_increment
 nombre	varchar(150)	NO			
@@ -78,14 +78,18 @@ Columna contrato_id referencia a CosechaMecanica.id
 📄 Tabla: cosechaMecanica_relevamiento_finca
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	bigint(20) unsigned	NO	PRI		auto_increment
+productor_id	int(11)	YES			
+finca_id	int(10) unsigned	YES			
 participacion_id	bigint(20) unsigned	NO	MUL		
 ancho_callejon_norte	int(11)	NO			
 ancho_callejon_sur	int(11)	NO			
 promedio_callejon	decimal(6,2)	YES			
+ancho_callejon	enum('Mayor a 6 metros','Mayor a 5.7 metros','Mayor a 5.3 metros','Mayor a 5 metros','Menor a 5 metros')	NO			
 interfilar	enum('Mayor a 2,5 metros','Mayor a 2,3 metros','Mayor a 2.2 metros','Mayor a 2 metros','Menor a 2 metros')	NO			
 cantidad_postes	int(11)	NO			
 postes_mal_estado	int(11)	NO			
 porcentaje_postes_mal_estado	decimal(5,2)	YES			
+estructura_postes	enum('Menos del 5%','Menos de 10%','Menos de 25%','Menos de 40%','Más de 40%')	NO			
 estructura_separadores	enum('Todos asegurados y tensados firmemente','Asegurados y tensados, algunos olvidados','Sin atar o tensar')	NO			
 agua_lavado	enum('Suficiente y cercanda','Suficiente a mas de 1km','Insuficiente pero cercana','Insuficiente a mas de 1km','No tiene')	NO			
 preparacion_acequias	enum('Acequias borradas y sin impedimentos','Acequias suavizadas de facil transito','Acequias con dificultades para el transito','Profundas sin borrar')	NO			
@@ -705,7 +709,7 @@ created_at	timestamp	NO		current_timestamp()
 
 🔗 Relaciones (salientes):
 Columna productor_id_real referencia a usuarios.id_real
-🔁 Relaciones (entrantes): prod_finca_cultivos, usuarios, prod_cuartel, prod_finca_direccion, prod_finca_maquinaria, prod_finca_agua, prod_finca_gerencia, rel_productor_finca, prod_finca_superficie
+🔁 Relaciones (entrantes): prod_finca_cultivos, usuarios, prod_cuartel, relevamiento_fincas, prod_finca_direccion, prod_finca_maquinaria, prod_finca_agua, prod_finca_gerencia, rel_productor_finca, prod_finca_superficie
 📄 Tabla: prod_hijos
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(10) unsigned	NO	PRI		auto_increment
@@ -809,6 +813,30 @@ created_at	timestamp	NO		current_timestamp()
 Columna finca_id referencia a prod_fincas.id
 Columna productor_id referencia a usuarios.id
 🔁 Relaciones (entrantes): prod_fincas, usuarios
+📄 Tabla: relevamiento_fincas
+Columna	Tipo	Nulo	Clave	Default	Extra
+id	bigint(20) unsigned	NO	PRI		auto_increment
+productor_id	int(11)	NO	MUL		
+finca_id	int(10) unsigned	NO	MUL		
+ancho_callejon_norte	int(11)	NO			
+ancho_callejon_sur	int(11)	NO			
+promedio_callejon	decimal(6,2)	YES			
+interfilar	enum('Mayor a 2,5 metros','Mayor a 2,3 metros','Mayor a 2.2 metros','Mayor a 2 metros','Menor a 2 metros')	NO			
+cantidad_postes	int(11)	NO			
+postes_mal_estado	int(11)	NO			
+porcentaje_postes_mal_estado	decimal(5,2)	YES			
+estructura_separadores	enum('Todos asegurados y tensados firmemente','Asegurados y tensados, algunos olvidados','Sin atar o tensar')	NO			
+agua_lavado	enum('Suficiente y cercana','Suficiente a mas de 1km','Insuficiente pero cercana','Insuficiente a mas de 1km','No tiene')	NO			
+preparacion_acequias	enum('Acequias borradas y sin impedimentos','Acequias suavizadas de facil transito','Acequias con dificultades para el transito','Profundas sin borrar')	NO			
+preparacion_obstaculos	enum('Ausencia de malesas','Ausencia en la mayoria de las superficies','Malezas menores a 40cm','Suelo enmalezado','Obstaculos o malesas sobre el alambre')	NO			
+observaciones	text	YES			
+created_at	timestamp	NO		current_timestamp()	
+updated_at	timestamp	YES		current_timestamp()	on update current_timestamp()
+
+🔗 Relaciones (salientes):
+Columna finca_id referencia a prod_fincas.id
+Columna productor_id referencia a usuarios.id
+🔁 Relaciones (entrantes): prod_fincas, usuarios
 📄 Tabla: subcategorias_publicaciones
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(11)	NO	PRI		auto_increment
@@ -846,7 +874,7 @@ cuit	bigint(11)	NO
 razon_social	varchar(150)	YES			
 id_real	varchar(20)	NO	UNI		
 
-🔁 Relaciones (entrantes): drones_solicitud, prod_fincas, prod_hijos, rel_coop_ingeniero, prod_cuartel, drones_calendario_notas, productores_contactos_alternos, rel_productor_coop, info_productor, usuarios_info, operativos_cooperativas_participacion, rel_productor_finca, prod_colaboradores
+🔁 Relaciones (entrantes): drones_solicitud, prod_fincas, prod_hijos, rel_coop_ingeniero, prod_cuartel, drones_calendario_notas, relevamiento_fincas, productores_contactos_alternos, rel_productor_coop, info_productor, usuarios_info, operativos_cooperativas_participacion, rel_productor_finca, prod_colaboradores
 📄 Tabla: usuarios_info
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(11)	NO	PRI		auto_increment

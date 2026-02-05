@@ -141,11 +141,10 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 </div>
 
                 <div class="tabla-card">
-                    <h2>Listado de Cooperativas con sus productores y las fincas asociadas</h2>
+                    <h2>Relevamiento_fincas</h2>
                     <p id="productores-count" style="margin-top: 0.25rem;">Tenemos 0 productores registrados.</p>
-                    <br>
                     <div class="tabla-wrapper table-scroll">
-                        <table class="data-table" aria-label="Fincas participantes de operativos">
+                        <table class="data-table" aria-label="Relevamiento_fincas">
                             <thead>
                                 <tr>
                                     <th>Acciones</th>
@@ -435,8 +434,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const productor = document.getElementById('filtro-productor')?.value;
             const finca = document.getElementById('filtro-finca')?.value;
 
-            if (cooperativa) params.set('cooperativa', cooperativa);
-            if (productor) params.set('productor', productor);
+            if (cooperativa) params.set('cooperativa_id', cooperativa);
+            if (productor) params.set('productor_id', productor);
             if (finca) params.set('finca_id', finca);
 
             return params;
@@ -487,15 +486,23 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 const selectFinca = document.getElementById('filtro-finca');
 
                 if (selectCooperativa) {
-                    actualizarSelect(selectCooperativa, filtros.cooperativas || [], 'Todas');
+                    const coops = (filtros.cooperativas || []).map((item) => ({
+                        value: item.id,
+                        label: item.nombre || `Cooperativa #${item.id}`,
+                    }));
+                    actualizarSelect(selectCooperativa, coops, 'Todas');
                 }
                 if (selectProductor) {
-                    actualizarSelect(selectProductor, filtros.productores || [], 'Todos');
+                    const productores = (filtros.productores || []).map((item) => ({
+                        value: item.id,
+                        label: item.nombre || `Productor #${item.id}`,
+                    }));
+                    actualizarSelect(selectProductor, productores, 'Todos');
                 }
                 if (selectFinca) {
                     const fincas = (filtros.fincas || []).map((item) => {
-                        const label = item.nombre_finca || item.codigo_finca || `Finca #${item.finca_id}`;
-                        return { value: item.finca_id, label };
+                        const label = item.nombre_finca || item.codigo_finca || `Finca #${item.id}`;
+                        return { value: item.id, label };
                     });
                     actualizarSelect(selectFinca, fincas, 'Todas');
                 }
@@ -515,15 +522,17 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     const tr = document.createElement('tr');
 
                     const fincaLabel = fila.nombre_finca || fila.codigo_finca || (fila.finca_id ? `Finca #${fila.finca_id}` : 'Sin finca');
-                    if (fila.productor) {
-                        productoresSet.add(String(fila.productor).trim());
+                    if (fila.productor_id) {
+                        productoresSet.add(String(fila.productor_id));
                     }
 
                     const tdAcciones = document.createElement('td');
                     const btn = document.createElement('button');
                     btn.className = 'btn btn-info';
                     btn.dataset.action = 'abrir-modal';
-                    btn.dataset.participacionId = String(fila.id);
+                    if (fila.productor_id !== null && fila.productor_id !== undefined) {
+                        btn.dataset.productorId = String(fila.productor_id);
+                    }
                     if (fila.finca_id !== null && fila.finca_id !== undefined) {
                         btn.dataset.fincaId = String(fila.finca_id);
                     }
@@ -532,8 +541,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     tr.appendChild(tdAcciones);
 
                     const celdas = [
-                        fila.nom_cooperativa || '-',
-                        fila.productor || '-',
+                        fila.cooperativa_nombre || '-',
+                        fila.productor_nombre || '-',
                         fincaLabel,
                     ];
 
@@ -571,7 +580,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
         }
 
         async function cargarRelevamiento(participacionId) {
-            const params = new URLSearchParams({ action: 'relevamiento', participacion_id: String(participacionId) });
+            const params = new URLSearchParams({ action: 'relevamiento', productor_id: String(participacionId.productorId), finca_id: String(participacionId.fincaId) });
             const res = await fetch(`${API_TRACTOR_PILOT}?${params.toString()}`, {
                 credentials: 'same-origin'
             });
@@ -582,7 +591,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             return payload.data || null;
         }
 
-        async function guardarRelevamiento(participacionId) {
+        async function guardarRelevamiento(participacion) {
             const payload = getModalPayload();
             const requeridos = [
                 payload.ancho_callejon_norte,
@@ -603,7 +612,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
             const body = new URLSearchParams({
                 action: 'guardar_relevamiento',
-                participacion_id: String(participacionId),
+                productor_id: String(participacion.productorId),
+                finca_id: String(participacion.fincaId),
                 ...payload,
             });
 
@@ -646,16 +656,18 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             tbody?.addEventListener('click', async (event) => {
                 const target = event.target;
                 if (target instanceof HTMLElement && target.dataset.action === 'abrir-modal') {
-                    const participacionId = Number(target.dataset.participacionId || 0);
-                    if (!participacionId) {
-                        showUserAlert('error', 'No se encontró el ID de participación.');
+                    const productorId = Number(target.dataset.productorId || 0);
+                    const fincaId = Number(target.dataset.fincaId || 0);
+                    if (!productorId || !fincaId) {
+                        showUserAlert('error', 'No se encontró el productor o la finca.');
                         return;
                     }
-                    modal.dataset.participacionId = String(participacionId);
+                    modal.dataset.productorId = String(productorId);
+                    modal.dataset.fincaId = String(fincaId);
                     abrirModalFinca();
                     showUserAlert('info', 'Cargando relevamiento...');
                     try {
-                        const relevamiento = await cargarRelevamiento(participacionId);
+                        const relevamiento = await cargarRelevamiento({ productorId, fincaId });
                         setModalData(relevamiento);
                         const msg = relevamiento ? 'Relevamiento cargado.' : 'Sin relevamiento previo.';
                         showUserAlert('success', msg);
@@ -680,13 +692,14 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             postesMalEstado?.addEventListener('input', actualizarPorcentajePostesMalEstado);
 
             guardarBtn?.addEventListener('click', async () => {
-                const participacionId = Number(modal?.dataset.participacionId || 0);
-                if (!participacionId) {
-                    showUserAlert('error', 'No se encontró el ID de participación.');
+                const productorId = Number(modal?.dataset.productorId || 0);
+                const fincaId = Number(modal?.dataset.fincaId || 0);
+                if (!productorId || !fincaId) {
+                    showUserAlert('error', 'No se encontró el productor o la finca.');
                     return;
                 }
                 try {
-                    await guardarRelevamiento(participacionId);
+                    await guardarRelevamiento({ productorId, fincaId });
                     showUserAlert('success', 'Relevamiento guardado.');
                     cerrarModalFinca();
                     cargarFincas();

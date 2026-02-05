@@ -24,23 +24,18 @@ class TractorPilotDashboardModel
         $condiciones = [];
         $params = [];
 
-        if ($excluir !== 'contrato' && !empty($filtros['contrato_id'])) {
-            $condiciones[] = 'p.contrato_id = :contrato_id';
-            $params[':contrato_id'] = (int) $filtros['contrato_id'];
+        if ($excluir !== 'cooperativa' && !empty($filtros['cooperativa_id'])) {
+            $condiciones[] = 'coop.id = :cooperativa_id';
+            $params[':cooperativa_id'] = (int) $filtros['cooperativa_id'];
         }
 
-        if ($excluir !== 'cooperativa' && !empty($filtros['cooperativa'])) {
-            $condiciones[] = 'p.nom_cooperativa = :nom_cooperativa';
-            $params[':nom_cooperativa'] = (string) $filtros['cooperativa'];
-        }
-
-        if ($excluir !== 'productor' && !empty($filtros['productor'])) {
-            $condiciones[] = 'p.productor = :productor';
-            $params[':productor'] = (string) $filtros['productor'];
+        if ($excluir !== 'productor' && !empty($filtros['productor_id'])) {
+            $condiciones[] = 'prod.id = :productor_id';
+            $params[':productor_id'] = (int) $filtros['productor_id'];
         }
 
         if ($excluir !== 'finca' && !empty($filtros['finca_id'])) {
-            $condiciones[] = 'p.finca_id = :finca_id';
+            $condiciones[] = 'f.id = :finca_id';
             $params[':finca_id'] = (int) $filtros['finca_id'];
         }
 
@@ -52,42 +47,38 @@ class TractorPilotDashboardModel
         [$condiciones, $params] = $this->construirFiltros($filtros);
 
         $sql = "SELECT
-                    p.id,
-                    p.contrato_id,
-                    c.nombre AS contrato_nombre,
-                    p.nom_cooperativa,
-                    p.productor,
-                    p.superficie,
-                    p.variedad,
-                    p.prod_estimada,
-                    p.fecha_estimada,
-                    p.km_finca,
-                    p.flete,
-                    p.seguro_flete,
-                    p.finca_id,
-                    rf.id AS relevamiento_id,
+                    coop.id AS cooperativa_id,
+                    coop_info.nombre AS cooperativa_nombre,
+                    prod.id AS productor_id,
+                    prod_info.nombre AS productor_nombre,
+                    f.id AS finca_id,
                     f.codigo_finca,
-                    f.nombre_finca
-                FROM cosechaMecanica_cooperativas_participacion p
-                INNER JOIN CosechaMecanica c
-                    ON c.id = p.contrato_id
-                LEFT JOIN cosechaMecanica_relevamiento_finca rf
-                    ON rf.participacion_id = p.id
+                    f.nombre_finca,
+                    rf.id AS relevamiento_id
+                FROM usuarios coop
+                INNER JOIN rel_productor_coop rpc
+                    ON rpc.cooperativa_id_real = coop.id_real
+                INNER JOIN usuarios prod
+                    ON prod.id_real = rpc.productor_id_real
+                   AND prod.rol = 'productor'
+                LEFT JOIN usuarios_info coop_info
+                    ON coop_info.usuario_id = coop.id
+                LEFT JOIN usuarios_info prod_info
+                    ON prod_info.usuario_id = prod.id
+                LEFT JOIN rel_productor_finca rpf
+                    ON rpf.productor_id = prod.id
                 LEFT JOIN prod_fincas f
-                    ON f.id = p.finca_id
-                WHERE p.firma = 1
-                  AND EXISTS (
-                      SELECT 1
-                      FROM cosechaMecanica_coop_contrato_firma cf
-                      WHERE cf.contrato_id = p.contrato_id
-                        AND cf.acepto = 1
-                  )";
+                    ON f.id = rpf.finca_id
+                LEFT JOIN relevamiento_fincas rf
+                    ON rf.productor_id = prod.id
+                   AND rf.finca_id = f.id
+                WHERE coop.rol = 'cooperativa'";
 
         if (!empty($condiciones)) {
             $sql .= " AND " . implode(' AND ', $condiciones);
         }
 
-        $sql .= " ORDER BY c.fecha_apertura DESC, p.nom_cooperativa ASC, p.productor ASC, p.id ASC";
+        $sql .= " ORDER BY coop_info.nombre ASC, prod_info.nombre ASC, f.nombre_finca ASC, f.codigo_finca ASC";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
@@ -95,11 +86,12 @@ class TractorPilotDashboardModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
-    public function obtenerRelevamientoPorParticipacion(int $participacionId): ?array
+    public function obtenerRelevamientoPorProductorFinca(int $productorId, int $fincaId): ?array
     {
         $sql = "SELECT
                     id,
-                    participacion_id,
+                    productor_id,
+                    finca_id,
                     ancho_callejon_norte,
                     ancho_callejon_sur,
                     promedio_callejon,
@@ -112,26 +104,38 @@ class TractorPilotDashboardModel
                     preparacion_acequias,
                     preparacion_obstaculos,
                     observaciones
-                FROM cosechaMecanica_relevamiento_finca
-                WHERE participacion_id = :participacion_id
+                FROM relevamiento_fincas
+                WHERE productor_id = :productor_id
+                  AND finca_id = :finca_id
                 LIMIT 1";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':participacion_id' => $participacionId]);
+        $stmt->execute([
+            ':productor_id' => $productorId,
+            ':finca_id' => $fincaId
+        ]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row ?: null;
     }
 
-    public function guardarRelevamiento(int $participacionId, array $data): array
+    public function guardarRelevamiento(int $productorId, int $fincaId, array $data): array
     {
-        $sqlExiste = "SELECT id FROM cosechaMecanica_relevamiento_finca WHERE participacion_id = :participacion_id LIMIT 1";
+        $sqlExiste = "SELECT id
+            FROM relevamiento_fincas
+            WHERE productor_id = :productor_id
+              AND finca_id = :finca_id
+            LIMIT 1";
         $stmtExiste = $this->pdo->prepare($sqlExiste);
-        $stmtExiste->execute([':participacion_id' => $participacionId]);
+        $stmtExiste->execute([
+            ':productor_id' => $productorId,
+            ':finca_id' => $fincaId,
+        ]);
         $existente = $stmtExiste->fetch(PDO::FETCH_ASSOC);
 
         $payload = [
-            ':participacion_id' => $participacionId,
+            ':productor_id' => $productorId,
+            ':finca_id' => $fincaId,
             ':ancho_callejon_norte' => $data['ancho_callejon_norte'],
             ':ancho_callejon_sur' => $data['ancho_callejon_sur'],
             ':promedio_callejon' => $data['promedio_callejon'],
@@ -147,7 +151,7 @@ class TractorPilotDashboardModel
         ];
 
         if ($existente) {
-            $sqlUpdate = "UPDATE cosechaMecanica_relevamiento_finca
+            $sqlUpdate = "UPDATE relevamiento_fincas
                 SET ancho_callejon_norte = :ancho_callejon_norte,
                     ancho_callejon_sur = :ancho_callejon_sur,
                     promedio_callejon = :promedio_callejon,
@@ -160,15 +164,17 @@ class TractorPilotDashboardModel
                     preparacion_acequias = :preparacion_acequias,
                     preparacion_obstaculos = :preparacion_obstaculos,
                     observaciones = :observaciones
-                WHERE participacion_id = :participacion_id";
+                WHERE productor_id = :productor_id
+                  AND finca_id = :finca_id";
             $stmtUpdate = $this->pdo->prepare($sqlUpdate);
             $stmtUpdate->execute($payload);
 
             return ['id' => (int) $existente['id'], 'accion' => 'actualizado'];
         }
 
-        $sqlInsert = "INSERT INTO cosechaMecanica_relevamiento_finca (
-                participacion_id,
+        $sqlInsert = "INSERT INTO relevamiento_fincas (
+                productor_id,
+                finca_id,
                 ancho_callejon_norte,
                 ancho_callejon_sur,
                 promedio_callejon,
@@ -182,7 +188,8 @@ class TractorPilotDashboardModel
                 preparacion_obstaculos,
                 observaciones
             ) VALUES (
-                :participacion_id,
+                :productor_id,
+                :finca_id,
                 :ancho_callejon_norte,
                 :ancho_callejon_sur,
                 :promedio_callejon,
@@ -205,68 +212,54 @@ class TractorPilotDashboardModel
 
     public function obtenerOpcionesFiltros(array $filtros = []): array
     {
-        $baseFrom = " FROM cosechaMecanica_cooperativas_participacion p
-            INNER JOIN CosechaMecanica c
-                ON c.id = p.contrato_id
+        $baseFrom = " FROM usuarios coop
+            INNER JOIN rel_productor_coop rpc
+                ON rpc.cooperativa_id_real = coop.id_real
+            INNER JOIN usuarios prod
+                ON prod.id_real = rpc.productor_id_real
+               AND prod.rol = 'productor'
+            LEFT JOIN usuarios_info coop_info
+                ON coop_info.usuario_id = coop.id
+            LEFT JOIN usuarios_info prod_info
+                ON prod_info.usuario_id = prod.id
+            LEFT JOIN rel_productor_finca rpf
+                ON rpf.productor_id = prod.id
             LEFT JOIN prod_fincas f
-                ON f.id = p.finca_id
-            WHERE p.firma = 1
-              AND EXISTS (
-                  SELECT 1
-                  FROM cosechaMecanica_coop_contrato_firma cf
-                  WHERE cf.contrato_id = p.contrato_id
-                    AND cf.acepto = 1
-              )";
-
-        [$condContratos, $paramsContratos] = $this->construirFiltros($filtros, 'contrato');
-        $sqlContratos = "SELECT DISTINCT c.id, c.nombre" . $baseFrom;
-        if (!empty($condContratos)) {
-            $sqlContratos .= " AND " . implode(' AND ', $condContratos);
-        }
-        $sqlContratos .= " ORDER BY c.fecha_apertura DESC, c.nombre ASC";
-        $stmtContratos = $this->pdo->prepare($sqlContratos);
-        $stmtContratos->execute($paramsContratos);
-        $contratos = $stmtContratos->fetchAll(PDO::FETCH_ASSOC) ?: [];
+                ON f.id = rpf.finca_id
+            WHERE coop.rol = 'cooperativa'";
 
         [$condCoops, $paramsCoops] = $this->construirFiltros($filtros, 'cooperativa');
-        $sqlCoops = "SELECT DISTINCT p.nom_cooperativa" . $baseFrom;
+        $sqlCoops = "SELECT DISTINCT coop.id, coop_info.nombre" . $baseFrom;
         if (!empty($condCoops)) {
             $sqlCoops .= " AND " . implode(' AND ', $condCoops);
         }
-        $sqlCoops .= " ORDER BY p.nom_cooperativa ASC";
+        $sqlCoops .= " ORDER BY coop_info.nombre ASC";
         $stmtCoops = $this->pdo->prepare($sqlCoops);
         $stmtCoops->execute($paramsCoops);
-        $cooperativas = array_map(
-            fn($row) => $row['nom_cooperativa'],
-            $stmtCoops->fetchAll(PDO::FETCH_ASSOC) ?: []
-        );
+        $cooperativas = $stmtCoops->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
         [$condProds, $paramsProds] = $this->construirFiltros($filtros, 'productor');
-        $sqlProds = "SELECT DISTINCT p.productor" . $baseFrom;
+        $sqlProds = "SELECT DISTINCT prod.id, prod_info.nombre" . $baseFrom;
         if (!empty($condProds)) {
             $sqlProds .= " AND " . implode(' AND ', $condProds);
         }
-        $sqlProds .= " ORDER BY p.productor ASC";
+        $sqlProds .= " ORDER BY prod_info.nombre ASC";
         $stmtProds = $this->pdo->prepare($sqlProds);
         $stmtProds->execute($paramsProds);
-        $productores = array_map(
-            fn($row) => $row['productor'],
-            $stmtProds->fetchAll(PDO::FETCH_ASSOC) ?: []
-        );
+        $productores = $stmtProds->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
         [$condFincas, $paramsFincas] = $this->construirFiltros($filtros, 'finca');
-        $sqlFincas = "SELECT DISTINCT p.finca_id, f.codigo_finca, f.nombre_finca" . $baseFrom;
+        $sqlFincas = "SELECT DISTINCT f.id, f.codigo_finca, f.nombre_finca" . $baseFrom;
         if (!empty($condFincas)) {
             $sqlFincas .= " AND " . implode(' AND ', $condFincas);
         }
-        $sqlFincas .= " AND p.finca_id IS NOT NULL
+        $sqlFincas .= " AND f.id IS NOT NULL
             ORDER BY f.nombre_finca ASC, f.codigo_finca ASC";
         $stmtFincas = $this->pdo->prepare($sqlFincas);
         $stmtFincas->execute($paramsFincas);
         $fincas = $stmtFincas->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
         return [
-            'contratos' => $contratos,
             'cooperativas' => $cooperativas,
             'productores' => $productores,
             'fincas' => $fincas,
