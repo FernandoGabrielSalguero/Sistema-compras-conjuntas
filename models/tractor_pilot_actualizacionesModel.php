@@ -165,15 +165,27 @@ class TractorPilotActualizacionesModel
         ];
     }
 
-    public function crearProductorExterno(string $usuario, string $contrasena, string $nombreFinca, ?string $codigoFinca = null): array
+    public function crearProductorExterno(
+        string $usuario,
+        string $contrasena,
+        string $nombreFinca,
+        ?string $codigoFinca = null,
+        ?string $cooperativaIdReal = null,
+        ?string $variedad = null
+    ): array
     {
         $usuario = trim($usuario);
         $contrasena = trim($contrasena);
         $nombreFinca = trim($nombreFinca);
         $codigoFinca = $codigoFinca ? trim($codigoFinca) : '';
+        $cooperativaIdReal = $cooperativaIdReal ? trim($cooperativaIdReal) : '';
+        $variedad = $variedad ? trim($variedad) : '';
 
         if ($usuario === '' || $contrasena === '' || $nombreFinca === '') {
             throw new InvalidArgumentException('Faltan datos obligatorios.');
+        }
+        if ($cooperativaIdReal === '') {
+            throw new InvalidArgumentException('Falta la cooperativa.');
         }
 
         $stmtExiste = $this->pdo->prepare("SELECT 1 FROM usuarios WHERE usuario = :usuario LIMIT 1");
@@ -219,15 +231,16 @@ class TractorPilotActualizacionesModel
                 VALUES (:productor_id_real, :cooperativa_id_real)");
             $stmtRelCoop->execute([
                 ':productor_id_real' => $idReal,
-                ':cooperativa_id_real' => '77675558875',
+                ':cooperativa_id_real' => $cooperativaIdReal,
             ]);
 
-            $stmtFinca = $this->pdo->prepare("INSERT INTO prod_fincas (codigo_finca, productor_id_real, nombre_finca)
-                VALUES (:codigo_finca, :productor_id_real, :nombre_finca)");
+            $stmtFinca = $this->pdo->prepare("INSERT INTO prod_fincas (codigo_finca, productor_id_real, nombre_finca, variedad)
+                VALUES (:codigo_finca, :productor_id_real, :nombre_finca, :variedad)");
             $stmtFinca->execute([
                 ':codigo_finca' => $codigoFinal,
                 ':productor_id_real' => $idReal,
                 ':nombre_finca' => $nombreFinca,
+                ':variedad' => $variedad !== '' ? $variedad : null,
             ]);
 
             $fincaId = (int) $this->pdo->lastInsertId();
@@ -480,5 +493,21 @@ class TractorPilotActualizacionesModel
             'productores' => $productores,
             'fincas' => $fincas,
         ];
+    }
+
+    public function obtenerCooperativas(): array
+    {
+        $sql = "SELECT
+                    u.id_real,
+                    COALESCE(NULLIF(ui.nombre, ''), u.usuario) AS nombre
+                FROM usuarios u
+                LEFT JOIN usuarios_info ui
+                    ON ui.usuario_id = u.id
+                WHERE u.rol = 'cooperativa'
+                ORDER BY nombre ASC, u.id_real ASC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 }

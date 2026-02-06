@@ -48,6 +48,9 @@ try {
         if ($action === 'generar_codigo_finca') {
             jsonResponse(true, $model->obtenerCodigoFincaDisponible());
         }
+        if ($action === 'cooperativas') {
+            jsonResponse(true, $model->obtenerCooperativas());
+        }
         if ($action === 'relevamiento') {
             $participacionId = isset($_GET['participacion_id']) ? (int) $_GET['participacion_id'] : 0;
             if ($participacionId <= 0) {
@@ -65,12 +68,21 @@ try {
             $contrasena = trim((string) ($_POST['contrasena'] ?? ''));
             $nombreFinca = trim((string) ($_POST['nombre_finca'] ?? ''));
             $codigoFinca = trim((string) ($_POST['codigo_finca'] ?? ''));
+            $cooperativaIdReal = trim((string) ($_POST['cooperativa_id_real'] ?? ''));
+            $variedad = trim((string) ($_POST['variedad'] ?? ''));
 
-            if ($usuario === '' || $contrasena === '' || $nombreFinca === '') {
-                jsonResponse(false, null, 'usuario, contrasena o nombre_finca inválido.', 422);
+            if ($usuario === '' || $contrasena === '' || $nombreFinca === '' || $cooperativaIdReal === '') {
+                jsonResponse(false, null, 'usuario, contrasena, nombre_finca o cooperativa_id_real inválido.', 422);
             }
 
-            $resultado = $model->crearProductorExterno($usuario, $contrasena, $nombreFinca, $codigoFinca ?: null);
+            $resultado = $model->crearProductorExterno(
+                $usuario,
+                $contrasena,
+                $nombreFinca,
+                $codigoFinca ?: null,
+                $cooperativaIdReal,
+                $variedad ?: null
+            );
             jsonResponse(true, $resultado, 'Productor externo creado.');
         }
 

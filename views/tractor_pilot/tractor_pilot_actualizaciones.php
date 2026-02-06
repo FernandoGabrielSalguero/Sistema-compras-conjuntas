@@ -93,6 +93,32 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             border-color: #d97706;
             color: #111827;
         }
+
+        .badge-tipo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-externo {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-interno {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .input-group.hidden {
+            display: none;
+        }
     </style>
 </head>
 
@@ -148,6 +174,14 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     <h2>Añadir productor externo</h2>
                     <form class="form-modern" autocomplete="off">
                         <div class="form-grid grid-2">
+                            <div class="input-group" style="grid-column: span 2;">
+                                <label for="prod-cooperativa">Cooperativa</label>
+                                <div class="input-icon">
+                                    <select id="prod-cooperativa" name="cooperativa_id_real" required>
+                                        <option value="">Seleccionar cooperativa</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div class="input-group">
                                 <label for="prod-usuario">Nombre productor</label>
                                 <div class="input-icon">
@@ -159,6 +193,12 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                 <label for="prod-finca-nombre">Nombre de la finca</label>
                                 <div class="input-icon">
                                     <input type="text" id="prod-finca-nombre" name="nombre_finca" placeholder="Nombre de la finca" required />
+                                </div>
+                            </div>
+                            <div class="input-group hidden" id="prod-finca-variedad-group">
+                                <label for="prod-finca-variedad">Variedad</label>
+                                <div class="input-icon">
+                                    <input type="text" id="prod-finca-variedad" name="variedad" placeholder="Variedad de la finca" />
                                 </div>
                             </div>
                             <div class="input-group">
@@ -220,6 +260,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                     <th>Acciones</th>
                                     <th>Cooperativa</th>
                                     <th>Productor</th>
+                                    <th>Tipo</th>
                                     <th>Finca</th>
                                     <th>Superficie (ha)</th>
                                     <th>Variedad</th>
@@ -227,7 +268,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                             </thead>
                             <tbody id="fincas-table-body">
                                 <tr>
-                                    <td colspan="6">Cargando fincas...</td>
+                                    <td colspan="7">Cargando fincas...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -479,9 +520,34 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const usuario = document.getElementById('prod-usuario');
             const contrasena = document.getElementById('prod-contrasena');
             const fincaNombre = document.getElementById('prod-finca-nombre');
+            const fincaVariedad = document.getElementById('prod-finca-variedad');
             if (usuario) usuario.value = '';
             if (contrasena) contrasena.value = '';
             if (fincaNombre) fincaNombre.value = '';
+            if (fincaVariedad) fincaVariedad.value = '';
+        }
+
+        function esSVEProductores(cooperativaIdReal) {
+            return String(cooperativaIdReal || '') === '77675558875';
+        }
+
+        function actualizarFormularioCooperativa() {
+            const select = document.getElementById('prod-cooperativa');
+            const variedadGroup = document.getElementById('prod-finca-variedad-group');
+            const variedadInput = document.getElementById('prod-finca-variedad');
+            const seleccion = select?.value ?? '';
+            const debeMostrarVariedad = esSVEProductores(seleccion);
+
+            if (!variedadGroup || !variedadInput) return;
+
+            if (debeMostrarVariedad) {
+                variedadGroup.classList.remove('hidden');
+                variedadInput.setAttribute('required', 'required');
+            } else {
+                variedadGroup.classList.add('hidden');
+                variedadInput.removeAttribute('required');
+                variedadInput.value = '';
+            }
         }
 
         async function cargarCodigoFinca() {
@@ -500,6 +566,34 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 console.error(e);
                 input.value = '';
                 showUserAlert('error', 'No se pudo generar el código de finca.');
+            }
+        }
+
+        async function cargarCooperativas() {
+            const select = document.getElementById('prod-cooperativa');
+            if (!select) return;
+            try {
+                const res = await fetch(`${API_TRACTOR_PILOT}?action=cooperativas`, {
+                    credentials: 'same-origin'
+                });
+                const payload = await res.json();
+                if (!res.ok || !payload.ok) {
+                    throw new Error(payload.message || 'Error');
+                }
+                const items = Array.isArray(payload.data) ? payload.data : [];
+                select.innerHTML = '<option value="">Seleccionar cooperativa</option>';
+                items.forEach((coop) => {
+                    const opt = document.createElement('option');
+                    opt.value = String(coop.id_real ?? '');
+                    const nombre = String(coop.nombre ?? '').trim();
+                    const idReal = String(coop.id_real ?? '').trim();
+                    opt.textContent = idReal ? `${nombre} (${idReal})` : nombre || 'Cooperativa';
+                    select.appendChild(opt);
+                });
+            } catch (e) {
+                console.error(e);
+                select.innerHTML = '<option value="">No se pudieron cargar</option>';
+                showUserAlert('error', 'No se pudieron cargar las cooperativas.');
             }
         }
 
@@ -563,9 +657,21 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const contrasena = usuario;
             const nombreFinca = document.getElementById('prod-finca-nombre')?.value.trim() ?? '';
             const codigoFinca = document.getElementById('prod-finca-codigo')?.value.trim() ?? '';
+            const cooperativaIdReal = document.getElementById('prod-cooperativa')?.value.trim() ?? '';
+            const variedad = document.getElementById('prod-finca-variedad')?.value.trim() ?? '';
+
+            if (!cooperativaIdReal) {
+                showUserAlert('warning', 'Seleccioná una cooperativa.');
+                return null;
+            }
 
             if (!usuario || !contrasena || !nombreFinca) {
                 showUserAlert('warning', 'Completá usuario, contraseña y nombre de finca.');
+                return null;
+            }
+
+            if (esSVEProductores(cooperativaIdReal) && !variedad) {
+                showUserAlert('warning', 'Completá la variedad de la finca.');
                 return null;
             }
 
@@ -575,6 +681,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 contrasena,
                 nombre_finca: nombreFinca,
                 codigo_finca: codigoFinca,
+                cooperativa_id_real: cooperativaIdReal,
+                variedad,
             });
 
             showUserAlert('info', 'Creando productor externo...');
@@ -723,7 +831,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 }
 
                 if (filas.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6">No hay fincas participantes.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7">No hay fincas participantes.</td></tr>';
                     return;
                 }
 
@@ -751,15 +859,35 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     tdAcciones.appendChild(btn);
                     tr.appendChild(tdAcciones);
 
+                    const codigoFinca = String(fila.codigo_finca ?? '');
+                    const esExterno = codigoFinca.startsWith('EXT-');
+                    const tipoLabel = esExterno ? 'Externo' : 'Interno';
+
                     const celdas = [
                         fila.nom_cooperativa || '-',
                         fila.productor || '-',
+                    ];
+
+                    celdas.forEach((valor) => {
+                        const td = document.createElement('td');
+                        aplicarSaltoTerceraPalabra(td, valor);
+                        tr.appendChild(td);
+                    });
+
+                    const tdTipo = document.createElement('td');
+                    const badge = document.createElement('span');
+                    badge.className = `badge-tipo ${esExterno ? 'badge-externo' : 'badge-interno'}`;
+                    badge.textContent = tipoLabel;
+                    tdTipo.appendChild(badge);
+                    tr.appendChild(tdTipo);
+
+                    const celdasFinales = [
                         fincaLabel,
                         fila.superficie ?? '-',
                         fila.variedad || '-',
                     ];
 
-                    celdas.forEach((valor) => {
+                    celdasFinales.forEach((valor) => {
                         const td = document.createElement('td');
                         aplicarSaltoTerceraPalabra(td, valor);
                         tr.appendChild(td);
@@ -768,7 +896,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 });
             } catch (e) {
                 console.error(e);
-                tbody.innerHTML = '<tr><td colspan="6">No se pudieron cargar las fincas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7">No se pudieron cargar las fincas.</td></tr>';
                 actualizarContadoresTotales({}, []);
                 showUserAlert('error', 'No se pudieron cargar las fincas.');
             }
@@ -776,6 +904,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
         document.addEventListener('DOMContentLoaded', () => {
             cargarFincas();
+            cargarCooperativas();
 
             const tbody = document.getElementById('fincas-table-body');
             const closeBtn = document.getElementById('fincaModalClose');
@@ -786,6 +915,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const anchoCallejonSur = document.getElementById('ancho-callejon-sur');
             const cantidadPostes = document.getElementById('cantidad-postes');
             const postesMalEstado = document.getElementById('postes-mal-estado');
+            const selectCooperativa = document.getElementById('prod-cooperativa');
             const filtros = [
                 document.getElementById('filtro-cooperativa'),
                 document.getElementById('filtro-productor'),
@@ -836,6 +966,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 }
             });
 
+            selectCooperativa?.addEventListener('change', actualizarFormularioCooperativa);
+
             guardarProductorExterno?.addEventListener('click', async () => {
                 try {
                     await crearProductorExterno();
@@ -872,6 +1004,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
             resetProductorExternoForm();
             cargarCodigoFinca();
+            actualizarFormularioCooperativa();
         });
     </script>
 </body>
