@@ -172,7 +172,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                             <thead>
                                 <tr>
                                     <th>Acciones</th>
-                                    <th>ID pedido</th>
                                     <th>Cooperativa</th>
                                     <th>Productor</th>
                                     <th>Finca</th>
@@ -182,7 +181,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                             </thead>
                             <tbody id="fincas-table-body">
                                 <tr>
-                                    <td colspan="7">Cargando fincas...</td>
+                                    <td colspan="6">Cargando fincas...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -546,7 +545,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 }
 
                 if (filas.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7">No hay fincas participantes.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6">No hay fincas participantes.</td></tr>';
                     return;
                 }
 
@@ -565,11 +564,14 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         btn.dataset.fincaId = String(fila.finca_id);
                     }
                     btn.textContent = fila.relevamiento_id ? 'Modificar' : 'Calificar';
+                    if (!fila.relevamiento_id) {
+                        const idPedido = fila.id ?? '';
+                        btn.title = idPedido ? `Calificar ID ${idPedido}` : 'Calificar';
+                    }
                     tdAcciones.appendChild(btn);
                     tr.appendChild(tdAcciones);
 
                     const celdas = [
-                        fila.id ?? '-',
                         fila.nom_cooperativa || '-',
                         fila.productor || '-',
                         fincaLabel,
@@ -586,7 +588,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 });
             } catch (e) {
                 console.error(e);
-                tbody.innerHTML = '<tr><td colspan="7">No se pudieron cargar las fincas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6">No se pudieron cargar las fincas.</td></tr>';
                 actualizarContadoresTotales({ total_registros: 0, realizados: 0, pendientes: 0 });
                 showUserAlert('error', 'No se pudieron cargar las fincas.');
             }
