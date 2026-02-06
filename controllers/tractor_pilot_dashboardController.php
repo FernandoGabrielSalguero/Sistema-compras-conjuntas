@@ -32,8 +32,9 @@ try {
         }
         if ($action === 'fincas') {
             $filtros = [
-                'cooperativa_id' => $_GET['cooperativa_id'] ?? null,
-                'productor_id' => $_GET['productor_id'] ?? null,
+                'contrato_id' => $_GET['contrato_id'] ?? null,
+                'cooperativa' => $_GET['cooperativa'] ?? null,
+                'productor' => $_GET['productor'] ?? null,
                 'finca_id' => $_GET['finca_id'] ?? null,
             ];
             $data = [
@@ -56,12 +57,8 @@ try {
     if ($method === 'POST') {
         if ($action === 'guardar_relevamiento') {
             $participacionId = isset($_POST['participacion_id']) ? (int) $_POST['participacion_id'] : 0;
-            $fincaId = isset($_POST['finca_id']) ? (int) $_POST['finca_id'] : null;
             if ($participacionId <= 0) {
                 jsonResponse(false, null, 'participacion_id inválido.', 422);
-            }
-            if ($fincaId !== null && $fincaId <= 0) {
-                $fincaId = null;
             }
 
             $data = [
@@ -110,7 +107,7 @@ try {
                 }
             }
 
-            $resultado = $model->guardarRelevamiento($participacionId, $fincaId, $data);
+            $resultado = $model->guardarRelevamiento($participacionId, $data);
             jsonResponse(true, $resultado, 'Relevamiento guardado.');
         }
 

@@ -81,10 +81,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         <span class="material-symbols-outlined" style="color:#16a34a;">agriculture</span>
                         <span class="link-text">Fincas</span>
                     </li>
-                    <li onclick="location.href='tractor_pilot_actualizaciones.php'">
-                        <span class="material-symbols-outlined" style="color:#2563eb;">update</span>
-                        <span class="link-text">Actualizaciones</span>
-                    </li>
                     <li onclick="location.href='../../../logout.php'">
                         <span class="material-icons" style="color: red;">logout</span>
                         <span class="link-text">Salir</span>
@@ -109,7 +105,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
             <section class="content">
                 <div class="card" id="estado-card">
-                    <h2>Panel relevador de fincas</h2>
+                    <h2>Panel piloto tractor</h2>
                     <p>Hola, <?php echo htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8'); ?>.</p>
                     <p id="estado-msg">Cargando estado...</p>
                 </div>
@@ -145,10 +141,9 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 </div>
 
                 <div class="tabla-card">
-                    <h2>Relevamiento_fincas</h2>
-                    <p id="productores-count" style="margin-top: 0.25rem;">Tenemos 0 participantes registrados.</p>
+                    <h2>Fincas participantes de operativos</h2>
                     <div class="tabla-wrapper table-scroll">
-                        <table class="data-table" aria-label="Relevamiento_fincas">
+                        <table class="data-table" aria-label="Fincas participantes de operativos">
                             <thead>
                                 <tr>
                                     <th>Acciones</th>
@@ -156,7 +151,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                     <th>Cooperativa</th>
                                     <th>Productor</th>
                                     <th>Finca</th>
-                                    <th>Superficie</th>
+                                    <th>Superficie (ha)</th>
                                     <th>Variedad</th>
                                 </tr>
                             </thead>
@@ -212,18 +207,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         </div>
                     </div>
                     <div class="input-group">
-                        <label for="prep-acequias">Preparación del suelo <span class="label-subtext">Acequias</span></label>
-                        <div class="input-icon">
-                            <select id="prep-acequias" name="preparacion_acequias" required>
-                                <option value="">Seleccionar</option>
-                                <option>Acequias borradas y sin impedimentos</option>
-                                <option>Acequias suavizadas de fácil tránsito</option>
-                                <option>Acequias con dificultades para el tránsito</option>
-                                <option>Profundas sin borrar</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-group">
                         <label for="estructura-separadores">Estructura <span class="label-subtext">Alambres</span></label>
                         <div class="input-icon">
                             <select id="estructura-separadores" name="estructura_separadores" required>
@@ -231,6 +214,31 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                 <option>Todos asegurados y tensados firmemente</option>
                                 <option>Asegurados y tensados, algunos olvidados</option>
                                 <option>Sin atar o tensar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="agua-lavado">Agua para el lavado</label>
+                        <div class="input-icon">
+                            <select id="agua-lavado" name="agua_lavado" required>
+                                <option value="">Seleccionar</option>
+                                <option>Suficiente y cercanda</option>
+                                <option>Suficiente a mas de 1km</option>
+                                <option>Insuficiente pero cercana</option>
+                                <option>Insuficiente a mas de 1km</option>
+                                <option>No tiene</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="prep-acequias">Preparación del suelo <span class="label-subtext">Acequias</span></label>
+                        <div class="input-icon">
+                            <select id="prep-acequias" name="preparacion_acequias" required>
+                                <option value="">Seleccionar</option>
+                                <option>Acequias borradas y sin impedimentos</option>
+                                <option>Acequias suavizadas de facil transito</option>
+                                <option>Acequias con dificultades para el transito</option>
+                                <option>Profundas sin borrar</option>
                             </select>
                         </div>
                     </div>
@@ -247,29 +255,16 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                             </select>
                         </div>
                     </div>
-                    <div class="input-group">
-                        <label for="agua-lavado">Agua para el lavado</label>
-                        <div class="input-icon">
-                            <select id="agua-lavado" name="agua_lavado" required>
-                                <option value="">Seleccionar</option>
-                                <option>Suficiente y cercana</option>
-                                <option>Suficiente a mas de 1km</option>
-                                <option>Insuficiente pero cercana</option>
-                                <option>Insuficiente a mas de 1km</option>
-                                <option>No tiene</option>
-                            </select>
-                        </div>
-                    </div>
                     <div class="input-group" style="grid-column: span 2;">
-                        <label for="prep-obstaculos">Preparación del suelo <span class="label-subtext">obstáculos</span></label>
+                        <label for="prep-obstaculos">Preparación del suelo (obstáculos)</label>
                         <div class="input-icon">
                             <select id="prep-obstaculos" name="preparacion_obstaculos" required>
                                 <option value="">Seleccionar</option>
-                                <option>Ausencia de malezas</option>
+                                <option>Ausencia de malesas</option>
                                 <option>Ausencia en la mayoria de las superficies</option>
                                 <option>Malezas menores a 40cm</option>
                                 <option>Suelo enmalezado</option>
-                                <option>Obstáculos o malezas sobre el alambre</option>
+                                <option>Obstaculos o malesas sobre el alambre</option>
                             </select>
                         </div>
                     </div>
@@ -372,13 +367,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             promedioEl.textContent = '-';
         }
 
-        function formatearNumeroSinCeroDecimal(valor) {
-            if (Number.isInteger(valor)) {
-                return String(valor);
-            }
-            return valor.toFixed(1).replace(/\.0$/, '');
-        }
-
         function actualizarPorcentajePostesMalEstado() {
             const totalRaw = document.getElementById('cantidad-postes')?.value.trim() ?? '';
             const malRaw = document.getElementById('postes-mal-estado')?.value.trim() ?? '';
@@ -400,7 +388,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             }
 
             const porcentaje = (mal / total) * 100;
-            porcentajeEl.textContent = `${formatearNumeroSinCeroDecimal(porcentaje)}%`;
+            porcentajeEl.textContent = `${porcentaje.toFixed(1)}%`;
         }
 
         async function cargarEstado() {
@@ -448,8 +436,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const productor = document.getElementById('filtro-productor')?.value;
             const finca = document.getElementById('filtro-finca')?.value;
 
-            if (cooperativa) params.set('cooperativa_id', cooperativa);
-            if (productor) params.set('productor_id', productor);
+            if (cooperativa) params.set('cooperativa', cooperativa);
+            if (productor) params.set('productor', productor);
             if (finca) params.set('finca_id', finca);
 
             return params;
@@ -500,53 +488,35 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 const selectFinca = document.getElementById('filtro-finca');
 
                 if (selectCooperativa) {
-                    const coops = (filtros.cooperativas || []).map((item) => ({
-                        value: item.id,
-                        label: item.nombre || `Cooperativa #${item.id}`,
-                    }));
-                    actualizarSelect(selectCooperativa, coops, 'Todas');
+                    actualizarSelect(selectCooperativa, filtros.cooperativas || [], 'Todas');
                 }
                 if (selectProductor) {
-                    const productores = (filtros.productores || []).map((item) => ({
-                        value: item.id,
-                        label: item.nombre || `Productor #${item.id}`,
-                    }));
-                    actualizarSelect(selectProductor, productores, 'Todos');
+                    actualizarSelect(selectProductor, filtros.productores || [], 'Todos');
                 }
                 if (selectFinca) {
                     const fincas = (filtros.fincas || []).map((item) => {
-                        const label = item.nombre_finca || item.codigo_finca || `Finca #${item.id}`;
-                        return { value: item.id, label };
+                        const label = item.nombre_finca || item.codigo_finca || `Finca #${item.finca_id}`;
+                        return { value: item.finca_id, label };
                     });
                     actualizarSelect(selectFinca, fincas, 'Todas');
                 }
 
                 if (filas.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7">No hay fincas participantes.</td></tr>';
-                    const countEl = document.getElementById('productores-count');
-                    if (countEl) {
-                        countEl.textContent = 'Tenemos 0 participantes registrados.';
-                    }
                     return;
                 }
 
                 tbody.innerHTML = '';
-                const participantesSet = new Set();
                 filas.forEach((fila) => {
                     const tr = document.createElement('tr');
 
                     const fincaLabel = fila.nombre_finca || fila.codigo_finca || (fila.finca_id ? `Finca #${fila.finca_id}` : 'Sin finca');
-                    if (fila.participacion_id) {
-                        participantesSet.add(String(fila.participacion_id));
-                    }
 
                     const tdAcciones = document.createElement('td');
                     const btn = document.createElement('button');
                     btn.className = 'btn btn-info';
                     btn.dataset.action = 'abrir-modal';
-                    if (fila.participacion_id !== null && fila.participacion_id !== undefined) {
-                        btn.dataset.participacionId = String(fila.participacion_id);
-                    }
+                    btn.dataset.participacionId = String(fila.id);
                     if (fila.finca_id !== null && fila.finca_id !== undefined) {
                         btn.dataset.fincaId = String(fila.finca_id);
                     }
@@ -555,9 +525,9 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     tr.appendChild(tdAcciones);
 
                     const celdas = [
-                        fila.pedido_id ?? '-',
-                        fila.cooperativa_nombre || '-',
-                        fila.productor_nombre || '-',
+                        fila.id ?? '-',
+                        fila.nom_cooperativa || '-',
+                        fila.productor || '-',
                         fincaLabel,
                         fila.superficie ?? '-',
                         fila.variedad || '-',
@@ -570,14 +540,9 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     });
                     tbody.appendChild(tr);
                 });
-
-                const countEl = document.getElementById('productores-count');
-                if (countEl) {
-                    countEl.textContent = `Tenemos ${participantesSet.size} participantes registrados.`;
-                }
             } catch (e) {
                 console.error(e);
-                tbody.innerHTML = '<tr><td colspan="4">No se pudieron cargar las fincas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7">No se pudieron cargar las fincas.</td></tr>';
                 showUserAlert('error', 'No se pudieron cargar las fincas.');
             }
         }
@@ -596,11 +561,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             modal.setAttribute('aria-hidden', 'true');
         }
 
-        async function cargarRelevamiento(participacion) {
-            const params = new URLSearchParams({
-                action: 'relevamiento',
-                participacion_id: String(participacion.participacionId),
-            });
+        async function cargarRelevamiento(participacionId) {
+            const params = new URLSearchParams({ action: 'relevamiento', participacion_id: String(participacionId) });
             const res = await fetch(`${API_TRACTOR_PILOT}?${params.toString()}`, {
                 credentials: 'same-origin'
             });
@@ -611,7 +573,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             return payload.data || null;
         }
 
-        async function guardarRelevamiento(participacion) {
+        async function guardarRelevamiento(participacionId) {
             const payload = getModalPayload();
             const requeridos = [
                 payload.ancho_callejon_norte,
@@ -632,8 +594,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
             const body = new URLSearchParams({
                 action: 'guardar_relevamiento',
-                participacion_id: String(participacion.participacionId),
-                finca_id: String(participacion.fincaId ?? ''),
+                participacion_id: String(participacionId),
                 ...payload,
             });
 
@@ -677,17 +638,15 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 const target = event.target;
                 if (target instanceof HTMLElement && target.dataset.action === 'abrir-modal') {
                     const participacionId = Number(target.dataset.participacionId || 0);
-                    const fincaId = Number(target.dataset.fincaId || 0);
                     if (!participacionId) {
-                        showUserAlert('error', 'No se encontró la participación.');
+                        showUserAlert('error', 'No se encontró el ID de participación.');
                         return;
                     }
                     modal.dataset.participacionId = String(participacionId);
-                    modal.dataset.fincaId = String(fincaId);
                     abrirModalFinca();
                     showUserAlert('info', 'Cargando relevamiento...');
                     try {
-                        const relevamiento = await cargarRelevamiento({ participacionId, fincaId });
+                        const relevamiento = await cargarRelevamiento(participacionId);
                         setModalData(relevamiento);
                         const msg = relevamiento ? 'Relevamiento cargado.' : 'Sin relevamiento previo.';
                         showUserAlert('success', msg);
@@ -713,13 +672,12 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
             guardarBtn?.addEventListener('click', async () => {
                 const participacionId = Number(modal?.dataset.participacionId || 0);
-                const fincaId = Number(modal?.dataset.fincaId || 0);
                 if (!participacionId) {
-                    showUserAlert('error', 'No se encontró la participación.');
+                    showUserAlert('error', 'No se encontró el ID de participación.');
                     return;
                 }
                 try {
-                    await guardarRelevamiento({ participacionId, fincaId });
+                    await guardarRelevamiento(participacionId);
                     showUserAlert('success', 'Relevamiento guardado.');
                     cerrarModalFinca();
                     cargarFincas();
