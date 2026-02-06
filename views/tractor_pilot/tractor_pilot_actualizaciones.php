@@ -69,6 +69,18 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             color: #6b7280;
             cursor: not-allowed;
         }
+
+        .table-meta {
+            margin-top: 0.35rem;
+            margin-bottom: 0.6rem;
+            color: #4b5563;
+            font-size: 0.95rem;
+        }
+
+        .table-meta-sep {
+            margin: 0 0.35rem;
+            color: #9ca3af;
+        }
     </style>
 </head>
 
@@ -147,15 +159,48 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                 </select>
                             </div>
                         </div>
-                        <div class="input-group" style="display:flex; align-items:flex-end;">
-                            <button class="btn btn-info" type="button" id="btn-productor-externo">Añadir productor externo</button>
-                        </div>
                     </div>
+                </div>
+
+                <div class="card">
+                    <h2>Añadir productor externo</h2>
+                    <form class="form-modern" autocomplete="off">
+                        <div class="form-grid grid-2">
+                            <div class="input-group">
+                                <label for="prod-usuario">Nombre productor</label>
+                                <div class="input-icon">
+                                    <input type="text" id="prod-usuario" name="usuario" placeholder="Nombre del productor" required />
+                                </div>
+                            </div>
+                            <input type="hidden" id="prod-contrasena" name="contrasena" />
+                            <div class="input-group">
+                                <label for="prod-finca-nombre">Nombre de la finca</label>
+                                <div class="input-icon">
+                                    <input type="text" id="prod-finca-nombre" name="nombre_finca" placeholder="Nombre de la finca" required />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="prod-finca-codigo">Código de la finca</label>
+                                <div class="input-icon">
+                                    <input type="text" id="prod-finca-codigo" name="codigo_finca" readonly />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-buttons">
+                            <button class="btn btn-aceptar" type="button" id="productorExternoGuardar">Guardar</button>
+                        </div>
+                    </form>
                 </div>
 
                 <div class="tabla-card">
                     <h2>Relevamiento_fincas</h2>
-                    <p id="productores-count" style="margin-top: 0.25rem;">Tenemos 0 productores registrados.</p>
+                    <div class="table-meta">
+                        <strong>Registros:</strong> <span id="fincas-count">0</span>
+                        <span class="table-meta-sep">|</span>
+                        <strong>Realizados:</strong> <span id="fincas-done-count">0</span>
+                        <span class="table-meta-sep">|</span>
+                        <strong>Pendientes:</strong> <span id="fincas-pending-count">0</span>
+                    </div>
                     <div class="tabla-wrapper table-scroll">
                         <table class="data-table" aria-label="Relevamiento_fincas">
                             <thead>
@@ -164,11 +209,13 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                     <th>Cooperativa</th>
                                     <th>Productor</th>
                                     <th>Finca</th>
+                                    <th>Superficie (ha)</th>
+                                    <th>Variedad</th>
                                 </tr>
                             </thead>
                             <tbody id="fincas-table-body">
                                 <tr>
-                                    <td colspan="4">Cargando fincas...</td>
+                                    <td colspan="6">Cargando fincas...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -211,39 +258,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 <div class="form-buttons">
                     <button class="btn btn-aceptar" type="button" id="fincaModalGuardar">Guardar</button>
                     <button class="btn btn-cancelar" type="button" id="fincaModalClose">Cerrar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="productorExternoModal" class="modal hidden" aria-hidden="true">
-        <div class="modal-content">
-            <h3>Añadir productor externo</h3>
-            <form class="form-modern">
-                <div class="form-grid grid-2">
-                    <div class="input-group">
-                        <label for="prod-usuario">Nombre productor</label>
-                        <div class="input-icon">
-                            <input type="text" id="prod-usuario" name="usuario" placeholder="Nombre del productor" required />
-                        </div>
-                    </div>
-                    <input type="hidden" id="prod-contrasena" name="contrasena" />
-                    <div class="input-group">
-                        <label for="prod-finca-nombre">Nombre de la finca</label>
-                        <div class="input-icon">
-                            <input type="text" id="prod-finca-nombre" name="nombre_finca" placeholder="Nombre de la finca" required />
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label for="prod-finca-codigo">Código de la finca</label>
-                        <div class="input-icon">
-                            <input type="text" id="prod-finca-codigo" name="codigo_finca" readonly />
-                        </div>
-                    </div>
-                </div>
-                <div class="form-buttons">
-                    <button class="btn btn-aceptar" type="button" id="productorExternoGuardar">Guardar</button>
-                    <button class="btn btn-cancelar" type="button" id="productorExternoClose">Cerrar</button>
                 </div>
             </form>
         </div>
@@ -479,6 +493,23 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             }
         }
 
+        function actualizarContadoresTotales(filas) {
+            const totalEl = document.getElementById('fincas-count');
+            const doneEl = document.getElementById('fincas-done-count');
+            const pendingEl = document.getElementById('fincas-pending-count');
+
+            if (!totalEl || !doneEl || !pendingEl) return;
+
+            const items = Array.isArray(filas) ? filas : [];
+            const total = items.length;
+            const realizados = items.filter((fila) => fila.relevamiento_id).length;
+            const pendientes = Math.max(0, total - realizados);
+
+            totalEl.textContent = String(total);
+            doneEl.textContent = String(realizados);
+            pendingEl.textContent = String(pendientes);
+        }
+
         async function cargarFincas() {
             const tbody = document.getElementById('fincas-table-body');
             const params = construirQueryFiltros();
@@ -493,6 +524,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 const data = payload.data || {};
                 const filas = Array.isArray(data.items) ? data.items : [];
                 const filtros = data.filtros || {};
+
+                actualizarContadoresTotales(filas);
 
                 const selectCooperativa = document.getElementById('filtro-cooperativa');
                 const selectProductor = document.getElementById('filtro-productor');
@@ -521,23 +554,15 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 }
 
                 if (filas.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4">No hay fincas participantes.</td></tr>';
-                    const countEl = document.getElementById('productores-count');
-                    if (countEl) {
-                        countEl.textContent = 'Tenemos 0 productores registrados.';
-                    }
+                    tbody.innerHTML = '<tr><td colspan="6">No hay fincas participantes.</td></tr>';
                     return;
                 }
 
                 tbody.innerHTML = '';
-                const productoresSet = new Set();
                 filas.forEach((fila) => {
                     const tr = document.createElement('tr');
 
                     const fincaLabel = fila.nombre_finca || fila.codigo_finca || (fila.finca_id ? `Finca #${fila.finca_id}` : 'Sin finca');
-                    if (fila.productor_id) {
-                        productoresSet.add(String(fila.productor_id));
-                    }
 
                     const tdAcciones = document.createElement('td');
                     const btn = document.createElement('button');
@@ -558,6 +583,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         fila.cooperativa_nombre || '-',
                         fila.productor_nombre || '-',
                         fincaLabel,
+                        fila.superficie ?? '-',
+                        fila.variedad || '-',
                     ];
 
                     celdas.forEach((valor) => {
@@ -567,14 +594,10 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     });
                     tbody.appendChild(tr);
                 });
-
-                const countEl = document.getElementById('productores-count');
-                if (countEl) {
-                    countEl.textContent = `Tenemos ${productoresSet.size} productores registrados.`;
-                }
             } catch (e) {
                 console.error(e);
-                tbody.innerHTML = '<tr><td colspan="4">No se pudieron cargar las fincas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6">No se pudieron cargar las fincas.</td></tr>';
+                actualizarContadoresTotales([]);
                 showUserAlert('error', 'No se pudieron cargar las fincas.');
             }
         }
@@ -586,9 +609,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const closeBtn = document.getElementById('fincaModalClose');
             const modal = document.getElementById('fincaModal');
             const guardarBtn = document.getElementById('fincaModalGuardar');
-            const btnProductorExterno = document.getElementById('btn-productor-externo');
-            const modalProductorExterno = document.getElementById('productorExternoModal');
-            const closeProductorExterno = document.getElementById('productorExternoClose');
             const guardarProductorExterno = document.getElementById('productorExternoGuardar');
             const filtros = [
                 document.getElementById('filtro-cooperativa'),
@@ -624,14 +644,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 }
             });
 
-            btnProductorExterno?.addEventListener('click', () => {
-                if (!modalProductorExterno) return;
-                modalProductorExterno.classList.remove('hidden');
-                modalProductorExterno.setAttribute('aria-hidden', 'false');
-                resetProductorExternoForm();
-                cargarCodigoFinca();
-            });
-
             document.getElementById('prod-usuario')?.addEventListener('input', (event) => {
                 const target = event.target;
                 const contrasena = document.getElementById('prod-contrasena');
@@ -640,27 +652,12 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 }
             });
 
-            closeProductorExterno?.addEventListener('click', () => {
-                if (!modalProductorExterno) return;
-                modalProductorExterno.classList.add('hidden');
-                modalProductorExterno.setAttribute('aria-hidden', 'true');
-            });
-
-            modalProductorExterno?.addEventListener('click', (event) => {
-                if (event.target === modalProductorExterno) {
-                    modalProductorExterno.classList.add('hidden');
-                    modalProductorExterno.setAttribute('aria-hidden', 'true');
-                }
-            });
-
             guardarProductorExterno?.addEventListener('click', async () => {
                 try {
                     await crearProductorExterno();
                     showUserAlert('success', 'Productor externo creado.');
-                    if (modalProductorExterno) {
-                        modalProductorExterno.classList.add('hidden');
-                        modalProductorExterno.setAttribute('aria-hidden', 'true');
-                    }
+                    resetProductorExternoForm();
+                    cargarCodigoFinca();
                     cargarFincas();
                 } catch (error) {
                     console.error(error);
@@ -689,6 +686,9 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             filtros.forEach((select) => {
                 select?.addEventListener('change', cargarFincas);
             });
+
+            resetProductorExternoForm();
+            cargarCodigoFinca();
         });
     </script>
 </body>
