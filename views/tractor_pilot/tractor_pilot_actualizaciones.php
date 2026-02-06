@@ -174,8 +174,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         <span class="link-text">Fincas</span>
                     </li>
                     <li onclick="location.href='tractor_pilot_actualizaciones.php'">
-                        <span class="material-symbols-outlined" style="color:#2563eb;">update</span>
-                        <span class="link-text">Actualizaciones</span>
+                        <span class="material-symbols-outlined" style="color:#2563eb;">add</span>
+                        <span class="link-text">Nuevo</span>
                     </li>
                     <li onclick="location.href='../../../logout.php'">
                         <span class="material-icons" style="color: red;">logout</span>
