@@ -195,10 +195,10 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                     <input type="text" id="prod-finca-nombre" name="nombre_finca" placeholder="Nombre de la finca" required />
                                 </div>
                             </div>
-                            <div class="input-group hidden" id="prod-finca-variedad-group">
+                            <div class="input-group" id="prod-finca-variedad-group">
                                 <label for="prod-finca-variedad">Variedad</label>
                                 <div class="input-icon">
-                                    <input type="text" id="prod-finca-variedad" name="variedad" placeholder="Variedad de la finca" />
+                                    <input type="text" id="prod-finca-variedad" name="variedad" placeholder="Variedad de la finca" required />
                                 </div>
                             </div>
                             <div class="input-group">
@@ -527,29 +527,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             if (fincaVariedad) fincaVariedad.value = '';
         }
 
-        function esSVEProductores(cooperativaIdReal) {
-            return String(cooperativaIdReal || '') === '77675558875';
-        }
-
-        function actualizarFormularioCooperativa() {
-            const select = document.getElementById('prod-cooperativa');
-            const variedadGroup = document.getElementById('prod-finca-variedad-group');
-            const variedadInput = document.getElementById('prod-finca-variedad');
-            const seleccion = select?.value ?? '';
-            const debeMostrarVariedad = esSVEProductores(seleccion);
-
-            if (!variedadGroup || !variedadInput) return;
-
-            if (debeMostrarVariedad) {
-                variedadGroup.classList.remove('hidden');
-                variedadInput.setAttribute('required', 'required');
-            } else {
-                variedadGroup.classList.add('hidden');
-                variedadInput.removeAttribute('required');
-                variedadInput.value = '';
-            }
-        }
-
         async function cargarCodigoFinca() {
             const input = document.getElementById('prod-finca-codigo');
             if (!input) return;
@@ -670,7 +647,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 return null;
             }
 
-            if (esSVEProductores(cooperativaIdReal) && !variedad) {
+            if (!variedad) {
                 showUserAlert('warning', 'Completá la variedad de la finca.');
                 return null;
             }
@@ -915,7 +892,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const anchoCallejonSur = document.getElementById('ancho-callejon-sur');
             const cantidadPostes = document.getElementById('cantidad-postes');
             const postesMalEstado = document.getElementById('postes-mal-estado');
-            const selectCooperativa = document.getElementById('prod-cooperativa');
             const filtros = [
                 document.getElementById('filtro-cooperativa'),
                 document.getElementById('filtro-productor'),
@@ -966,8 +942,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 }
             });
 
-            selectCooperativa?.addEventListener('change', actualizarFormularioCooperativa);
-
             guardarProductorExterno?.addEventListener('click', async () => {
                 try {
                     await crearProductorExterno();
@@ -1004,7 +978,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
             resetProductorExternoForm();
             cargarCodigoFinca();
-            actualizarFormularioCooperativa();
         });
     </script>
 </body>
