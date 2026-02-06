@@ -188,6 +188,18 @@ class TractorPilotActualizacionesModel
             throw new InvalidArgumentException('Falta la cooperativa.');
         }
 
+        $productorExistente = $this->obtenerProductorPorNombre($usuario);
+        if ($productorExistente) {
+            return $this->crearFincaParaProductorExistente(
+                (int) $productorExistente['id'],
+                (string) $productorExistente['id_real'],
+                $cooperativaIdReal,
+                $nombreFinca,
+                $codigoFinca ?: null,
+                $variedad ?: null
+            );
+        }
+
         $stmtExiste = $this->pdo->prepare("SELECT 1 FROM usuarios WHERE usuario = :usuario LIMIT 1");
         $stmtExiste->execute([':usuario' => $usuario]);
         if ($stmtExiste->fetchColumn()) {
@@ -509,5 +521,138 @@ class TractorPilotActualizacionesModel
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function buscarProductoresPorCooperativa(string $cooperativaIdReal, string $query): array
+    {
+        $sql = "SELECT
+                    u.id,
+                    u.id_real,
+                    COALESCE(NULLIF(ui.nombre, ''), u.usuario) AS nombre
+                FROM rel_productor_coop rpc
+                INNER JOIN usuarios u
+                    ON u.id_real = rpc.productor_id_real
+                LEFT JOIN usuarios_info ui
+                    ON ui.usuario_id = u.id
+                WHERE rpc.cooperativa_id_real = :cooperativa_id_real
+                  AND u.rol = 'productor'
+                  AND (
+                      COALESCE(NULLIF(ui.nombre, ''), u.usuario) LIKE :q
+                      OR u.usuario LIKE :q
+                  )
+                ORDER BY nombre ASC
+                LIMIT 10";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':cooperativa_id_real' => $cooperativaIdReal,
+            ':q' => '%' . $query . '%',
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    private function obtenerProductorPorNombre(string $nombre): ?array
+    {
+        $sql = "SELECT
+                    u.id,
+                    u.id_real,
+                    COALESCE(NULLIF(ui.nombre, ''), u.usuario) AS nombre
+                FROM usuarios u
+                LEFT JOIN usuarios_info ui
+                    ON ui.usuario_id = u.id
+                WHERE u.rol = 'productor'
+                  AND (
+                      LOWER(COALESCE(NULLIF(ui.nombre, ''), u.usuario)) = LOWER(:nombre)
+                      OR LOWER(u.usuario) = LOWER(:nombre)
+                  )
+                LIMIT 1";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':nombre' => $nombre]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
+
+    public function crearFincaParaProductorExistente(
+        int $productorId,
+        string $productorIdReal,
+        string $cooperativaIdReal,
+        string $nombreFinca,
+        ?string $codigoFinca = null,
+        ?string $variedad = null
+    ): array {
+        $productorIdReal = trim($productorIdReal);
+        $cooperativaIdReal = trim($cooperativaIdReal);
+        $nombreFinca = trim($nombreFinca);
+        $codigoFinca = $codigoFinca ? trim($codigoFinca) : '';
+        $variedad = $variedad ? trim($variedad) : '';
+
+        if ($productorId <= 0 || $productorIdReal === '' || $cooperativaIdReal === '' || $nombreFinca === '') {
+            throw new InvalidArgumentException('Faltan datos obligatorios.');
+        }
+
+        $codigoFinal = $codigoFinca;
+        if ($codigoFinal === '') {
+            $codigoFinal = $this->generarCodigoFincaUnico();
+        } else {
+            $stmtCodigo = $this->pdo->prepare("SELECT 1 FROM prod_fincas WHERE codigo_finca = :codigo LIMIT 1");
+            $stmtCodigo->execute([':codigo' => $codigoFinal]);
+            if ($stmtCodigo->fetchColumn()) {
+                $codigoFinal = $this->generarCodigoFincaUnico();
+            }
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $stmtRelExiste = $this->pdo->prepare("SELECT 1 FROM rel_productor_coop
+                WHERE productor_id_real = :productor_id_real AND cooperativa_id_real = :cooperativa_id_real
+                LIMIT 1");
+            $stmtRelExiste->execute([
+                ':productor_id_real' => $productorIdReal,
+                ':cooperativa_id_real' => $cooperativaIdReal,
+            ]);
+            if (!$stmtRelExiste->fetchColumn()) {
+                $stmtRelCoop = $this->pdo->prepare("INSERT INTO rel_productor_coop (productor_id_real, cooperativa_id_real)
+                    VALUES (:productor_id_real, :cooperativa_id_real)");
+                $stmtRelCoop->execute([
+                    ':productor_id_real' => $productorIdReal,
+                    ':cooperativa_id_real' => $cooperativaIdReal,
+                ]);
+            }
+
+            $stmtFinca = $this->pdo->prepare("INSERT INTO prod_fincas (codigo_finca, productor_id_real, nombre_finca, variedad)
+                VALUES (:codigo_finca, :productor_id_real, :nombre_finca, :variedad)");
+            $stmtFinca->execute([
+                ':codigo_finca' => $codigoFinal,
+                ':productor_id_real' => $productorIdReal,
+                ':nombre_finca' => $nombreFinca,
+                ':variedad' => $variedad !== '' ? $variedad : null,
+            ]);
+
+            $fincaId = (int) $this->pdo->lastInsertId();
+
+            $stmtRelFinca = $this->pdo->prepare("INSERT INTO rel_productor_finca (productor_id, productor_id_real, finca_id)
+                VALUES (:productor_id, :productor_id_real, :finca_id)");
+            $stmtRelFinca->execute([
+                ':productor_id' => $productorId,
+                ':productor_id_real' => $productorIdReal,
+                ':finca_id' => $fincaId,
+            ]);
+
+            $this->pdo->commit();
+
+            return [
+                'usuario_id' => $productorId,
+                'productor_id_real' => $productorIdReal,
+                'finca_id' => $fincaId,
+                'codigo_finca' => $codigoFinal,
+                'accion' => 'finca_creada',
+            ];
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
 }

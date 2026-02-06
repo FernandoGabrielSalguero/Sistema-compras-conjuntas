@@ -119,6 +119,38 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
         .input-group.hidden {
             display: none;
         }
+
+        .suggest-list {
+            margin-top: 0.35rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #fff;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+        }
+
+        .suggest-list.hidden {
+            display: none;
+        }
+
+        .suggest-item {
+            padding: 0.55rem 0.75rem;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #111827;
+        }
+
+        .suggest-item:hover {
+            background: #f3f4f6;
+        }
+
+        .suggest-item small {
+            display: block;
+            color: #6b7280;
+            margin-top: 0.15rem;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 
@@ -187,6 +219,9 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                 <div class="input-icon">
                                     <input type="text" id="prod-usuario" name="usuario" placeholder="Nombre del productor" required />
                                 </div>
+                                <input type="hidden" id="prod-productor-id" name="productor_id" />
+                                <input type="hidden" id="prod-productor-id-real" name="productor_id_real" />
+                                <div id="prod-usuario-sugerencias" class="suggest-list hidden"></div>
                             </div>
                             <input type="hidden" id="prod-contrasena" name="contrasena" />
                             <div class="input-group">
@@ -521,10 +556,19 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const contrasena = document.getElementById('prod-contrasena');
             const fincaNombre = document.getElementById('prod-finca-nombre');
             const fincaVariedad = document.getElementById('prod-finca-variedad');
+            const productorId = document.getElementById('prod-productor-id');
+            const productorIdReal = document.getElementById('prod-productor-id-real');
+            const sugerencias = document.getElementById('prod-usuario-sugerencias');
             if (usuario) usuario.value = '';
             if (contrasena) contrasena.value = '';
             if (fincaNombre) fincaNombre.value = '';
             if (fincaVariedad) fincaVariedad.value = '';
+            if (productorId) productorId.value = '';
+            if (productorIdReal) productorIdReal.value = '';
+            if (sugerencias) {
+                sugerencias.innerHTML = '';
+                sugerencias.classList.add('hidden');
+            }
         }
 
         async function cargarCodigoFinca() {
@@ -572,6 +616,57 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 select.innerHTML = '<option value="">No se pudieron cargar</option>';
                 showUserAlert('error', 'No se pudieron cargar las cooperativas.');
             }
+        }
+
+        function limpiarSeleccionProductor() {
+            const productorId = document.getElementById('prod-productor-id');
+            const productorIdReal = document.getElementById('prod-productor-id-real');
+            if (productorId) productorId.value = '';
+            if (productorIdReal) productorIdReal.value = '';
+        }
+
+        function renderSugerenciasProductor(items) {
+            const sugerencias = document.getElementById('prod-usuario-sugerencias');
+            if (!sugerencias) return;
+            sugerencias.innerHTML = '';
+
+            if (!items.length) {
+                sugerencias.classList.add('hidden');
+                return;
+            }
+
+            items.forEach((item) => {
+                const div = document.createElement('div');
+                div.className = 'suggest-item';
+                div.dataset.productorId = String(item.id ?? '');
+                div.dataset.productorIdReal = String(item.id_real ?? '');
+                div.dataset.nombre = String(item.nombre ?? '').trim();
+                div.textContent = div.dataset.nombre || 'Productor';
+                if (item.id_real) {
+                    const small = document.createElement('small');
+                    small.textContent = `ID: ${item.id_real}`;
+                    div.appendChild(small);
+                }
+                sugerencias.appendChild(div);
+            });
+
+            sugerencias.classList.remove('hidden');
+        }
+
+        async function buscarProductores(cooperativaIdReal, query) {
+            const params = new URLSearchParams({
+                action: 'buscar_productores',
+                cooperativa_id_real: String(cooperativaIdReal),
+                q: String(query),
+            });
+            const res = await fetch(`${API_TRACTOR_PILOT}?${params.toString()}`, {
+                credentials: 'same-origin'
+            });
+            const payload = await res.json();
+            if (!res.ok || !payload.ok) {
+                throw new Error(payload.message || 'Error');
+            }
+            return Array.isArray(payload.data) ? payload.data : [];
         }
 
         async function cargarRelevamiento(participacionId) {
@@ -636,14 +731,16 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const codigoFinca = document.getElementById('prod-finca-codigo')?.value.trim() ?? '';
             const cooperativaIdReal = document.getElementById('prod-cooperativa')?.value.trim() ?? '';
             const variedad = document.getElementById('prod-finca-variedad')?.value.trim() ?? '';
+            const productorId = document.getElementById('prod-productor-id')?.value.trim() ?? '';
+            const productorIdReal = document.getElementById('prod-productor-id-real')?.value.trim() ?? '';
 
             if (!cooperativaIdReal) {
                 showUserAlert('warning', 'Seleccioná una cooperativa.');
                 return null;
             }
 
-            if (!usuario || !contrasena || !nombreFinca) {
-                showUserAlert('warning', 'Completá usuario, contraseña y nombre de finca.');
+            if (!usuario || !nombreFinca) {
+                showUserAlert('warning', 'Completá productor y nombre de finca.');
                 return null;
             }
 
@@ -660,6 +757,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 codigo_finca: codigoFinca,
                 cooperativa_id_real: cooperativaIdReal,
                 variedad,
+                productor_id: productorId,
+                productor_id_real: productorIdReal,
             });
 
             showUserAlert('info', 'Creando productor externo...');
@@ -892,6 +991,9 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const anchoCallejonSur = document.getElementById('ancho-callejon-sur');
             const cantidadPostes = document.getElementById('cantidad-postes');
             const postesMalEstado = document.getElementById('postes-mal-estado');
+            const inputProductor = document.getElementById('prod-usuario');
+            const sugerencias = document.getElementById('prod-usuario-sugerencias');
+            const selectCooperativa = document.getElementById('prod-cooperativa');
             const filtros = [
                 document.getElementById('filtro-cooperativa'),
                 document.getElementById('filtro-productor'),
@@ -939,6 +1041,57 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 const contrasena = document.getElementById('prod-contrasena');
                 if (target instanceof HTMLInputElement && contrasena) {
                     contrasena.value = target.value;
+                }
+            });
+
+            let productorSearchTimer = null;
+            inputProductor?.addEventListener('input', () => {
+                limpiarSeleccionProductor();
+                if (productorSearchTimer) {
+                    clearTimeout(productorSearchTimer);
+                }
+                const query = inputProductor?.value.trim() ?? '';
+                const cooperativaIdReal = selectCooperativa?.value.trim() ?? '';
+                if (!cooperativaIdReal || query.length < 3) {
+                    sugerencias?.classList.add('hidden');
+                    if (sugerencias) sugerencias.innerHTML = '';
+                    return;
+                }
+                productorSearchTimer = setTimeout(async () => {
+                    try {
+                        const items = await buscarProductores(cooperativaIdReal, query);
+                        renderSugerenciasProductor(items);
+                    } catch (error) {
+                        console.error(error);
+                        if (sugerencias) {
+                            sugerencias.innerHTML = '';
+                            sugerencias.classList.add('hidden');
+                        }
+                    }
+                }, 250);
+            });
+
+            sugerencias?.addEventListener('click', (event) => {
+                const target = event.target instanceof HTMLElement ? event.target.closest('.suggest-item') : null;
+                if (!target) return;
+                const nombre = target.dataset.nombre ?? '';
+                const productorId = target.dataset.productorId ?? '';
+                const productorIdReal = target.dataset.productorIdReal ?? '';
+
+                if (inputProductor) inputProductor.value = nombre;
+                const hiddenId = document.getElementById('prod-productor-id');
+                const hiddenIdReal = document.getElementById('prod-productor-id-real');
+                if (hiddenId) hiddenId.value = productorId;
+                if (hiddenIdReal) hiddenIdReal.value = productorIdReal;
+
+                sugerencias.classList.add('hidden');
+            });
+
+            selectCooperativa?.addEventListener('change', () => {
+                limpiarSeleccionProductor();
+                if (sugerencias) {
+                    sugerencias.innerHTML = '';
+                    sugerencias.classList.add('hidden');
                 }
             });
 
