@@ -63,6 +63,13 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             font-weight: 500;
             margin-top: 0.15rem;
         }
+
+        .table-meta {
+            margin-top: 0.35rem;
+            margin-bottom: 0.6rem;
+            color: #4b5563;
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 
@@ -142,6 +149,11 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
                 <div class="tabla-card">
                     <h2>Fincas participantes de operativos</h2>
+                    <br>
+                    <div class="table-meta">
+                        <strong>Fincas:</strong> <span id="fincas-count">0</span>
+                    </div>
+                    <br>
                     <div class="tabla-wrapper table-scroll">
                         <table class="data-table" aria-label="Fincas participantes de operativos">
                             <thead>
@@ -443,6 +455,28 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             return params;
         }
 
+        function actualizarContadorFincas(filas) {
+            const contador = document.getElementById('fincas-count');
+            if (!contador) return;
+
+            const items = Array.isArray(filas) ? filas : [];
+            if (items.length === 0) {
+                contador.textContent = '0';
+                return;
+            }
+
+            const fincasUnicas = new Set();
+            items.forEach((fila) => {
+                if (fila.finca_id !== null && fila.finca_id !== undefined && fila.finca_id !== '') {
+                    fincasUnicas.add(String(fila.finca_id));
+                } else if (fila.id !== null && fila.id !== undefined) {
+                    fincasUnicas.add(`participacion-${fila.id}`);
+                }
+            });
+
+            contador.textContent = String(fincasUnicas.size);
+        }
+
         function actualizarSelect(select, opciones, placeholder) {
             const valorActual = select.value;
             select.innerHTML = '';
@@ -482,6 +516,8 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 const data = payload.data || {};
                 const filas = Array.isArray(data.items) ? data.items : [];
                 const filtros = data.filtros || {};
+
+                actualizarContadorFincas(filas);
 
                 const selectCooperativa = document.getElementById('filtro-cooperativa');
                 const selectProductor = document.getElementById('filtro-productor');
@@ -543,6 +579,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             } catch (e) {
                 console.error(e);
                 tbody.innerHTML = '<tr><td colspan="7">No se pudieron cargar las fincas.</td></tr>';
+                actualizarContadorFincas([]);
                 showUserAlert('error', 'No se pudieron cargar las fincas.');
             }
         }
