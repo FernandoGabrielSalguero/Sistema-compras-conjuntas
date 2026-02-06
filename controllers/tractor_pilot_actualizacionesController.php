@@ -36,6 +36,7 @@ try {
                 'contrato_id' => $_GET['contrato_id'] ?? null,
                 'cooperativa' => $_GET['cooperativa'] ?? null,
                 'productor' => $_GET['productor'] ?? null,
+                'tipo' => $_GET['tipo'] ?? null,
                 'finca_id' => $_GET['finca_id'] ?? null,
             ];
             $data = [

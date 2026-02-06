@@ -288,6 +288,16 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                             </div>
                         </div>
                         <div class="input-group">
+                            <label for="filtro-tipo">Tipo</label>
+                            <div class="input-icon">
+                                <select id="filtro-tipo">
+                                    <option value="">Todos</option>
+                                    <option value="interno">Internos</option>
+                                    <option value="externo">Externos</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="input-group">
                             <label for="filtro-finca">Finca</label>
                             <div class="input-icon">
                                 <select id="filtro-finca">
@@ -866,10 +876,12 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const params = new URLSearchParams();
             const cooperativa = document.getElementById('filtro-cooperativa')?.value;
             const productor = document.getElementById('filtro-productor')?.value;
+            const tipo = document.getElementById('filtro-tipo')?.value;
             const finca = document.getElementById('filtro-finca')?.value;
 
             if (cooperativa) params.set('cooperativa', cooperativa);
             if (productor) params.set('productor', productor);
+            if (tipo) params.set('tipo', tipo);
             if (finca) params.set('finca_id', finca);
 
             return params;
@@ -1059,6 +1071,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const filtros = [
                 document.getElementById('filtro-cooperativa'),
                 document.getElementById('filtro-productor'),
+                document.getElementById('filtro-tipo'),
                 document.getElementById('filtro-finca'),
             ];
 

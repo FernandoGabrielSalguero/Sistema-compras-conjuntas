@@ -40,6 +40,15 @@ class TractorPilotActualizacionesModel
             $params[':productor'] = (string) $filtros['productor'];
         }
 
+        if ($excluir !== 'tipo' && !empty($filtros['tipo'])) {
+            $tipo = strtolower((string) $filtros['tipo']);
+            if ($tipo === 'externo') {
+                $condiciones[] = "f.codigo_finca LIKE 'EXT-%'";
+            } elseif ($tipo === 'interno') {
+                $condiciones[] = "(f.codigo_finca IS NULL OR f.codigo_finca NOT LIKE 'EXT-%')";
+            }
+        }
+
         if ($excluir !== 'finca' && !empty($filtros['finca_id'])) {
             $condiciones[] = 'p.finca_id = :finca_id';
             $params[':finca_id'] = (int) $filtros['finca_id'];
