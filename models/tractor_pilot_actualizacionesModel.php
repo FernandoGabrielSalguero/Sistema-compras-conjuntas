@@ -171,7 +171,9 @@ class TractorPilotActualizacionesModel
         string $nombreFinca,
         ?string $codigoFinca = null,
         ?string $cooperativaIdReal = null,
-        ?string $variedad = null
+        ?string $variedad = null,
+        ?int $contratoId = null,
+        ?string $superficie = null
     ): array
     {
         $usuario = trim($usuario);
@@ -187,6 +189,12 @@ class TractorPilotActualizacionesModel
         if ($cooperativaIdReal === '') {
             throw new InvalidArgumentException('Falta la cooperativa.');
         }
+        if (!$contratoId) {
+            throw new InvalidArgumentException('Falta el contrato.');
+        }
+        if ($superficie === null || trim($superficie) === '') {
+            throw new InvalidArgumentException('Falta la superficie.');
+        }
 
         $productorExistente = $this->obtenerProductorPorNombre($usuario);
         if ($productorExistente) {
@@ -196,7 +204,9 @@ class TractorPilotActualizacionesModel
                 $cooperativaIdReal,
                 $nombreFinca,
                 $codigoFinca ?: null,
-                $variedad ?: null
+                $variedad ?: null,
+                $contratoId,
+                $superficie
             );
         }
 
@@ -265,6 +275,15 @@ class TractorPilotActualizacionesModel
                 ':finca_id' => $fincaId,
             ]);
 
+            $this->insertarParticipacionOperativo(
+                $contratoId,
+                $cooperativaIdReal,
+                $usuario,
+                $fincaId,
+                $variedad,
+                $superficie
+            );
+
             $this->pdo->commit();
 
             return [
@@ -272,6 +291,8 @@ class TractorPilotActualizacionesModel
                 'productor_id_real' => $idReal,
                 'finca_id' => $fincaId,
                 'codigo_finca' => $codigoFinal,
+                'contrato_id' => $contratoId,
+                'superficie' => $superficie,
             ];
         } catch (Throwable $e) {
             $this->pdo->rollBack();
@@ -581,7 +602,9 @@ class TractorPilotActualizacionesModel
         string $cooperativaIdReal,
         string $nombreFinca,
         ?string $codigoFinca = null,
-        ?string $variedad = null
+        ?string $variedad = null,
+        ?int $contratoId = null,
+        ?string $superficie = null
     ): array {
         $productorIdReal = trim($productorIdReal);
         $cooperativaIdReal = trim($cooperativaIdReal);
@@ -591,6 +614,12 @@ class TractorPilotActualizacionesModel
 
         if ($productorId <= 0 || $productorIdReal === '' || $cooperativaIdReal === '' || $nombreFinca === '') {
             throw new InvalidArgumentException('Faltan datos obligatorios.');
+        }
+        if (!$contratoId) {
+            throw new InvalidArgumentException('Falta el contrato.');
+        }
+        if ($superficie === null || trim($superficie) === '') {
+            throw new InvalidArgumentException('Falta la superficie.');
         }
 
         $codigoFinal = $codigoFinca;
@@ -641,6 +670,15 @@ class TractorPilotActualizacionesModel
                 ':finca_id' => $fincaId,
             ]);
 
+            $this->insertarParticipacionOperativo(
+                $contratoId,
+                $cooperativaIdReal,
+                $this->obtenerNombreProductorPorId($productorId) ?? 'Productor',
+                $fincaId,
+                $variedad,
+                $superficie
+            );
+
             $this->pdo->commit();
 
             return [
@@ -649,10 +687,98 @@ class TractorPilotActualizacionesModel
                 'finca_id' => $fincaId,
                 'codigo_finca' => $codigoFinal,
                 'accion' => 'finca_creada',
+                'contrato_id' => $contratoId,
+                'superficie' => $superficie,
             ];
         } catch (Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
         }
+    }
+
+    public function obtenerOperativosAbiertos(): array
+    {
+        $sql = "SELECT id, nombre, fecha_apertura
+                FROM CosechaMecanica
+                WHERE estado = 'abierto'
+                ORDER BY fecha_apertura DESC, nombre ASC";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    private function obtenerNombreProductorPorId(int $productorId): ?string
+    {
+        $sql = "SELECT COALESCE(NULLIF(ui.nombre, ''), u.usuario) AS nombre
+                FROM usuarios u
+                LEFT JOIN usuarios_info ui
+                    ON ui.usuario_id = u.id
+                WHERE u.id = :id
+                LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':id' => $productorId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? (string) $row['nombre'] : null;
+    }
+
+    private function obtenerNombreCooperativaPorIdReal(string $cooperativaIdReal): ?string
+    {
+        $sql = "SELECT COALESCE(NULLIF(ui.nombre, ''), u.usuario) AS nombre
+                FROM usuarios u
+                LEFT JOIN usuarios_info ui
+                    ON ui.usuario_id = u.id
+                WHERE u.id_real = :id_real
+                  AND u.rol = 'cooperativa'
+                LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':id_real' => $cooperativaIdReal]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? (string) $row['nombre'] : null;
+    }
+
+    private function insertarParticipacionOperativo(
+        int $contratoId,
+        string $cooperativaIdReal,
+        string $productorNombre,
+        int $fincaId,
+        ?string $variedad = null,
+        ?string $superficie = null
+    ): void {
+        $nombreCoop = $this->obtenerNombreCooperativaPorIdReal($cooperativaIdReal) ?? $cooperativaIdReal;
+        $stmt = $this->pdo->prepare("INSERT INTO cosechaMecanica_cooperativas_participacion (
+                contrato_id,
+                nom_cooperativa,
+                firma,
+                productor,
+                finca_id,
+                superficie,
+                variedad,
+                prod_estimada,
+                fecha_estimada,
+                km_finca,
+                flete,
+                seguro_flete
+            ) VALUES (
+                :contrato_id,
+                :nom_cooperativa,
+                1,
+                :productor,
+                :finca_id,
+                :superficie,
+                :variedad,
+                0,
+                NULL,
+                0,
+                0,
+                'sin_definir'
+            )");
+        $stmt->execute([
+            ':contrato_id' => $contratoId,
+            ':nom_cooperativa' => $nombreCoop,
+            ':productor' => $productorNombre,
+            ':finca_id' => $fincaId,
+            ':variedad' => $variedad !== '' ? $variedad : null,
+            ':superficie' => $superficie !== '' ? $superficie : 0,
+        ]);
     }
 }

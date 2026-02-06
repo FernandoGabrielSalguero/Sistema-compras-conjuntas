@@ -207,6 +207,14 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     <form class="form-modern" autocomplete="off">
                         <div class="form-grid grid-2">
                             <div class="input-group" style="grid-column: span 2;">
+                                <label for="prod-operativo">Operativo abierto</label>
+                                <div class="input-icon">
+                                    <select id="prod-operativo" name="contrato_id" required>
+                                        <option value="">Seleccionar operativo</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="input-group" style="grid-column: span 2;">
                                 <label for="prod-cooperativa">Cooperativa</label>
                                 <div class="input-icon">
                                     <select id="prod-cooperativa" name="cooperativa_id_real" required>
@@ -234,6 +242,12 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                 <label for="prod-finca-variedad">Variedad</label>
                                 <div class="input-icon">
                                     <input type="text" id="prod-finca-variedad" name="variedad" placeholder="Variedad de la finca" required />
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="prod-finca-superficie">Superficie (ha)</label>
+                                <div class="input-icon">
+                                    <input type="number" id="prod-finca-superficie" name="superficie" min="0" step="0.01" inputmode="decimal" placeholder="0.00" required />
                                 </div>
                             </div>
                             <div class="input-group">
@@ -556,6 +570,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const contrasena = document.getElementById('prod-contrasena');
             const fincaNombre = document.getElementById('prod-finca-nombre');
             const fincaVariedad = document.getElementById('prod-finca-variedad');
+            const fincaSuperficie = document.getElementById('prod-finca-superficie');
             const productorId = document.getElementById('prod-productor-id');
             const productorIdReal = document.getElementById('prod-productor-id-real');
             const sugerencias = document.getElementById('prod-usuario-sugerencias');
@@ -563,6 +578,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             if (contrasena) contrasena.value = '';
             if (fincaNombre) fincaNombre.value = '';
             if (fincaVariedad) fincaVariedad.value = '';
+            if (fincaSuperficie) fincaSuperficie.value = '';
             if (productorId) productorId.value = '';
             if (productorIdReal) productorIdReal.value = '';
             if (sugerencias) {
@@ -615,6 +631,34 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 console.error(e);
                 select.innerHTML = '<option value="">No se pudieron cargar</option>';
                 showUserAlert('error', 'No se pudieron cargar las cooperativas.');
+            }
+        }
+
+        async function cargarOperativosAbiertos() {
+            const select = document.getElementById('prod-operativo');
+            if (!select) return;
+            try {
+                const res = await fetch(`${API_TRACTOR_PILOT}?action=operativos_abiertos`, {
+                    credentials: 'same-origin'
+                });
+                const payload = await res.json();
+                if (!res.ok || !payload.ok) {
+                    throw new Error(payload.message || 'Error');
+                }
+                const items = Array.isArray(payload.data) ? payload.data : [];
+                select.innerHTML = '<option value="">Seleccionar operativo</option>';
+                items.forEach((op) => {
+                    const opt = document.createElement('option');
+                    opt.value = String(op.id ?? '');
+                    const nombre = String(op.nombre ?? '').trim();
+                    const fecha = String(op.fecha_apertura ?? '').trim();
+                    opt.textContent = fecha ? `${nombre} (${fecha})` : nombre || 'Operativo';
+                    select.appendChild(opt);
+                });
+            } catch (e) {
+                console.error(e);
+                select.innerHTML = '<option value="">No se pudieron cargar</option>';
+                showUserAlert('error', 'No se pudieron cargar los operativos.');
             }
         }
 
@@ -731,8 +775,15 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const codigoFinca = document.getElementById('prod-finca-codigo')?.value.trim() ?? '';
             const cooperativaIdReal = document.getElementById('prod-cooperativa')?.value.trim() ?? '';
             const variedad = document.getElementById('prod-finca-variedad')?.value.trim() ?? '';
+            const superficie = document.getElementById('prod-finca-superficie')?.value.trim() ?? '';
             const productorId = document.getElementById('prod-productor-id')?.value.trim() ?? '';
             const productorIdReal = document.getElementById('prod-productor-id-real')?.value.trim() ?? '';
+            const contratoId = document.getElementById('prod-operativo')?.value.trim() ?? '';
+
+            if (!contratoId) {
+                showUserAlert('warning', 'Seleccioná un operativo abierto.');
+                return null;
+            }
 
             if (!cooperativaIdReal) {
                 showUserAlert('warning', 'Seleccioná una cooperativa.');
@@ -749,6 +800,11 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 return null;
             }
 
+            if (!superficie) {
+                showUserAlert('warning', 'Completá la superficie de la finca.');
+                return null;
+            }
+
             const body = new URLSearchParams({
                 action: 'crear_productor_externo',
                 usuario,
@@ -757,8 +813,10 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 codigo_finca: codigoFinca,
                 cooperativa_id_real: cooperativaIdReal,
                 variedad,
+                superficie,
                 productor_id: productorId,
                 productor_id_real: productorIdReal,
+                contrato_id: contratoId,
             });
 
             showUserAlert('info', 'Creando productor externo...');
@@ -981,6 +1039,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
         document.addEventListener('DOMContentLoaded', () => {
             cargarFincas();
             cargarCooperativas();
+            cargarOperativosAbiertos();
 
             const tbody = document.getElementById('fincas-table-body');
             const closeBtn = document.getElementById('fincaModalClose');

@@ -51,6 +51,9 @@ try {
         if ($action === 'cooperativas') {
             jsonResponse(true, $model->obtenerCooperativas());
         }
+        if ($action === 'operativos_abiertos') {
+            jsonResponse(true, $model->obtenerOperativosAbiertos());
+        }
         if ($action === 'buscar_productores') {
             $cooperativaIdReal = trim((string) ($_GET['cooperativa_id_real'] ?? ''));
             $query = trim((string) ($_GET['q'] ?? ''));
@@ -80,9 +83,11 @@ try {
             $variedad = trim((string) ($_POST['variedad'] ?? ''));
             $productorId = isset($_POST['productor_id']) ? (int) $_POST['productor_id'] : 0;
             $productorIdReal = trim((string) ($_POST['productor_id_real'] ?? ''));
+            $contratoId = isset($_POST['contrato_id']) ? (int) $_POST['contrato_id'] : 0;
+            $superficie = trim((string) ($_POST['superficie'] ?? ''));
 
-            if ($nombreFinca === '' || $cooperativaIdReal === '' || $variedad === '') {
-                jsonResponse(false, null, 'nombre_finca, variedad o cooperativa_id_real inválido.', 422);
+            if ($nombreFinca === '' || $cooperativaIdReal === '' || $variedad === '' || $contratoId <= 0 || $superficie === '') {
+                jsonResponse(false, null, 'nombre_finca, variedad, cooperativa_id_real, contrato_id o superficie inválido.', 422);
             }
 
             if ($productorId > 0 && $productorIdReal !== '') {
@@ -92,7 +97,9 @@ try {
                     $cooperativaIdReal,
                     $nombreFinca,
                     $codigoFinca ?: null,
-                    $variedad
+                    $variedad,
+                    $contratoId,
+                    $superficie
                 );
             } else {
                 if ($usuario === '' || $contrasena === '') {
@@ -104,7 +111,9 @@ try {
                     $nombreFinca,
                     $codigoFinca ?: null,
                     $cooperativaIdReal,
-                    $variedad ?: null
+                    $variedad ?: null,
+                    $contratoId,
+                    $superficie
                 );
             }
             jsonResponse(true, $resultado, 'Productor externo creado.');
