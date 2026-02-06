@@ -182,7 +182,7 @@ class TractorPilotActualizacionesModel
         ?string $cooperativaIdReal = null,
         array $variedades = [],
         ?int $contratoId = null,
-        ?string $superficie = null
+        array $superficies = []
     ): array
     {
         $usuario = trim($usuario);
@@ -202,7 +202,7 @@ class TractorPilotActualizacionesModel
         if (!$contratoId) {
             throw new InvalidArgumentException('Falta el contrato.');
         }
-        if ($superficie === null || trim($superficie) === '') {
+        if (count($superficies) === 0) {
             throw new InvalidArgumentException('Falta la superficie.');
         }
         if (count($variedades) === 0) {
@@ -213,6 +213,9 @@ class TractorPilotActualizacionesModel
         }
         if (count($variedades) > 10) {
             throw new InvalidArgumentException('Máximo 10 variedades.');
+        }
+        if (count($variedades) !== count($superficies)) {
+            throw new InvalidArgumentException('Cada variedad debe tener superficie.');
         }
 
         $productorExistente = $this->obtenerProductorPorNombre($usuario);
@@ -225,7 +228,7 @@ class TractorPilotActualizacionesModel
                 $codigoFinca ?: null,
                 $variedades,
                 $contratoId,
-                $superficie
+                $superficies
             );
         }
 
@@ -300,7 +303,7 @@ class TractorPilotActualizacionesModel
                 $usuario,
                 $fincaId,
                 $variedades,
-                $superficie
+                $superficies
             );
 
             $this->pdo->commit();
@@ -311,7 +314,7 @@ class TractorPilotActualizacionesModel
                 'finca_id' => $fincaId,
                 'codigo_finca' => $codigoFinal,
                 'contrato_id' => $contratoId,
-                'superficie' => $superficie,
+                'superficie' => $superficies,
             ];
         } catch (Throwable $e) {
             $this->pdo->rollBack();
@@ -623,7 +626,7 @@ class TractorPilotActualizacionesModel
         ?string $codigoFinca = null,
         array $variedades = [],
         ?int $contratoId = null,
-        ?string $superficie = null
+        array $superficies = []
     ): array {
         $productorIdReal = trim($productorIdReal);
         $cooperativaIdReal = trim($cooperativaIdReal);
@@ -638,7 +641,7 @@ class TractorPilotActualizacionesModel
         if (!$contratoId) {
             throw new InvalidArgumentException('Falta el contrato.');
         }
-        if ($superficie === null || trim($superficie) === '') {
+        if (count($superficies) === 0) {
             throw new InvalidArgumentException('Falta la superficie.');
         }
         if (count($variedades) === 0) {
@@ -649,6 +652,9 @@ class TractorPilotActualizacionesModel
         }
         if (count($variedades) > 10) {
             throw new InvalidArgumentException('Máximo 10 variedades.');
+        }
+        if (count($variedades) !== count($superficies)) {
+            throw new InvalidArgumentException('Cada variedad debe tener superficie.');
         }
 
         $codigoFinal = $codigoFinca;
@@ -705,7 +711,7 @@ class TractorPilotActualizacionesModel
                 $this->obtenerNombreProductorPorId($productorId) ?? 'Productor',
                 $fincaId,
                 $variedades,
-                $superficie
+                $superficies
             );
 
             $this->pdo->commit();
@@ -717,7 +723,7 @@ class TractorPilotActualizacionesModel
                 'codigo_finca' => $codigoFinal,
                 'accion' => 'finca_creada',
                 'contrato_id' => $contratoId,
-                'superficie' => $superficie,
+                'superficie' => $superficies,
             ];
         } catch (Throwable $e) {
             $this->pdo->rollBack();
@@ -771,7 +777,7 @@ class TractorPilotActualizacionesModel
         string $productorNombre,
         int $fincaId,
         array $variedades = [],
-        ?string $superficie = null
+        array $superficies = []
     ): void {
         $nombreCoop = $this->obtenerNombreCooperativaPorIdReal($cooperativaIdReal) ?? $cooperativaIdReal;
         $stmt = $this->pdo->prepare("INSERT INTO cosechaMecanica_cooperativas_participacion (
@@ -802,7 +808,8 @@ class TractorPilotActualizacionesModel
                 'sin_definir'
             )");
 
-        foreach ($variedades as $variedad) {
+        foreach ($variedades as $index => $variedad) {
+            $superficie = $superficies[$index] ?? 0;
             $stmt->execute([
                 ':contrato_id' => $contratoId,
                 ':nom_cooperativa' => $nombreCoop,

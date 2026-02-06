@@ -164,7 +164,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
         .variedad-row {
             display: grid;
-            grid-template-columns: 1fr auto;
+            grid-template-columns: 1fr 160px auto;
             gap: 0.5rem;
             align-items: center;
         }
@@ -299,14 +299,11 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                         <div class="input-icon">
                                             <input type="text" name="variedades[]" placeholder="Variedad de la finca" required />
                                         </div>
+                                        <div class="input-icon">
+                                            <input type="number" name="superficies[]" placeholder="Ha" min="0" step="0.01" inputmode="decimal" required />
+                                        </div>
                                         <button class="btn-variedad-add" type="button" id="btn-add-variedad" title="Agregar variedad">+</button>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="prod-finca-superficie">Superficie (ha)</label>
-                                <div class="input-icon">
-                                    <input type="number" id="prod-finca-superficie" name="superficie" min="0" step="0.01" inputmode="decimal" placeholder="0.00" required />
                                 </div>
                             </div>
                             <div class="input-group">
@@ -639,7 +636,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const usuario = document.getElementById('prod-usuario');
             const contrasena = document.getElementById('prod-contrasena');
             const fincaNombre = document.getElementById('prod-finca-nombre');
-            const fincaSuperficie = document.getElementById('prod-finca-superficie');
             const productorId = document.getElementById('prod-productor-id');
             const productorIdReal = document.getElementById('prod-productor-id-real');
             const sugerencias = document.getElementById('prod-usuario-sugerencias');
@@ -647,7 +643,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             if (usuario) usuario.value = '';
             if (contrasena) contrasena.value = '';
             if (fincaNombre) fincaNombre.value = '';
-            if (fincaSuperficie) fincaSuperficie.value = '';
             if (productorId) productorId.value = '';
             if (productorIdReal) productorIdReal.value = '';
             if (sugerencias) {
@@ -661,6 +656,9 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 row.innerHTML = `
                     <div class="input-icon">
                         <input type="text" name="variedades[]" placeholder="Variedad de la finca" required />
+                    </div>
+                    <div class="input-icon">
+                        <input type="number" name="superficies[]" placeholder="Ha" min="0" step="0.01" inputmode="decimal" required />
                     </div>
                     <button class="btn-variedad-add" type="button" id="btn-add-variedad" title="Agregar variedad">+</button>
                 `;
@@ -856,13 +854,15 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const nombreFinca = document.getElementById('prod-finca-nombre')?.value.trim() ?? '';
             const codigoFinca = document.getElementById('prod-finca-codigo')?.value.trim() ?? '';
             const cooperativaIdReal = document.getElementById('prod-cooperativa')?.value.trim() ?? '';
-            const superficie = document.getElementById('prod-finca-superficie')?.value.trim() ?? '';
             const productorId = document.getElementById('prod-productor-id')?.value.trim() ?? '';
             const productorIdReal = document.getElementById('prod-productor-id-real')?.value.trim() ?? '';
             const contratoId = document.getElementById('prod-operativo')?.value.trim() ?? '';
             const variedades = Array.from(document.querySelectorAll('#prod-variedades-wrap input[name="variedades[]"]'))
                 .map((input) => input.value.trim())
                 .filter((valor) => valor);
+            const superficies = Array.from(document.querySelectorAll('#prod-variedades-wrap input[name="superficies[]"]'))
+                .map((input) => input.value.trim())
+                .filter((valor) => valor !== '');
             const variedadesNorm = variedades.map((v) => v.toLowerCase());
             const sinRepetidas = new Set(variedadesNorm);
 
@@ -886,6 +886,11 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 return null;
             }
 
+            if (superficies.length !== variedades.length) {
+                showUserAlert('warning', 'Completá la superficie de cada variedad.');
+                return null;
+            }
+
             if (sinRepetidas.size !== variedades.length) {
                 showUserAlert('warning', 'Las variedades no pueden repetirse.');
                 return null;
@@ -896,11 +901,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 return null;
             }
 
-            if (!superficie) {
-                showUserAlert('warning', 'Completá la superficie de la finca.');
-                return null;
-            }
-
             const body = new URLSearchParams({
                 action: 'crear_productor_externo',
                 usuario,
@@ -908,12 +908,12 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 nombre_finca: nombreFinca,
                 codigo_finca: codigoFinca,
                 cooperativa_id_real: cooperativaIdReal,
-                superficie,
                 productor_id: productorId,
                 productor_id_real: productorIdReal,
                 contrato_id: contratoId,
             });
             variedades.forEach((item) => body.append('variedades[]', item));
+            superficies.forEach((item) => body.append('superficies[]', item));
 
             const res = await fetch(API_TRACTOR_PILOT, {
                 method: 'POST',
@@ -1266,6 +1266,9 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     row.innerHTML = `
                         <div class="input-icon">
                             <input type="text" name="variedades[]" placeholder="Variedad de la finca" required />
+                        </div>
+                        <div class="input-icon">
+                            <input type="number" name="superficies[]" placeholder="Ha" min="0" step="0.01" inputmode="decimal" required />
                         </div>
                         <button class="btn-variedad-remove" type="button" title="Quitar variedad">-</button>
                     `;

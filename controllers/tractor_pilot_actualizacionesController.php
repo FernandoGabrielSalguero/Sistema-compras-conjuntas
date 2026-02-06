@@ -82,14 +82,18 @@ try {
             $codigoFinca = trim((string) ($_POST['codigo_finca'] ?? ''));
             $cooperativaIdReal = trim((string) ($_POST['cooperativa_id_real'] ?? ''));
             $variedades = $_POST['variedades'] ?? [];
+            $superficies = $_POST['superficies'] ?? [];
             $productorId = isset($_POST['productor_id']) ? (int) $_POST['productor_id'] : 0;
             $productorIdReal = trim((string) ($_POST['productor_id_real'] ?? ''));
             $contratoId = isset($_POST['contrato_id']) ? (int) $_POST['contrato_id'] : 0;
-            $superficie = trim((string) ($_POST['superficie'] ?? ''));
 
             $variedades = is_array($variedades) ? array_values(array_filter(array_map('trim', $variedades))) : [];
-            if ($nombreFinca === '' || $cooperativaIdReal === '' || $contratoId <= 0 || $superficie === '' || count($variedades) === 0) {
-                jsonResponse(false, null, 'nombre_finca, variedades, cooperativa_id_real, contrato_id o superficie inválido.', 422);
+            $superficies = is_array($superficies) ? array_values(array_filter(array_map('trim', $superficies), static fn($v) => $v !== '')) : [];
+            if ($nombreFinca === '' || $cooperativaIdReal === '' || $contratoId <= 0 || count($variedades) === 0) {
+                jsonResponse(false, null, 'nombre_finca, variedades, cooperativa_id_real o contrato_id inválido.', 422);
+            }
+            if (count($variedades) !== count($superficies)) {
+                jsonResponse(false, null, 'Cada variedad debe tener superficie.', 422);
             }
             $variedadesLower = array_map('mb_strtolower', $variedades);
             if (count(array_unique($variedadesLower)) !== count($variedadesLower)) {
@@ -108,7 +112,7 @@ try {
                     $codigoFinca ?: null,
                     $variedades,
                     $contratoId,
-                    $superficie
+                    $superficies
                 );
             } else {
                 if ($usuario === '' || $contrasena === '') {
@@ -122,7 +126,7 @@ try {
                     $cooperativaIdReal,
                     $variedades,
                     $contratoId,
-                    $superficie
+                    $superficies
                 );
             }
             jsonResponse(true, $resultado, 'Productor externo creado.');
