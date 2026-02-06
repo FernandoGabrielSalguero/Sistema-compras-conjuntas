@@ -47,10 +47,13 @@ class TractorPilotDashboardModel
         [$condiciones, $params] = $this->construirFiltros($filtros);
 
         $sql = "SELECT
+                    cm.id AS pedido_id,
                     cp.id AS participacion_id,
                     cp.nom_cooperativa AS cooperativa_nombre,
                     cp.productor AS productor_nombre,
                     cp.finca_id,
+                    cp.superficie,
+                    cp.variedad,
                     f.codigo_finca,
                     f.nombre_finca,
                     rf.id AS relevamiento_id

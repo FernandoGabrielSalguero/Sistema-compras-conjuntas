@@ -146,20 +146,23 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
                 <div class="tabla-card">
                     <h2>Relevamiento_fincas</h2>
-                    <p id="productores-count" style="margin-top: 0.25rem;">Tenemos 0 productores registrados.</p>
+                    <p id="productores-count" style="margin-top: 0.25rem;">Tenemos 0 participantes registrados.</p>
                     <div class="tabla-wrapper table-scroll">
                         <table class="data-table" aria-label="Relevamiento_fincas">
                             <thead>
                                 <tr>
                                     <th>Acciones</th>
+                                    <th>ID pedido</th>
                                     <th>Cooperativa</th>
                                     <th>Productor</th>
                                     <th>Finca</th>
+                                    <th>Superficie</th>
+                                    <th>Variedad</th>
                                 </tr>
                             </thead>
                             <tbody id="fincas-table-body">
                                 <tr>
-                                    <td colspan="4">Cargando fincas...</td>
+                                    <td colspan="7">Cargando fincas...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -519,22 +522,22 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 }
 
                 if (filas.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4">No hay fincas participantes.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7">No hay fincas participantes.</td></tr>';
                     const countEl = document.getElementById('productores-count');
                     if (countEl) {
-                        countEl.textContent = 'Tenemos 0 productores registrados.';
+                        countEl.textContent = 'Tenemos 0 participantes registrados.';
                     }
                     return;
                 }
 
                 tbody.innerHTML = '';
-                const productoresSet = new Set();
+                const participantesSet = new Set();
                 filas.forEach((fila) => {
                     const tr = document.createElement('tr');
 
                     const fincaLabel = fila.nombre_finca || fila.codigo_finca || (fila.finca_id ? `Finca #${fila.finca_id}` : 'Sin finca');
-                    if (fila.productor_nombre) {
-                        productoresSet.add(String(fila.productor_nombre));
+                    if (fila.participacion_id) {
+                        participantesSet.add(String(fila.participacion_id));
                     }
 
                     const tdAcciones = document.createElement('td');
@@ -552,9 +555,12 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     tr.appendChild(tdAcciones);
 
                     const celdas = [
+                        fila.pedido_id ?? '-',
                         fila.cooperativa_nombre || '-',
                         fila.productor_nombre || '-',
                         fincaLabel,
+                        fila.superficie ?? '-',
+                        fila.variedad || '-',
                     ];
 
                     celdas.forEach((valor) => {
@@ -567,7 +573,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
                 const countEl = document.getElementById('productores-count');
                 if (countEl) {
-                    countEl.textContent = `Tenemos ${productoresSet.size} productores registrados.`;
+                    countEl.textContent = `Tenemos ${participantesSet.size} participantes registrados.`;
                 }
             } catch (e) {
                 console.error(e);
