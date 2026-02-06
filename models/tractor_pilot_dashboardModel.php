@@ -25,17 +25,17 @@ class TractorPilotDashboardModel
         $params = [];
 
         if ($excluir !== 'cooperativa' && !empty($filtros['cooperativa_id'])) {
-            $condiciones[] = 'coop.id = :cooperativa_id';
-            $params[':cooperativa_id'] = (int) $filtros['cooperativa_id'];
+            $condiciones[] = 'cp.nom_cooperativa = :cooperativa_id';
+            $params[':cooperativa_id'] = (string) $filtros['cooperativa_id'];
         }
 
         if ($excluir !== 'productor' && !empty($filtros['productor_id'])) {
-            $condiciones[] = 'prod.id = :productor_id';
-            $params[':productor_id'] = (int) $filtros['productor_id'];
+            $condiciones[] = 'cp.productor = :productor_id';
+            $params[':productor_id'] = (string) $filtros['productor_id'];
         }
 
         if ($excluir !== 'finca' && !empty($filtros['finca_id'])) {
-            $condiciones[] = 'f.id = :finca_id';
+            $condiciones[] = 'cp.finca_id = :finca_id';
             $params[':finca_id'] = (int) $filtros['finca_id'];
         }
 
@@ -47,38 +47,29 @@ class TractorPilotDashboardModel
         [$condiciones, $params] = $this->construirFiltros($filtros);
 
         $sql = "SELECT
-                    coop.id AS cooperativa_id,
-                    coop_info.nombre AS cooperativa_nombre,
-                    prod.id AS productor_id,
-                    prod_info.nombre AS productor_nombre,
-                    f.id AS finca_id,
+                    cp.id AS participacion_id,
+                    cp.nom_cooperativa AS cooperativa_nombre,
+                    cp.productor AS productor_nombre,
+                    cp.finca_id,
                     f.codigo_finca,
                     f.nombre_finca,
                     rf.id AS relevamiento_id
-                FROM usuarios coop
-                INNER JOIN rel_productor_coop rpc
-                    ON rpc.cooperativa_id_real = coop.id_real
-                INNER JOIN usuarios prod
-                    ON prod.id_real = rpc.productor_id_real
-                   AND prod.rol = 'productor'
-                LEFT JOIN usuarios_info coop_info
-                    ON coop_info.usuario_id = coop.id
-                LEFT JOIN usuarios_info prod_info
-                    ON prod_info.usuario_id = prod.id
-                LEFT JOIN rel_productor_finca rpf
-                    ON rpf.productor_id = prod.id
+                FROM CosechaMecanica cm
+                INNER JOIN cosechaMecanica_coop_contrato_firma ccf
+                    ON ccf.contrato_id = cm.id
+                INNER JOIN cosechaMecanica_cooperativas_participacion cp
+                    ON cp.contrato_id = cm.id
                 LEFT JOIN prod_fincas f
-                    ON f.id = rpf.finca_id
-                LEFT JOIN relevamiento_fincas rf
-                    ON rf.productor_id = prod.id
-                   AND rf.finca_id = f.id
-                WHERE coop.rol = 'cooperativa'";
+                    ON f.id = cp.finca_id
+                LEFT JOIN cosechaMecanica_relevamiento_finca rf
+                    ON rf.participacion_id = cp.id
+                WHERE 1 = 1";
 
         if (!empty($condiciones)) {
             $sql .= " AND " . implode(' AND ', $condiciones);
         }
 
-        $sql .= " ORDER BY coop_info.nombre ASC, prod_info.nombre ASC, f.nombre_finca ASC, f.codigo_finca ASC";
+        $sql .= " ORDER BY cp.nom_cooperativa ASC, cp.productor ASC, f.nombre_finca ASC, f.codigo_finca ASC";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
@@ -86,12 +77,13 @@ class TractorPilotDashboardModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
-    public function obtenerRelevamientoPorProductorFinca(int $productorId, int $fincaId): ?array
+    public function obtenerRelevamientoPorParticipacion(int $participacionId): ?array
     {
         $sql = "SELECT
                     id,
                     productor_id,
                     finca_id,
+                    participacion_id,
                     ancho_callejon_norte,
                     ancho_callejon_sur,
                     promedio_callejon,
@@ -104,38 +96,35 @@ class TractorPilotDashboardModel
                     preparacion_acequias,
                     preparacion_obstaculos,
                     observaciones
-                FROM relevamiento_fincas
-                WHERE productor_id = :productor_id
-                  AND finca_id = :finca_id
+                FROM cosechaMecanica_relevamiento_finca
+                WHERE participacion_id = :participacion_id
                 LIMIT 1";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
-            ':productor_id' => $productorId,
-            ':finca_id' => $fincaId
+            ':participacion_id' => $participacionId
         ]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row ?: null;
     }
 
-    public function guardarRelevamiento(int $productorId, int $fincaId, array $data): array
+    public function guardarRelevamiento(int $participacionId, ?int $fincaId, array $data): array
     {
         $sqlExiste = "SELECT id
-            FROM relevamiento_fincas
-            WHERE productor_id = :productor_id
-              AND finca_id = :finca_id
+            FROM cosechaMecanica_relevamiento_finca
+            WHERE participacion_id = :participacion_id
             LIMIT 1";
         $stmtExiste = $this->pdo->prepare($sqlExiste);
         $stmtExiste->execute([
-            ':productor_id' => $productorId,
-            ':finca_id' => $fincaId,
+            ':participacion_id' => $participacionId,
         ]);
         $existente = $stmtExiste->fetch(PDO::FETCH_ASSOC);
 
         $payload = [
-            ':productor_id' => $productorId,
+            ':productor_id' => null,
             ':finca_id' => $fincaId,
+            ':participacion_id' => $participacionId,
             ':ancho_callejon_norte' => $data['ancho_callejon_norte'],
             ':ancho_callejon_sur' => $data['ancho_callejon_sur'],
             ':promedio_callejon' => $data['promedio_callejon'],
@@ -151,7 +140,7 @@ class TractorPilotDashboardModel
         ];
 
         if ($existente) {
-            $sqlUpdate = "UPDATE relevamiento_fincas
+            $sqlUpdate = "UPDATE cosechaMecanica_relevamiento_finca
                 SET ancho_callejon_norte = :ancho_callejon_norte,
                     ancho_callejon_sur = :ancho_callejon_sur,
                     promedio_callejon = :promedio_callejon,
@@ -164,17 +153,17 @@ class TractorPilotDashboardModel
                     preparacion_acequias = :preparacion_acequias,
                     preparacion_obstaculos = :preparacion_obstaculos,
                     observaciones = :observaciones
-                WHERE productor_id = :productor_id
-                  AND finca_id = :finca_id";
+                WHERE participacion_id = :participacion_id";
             $stmtUpdate = $this->pdo->prepare($sqlUpdate);
             $stmtUpdate->execute($payload);
 
             return ['id' => (int) $existente['id'], 'accion' => 'actualizado'];
         }
 
-        $sqlInsert = "INSERT INTO relevamiento_fincas (
+        $sqlInsert = "INSERT INTO cosechaMecanica_relevamiento_finca (
                 productor_id,
                 finca_id,
+                participacion_id,
                 ancho_callejon_norte,
                 ancho_callejon_sur,
                 promedio_callejon,
@@ -190,6 +179,7 @@ class TractorPilotDashboardModel
             ) VALUES (
                 :productor_id,
                 :finca_id,
+                :participacion_id,
                 :ancho_callejon_norte,
                 :ancho_callejon_sur,
                 :promedio_callejon,
@@ -212,38 +202,31 @@ class TractorPilotDashboardModel
 
     public function obtenerOpcionesFiltros(array $filtros = []): array
     {
-        $baseFrom = " FROM usuarios coop
-            INNER JOIN rel_productor_coop rpc
-                ON rpc.cooperativa_id_real = coop.id_real
-            INNER JOIN usuarios prod
-                ON prod.id_real = rpc.productor_id_real
-               AND prod.rol = 'productor'
-            LEFT JOIN usuarios_info coop_info
-                ON coop_info.usuario_id = coop.id
-            LEFT JOIN usuarios_info prod_info
-                ON prod_info.usuario_id = prod.id
-            LEFT JOIN rel_productor_finca rpf
-                ON rpf.productor_id = prod.id
+        $baseFrom = " FROM CosechaMecanica cm
+            INNER JOIN cosechaMecanica_coop_contrato_firma ccf
+                ON ccf.contrato_id = cm.id
+            INNER JOIN cosechaMecanica_cooperativas_participacion cp
+                ON cp.contrato_id = cm.id
             LEFT JOIN prod_fincas f
-                ON f.id = rpf.finca_id
-            WHERE coop.rol = 'cooperativa'";
+                ON f.id = cp.finca_id
+            WHERE 1 = 1";
 
         [$condCoops, $paramsCoops] = $this->construirFiltros($filtros, 'cooperativa');
-        $sqlCoops = "SELECT DISTINCT coop.id, coop_info.nombre" . $baseFrom;
+        $sqlCoops = "SELECT DISTINCT cp.nom_cooperativa AS id, cp.nom_cooperativa AS nombre" . $baseFrom;
         if (!empty($condCoops)) {
             $sqlCoops .= " AND " . implode(' AND ', $condCoops);
         }
-        $sqlCoops .= " ORDER BY coop_info.nombre ASC";
+        $sqlCoops .= " ORDER BY cp.nom_cooperativa ASC";
         $stmtCoops = $this->pdo->prepare($sqlCoops);
         $stmtCoops->execute($paramsCoops);
         $cooperativas = $stmtCoops->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
         [$condProds, $paramsProds] = $this->construirFiltros($filtros, 'productor');
-        $sqlProds = "SELECT DISTINCT prod.id, prod_info.nombre" . $baseFrom;
+        $sqlProds = "SELECT DISTINCT cp.productor AS id, cp.productor AS nombre" . $baseFrom;
         if (!empty($condProds)) {
             $sqlProds .= " AND " . implode(' AND ', $condProds);
         }
-        $sqlProds .= " ORDER BY prod_info.nombre ASC";
+        $sqlProds .= " ORDER BY cp.productor ASC";
         $stmtProds = $this->pdo->prepare($sqlProds);
         $stmtProds->execute($paramsProds);
         $productores = $stmtProds->fetchAll(PDO::FETCH_ASSOC) ?: [];
