@@ -120,6 +120,10 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             display: none;
         }
 
+        .input-group.placeholder {
+            visibility: hidden;
+        }
+
         .suggest-list {
             margin-top: 0.35rem;
             border: 1px solid #e5e7eb;
@@ -206,7 +210,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     <h2>Añadir productor externo</h2>
                     <form class="form-modern" autocomplete="off">
                         <div class="form-grid grid-2">
-                            <div class="input-group" style="grid-column: span 2;">
+                            <div class="input-group">
                                 <label for="prod-operativo">Operativo abierto</label>
                                 <div class="input-icon">
                                     <select id="prod-operativo" name="contrato_id" required>
@@ -214,7 +218,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                     </select>
                                 </div>
                             </div>
-                            <div class="input-group" style="grid-column: span 2;">
+                            <div class="input-group">
                                 <label for="prod-cooperativa">Cooperativa</label>
                                 <div class="input-icon">
                                     <select id="prod-cooperativa" name="cooperativa_id_real" required>
@@ -256,6 +260,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                     <input type="text" id="prod-finca-codigo" name="codigo_finca" readonly />
                                 </div>
                             </div>
+                            <div class="input-group placeholder" aria-hidden="true"></div>
                         </div>
                         <div class="form-buttons">
                             <button class="btn btn-aceptar" type="button" id="productorExternoGuardar">Guardar</button>
@@ -818,8 +823,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 productor_id_real: productorIdReal,
                 contrato_id: contratoId,
             });
-
-            showUserAlert('info', 'Creando productor externo...');
 
             const res = await fetch(API_TRACTOR_PILOT, {
                 method: 'POST',
