@@ -81,14 +81,22 @@ try {
             $nombreFinca = trim((string) ($_POST['nombre_finca'] ?? ''));
             $codigoFinca = trim((string) ($_POST['codigo_finca'] ?? ''));
             $cooperativaIdReal = trim((string) ($_POST['cooperativa_id_real'] ?? ''));
-            $variedad = trim((string) ($_POST['variedad'] ?? ''));
+            $variedades = $_POST['variedades'] ?? [];
             $productorId = isset($_POST['productor_id']) ? (int) $_POST['productor_id'] : 0;
             $productorIdReal = trim((string) ($_POST['productor_id_real'] ?? ''));
             $contratoId = isset($_POST['contrato_id']) ? (int) $_POST['contrato_id'] : 0;
             $superficie = trim((string) ($_POST['superficie'] ?? ''));
 
-            if ($nombreFinca === '' || $cooperativaIdReal === '' || $variedad === '' || $contratoId <= 0 || $superficie === '') {
-                jsonResponse(false, null, 'nombre_finca, variedad, cooperativa_id_real, contrato_id o superficie inválido.', 422);
+            $variedades = is_array($variedades) ? array_values(array_filter(array_map('trim', $variedades))) : [];
+            if ($nombreFinca === '' || $cooperativaIdReal === '' || $contratoId <= 0 || $superficie === '' || count($variedades) === 0) {
+                jsonResponse(false, null, 'nombre_finca, variedades, cooperativa_id_real, contrato_id o superficie inválido.', 422);
+            }
+            $variedadesLower = array_map('mb_strtolower', $variedades);
+            if (count(array_unique($variedadesLower)) !== count($variedadesLower)) {
+                jsonResponse(false, null, 'Las variedades no pueden repetirse.', 422);
+            }
+            if (count($variedades) > 10) {
+                jsonResponse(false, null, 'Máximo 10 variedades.', 422);
             }
 
             if ($productorId > 0 && $productorIdReal !== '') {
@@ -98,7 +106,7 @@ try {
                     $cooperativaIdReal,
                     $nombreFinca,
                     $codigoFinca ?: null,
-                    $variedad,
+                    $variedades,
                     $contratoId,
                     $superficie
                 );
@@ -112,7 +120,7 @@ try {
                     $nombreFinca,
                     $codigoFinca ?: null,
                     $cooperativaIdReal,
-                    $variedad ?: null,
+                    $variedades,
                     $contratoId,
                     $superficie
                 );

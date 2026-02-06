@@ -155,6 +155,52 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             margin-top: 0.15rem;
             font-size: 0.8rem;
         }
+
+        .variedades-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .variedad-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .variedades-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 0.35rem;
+        }
+
+        .btn-variedad-add {
+            height: 42px;
+            width: 42px;
+            border-radius: 999px;
+            border: 1px solid #d1d5db;
+            background: #f9fafb;
+            color: #111827;
+            font-weight: 700;
+        }
+
+        .btn-variedad-add:hover {
+            background: #f3f4f6;
+        }
+
+        .btn-variedad-remove {
+            height: 42px;
+            width: 42px;
+            border-radius: 999px;
+            border: 1px solid #fecaca;
+            background: #fee2e2;
+            color: #991b1b;
+            font-weight: 700;
+        }
     </style>
 </head>
 
@@ -243,9 +289,18 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                                 </div>
                             </div>
                             <div class="input-group" id="prod-finca-variedad-group">
-                                <label for="prod-finca-variedad">Variedad</label>
-                                <div class="input-icon">
-                                    <input type="text" id="prod-finca-variedad" name="variedad" placeholder="Variedad de la finca" required />
+                                <label>Variedades (hasta 10)</label>
+                                <div class="variedades-meta">
+                                    <span>Agregar variedades diferentes</span>
+                                    <span id="variedades-count">1/10</span>
+                                </div>
+                                <div class="variedades-wrap" id="prod-variedades-wrap">
+                                    <div class="variedad-row">
+                                        <div class="input-icon">
+                                            <input type="text" name="variedades[]" placeholder="Variedad de la finca" required />
+                                        </div>
+                                        <button class="btn-variedad-add" type="button" id="btn-add-variedad" title="Agregar variedad">+</button>
+                                    </div>
                                 </div>
                             </div>
                             <div class="input-group">
@@ -584,15 +639,14 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const usuario = document.getElementById('prod-usuario');
             const contrasena = document.getElementById('prod-contrasena');
             const fincaNombre = document.getElementById('prod-finca-nombre');
-            const fincaVariedad = document.getElementById('prod-finca-variedad');
             const fincaSuperficie = document.getElementById('prod-finca-superficie');
             const productorId = document.getElementById('prod-productor-id');
             const productorIdReal = document.getElementById('prod-productor-id-real');
             const sugerencias = document.getElementById('prod-usuario-sugerencias');
+            const variedadesWrap = document.getElementById('prod-variedades-wrap');
             if (usuario) usuario.value = '';
             if (contrasena) contrasena.value = '';
             if (fincaNombre) fincaNombre.value = '';
-            if (fincaVariedad) fincaVariedad.value = '';
             if (fincaSuperficie) fincaSuperficie.value = '';
             if (productorId) productorId.value = '';
             if (productorIdReal) productorIdReal.value = '';
@@ -600,6 +654,19 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 sugerencias.innerHTML = '';
                 sugerencias.classList.add('hidden');
             }
+            if (variedadesWrap) {
+                variedadesWrap.innerHTML = '';
+                const row = document.createElement('div');
+                row.className = 'variedad-row';
+                row.innerHTML = `
+                    <div class="input-icon">
+                        <input type="text" name="variedades[]" placeholder="Variedad de la finca" required />
+                    </div>
+                    <button class="btn-variedad-add" type="button" id="btn-add-variedad" title="Agregar variedad">+</button>
+                `;
+                variedadesWrap.appendChild(row);
+            }
+            actualizarContadorVariedades();
         }
 
         async function cargarCodigoFinca() {
@@ -789,11 +856,15 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             const nombreFinca = document.getElementById('prod-finca-nombre')?.value.trim() ?? '';
             const codigoFinca = document.getElementById('prod-finca-codigo')?.value.trim() ?? '';
             const cooperativaIdReal = document.getElementById('prod-cooperativa')?.value.trim() ?? '';
-            const variedad = document.getElementById('prod-finca-variedad')?.value.trim() ?? '';
             const superficie = document.getElementById('prod-finca-superficie')?.value.trim() ?? '';
             const productorId = document.getElementById('prod-productor-id')?.value.trim() ?? '';
             const productorIdReal = document.getElementById('prod-productor-id-real')?.value.trim() ?? '';
             const contratoId = document.getElementById('prod-operativo')?.value.trim() ?? '';
+            const variedades = Array.from(document.querySelectorAll('#prod-variedades-wrap input[name="variedades[]"]'))
+                .map((input) => input.value.trim())
+                .filter((valor) => valor);
+            const variedadesNorm = variedades.map((v) => v.toLowerCase());
+            const sinRepetidas = new Set(variedadesNorm);
 
             if (!contratoId) {
                 showUserAlert('warning', 'Seleccioná un operativo abierto.');
@@ -810,8 +881,18 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 return null;
             }
 
-            if (!variedad) {
-                showUserAlert('warning', 'Completá la variedad de la finca.');
+            if (!variedades.length) {
+                showUserAlert('warning', 'Completá al menos una variedad.');
+                return null;
+            }
+
+            if (sinRepetidas.size !== variedades.length) {
+                showUserAlert('warning', 'Las variedades no pueden repetirse.');
+                return null;
+            }
+
+            if (variedades.length > 10) {
+                showUserAlert('warning', 'Máximo 10 variedades.');
                 return null;
             }
 
@@ -827,12 +908,12 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 nombre_finca: nombreFinca,
                 codigo_finca: codigoFinca,
                 cooperativa_id_real: cooperativaIdReal,
-                variedad,
                 superficie,
                 productor_id: productorId,
                 productor_id_real: productorIdReal,
                 contrato_id: contratoId,
             });
+            variedades.forEach((item) => body.append('variedades[]', item));
 
             const res = await fetch(API_TRACTOR_PILOT, {
                 method: 'POST',
@@ -1170,6 +1251,41 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 }
             });
 
+            const variedadesWrap = document.getElementById('prod-variedades-wrap');
+            variedadesWrap?.addEventListener('click', (event) => {
+                const target = event.target;
+                if (!(target instanceof HTMLElement)) return;
+                if (target.id === 'btn-add-variedad') {
+                    const rows = variedadesWrap.querySelectorAll('.variedad-row');
+                    if (rows.length >= 10) {
+                        showUserAlert('warning', 'Máximo 10 variedades.');
+                        return;
+                    }
+                    const row = document.createElement('div');
+                    row.className = 'variedad-row';
+                    row.innerHTML = `
+                        <div class="input-icon">
+                            <input type="text" name="variedades[]" placeholder="Variedad de la finca" required />
+                        </div>
+                        <button class="btn-variedad-remove" type="button" title="Quitar variedad">-</button>
+                    `;
+                    variedadesWrap.appendChild(row);
+                    actualizarContadorVariedades();
+                }
+                if (target.classList.contains('btn-variedad-remove')) {
+                    const row = target.closest('.variedad-row');
+                    if (row) row.remove();
+                    actualizarContadorVariedades();
+                }
+            });
+
+            variedadesWrap?.addEventListener('input', (event) => {
+                const target = event.target;
+                if (target instanceof HTMLInputElement && target.name === 'variedades[]') {
+                    actualizarContadorVariedades();
+                }
+            });
+
             guardarProductorExterno?.addEventListener('click', async () => {
                 try {
                     await crearProductorExterno();
@@ -1207,6 +1323,13 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             resetProductorExternoForm();
             cargarCodigoFinca();
         });
+
+        function actualizarContadorVariedades() {
+            const countEl = document.getElementById('variedades-count');
+            if (!countEl) return;
+            const total = document.querySelectorAll('#prod-variedades-wrap input[name="variedades[]"]').length;
+            countEl.textContent = `${total}/10`;
+        }
     </script>
 </body>
 

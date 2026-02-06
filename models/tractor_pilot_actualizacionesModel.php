@@ -180,7 +180,7 @@ class TractorPilotActualizacionesModel
         string $nombreFinca,
         ?string $codigoFinca = null,
         ?string $cooperativaIdReal = null,
-        ?string $variedad = null,
+        array $variedades = [],
         ?int $contratoId = null,
         ?string $superficie = null
     ): array
@@ -190,7 +190,8 @@ class TractorPilotActualizacionesModel
         $nombreFinca = trim($nombreFinca);
         $codigoFinca = $codigoFinca ? trim($codigoFinca) : '';
         $cooperativaIdReal = $cooperativaIdReal ? trim($cooperativaIdReal) : '';
-        $variedad = $variedad ? trim($variedad) : '';
+        $variedades = array_values(array_filter(array_map('trim', $variedades)));
+        $variedadesLower = array_map('mb_strtolower', $variedades);
 
         if ($usuario === '' || $contrasena === '' || $nombreFinca === '') {
             throw new InvalidArgumentException('Faltan datos obligatorios.');
@@ -204,6 +205,15 @@ class TractorPilotActualizacionesModel
         if ($superficie === null || trim($superficie) === '') {
             throw new InvalidArgumentException('Falta la superficie.');
         }
+        if (count($variedades) === 0) {
+            throw new InvalidArgumentException('Falta la variedad.');
+        }
+        if (count(array_unique($variedadesLower)) !== count($variedadesLower)) {
+            throw new InvalidArgumentException('Las variedades no pueden repetirse.');
+        }
+        if (count($variedades) > 10) {
+            throw new InvalidArgumentException('Máximo 10 variedades.');
+        }
 
         $productorExistente = $this->obtenerProductorPorNombre($usuario);
         if ($productorExistente) {
@@ -213,7 +223,7 @@ class TractorPilotActualizacionesModel
                 $cooperativaIdReal,
                 $nombreFinca,
                 $codigoFinca ?: null,
-                $variedad ?: null,
+                $variedades,
                 $contratoId,
                 $superficie
             );
@@ -271,7 +281,7 @@ class TractorPilotActualizacionesModel
                 ':codigo_finca' => $codigoFinal,
                 ':productor_id_real' => $idReal,
                 ':nombre_finca' => $nombreFinca,
-                ':variedad' => $variedad !== '' ? $variedad : null,
+                ':variedad' => $variedades[0] ?? null,
             ]);
 
             $fincaId = (int) $this->pdo->lastInsertId();
@@ -289,7 +299,7 @@ class TractorPilotActualizacionesModel
                 $cooperativaIdReal,
                 $usuario,
                 $fincaId,
-                $variedad,
+                $variedades,
                 $superficie
             );
 
@@ -611,7 +621,7 @@ class TractorPilotActualizacionesModel
         string $cooperativaIdReal,
         string $nombreFinca,
         ?string $codigoFinca = null,
-        ?string $variedad = null,
+        array $variedades = [],
         ?int $contratoId = null,
         ?string $superficie = null
     ): array {
@@ -619,7 +629,8 @@ class TractorPilotActualizacionesModel
         $cooperativaIdReal = trim($cooperativaIdReal);
         $nombreFinca = trim($nombreFinca);
         $codigoFinca = $codigoFinca ? trim($codigoFinca) : '';
-        $variedad = $variedad ? trim($variedad) : '';
+        $variedades = array_values(array_filter(array_map('trim', $variedades)));
+        $variedadesLower = array_map('mb_strtolower', $variedades);
 
         if ($productorId <= 0 || $productorIdReal === '' || $cooperativaIdReal === '' || $nombreFinca === '') {
             throw new InvalidArgumentException('Faltan datos obligatorios.');
@@ -629,6 +640,15 @@ class TractorPilotActualizacionesModel
         }
         if ($superficie === null || trim($superficie) === '') {
             throw new InvalidArgumentException('Falta la superficie.');
+        }
+        if (count($variedades) === 0) {
+            throw new InvalidArgumentException('Falta la variedad.');
+        }
+        if (count(array_unique($variedadesLower)) !== count($variedadesLower)) {
+            throw new InvalidArgumentException('Las variedades no pueden repetirse.');
+        }
+        if (count($variedades) > 10) {
+            throw new InvalidArgumentException('Máximo 10 variedades.');
         }
 
         $codigoFinal = $codigoFinca;
@@ -666,7 +686,7 @@ class TractorPilotActualizacionesModel
                 ':codigo_finca' => $codigoFinal,
                 ':productor_id_real' => $productorIdReal,
                 ':nombre_finca' => $nombreFinca,
-                ':variedad' => $variedad !== '' ? $variedad : null,
+                ':variedad' => $variedades[0] ?? null,
             ]);
 
             $fincaId = (int) $this->pdo->lastInsertId();
@@ -684,7 +704,7 @@ class TractorPilotActualizacionesModel
                 $cooperativaIdReal,
                 $this->obtenerNombreProductorPorId($productorId) ?? 'Productor',
                 $fincaId,
-                $variedad,
+                $variedades,
                 $superficie
             );
 
@@ -750,7 +770,7 @@ class TractorPilotActualizacionesModel
         string $cooperativaIdReal,
         string $productorNombre,
         int $fincaId,
-        ?string $variedad = null,
+        array $variedades = [],
         ?string $superficie = null
     ): void {
         $nombreCoop = $this->obtenerNombreCooperativaPorIdReal($cooperativaIdReal) ?? $cooperativaIdReal;
@@ -781,13 +801,16 @@ class TractorPilotActualizacionesModel
                 0,
                 'sin_definir'
             )");
-        $stmt->execute([
-            ':contrato_id' => $contratoId,
-            ':nom_cooperativa' => $nombreCoop,
-            ':productor' => $productorNombre,
-            ':finca_id' => $fincaId,
-            ':variedad' => $variedad !== '' ? $variedad : null,
-            ':superficie' => $superficie !== '' ? $superficie : 0,
-        ]);
+
+        foreach ($variedades as $variedad) {
+            $stmt->execute([
+                ':contrato_id' => $contratoId,
+                ':nom_cooperativa' => $nombreCoop,
+                ':productor' => $productorNombre,
+                ':finca_id' => $fincaId,
+                ':variedad' => $variedad !== '' ? $variedad : null,
+                ':superficie' => $superficie !== '' ? $superficie : 0,
+            ]);
+        }
     }
 }
