@@ -46,7 +46,7 @@ class TractorPilotDashboardModel
     {
         [$condiciones, $params] = $this->construirFiltros($filtros);
 
-        $sql = "SELECT
+        $sql = "SELECT DISTINCT
                     cm.id AS pedido_id,
                     cp.id AS participacion_id,
                     cp.nom_cooperativa AS cooperativa_nombre,
@@ -58,7 +58,7 @@ class TractorPilotDashboardModel
                     f.nombre_finca,
                     rf.id AS relevamiento_id
                 FROM CosechaMecanica cm
-                INNER JOIN cosechaMecanica_coop_contrato_firma ccf
+                LEFT JOIN cosechaMecanica_coop_contrato_firma ccf
                     ON ccf.contrato_id = cm.id
                 INNER JOIN cosechaMecanica_cooperativas_participacion cp
                     ON cp.contrato_id = cm.id
