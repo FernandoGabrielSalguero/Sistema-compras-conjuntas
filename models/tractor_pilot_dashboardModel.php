@@ -95,6 +95,44 @@ class TractorPilotDashboardModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
+    public function obtenerTotalesParticipaciones(array $filtros = []): array
+    {
+        [$condiciones, $params] = $this->construirFiltros($filtros);
+
+        $sql = "SELECT
+                    COUNT(DISTINCT p.id) AS total_registros,
+                    COUNT(DISTINCT rf.participacion_id) AS realizados
+                FROM cosechaMecanica_cooperativas_participacion p
+                INNER JOIN CosechaMecanica c
+                    ON c.id = p.contrato_id
+                LEFT JOIN cosechaMecanica_relevamiento_finca rf
+                    ON rf.participacion_id = p.id
+                WHERE p.firma = 1
+                  AND EXISTS (
+                      SELECT 1
+                      FROM cosechaMecanica_coop_contrato_firma cf
+                      WHERE cf.contrato_id = p.contrato_id
+                        AND cf.acepto = 1
+                  )";
+
+        if (!empty($condiciones)) {
+            $sql .= " AND " . implode(' AND ', $condiciones);
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        $total = isset($row['total_registros']) ? (int) $row['total_registros'] : 0;
+        $realizados = isset($row['realizados']) ? (int) $row['realizados'] : 0;
+
+        return [
+            'total_registros' => $total,
+            'realizados' => $realizados,
+            'pendientes' => max(0, $total - $realizados),
+        ];
+    }
+
     public function obtenerRelevamientoPorParticipacion(int $participacionId): ?array
     {
         $sql = "SELECT

@@ -40,6 +40,7 @@ try {
             $data = [
                 'items' => $model->obtenerFincasParticipantes($filtros),
                 'filtros' => $model->obtenerOpcionesFiltros($filtros),
+                'totales' => $model->obtenerTotalesParticipaciones($filtros),
             ];
             jsonResponse(true, $data);
         }

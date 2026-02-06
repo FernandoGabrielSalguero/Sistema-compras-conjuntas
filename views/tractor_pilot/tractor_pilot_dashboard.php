@@ -70,6 +70,11 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             color: #4b5563;
             font-size: 0.95rem;
         }
+
+        .table-meta-sep {
+            margin: 0 0.35rem;
+            color: #9ca3af;
+        }
     </style>
 </head>
 
@@ -151,7 +156,11 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     <h2>Fincas participantes de operativos</h2>
                     <br>
                     <div class="table-meta">
-                        <strong>Fincas:</strong> <span id="fincas-count">0</span>
+                        <strong>Registros:</strong> <span id="fincas-count">0</span>
+                        <span class="table-meta-sep">|</span>
+                        <strong>Realizados:</strong> <span id="fincas-done-count">0</span>
+                        <span class="table-meta-sep">|</span>
+                        <strong>Pendientes:</strong> <span id="fincas-pending-count">0</span>
                     </div>
                     <br>
                     <div class="tabla-wrapper table-scroll">
@@ -455,26 +464,20 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             return params;
         }
 
-        function actualizarContadorFincas(filas) {
-            const contador = document.getElementById('fincas-count');
-            if (!contador) return;
+        function actualizarContadoresTotales(totales) {
+            const totalEl = document.getElementById('fincas-count');
+            const doneEl = document.getElementById('fincas-done-count');
+            const pendingEl = document.getElementById('fincas-pending-count');
 
-            const items = Array.isArray(filas) ? filas : [];
-            if (items.length === 0) {
-                contador.textContent = '0';
-                return;
-            }
+            if (!totalEl || !doneEl || !pendingEl) return;
 
-            const fincasUnicas = new Set();
-            items.forEach((fila) => {
-                if (fila.finca_id !== null && fila.finca_id !== undefined && fila.finca_id !== '') {
-                    fincasUnicas.add(String(fila.finca_id));
-                } else if (fila.id !== null && fila.id !== undefined) {
-                    fincasUnicas.add(`participacion-${fila.id}`);
-                }
-            });
+            const total = Number(totales?.total_registros ?? 0);
+            const realizados = Number(totales?.realizados ?? 0);
+            const pendientes = Number(totales?.pendientes ?? Math.max(0, total - realizados));
 
-            contador.textContent = String(fincasUnicas.size);
+            totalEl.textContent = String(Number.isFinite(total) ? total : 0);
+            doneEl.textContent = String(Number.isFinite(realizados) ? realizados : 0);
+            pendingEl.textContent = String(Number.isFinite(pendientes) ? pendientes : 0);
         }
 
         function actualizarSelect(select, opciones, placeholder) {
@@ -516,8 +519,9 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                 const data = payload.data || {};
                 const filas = Array.isArray(data.items) ? data.items : [];
                 const filtros = data.filtros || {};
+                const totales = data.totales || {};
 
-                actualizarContadorFincas(filas);
+                actualizarContadoresTotales(totales);
 
                 const selectCooperativa = document.getElementById('filtro-cooperativa');
                 const selectProductor = document.getElementById('filtro-productor');
@@ -579,7 +583,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             } catch (e) {
                 console.error(e);
                 tbody.innerHTML = '<tr><td colspan="7">No se pudieron cargar las fincas.</td></tr>';
-                actualizarContadorFincas([]);
+                actualizarContadoresTotales({ total_registros: 0, realizados: 0, pendientes: 0 });
                 showUserAlert('error', 'No se pudieron cargar las fincas.');
             }
         }
