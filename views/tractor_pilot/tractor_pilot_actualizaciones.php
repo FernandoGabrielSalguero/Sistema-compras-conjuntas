@@ -201,6 +201,37 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             color: #991b1b;
             font-weight: 700;
         }
+
+        @media (max-width: 1024px) {
+            .form-grid.grid-4 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-grid.grid-2,
+            .form-grid.grid-4 {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .variedad-row {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .btn-variedad-add,
+            .btn-variedad-remove {
+                width: 100%;
+                border-radius: 10px;
+            }
+
+            .table-scroll {
+                overflow-x: auto;
+            }
+
+            .table-scroll .data-table {
+                min-width: 720px;
+            }
+        }
     </style>
 </head>
 
