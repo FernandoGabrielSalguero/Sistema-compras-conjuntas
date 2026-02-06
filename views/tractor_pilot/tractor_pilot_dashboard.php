@@ -75,6 +75,18 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             margin: 0 0.35rem;
             color: #9ca3af;
         }
+
+        .btn-modificar {
+            background-color: #f59e0b;
+            border-color: #f59e0b;
+            color: #111827;
+        }
+
+        .btn-modificar:hover {
+            background-color: #d97706;
+            border-color: #d97706;
+            color: #111827;
+        }
     </style>
 </head>
 
@@ -564,6 +576,9 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         btn.dataset.fincaId = String(fila.finca_id);
                     }
                     btn.textContent = fila.relevamiento_id ? 'Modificar' : 'Calificar';
+                    if (fila.relevamiento_id) {
+                        btn.classList.add('btn-modificar');
+                    }
                     if (!fila.relevamiento_id) {
                         const idPedido = fila.id ?? '';
                         btn.title = idPedido ? `Calificar ID ${idPedido}` : 'Calificar';
