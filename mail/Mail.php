@@ -227,4 +227,113 @@ final class Mail
             return ['ok' => false, 'error' => $e->getMessage()];
         }
     }
+
+    /**
+     * Envia correo de compra realizada desde panel SVE.
+     * Misma data que enviarCompraRealizadaCooperativa(), con template SVE.
+     * @return array{ok:bool, error?:string}
+     */
+    public static function enviarCompraRealizadaSVE(array $data): array
+    {
+        try {
+            $tplPath = __DIR__ . '/template/compra_realizada_sve.html';
+
+            $rows = '';
+            foreach ((array)($data['items'] ?? []) as $it) {
+                $rows .= sprintf(
+                    '<tr>
+                        <td>%s</td>
+                        <td style="text-align:right;">%s</td>
+                        <td>%s</td>
+                        <td style="text-align:right;">$%0.2f</td>
+                        <td style="text-align:right;">%0.2f%%</td>
+                        <td style="text-align:right;">$%0.2f</td>
+                        <td style="text-align:right;">$%0.2f</td>
+                    </tr>',
+                    htmlspecialchars((string)($it['nombre'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                    number_format((float)($it['cantidad'] ?? 0), 2, ',', '.'),
+                    htmlspecialchars((string)($it['unidad'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                    (float)($it['precio'] ?? 0),
+                    (float)($it['alicuota'] ?? 0),
+                    (float)($it['subtotal'] ?? 0),
+                    (float)($it['total'] ?? 0)
+                );
+            }
+            if ($rows === '') {
+                $rows = '<tr><td colspan="7" style="text-align:center;color:#6b7280;">Sin productos</td></tr>';
+            }
+
+            $coopNombre = (string)($data['cooperativa_nombre'] ?? 'Cooperativa');
+            $prodNombre = (string)($data['productor_nombre'] ?? 'Productor');
+            $opNombre = (string)($data['operativo_nombre'] ?? '');
+
+            $content = sprintf(
+                '<h2>Pedido realizado</h2>
+                <p>La cooperativa <strong>%s</strong> realizó un pedido para el productor <strong>%s</strong>%s.</p>
+                <table cellpadding="8" cellspacing="0" border="0" style="width:100%%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#f3f4f6;">
+                            <th style="text-align:left;">Producto</th>
+                            <th style="text-align:right;">Cant.</th>
+                            <th>Unidad</th>
+                            <th style="text-align:right;">Precio</th>
+                            <th style="text-align:right;">IVA</th>
+                            <th style="text-align:right;">Subtotal</th>
+                            <th style="text-align:right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>%s</tbody>
+                </table>
+                <p style="margin-top:12px;">
+                <strong>Total s/IVA:</strong> $%0.2f<br/>
+                <strong>IVA:</strong> $%0.2f<br/>
+                <strong>Total c/IVA:</strong> $%0.2f
+                </p>',
+                htmlspecialchars($coopNombre, ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($prodNombre, ENT_QUOTES, 'UTF-8'),
+                $opNombre !== '' ? (' en el operativo <strong>' . htmlspecialchars($opNombre, ENT_QUOTES, 'UTF-8') . '</strong>') : '',
+                $rows,
+                (float)($data['totales']['sin_iva'] ?? 0),
+                (float)($data['totales']['iva'] ?? 0),
+                (float)($data['totales']['con_iva'] ?? 0)
+            );
+
+            $html = self::renderTemplate($tplPath, $content, 'Pedido realizado');
+
+            $mailOk = true;
+
+            // 1) Envio a cooperativa
+            if (!empty($data['cooperativa_correo'])) {
+                $mailCoop = self::baseMailer();
+                $mailCoop->Subject = 'Realizaste una compra para el productor ' . $prodNombre;
+                $mailCoop->Body    = $html;
+                $mailCoop->AltBody = 'Compra realizada para productor - ' . $prodNombre;
+                $mailCoop->addAddress((string)$data['cooperativa_correo'], $coopNombre);
+                $mailOk = $mailOk && self::sendAndLog($mailCoop, 'compra_realizada_sve', 'compra_realizada_sve.html');
+            }
+
+            // 2) Envio a copias fijas
+            $mailCopias = self::baseMailer();
+            $mailCopias->Subject = 'La cooperativa ' . $coopNombre . ' realizo un pedido de compra conjunta para el productor ' . $prodNombre . '.';
+            $mailCopias->Body    = $html;
+            $mailCopias->AltBody = 'Pedido compra conjunta - ' . $coopNombre . ' / ' . $prodNombre;
+            $mailCopias->addAddress('lacruzg@coopsve.com', 'La Cruz');
+            $mailCopias->addAddress('fernandosalguero685@gmail.com', 'Fernando Salguero');
+            $mailOk = $mailOk && self::sendAndLog($mailCopias, 'compra_realizada_sve', 'compra_realizada_sve.html');
+
+            // 3) Envio al productor
+            if (!empty($data['productor_correo'])) {
+                $mailProd = self::baseMailer();
+                $mailProd->Subject = 'Tu cooperativa ' . $coopNombre . ' realizo un pedido para vos, en el sistema de compra conjunta';
+                $mailProd->Body    = $html;
+                $mailProd->AltBody = 'Tu cooperativa realizo un pedido para vos - ' . $coopNombre;
+                $mailProd->addAddress((string)$data['productor_correo'], $prodNombre);
+                $mailOk = $mailOk && self::sendAndLog($mailProd, 'compra_realizada_sve', 'compra_realizada_sve.html');
+            }
+
+            return ['ok' => (bool)$mailOk];
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'error' => $e->getMessage()];
+        }
+    }
 }
