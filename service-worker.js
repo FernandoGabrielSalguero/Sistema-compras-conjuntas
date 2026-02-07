@@ -1,5 +1,5 @@
-/*! SVE Service Worker v4.0 - offline-first para piloto_drone + Background Sync */
-const CACHE_VERSION = 'v4';
+/*! SVE Service Worker v4.1 - offline-first para piloto_drone + Background Sync */
+const CACHE_VERSION = 'v4.1';
 const PRECACHE = 'sve-precache-' + CACHE_VERSION;
 const RUNTIME = 'sve-runtime-' + CACHE_VERSION;
 
@@ -9,16 +9,14 @@ const PRECACHE_URLS = [
     '/views/drone_pilot/drone_pilot_dashboard.php',
     '/offline.js',
     '/offline-sync.js',
+    '/offline-init.js',
     '/assets/js/sve_operativo.js',
     '/views/partials/spinner-global.js',
-    '/assets/png/logo_con_color_original.png',
-    'https://framework.impulsagroup.com/index.html',
-    'https://framework.impulsagroup.com/assets/css/framework.css',
-    'https://framework.impulsagroup.com/assets/javascript/framework.js',
-    'https://fonts.googleapis.com/icon?family=Material+Icons',
-    'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0',
-    'https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js'
+    '/assets/png/logo_con_color_original.png'
 ];
+
+// Recursos externos se cachean dinámicamente (evita errores CORS en precache)
+// Se cachearán automáticamente en RUNTIME la primera vez que se soliciten
 
 
 self.addEventListener('install', (event) => {
