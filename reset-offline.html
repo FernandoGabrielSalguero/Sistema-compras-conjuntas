@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Sistema Offline - SVE</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #673ab7;
+            margin: 0 0 20px;
+        }
+        button {
+            background: #673ab7;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #5e35b1;
+        }
+        #log {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔧 Reset Sistema Offline</h1>
+        <p>Esta herramienta limpia completamente el sistema offline y fuerza la instalación de la versión más reciente.</p>
+
+        <button onclick="resetComplete()">🗑️ RESET COMPLETO</button>
+        <button onclick="location.href='/'">← Volver al Login</button>
+
+        <div id="log"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const line = document.createElement('div');
+            line.className = type;
+            line.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            logDiv.appendChild(line);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function resetComplete() {
+            log('Iniciando reset completo...', 'info');
+
+            try {
+                // 1. Eliminar todos los caches
+                if (window.caches) {
+                    log('Eliminando caches...', 'info');
+                    const cacheNames = await caches.keys();
+                    for (const name of cacheNames) {
+                        await caches.delete(name);
+                        log(`✓ Cache eliminado: ${name}`, 'success');
+                    }
+                }
+
+                // 2. Desregistrar Service Workers
+                if ('serviceWorker' in navigator) {
+                    log('Desregistrando Service Workers...', 'info');
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (const registration of registrations) {
+                        await registration.unregister();
+                        log('✓ Service Worker desregistrado', 'success');
+                    }
+                }
+
+                // 3. Limpiar IndexedDB
+                if (window.indexedDB) {
+                    log('Limpiando IndexedDB...', 'info');
+                    try {
+                        const databases = await indexedDB.databases();
+                        for (const db of databases) {
+                            if (db.name) {
+                                await indexedDB.deleteDatabase(db.name);
+                                log(`✓ Base de datos eliminada: ${db.name}`, 'success');
+                            }
+                        }
+                    } catch (e) {
+                        log('⚠ IndexedDB limpiado parcialmente', 'info');
+                    }
+                }
+
+                // 4. Limpiar LocalStorage
+                log('Limpiando LocalStorage...', 'info');
+                const keysToRemove = [
+                    'sve_offline_token',
+                    'sve_offline_session',
+                    'sve_offline_initialized',
+                    'sve_offline_init_date',
+                    'sve_offline_cred'
+                ];
+                for (const key of keysToRemove) {
+                    localStorage.removeItem(key);
+                    log(`✓ Eliminado: ${key}`, 'success');
+                }
+
+                // 5. Limpiar SessionStorage
+                sessionStorage.clear();
+                log('✓ SessionStorage limpiado', 'success');
+
+                log('═'.repeat(50), 'info');
+                log('✅ RESET COMPLETO EXITOSO', 'success');
+                log('Recargando página en 2 segundos...', 'info');
+
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error('Error en reset:', error);
+            }
+        }
+    </script>
+</body>
+</html>
