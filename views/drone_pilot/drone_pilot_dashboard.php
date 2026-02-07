@@ -1636,64 +1636,8 @@ $sesionDebug = [
         // Evita doble submit (bloquea mientras procesa)
         let submitting = false;
 
-        document.getElementById('form-reporte')?.addEventListener('submit', async (ev) => {
-            ev.preventDefault();
-            if (submitting) return;
-            submitting = true;
-
-            const sid = ev.currentTarget.dataset.sid;
-            if (sid) {
-                const rows = Array.from(document.querySelectorAll('#tbody-receta tr')).map(tr => {
-                    return {
-                        id: tr.dataset.id,
-                        cant_prod_usado: tr.querySelector('.inp-cant')?.value || null,
-                        fecha_vencimiento: tr.querySelector('.inp-fecha')?.value || null
-                    }
-                });
-                try {
-                    await fetch(`../../controllers/drone_pilot_dashboardController.php`, {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        body: new URLSearchParams({
-                            action: 'actualizar_receta',
-                            solicitud_id: sid,
-                            recetas_json: JSON.stringify(rows)
-                        })
-                    });
-                } catch (e) {
-                    console.error('actualizar_receta', e);
-                }
-            }
-
-            // sigue el submit original (guardar_reporte)
-            try {
-                const fotos = document.getElementById('fotos');
-                if (fotos.files.length > 10) {
-                    showAlert?.('info', 'Máximo 10 fotos.');
-                    return;
-                }
-                const firmaCliente = signatureCliente && !signatureCliente.isEmpty() ? signatureCliente.toDataURL('image/png') : '';
-                const firmaPiloto = signaturePiloto && !signaturePiloto.isEmpty() ? signaturePiloto.toDataURL('image/png') : '';
-                document.getElementById('firma_cliente_base64').value = firmaCliente;
-                document.getElementById('firma_piloto_base64').value = firmaPiloto;
-
-                const formData = new FormData(ev.target);
-                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php`, {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'same-origin'
-                });
-                const payload = await res.json();
-                if (!res.ok || !payload.ok) throw new Error(payload.message || 'Error API');
-                showAlert?.('success', 'Reporte guardado correctamente.');
-                closeModalReporte();
-            } catch (err) {
-                console.error(err);
-                showAlert?.('error', 'No se pudo guardar el reporte.');
-            } finally {
-                submitting = false;
-            }
-        });
+        // NOTA: El event listener del submit se agrega más abajo en el módulo de sincronización offline
+        // para manejar correctamente el modo online/offline
 
         // Cargar catálogo liviano para datalist (por nombre)
         async function cargarCatalogoProductos() {
@@ -2046,7 +1990,7 @@ $sesionDebug = [
             // Simplemente cerrar sesión sin borrar datos offline
             // La sesión offline se mantiene para trabajar sin conexión
             console.log('[Dashboard] Cerrando sesión (manteniendo datos offline)');
-            window.location.href = '../../../logout.php';
+            window.location.href = '/logout.php';
         }
     </script>
 
