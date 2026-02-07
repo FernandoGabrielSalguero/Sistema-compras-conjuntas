@@ -193,20 +193,26 @@ final class Mail
 
             $mailOk = true;
 
-            // 1) Envio a cooperativa + copia fija (asunto actual)
-            $mailCoop = self::baseMailer();
-            $mailCoop->Subject = 'Pedido realizado por ' . $coopNombre . ', para ' . $prodNombre . '.';
-            $mailCoop->Body    = $html;
-            $mailCoop->AltBody = 'Pedido realizado - ' . $coopNombre . ' / ' . $prodNombre;
-
+            // 1) Envio a cooperativa (asunto específico)
             if (!empty($data['cooperativa_correo'])) {
+                $mailCoop = self::baseMailer();
+                $mailCoop->Subject = 'Realizaste una compra para el productor ' . $prodNombre;
+                $mailCoop->Body    = $html;
+                $mailCoop->AltBody = 'Compra realizada para productor - ' . $prodNombre;
                 $mailCoop->addAddress((string)$data['cooperativa_correo'], $coopNombre);
+                $mailOk = $mailOk && self::sendAndLog($mailCoop, 'compra_realizada', 'compra_realizada_cooperativa.html');
             }
-            $mailCoop->addAddress('lacruzg@coopsve.com', 'La Cruz');
-            $mailCoop->addAddress('fernandosalguero685@gmail.com', 'Fernando Salguero');
-            $mailOk = $mailOk && self::sendAndLog($mailCoop, 'compra_realizada', 'compra_realizada_cooperativa.html');
 
-            // 2) Envio al productor con asunto personalizado
+            // 2) Envio a copias fijas (asunto específico)
+            $mailCopias = self::baseMailer();
+            $mailCopias->Subject = 'La cooperativa ' . $coopNombre . ' realizo un pedido de compra conjunta para el productor ' . $prodNombre . '.';
+            $mailCopias->Body    = $html;
+            $mailCopias->AltBody = 'Pedido compra conjunta - ' . $coopNombre . ' / ' . $prodNombre;
+            $mailCopias->addAddress('lacruzg@coopsve.com', 'La Cruz');
+            $mailCopias->addAddress('fernandosalguero685@gmail.com', 'Fernando Salguero');
+            $mailOk = $mailOk && self::sendAndLog($mailCopias, 'compra_realizada', 'compra_realizada_cooperativa.html');
+
+            // 3) Envio al productor con asunto personalizado
             if (!empty($data['productor_correo'])) {
                 $mailProd = self::baseMailer();
                 $mailProd->Subject = 'Tu cooperativa ' . $coopNombre . ' realizo un pedido para vos, en el sistema de compra conjunta';
