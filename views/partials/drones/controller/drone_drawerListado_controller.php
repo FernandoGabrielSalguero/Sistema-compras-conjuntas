@@ -12,7 +12,7 @@ require_once __DIR__ . '/../../../../config.php';
 require_once __DIR__ . '/../model/drone_drawerListado_model.php';
 require_once __DIR__ . '/../../../../mail/Mail.php';
 
-use SVE\Mail\Maill;
+use SVE\Mail\Mail;
 
 function read_json_body(): array
 {
@@ -162,7 +162,7 @@ try {
                     ];
                     // Ignorar errores de email en la respuesta HTTP: se loguea en server (si PHPMailer lanza).
                     try {
-                        Maill::enviarSolicitudDronActualizada($payloadMail);
+                        Mail::enviarSolicitudDronActualizadaCooperativa($payloadMail);
                     } catch (\Throwable $__) {
                     }
 
