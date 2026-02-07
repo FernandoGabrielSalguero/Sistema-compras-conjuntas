@@ -350,6 +350,37 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             return rows;
         }
 
+        function normalizeMediaUrl(path) {
+            if (!path) return '';
+            const raw = String(path).replace(/\\/g, '/');
+            if (/^(https?:)?\/\//i.test(raw)) return raw;
+            if (raw.startsWith('data:') || raw.startsWith('blob:')) return raw;
+            return raw;
+        }
+
+        function buildImg(url, altText) {
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = altText || 'Imagen';
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.crossOrigin = 'anonymous';
+            img.referrerPolicy = 'no-referrer';
+            return img;
+        }
+
+        function waitForImages(container) {
+            const imgs = Array.from(container.querySelectorAll('img'));
+            if (!imgs.length) return Promise.resolve();
+            const waits = imgs.map(img => new Promise(resolve => {
+                if (img.complete && img.naturalWidth > 0) return resolve();
+                const done = () => resolve();
+                img.addEventListener('load', done, { once: true });
+                img.addEventListener('error', done, { once: true });
+            }));
+            return Promise.all(waits).then(() => undefined);
+        }
+
         function populateFormato(data) {
             const s = data.solicitud || {};
             const rep = (data.reporte && data.reporte[0]) ? data.reporte[0] : {};
@@ -408,11 +439,12 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             let firmaPrestador = '';
             let firmaCliente = '';
             media.forEach(m => {
-                const url = `/${m.ruta}`.replace(/\/{2,}/g, '/'); // asegurar slash inicial
+                const url = normalizeMediaUrl(m.ruta);
+                if (!url) return;
                 if (m.tipo === 'foto') {
                     const fig = document.createElement('figure');
                     fig.style.margin = '0';
-                    fig.innerHTML = `<img src="${esc(url)}" alt="Foto">`;
+                    fig.appendChild(buildImg(url, 'Foto'));
                     galEl.appendChild(fig);
                 } else if (m.tipo === 'firma_piloto') {
                     firmaPrestador = url;
@@ -422,9 +454,13 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             });
             if (firmaPrestador) {
                 firmaPrestadorEl.src = firmaPrestador;
+                firmaPrestadorEl.crossOrigin = 'anonymous';
+                firmaPrestadorEl.referrerPolicy = 'no-referrer';
             }
             if (firmaCliente) {
                 firmaClienteEl.src = firmaCliente;
+                firmaClienteEl.crossOrigin = 'anonymous';
+                firmaClienteEl.referrerPolicy = 'no-referrer';
             }
         }
 
@@ -518,19 +554,54 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         });
 
         // Descargar PDF (multipágina) del contenido formateado
+        function loadScriptOnce(src, testFn) {
+            if (testFn && testFn()) return Promise.resolve();
+            return new Promise((resolve, reject) => {
+                const existing = document.querySelector(`script[src="${src}"]`);
+                if (existing) {
+                    existing.addEventListener('load', () => resolve(), { once: true });
+                    existing.addEventListener('error', () => reject(new Error('No se pudo cargar ' + src)), { once: true });
+                    return;
+                }
+                const s = document.createElement('script');
+                s.src = src;
+                s.defer = true;
+                s.onload = () => resolve();
+                s.onerror = () => reject(new Error('No se pudo cargar ' + src));
+                document.head.appendChild(s);
+            });
+        }
+
+        async function ensurePdfLibs() {
+            await loadScriptOnce('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js', () => !!window.html2canvas);
+            await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', () => !!(window.jspdf && window.jspdf.jsPDF));
+        }
+
         async function exportPDF() {
             try {
+                await ensurePdfLibs();
+                if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
+                    if (typeof window.showAlert === 'function') window.showAlert('error', 'No se pudieron cargar las librerías de PDF.');
+                    return;
+                }
                 // Forzar pestaña Formato para capturar
                 const wasJSON = !paneJSON.classList.contains('hidden');
                 activate('formato');
 
                 // Área a exportar
                 const target = document.getElementById('fito-formato');
+                if (!target) {
+                    if (typeof window.showAlert === 'function') window.showAlert('error', 'No se encontró el contenido a exportar.');
+                    return;
+                }
+                await waitForImages(target);
 
                 // html2canvas de alta calidad
                 const canvas = await html2canvas(target, {
                     scale: 2, // más DPI
                     useCORS: true,
+                    allowTaint: true,
+                    imageTimeout: 15000,
                     backgroundColor: '#ffffff',
                     windowWidth: document.documentElement.scrollWidth
                 });
