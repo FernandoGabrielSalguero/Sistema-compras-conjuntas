@@ -961,7 +961,7 @@ $sesionDebug = [
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 // Cache busting: agregar parámetro de versión
-                navigator.serviceWorker.register('/service-worker.js?v=4.1')
+                navigator.serviceWorker.register('/service-worker.js?v=4.2')
                     .then(registration => {
                         console.log('Service Worker registrado:', registration.scope);
                         // Forzar actualización si hay nueva versión

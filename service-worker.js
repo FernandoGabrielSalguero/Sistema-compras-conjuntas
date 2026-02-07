@@ -1,5 +1,5 @@
-/*! SVE Service Worker v4.1 - offline-first para piloto_drone + Background Sync */
-const CACHE_VERSION = 'v4.1';
+/*! SVE Service Worker v4.2 - offline-first para piloto_drone + Background Sync */
+const CACHE_VERSION = 'v4.2';
 const PRECACHE = 'sve-precache-' + CACHE_VERSION;
 const RUNTIME = 'sve-runtime-' + CACHE_VERSION;
 
@@ -56,17 +56,30 @@ self.addEventListener('fetch', (event) => {
     // Ignorar todo lo que no sea http/https (incluye chrome-extension:, data:, etc.)
     if (!(url.protocol === 'http:' || url.protocol === 'https:')) return;
 
+    // Lista de dominios externos que causan problemas CORS - no intentar cachearlos
+    const corsProblematicDomains = ['framework.impulsagroup.com'];
+    const isCorsProblematic = corsProblematicDomains.some(domain => url.hostname.includes(domain));
+
+    // Si es un dominio problemático, solo hacer fetch sin cachear
+    if (isCorsProblematic) {
+        event.respondWith(fetch(req).catch(() => {
+            // Si falla, devolver respuesta vacía en lugar de error
+            return new Response('', { status: 200 });
+        }));
+        return;
+    }
+
     event.respondWith((async () => {
         const cached = await caches.match(req);
 
         const fetchPromise = fetch(req).then(async (networkResp) => {
             // Evitar cachear si por alguna razón el request no es http/https
             if (!/^https?:/i.test(req.url)) return networkResp;
-            if (networkResp && (networkResp.status === 200 || networkResp.type === 'opaque')) {
+            // Solo cachear respuestas exitosas del mismo origen
+            if (networkResp && networkResp.status === 200 && url.origin === self.location.origin) {
                 try {
                     const cache = await caches.open(RUNTIME);
-                    const cacheReq = (req.mode === 'no-cors') ? new Request(req.url, { mode: 'no-cors' }) : req;
-                    await cache.put(cacheReq, networkResp.clone());
+                    await cache.put(req, networkResp.clone());
                 } catch { /* no-op */ }
             }
             return networkResp;
