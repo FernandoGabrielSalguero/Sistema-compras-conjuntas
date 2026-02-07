@@ -42,7 +42,13 @@ $sesionDebug = [
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SVE</title>
+    <title>SVE - Piloto Drone</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0ea5e9" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
@@ -54,6 +60,10 @@ $sesionDebug = [
 
     <!-- CDN firma con dedo -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" defer></script>
+
+    <!-- Sistema de sincronización offline -->
+    <script src="../../offline-sync.js" defer></script>
+    <script src="../../offline-init.js" defer></script>
 
     <style>
         /* Overlay del modal */
@@ -442,10 +452,73 @@ $sesionDebug = [
         .days-grid>.card>h3 {
             margin: 0 0 .75rem 0;
         }
+
+        /* Indicador de estado offline/online */
+        .sync-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .sync-status.online {
+            border-left: 4px solid #22c55e;
+        }
+
+        .sync-status.offline {
+            border-left: 4px solid #ef4444;
+        }
+
+        .sync-status.syncing {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .sync-status .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .sync-status.online .status-dot {
+            background: #22c55e;
+        }
+
+        .sync-status.offline .status-dot {
+            background: #ef4444;
+        }
+
+        .sync-status.syncing .status-dot {
+            background: #f59e0b;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .sync-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 4px;
+        }
     </style>
 </head>
 
-<body>
+<body data-role="piloto_drone">
     <!-- 🔲 CONTENEDOR PRINCIPAL -->
     <div class="layout">
 
@@ -788,7 +861,29 @@ $sesionDebug = [
         </div>
     </div>
 
+    <!-- Indicador de estado de sincronización -->
+    <div class="sync-status online" id="sync-status">
+        <div class="status-dot"></div>
+        <span id="sync-status-text">En línea</span>
+        <span id="sync-pending-badge" class="sync-badge" style="display: none;">0</span>
+    </div>
+
     <script>
+        // =========================================================
+        // Registro del Service Worker
+        // =========================================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('Error al registrar Service Worker:', error);
+                    });
+            });
+        }
+
         // listeners, detalle, reporte, firma
         let signatureCliente, signaturePiloto;
 
@@ -1629,6 +1724,212 @@ $sesionDebug = [
 
         // Activa la normalización en cuanto cargue el DOM
         document.addEventListener('DOMContentLoaded', setupNumericInputs);
+
+        // =========================================================
+        // Sistema de sincronización offline
+        // =========================================================
+        (function() {
+            const statusEl = document.getElementById('sync-status');
+            const statusText = document.getElementById('sync-status-text');
+            const pendingBadge = document.getElementById('sync-pending-badge');
+
+            // Actualizar estado visual
+            function updateSyncStatus() {
+                const isOnline = navigator.onLine;
+
+                if (window.offlineSync) {
+                    window.offlineSync.getPendingCount().then(count => {
+                        if (count > 0) {
+                            pendingBadge.textContent = count;
+                            pendingBadge.style.display = 'inline-block';
+                        } else {
+                            pendingBadge.style.display = 'none';
+                        }
+                    }).catch(err => {
+                        console.error('Error obteniendo pendientes:', err);
+                    });
+                }
+
+                if (isOnline) {
+                    statusEl.className = 'sync-status online';
+                    statusText.textContent = 'En línea';
+                } else {
+                    statusEl.className = 'sync-status offline';
+                    statusText.textContent = 'Sin conexión';
+                }
+            }
+
+            // Event listeners de conexión
+            window.addEventListener('online', () => {
+                updateSyncStatus();
+                showAlert?.('success', 'Conexión restaurada. Sincronizando...');
+            });
+
+            window.addEventListener('offline', () => {
+                updateSyncStatus();
+                showAlert?.('info', 'Sin conexión. Los datos se guardarán localmente.');
+            });
+
+            // Event listeners de sincronización
+            if (window.offlineSync) {
+                window.offlineSync.on('sync-start', () => {
+                    statusEl.className = 'sync-status syncing';
+                    statusText.textContent = 'Sincronizando...';
+                });
+
+                window.offlineSync.on('sync-complete', (detail) => {
+                    updateSyncStatus();
+                    if (detail.success > 0) {
+                        showAlert?.('success', `${detail.success} reporte(s) sincronizado(s) correctamente`);
+                        // Recargar solicitudes para reflejar cambios
+                        cargarSolicitudes();
+                    }
+                    if (detail.errors > 0) {
+                        showAlert?.('warning', `${detail.errors} reporte(s) con errores al sincronizar`);
+                    }
+                });
+
+                window.offlineSync.on('sync-error', (detail) => {
+                    updateSyncStatus();
+                    showAlert?.('error', 'Error al sincronizar datos');
+                });
+
+                window.offlineSync.on('report-saved', (detail) => {
+                    updateSyncStatus();
+                    showAlert?.('info', 'Reporte guardado localmente. Se sincronizará cuando haya conexión.');
+                });
+
+                // Listener para mensajes del service worker
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.addEventListener('message', (event) => {
+                        if (event.data?.type === 'SYNC_REPORTS') {
+                            console.log('Service Worker solicitó sincronización');
+                            window.offlineSync.syncPendingData();
+                        }
+                    });
+                }
+            }
+
+            // Actualizar estado inicial
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(updateSyncStatus, 500);
+                // Actualizar cada 30 segundos
+                setInterval(updateSyncStatus, 30000);
+            });
+
+            // Modificar el submit del formulario de reporte para soportar offline
+            const formReporte = document.getElementById('form-reporte');
+            if (formReporte) {
+                // Remover el listener existente y agregar uno nuevo
+                const oldSubmit = formReporte.onsubmit;
+                formReporte.removeEventListener('submit', oldSubmit);
+
+                formReporte.addEventListener('submit', async (ev) => {
+                    ev.preventDefault();
+                    if (submitting) return;
+                    submitting = true;
+
+                    try {
+                        const sid = ev.currentTarget.dataset.sid;
+
+                        // Actualizar receta editable primero (si está online)
+                        if (sid && navigator.onLine) {
+                            const rows = Array.from(document.querySelectorAll('#tbody-receta tr')).map(tr => {
+                                return {
+                                    id: tr.dataset.id,
+                                    cant_prod_usado: tr.querySelector('.inp-cant')?.value || null,
+                                    fecha_vencimiento: tr.querySelector('.inp-fecha')?.value || null
+                                }
+                            });
+                            try {
+                                await fetch(`../../controllers/drone_pilot_dashboardController.php`, {
+                                    method: 'POST',
+                                    credentials: 'same-origin',
+                                    body: new URLSearchParams({
+                                        action: 'actualizar_receta',
+                                        solicitud_id: sid,
+                                        recetas_json: JSON.stringify(rows)
+                                    })
+                                });
+                            } catch (e) {
+                                console.error('actualizar_receta', e);
+                            }
+                        }
+
+                        // Validar fotos
+                        const fotos = document.getElementById('fotos');
+                        if (fotos.files.length > 10) {
+                            showAlert?.('info', 'Máximo 10 fotos.');
+                            submitting = false;
+                            return;
+                        }
+
+                        // Capturar firmas
+                        const firmaCliente = signatureCliente && !signatureCliente.isEmpty() ?
+                            signatureCliente.toDataURL('image/png') : '';
+                        const firmaPiloto = signaturePiloto && !signaturePiloto.isEmpty() ?
+                            signaturePiloto.toDataURL('image/png') : '';
+
+                        // Preparar datos del reporte
+                        const formData = new FormData(ev.target);
+                        const reportData = {
+                            solicitud_id: formData.get('solicitud_id'),
+                            nom_cliente: formData.get('nom_cliente'),
+                            nom_piloto: formData.get('nom_piloto'),
+                            nom_encargado: formData.get('nom_encargado'),
+                            fecha_visita: formData.get('fecha_visita'),
+                            hora_ingreso: formData.get('hora_ingreso'),
+                            hora_egreso: formData.get('hora_egreso'),
+                            nombre_finca: formData.get('nombre_finca'),
+                            cultivo_pulverizado: formData.get('cultivo_pulverizado'),
+                            cuadro_cuartel: formData.get('cuadro_cuartel'),
+                            sup_pulverizada: formData.get('sup_pulverizada'),
+                            vol_aplicado: formData.get('vol_aplicado'),
+                            vel_viento: formData.get('vel_viento'),
+                            temperatura: formData.get('temperatura'),
+                            humedad_relativa: formData.get('humedad_relativa'),
+                            lavado_dron_miner: formData.get('lavado_dron_miner'),
+                            triple_lavado_envases: formData.get('triple_lavado_envases'),
+                            observaciones: formData.get('observaciones')
+                        };
+
+                        // Si está offline, guardar localmente
+                        if (!navigator.onLine && window.offlineSync) {
+                            const photos = Array.from(fotos.files || []);
+                            await window.offlineSync.saveReportOffline(
+                                reportData,
+                                photos,
+                                firmaCliente,
+                                firmaPiloto
+                            );
+                            showAlert?.('success', 'Reporte guardado offline. Se sincronizará automáticamente.');
+                            closeModalReporte();
+                            updateSyncStatus();
+                        } else {
+                            // Online: enviar normalmente
+                            document.getElementById('firma_cliente_base64').value = firmaCliente;
+                            document.getElementById('firma_piloto_base64').value = firmaPiloto;
+
+                            const res = await fetch(`../../controllers/drone_pilot_dashboardController.php`, {
+                                method: 'POST',
+                                body: formData,
+                                credentials: 'same-origin'
+                            });
+                            const payload = await res.json();
+                            if (!res.ok || !payload.ok) throw new Error(payload.message || 'Error API');
+                            showAlert?.('success', 'Reporte guardado correctamente.');
+                            closeModalReporte();
+                            cargarSolicitudes();
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        showAlert?.('error', 'No se pudo guardar el reporte.');
+                    } finally {
+                        submitting = false;
+                    }
+                });
+            }
+        })();
     </script>
 
 </body>

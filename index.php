@@ -131,6 +131,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Iniciar Sesión</title>
 
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0ea5e9" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
     <!-- Framework visual del proyecto -->
     <link rel="preconnect" href="https://framework.impulsagroup.com" />
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css" />
@@ -279,17 +285,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             line-height: 1;
         }
 
-        .sve-menu-trigger[data-offline="1"]::after {
-            content: "";
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            width: 8px;
-            height: 8px;
-            border-radius: 9999px;
-            background: var(--sve-success);
-            box-shadow: 0 0 0 2px #fff;
-        }
 
         .sve-menu {
             position: absolute;
@@ -325,13 +320,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: var(--sve-gray-100);
         }
 
-        /* Estado activo visual para el item de offline */
-        #sve-offline-enable-inline[data-active="1"],
-        #sve-offline-enable-inline[aria-pressed="true"] {
-            background: var(--sve-success) !important;
-            color: #fff !important;
-            border-color: var(--sve-success) !important;
-        }
 
         /* Modal de reset offline */
         #sve-cache-reset-overlay {
@@ -387,9 +375,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="sve-topmenu">
             <button type="button" class="sve-menu-trigger" id="sve-menu-trigger" aria-haspopup="true" aria-expanded="false" title="Más opciones">⋮</button>
             <div class="sve-menu" id="sve-menu" role="menu" aria-hidden="true" inert>
-                <button type="button" role="menuitem" id="sve-offline-enable-inline" title="Activar acceso sin conexión" aria-label="Activar acceso sin conexión" class="sve-menu-item">
-                    ⚡ Activar acceso sin conexión
-                </button>
                 <button type="button" role="menuitem" id="sve-cache-reset-inline" title="Restablecer versión offline" aria-label="Restablecer versión offline" class="sve-menu-item">
                     ↺ Restablecer versión offline
                 </button>
@@ -535,27 +520,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         })();
 
         // =========================================================
-        // Módulo: Menú "3 puntos" + estado Offline
-        // - Requisitos:
-        //   - Cuando el modo offline esté activo, el item muestra
-        //     "⚡ Acceso sin conección activado" (pedido literal).
-        //   - Indicador verde en el trigger si activo.
-        //   - Manejo de foco/esc para accesibilidad.
-        // =========================================================
-        // =========================================================
-        // Módulo: Menú "3 puntos" + estado Offline
-        // - Toggle real del modo offline:
-        //   * Persiste en localStorage: 'sve_offline_cred'
-        //   * Setea/remueve data-active en el botón
-        //   * Actualiza texto y badge del trigger
-        // - Compatible con offline.js vía MutationObserver.
+        // Módulo: Menú "3 puntos" simplificado
         // =========================================================
         (function() {
             const trigger = document.getElementById('sve-menu-trigger');
             const menu = document.getElementById('sve-menu');
-            const enableItem = document.getElementById('sve-offline-enable-inline');
 
-            if (!trigger || !menu || !enableItem) return;
+            if (!trigger || !menu) return;
 
             function openMenu() {
                 menu.classList.add('open');
@@ -595,91 +566,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     closeMenu();
                 }
             });
-
-            // ---------- Estado "offline activo" en UI ----------
-            // Solo actualiza UI (texto/aria/badge). NO toca data-active aquí
-            // para evitar loops con el MutationObserver.
-            function reflectActiveState(on) {
-                enableItem.textContent = on ?
-                    '⚡ Acceso sin conección activado' :
-                    '⚡ Activar acceso sin conexión';
-
-                enableItem.setAttribute('aria-pressed', on ? 'true' : 'false');
-                if (on) {
-                    trigger.setAttribute('data-offline', '1');
-                } else {
-                    trigger.removeAttribute('data-offline');
-                }
-            }
-
-            // Valor inicial desde localStorage (por defecto: desactivado)
-            const initialOn = !!localStorage.getItem('sve_offline_cred');
-            reflectActiveState(initialOn);
-
-            // Toggle manual desde el item del menú (fallback si no está offline.js)
-            enableItem.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                const isActive = enableItem.getAttribute('data-active') === '1' || !!localStorage.getItem('sve_offline_cred');
-
-                if (isActive) {
-                    // Desactivar offline (no persistido)
-                    try {
-                        localStorage.removeItem('sve_offline_cred');
-                    } catch {}
-                    enableItem.removeAttribute('data-active'); // atributo solo para observadores externos
-                    reflectActiveState(false);
-                } else {
-                    // Activar offline (persistido)
-                    try {
-                        localStorage.setItem('sve_offline_cred', '1');
-                    } catch {}
-                    enableItem.setAttribute('data-active', '1'); // atributo solo para observadores externos
-                    reflectActiveState(true);
-                }
-
-                // Cerrar el menú al seleccionar la opción
-                if (typeof closeMenu === 'function') closeMenu();
-            });
-
-            // Si offline.js modifica data-active, reflejar cambio sin reescribir data-active,
-            // así evitamos loops de observer.
-            const obs = new MutationObserver(() => {
-                const on = enableItem.getAttribute('data-active') === '1';
-
-                // Solo sincroniza persistencia; no toca el atributo observado.
-                const lsOn = !!localStorage.getItem('sve_offline_cred');
-                if (on && !lsOn) {
-                    try {
-                        localStorage.setItem('sve_offline_cred', '1');
-                    } catch {}
-                }
-                if (!on && lsOn) {
-                    try {
-                        localStorage.removeItem('sve_offline_cred');
-                    } catch {}
-                }
-
-                // Actualiza únicamente la UI
-                reflectActiveState(on);
-            });
-            obs.observe(enableItem, {
-                attributes: true,
-                attributeFilter: ['data-active']
-            });
-
         })();
-
-        // Defensa adicional: al activar/desactivar desde este script, no vuelvas a modificar
-        // 'data-active' si ya está en el estado correcto.
-        function setDataActiveSafely(on) {
-            const current = enableItem.getAttribute('data-active') === '1';
-            if (on !== current) {
-                if (on) enableItem.setAttribute('data-active', '1');
-                else enableItem.removeAttribute('data-active');
-            }
-        }
 
         // =========================================================
         // (Opcional para debug): imprimir sesión/cierre en consola
