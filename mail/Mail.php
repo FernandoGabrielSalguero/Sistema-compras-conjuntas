@@ -883,4 +883,100 @@ final class Mail
             return ['ok' => false, 'error' => $e->getMessage()];
         }
     }
+
+    /**
+     * Envia correo por modificacion de solicitud de drones desde SVE.
+     * @return array{ok:bool, error?:string}
+     */
+    public static function enviarSolicitudDronActualizadaSVE(array $data): array
+    {
+        try {
+            $tplPath = __DIR__ . '/template/drone_modificacionPedido_sve.html';
+
+            $rows = '';
+            foreach ((array)($data['cambios'] ?? []) as $c) {
+                $rows .= sprintf(
+                    '<tr>
+                        <td style="padding:8px;border-bottom:1px solid #eee;">%s</td>
+                        <td style="padding:8px;border-bottom:1px solid #eee;color:#6b7280;">%s</td>
+                        <td style="padding:8px;border-bottom:1px solid #eee;"><strong>%s</strong></td>
+                    </tr>',
+                    htmlspecialchars((string)($c['campo'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                    htmlspecialchars((string)($c['antes'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                    htmlspecialchars((string)($c['despues'] ?? ''), ENT_QUOTES, 'UTF-8')
+                );
+            }
+            if ($rows === '') {
+                $rows = '<tr><td colspan="3" style="padding:8px;text-align:center;color:#6b7280;">Sin cambios detectados</td></tr>';
+            }
+
+            $prodNombre = (string)($data['productor']['nombre'] ?? 'Productor');
+            $estadoAntes = (string)($data['estado_anterior'] ?? '—');
+            $estadoAhora = (string)($data['estado_actual'] ?? '—');
+            $sid = (int)($data['solicitud_id'] ?? 0);
+
+            $content = sprintf(
+                '<h2 style="margin:0 0 6px 0;">SVE modifico la solicitud de drones</h2>
+                <p style="margin:0 0 12px 0;color:#374151;">ID solicitud: <strong>#%d</strong></p>
+                <p style="margin:0 0 12px 0;color:#374151;">
+                Estado: <span style="background:#eef;padding:2px 8px;border-radius:999px;">%s</span>
+                &nbsp;→&nbsp;
+                <span style="background:#dcfce7;padding:2px 8px;border-radius:999px;">%s</span>
+                </p>
+
+                <h3 style="margin:12px 0 6px 0;">Resumen de cambios</h3>
+                <table cellpadding="0" cellspacing="0" border="0" style="width:100%%;border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#f3f4f6;">
+                    <th style="text-align:left;padding:8px;">Campo</th>
+                    <th style="text-align:left;padding:8px;">Antes</th>
+                    <th style="text-align:left;padding:8px;">Despues</th>
+                    </tr>
+                </thead>
+                <tbody>%s</tbody>
+                </table>',
+                $sid,
+                htmlspecialchars($estadoAntes, ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($estadoAhora, ENT_QUOTES, 'UTF-8'),
+                $rows
+            );
+
+            $html = self::renderTemplate($tplPath, $content, 'Modificacion de solicitud de drones');
+            $subject = 'SVE modifico la solicitud de drones N° ' . $sid;
+
+            $mail = self::baseMailer();
+            $mail->Subject = $subject;
+            $mail->Body    = $html;
+            $mail->AltBody = $subject;
+
+            $prodCorreo = (string)($data['productor']['correo'] ?? '');
+            if ($prodCorreo !== '') {
+                $mail->addAddress($prodCorreo, $prodNombre);
+            }
+
+            $added = [];
+            foreach ((array)($data['cooperativas'] ?? []) as $c) {
+                $cc = trim((string)($c['correo'] ?? ''));
+                $nn = (string)($c['usuario'] ?? '');
+                if ($cc !== '' && !isset($added[$cc])) {
+                    $mail->addAddress($cc, $nn);
+                    $added[$cc] = true;
+                }
+            }
+
+            $mail->addAddress('dronesvecoop@gmail.com', 'Drones SVE');
+            $mail->addAddress('fernandosalguero685@gmail.com', 'Fernando Salguero');
+
+            $meta = [
+                'contrato_id' => $sid,
+                'correo' => $prodCorreo,
+                'enviado_por' => 'sve_update',
+            ];
+
+            $ok = self::sendAndLog($mail, 'dron_modificacion_sve', 'drone_modificacionPedido_sve.html', $meta);
+            return ['ok' => (bool)$ok];
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'error' => $e->getMessage()];
+        }
+    }
 }

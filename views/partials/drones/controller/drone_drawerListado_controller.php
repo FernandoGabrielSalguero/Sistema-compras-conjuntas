@@ -7,6 +7,9 @@ ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
 header('Content-Type: application/json; charset=utf-8');
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 require_once __DIR__ . '/../../../../config.php';
 require_once __DIR__ . '/../model/drone_drawerListado_model.php';
@@ -162,7 +165,12 @@ try {
                     ];
                     // Ignorar errores de email en la respuesta HTTP: se loguea en server (si PHPMailer lanza).
                     try {
-                        Mail::enviarSolicitudDronActualizadaCooperativa($payloadMail);
+                        $rol = (string)($_SESSION['rol'] ?? '');
+                        if ($rol === 'sve') {
+                            Mail::enviarSolicitudDronActualizadaSVE($payloadMail);
+                        } else {
+                            Mail::enviarSolicitudDronActualizadaCooperativa($payloadMail);
+                        }
                     } catch (\Throwable $__) {
                     }
 
