@@ -719,4 +719,72 @@ final class Mail
             return ['ok' => false, 'error' => $e->getMessage()];
         }
     }
+
+    /**
+     * Envia correo con la respuesta de cooperativa (aprobada/denegada).
+     * @return array{ok:bool, error?:string}
+     */
+    public static function enviarRespuestaCoopSolicitudDron(array $data): array
+    {
+        try {
+            $tplPath = __DIR__ . '/autorizacion_drone/drone_respuesta_cooperativa_alCorreo.html';
+
+            $prodNombre = (string)($data['productor']['nombre'] ?? 'Productor');
+            $prodCorreo = (string)($data['productor']['correo'] ?? '');
+            $coopNombre = (string)($data['cooperativa']['nombre'] ?? 'Cooperativa');
+            $coopCorreo = (string)($data['cooperativa']['correo'] ?? '');
+            $estado     = (string)($data['estado'] ?? '');
+            $sid        = (int)($data['solicitud_id'] ?? 0);
+
+            $estadoTxt = $estado === 'aprobada_coop' ? 'APROBADA' : ($estado === 'cancelada' ? 'DENEGADA' : strtoupper($estado));
+
+            $content = sprintf(
+                '<h2>Respuesta de cooperativa</h2>
+                <p>La cooperativa <strong>%s</strong> ha <strong>%s</strong> la solicitud de drones.</p>
+                <table cellpadding="8" cellspacing="0" border="0" style="width:100%%;border-collapse:collapse;">
+                    <tbody>
+                        <tr><td style="width:35%%;background:#f9fafb;">Solicitud</td><td>#%d</td></tr>
+                        <tr><td style="background:#f9fafb;">Productor</td><td>%s</td></tr>
+                        <tr><td style="background:#f9fafb;">Cooperativa</td><td>%s</td></tr>
+                        <tr><td style="background:#f9fafb;">Estado</td><td>%s</td></tr>
+                    </tbody>
+                </table>',
+                htmlspecialchars($coopNombre, ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($estadoTxt, ENT_QUOTES, 'UTF-8'),
+                $sid,
+                htmlspecialchars($prodNombre, ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($coopNombre, ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($estadoTxt, ENT_QUOTES, 'UTF-8')
+            );
+
+            $html = self::renderTemplate($tplPath, $content, 'Respuesta de cooperativa');
+            $subject = 'Respuesta de cooperativa - Solicitud #' . $sid . ' ' . $estadoTxt;
+
+            $mail = self::baseMailer();
+            $mail->Subject = $subject;
+            $mail->Body    = $html;
+            $mail->AltBody = $subject;
+
+            if ($prodCorreo !== '') {
+                $mail->addAddress($prodCorreo, $prodNombre);
+            }
+            if ($coopCorreo !== '') {
+                $mail->addAddress($coopCorreo, $coopNombre);
+            }
+            $mail->addAddress('dronesvecoop@gmail.com', 'Drones SVE');
+            $mail->addAddress('fernandosalguero685@gmail.com', 'Fernando Salguero');
+
+            $meta = [
+                'contrato_id' => $sid,
+                'cooperativa_id_real' => $data['cooperativa']['id_real'] ?? null,
+                'correo' => $prodCorreo,
+                'enviado_por' => 'coop_action',
+            ];
+
+            $ok = self::sendAndLog($mail, 'dron_respuesta_coop', 'drone_respuesta_cooperativa_alCorreo.html', $meta);
+            return ['ok' => (bool)$ok];
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'error' => $e->getMessage()];
+        }
+    }
 }

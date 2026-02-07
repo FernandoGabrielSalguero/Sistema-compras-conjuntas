@@ -6,6 +6,9 @@ ini_set('display_errors', '0');
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../Mail.php';
+
+use SVE\Mail\Mail;
 
 function base64url_decode(string $data): string
 {
@@ -86,6 +89,52 @@ if (in_array($estadoActual, ['aprobada_coop', 'cancelada'], true)) {
 $nuevoEstado = $act === 'approve' ? 'aprobada_coop' : 'cancelada';
 $upd = $pdo->prepare("UPDATE drones_solicitud SET estado = ? WHERE id = ? LIMIT 1");
 $upd->execute([$nuevoEstado, $sid]);
+
+// Notificar a involucrados
+$stmt = $pdo->prepare("
+    SELECT ds.productor_id_real,
+           ui_prod.nombre AS prod_nombre,
+           ui_prod.correo AS prod_correo
+    FROM drones_solicitud ds
+    LEFT JOIN usuarios u_prod ON u_prod.id_real = ds.productor_id_real
+    LEFT JOIN usuarios_info ui_prod ON ui_prod.usuario_id = u_prod.id
+    WHERE ds.id = ?
+    LIMIT 1
+");
+$stmt->execute([$sid]);
+$prod = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['prod_nombre' => '', 'prod_correo' => '', 'productor_id_real' => ''];
+
+$coopIdReal = (string)($payload['coop'] ?? '');
+$coop = ['coop_nombre' => '', 'coop_correo' => '', 'coop_id_real' => $coopIdReal];
+if ($coopIdReal !== '') {
+    $stCoop = $pdo->prepare("
+        SELECT ui.nombre AS coop_nombre, ui.correo AS coop_correo
+        FROM usuarios u
+        LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+        WHERE u.id_real = ?
+        LIMIT 1
+    ");
+    $stCoop->execute([$coopIdReal]);
+    $rowCoop = $stCoop->fetch(PDO::FETCH_ASSOC);
+    if ($rowCoop) {
+        $coop['coop_nombre'] = (string)($rowCoop['coop_nombre'] ?? '');
+        $coop['coop_correo'] = (string)($rowCoop['coop_correo'] ?? '');
+    }
+}
+
+Mail::enviarRespuestaCoopSolicitudDron([
+    'solicitud_id' => $sid,
+    'estado' => $nuevoEstado,
+    'productor' => [
+        'nombre' => (string)($prod['prod_nombre'] ?? ''),
+        'correo' => (string)($prod['prod_correo'] ?? ''),
+    ],
+    'cooperativa' => [
+        'nombre' => (string)($coop['coop_nombre'] ?? ''),
+        'correo' => (string)($coop['coop_correo'] ?? ''),
+        'id_real' => $coopIdReal,
+    ],
+]);
 
 echo $nuevoEstado === 'aprobada_coop'
     ? 'Solicitud autorizada correctamente.'
