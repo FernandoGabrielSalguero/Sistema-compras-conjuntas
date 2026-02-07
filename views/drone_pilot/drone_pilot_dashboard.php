@@ -1156,7 +1156,26 @@ $sesionDebug = [
                 const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=reporte_solicitud&id=${encodeURIComponent(id)}`, {
                     credentials: 'same-origin'
                 });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
+
+                // Verificar que la respuesta sea exitosa
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+
+                // Verificar que la respuesta sea JSON
+                const contentType = res.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await res.text();
+                    console.error('[Dashboard] Respuesta no es JSON:', text.substring(0, 200));
+
+                    // Si es HTML, probablemente es una redirección a login
+                    if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+                        throw new Error('Sesión expirada o no autenticado. Recarga la página e inicia sesión nuevamente.');
+                    }
+
+                    throw new Error('Respuesta del servidor no es JSON válido');
+                }
+
                 const payload = await res.json();
                 if (!payload.ok) throw new Error(payload.message || 'Error de API');
 
@@ -1223,9 +1242,18 @@ $sesionDebug = [
 
             } catch (e) {
                 console.error('[Dashboard] Error al cargar reporte:', e);
+
                 // Si falla la carga, abrir modal con datos básicos
                 buildTablaReceta([], id);
-                showAlert?.('warning', 'No se pudieron cargar datos previos. Completa el formulario manualmente.');
+
+                // Mostrar mensaje específico según el error
+                if (e.message.includes('Sesión expirada')) {
+                    showAlert?.('error', e.message);
+                } else if (e.message.includes('HTTP 401') || e.message.includes('HTTP 403')) {
+                    showAlert?.('error', 'No autorizado. Recarga la página e inicia sesión nuevamente.');
+                } else {
+                    showAlert?.('warning', 'No se pudieron cargar datos previos. Completa el formulario manualmente.');
+                }
             }
 
             openModalReporte();
@@ -1624,7 +1652,24 @@ $sesionDebug = [
                         const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
                             credentials: 'same-origin'
                         });
-                        if (!res.ok) throw new Error('HTTP ' + res.status);
+
+                        if (!res.ok) {
+                            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                        }
+
+                        // Verificar que la respuesta sea JSON
+                        const contentType = res.headers.get('content-type');
+                        if (!contentType || !contentType.includes('application/json')) {
+                            const text = await res.text();
+                            console.error('[Dashboard] Respuesta no es JSON:', text.substring(0, 200));
+
+                            if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+                                throw new Error('Sesión expirada. Recarga la página e inicia sesión.');
+                            }
+
+                            throw new Error('Respuesta del servidor inválida');
+                        }
+
                         const payload = await res.json();
                         const solicitudes = payload.data || [];
 

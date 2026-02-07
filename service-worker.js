@@ -1,5 +1,5 @@
-/*! SVE Service Worker v4.3 - offline-first para piloto_drone + Background Sync */
-const CACHE_VERSION = 'v4.3';
+/*! SVE Service Worker v4.4 - offline-first para piloto_drone + Background Sync */
+const CACHE_VERSION = 'v4.4';
 const PRECACHE = 'sve-precache-' + CACHE_VERSION;
 const RUNTIME = 'sve-runtime-' + CACHE_VERSION;
 
@@ -61,17 +61,14 @@ self.addEventListener('fetch', (event) => {
     // Ignorar todo lo que no sea http/https (incluye chrome-extension:, data:, etc.)
     if (!(url.protocol === 'http:' || url.protocol === 'https:')) return;
 
-    // Lista de dominios externos que causan problemas CORS - no intentar cachearlos
-    const corsProblematicDomains = ['framework.impulsagroup.com'];
+    // Lista de dominios externos que causan problemas CORS - dejar que el navegador los maneje
+    const corsProblematicDomains = ['framework.impulsagroup.com', 'fonts.googleapis.com', 'cdn.jsdelivr.net'];
     const isCorsProblematic = corsProblematicDomains.some(domain => url.hostname.includes(domain));
 
-    // Si es un dominio problemático, solo hacer fetch sin cachear
+    // Si es un dominio problemático, NO interceptar - dejar que el navegador lo maneje directamente
+    // Esto evita errores CORS en el Service Worker
     if (isCorsProblematic) {
-        event.respondWith(fetch(req).catch(() => {
-            // Si falla, devolver respuesta vacía en lugar de error
-            return new Response('', { status: 200 });
-        }));
-        return;
+        return; // No llamar a event.respondWith(), el navegador manejará el request normalmente
     }
 
     event.respondWith((async () => {

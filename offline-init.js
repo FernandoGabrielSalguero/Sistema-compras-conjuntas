@@ -26,7 +26,7 @@
 
         try {
             // Cache busting: agregar parámetro de versión
-            const registration = await navigator.serviceWorker.register('/service-worker.js?v=4.3', {
+            const registration = await navigator.serviceWorker.register('/service-worker.js?v=4.4', {
                 scope: '/'
             });
 
