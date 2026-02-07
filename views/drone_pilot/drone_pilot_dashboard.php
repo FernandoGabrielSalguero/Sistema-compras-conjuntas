@@ -4,18 +4,51 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesión y configurar parámetros de seguridad
-require_once '../../middleware/authMiddleware.php';
+// Detectar si viene del modo offline
+$isOfflineMode = isset($_GET['offline']) && $_GET['offline'] === '1';
 
+if ($isOfflineMode) {
+    // Modo offline: crear sesión simulada (los datos se cargan desde localStorage en JavaScript)
+    // No verificamos autenticación contra el servidor
+    session_start();
 
-checkAccess('piloto_drone');
+    // Marcar como sesión offline
+    $_SESSION['offline_mode'] = true;
+    $_SESSION['rol'] = 'piloto_drone'; // Forzar rol para que pase checkAccess
 
-// Datos del usuario en sesión
-$nombre = $_SESSION['nombre'] ?? 'Sin nombre';
-$correo = $_SESSION['correo'] ?? 'Sin correo';
-$cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
-$observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
+    // Los datos reales se cargarán desde localStorage en JavaScript
+    $nombre = 'Cargando...';
+    $correo = 'offline@mode';
+    $cuit = '';
+    $telefono = '';
+    $observaciones = '';
+
+} else {
+    // Modo online normal: autenticación estándar
+    require_once '../../middleware/authMiddleware.php';
+    checkAccess('piloto_drone');
+
+    // Datos del usuario en sesión
+    $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
+    $correo = $_SESSION['correo'] ?? 'Sin correo';
+    $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
+    $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
+    $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
+
+    // Preparar datos para guardar offline
+    $userDataForOffline = [
+        'id' => $_SESSION['usuario_id'] ?? null,
+        'usuario' => $_SESSION['usuario'] ?? '',
+        'rol' => $_SESSION['rol'] ?? '',
+        'nombre' => $nombre,
+        'correo' => $correo,
+        'telefono' => $telefono,
+        'direccion' => $_SESSION['direccion'] ?? '',
+        'usuario_id' => $_SESSION['usuario_id'] ?? null,
+        'id_real' => $_SESSION['id_real'] ?? '',
+        'cuit' => $cuit
+    ];
+}
 
 $sesionDebug = [
     'nombre' => $nombre,
@@ -24,7 +57,8 @@ $sesionDebug = [
     'telefono' => $telefono,
     'observaciones' => $observaciones,
     'usuario_id' => $_SESSION['usuario_id'] ?? ($_SESSION['id'] ?? null),
-    'rol' => $_SESSION['rol'] ?? null
+    'rol' => $_SESSION['rol'] ?? null,
+    'offline_mode' => $isOfflineMode
 ];
 ?>
 
@@ -541,7 +575,7 @@ $sesionDebug = [
                         <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
                         <span class="link-text">Solicitudes</span>
                     </li>
-                    <li onclick="location.href='../../../logout.php'">
+                    <li onclick="handleLogout()">
                         <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
                     </li>
                 </ul>
@@ -875,6 +909,52 @@ $sesionDebug = [
     </div>
 
     <script>
+        // =========================================================
+        // Gestión de sesión offline
+        // =========================================================
+        (function() {
+            const isOfflineMode = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+
+            function setupOfflineSession() {
+                if (!window.offlineSync) {
+                    setTimeout(setupOfflineSession, 100);
+                    return;
+                }
+
+                if (isOfflineMode) {
+                    // Modo offline: cargar datos desde localStorage
+                    console.log('[Dashboard] Modo offline activado');
+                    const session = window.offlineSync.getOfflineSession();
+                    if (session) {
+                        console.log('[Dashboard] Sesión offline cargada:', session.usuario);
+                        // Los datos ya están en la página, no necesitamos hacer nada más
+                    } else {
+                        console.error('[Dashboard] No hay sesión offline válida');
+                        alert('Sesión offline inválida o expirada. Necesitas conectarte a internet.');
+                        window.location.href = '/';
+                    }
+                } else {
+                    // Modo online: guardar sesión offline
+                    <?php if (!$isOfflineMode && isset($userDataForOffline)): ?>
+                    const userData = <?php echo json_encode($userDataForOffline, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+                    const saved = window.offlineSync.saveOfflineSession(userData);
+                    if (saved) {
+                        console.log('[Dashboard] Sesión offline guardada correctamente');
+                    }
+                    <?php endif; ?>
+
+                    // Renovar token cada vez que hay conexión
+                    window.addEventListener('online', () => {
+                        if (window.offlineSync) {
+                            window.offlineSync.renewOfflineToken();
+                        }
+                    });
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', setupOfflineSession);
+        })();
+
         // =========================================================
         // Registro del Service Worker
         // =========================================================
@@ -1936,6 +2016,34 @@ $sesionDebug = [
                 });
             }
         })();
+
+        // =========================================================
+        // Función de logout con opción de borrar sesión offline
+        // =========================================================
+        async function handleLogout() {
+            if (!window.offlineSync) {
+                window.location.href = '../../../logout.php';
+                return;
+            }
+
+            const hasOfflineSession = window.offlineSync.hasValidOfflineSession();
+
+            if (hasOfflineSession) {
+                const message = '¿Deseas borrar también la sesión offline?\n\n' +
+                    '• SÍ: No podrás trabajar sin conexión hasta que vuelvas a iniciar sesión.\n' +
+                    '• NO: Podrás seguir trabajando sin conexión.';
+
+                const clearOffline = confirm(message);
+
+                if (clearOffline) {
+                    window.offlineSync.clearOfflineSession();
+                    console.log('[Dashboard] Sesión offline eliminada en logout');
+                }
+            }
+
+            // Redirigir a logout
+            window.location.href = '../../../logout.php';
+        }
     </script>
 
 </body>

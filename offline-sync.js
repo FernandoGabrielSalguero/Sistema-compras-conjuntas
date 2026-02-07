@@ -6,6 +6,9 @@
 
 const SYNC_DB_NAME = 'SVE_DroneSync';
 const SYNC_DB_VERSION = 1;
+const OFFLINE_TOKEN_KEY = 'sve_offline_token';
+const OFFLINE_SESSION_KEY = 'sve_offline_session';
+const TOKEN_EXPIRY_DAYS = 30;
 
 class OfflineSync {
     constructor() {
@@ -525,6 +528,147 @@ class OfflineSync {
             request.onsuccess = () => resolve(request.result || []);
             request.onerror = () => reject(request.error);
         });
+    }
+
+    // =========================================================
+    // AUTENTICACIÓN OFFLINE
+    // =========================================================
+
+    /**
+     * Genera un token simple para sesión offline
+     */
+    generateOfflineToken(userData) {
+        const payload = {
+            id: userData.id || userData.usuario_id,
+            usuario: userData.usuario,
+            rol: userData.rol,
+            nombre: userData.nombre,
+            correo: userData.correo,
+            timestamp: Date.now(),
+            expiresAt: Date.now() + (TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000)
+        };
+
+        // Codificar en base64 (no es seguridad real, solo ofuscación)
+        const encoded = btoa(JSON.stringify(payload));
+        return encoded;
+    }
+
+    /**
+     * Guarda token y datos de sesión offline
+     * Solo para rol piloto_drone
+     */
+    saveOfflineSession(userData) {
+        if (userData.rol !== 'piloto_drone') {
+            console.log('[OfflineSync] Token offline solo disponible para piloto_drone');
+            return false;
+        }
+
+        try {
+            const token = this.generateOfflineToken(userData);
+            localStorage.setItem(OFFLINE_TOKEN_KEY, token);
+
+            // Guardar datos de sesión también
+            const sessionData = {
+                usuario: userData.usuario,
+                rol: userData.rol,
+                nombre: userData.nombre,
+                correo: userData.correo,
+                telefono: userData.telefono || '',
+                direccion: userData.direccion || '',
+                usuario_id: userData.id || userData.usuario_id,
+                id_real: userData.id_real || '',
+                cuit: userData.cuit || '',
+                savedAt: Date.now()
+            };
+            localStorage.setItem(OFFLINE_SESSION_KEY, JSON.stringify(sessionData));
+
+            console.log('[OfflineSync] Sesión offline guardada para:', userData.usuario);
+            return true;
+        } catch (error) {
+            console.error('[OfflineSync] Error guardando sesión offline:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Obtiene token offline si existe y es válido
+     */
+    getOfflineToken() {
+        try {
+            const token = localStorage.getItem(OFFLINE_TOKEN_KEY);
+            if (!token) return null;
+
+            const decoded = JSON.parse(atob(token));
+
+            // Verificar expiración
+            if (decoded.expiresAt < Date.now()) {
+                console.log('[OfflineSync] Token offline expirado');
+                this.clearOfflineSession();
+                return null;
+            }
+
+            return decoded;
+        } catch (error) {
+            console.error('[OfflineSync] Error leyendo token offline:', error);
+            this.clearOfflineSession();
+            return null;
+        }
+    }
+
+    /**
+     * Obtiene datos de sesión offline guardados
+     */
+    getOfflineSession() {
+        try {
+            const sessionStr = localStorage.getItem(OFFLINE_SESSION_KEY);
+            if (!sessionStr) return null;
+
+            const session = JSON.parse(sessionStr);
+
+            // Verificar que el token asociado sea válido
+            const token = this.getOfflineToken();
+            if (!token) {
+                this.clearOfflineSession();
+                return null;
+            }
+
+            return session;
+        } catch (error) {
+            console.error('[OfflineSync] Error leyendo sesión offline:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Verifica si hay una sesión offline válida
+     */
+    hasValidOfflineSession() {
+        const token = this.getOfflineToken();
+        return token !== null;
+    }
+
+    /**
+     * Limpia token y sesión offline
+     */
+    clearOfflineSession() {
+        try {
+            localStorage.removeItem(OFFLINE_TOKEN_KEY);
+            localStorage.removeItem(OFFLINE_SESSION_KEY);
+            console.log('[OfflineSync] Sesión offline eliminada');
+        } catch (error) {
+            console.error('[OfflineSync] Error limpiando sesión offline:', error);
+        }
+    }
+
+    /**
+     * Renueva el token offline (actualiza timestamp y expiración)
+     */
+    renewOfflineToken() {
+        const session = this.getOfflineSession();
+        if (session) {
+            this.saveOfflineSession(session);
+            console.log('[OfflineSync] Token offline renovado');
+        }
     }
 }
 

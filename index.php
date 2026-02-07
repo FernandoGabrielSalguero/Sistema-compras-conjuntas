@@ -82,6 +82,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 refreshSessionCookie();
             }
 
+            // Si es piloto_drone, guardar flag para activar sesión offline
+            $saveOffline = ($user['rol'] ?? '') === 'piloto_drone';
+            $_SESSION['save_offline_session'] = $saveOffline;
+            $_SESSION['user_data_for_offline'] = $saveOffline ? $user : null;
+
             // Redirección por rol (fail-safe a "/")
             $destinos = [
                 'cooperativa'  => '/views/cooperativa/coop_dashboard.php',
@@ -426,6 +431,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="views/partials/spinner-global.js"></script>
     <!-- Framework JS del proyecto -->
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
+    <!-- Sistema offline -->
+    <script src="offline-sync.js"></script>
 
     <script>
         // =========================================================
@@ -566,6 +573,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     item.blur();
                     closeMenu();
                 }
+            });
+        })();
+
+        // =========================================================
+        // =========================================================
+        // Autenticación offline para pilotos
+        // =========================================================
+        (function() {
+            // Esperar a que offlineSync esté disponible
+            function waitForOfflineSync(callback) {
+                if (window.offlineSync && window.offlineSync.db) {
+                    callback();
+                } else {
+                    setTimeout(() => waitForOfflineSync(callback), 100);
+                }
+            }
+
+            // Verificar si estamos offline y hay sesión válida
+            function checkOfflineAuth() {
+                if (!navigator.onLine && window.offlineSync) {
+                    const session = window.offlineSync.getOfflineSession();
+                    if (session && session.rol === 'piloto_drone') {
+                        console.log('[SVE] Sesión offline válida encontrada, redirigiendo...');
+                        // Redirigir al dashboard del piloto
+                        window.location.href = '/views/drone_pilot/drone_pilot_dashboard.php?offline=1';
+                        return true;
+                    } else {
+                        console.log('[SVE] Sin sesión offline válida');
+                    }
+                }
+                return false;
+            }
+
+            // Ejecutar al cargar
+            waitForOfflineSync(() => {
+                // Si estamos offline, intentar auto-login
+                if (!navigator.onLine) {
+                    const redirected = checkOfflineAuth();
+                    if (!redirected) {
+                        // Mostrar mensaje de que necesita conectarse primero
+                        const errorDiv = document.querySelector('.error');
+                        if (errorDiv) {
+                            errorDiv.textContent = 'Sin conexión. Para trabajar offline, debes haber iniciado sesión al menos una vez con conexión.';
+                            errorDiv.style.display = 'block';
+                        }
+                    }
+                }
+            });
+
+            // Listener para detectar cuando pierde la conexión
+            window.addEventListener('offline', () => {
+                checkOfflineAuth();
             });
         })();
 
