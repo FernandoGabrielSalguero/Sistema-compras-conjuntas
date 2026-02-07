@@ -36,3 +36,8 @@ if (!defined('MAIL_HOST')) {
     define('MAIL_FROM', 'contacto@sve.com.ar');   // igual a MAIL_USER
     define('MAIL_FROM_NAME', 'SVE Notificaciones');
 }
+
+// ==== COOP ACTION SECRET ====
+if (!defined('COOP_ACTION_SECRET')) {
+    define('COOP_ACTION_SECRET', getenv('COOP_ACTION_SECRET') ?: '');
+}

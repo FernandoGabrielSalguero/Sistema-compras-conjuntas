@@ -66,6 +66,133 @@ final class Mail
         return 'Sin definir';
     }
 
+    private static function buildDroneSolicitudContent(array $data, bool $includeCoopExtra): string
+    {
+        $prodNombre = (string)($data['productor']['nombre'] ?? '');
+        $prodCorreo = (string)($data['productor']['correo'] ?? '');
+        $coopNombre = (string)($data['cooperativa']['nombre'] ?? '');
+
+        $prodRows = '';
+        foreach ((array)($data['productos'] ?? []) as $p) {
+            $prodRows .= sprintf(
+                '<tr><td>%s</td><td>%s</td><td>%s</td></tr>',
+                htmlspecialchars((string)($p['patologia'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars((string)($p['fuente'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars((string)($p['detalle'] ?? ''), ENT_QUOTES, 'UTF-8')
+            );
+        }
+        if ($prodRows === '') {
+            $prodRows = '<tr><td colspan="3" style="text-align:center;color:#6b7280;">Sin productos</td></tr>';
+        }
+
+        $motivos = implode(', ', array_map(fn($m) => htmlspecialchars((string)$m, ENT_QUOTES, 'UTF-8'), (array)($data['motivos'] ?? [])));
+        $rangos  = implode(', ', array_map(fn($r) => htmlspecialchars((string)$r, ENT_QUOTES, 'UTF-8'), (array)($data['rangos'] ?? [])));
+        $dir     = $data['direccion'] ?? [];
+        $dirText = trim(
+            (($dir['calle'] ?? '') . ' ' . ($dir['numero'] ?? '')) . ', ' .
+                ($dir['localidad'] ?? '') . ', ' . ($dir['provincia'] ?? ''),
+            " ,"
+        );
+
+        $ubi     = $data['ubicacion'] ?? [];
+        $ubiText = sprintf(
+            'En finca: %s%s',
+            (($ubi['en_finca'] ?? '') === 'si' ? 'Sí' : 'No'),
+            (!empty($ubi['lat']) && !empty($ubi['lng'])) ? sprintf(' — (%.6f, %.6f)', (float)$ubi['lat'], (float)$ubi['lng']) : ''
+        );
+
+        $costos = $data['costos'] ?? ['moneda' => 'Pesos', 'base' => 0, 'productos' => 0, 'total' => 0];
+
+        $coopExtra = '';
+        if ($includeCoopExtra) {
+            $texto = trim((string)($data['coop_texto_extra'] ?? ''));
+            $ctaApprove = (string)($data['cta_approve_url'] ?? '');
+            $ctaDecline = (string)($data['cta_decline_url'] ?? '');
+
+            $nota = '<p style="margin:12px 0 0 0;color:#6b7280;font-size:13px;">'
+                . 'Los botones tienen una validez de 24hs. '
+                . 'Una vez seleccionada una opcion, si deseas cambiar la decision debes ingresar al sistema.'
+                . '</p>';
+
+            $botones = '';
+            if ($ctaApprove !== '' && $ctaDecline !== '') {
+                $botones = sprintf(
+                    '<div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+                        <a href="%1$s" style="background:#10b981;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;display:inline-block;font-weight:600;">Autorizar</a>
+                        <a href="%2$s" style="background:#ef4444;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;display:inline-block;font-weight:600;">Denegar</a>
+                    </div>',
+                    htmlspecialchars($ctaApprove, ENT_QUOTES, 'UTF-8'),
+                    htmlspecialchars($ctaDecline, ENT_QUOTES, 'UTF-8')
+                );
+            }
+
+            if ($texto !== '' || $botones !== '') {
+                $coopExtra = '<h3 style="margin:16px 0 6px 0;">Autorizacion requerida</h3>'
+                    . '<div style="color:#111;line-height:1.5;">' . nl2br(htmlspecialchars($texto, ENT_QUOTES, 'UTF-8')) . '</div>'
+                    . $botones
+                    . $nota;
+            }
+        }
+
+        return sprintf(
+            '<h2 style="margin:0 0 8px 0;">Solicitud de servicio de drones</h2>
+            <p style="margin:0 0 14px 0;color:#374151;">ID solicitud: <strong>#%d</strong></p>
+
+            <table cellpadding="8" cellspacing="0" border="0" style="width:100%%;border-collapse:collapse;margin-bottom:12px;">
+            <tbody>
+                <tr><td style="width:35%%;background:#f9fafb;">Productor</td><td><strong>%s</strong> &lt;%s&gt;</td></tr>
+                <tr><td style="background:#f9fafb;">Cooperativa</td><td>%s</td></tr>
+                <tr><td style="background:#f9fafb;">Superficie</td><td>%0.2f ha</td></tr>
+                <tr><td style="background:#f9fafb;">Metodo de pago</td><td>%s</td></tr>
+                <tr><td style="background:#f9fafb;">Motivo(s)</td><td>%s</td></tr>
+                <tr><td style="background:#f9fafb;">Rango deseado</td><td>%s</td></tr>
+                <tr><td style="background:#f9fafb;">Direccion</td><td>%s</td></tr>
+                <tr><td style="background:#f9fafb;">Ubicacion</td><td>%s</td></tr>
+            </tbody>
+            </table>
+
+            <h3 style="margin:14px 0 6px 0;">Productos</h3>
+            <table cellpadding="8" cellspacing="0" border="0" style="width:100%%;border-collapse:collapse;">
+            <thead>
+                <tr style="background:#f3f4f6;">
+                <th style="text-align:left;">Patologia</th>
+                <th style="text-align:left;">Fuente</th>
+                <th style="text-align:left;">Detalle</th>
+                </tr>
+            </thead>
+            <tbody>%s</tbody>
+            </table>
+
+            <h3 style="margin:16px 0 6px 0;">Costo estimado</h3>
+            <table cellpadding="8" cellspacing="0" border="0" style="width:100%%;border-collapse:collapse;">
+            <tbody>
+                <tr><td style="width:35%%;background:#f9fafb;">Servicio base</td><td>%s %0.2f</td></tr>
+                <tr><td style="background:#f9fafb;">Productos SVE</td><td>%s %0.2f</td></tr>
+                <tr><td style="background:#f9fafb;"><strong>Total</strong></td><td><strong>%s %0.2f</strong></td></tr>
+            </tbody>
+            </table>
+            %s',
+            (int)($data['solicitud_id'] ?? 0),
+            htmlspecialchars($prodNombre, ENT_QUOTES, 'UTF-8'),
+            htmlspecialchars($prodCorreo, ENT_QUOTES, 'UTF-8'),
+            htmlspecialchars($coopNombre, ENT_QUOTES, 'UTF-8'),
+            (float)($data['superficie_ha'] ?? 0),
+            htmlspecialchars((string)($data['forma_pago'] ?? ''), ENT_QUOTES, 'UTF-8'),
+            $motivos ?: '—',
+            $rangos ?: '—',
+            htmlspecialchars($dirText ?: '—', ENT_QUOTES, 'UTF-8'),
+            htmlspecialchars($ubiText, ENT_QUOTES, 'UTF-8'),
+            $prodRows,
+            htmlspecialchars((string)$costos['moneda'], ENT_QUOTES, 'UTF-8'),
+            (float)$costos['base'],
+            htmlspecialchars((string)$costos['moneda'], ENT_QUOTES, 'UTF-8'),
+            (float)$costos['productos'],
+            htmlspecialchars((string)$costos['moneda'], ENT_QUOTES, 'UTF-8'),
+            (float)$costos['total'],
+            $coopExtra
+        );
+    }
+
     private static function renderTemplate(string $path, string $content, string $title = ''): string
     {
         $tpl = is_file($path)
@@ -275,6 +402,83 @@ final class Mail
 
             $tipoLog = (string)($data['tipo_log'] ?? 'cierre');
             $ok = self::sendAndLog($mail, $tipoLog, 'cosecha_cierre_operativo.html', $meta);
+            return ['ok' => (bool)$ok];
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Envia correo de solicitud de dron a correos fijos y copia al productor.
+     * @return array{ok:bool, error?:string}
+     */
+    public static function enviarSolicitudDronProductor(array $data): array
+    {
+        try {
+            $tplPath = __DIR__ . '/template/drone_solicitud_productor.html';
+            $content = self::buildDroneSolicitudContent($data, false);
+            $html = self::renderTemplate($tplPath, $content, 'Solicitud de servicio de drones');
+
+            $prodNombre = (string)($data['productor']['nombre'] ?? 'Productor');
+            $subject = 'El productor ' . $prodNombre . ' solicito un servicio de drone.';
+
+            $mail = self::baseMailer();
+            $mail->Subject = $subject;
+            $mail->Body    = $html;
+            $mail->AltBody = $subject;
+
+            $mail->addAddress('dronesvecoop@gmail.com', 'Drones SVE');
+            $mail->addAddress('fernandosalguero685@gmail.com', 'Fernando Salguero');
+            if (!empty($data['productor']['correo'])) {
+                $mail->addAddress((string)$data['productor']['correo'], $prodNombre);
+            }
+
+            $meta = [
+                'contrato_id' => (int)($data['solicitud_id'] ?? 0),
+                'correo' => (string)($data['productor']['correo'] ?? ''),
+                'enviado_por' => 'productor',
+            ];
+
+            $ok = self::sendAndLog($mail, 'dron_solicitud_productor', 'drone_solicitud_productor.html', $meta);
+            return ['ok' => (bool)$ok];
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Envia correo de autorizacion a cooperativa cuando pago es descuento por cooperativa.
+     * @return array{ok:bool, error?:string}
+     */
+    public static function enviarSolicitudDronAutorizacionCoop(array $data): array
+    {
+        try {
+            $tplPath = __DIR__ . '/autorizacion_drone/dron_autorizacion_cooperativa.html';
+            $content = self::buildDroneSolicitudContent($data, true);
+            $html = self::renderTemplate($tplPath, $content, 'Autorizacion cooperativa');
+
+            $prodNombre = (string)($data['productor']['nombre'] ?? 'Productor');
+            $subject = 'El productor ' . $prodNombre . ' solicito un servicio de drones.';
+
+            $correo = (string)($data['cooperativa']['correo'] ?? '');
+            if ($correo === '') {
+                return ['ok' => false, 'error' => 'Correo de cooperativa no valido.'];
+            }
+
+            $mail = self::baseMailer();
+            $mail->Subject = $subject;
+            $mail->Body    = $html;
+            $mail->AltBody = $subject;
+            $mail->addAddress($correo, (string)($data['cooperativa']['nombre'] ?? 'Cooperativa'));
+
+            $meta = [
+                'contrato_id' => (int)($data['solicitud_id'] ?? 0),
+                'cooperativa_id_real' => $data['cooperativa']['id_real'] ?? null,
+                'correo' => $correo,
+                'enviado_por' => 'productor',
+            ];
+
+            $ok = self::sendAndLog($mail, 'dron_autorizacion_coop', 'donde_autorizacion_cooperativa.html', $meta);
             return ['ok' => (bool)$ok];
         } catch (\Throwable $e) {
             return ['ok' => false, 'error' => $e->getMessage()];

@@ -1,4 +1,4 @@
-Tabla: CosechaMecanica
+📄 Tabla: CosechaMecanica
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(10) unsigned	NO	PRI		auto_increment
 nombre	varchar(150)	NO			
@@ -421,6 +421,28 @@ created_at	timestamp	NO		current_timestamp()
 🔗 Relaciones (salientes):
 Columna productor_id referencia a usuarios.id
 🔁 Relaciones (entrantes): usuarios
+📄 Tabla: log_correos
+Columna	Tipo	Nulo	Clave	Default	Extra
+id	int(11)	NO	PRI		auto_increment
+tipo	varchar(100)	YES			
+template	varchar(190)	YES			
+subject	varchar(255)	YES			
+from_email	varchar(190)	YES			
+from_name	varchar(190)	YES			
+reply_to	varchar(190)	YES			
+to_emails	longtext	YES			
+cc_emails	longtext	YES			
+bcc_emails	longtext	YES			
+body_html	longtext	YES			
+body_text	longtext	YES			
+enviado_ok	tinyint(1)	NO		0	
+error_msg	text	YES			
+created_at	datetime	NO		current_timestamp()	
+contrato_id	int(11)	YES			
+cooperativa_id_real	varchar(20)	YES			
+correo	varchar(190)	YES			
+enviado_por	varchar(50)	YES			
+
 📄 Tabla: login_auditoria
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	bigint(20) unsigned	NO	PRI		auto_increment
@@ -705,6 +727,7 @@ id	int(10) unsigned	NO	PRI		auto_increment
 codigo_finca	varchar(20)	NO	MUL		
 productor_id_real	varchar(20)	NO	MUL		
 nombre_finca	varchar(150)	YES			
+variedad	varchar(150)	YES			
 created_at	timestamp	NO		current_timestamp()	
 
 🔗 Relaciones (salientes):

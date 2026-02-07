@@ -29,7 +29,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/prod_dronesModel.php';
 require_once __DIR__ . '/../mail/Mail.php';
 
-use SVE\Mail\Maill;
+use SVE\Mail\Mail;
 
 function base64url_encode(string $data): string
 {
@@ -245,9 +245,9 @@ try {
         $direccion = (array)($data['direccion'] ?? []);
         $ubicacion = (array)($data['ubicacion'] ?? []);
 
-        $actionBase = rtrim((string)APP_URL, '/') . '/controllers/dron_coop_action.php';
+        $actionBase = rtrim((string)APP_URL, '/') . '/mail/autorizacion_drone/dron_coop_action.php';
         $coopIdReal = (string)($coop['coop_id_real'] ?? '');
-        $ttlSeconds = 7 * 24 * 60 * 60;
+        $ttlSeconds = 24 * 60 * 60;
         $approveToken = $esPagoCoop && $coopIdReal !== ''
             ? signCoopActionToken(['sid' => (int)$id, 'coop' => $coopIdReal, 'act' => 'approve', 'exp' => time() + $ttlSeconds])
             : null;
@@ -261,7 +261,11 @@ try {
         $mailPayload = [
             'solicitud_id'    => (int)$id,
             'productor'       => ['nombre' => $prodNombre, 'correo' => $prodCorreo],
-            'cooperativa'     => ['nombre' => (string)($coop['coop_nombre'] ?? ''), 'correo' => (string)($coop['coop_correo'] ?? '')],
+            'cooperativa'     => [
+                'nombre' => (string)($coop['coop_nombre'] ?? ''),
+                'correo' => (string)($coop['coop_correo'] ?? ''),
+                'id_real' => (string)($coop['coop_id_real'] ?? ''),
+            ],
             'superficie_ha'   => $superficie,
             'forma_pago'      => $formaPagoTxt,
             'motivos'         => $motivosSel,
@@ -286,9 +290,22 @@ try {
             'coop_texto_extra' => "Estimada cooperativa. Por el presente correo se les informa que un productor vinculado a su cooperativa a manifestado la intención de tomar el servicio de dron y de pagarlo a través del descuento por la cuota de vino. \nSi este productor productor posee los fondos necesarios para llevar a cabo el pago por favor apruébelo seleccionado el botón que dice Aprobar Solicitud el cual se encuentra al final de este correo. \nEn caso de que el productor no este en condiciones de pagarlo por esta vía por favor haga click en el botón que dice Declinar Solicitud el cual se encuentra al final de este correo. \nAnte cualquier duda por favor comuníquese al 2612072518.",
         ];
 
-        $mailResp = Maill::enviarSolicitudDron($mailPayload);
-        $mailOk = (bool)($mailResp['ok'] ?? false);
-        $mailErr = $mailResp['error'] ?? null;
+        $mailOk = true;
+        $mailErr = null;
+
+        $mailResp = Mail::enviarSolicitudDronProductor($mailPayload);
+        $mailOk = $mailOk && (bool)($mailResp['ok'] ?? false);
+        if (!($mailResp['ok'] ?? false)) {
+            $mailErr = $mailResp['error'] ?? 'Error enviando mail productor';
+        }
+
+        if ($esPagoCoop && !empty($mailPayload['cooperativa']['correo'])) {
+            $mailRespCoop = Mail::enviarSolicitudDronAutorizacionCoop($mailPayload);
+            $mailOk = $mailOk && (bool)($mailRespCoop['ok'] ?? false);
+            if (!($mailRespCoop['ok'] ?? false)) {
+                $mailErr = $mailErr ?: ($mailRespCoop['error'] ?? 'Error enviando mail cooperativa');
+            }
+        }
     } catch (Throwable $me) {
         $mailOk = false;
         $mailErr = $me->getMessage();
