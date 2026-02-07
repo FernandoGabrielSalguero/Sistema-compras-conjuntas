@@ -14,6 +14,8 @@ require_once __DIR__ . '/lib/Exception.php';
 
 final class Mail
 {
+    private const SEND_DELAY_US = 1000000; // 1s
+
     private static function baseMailer(): PHPMailer
     {
         $m = new PHPMailer(true);
@@ -51,9 +53,15 @@ final class Mail
         try {
             $ok = (bool)$mail->send();
             self::logEmail($mail, $tipo, $template, $ok, null);
+            if (self::SEND_DELAY_US > 0) {
+                usleep(self::SEND_DELAY_US);
+            }
             return $ok;
         } catch (\Throwable $e) {
             self::logEmail($mail, $tipo, $template, false, $e->getMessage());
+            if (self::SEND_DELAY_US > 0) {
+                usleep(self::SEND_DELAY_US);
+            }
             return false;
         }
     }
