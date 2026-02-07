@@ -210,13 +210,16 @@ final class Mail
     {
         try {
             $ok = (bool)$mail->send();
-            self::logEmail($mail, $tipo, $template, $meta, $ok, null);
+            $errInfo = (!$ok && property_exists($mail, 'ErrorInfo')) ? (string)$mail->ErrorInfo : null;
+            self::logEmail($mail, $tipo, $template, $meta, $ok, $errInfo);
             if (self::SEND_DELAY_US > 0) {
                 usleep(self::SEND_DELAY_US);
             }
             return $ok;
         } catch (\Throwable $e) {
-            self::logEmail($mail, $tipo, $template, $meta, false, $e->getMessage());
+            $errInfo = property_exists($mail, 'ErrorInfo') ? (string)$mail->ErrorInfo : null;
+            $err = $errInfo !== '' ? ($e->getMessage() . ' | ' . $errInfo) : $e->getMessage();
+            self::logEmail($mail, $tipo, $template, $meta, false, $err);
             if (self::SEND_DELAY_US > 0) {
                 usleep(self::SEND_DELAY_US);
             }
