@@ -233,6 +233,7 @@ final class Mail
             $pdo = $GLOBALS['pdo'] ?? null;
             if (!$pdo instanceof \PDO) {
                 error_log('[Mail] No PDO disponible para log_correos.');
+                @file_put_contents(__DIR__ . '/mail_debug.log', '[' . date('c') . '] No PDO disponible para log_correos.' . PHP_EOL, FILE_APPEND);
                 return;
             }
 
@@ -273,6 +274,11 @@ final class Mail
             ]);
         } catch (\Throwable $e) {
             error_log('[Mail] Error al registrar log_correos: ' . $e->getMessage());
+            @file_put_contents(
+                __DIR__ . '/mail_debug.log',
+                '[' . date('c') . '] Error log_correos: ' . $e->getMessage() . PHP_EOL,
+                FILE_APPEND
+            );
         }
     }
 
