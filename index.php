@@ -432,7 +432,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Framework JS del proyecto -->
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
     <!-- Sistema offline -->
-    <script src="offline-sync.js"></script>
+    <script src="offline-sync.js?v=4.1"></script>
 
     <script>
         // =========================================================

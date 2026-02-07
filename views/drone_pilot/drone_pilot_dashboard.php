@@ -97,12 +97,12 @@ $sesionDebug = [
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" defer></script>
 
     <!-- Sistema de sincronización offline -->
-    <script src="../../offline-sync.js" defer></script>
-    <script src="../../offline-init.js" defer></script>
+    <script src="../../offline-sync.js?v=4.1" defer></script>
+    <script src="../../offline-init.js?v=1.1" defer></script>
 
     <?php if (isset($_GET['debug']) && $_GET['debug'] === '1'): ?>
     <!-- Herramientas de diagnóstico (solo en modo debug) -->
-    <script src="../../offline-diagnostics.js" defer></script>
+    <script src="../../offline-diagnostics.js?v=1.0" defer></script>
     <?php endif; ?>
 
     <style>
