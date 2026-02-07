@@ -10,7 +10,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/coop_cosechaMecanicaModel.php';
 require_once __DIR__ . '/../mail/Mail.php';
 
-use SVE\Mail\Maill;
+use SVE\Mail\Mail;
 
 $now = new DateTimeImmutable('now');
 $hoy = $now->format('Y-m-d');
@@ -101,9 +101,11 @@ try {
             $mailResp = Mail::enviarCierreCosechaMecanica([
                 'cooperativa_nombre' => $nombreCoop !== '' ? $nombreCoop : ($usuarioCoop !== '' ? $usuarioCoop : 'Cooperativa'),
                 'cooperativa_correo' => $correo,
+                'cooperativa_id_real' => (string) $coop['id_real'],
                 'operativo' => $op,
                 'participaciones' => $participaciones,
                 'firma_fecha' => $coop['fecha_firma'] ?? null,
+                'enviado_por' => 'cron',
             ]);
 
             if (!($mailResp['ok'] ?? false)) {
@@ -112,7 +114,6 @@ try {
                 continue;
             }
 
-            $model->registrarCorreoCierre((int) $op['id'], (string) $coop['id_real'], $correo, 'cron');
         }
     }
 } catch (Throwable $e) {

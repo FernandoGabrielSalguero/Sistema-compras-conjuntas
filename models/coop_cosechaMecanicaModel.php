@@ -299,10 +299,11 @@ class CoopCosechaMecanicaModel
         $coopId = substr($cooperativaIdReal, 0, 11);
 
         $sql = "SELECT 1
-                FROM cosechaMecanica_coop_correo_log
+                FROM log_correos
                 WHERE contrato_id = :contrato_id
                   AND cooperativa_id_real = :coop_id
                   AND tipo = 'cierre'
+                  AND enviado_ok = 1
                 LIMIT 1";
 
         $stmt = $this->pdo->prepare($sql);
@@ -322,10 +323,10 @@ class CoopCosechaMecanicaModel
         $correoNorm = mb_strtolower(trim($correo));
         $origen = in_array($enviadoPor, ['cron', 'manual', 'check_pendientes'], true) ? $enviadoPor : 'manual';
 
-        $sql = "INSERT INTO cosechaMecanica_coop_correo_log
-                    (contrato_id, cooperativa_id_real, correo, tipo, enviado_por, created_at)
+        $sql = "INSERT INTO log_correos
+                    (tipo, contrato_id, cooperativa_id_real, correo, enviado_por, enviado_ok, created_at)
                 VALUES
-                    (:contrato_id, :coop_id, :correo, 'cierre', :enviado_por, NOW())";
+                    ('cierre', :contrato_id, :coop_id, :correo, :enviado_por, 1, NOW())";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([

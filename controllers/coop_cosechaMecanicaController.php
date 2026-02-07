@@ -7,6 +7,9 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/coop_cosechaMecanicaModel.php';
+require_once __DIR__ . '/../mail/Mail.php';
+
+use SVE\Mail\Mail;
 
 if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'cooperativa') {
     echo json_encode(['success' => false, 'message' => 'Acceso denegado.']);
@@ -70,8 +73,6 @@ if ($action === 'enviar_cierre_pendiente') {
     }
 
     try {
-        require_once __DIR__ . '/../mail/Mail.php';
-
         $nomCooperativa = $_SESSION['nombre'] ?? 'Cooperativa';
         $operativos = $model->obtenerOperativos($cooperativa_id);
         $enviados = 0;
@@ -94,12 +95,14 @@ if ($action === 'enviar_cierre_pendiente') {
             $firma = $model->obtenerFirmaContrato($contratoId, $cooperativa_id);
             $fechaFirma = $firma['fecha_firma'] ?? null;
 
-            $mailResp = \SVE\Mail\Maill::enviarCierreCosechaMecanica([
+            $mailResp = Mail::enviarCierreCosechaMecanica([
                 'cooperativa_nombre' => (string) $nomCooperativa,
                 'cooperativa_correo' => $correo,
+                'cooperativa_id_real' => $cooperativa_id,
                 'operativo'          => $op,
                 'participaciones'    => $participaciones,
                 'firma_fecha'        => $fechaFirma,
+                'enviado_por'        => 'check_pendientes',
             ]);
 
             if (!($mailResp['ok'] ?? false)) {
@@ -108,7 +111,6 @@ if ($action === 'enviar_cierre_pendiente') {
                 continue;
             }
 
-            $model->registrarCorreoCierre($contratoId, $cooperativa_id, $correo, 'check_pendientes');
             $enviados++;
         }
 
@@ -185,8 +187,6 @@ if ($action === 'enviar_cierre_manual') {
     }
 
     try {
-        require_once __DIR__ . '/../mail/Mail.php';
-
         if ($model->correoCierreEnviado($contratoId, $cooperativa_id)) {
             echo json_encode(['success' => false, 'message' => 'El correo ya fue enviado para este contrato.']);
             exit;
@@ -203,12 +203,14 @@ if ($action === 'enviar_cierre_manual') {
         $firma           = $model->obtenerFirmaContrato($contratoId, $cooperativa_id);
         $fechaFirma      = $firma['fecha_firma'] ?? null;
 
-        $mailResp = \SVE\Mail\Maill::enviarCierreCosechaMecanica([
+        $mailResp = Mail::enviarCierreCosechaMecanica([
             'cooperativa_nombre' => (string) $nomCooperativa,
             'cooperativa_correo' => $correo,
+            'cooperativa_id_real' => $cooperativa_id,
             'operativo'          => $operativo,
             'participaciones'    => $participaciones,
             'firma_fecha'        => $fechaFirma,
+            'enviado_por'        => 'manual',
         ]);
 
         if (!($mailResp['ok'] ?? false)) {
@@ -216,8 +218,6 @@ if ($action === 'enviar_cierre_manual') {
             echo json_encode(['success' => false, 'message' => 'No se pudo enviar el correo.', 'error' => $err]);
             exit;
         }
-
-        $model->registrarCorreoCierre($contratoId, $cooperativa_id, $correo, 'manual');
 
         echo json_encode(['success' => true, 'message' => 'Correo enviado.']);
     } catch (Throwable $e) {
@@ -248,8 +248,6 @@ if ($action === 'enviar_cierre_test') {
     }
 
     try {
-        require_once __DIR__ . '/../mail/Mail.php';
-
         $operativo = $model->obtenerOperativoPorId($contratoId);
         if (!$operativo) {
             echo json_encode(['success' => false, 'message' => 'Operativo no encontrado.']);
@@ -261,12 +259,15 @@ if ($action === 'enviar_cierre_test') {
         $firma           = $model->obtenerFirmaContrato($contratoId, $cooperativa_id);
         $fechaFirma      = $firma['fecha_firma'] ?? null;
 
-        $mailResp = \SVE\Mail\Maill::enviarCierreCosechaMecanica([
+        $mailResp = Mail::enviarCierreCosechaMecanica([
             'cooperativa_nombre' => (string) $nomCooperativa,
             'cooperativa_correo' => $correo,
+            'cooperativa_id_real' => $cooperativa_id,
             'operativo'          => $operativo,
             'participaciones'    => $participaciones,
             'firma_fecha'        => $fechaFirma,
+            'enviado_por'        => 'test',
+            'tipo_log'           => 'cierre_test',
         ]);
 
         if (!($mailResp['ok'] ?? false)) {

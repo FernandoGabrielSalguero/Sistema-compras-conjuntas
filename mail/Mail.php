@@ -35,6 +35,37 @@ final class Mail
         return $m;
     }
 
+    private static function formatDateShort(?string $value): string
+    {
+        if ($value === null || $value === '') {
+            return '-';
+        }
+
+        $s = (string)$value;
+        $soloFecha = explode(' ', $s)[0];
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $soloFecha) === 1) {
+            [$y, $m, $d] = explode('-', $soloFecha);
+            return $d . '/' . $m . '/' . $y;
+        }
+
+        return $s;
+    }
+
+    private static function normalizarSeguroFlete(?string $valor): string
+    {
+        $raw = strtolower(trim((string)$valor));
+        if ($raw === '' || $raw === 'sin definir' || $raw === 'sin_definir') {
+            return 'Sin definir';
+        }
+        if ($raw === 'si' || $raw === '1') {
+            return 'Si';
+        }
+        if ($raw === 'no' || $raw === '0') {
+            return 'No';
+        }
+        return 'Sin definir';
+    }
+
     private static function renderTemplate(string $path, string $content, string $title = ''): string
     {
         $tpl = is_file($path)
@@ -48,17 +79,17 @@ final class Mail
         );
     }
 
-    private static function sendAndLog(PHPMailer $mail, string $tipo, string $template): bool
+    private static function sendAndLog(PHPMailer $mail, string $tipo, string $template, array $meta = []): bool
     {
         try {
             $ok = (bool)$mail->send();
-            self::logEmail($mail, $tipo, $template, $ok, null);
+            self::logEmail($mail, $tipo, $template, $meta, $ok, null);
             if (self::SEND_DELAY_US > 0) {
                 usleep(self::SEND_DELAY_US);
             }
             return $ok;
         } catch (\Throwable $e) {
-            self::logEmail($mail, $tipo, $template, false, $e->getMessage());
+            self::logEmail($mail, $tipo, $template, $meta, false, $e->getMessage());
             if (self::SEND_DELAY_US > 0) {
                 usleep(self::SEND_DELAY_US);
             }
@@ -66,7 +97,7 @@ final class Mail
         }
     }
 
-    private static function logEmail(PHPMailer $mail, string $tipo, string $template, bool $ok, ?string $error): void
+    private static function logEmail(PHPMailer $mail, string $tipo, string $template, array $meta, bool $ok, ?string $error): void
     {
         try {
             $pdo = $GLOBALS['pdo'] ?? null;
@@ -77,9 +108,9 @@ final class Mail
 
             $stmt = $pdo->prepare("
                 INSERT INTO log_correos
-                    (tipo, template, subject, from_email, from_name, reply_to, to_emails, cc_emails, bcc_emails, body_html, body_text, enviado_ok, error_msg, created_at)
+                    (tipo, template, contrato_id, cooperativa_id_real, correo, enviado_por, subject, from_email, from_name, reply_to, to_emails, cc_emails, bcc_emails, body_html, body_text, enviado_ok, error_msg, created_at)
                 VALUES
-                    (:tipo, :template, :subject, :from_email, :from_name, :reply_to, :to_emails, :cc_emails, :bcc_emails, :body_html, :body_text, :enviado_ok, :error_msg, NOW())
+                    (:tipo, :template, :contrato_id, :cooperativa_id_real, :correo, :enviado_por, :subject, :from_email, :from_name, :reply_to, :to_emails, :cc_emails, :bcc_emails, :body_html, :body_text, :enviado_ok, :error_msg, NOW())
             ");
 
             $from = $mail->From ?? '';
@@ -94,6 +125,10 @@ final class Mail
             $stmt->execute([
                 ':tipo' => $tipo,
                 ':template' => $template,
+                ':contrato_id' => $meta['contrato_id'] ?? null,
+                ':cooperativa_id_real' => $meta['cooperativa_id_real'] ?? null,
+                ':correo' => $meta['correo'] ?? null,
+                ':enviado_por' => $meta['enviado_por'] ?? null,
                 ':subject' => (string)($mail->Subject ?? ''),
                 ':from_email' => (string)$from,
                 ':from_name' => (string)$fromName,
@@ -108,6 +143,141 @@ final class Mail
             ]);
         } catch (\Throwable $e) {
             error_log('[Mail] Error al registrar log_correos: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Envia correo de cierre de operativo de Cosecha Mecanica.
+     * $data = [
+     *   'cooperativa_nombre' => string,
+     *   'cooperativa_correo' => string,
+     *   'cooperativa_id_real' => ?string,
+     *   'operativo' => [id,nombre,fecha_apertura,fecha_cierre,descripcion,estado],
+     *   'participaciones' => [ ['productor'=>..., 'finca_id'=>..., 'superficie'=>..., 'variedad'=>..., 'prod_estimada'=>..., 'fecha_estimada'=>..., 'km_finca'=>..., 'flete'=>..., 'seguro_flete'=>...], ... ],
+     *   'firma_fecha' => ?string,
+     *   'enviado_por' => ?string,
+     * ]
+     * @return array{ok:bool, error?:string}
+     */
+    public static function enviarCierreCosechaMecanica(array $data): array
+    {
+        try {
+            $tplPath = __DIR__ . '/template/cosecha_cierre_operativo.html';
+
+            $op = $data['operativo'] ?? [];
+            $participaciones = $data['participaciones'] ?? [];
+            $nombreCoop = (string)($data['cooperativa_nombre'] ?? 'Cooperativa');
+
+            $descripcionRaw = (string)($op['descripcion'] ?? '');
+            $descripcionHtml = trim($descripcionRaw);
+            if ($descripcionHtml !== '') {
+                $descripcionHtml = html_entity_decode($descripcionHtml, ENT_QUOTES, 'UTF-8');
+                $descripcionHtml = strip_tags($descripcionHtml, '<p><br><strong><b><em><i><u><ul><ol><li><span><div><table><thead><tbody><tr><th><td>');
+            } else {
+                $descripcionHtml = '-';
+            }
+
+            $fechaApertura = self::formatDateShort($op['fecha_apertura'] ?? null);
+            $fechaCierre = self::formatDateShort($op['fecha_cierre'] ?? null);
+            $fechaFirma = self::formatDateShort($data['firma_fecha'] ?? null);
+            $estado = (string)($op['estado'] ?? 'cerrado');
+
+            $rows = '';
+            foreach ((array)$participaciones as $p) {
+                $rows .= sprintf(
+                    '<tr>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                    </tr>',
+                    htmlspecialchars((string)($p['productor'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                    htmlspecialchars((string)($p['finca_id'] ?? '-'), ENT_QUOTES, 'UTF-8'),
+                    htmlspecialchars((string)($p['superficie'] ?? 0), ENT_QUOTES, 'UTF-8'),
+                    htmlspecialchars((string)($p['variedad'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                    htmlspecialchars((string)($p['prod_estimada'] ?? 0), ENT_QUOTES, 'UTF-8'),
+                    htmlspecialchars(self::formatDateShort($p['fecha_estimada'] ?? null), ENT_QUOTES, 'UTF-8'),
+                    htmlspecialchars((string)($p['km_finca'] ?? 0), ENT_QUOTES, 'UTF-8'),
+                    htmlspecialchars((string)($p['flete'] ?? 0), ENT_QUOTES, 'UTF-8'),
+                    htmlspecialchars(self::normalizarSeguroFlete($p['seguro_flete'] ?? null), ENT_QUOTES, 'UTF-8')
+                );
+            }
+            if ($rows === '') {
+                $rows = '<tr><td colspan="9" style="text-align:center;color:#6b7280;">Sin productores inscriptos</td></tr>';
+            }
+
+            $content = sprintf(
+                '<h2>Cierre de operativo - Cosecha Mecanica</h2>
+                <p>Hola %s, el operativo ya fue cerrado. Este es el detalle del contrato:</p>
+                <h3 style="font-size:14px;margin:16px 0 8px 0;">Datos del contrato</h3>
+                <table cellpadding="8" cellspacing="0" border="0" style="width:100%%;border-collapse:collapse;">
+                    <tbody>
+                        <tr><td style="width:32%%;background:#f9fafb;">Operativo</td><td>%s</td></tr>
+                        <tr><td style="background:#f9fafb;">Apertura</td><td>%s</td></tr>
+                        <tr><td style="background:#f9fafb;">Cierre</td><td>%s</td></tr>
+                        <tr><td style="background:#f9fafb;">Estado</td><td>%s</td></tr>
+                        <tr><td style="background:#f9fafb;">Descripcion</td><td style="white-space:pre-wrap;">%s</td></tr>
+                        <tr><td style="background:#f9fafb;">Contrato firmado</td><td>Si</td></tr>
+                        <tr><td style="background:#f9fafb;">Fecha firma</td><td>%s</td></tr>
+                    </tbody>
+                </table>
+                <h3 style="font-size:14px;margin:16px 0 8px 0;">Anexo 1 - Productores inscriptos</h3>
+                <table cellpadding="8" cellspacing="0" border="0" style="width:100%%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#f3f4f6;">
+                            <th style="text-align:left;">Productor</th>
+                            <th style="text-align:left;">Finca ID</th>
+                            <th style="text-align:left;">Superficie</th>
+                            <th style="text-align:left;">Variedad</th>
+                            <th style="text-align:left;">Prod. estimada</th>
+                            <th style="text-align:left;">Fecha estimada</th>
+                            <th style="text-align:left;">KM finca</th>
+                            <th style="text-align:left;">Flete</th>
+                            <th style="text-align:left;">Seguro flete</th>
+                        </tr>
+                    </thead>
+                    <tbody>%s</tbody>
+                </table>',
+                htmlspecialchars($nombreCoop, ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars((string)($op['nombre'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($fechaApertura, ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($fechaCierre, ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($estado, ENT_QUOTES, 'UTF-8'),
+                $descripcionHtml,
+                htmlspecialchars($fechaFirma, ENT_QUOTES, 'UTF-8'),
+                $rows
+            );
+
+            $html = self::renderTemplate($tplPath, $content, 'Cierre operativo Cosecha Mecanica');
+
+            $mail = self::baseMailer();
+            $mail->Subject = 'Cierre de operativo de Cosecha Mecanica';
+            $mail->Body    = $html;
+            $mail->AltBody = 'Cierre de operativo de Cosecha Mecanica - ' . (string)($op['nombre'] ?? '');
+
+            $correo = (string)($data['cooperativa_correo'] ?? '');
+            if ($correo === '') {
+                return ['ok' => false, 'error' => 'Correo de cooperativa no valido.'];
+            }
+            $mail->addAddress($correo, $nombreCoop);
+
+            $meta = [
+                'contrato_id' => (int)($op['id'] ?? 0),
+                'cooperativa_id_real' => $data['cooperativa_id_real'] ?? null,
+                'correo' => $correo,
+                'enviado_por' => $data['enviado_por'] ?? null,
+            ];
+
+            $tipoLog = (string)($data['tipo_log'] ?? 'cierre');
+            $ok = self::sendAndLog($mail, $tipoLog, 'cosecha_cierre_operativo.html', $meta);
+            return ['ok' => (bool)$ok];
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'error' => $e->getMessage()];
         }
     }
 
