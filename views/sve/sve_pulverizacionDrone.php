@@ -228,8 +228,28 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
       // Ejecuta <script> embebidos dentro del HTML insertado
       function runInlineScripts(container) {
+        function isScriptAlreadyLoaded(src) {
+          if (!src) return false;
+          let normalized = src;
+          try {
+            normalized = new URL(src, document.baseURI).href;
+          } catch (_) {}
+          return Array.from(document.scripts).some(existing => {
+            if (!existing.src) return false;
+            try {
+              return new URL(existing.src, document.baseURI).href === normalized;
+            } catch (_) {
+              return existing.src === src;
+            }
+          });
+        }
+
         const scripts = container.querySelectorAll('script');
         scripts.forEach(old => {
+          if (old.src && isScriptAlreadyLoaded(old.getAttribute('src'))) {
+            old.remove();
+            return;
+          }
           const s = document.createElement('script');
           // Copiamos atributos (tipo, src, etc.)
           for (const attr of old.attributes) s.setAttribute(attr.name, attr.value);
