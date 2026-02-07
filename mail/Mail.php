@@ -110,7 +110,7 @@ final class Mail
             $ctaDecline = (string)($data['cta_decline_url'] ?? '');
 
             $nota = '<p style="margin:12px 0 0 0;color:#6b7280;font-size:13px;">'
-                . 'Los botones tienen una validez de 24hs. '
+                . 'Los botones tienen una validez de 72hs. '
                 . 'Una vez seleccionada una opcion, si deseas cambiar la decision debes ingresar al sistema.'
                 . '</p>';
 

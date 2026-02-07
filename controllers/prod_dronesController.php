@@ -247,7 +247,7 @@ try {
 
         $actionBase = rtrim((string)APP_URL, '/') . '/mail/autorizacion_drone/dron_coop_action.php';
         $coopIdReal = (string)($coop['coop_id_real'] ?? '');
-        $ttlSeconds = 24 * 60 * 60;
+        $ttlSeconds = 72 * 60 * 60;
         $approveToken = $esPagoCoop && $coopIdReal !== ''
             ? signCoopActionToken(['sid' => (int)$id, 'coop' => $coopIdReal, 'act' => 'approve', 'exp' => time() + $ttlSeconds])
             : null;
