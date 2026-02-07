@@ -41,3 +41,14 @@ if (!defined('MAIL_HOST')) {
 if (!defined('COOP_ACTION_SECRET')) {
     define('COOP_ACTION_SECRET', getenv('COOP_ACTION_SECRET') ?: '');
 }
+
+// ==== APP URL ====
+if (!defined('APP_URL')) {
+    $appUrl = getenv('APP_URL') ?: '';
+    if ($appUrl === '') {
+        $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $appUrl = $https . '://' . $host;
+    }
+    define('APP_URL', $appUrl);
+}
