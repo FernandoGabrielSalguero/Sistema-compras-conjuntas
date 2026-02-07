@@ -125,21 +125,32 @@ final class Mail
 
             $html = self::renderTemplate($tplPath, $content, 'Pedido realizado');
 
-            $mail = self::baseMailer();
-            $mail->Subject = 'Pedido realizado por ' . $coopNombre . ', para ' . $prodNombre . '.';
-            $mail->Body    = $html;
-            $mail->AltBody = 'Pedido realizado - ' . $coopNombre . ' / ' . $prodNombre;
+            $mailOk = true;
+
+            // 1) Envio a cooperativa + copia fija (asunto actual)
+            $mailCoop = self::baseMailer();
+            $mailCoop->Subject = 'Pedido realizado por ' . $coopNombre . ', para ' . $prodNombre . '.';
+            $mailCoop->Body    = $html;
+            $mailCoop->AltBody = 'Pedido realizado - ' . $coopNombre . ' / ' . $prodNombre;
 
             if (!empty($data['cooperativa_correo'])) {
-                $mail->addAddress((string)$data['cooperativa_correo'], $coopNombre);
+                $mailCoop->addAddress((string)$data['cooperativa_correo'], $coopNombre);
             }
-            if (!empty($data['productor_correo'])) {
-                $mail->addAddress((string)$data['productor_correo'], $prodNombre);
-            }
-            $mail->addAddress('lacruzg@coopsve.com', 'La Cruz');
+            $mailCoop->addAddress('lacruzg@coopsve.com', 'La Cruz');
+            $mailCoop->addAddress('fernandosalguero685@gmail.com', 'Fernando Salguero');
+            $mailOk = $mailOk && $mailCoop->send();
 
-            $mail->send();
-            return ['ok' => true];
+            // 2) Envio al productor con asunto personalizado
+            if (!empty($data['productor_correo'])) {
+                $mailProd = self::baseMailer();
+                $mailProd->Subject = 'Tu cooperativa ' . $coopNombre . ' realizo un pedido para vos, en el sistema de compra conjunta';
+                $mailProd->Body    = $html;
+                $mailProd->AltBody = 'Tu cooperativa realizo un pedido para vos - ' . $coopNombre;
+                $mailProd->addAddress((string)$data['productor_correo'], $prodNombre);
+                $mailOk = $mailOk && $mailProd->send();
+            }
+
+            return ['ok' => (bool)$mailOk];
         } catch (\Throwable $e) {
             return ['ok' => false, 'error' => $e->getMessage()];
         }
