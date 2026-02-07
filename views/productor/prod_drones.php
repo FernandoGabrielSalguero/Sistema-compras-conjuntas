@@ -1195,7 +1195,13 @@ $sesion_payload = [
                     if (!res.ok || !data?.ok) {
                         const msg = data?.error || `Error ${res.status} al registrar la solicitud.`;
                         window.showToast?.('error', msg);
+                        alert(msg);
                         return;
+                    }
+
+                    if (data?.mail_ok === false) {
+                        const mailMsg = data?.mail_error || 'Error enviando correo.';
+                        alert(mailMsg);
                     }
 
                     window.showToast?.('success', `Solicitud registrada (#${data.id}).`);
