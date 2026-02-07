@@ -250,13 +250,25 @@ class OfflineSync {
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['reports'], 'readonly');
             const store = transaction.objectStore('reports');
-            const index = store.index('synced');
+            const results = [];
 
-            // Usar IDBKeyRange para obtener solo los que synced = false
-            const range = IDBKeyRange.only(false);
-            const request = index.getAll(range);
+            // Usar cursor para filtrar manualmente (más compatible que IDBKeyRange con booleanos)
+            const request = store.openCursor();
 
-            request.onsuccess = () => resolve(request.result || []);
+            request.onsuccess = (event) => {
+                const cursor = event.target.result;
+                if (cursor) {
+                    // Filtrar solo los no sincronizados
+                    if (cursor.value.synced === false || !cursor.value.synced) {
+                        results.push(cursor.value);
+                    }
+                    cursor.continue();
+                } else {
+                    // Terminó de iterar, devolver resultados
+                    resolve(results);
+                }
+            };
+
             request.onerror = () => reject(request.error);
         });
     }
@@ -268,13 +280,23 @@ class OfflineSync {
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['photos'], 'readonly');
             const store = transaction.objectStore('photos');
-            const index = store.index('report_id');
+            const results = [];
 
-            // Usar IDBKeyRange para buscar por report_id
-            const range = IDBKeyRange.only(reportId);
-            const request = index.getAll(range);
+            // Usar cursor para buscar por report_id (más compatible)
+            const request = store.openCursor();
 
-            request.onsuccess = () => resolve(request.result || []);
+            request.onsuccess = (event) => {
+                const cursor = event.target.result;
+                if (cursor) {
+                    if (cursor.value.report_id === reportId) {
+                        results.push(cursor.value);
+                    }
+                    cursor.continue();
+                } else {
+                    resolve(results);
+                }
+            };
+
             request.onerror = () => reject(request.error);
         });
     }
@@ -416,15 +438,16 @@ class OfflineSync {
         const photoStore = transaction.objectStore('photos');
 
         // Eliminar reportes sincronizados
-        const reportIndex = reportStore.index('synced');
-        const range = IDBKeyRange.only(true);
-        const reportRequest = reportIndex.openCursor(range);
+        const reportRequest = reportStore.openCursor();
 
         await new Promise((resolve) => {
             reportRequest.onsuccess = (event) => {
                 const cursor = event.target.result;
                 if (cursor) {
-                    cursor.delete();
+                    // Eliminar solo si está sincronizado
+                    if (cursor.value.synced === true) {
+                        cursor.delete();
+                    }
                     cursor.continue();
                 } else {
                     resolve();
@@ -433,14 +456,16 @@ class OfflineSync {
         });
 
         // Eliminar fotos sincronizadas
-        const photoIndex = photoStore.index('synced');
-        const photoRequest = photoIndex.openCursor(range);
+        const photoRequest = photoStore.openCursor();
 
         await new Promise((resolve) => {
             photoRequest.onsuccess = (event) => {
                 const cursor = event.target.result;
                 if (cursor) {
-                    cursor.delete();
+                    // Eliminar solo si está sincronizada
+                    if (cursor.value.synced === true) {
+                        cursor.delete();
+                    }
                     cursor.continue();
                 } else {
                     resolve();
