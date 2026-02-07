@@ -1106,7 +1106,23 @@ $sesionDebug = [
             setIfExists('nom_cliente', nomCliente);
             setIfExists('nom_piloto', <?php echo json_encode($nombre); ?>);
 
-            // Traer último reporte (si existe) para prelleno
+            // Detectar si estamos offline
+            const isOffline = !navigator.onLine;
+
+            if (isOffline) {
+                // Modo offline: mostrar notificación y abrir formulario vacío
+                console.log('[Dashboard] Modo offline: abriendo formulario sin datos del servidor');
+                showAlert?.('info', 'Modo offline: Completa el formulario manualmente. Se guardará localmente.');
+
+                // Inicializar tabla de receta vacía
+                buildTablaReceta([], id);
+
+                // Abrir modal con datos básicos
+                openModalReporte();
+                return;
+            }
+
+            // Modo online: intentar cargar datos del servidor
             try {
                 const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=reporte_solicitud&id=${encodeURIComponent(id)}`, {
                     credentials: 'same-origin'
@@ -1172,12 +1188,15 @@ $sesionDebug = [
                     const payloadRec = await resRec.json();
                     buildTablaReceta(payloadRec.data || [], id);
                 } catch (e) {
-                    console.error('receta_editable', e);
+                    console.warn('[Dashboard] No se pudo cargar receta:', e);
+                    buildTablaReceta([], id);
                 }
 
             } catch (e) {
-                console.error(e);
-                // Si falla la carga, al menos abrimos el modal con los datos mínimos
+                console.error('[Dashboard] Error al cargar reporte:', e);
+                // Si falla la carga, abrir modal con datos básicos
+                buildTablaReceta([], id);
+                showAlert?.('warning', 'No se pudieron cargar datos previos. Completa el formulario manualmente.');
             }
 
             openModalReporte();
