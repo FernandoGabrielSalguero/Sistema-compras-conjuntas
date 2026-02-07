@@ -1,18 +1,23 @@
-/*! SVE Service Worker v4.2 - offline-first para piloto_drone + Background Sync */
-const CACHE_VERSION = 'v4.2';
+/*! SVE Service Worker v4.3 - offline-first para piloto_drone + Background Sync */
+const CACHE_VERSION = 'v4.3';
 const PRECACHE = 'sve-precache-' + CACHE_VERSION;
 const RUNTIME = 'sve-runtime-' + CACHE_VERSION;
 
 const PRECACHE_URLS = [
-    '/', '/index.php',
+    '/',
+    '/index.php',
     '/views/sve/sve_registro_login.php',
     '/views/drone_pilot/drone_pilot_dashboard.php',
-    '/offline.js',
+    '/views/drone_pilot/drone_pilot_dashboard.php?offline=1',
     '/offline-sync.js',
+    '/offline-sync.js?v=4.1',
     '/offline-init.js',
+    '/offline-init.js?v=1.1',
     '/assets/js/sve_operativo.js',
     '/views/partials/spinner-global.js',
-    '/assets/png/logo_con_color_original.png'
+    '/assets/png/logo_con_color_original.png',
+    '/logout.php',
+    '/controllers/drone_pilot_dashboardController.php'
 ];
 
 // Recursos externos se cachean dinámicamente (evita errores CORS en precache)

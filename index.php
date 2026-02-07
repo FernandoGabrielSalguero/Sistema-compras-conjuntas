@@ -581,24 +581,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Autenticación offline para pilotos
         // =========================================================
         (function() {
+            let redirecting = false;
+
             // Esperar a que offlineSync esté disponible
-            function waitForOfflineSync(callback) {
-                if (window.offlineSync && window.offlineSync.db) {
-                    callback();
-                } else {
-                    setTimeout(() => waitForOfflineSync(callback), 100);
+            function waitForOfflineSync(callback, maxAttempts = 50) {
+                let attempts = 0;
+
+                function check() {
+                    attempts++;
+                    if (window.offlineSync && window.offlineSync.db) {
+                        callback();
+                    } else if (attempts < maxAttempts) {
+                        setTimeout(check, 100);
+                    } else {
+                        console.warn('[SVE] offlineSync no disponible después de', maxAttempts, 'intentos');
+                        callback(); // Llamar igual para mostrar mensaje de error
+                    }
                 }
+
+                check();
             }
 
             // Verificar si estamos offline y hay sesión válida
-            function checkOfflineAuth() {
+            async function checkOfflineAuth() {
+                if (redirecting) {
+                    console.log('[SVE] Redirección ya en proceso');
+                    return false;
+                }
+
                 if (!navigator.onLine && window.offlineSync) {
                     const session = window.offlineSync.getOfflineSession();
                     if (session && session.rol === 'piloto_drone') {
-                        console.log('[SVE] Sesión offline válida encontrada, redirigiendo...');
-                        // Redirigir al dashboard del piloto
-                        window.location.href = '/views/drone_pilot/drone_pilot_dashboard.php?offline=1';
-                        return true;
+                        console.log('[SVE] Sesión offline válida encontrada');
+
+                        // Verificar que el Service Worker esté activo
+                        if ('serviceWorker' in navigator) {
+                            try {
+                                const registration = await navigator.serviceWorker.ready;
+                                if (registration.active) {
+                                    console.log('[SVE] Service Worker activo, redirigiendo...');
+                                    redirecting = true;
+
+                                    // Pequeño delay para asegurar que SW está listo
+                                    setTimeout(() => {
+                                        window.location.href = '/views/drone_pilot/drone_pilot_dashboard.php?offline=1';
+                                    }, 300);
+                                    return true;
+                                } else {
+                                    console.warn('[SVE] Service Worker no está activo');
+                                }
+                            } catch (error) {
+                                console.error('[SVE] Error verificando Service Worker:', error);
+                            }
+                        } else {
+                            console.warn('[SVE] Service Worker no soportado');
+                        }
                     } else {
                         console.log('[SVE] Sin sesión offline válida');
                     }
@@ -606,25 +643,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 return false;
             }
 
+            // Mostrar mensaje de error offline
+            function showOfflineError() {
+                const errorDiv = document.querySelector('.error');
+                if (errorDiv && !navigator.onLine) {
+                    errorDiv.textContent = 'Sin conexión. Para trabajar offline, debes haber iniciado sesión al menos una vez con conexión.';
+                    errorDiv.style.display = 'block';
+                }
+            }
+
             // Ejecutar al cargar
-            waitForOfflineSync(() => {
+            waitForOfflineSync(async () => {
                 // Si estamos offline, intentar auto-login
                 if (!navigator.onLine) {
-                    const redirected = checkOfflineAuth();
+                    const redirected = await checkOfflineAuth();
                     if (!redirected) {
-                        // Mostrar mensaje de que necesita conectarse primero
-                        const errorDiv = document.querySelector('.error');
-                        if (errorDiv) {
-                            errorDiv.textContent = 'Sin conexión. Para trabajar offline, debes haber iniciado sesión al menos una vez con conexión.';
-                            errorDiv.style.display = 'block';
-                        }
+                        showOfflineError();
                     }
                 }
             });
 
             // Listener para detectar cuando pierde la conexión
-            window.addEventListener('offline', () => {
-                checkOfflineAuth();
+            window.addEventListener('offline', async () => {
+                await checkOfflineAuth();
             });
         })();
 

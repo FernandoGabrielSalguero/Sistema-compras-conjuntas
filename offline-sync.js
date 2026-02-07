@@ -5,7 +5,7 @@
  */
 
 const SYNC_DB_NAME = 'SVE_DroneSync';
-const SYNC_DB_VERSION = 1;
+const SYNC_DB_VERSION = 2;
 const OFFLINE_TOKEN_KEY = 'sve_offline_token';
 const OFFLINE_SESSION_KEY = 'sve_offline_session';
 const TOKEN_EXPIRY_DAYS = 30;
@@ -73,6 +73,14 @@ class OfflineSync {
                 // Store para metadata de sincronización
                 if (!db.objectStoreNames.contains('sync_meta')) {
                     db.createObjectStore('sync_meta', { keyPath: 'key' });
+                }
+
+                // Store para solicitudes cacheadas (para trabajar offline)
+                if (!db.objectStoreNames.contains('solicitudes')) {
+                    const solicitudStore = db.createObjectStore('solicitudes', {
+                        keyPath: 'id'
+                    });
+                    solicitudStore.createIndex('timestamp', 'timestamp', { unique: false });
                 }
 
                 console.log('[OfflineSync] Base de datos creada/actualizada');
@@ -668,6 +676,104 @@ class OfflineSync {
         if (session) {
             this.saveOfflineSession(session);
             console.log('[OfflineSync] Token offline renovado');
+        }
+    }
+
+    // =========================================================
+    // CACHE DE SOLICITUDES PARA MODO OFFLINE
+    // =========================================================
+
+    /**
+     * Guarda solicitudes en cache para uso offline
+     * @param {Array} solicitudes - Array de solicitudes
+     */
+    async cacheSolicitudes(solicitudes) {
+        if (!this.db) {
+            console.warn('[OfflineSync] DB no inicializada, no se pueden cachear solicitudes');
+            return false;
+        }
+
+        try {
+            const transaction = this.db.transaction(['solicitudes'], 'readwrite');
+            const store = transaction.objectStore('solicitudes');
+
+            // Limpiar solicitudes antiguas primero
+            await new Promise((resolve, reject) => {
+                const clearRequest = store.clear();
+                clearRequest.onsuccess = () => resolve();
+                clearRequest.onerror = () => reject(clearRequest.error);
+            });
+
+            // Guardar nuevas solicitudes
+            for (const solicitud of solicitudes) {
+                const dataToStore = {
+                    ...solicitud,
+                    timestamp: Date.now()
+                };
+
+                await new Promise((resolve, reject) => {
+                    const addRequest = store.put(dataToStore);
+                    addRequest.onsuccess = () => resolve();
+                    addRequest.onerror = () => reject(addRequest.error);
+                });
+            }
+
+            console.log(`[OfflineSync] ${solicitudes.length} solicitudes cacheadas`);
+            return true;
+        } catch (error) {
+            console.error('[OfflineSync] Error cacheando solicitudes:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Obtiene solicitudes del cache
+     * @returns {Promise<Array>} Array de solicitudes cacheadas
+     */
+    async getCachedSolicitudes() {
+        if (!this.db) {
+            console.warn('[OfflineSync] DB no inicializada');
+            return [];
+        }
+
+        try {
+            const transaction = this.db.transaction(['solicitudes'], 'readonly');
+            const store = transaction.objectStore('solicitudes');
+
+            return await new Promise((resolve, reject) => {
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result || []);
+                request.onerror = () => reject(request.error);
+            });
+        } catch (error) {
+            console.error('[OfflineSync] Error obteniendo solicitudes cacheadas:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Obtiene una solicitud específica del cache
+     * @param {number|string} id - ID de la solicitud
+     * @returns {Promise<Object|null>}
+     */
+    async getCachedSolicitud(id) {
+        if (!this.db) {
+            console.warn('[OfflineSync] DB no inicializada');
+            return null;
+        }
+
+        try {
+            const transaction = this.db.transaction(['solicitudes'], 'readonly');
+            const store = transaction.objectStore('solicitudes');
+
+            return await new Promise((resolve, reject) => {
+                const request = store.get(Number(id));
+                request.onsuccess = () => resolve(request.result || null);
+                request.onerror = () => reject(request.error);
+            });
+        } catch (error) {
+            console.error('[OfflineSync] Error obteniendo solicitud cacheada:', error);
+            return null;
         }
     }
 }

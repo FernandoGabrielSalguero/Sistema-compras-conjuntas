@@ -894,7 +894,7 @@ $sesionDebug = [
                 <div id="toast-container"></div>
                 <div id="toast-container-boton"></div>
                 <!-- Spinner Global -->
-                <script src="../../views/partials/spinner-global.js"></script>
+                <script src="/views/partials/spinner-global.js"></script>
 
             </section>
 
@@ -1110,14 +1110,43 @@ $sesionDebug = [
             const isOffline = !navigator.onLine;
 
             if (isOffline) {
-                // Modo offline: mostrar notificación y abrir formulario vacío
-                console.log('[Dashboard] Modo offline: abriendo formulario sin datos del servidor');
-                showAlert?.('info', 'Modo offline: Completa el formulario manualmente. Se guardará localmente.');
+                // Modo offline: intentar cargar desde cache
+                console.log('[Dashboard] Modo offline: intentando cargar desde cache...');
+
+                try {
+                    if (window.offlineSync && window.offlineSync.getCachedSolicitud) {
+                        const cachedSolicitud = await window.offlineSync.getCachedSolicitud(id);
+
+                        if (cachedSolicitud) {
+                            console.log('[Dashboard] Solicitud encontrada en cache:', cachedSolicitud);
+
+                            // Pre-llenar campos desde cache
+                            setIfExists('nom_cliente', cachedSolicitud.nom_cliente || nomCliente);
+                            setIfExists('nom_piloto', <?php echo json_encode($nombre); ?>);
+
+                            // Llenar otros campos si están disponibles en cache
+                            if (cachedSolicitud.finca) {
+                                setIfExists('nombre_finca', cachedSolicitud.finca);
+                            }
+                            if (cachedSolicitud.cuartel) {
+                                setIfExists('cuadro_cuartel', cachedSolicitud.cuartel);
+                            }
+
+                            showAlert?.('info', 'Modo offline: Datos básicos cargados desde cache. Se guardará localmente.');
+                        } else {
+                            console.log('[Dashboard] No se encontró solicitud en cache');
+                            showAlert?.('warning', 'Modo offline: Completa el formulario manualmente. Se guardará localmente.');
+                        }
+                    }
+                } catch (error) {
+                    console.warn('[Dashboard] Error cargando desde cache:', error);
+                    showAlert?.('info', 'Modo offline: Completa el formulario manualmente. Se guardará localmente.');
+                }
 
                 // Inicializar tabla de receta vacía
                 buildTablaReceta([], id);
 
-                // Abrir modal con datos básicos
+                // Abrir modal
                 openModalReporte();
                 return;
             }
@@ -1588,15 +1617,47 @@ $sesionDebug = [
         async function cargarSolicitudes() {
             try {
                 cardsSkeleton(3);
-                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
-                    credentials: 'same-origin'
-                });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const payload = await res.json();
-                renderCards(payload.data || []);
+
+                // Intentar cargar desde servidor si hay conexión
+                if (navigator.onLine) {
+                    try {
+                        const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
+                            credentials: 'same-origin'
+                        });
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        const payload = await res.json();
+                        const solicitudes = payload.data || [];
+
+                        // Cachear solicitudes para uso offline
+                        if (window.offlineSync && window.offlineSync.cacheSolicitudes) {
+                            await window.offlineSync.cacheSolicitudes(solicitudes);
+                            console.log('[Dashboard] Solicitudes cacheadas para uso offline');
+                        }
+
+                        renderCards(solicitudes);
+                        return;
+                    } catch (fetchError) {
+                        console.warn('[Dashboard] Error al cargar desde servidor, intentando cache...', fetchError);
+                    }
+                }
+
+                // Si estamos offline o falló el fetch, cargar desde cache
+                console.log('[Dashboard] Cargando solicitudes desde cache offline...');
+                if (window.offlineSync && window.offlineSync.getCachedSolicitudes) {
+                    const cachedSolicitudes = await window.offlineSync.getCachedSolicitudes();
+                    if (cachedSolicitudes && cachedSolicitudes.length > 0) {
+                        console.log(`[Dashboard] ${cachedSolicitudes.length} solicitudes cargadas desde cache`);
+                        renderCards(cachedSolicitudes);
+                        showAlert?.('info', 'Modo offline: Mostrando solicitudes cacheadas');
+                    } else {
+                        throw new Error('No hay solicitudes en cache');
+                    }
+                } else {
+                    throw new Error('Sistema offline no disponible');
+                }
             } catch (e) {
-                console.error(e);
-                document.getElementById('cards-solicitudes').innerHTML = `<div class="alert danger"><span class="material-icons">error</span>Error al cargar</div>`;
+                console.error('[Dashboard] Error cargando solicitudes:', e);
+                document.getElementById('cards-solicitudes').innerHTML = `<div class="alert danger"><span class="material-icons">error</span>Sin conexión y sin datos cacheados. Conéctate al menos una vez para trabajar offline.</div>`;
             }
         }
 
@@ -1987,11 +2048,80 @@ $sesionDebug = [
         // Función de logout simple
         // =========================================================
         function handleLogout() {
-            // Simplemente cerrar sesión sin borrar datos offline
-            // La sesión offline se mantiene para trabajar sin conexión
-            console.log('[Dashboard] Cerrando sesión (manteniendo datos offline)');
-            window.location.href = '/logout.php';
+            console.log('[Dashboard] Cerrando sesión...');
+
+            // Verificar si estamos en modo offline
+            const isOfflineMode = <?php echo json_encode($isOfflineMode); ?>;
+
+            if (isOfflineMode || !navigator.onLine) {
+                // Modo offline: redirigir a index.php directamente
+                // No intentar logout.php porque no hay conexión
+                console.log('[Dashboard] Modo offline: redirigiendo a login');
+                window.location.href = '/index.php';
+            } else {
+                // Modo online: logout normal que destruye sesión en servidor
+                console.log('[Dashboard] Modo online: cerrando sesión en servidor');
+                window.location.href = '/logout.php';
+            }
         }
+
+        // =========================================================
+        // Manejo silencioso de errores CORS de recursos externos
+        // =========================================================
+        (function() {
+            // Los errores CORS de framework.impulsagroup.com son normales y están manejados
+            // por el Service Worker. Este código simplemente los silencia en la consola.
+
+            // Interceptar errores de carga de recursos
+            window.addEventListener('error', function(e) {
+                // Si es un error de carga de recurso externo, registrarlo silenciosamente
+                if (e.target && (e.target.tagName === 'LINK' || e.target.tagName === 'SCRIPT')) {
+                    const url = e.target.src || e.target.href;
+                    if (url && (url.includes('framework.impulsagroup.com') || url.includes('fonts.googleapis.com'))) {
+                        console.info('[SVE] Recurso externo no disponible (normal en offline):', url);
+                        // Prevenir que el error se propague a la consola
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            }, true);
+
+            // Agregar onerror handlers a recursos externos ya cargados
+            document.addEventListener('DOMContentLoaded', function() {
+                const externalScripts = document.querySelectorAll('script[src*="framework.impulsagroup.com"], script[src*="googleapis.com"], script[src*="jsdelivr.net"]');
+                const externalLinks = document.querySelectorAll('link[href*="framework.impulsagroup.com"], link[href*="googleapis.com"]');
+
+                externalScripts.forEach(script => {
+                    if (!script.onerror) {
+                        script.onerror = function() {
+                            console.info('[SVE] Script externo no cargado (normal en offline):', script.src);
+                        };
+                    }
+                });
+
+                externalLinks.forEach(link => {
+                    if (!link.onerror) {
+                        link.onerror = function() {
+                            console.info('[SVE] CSS externo no cargado (normal en offline):', link.href);
+                        };
+                    }
+                });
+            });
+
+            // Interceptar errores de fetch de CORS (aunque el SW los maneja)
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                return originalFetch.apply(this, args).catch(error => {
+                    const url = args[0];
+                    if (typeof url === 'string' && url.includes('framework.impulsagroup.com')) {
+                        console.info('[SVE] Fetch CORS silenciado (manejado por SW):', url);
+                        // Retornar respuesta vacía en lugar de error
+                        return new Response('', { status: 200 });
+                    }
+                    throw error;
+                });
+            };
+        })();
     </script>
 
 </body>
