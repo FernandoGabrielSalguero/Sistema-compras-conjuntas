@@ -7,6 +7,7 @@ namespace SVE\Mail;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/lib/PHPMailer.php';
 require_once __DIR__ . '/lib/SMTP.php';
 require_once __DIR__ . '/lib/Exception.php';
@@ -43,6 +44,63 @@ final class Mail
             [$title, $content],
             $tpl
         );
+    }
+
+    private static function sendAndLog(PHPMailer $mail, string $tipo, string $template): bool
+    {
+        try {
+            $ok = (bool)$mail->send();
+            self::logEmail($mail, $tipo, $template, $ok, null);
+            return $ok;
+        } catch (\Throwable $e) {
+            self::logEmail($mail, $tipo, $template, false, $e->getMessage());
+            return false;
+        }
+    }
+
+    private static function logEmail(PHPMailer $mail, string $tipo, string $template, bool $ok, ?string $error): void
+    {
+        try {
+            $pdo = $GLOBALS['pdo'] ?? null;
+            if (!$pdo instanceof \PDO) {
+                error_log('[Mail] No PDO disponible para log_correos.');
+                return;
+            }
+
+            $stmt = $pdo->prepare("
+                INSERT INTO log_correos
+                    (tipo, template, subject, from_email, from_name, reply_to, to_emails, cc_emails, bcc_emails, body_html, body_text, enviado_ok, error_msg, created_at)
+                VALUES
+                    (:tipo, :template, :subject, :from_email, :from_name, :reply_to, :to_emails, :cc_emails, :bcc_emails, :body_html, :body_text, :enviado_ok, :error_msg, NOW())
+            ");
+
+            $from = $mail->From ?? '';
+            $fromName = $mail->FromName ?? '';
+            $replyToArr = $mail->getReplyToAddresses();
+            $replyTo = '';
+            if (!empty($replyToArr)) {
+                $first = reset($replyToArr);
+                $replyTo = (string)($first[0] ?? '');
+            }
+
+            $stmt->execute([
+                ':tipo' => $tipo,
+                ':template' => $template,
+                ':subject' => (string)($mail->Subject ?? ''),
+                ':from_email' => (string)$from,
+                ':from_name' => (string)$fromName,
+                ':reply_to' => (string)$replyTo,
+                ':to_emails' => json_encode($mail->getToAddresses(), JSON_UNESCAPED_UNICODE),
+                ':cc_emails' => json_encode($mail->getCcAddresses(), JSON_UNESCAPED_UNICODE),
+                ':bcc_emails' => json_encode($mail->getBccAddresses(), JSON_UNESCAPED_UNICODE),
+                ':body_html' => (string)($mail->Body ?? ''),
+                ':body_text' => (string)($mail->AltBody ?? ''),
+                ':enviado_ok' => $ok ? 1 : 0,
+                ':error_msg' => $error,
+            ]);
+        } catch (\Throwable $e) {
+            error_log('[Mail] Error al registrar log_correos: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -138,7 +196,7 @@ final class Mail
             }
             $mailCoop->addAddress('lacruzg@coopsve.com', 'La Cruz');
             $mailCoop->addAddress('fernandosalguero685@gmail.com', 'Fernando Salguero');
-            $mailOk = $mailOk && $mailCoop->send();
+            $mailOk = $mailOk && self::sendAndLog($mailCoop, 'compra_realizada', 'compra_realizada_cooperativa.html');
 
             // 2) Envio al productor con asunto personalizado
             if (!empty($data['productor_correo'])) {
@@ -147,7 +205,7 @@ final class Mail
                 $mailProd->Body    = $html;
                 $mailProd->AltBody = 'Tu cooperativa realizo un pedido para vos - ' . $coopNombre;
                 $mailProd->addAddress((string)$data['productor_correo'], $prodNombre);
-                $mailOk = $mailOk && $mailProd->send();
+                $mailOk = $mailOk && self::sendAndLog($mailProd, 'compra_realizada', 'compra_realizada_cooperativa.html');
             }
 
             return ['ok' => (bool)$mailOk];
