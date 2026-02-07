@@ -25,11 +25,15 @@
         }
 
         try {
-            const registration = await navigator.serviceWorker.register('/service-worker.js', {
+            // Cache busting: agregar parámetro de versión
+            const registration = await navigator.serviceWorker.register('/service-worker.js?v=4.1', {
                 scope: '/'
             });
 
             console.log('[OfflineInit] Service Worker registrado:', registration.scope);
+
+            // Forzar actualización
+            await registration.update();
 
             // Esperar a que esté activo
             await navigator.serviceWorker.ready;
