@@ -2040,30 +2040,12 @@ $sesionDebug = [
         })();
 
         // =========================================================
-        // Función de logout con opción de borrar sesión offline
+        // Función de logout simple
         // =========================================================
-        async function handleLogout() {
-            if (!window.offlineSync) {
-                window.location.href = '../../../logout.php';
-                return;
-            }
-
-            const hasOfflineSession = window.offlineSync.hasValidOfflineSession();
-
-            if (hasOfflineSession) {
-                const message = '¿Deseas borrar también la sesión offline?\n\n' +
-                    '• SÍ: No podrás trabajar sin conexión hasta que vuelvas a iniciar sesión.\n' +
-                    '• NO: Podrás seguir trabajando sin conexión.';
-
-                const clearOffline = confirm(message);
-
-                if (clearOffline) {
-                    window.offlineSync.clearOfflineSession();
-                    console.log('[Dashboard] Sesión offline eliminada en logout');
-                }
-            }
-
-            // Redirigir a logout
+        function handleLogout() {
+            // Simplemente cerrar sesión sin borrar datos offline
+            // La sesión offline se mantiene para trabajar sin conexión
+            console.log('[Dashboard] Cerrando sesión (manteniendo datos offline)');
             window.location.href = '../../../logout.php';
         }
     </script>
