@@ -4,8 +4,8 @@
 
 <div class="content">
   <div class="card" style="background-color:#5b21b6;">
-    <h3 style="color:white;">Módulo: Registro nueva solicitud de servicio de pulverización con drones</h3>
-    <p style="color:white;margin:0;">Formulario limpio, accesible y listo para guardar.</p>
+    <h3 style="color:white;">Módulo: Registro nueva solicitud de servicio de pulverización con drones.</h3>
+    <p style="color:white;margin:0;">Completa el formulario y registra una solicitud nueva de pulverización con drones.</p>
   </div>
 
   <div class="card">

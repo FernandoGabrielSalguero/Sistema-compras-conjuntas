@@ -11,7 +11,17 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 <noscript>
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
 </noscript>
-<script defer src="https://framework.impulsagroup.com/assets/javascript/framework.js"></script>
+<script>
+    (function() {
+        const SRC = 'https://framework.impulsagroup.com/assets/javascript/framework.js';
+        const already = document.querySelector('script[src*="framework.impulsagroup.com/assets/javascript/framework.js"]');
+        if (already) return;
+        const s = document.createElement('script');
+        s.src = SRC;
+        s.defer = true;
+        document.head.appendChild(s);
+    })();
+</script>
 <style id="sve-fito-autoblock">
 
     #modal-fito-json {
