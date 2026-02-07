@@ -11,7 +11,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/coop_MercadoDigitalModel.php';
 require_once __DIR__ . '/../mail/Mail.php';
 
-use SVE\Mail\Maill;
+use SVE\Mail\Mail;
 
 $model = new CoopMercadoDigitalModel($pdo);
 
@@ -74,6 +74,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $opNombre = (string)($row['nombre'] ?? '');
             }
 
+            //    b.1) Productor
+            $prodNombre = '';
+            $prodCorreo = null;
+            $stmtProd = $pdo->prepare("
+                SELECT ui.nombre AS nombre, ui.correo AS correo
+                FROM usuarios u
+                LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+                WHERE u.id_real = ?
+                LIMIT 1
+            ");
+            $stmtProd->execute([$data['productor']]);
+            if ($row = $stmtProd->fetch(PDO::FETCH_ASSOC)) {
+                $prodNombre = (string)($row['nombre'] ?? '');
+                $prodCorreo = $row['correo'] ?? null;
+            }
+
             //    c) Items (recalculo por seguridad)
             $items = [];
             if (!empty($data['productos']) && is_array($data['productos'])) {
@@ -117,10 +133,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mailError = null;
 
             try {
-                $mailResp = Maill::enviarPedidoCreado([
+                $mailResp = Mail::enviarCompraRealizadaCooperativa([
                     'cooperativa_nombre' => $coopNombre ?: 'Cooperativa',
-                    'cooperativa_correo' => $coopCorreo,            // puede ser null; el método agrega siempre lacruzg@
-                    'operativo_nombre'   => $opNombre ?: 'Operativo',
+                    'cooperativa_correo' => $coopCorreo,
+                    'productor_nombre'   => $prodNombre ?: 'Productor',
+                    'productor_correo'   => $prodCorreo,
+                    'operativo_nombre'   => $opNombre ?: '',
                     'items'              => $items,
                     'totales'            => $totales,
                 ]);

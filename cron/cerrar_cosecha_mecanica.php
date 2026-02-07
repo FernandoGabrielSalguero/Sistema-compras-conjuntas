@@ -98,7 +98,7 @@ try {
             ]);
             $participaciones = $partStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-            $mailResp = Maill::enviarCierreCosechaMecanica([
+            $mailResp = Mail::enviarCierreCosechaMecanica([
                 'cooperativa_nombre' => $nombreCoop !== '' ? $nombreCoop : ($usuarioCoop !== '' ? $usuarioCoop : 'Cooperativa'),
                 'cooperativa_correo' => $correo,
                 'operativo' => $op,
