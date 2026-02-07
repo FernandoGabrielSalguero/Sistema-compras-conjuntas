@@ -594,10 +594,13 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 
                 // Remover tarjeta del DOM sin layout shift brusco
                 if (deleteCtx.cardEl && deleteCtx.cardEl.parentNode) {
-                    deleteCtx.cardEl.style.transition = 'opacity .18s ease, transform .18s ease';
-                    deleteCtx.cardEl.style.opacity = '0';
-                    deleteCtx.cardEl.style.transform = 'scale(.98)';
-                    setTimeout(() => deleteCtx.cardEl.remove(), 180);
+                    const cardEl = deleteCtx.cardEl;
+                    cardEl.style.transition = 'opacity .18s ease, transform .18s ease';
+                    cardEl.style.opacity = '0';
+                    cardEl.style.transform = 'scale(.98)';
+                    setTimeout(() => {
+                        if (cardEl && cardEl.parentNode) cardEl.remove();
+                    }, 180);
                 }
                 showAlert('success', '¡Solicitud eliminada!');
             } catch (e) {
