@@ -47,6 +47,7 @@ $sesionDebug = [
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0ea5e9" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
@@ -64,6 +65,11 @@ $sesionDebug = [
     <!-- Sistema de sincronización offline -->
     <script src="../../offline-sync.js" defer></script>
     <script src="../../offline-init.js" defer></script>
+
+    <?php if (isset($_GET['debug']) && $_GET['debug'] === '1'): ?>
+    <!-- Herramientas de diagnóstico (solo en modo debug) -->
+    <script src="../../offline-diagnostics.js" defer></script>
+    <?php endif; ?>
 
     <style>
         /* Overlay del modal */

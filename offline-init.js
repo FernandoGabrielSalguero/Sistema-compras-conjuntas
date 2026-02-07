@@ -48,8 +48,8 @@
     async function precacheResources() {
         const criticalResources = [
             '/views/drone_pilot/drone_pilot_dashboard.php',
-            '/controllers/drone_pilot_dashboardController.php',
             '/offline-sync.js',
+            '/offline-init.js',
             '/views/partials/spinner-global.js'
         ];
 

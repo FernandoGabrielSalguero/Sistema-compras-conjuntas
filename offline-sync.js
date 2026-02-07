@@ -251,7 +251,10 @@ class OfflineSync {
             const transaction = this.db.transaction(['reports'], 'readonly');
             const store = transaction.objectStore('reports');
             const index = store.index('synced');
-            const request = index.getAll(false);
+
+            // Usar IDBKeyRange para obtener solo los que synced = false
+            const range = IDBKeyRange.only(false);
+            const request = index.getAll(range);
 
             request.onsuccess = () => resolve(request.result || []);
             request.onerror = () => reject(request.error);
@@ -266,7 +269,10 @@ class OfflineSync {
             const transaction = this.db.transaction(['photos'], 'readonly');
             const store = transaction.objectStore('photos');
             const index = store.index('report_id');
-            const request = index.getAll(reportId);
+
+            // Usar IDBKeyRange para buscar por report_id
+            const range = IDBKeyRange.only(reportId);
+            const request = index.getAll(range);
 
             request.onsuccess = () => resolve(request.result || []);
             request.onerror = () => reject(request.error);
@@ -411,7 +417,8 @@ class OfflineSync {
 
         // Eliminar reportes sincronizados
         const reportIndex = reportStore.index('synced');
-        const reportRequest = reportIndex.openCursor(true);
+        const range = IDBKeyRange.only(true);
+        const reportRequest = reportIndex.openCursor(range);
 
         await new Promise((resolve) => {
             reportRequest.onsuccess = (event) => {
@@ -427,7 +434,7 @@ class OfflineSync {
 
         // Eliminar fotos sincronizadas
         const photoIndex = photoStore.index('synced');
-        const photoRequest = photoIndex.openCursor(true);
+        const photoRequest = photoIndex.openCursor(range);
 
         await new Promise((resolve) => {
             photoRequest.onsuccess = (event) => {
