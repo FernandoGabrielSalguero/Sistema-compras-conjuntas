@@ -390,7 +390,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                     <td>${servicioText}</td>
                     <td>${volumenTxt}</td>
                     <td>${equipoText}</td>
-                    <td>CONFIRMADO</td>
+                    <td>SOLICITADO</td>
                     <td><span class="estado-pill">${contratoTxt}</span></td>
                     <td>Recién creado</td>
                 `;

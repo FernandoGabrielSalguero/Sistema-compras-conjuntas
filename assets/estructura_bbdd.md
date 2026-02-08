@@ -1,4 +1,4 @@
-Tabla: CosechaMecanica
+📄 Tabla: CosechaMecanica
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(10) unsigned	NO	PRI		auto_increment
 nombre	varchar(150)	NO			
@@ -910,7 +910,7 @@ volumenAproximado	decimal(14,3)	YES
 unidad_volumen	varchar(20)	NO		litros	
 fecha_entrada_equipo	date	YES			
 equipo_centrifugadora	bigint(20) unsigned	YES	MUL		
-estado	enum('BORRADOR','CONFIRMADO','CANCELADO')	NO	MUL	BORRADOR	
+estado	enum('SOLICITADO','BORRADOR','CONFIRMADO','CANCELADO')	NO	MUL	BORRADOR	
 observaciones	text	YES			
 created_at	timestamp	NO		current_timestamp()	
 updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()

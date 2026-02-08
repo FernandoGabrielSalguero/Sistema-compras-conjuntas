@@ -65,6 +65,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $contratoId = (int)($data['contrato_id'] ?? 0);
     $snapshot = (string)($data['contrato_snapshot'] ?? '');
 
+    if (!$aceptaContrato) {
+        echo json_encode(['success' => false, 'message' => 'Debés firmar el contrato antes de solicitar el servicio.']);
+        exit;
+    }
+
     if ($nombre === '' || $servicio <= 0) {
         echo json_encode(['success' => false, 'message' => 'Nombre y servicio son obligatorios.']);
         exit;
@@ -80,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'unidad_volumen' => $unidad ?: 'litros',
             'fecha_entrada_equipo' => $fechaEntrada ?: null,
             'equipo_centrifugadora' => $equipo ?: null,
-            'estado' => 'CONFIRMADO',
+            'estado' => 'SOLICITADO',
             'observaciones' => $observaciones ?: null
         ]);
 
