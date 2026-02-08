@@ -216,17 +216,16 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                                     <textarea id="observaciones" rows="3" placeholder="Notas adicionales..."></textarea>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="card" style="margin-top: 16px;">
-                            <h3>Contrato vigente</h3>
-                            <div id="contratoBox" class="contract-box">Cargando contrato...</div>
-                            <div style="margin-top: 12px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                                <label style="display:flex; gap:8px; align-items:flex-start;">
-                                    <input type="checkbox" id="acepta_contrato">
-                                    <span>Leí y acepto el contrato vigente.</span>
-                                </label>
-                                <button type="button" class="btn btn-aceptar" onclick="openModalContrato()">Ver contrato</button>
+                            <div class="input-group">
+                                <label>Términos</label>
+                                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                    <label style="display:flex; gap:8px; align-items:flex-start; margin:0;">
+                                        <input type="checkbox" id="acepta_contrato">
+                                        <span>Leí y acepto el contrato vigente.</span>
+                                    </label>
+                                    <button type="button" class="btn btn-aceptar" onclick="openModalContrato()">Ver contrato</button>
+                                </div>
                             </div>
                         </div>
 
@@ -303,12 +302,6 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             });
 
             contratoVigente = data.contrato || null;
-            const contratoBox = document.getElementById('contratoBox');
-            if (contratoVigente) {
-                contratoBox.innerHTML = contratoVigente.contenido || 'Contrato sin contenido.';
-            } else {
-                contratoBox.textContent = 'No hay contrato vigente.';
-            }
 
             // Detectar opción "centrifugadora" por nombre
             const servicioOptions = Array.from(servicioSelect.options);
