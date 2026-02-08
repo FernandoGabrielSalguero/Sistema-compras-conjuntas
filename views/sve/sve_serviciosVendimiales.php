@@ -51,6 +51,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             padding: 16px 8px;
         }
 
+        .table-container {
+            overflow-x: hidden;
+        }
+
         #modalServiciosOfrecidos .modal-content,
         #modalCentrifugadoras .modal-content,
         #modalContratos .modal-content {
@@ -190,6 +194,30 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <button type="button" class="btn btn-aceptar" onclick="openModalServiciosOfrecidos()">Servicios ofrecidos</button>
                         <button type="button" class="btn btn-aceptar" onclick="openModalCentrifugadoras()">Centrifugadoras</button>
                         <button type="button" class="btn btn-aceptar" onclick="openModalContratos()">Contratos</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Servicios contratados</h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Cooperativa</th>
+                                    <th>Nombre</th>
+                                    <th>Servicio</th>
+                                    <th>Volumen</th>
+                                    <th>Equipo</th>
+                                    <th>Estado</th>
+                                    <th>Contrato</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaPedidosBody">
+                                <tr>
+                                    <td colspan="7" class="empty-row">Sin pedidos cargados.</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -804,6 +832,45 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             });
         }
 
+        async function cargarServiciosContratados() {
+            const tbody = document.getElementById('tablaPedidosBody');
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Cargando...</td></tr>';
+
+            try {
+                const res = await fetch('/controllers/sve_serviciosVendimialesPedidosController.php');
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudo cargar la información.');
+                }
+
+                const pedidos = Array.isArray(data.pedidos) ? data.pedidos : [];
+                if (pedidos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Sin pedidos cargados.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                pedidos.forEach((p) => {
+                    const volumen = p.volumenAproximado ? `${p.volumenAproximado} ${p.unidad_volumen ?? ''}` : '-';
+                    const contrato = p.contrato_aceptado === null ? 'Sin firma' : (Number(p.contrato_aceptado) === 1 ? 'Firmado' : 'No aceptado');
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${p.cooperativa ?? '-'}</td>
+                        <td>${p.nombre ?? '-'}</td>
+                        <td>${p.servicio_nombre ?? '-'}</td>
+                        <td>${volumen}</td>
+                        <td>${p.centrifugadora_nombre ?? '-'}</td>
+                        <td>${p.estado ?? '-'}</td>
+                        <td><span class="estado-pill">${contrato}</span></td>
+                    `;
+                    tbody.appendChild(fila);
+                });
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-row">${error.message}</td></tr>`;
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             setForm(null);
             document.getElementById('formServicio').addEventListener('submit', guardarServicio);
@@ -893,6 +960,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     }
                 });
             }
+
+            cargarServiciosContratados();
         });
     </script>
 
