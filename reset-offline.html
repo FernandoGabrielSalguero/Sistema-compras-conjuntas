@@ -3,146 +3,499 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Sistema Offline - SVE</title>
+    <title>Reset ULTRA AGRESIVO - SVE</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <style>
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #f5f5f5;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .card {
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
             background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
         }
         h1 {
-            color: #673ab7;
-            margin: 0 0 20px;
+            color: #d32f2f;
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+        .warning strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 18px;
         }
         button {
-            background: #673ab7;
+            background: #d32f2f;
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 15px 30px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
+            font-weight: bold;
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         button:hover {
-            background: #5e35b1;
+            background: #b71c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(211, 47, 47, 0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        button.secondary {
+            background: #757575;
+        }
+        button.secondary:hover {
+            background: #616161;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
         }
         #log {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 8px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
             margin-top: 20px;
-            font-family: 'Courier New', monospace;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             font-size: 13px;
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
+            line-height: 1.6;
         }
-        .success { color: #22c55e; }
-        .error { color: #ef4444; }
-        .info { color: #3b82f6; }
+        #log:empty {
+            display: none;
+        }
+        .log-line {
+            margin-bottom: 5px;
+            padding: 3px 0;
+        }
+        .success { color: #4caf50; font-weight: bold; }
+        .error { color: #f44336; font-weight: bold; }
+        .warning-log { color: #ff9800; font-weight: bold; }
+        .info { color: #2196f3; }
+        .debug { color: #9e9e9e; }
+        .separator {
+            color: #666;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .progress {
+            margin: 20px 0;
+            display: none;
+        }
+        .progress.active {
+            display: block;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>🔧 Reset Sistema Offline</h1>
-        <p>Esta herramienta limpia completamente el sistema offline y fuerza la instalación de la versión más reciente.</p>
+    <div class="container">
+        <h1>🔥 RESET ULTRA AGRESIVO 🔥</h1>
 
-        <button onclick="resetComplete()">🗑️ RESET COMPLETO</button>
-        <button onclick="location.href='/'">← Volver al Login</button>
+        <div class="warning">
+            <strong>⚠️ ADVERTENCIA EXTREMA</strong>
+            Este reset eliminará ABSOLUTAMENTE TODO sin piedad:
+            <ul style="margin-top: 10px; padding-left: 20px;">
+                <li>TODOS los Service Workers (todas las versiones)</li>
+                <li>TODAS las Caches (sin excepciones)</li>
+                <li>TODAS las bases de datos IndexedDB</li>
+                <li>TODO el LocalStorage</li>
+                <li>TODO el SessionStorage</li>
+                <li>Verificación múltiple para garantizar eliminación completa</li>
+            </ul>
+        </div>
+
+        <button id="btnReset" onclick="ultraAggressiveReset()">
+            💣 EJECUTAR RESET NUCLEAR 💣
+        </button>
+
+        <button class="secondary" onclick="goToLogin()">
+            ← Cancelar y volver al Login
+        </button>
+
+        <div class="progress" id="progress">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+        </div>
 
         <div id="log"></div>
     </div>
 
     <script>
+        let logElement = document.getElementById('log');
+        let progressElement = document.getElementById('progress');
+        let progressFill = document.getElementById('progressFill');
+        let currentProgress = 0;
+
         function log(message, type = 'info') {
-            const logDiv = document.getElementById('log');
             const line = document.createElement('div');
-            line.className = type;
-            line.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
-            logDiv.appendChild(line);
-            logDiv.scrollTop = logDiv.scrollHeight;
+            line.className = `log-line ${type}`;
+            const timestamp = new Date().toLocaleTimeString('es-AR', {
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                fractionalSecondDigits: 3
+            });
+            line.textContent = `[${timestamp}] ${message}`;
+            logElement.appendChild(line);
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[RESET] ${message}`);
         }
 
-        async function resetComplete() {
-            log('Iniciando reset completo...', 'info');
+        function updateProgress(percent, label) {
+            currentProgress = percent;
+            progressFill.style.width = percent + '%';
+            progressFill.textContent = label || (percent + '%');
+        }
+
+        function separator() {
+            log('═'.repeat(60), 'separator');
+        }
+
+        async function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function ultraAggressiveReset() {
+            const btn = document.getElementById('btnReset');
+            btn.disabled = true;
+            btn.textContent = '⏳ DESTRUYENDO TODO...';
+
+            progressElement.classList.add('active');
+            logElement.innerHTML = '';
+
+            separator();
+            log('🔥🔥🔥 INICIANDO RESET NUCLEAR 🔥🔥🔥', 'error');
+            separator();
 
             try {
-                // 1. Eliminar todos los caches
-                if (window.caches) {
-                    log('Eliminando caches...', 'info');
-                    const cacheNames = await caches.keys();
-                    for (const name of cacheNames) {
-                        await caches.delete(name);
-                        log(`✓ Cache eliminado: ${name}`, 'success');
-                    }
-                }
+                // ============================================
+                // FASE 1: DESTRUCCIÓN DE SERVICE WORKERS
+                // ============================================
+                updateProgress(10, 'Fase 1/6');
+                log('FASE 1: Aniquilando Service Workers...', 'warning-log');
 
-                // 2. Desregistrar Service Workers
                 if ('serviceWorker' in navigator) {
-                    log('Desregistrando Service Workers...', 'info');
-                    const registrations = await navigator.serviceWorker.getRegistrations();
-                    for (const registration of registrations) {
-                        await registration.unregister();
-                        log('✓ Service Worker desregistrado', 'success');
+                    // Primer barrido
+                    let regs = await navigator.serviceWorker.getRegistrations();
+                    log(`Encontrados ${regs.length} Service Worker(s)`, 'info');
+
+                    for (const reg of regs) {
+                        try {
+                            const url = reg.active?.scriptURL || reg.waiting?.scriptURL || reg.installing?.scriptURL || 'unknown';
+                            await reg.unregister();
+                            log(`✓ SW desregistrado: ${url}`, 'success');
+                        } catch (e) {
+                            log(`✗ Error desregistrando SW: ${e.message}`, 'error');
+                        }
                     }
+
+                    await sleep(500);
+
+                    // Segundo barrido (paranoico)
+                    regs = await navigator.serviceWorker.getRegistrations();
+                    if (regs.length > 0) {
+                        log(`⚠ Aún quedan ${regs.length} SW, segundo barrido...`, 'warning-log');
+                        for (const reg of regs) {
+                            await reg.unregister();
+                        }
+                    }
+
+                    await sleep(500);
+
+                    // Verificación final
+                    regs = await navigator.serviceWorker.getRegistrations();
+                    if (regs.length === 0) {
+                        log('✓✓✓ TODOS los Service Workers eliminados', 'success');
+                    } else {
+                        log(`⚠ Aún quedan ${regs.length} SW residuales`, 'warning-log');
+                    }
+                } else {
+                    log('Service Worker API no disponible', 'debug');
                 }
 
-                // 3. Limpiar IndexedDB
+                // ============================================
+                // FASE 2: DESTRUCCIÓN DE CACHES
+                // ============================================
+                updateProgress(25, 'Fase 2/6');
+                await sleep(300);
+                separator();
+                log('FASE 2: Pulverizando Caches...', 'warning-log');
+
+                if (window.caches) {
+                    let cacheKeys = await caches.keys();
+                    log(`Encontradas ${cacheKeys.length} cache(s)`, 'info');
+
+                    for (const key of cacheKeys) {
+                        try {
+                            await caches.delete(key);
+                            log(`✓ Cache destruida: ${key}`, 'success');
+                        } catch (e) {
+                            log(`✗ Error eliminando cache ${key}: ${e.message}`, 'error');
+                        }
+                    }
+
+                    await sleep(500);
+
+                    // Verificación paranoica
+                    cacheKeys = await caches.keys();
+                    if (cacheKeys.length === 0) {
+                        log('✓✓✓ TODAS las caches eliminadas', 'success');
+                    } else {
+                        log(`⚠ Aún quedan ${cacheKeys.length} cache(s): ${cacheKeys.join(', ')}`, 'warning-log');
+                        // Tercer intento
+                        for (const key of cacheKeys) {
+                            await caches.delete(key);
+                        }
+                    }
+                } else {
+                    log('Cache API no disponible', 'debug');
+                }
+
+                // ============================================
+                // FASE 3: DESTRUCCIÓN DE INDEXEDDB
+                // ============================================
+                updateProgress(45, 'Fase 3/6');
+                await sleep(300);
+                separator();
+                log('FASE 3: Arrasando IndexedDB...', 'warning-log');
+
                 if (window.indexedDB) {
-                    log('Limpiando IndexedDB...', 'info');
                     try {
-                        const databases = await indexedDB.databases();
-                        for (const db of databases) {
-                            if (db.name) {
-                                await indexedDB.deleteDatabase(db.name);
-                                log(`✓ Base de datos eliminada: ${db.name}`, 'success');
+                        // Intentar obtener lista de bases de datos
+                        if (indexedDB.databases) {
+                            const databases = await indexedDB.databases();
+                            log(`Encontradas ${databases.length} base(s) de datos`, 'info');
+
+                            for (const db of databases) {
+                                if (db.name) {
+                                    try {
+                                        await new Promise((resolve, reject) => {
+                                            const req = indexedDB.deleteDatabase(db.name);
+                                            req.onsuccess = () => {
+                                                log(`✓ DB eliminada: ${db.name}`, 'success');
+                                                resolve();
+                                            };
+                                            req.onerror = () => reject(req.error);
+                                            req.onblocked = () => {
+                                                log(`⚠ DB bloqueada: ${db.name}, forzando...`, 'warning-log');
+                                                setTimeout(resolve, 1000);
+                                            };
+                                        });
+                                    } catch (e) {
+                                        log(`✗ Error eliminando DB ${db.name}: ${e.message}`, 'error');
+                                    }
+                                }
                             }
                         }
+
+                        // Eliminar bases de datos conocidas por nombre (por si acaso)
+                        const knownDatabases = ['SVE_DroneSync', 'sve_offline', 'offline_sync'];
+                        for (const dbName of knownDatabases) {
+                            try {
+                                await new Promise((resolve, reject) => {
+                                    const req = indexedDB.deleteDatabase(dbName);
+                                    req.onsuccess = () => {
+                                        log(`✓ DB conocida eliminada: ${dbName}`, 'success');
+                                        resolve();
+                                    };
+                                    req.onerror = () => resolve(); // Ignorar si no existe
+                                    req.onblocked = () => setTimeout(resolve, 500);
+                                });
+                            } catch (e) {
+                                // Ignorar errores de bases que no existen
+                            }
+                        }
+
+                        log('✓✓✓ IndexedDB completamente destruida', 'success');
                     } catch (e) {
-                        log('⚠ IndexedDB limpiado parcialmente', 'info');
+                        log(`⚠ IndexedDB limpiada parcialmente: ${e.message}`, 'warning-log');
                     }
+                } else {
+                    log('IndexedDB API no disponible', 'debug');
                 }
 
-                // 4. Limpiar LocalStorage
-                log('Limpiando LocalStorage...', 'info');
-                const keysToRemove = [
-                    'sve_offline_token',
-                    'sve_offline_session',
-                    'sve_offline_initialized',
-                    'sve_offline_init_date',
-                    'sve_offline_cred'
-                ];
-                for (const key of keysToRemove) {
-                    localStorage.removeItem(key);
-                    log(`✓ Eliminado: ${key}`, 'success');
+                // ============================================
+                // FASE 4: DESTRUCCIÓN DE LOCALSTORAGE
+                // ============================================
+                updateProgress(65, 'Fase 4/6');
+                await sleep(300);
+                separator();
+                log('FASE 4: Evaporando LocalStorage...', 'warning-log');
+
+                try {
+                    const keysCount = localStorage.length;
+                    log(`Encontradas ${keysCount} entrada(s) en LocalStorage`, 'info');
+
+                    // Guardar todas las keys antes de borrar (por si cambia durante iteración)
+                    const allKeys = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        allKeys.push(localStorage.key(i));
+                    }
+
+                    // Borrar una por una
+                    for (const key of allKeys) {
+                        if (key) {
+                            localStorage.removeItem(key);
+                            log(`✓ Eliminado: ${key}`, 'success');
+                        }
+                    }
+
+                    // Clear total (por si acaso)
+                    localStorage.clear();
+
+                    // Verificación
+                    if (localStorage.length === 0) {
+                        log('✓✓✓ LocalStorage COMPLETAMENTE vacío', 'success');
+                    } else {
+                        log(`⚠ Aún quedan ${localStorage.length} entrada(s)`, 'warning-log');
+                    }
+                } catch (e) {
+                    log(`✗ Error limpiando LocalStorage: ${e.message}`, 'error');
                 }
 
-                // 5. Limpiar SessionStorage
-                sessionStorage.clear();
-                log('✓ SessionStorage limpiado', 'success');
+                // ============================================
+                // FASE 5: DESTRUCCIÓN DE SESSIONSTORAGE
+                // ============================================
+                updateProgress(80, 'Fase 5/6');
+                await sleep(300);
+                separator();
+                log('FASE 5: Obliterando SessionStorage...', 'warning-log');
 
-                log('═'.repeat(50), 'info');
-                log('✅ RESET COMPLETO EXITOSO', 'success');
-                log('Recargando página en 2 segundos...', 'info');
+                try {
+                    const sessionCount = sessionStorage.length;
+                    log(`Encontradas ${sessionCount} entrada(s) en SessionStorage`, 'info');
 
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 2000);
+                    sessionStorage.clear();
+
+                    if (sessionStorage.length === 0) {
+                        log('✓✓✓ SessionStorage COMPLETAMENTE vacío', 'success');
+                    } else {
+                        log(`⚠ Aún quedan ${sessionStorage.length} entrada(s)`, 'warning-log');
+                    }
+                } catch (e) {
+                    log(`✗ Error limpiando SessionStorage: ${e.message}`, 'error');
+                }
+
+                // ============================================
+                // FASE 6: VERIFICACIÓN FINAL
+                // ============================================
+                updateProgress(95, 'Verificación...');
+                await sleep(500);
+                separator();
+                log('FASE 6: Verificación final...', 'warning-log');
+
+                const finalRegs = await navigator.serviceWorker.getRegistrations();
+                const finalCaches = await caches.keys();
+                const finalLocalStorage = localStorage.length;
+                const finalSessionStorage = sessionStorage.length;
+
+                log(`Service Workers restantes: ${finalRegs.length}`, finalRegs.length === 0 ? 'success' : 'error');
+                log(`Caches restantes: ${finalCaches.length}`, finalCaches.length === 0 ? 'success' : 'error');
+                log(`LocalStorage items: ${finalLocalStorage}`, finalLocalStorage === 0 ? 'success' : 'error');
+                log(`SessionStorage items: ${finalSessionStorage}`, finalSessionStorage === 0 ? 'success' : 'error');
+
+                // ============================================
+                // ÉXITO
+                // ============================================
+                updateProgress(100, 'Completado');
+                separator();
+                log('', 'info');
+                log('🎆🎆🎆 DESTRUCCIÓN TOTAL COMPLETADA 🎆🎆🎆', 'success');
+                log('', 'info');
+                separator();
+
+                // Preparar recarga con cache busting extremo
+                const timestamp = Date.now();
+                const randomParam = Math.random().toString(36).substring(7);
+                const reloadUrl = `/?nocache=${timestamp}&random=${randomParam}&reset=1`;
+
+                log(`Redirigiendo a: ${reloadUrl}`, 'info');
+                log('Recargando en 3 segundos...', 'warning-log');
+
+                await sleep(3000);
+
+                // Usar replace para evitar historial
+                window.location.replace(reloadUrl);
 
             } catch (error) {
-                log(`❌ Error: ${error.message}`, 'error');
+                separator();
+                log(`💥 ERROR CRÍTICO: ${error.message}`, 'error');
+                log(error.stack, 'debug');
                 console.error('Error en reset:', error);
+
+                btn.disabled = false;
+                btn.textContent = '💣 REINTENTAR RESET NUCLEAR 💣';
             }
         }
+
+        function goToLogin() {
+            // Redirigir con cache busting
+            const timestamp = Date.now();
+            window.location.replace(`/?t=${timestamp}`);
+        }
+
+        // Prevenir que el navegador cachee esta página
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
     </script>
 </body>
 </html>
