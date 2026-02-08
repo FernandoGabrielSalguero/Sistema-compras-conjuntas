@@ -199,7 +199,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                                 </div>
                             </div>
 
-                            <div class="input-group">
+                            <div class="input-group" id="grupo_centrifugadora" style="display:none;">
                                 <label for="equipo_centrifugadora">Centrifugadora</label>
                                 <div class="input-icon">
                                     <span class="material-icons">precision_manufacturing</span>
@@ -221,11 +221,12 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                         <div class="card" style="margin-top: 16px;">
                             <h3>Contrato vigente</h3>
                             <div id="contratoBox" class="contract-box">Cargando contrato...</div>
-                            <div style="margin-top: 12px;">
+                            <div style="margin-top: 12px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                                 <label style="display:flex; gap:8px; align-items:flex-start;">
                                     <input type="checkbox" id="acepta_contrato">
                                     <span>Leí y acepto el contrato vigente.</span>
                                 </label>
+                                <button type="button" class="btn btn-aceptar" onclick="openModalContrato()">Ver contrato</button>
                             </div>
                         </div>
 
@@ -262,8 +263,21 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
         </div>
     </div>
 
+    <div id="modalContrato" class="modal hidden">
+        <div class="modal-content" style="width: 80vw; height: 80vh; overflow-y: auto; overflow-x: hidden;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                <h3 style="margin:0;">Contrato vigente</h3>
+                <button class="btn-icon" onclick="closeModalContrato()" aria-label="Cerrar">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div id="contratoModalBody" class="contract-box" style="margin-top:16px; max-height:none;"></div>
+        </div>
+    </div>
+
     <script>
         let contratoVigente = null;
+        let centrifugadoraOptionId = null;
 
         async function cargarInit() {
             const res = await fetch('/controllers/coop_serviciosVendimialesController.php?action=init');
@@ -295,6 +309,11 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             } else {
                 contratoBox.textContent = 'No hay contrato vigente.';
             }
+
+            // Detectar opción "centrifugadora" por nombre
+            const servicioOptions = Array.from(servicioSelect.options);
+            const centrifOpt = servicioOptions.find(opt => (opt.textContent || '').toLowerCase().includes('centrifugadora'));
+            centrifugadoraOptionId = centrifOpt ? centrifOpt.value : null;
         }
 
         async function cargarPedidos() {
@@ -367,10 +386,46 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             await cargarPedidos();
         }
 
+        function toggleCentrifugadora() {
+            const servicioId = document.getElementById('servicio').value;
+            const grupo = document.getElementById('grupo_centrifugadora');
+            if (!grupo) return;
+            if (centrifugadoraOptionId && servicioId === centrifugadoraOptionId) {
+                grupo.style.display = '';
+            } else {
+                grupo.style.display = 'none';
+                document.getElementById('equipo_centrifugadora').value = '';
+            }
+        }
+
+        function openModalContrato() {
+            const modal = document.getElementById('modalContrato');
+            const body = document.getElementById('contratoModalBody');
+            if (body) {
+                body.innerHTML = contratoVigente ? (contratoVigente.contenido || 'Contrato sin contenido.') : 'No hay contrato vigente.';
+            }
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeModalContrato() {
+            const modal = document.getElementById('modalContrato');
+            if (modal) modal.classList.add('hidden');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             cargarInit();
             cargarPedidos();
             document.getElementById('formSolicitud').addEventListener('submit', enviarSolicitud);
+            document.getElementById('servicio').addEventListener('change', toggleCentrifugadora);
+
+            const modalContrato = document.getElementById('modalContrato');
+            if (modalContrato) {
+                modalContrato.addEventListener('click', (e) => {
+                    if (e.target === modalContrato) {
+                        closeModalContrato();
+                    }
+                });
+            }
         });
     </script>
 </body>
