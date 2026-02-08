@@ -218,20 +218,21 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
 
                         </div>
 
+                        <div class="card" style="box-shadow:none; border:1px solid #e2e8f0; background:transparent;">
+                            <div style="font-size:0.85rem; font-weight:600; color:#6b7280; margin-bottom:8px;">Términos</div>
+                            <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+                                <label style="display:flex; gap:8px; align-items:flex-start; margin:0;">
+                                    <input type="checkbox" id="acepta_contrato">
+                                    <span>Leí y acepto el contrato vigente.</span>
+                                </label>
+                                <button type="button" class="btn btn-info" onclick="openModalContrato()">Ver contrato</button>
+                            </div>
+                        </div>
+
                         <div class="form-buttons" style="margin-top: 20px;">
                             <button type="submit" class="btn btn-aceptar">Solicitar servicio vendimial</button>
                         </div>
                     </form>
-                </div>
-
-                <div class="card" style="box-shadow:none; border:1px solid #e2e8f0;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-                        <label style="display:flex; gap:8px; align-items:flex-start; margin:0;">
-                            <input type="checkbox" id="acepta_contrato">
-                            <span>Leí y acepto el contrato vigente.</span>
-                        </label>
-                        <button type="button" class="btn btn-info" onclick="openModalContrato()">Ver contrato</button>
-                    </div>
                 </div>
 
                 <div class="card">
