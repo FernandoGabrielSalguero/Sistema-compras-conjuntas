@@ -14,10 +14,6 @@ $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
 $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
-
-//Cargamos los operativos cerrados
-$cierre_info = $_SESSION['cierre_info'] ?? null;
-unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 ?>
 
 <!DOCTYPE html>
@@ -35,6 +31,23 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
+
+    <style>
+        .estado-pill {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            background: #eef2ff;
+            color: #3730a3;
+        }
+
+        .empty-row {
+            text-align: center;
+            color: #6b7280;
+            padding: 16px 8px;
+        }
+    </style>
 </head>
 
 <body>
@@ -117,63 +130,85 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="navbar-title">Inicio</div>
+                <div class="navbar-title">Servicios Vendimiales</div>
             </header>
 
             <!-- 📦 CONTENIDO -->
             <section class="content">
 
-                <!-- Bienvenida -->
                 <div class="card">
-                    <h2>Hola</h2>
-                    <p>Te presentamos el tablero Power BI. Vas a poder consultar todas las metricas desde esta página</p>
-                </div>
-                <!-- Métricas principales: 3 tarjetas apiladas (una columna, tres filas) -->
-                <div class="card" style="width:100%; margin-bottom:1rem;">
-                    <h3>Compra conjunta</h3>
-                    <?php include __DIR__ . '/../partials/sve_kpi/sve_kpi_compraConjuntaView.php'; ?>
-                </div>
-                <div class="card" style="width:100%; margin-bottom:1rem;">
-                    <h3>Pulverización con drones</h3>
-                    <?php include __DIR__ . '/../partials/sve_kpi/sve_kpi_dronesView.php'; ?>
-                </div>
-                <div class="card" style="width:100%; margin-bottom:1rem;">
-                    <h3>Cosecha Mecanica</h3>
-                    <?php include __DIR__ . '/../partials/sve_kpi/sve_kpi_cosechaView.php'; ?>
+                    <h2>Servicios Vendimiales</h2>
+                    <p>Esta sección queda lista para cargar y administrar servicios vendimiales.</p>
                 </div>
 
-                <!-- contenedor del toastify -->
-                <div id="toast-container"></div>
-                <div id="toast-container-boton"></div>
-                <!-- Spinner Global -->
-                <script src="../../views/partials/spinner-global.js"></script>
+                <div class="card">
+                    <h2>Estado de la sección</h2>
+                    <p>Sin actividades configuradas por el momento. Cuando definamos el flujo, agregamos los formularios y acciones.</p>
+                </div>
+
+                <div class="card">
+                    <h2>Listado de servicios</h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Estado</th>
+                                    <th>Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaServiciosBody">
+                                <tr>
+                                    <td colspan="3" class="empty-row">Sin servicios cargados.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
             </section>
-
         </div>
     </div>
 
-    <!-- toast -->
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            console.log(<?php echo json_encode($_SESSION); ?>);
+        async function cargarServiciosVendimiales() {
+            const tbody = document.getElementById('tablaServiciosBody');
+            tbody.innerHTML = '<tr><td colspan="3" class="empty-row">Cargando...</td></tr>';
 
-            <?php if (!empty($cierre_info)): ?>
-                const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-                cierreData.pendientes.forEach(op => {
-                    const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
-                    console.log(mensaje);
-                    if (typeof showToastBoton === 'function') {
-                        showToastBoton('info', mensaje);
-                    } else {
-                        console.warn('⚠️ showToastBoton no está definido aún.');
-                    }
+            try {
+                const res = await fetch('/controllers/sve_serviciosVendimialesController.php');
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudo cargar la información.');
+                }
+
+                const servicios = Array.isArray(data.servicios) ? data.servicios : [];
+
+                if (servicios.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="empty-row">Sin servicios cargados.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                servicios.forEach((servicio) => {
+                    const estado = servicio.estado ? servicio.estado : 'sin definir';
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${servicio.nombre ?? 'Sin nombre'}</td>
+                        <td><span class="estado-pill">${estado}</span></td>
+                        <td>${servicio.descripcion ?? 'Sin descripción'}</td>
+                    `;
+                    tbody.appendChild(fila);
                 });
-            <?php endif; ?>
-        });
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="3" class="empty-row">${error.message}</td></tr>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarServiciosVendimiales);
     </script>
 
 </body>
-
 
 </html>

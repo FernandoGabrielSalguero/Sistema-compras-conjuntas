@@ -121,6 +121,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
                         <span class="link-text">Cosecha Mecánica</span>
                     </li>
+                    <li onclick="location.href='sve_serviciosVendimiales.php'">
+                        <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
+                        <span class="link-text">Servicios Vendimiales</span>
+                    </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
                     </li>
