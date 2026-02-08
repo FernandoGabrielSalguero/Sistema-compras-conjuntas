@@ -277,7 +277,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
 
     <script>
         let contratoVigente = null;
-        let centrifugadoraOptionId = null;
+        const CENTRIFUGA_SERVICIO_ID = '1';
 
         async function cargarInit() {
             const res = await fetch('/controllers/coop_serviciosVendimialesController.php?action=init');
@@ -304,10 +304,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
 
             contratoVigente = data.contrato || null;
 
-            // Detectar opción de centrifugado por nombre (centrifugadora / centrifuga / centrifugado)
-            const servicioOptions = Array.from(servicioSelect.options);
-            const centrifOpt = servicioOptions.find(opt => (opt.textContent || '').toLowerCase().includes('Centrífuga'));
-            centrifugadoraOptionId = centrifOpt ? centrifOpt.value : null;
+            // Id fijo de servicio "Centrífuga"
         }
 
         async function cargarPedidos() {
@@ -410,7 +407,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             const servicioId = document.getElementById('servicio').value;
             const grupo = document.getElementById('grupo_centrifugadora');
             if (!grupo) return;
-            if (centrifugadoraOptionId && servicioId === centrifugadoraOptionId) {
+            if (servicioId === CENTRIFUGA_SERVICIO_ID) {
                 grupo.style.display = '';
             } else {
                 grupo.style.display = 'none';
