@@ -857,7 +857,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     const fila = document.createElement('tr');
                     fila.innerHTML = `
                         <td>${p.cooperativa ?? '-'}</td>
-                        <td>${p.nombre ?? '-'}</td>
+                        <td>
+                            <div>${p.nombre ?? '-'}</div>
+                            <div style="color: #5b21b6; font-size: 0.85rem;">${p.cargo ?? ''}</div>
+                        </td>
                         <td>${p.servicio_nombre ?? '-'}</td>
                         <td>${volumen}</td>
                         <td>${p.centrifugadora_nombre ?? '-'}</td>
