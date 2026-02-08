@@ -51,6 +51,22 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             padding: 16px 8px;
         }
 
+        #modalServiciosOfrecidos .modal-content,
+        #modalCentrifugadoras .modal-content,
+        #modalContratos .modal-content {
+            width: 80vw;
+            height: 80vh;
+            max-width: none;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #modalServiciosOfrecidos .table-container,
+        #modalCentrifugadoras .table-container,
+        #modalContratos .table-container {
+            overflow-x: hidden;
+        }
+
         #modalContratos .editor-card {
             margin-top: 0.25rem;
             background: #ffffff;
@@ -183,7 +199,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <!-- Modal servicios ofrecidos -->
     <div id="modalServiciosOfrecidos" class="modal hidden">
-        <div class="modal-content" style="max-width: 900px; width: 95%;">
+        <div class="modal-content">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
                 <h3 style="margin:0;">Servicios ofrecidos</h3>
                 <button class="btn-icon" onclick="closeModalServiciosOfrecidos()" aria-label="Cerrar">
@@ -244,7 +260,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <!-- Modal centrifugadoras -->
     <div id="modalCentrifugadoras" class="modal hidden">
-        <div class="modal-content" style="max-width: 980px; width: 95%;">
+        <div class="modal-content">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
                 <h3 style="margin:0;">Centrifugadoras</h3>
                 <button class="btn-icon" onclick="closeModalCentrifugadoras()" aria-label="Cerrar">
@@ -321,7 +337,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
     <!-- Modal contratos -->
     <div id="modalContratos" class="modal hidden">
-        <div class="modal-content" style="max-width: 980px; width: 95%;">
+        <div class="modal-content">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
                 <h3 style="margin:0;">Contratos</h3>
                 <button class="btn-icon" onclick="closeModalContratos()" aria-label="Cerrar">
