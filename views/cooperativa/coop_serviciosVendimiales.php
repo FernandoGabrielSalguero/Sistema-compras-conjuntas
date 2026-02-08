@@ -258,6 +258,8 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                     </div>
                 </div>
 
+                <div class="alert-container" id="alertContainer"></div>
+
             </section>
         </div>
     </div>
@@ -371,7 +373,11 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
 
             const data = await res.json();
             if (!data.success) {
-                alert(data.message || 'Error al enviar la solicitud.');
+                if (typeof showAlert === 'function') {
+                    showAlert('error', data.message || 'Error al enviar la solicitud.');
+                } else {
+                    alert(data.message || 'Error al enviar la solicitud.');
+                }
                 return;
             }
 
@@ -395,6 +401,9 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             }
 
             document.getElementById('formSolicitud').reset();
+            if (typeof showAlert === 'function') {
+                showAlert('success', 'Solicitud creada correctamente.');
+            }
             await cargarPedidos();
         }
 
