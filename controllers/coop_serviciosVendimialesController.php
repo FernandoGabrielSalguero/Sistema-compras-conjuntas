@@ -9,11 +9,15 @@ session_start();
 
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/coop_serviciosVendimialesModel.php';
+require_once __DIR__ . '/../mail/Mail.php';
+
+use SVE\Mail\Mail;
 
 header('Content-Type: application/json; charset=utf-8');
 
 $model = new CoopServiciosVendimialesModel($pdo);
 $coopNombre = $_SESSION['nombre'] ?? null;
+$coopIdReal = $_SESSION['id_real'] ?? null;
 
 if (!$coopNombre) {
     echo json_encode(['success' => false, 'message' => 'Sesión inválida.']);
@@ -101,7 +105,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
         }
 
-        echo json_encode(['success' => true, 'pedido_id' => $pedidoId]);
+        // Enviar correo con detalles
+        $coopCorreo = null;
+        if ($coopIdReal) {
+            $stmt = $pdo->prepare("
+                SELECT ui.nombre AS nombre, ui.correo AS correo
+                FROM usuarios u
+                LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+                WHERE u.id_real = ?
+                LIMIT 1
+            ");
+            $stmt->execute([$coopIdReal]);
+            if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $coopCorreo = $row['correo'] ?? null;
+            }
+        }
+
+        $servicioNombre = null;
+        if ($servicio > 0) {
+            $stmt = $pdo->prepare("SELECT nombre FROM serviciosVendimiales_serviciosOfrecidos WHERE id = ? LIMIT 1");
+            $stmt->execute([$servicio]);
+            $servicioNombre = $stmt->fetchColumn() ?: null;
+        }
+
+        $centrifugadoraNombre = null;
+        if (!empty($equipo)) {
+            $stmt = $pdo->prepare("SELECT nombre FROM serviciosVendimiales_centrifugadores WHERE id = ? LIMIT 1");
+            $stmt->execute([$equipo]);
+            $centrifugadoraNombre = $stmt->fetchColumn() ?: null;
+        }
+
+        $mailResp = Mail::enviarSolicitudServiciosVendimiales([
+            'pedido_id' => $pedidoId,
+            'cooperativa_nombre' => $coopNombre,
+            'cooperativa_correo' => $coopCorreo,
+            'solicitante_nombre' => $nombre,
+            'solicitante_cargo' => $cargo,
+            'servicio_nombre' => $servicioNombre,
+            'volumen' => $volumen,
+            'unidad' => $unidad,
+            'fecha_entrada' => $fechaEntrada,
+            'centrifugadora' => $centrifugadoraNombre,
+            'observaciones' => $observaciones,
+            'contrato_aceptado' => $aceptaContrato ? 'Sí' : 'No'
+        ]);
+
+        echo json_encode([
+            'success' => true,
+            'pedido_id' => $pedidoId,
+            'mail_ok' => (bool)($mailResp['ok'] ?? false)
+        ]);
     } catch (Exception $e) {
         error_log('Error crear pedido servicios vendimiales: ' . $e->getMessage());
         echo json_encode(['success' => false, 'message' => 'Error al guardar la solicitud.']);

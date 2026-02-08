@@ -721,6 +721,98 @@ final class Mail
     }
 
     /**
+     * Envia correo por solicitud de servicios vendimiales.
+     * $data = [
+     *   'pedido_id' => int,
+     *   'cooperativa_nombre' => string,
+     *   'cooperativa_correo' => ?string,
+     *   'solicitante_nombre' => string,
+     *   'solicitante_cargo' => string,
+     *   'servicio_nombre' => ?string,
+     *   'volumen' => ?string|float,
+     *   'unidad' => ?string,
+     *   'fecha_entrada' => ?string,
+     *   'centrifugadora' => ?string,
+     *   'observaciones' => ?string,
+     *   'contrato_aceptado' => ?string
+     * ]
+     * @return array{ok:bool, error?:string}
+     */
+    public static function enviarSolicitudServiciosVendimiales(array $data): array
+    {
+        try {
+            $tplPath = __DIR__ . '/template/serviciosVendimiales_pedidosCooperativa.html';
+
+            $coopNombre = (string)($data['cooperativa_nombre'] ?? 'Cooperativa');
+            $solicitante = (string)($data['solicitante_nombre'] ?? '');
+            $cargo = (string)($data['solicitante_cargo'] ?? '');
+            $servicio = (string)($data['servicio_nombre'] ?? '');
+            $volumen = $data['volumen'] ?? '';
+            $unidad = (string)($data['unidad'] ?? '');
+            $fecha = (string)($data['fecha_entrada'] ?? '');
+            $centrifugadora = (string)($data['centrifugadora'] ?? '');
+            $observaciones = (string)($data['observaciones'] ?? '');
+            $contrato = (string)($data['contrato_aceptado'] ?? 'No');
+
+            $volumenTxt = $volumen !== '' ? (string)$volumen . ' ' . $unidad : '-';
+
+            $content = sprintf(
+                '<h2>Solicitud de servicios vendimiales</h2>
+                <p>La cooperativa <strong>%s</strong> realizó una solicitud.</p>
+                <table cellpadding="8" cellspacing="0" border="0" style="width:100%%;border-collapse:collapse;">
+                    <tbody>
+                        <tr><td style="width:35%%;background:#f9fafb;">ID solicitud</td><td><strong>#%d</strong></td></tr>
+                        <tr><td style="background:#f9fafb;">Solicitante</td><td>%s</td></tr>
+                        <tr><td style="background:#f9fafb;">Cargo</td><td>%s</td></tr>
+                        <tr><td style="background:#f9fafb;">Servicio</td><td>%s</td></tr>
+                        <tr><td style="background:#f9fafb;">Volumen</td><td>%s</td></tr>
+                        <tr><td style="background:#f9fafb;">Fecha entrada equipo</td><td>%s</td></tr>
+                        <tr><td style="background:#f9fafb;">Centrifugadora</td><td>%s</td></tr>
+                        <tr><td style="background:#f9fafb;">Contrato aceptado</td><td>%s</td></tr>
+                        <tr><td style="background:#f9fafb;">Observaciones</td><td>%s</td></tr>
+                    </tbody>
+                </table>',
+                htmlspecialchars($coopNombre, ENT_QUOTES, 'UTF-8'),
+                (int)($data['pedido_id'] ?? 0),
+                htmlspecialchars($solicitante ?: '—', ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($cargo ?: '—', ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($servicio ?: '—', ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($volumenTxt ?: '—', ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($fecha !== '' ? $fecha : '—', ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($centrifugadora ?: '—', ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($contrato ?: 'No', ENT_QUOTES, 'UTF-8'),
+                nl2br(htmlspecialchars($observaciones ?: '—', ENT_QUOTES, 'UTF-8'))
+            );
+
+            $html = self::renderTemplate($tplPath, $content, 'Solicitud de servicios vendimiales');
+
+            $mailOk = true;
+
+            // 1) Envio a cooperativa (asunto específico)
+            if (!empty($data['cooperativa_correo'])) {
+                $mailCoop = self::baseMailer();
+                $mailCoop->Subject = 'Hola ' . $coopNombre . ' ya tenemos la solicitud de servicios vendimiales.';
+                $mailCoop->Body    = $html;
+                $mailCoop->AltBody = 'Solicitud de servicios vendimiales - ' . $coopNombre;
+                $mailCoop->addAddress((string)$data['cooperativa_correo'], $coopNombre);
+                $mailOk = $mailOk && self::sendAndLog($mailCoop, 'servicios_vendimiales_solicitud', 'serviciosVendimiales_pedidosCooperativa.html');
+            }
+
+            // 2) Envio a correo fijo
+            $mailFixed = self::baseMailer();
+            $mailFixed->Subject = 'La cooperativa ' . $coopNombre . ' solicito un servicio vendimial';
+            $mailFixed->Body    = $html;
+            $mailFixed->AltBody = 'Solicitud servicios vendimiales - ' . $coopNombre;
+            $mailFixed->addAddress('fernandosalguero685@gmail.com', 'Fernando Salguero');
+            $mailOk = $mailOk && self::sendAndLog($mailFixed, 'servicios_vendimiales_solicitud', 'serviciosVendimiales_pedidosCooperativa.html');
+
+            return ['ok' => (bool)$mailOk];
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
      * Envia correo con la respuesta de cooperativa (aprobada/denegada).
      * @return array{ok:bool, error?:string}
      */
