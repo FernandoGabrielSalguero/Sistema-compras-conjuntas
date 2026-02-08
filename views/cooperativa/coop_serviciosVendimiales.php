@@ -375,6 +375,25 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                 return;
             }
 
+            // Mostrar en tabla de forma inmediata (optimista)
+            const tbody = document.getElementById('tablaPedidosBody');
+            if (tbody) {
+                const servicioText = document.getElementById('servicio').selectedOptions[0]?.textContent || '-';
+                const equipoText = document.getElementById('equipo_centrifugadora').selectedOptions[0]?.textContent || '-';
+                const volumenTxt = payload.volumenAproximado ? `${payload.volumenAproximado} ${payload.unidad_volumen}` : '-';
+                const contratoTxt = payload.acepta_contrato ? 'Firmado' : 'Sin firma';
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>${servicioText}</td>
+                    <td>${volumenTxt}</td>
+                    <td>${equipoText}</td>
+                    <td>CONFIRMADO</td>
+                    <td><span class="estado-pill">${contratoTxt}</span></td>
+                    <td>Recién creado</td>
+                `;
+                tbody.prepend(fila);
+            }
+
             document.getElementById('formSolicitud').reset();
             await cargarPedidos();
         }
