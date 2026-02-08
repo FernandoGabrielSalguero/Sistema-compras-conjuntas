@@ -141,6 +141,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <p>Administración de servicios vendimiales. Usá el botón para gestionar los servicios ofrecidos.</p>
                     <div class="form-buttons" style="margin-top: 16px;">
                         <button type="button" class="btn btn-aceptar" onclick="openModalServiciosOfrecidos()">Servicios ofrecidos</button>
+                        <button type="button" class="btn" onclick="openModalCentrifugadoras()">Centrifugadoras</button>
                     </div>
                 </div>
 
@@ -209,6 +210,83 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
+    <!-- Modal centrifugadoras -->
+    <div id="modalCentrifugadoras" class="modal hidden">
+        <div class="modal-content" style="max-width: 980px; width: 95%;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                <h3 style="margin:0;">Centrifugadoras</h3>
+                <button class="btn-icon" onclick="closeModalCentrifugadoras()" aria-label="Cerrar">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+                <h4>Nueva centrifugadora</h4>
+                <form class="form-modern" id="formCentrifugadora">
+                    <input type="hidden" id="centrifugadora_id" name="id">
+                    <div class="form-grid grid-4">
+                        <div class="input-group">
+                            <label for="centrifugadora_nombre">Nombre</label>
+                            <div class="input-icon">
+                                <span class="material-icons">precision_manufacturing</span>
+                                <input type="text" id="centrifugadora_nombre" name="nombre" required maxlength="120" placeholder="Ej: Alfa 2200">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="centrifugadora_precio">Precio</label>
+                            <div class="input-icon">
+                                <span class="material-icons">payments</span>
+                                <input type="number" id="centrifugadora_precio" name="precio" required min="0" step="0.01" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="centrifugadora_moneda">Moneda</label>
+                            <div class="input-icon">
+                                <span class="material-icons">paid</span>
+                                <input type="text" id="centrifugadora_moneda" name="moneda" required maxlength="3" placeholder="ARS">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="centrifugadora_activo">Activo</label>
+                            <div class="input-icon">
+                                <span class="material-icons">toggle_on</span>
+                                <select id="centrifugadora_activo" name="activo" required>
+                                    <option value="1">Sí</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-buttons" style="margin-top: 16px;">
+                        <button type="submit" class="btn btn-aceptar">Guardar</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+                <h4>Listado de centrifugadoras</h4>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Precio</th>
+                                <th>Moneda</th>
+                                <th>Activo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaCentrifugadorasBody">
+                            <tr>
+                                <td colspan="5" class="empty-row">Sin centrifugadoras cargadas.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function openModalServiciosOfrecidos() {
             const modal = document.getElementById('modalServiciosOfrecidos');
@@ -225,10 +303,33 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
+        function openModalCentrifugadoras() {
+            const modal = document.getElementById('modalCentrifugadoras');
+            if (modal) {
+                modal.classList.remove('hidden');
+                cargarCentrifugadoras();
+            }
+        }
+
+        function closeModalCentrifugadoras() {
+            const modal = document.getElementById('modalCentrifugadoras');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
         function setForm(servicio) {
             document.getElementById('servicio_id').value = servicio?.id ?? '';
             document.getElementById('nombre').value = servicio?.nombre ?? '';
             document.getElementById('activo').value = servicio?.activo ?? '1';
+        }
+
+        function setCentrifugadoraForm(item) {
+            document.getElementById('centrifugadora_id').value = item?.id ?? '';
+            document.getElementById('centrifugadora_nombre').value = item?.nombre ?? '';
+            document.getElementById('centrifugadora_precio').value = item?.precio ?? '';
+            document.getElementById('centrifugadora_moneda').value = item?.moneda ?? '';
+            document.getElementById('centrifugadora_activo').value = item?.activo ?? '1';
         }
 
         async function cargarServiciosVendimiales() {
@@ -332,6 +433,108 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        async function cargarCentrifugadoras() {
+            const tbody = document.getElementById('tablaCentrifugadorasBody');
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Cargando...</td></tr>';
+
+            try {
+                const res = await fetch('/controllers/sve_centrifugadoresController.php');
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudo cargar la información.');
+                }
+
+                const items = Array.isArray(data.centrifugadoras) ? data.centrifugadoras : [];
+                if (items.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Sin centrifugadoras cargadas.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                items.forEach((item) => {
+                    const estado = Number(item.activo) === 1 ? 'Sí' : 'No';
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${item.nombre ?? 'Sin nombre'}</td>
+                        <td>${item.precio ?? '0.00'}</td>
+                        <td>${item.moneda ?? ''}</td>
+                        <td><span class="estado-pill">${estado}</span></td>
+                        <td>
+                            <button class="btn-icon" data-id="${item.id}" data-action="editar" data-tooltip="Editar">
+                                <span class="material-icons">edit</span>
+                            </button>
+                            <button class="btn-icon" data-id="${item.id}" data-action="eliminar" data-tooltip="Eliminar" style="color: red;">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(fila);
+                });
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-row">${error.message}</td></tr>`;
+            }
+        }
+
+        async function guardarCentrifugadora(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const payload = new URLSearchParams(formData);
+
+            const res = await fetch('/controllers/sve_centrifugadoresController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: payload.toString()
+            });
+
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || 'Error al guardar.');
+                return;
+            }
+
+            setCentrifugadoraForm(null);
+            await cargarCentrifugadoras();
+        }
+
+        async function eliminarCentrifugadora(id) {
+            if (!confirm('¿Eliminar centrifugadora?')) return;
+
+            const payload = new URLSearchParams();
+            payload.append('_method', 'delete');
+            payload.append('id', id);
+
+            const res = await fetch('/controllers/sve_centrifugadoresController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: payload.toString()
+            });
+
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || 'Error al eliminar.');
+                return;
+            }
+
+            await cargarCentrifugadoras();
+        }
+
+        async function editarCentrifugadora(id) {
+            const res = await fetch(`/controllers/sve_centrifugadoresController.php?id=${id}`);
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || 'No se pudo cargar la centrifugadora.');
+                return;
+            }
+            setCentrifugadoraForm(data.centrifugadora);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             setForm(null);
             document.getElementById('formServicio').addEventListener('submit', guardarServicio);
@@ -354,6 +557,31 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 modalServicios.addEventListener('click', (e) => {
                     if (e.target === modalServicios) {
                         closeModalServiciosOfrecidos();
+                    }
+                });
+            }
+
+            setCentrifugadoraForm(null);
+            document.getElementById('formCentrifugadora').addEventListener('submit', guardarCentrifugadora);
+
+            document.getElementById('tablaCentrifugadorasBody').addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-action]');
+                if (!btn) return;
+                const id = btn.getAttribute('data-id');
+                const action = btn.getAttribute('data-action');
+                if (action === 'editar') {
+                    editarCentrifugadora(id);
+                }
+                if (action === 'eliminar') {
+                    eliminarCentrifugadora(id);
+                }
+            });
+
+            const modalCentrifugadoras = document.getElementById('modalCentrifugadoras');
+            if (modalCentrifugadoras) {
+                modalCentrifugadoras.addEventListener('click', (e) => {
+                    if (e.target === modalCentrifugadoras) {
+                        closeModalCentrifugadoras();
                     }
                 });
             }
