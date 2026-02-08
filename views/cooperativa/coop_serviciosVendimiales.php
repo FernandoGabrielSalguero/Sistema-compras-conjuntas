@@ -224,7 +224,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                                         <input type="checkbox" id="acepta_contrato">
                                         <span>Leí y acepto el contrato vigente.</span>
                                     </label>
-                                    <button type="button" class="btn btn-aceptar" onclick="openModalContrato()">Ver contrato</button>
+                                    <button type="button" class="btn btn-info" onclick="openModalContrato()">Ver contrato</button>
                                 </div>
                             </div>
                         </div>
