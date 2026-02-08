@@ -171,6 +171,16 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                                 </div>
                             </div>
 
+                            <div class="input-group" id="grupo_centrifugadora" style="display:none;">
+                                <label for="equipo_centrifugadora">Centrifugadora</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">precision_manufacturing</span>
+                                    <select id="equipo_centrifugadora">
+                                        <option value="">Sin seleccionar</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div class="input-group">
                                 <label for="volumen">Volumen aproximado</label>
                                 <div class="input-icon">
@@ -198,16 +208,6 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                                 </div>
                             </div>
 
-                            <div class="input-group" id="grupo_centrifugadora" style="display:none;">
-                                <label for="equipo_centrifugadora">Centrifugadora</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">precision_manufacturing</span>
-                                    <select id="equipo_centrifugadora">
-                                        <option value="">Sin seleccionar</option>
-                                    </select>
-                                </div>
-                            </div>
-
                             <div class="input-group">
                                 <label for="observaciones">Observaciones</label>
                                 <div class="input-icon">
@@ -216,22 +216,22 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                                 </div>
                             </div>
 
-                            <div class="input-group">
-                                <label>Términos</label>
-                                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                                    <label style="display:flex; gap:8px; align-items:flex-start; margin:0;">
-                                        <input type="checkbox" id="acepta_contrato">
-                                        <span>Leí y acepto el contrato vigente.</span>
-                                    </label>
-                                    <button type="button" class="btn btn-info" onclick="openModalContrato()">Ver contrato</button>
-                                </div>
-                            </div>
                         </div>
 
                         <div class="form-buttons" style="margin-top: 20px;">
-                            <button type="submit" class="btn btn-aceptar">Enviar solicitud</button>
+                            <button type="submit" class="btn btn-aceptar">Solicitar servicio vendimial</button>
                         </div>
                     </form>
+                </div>
+
+                <div class="card" style="box-shadow:none; border:1px solid #e2e8f0;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+                        <label style="display:flex; gap:8px; align-items:flex-start; margin:0;">
+                            <input type="checkbox" id="acepta_contrato">
+                            <span>Leí y acepto el contrato vigente.</span>
+                        </label>
+                        <button type="button" class="btn btn-info" onclick="openModalContrato()">Ver contrato</button>
+                    </div>
                 </div>
 
                 <div class="card">
