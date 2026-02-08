@@ -130,63 +130,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="navbar-title">Servicios Ofrecidos</div>
+                <div class="navbar-title">Servicios vendimiales</div>
             </header>
 
             <!-- 📦 CONTENIDO -->
             <section class="content">
 
                 <div class="card">
-                    <h2>Servicios Ofrecidos</h2>
-                    <p>Administración simple de servicios vendimiales ofrecidos.</p>
-                </div>
-
-                <div class="card">
-                    <h2>Nuevo servicio</h2>
-                    <form class="form-modern" id="formServicio">
-                        <input type="hidden" id="servicio_id" name="id">
-                        <div class="form-grid grid-3">
-                            <div class="input-group">
-                                <label for="nombre">Nombre</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">local_offer</span>
-                                    <input type="text" id="nombre" name="nombre" required maxlength="120" placeholder="Ej: Centrifugado">
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="activo">Activo</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">toggle_on</span>
-                                    <select id="activo" name="activo" required>
-                                        <option value="1">Sí</option>
-                                        <option value="0">No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="input-group" style="display:flex; align-items:flex-end;">
-                                <button type="submit" class="btn btn-aceptar" style="width:100%;">Guardar</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="card">
-                    <h2>Listado de servicios</h2>
-                    <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Activo</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaServiciosBody">
-                                <tr>
-                                    <td colspan="3" class="empty-row">Sin servicios cargados.</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <h2>Servicios vendimiales</h2>
+                    <p>Administración de servicios vendimiales. Usá el botón para gestionar los servicios ofrecidos.</p>
+                    <div class="form-buttons" style="margin-top: 16px;">
+                        <button type="button" class="btn btn-aceptar" onclick="openModalServiciosOfrecidos()">Servicios ofrecidos</button>
                     </div>
                 </div>
 
@@ -194,7 +148,83 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
+    <!-- Modal servicios ofrecidos -->
+    <div id="modalServiciosOfrecidos" class="modal hidden">
+        <div class="modal-content" style="max-width: 900px; width: 95%;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                <h3 style="margin:0;">Servicios ofrecidos</h3>
+                <button class="btn-icon" onclick="closeModalServiciosOfrecidos()" aria-label="Cerrar">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+                <h4>Nuevo servicio</h4>
+                <form class="form-modern" id="formServicio">
+                    <input type="hidden" id="servicio_id" name="id">
+                    <div class="form-grid grid-3">
+                        <div class="input-group">
+                            <label for="nombre">Nombre</label>
+                            <div class="input-icon">
+                                <span class="material-icons">local_offer</span>
+                                <input type="text" id="nombre" name="nombre" required maxlength="120" placeholder="Ej: Centrifugado">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="activo">Activo</label>
+                            <div class="input-icon">
+                                <span class="material-icons">toggle_on</span>
+                                <select id="activo" name="activo" required>
+                                    <option value="1">Sí</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="input-group" style="display:flex; align-items:flex-end;">
+                            <button type="submit" class="btn btn-aceptar" style="width:100%;">Guardar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+                <h4>Listado de servicios</h4>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Activo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaServiciosBody">
+                            <tr>
+                                <td colspan="3" class="empty-row">Sin servicios cargados.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        function openModalServiciosOfrecidos() {
+            const modal = document.getElementById('modalServiciosOfrecidos');
+            if (modal) {
+                modal.classList.remove('hidden');
+                cargarServiciosVendimiales();
+            }
+        }
+
+        function closeModalServiciosOfrecidos() {
+            const modal = document.getElementById('modalServiciosOfrecidos');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
         function setForm(servicio) {
             document.getElementById('servicio_id').value = servicio?.id ?? '';
             document.getElementById('nombre').value = servicio?.nombre ?? '';
@@ -228,8 +258,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <td>${servicio.nombre ?? 'Sin nombre'}</td>
                         <td><span class="estado-pill">${estado}</span></td>
                         <td>
-                            <button class="btn btn-mini" data-id="${servicio.id}" data-action="editar">Editar</button>
-                            <button class="btn btn-mini" data-id="${servicio.id}" data-action="eliminar">Eliminar</button>
+                            <button class="btn-icon" data-id="${servicio.id}" data-action="editar" data-tooltip="Editar">
+                                <span class="material-icons">edit</span>
+                            </button>
+                            <button class="btn-icon" data-id="${servicio.id}" data-action="eliminar" data-tooltip="Eliminar" style="color: red;">
+                                <span class="material-icons">delete</span>
+                            </button>
                         </td>
                     `;
                     tbody.appendChild(fila);
@@ -300,8 +334,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         document.addEventListener('DOMContentLoaded', () => {
             setForm(null);
-            cargarServiciosVendimiales();
-
             document.getElementById('formServicio').addEventListener('submit', guardarServicio);
 
             document.getElementById('tablaServiciosBody').addEventListener('click', (e) => {
@@ -316,6 +348,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     eliminarServicio(id);
                 }
             });
+
+            const modalServicios = document.getElementById('modalServiciosOfrecidos');
+            if (modalServicios) {
+                modalServicios.addEventListener('click', (e) => {
+                    if (e.target === modalServicios) {
+                        closeModalServiciosOfrecidos();
+                    }
+                });
+            }
         });
     </script>
 
