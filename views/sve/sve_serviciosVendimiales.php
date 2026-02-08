@@ -130,20 +130,44 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="navbar-title">Servicios Vendimiales</div>
+                <div class="navbar-title">Servicios Ofrecidos</div>
             </header>
 
             <!-- 📦 CONTENIDO -->
             <section class="content">
 
                 <div class="card">
-                    <h2>Servicios Vendimiales</h2>
-                    <p>Esta sección queda lista para cargar y administrar servicios vendimiales.</p>
+                    <h2>Servicios Ofrecidos</h2>
+                    <p>Administración simple de servicios vendimiales ofrecidos.</p>
                 </div>
 
                 <div class="card">
-                    <h2>Estado de la sección</h2>
-                    <p>Sin actividades configuradas por el momento. Cuando definamos el flujo, agregamos los formularios y acciones.</p>
+                    <h2>Nuevo servicio</h2>
+                    <form class="form-modern" id="formServicio">
+                        <input type="hidden" id="servicio_id" name="id">
+                        <div class="form-grid grid-3">
+                            <div class="input-group">
+                                <label for="nombre">Nombre</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">local_offer</span>
+                                    <input type="text" id="nombre" name="nombre" required maxlength="120" placeholder="Ej: Centrifugado">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="activo">Activo</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">toggle_on</span>
+                                    <select id="activo" name="activo" required>
+                                        <option value="1">Sí</option>
+                                        <option value="0">No</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="input-group" style="display:flex; align-items:flex-end;">
+                                <button type="submit" class="btn btn-aceptar" style="width:100%;">Guardar</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
 
                 <div class="card">
@@ -153,8 +177,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <thead>
                                 <tr>
                                     <th>Nombre</th>
-                                    <th>Estado</th>
-                                    <th>Descripción</th>
+                                    <th>Activo</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaServiciosBody">
@@ -171,6 +195,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <script>
+        function setForm(servicio) {
+            document.getElementById('servicio_id').value = servicio?.id ?? '';
+            document.getElementById('nombre').value = servicio?.nombre ?? '';
+            document.getElementById('activo').value = servicio?.activo ?? '1';
+        }
+
         async function cargarServiciosVendimiales() {
             const tbody = document.getElementById('tablaServiciosBody');
             tbody.innerHTML = '<tr><td colspan="3" class="empty-row">Cargando...</td></tr>';
@@ -192,12 +222,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 tbody.innerHTML = '';
                 servicios.forEach((servicio) => {
-                    const estado = servicio.estado ? servicio.estado : 'sin definir';
+                    const estado = Number(servicio.activo) === 1 ? 'Sí' : 'No';
                     const fila = document.createElement('tr');
                     fila.innerHTML = `
                         <td>${servicio.nombre ?? 'Sin nombre'}</td>
                         <td><span class="estado-pill">${estado}</span></td>
-                        <td>${servicio.descripcion ?? 'Sin descripción'}</td>
+                        <td>
+                            <button class="btn btn-mini" data-id="${servicio.id}" data-action="editar">Editar</button>
+                            <button class="btn btn-mini" data-id="${servicio.id}" data-action="eliminar">Eliminar</button>
+                        </td>
                     `;
                     tbody.appendChild(fila);
                 });
@@ -206,7 +239,84 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
-        document.addEventListener('DOMContentLoaded', cargarServiciosVendimiales);
+        async function guardarServicio(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const payload = new URLSearchParams(formData);
+
+            const res = await fetch('/controllers/sve_serviciosVendimialesController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: payload.toString()
+            });
+
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || 'Error al guardar.');
+                return;
+            }
+
+            setForm(null);
+            await cargarServiciosVendimiales();
+        }
+
+        async function eliminarServicio(id) {
+            if (!confirm('¿Eliminar servicio?')) return;
+
+            const payload = new URLSearchParams();
+            payload.append('_method', 'delete');
+            payload.append('id', id);
+
+            const res = await fetch('/controllers/sve_serviciosVendimialesController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: payload.toString()
+            });
+
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || 'Error al eliminar.');
+                return;
+            }
+
+            await cargarServiciosVendimiales();
+        }
+
+        async function editarServicio(id) {
+            const res = await fetch(`/controllers/sve_serviciosVendimialesController.php?id=${id}`);
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || 'No se pudo cargar el servicio.');
+                return;
+            }
+            setForm(data.servicio);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setForm(null);
+            cargarServiciosVendimiales();
+
+            document.getElementById('formServicio').addEventListener('submit', guardarServicio);
+
+            document.getElementById('tablaServiciosBody').addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-action]');
+                if (!btn) return;
+                const id = btn.getAttribute('data-id');
+                const action = btn.getAttribute('data-action');
+                if (action === 'editar') {
+                    editarServicio(id);
+                }
+                if (action === 'eliminar') {
+                    eliminarServicio(id);
+                }
+            });
+        });
     </script>
 
 </body>

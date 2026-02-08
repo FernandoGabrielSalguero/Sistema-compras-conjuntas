@@ -33,8 +33,7 @@ if ($method === 'POST' && ($_POST['_method'] ?? '') === 'delete') {
 if ($method === 'POST') {
     $id = $_POST['id'] ?? null;
     $nombre = $_POST['nombre'] ?? '';
-    $descripcion = $_POST['descripcion'] ?? '';
-    $estado = $_POST['estado'] ?? 'activo';
+    $activo = isset($_POST['activo']) ? (int)$_POST['activo'] : 1;
 
     if (!$nombre) {
         echo json_encode(['success' => false, 'message' => 'El nombre es obligatorio.']);
@@ -43,10 +42,10 @@ if ($method === 'POST') {
 
     try {
         if ($id) {
-            $model->actualizar($id, $nombre, $descripcion, $estado);
+            $model->actualizar($id, $nombre, $activo);
             echo json_encode(['success' => true, 'message' => 'Servicio actualizado correctamente.']);
         } else {
-            $nuevoId = $model->crear($nombre, $descripcion, $estado);
+            $nuevoId = $model->crear($nombre, $activo);
             echo json_encode(['success' => true, 'message' => 'Servicio creado correctamente.', 'id' => $nuevoId]);
         }
     } catch (Exception $e) {
