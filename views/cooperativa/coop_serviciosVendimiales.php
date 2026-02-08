@@ -306,7 +306,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
 
             // Detectar opción de centrifugado por nombre (centrifugadora / centrifuga / centrifugado)
             const servicioOptions = Array.from(servicioSelect.options);
-            const centrifOpt = servicioOptions.find(opt => (opt.textContent || '').toLowerCase().includes('Centrifuga'));
+            const centrifOpt = servicioOptions.find(opt => (opt.textContent || '').toLowerCase().includes('Centrífuga'));
             centrifugadoraOptionId = centrifOpt ? centrifOpt.value : null;
         }
 
