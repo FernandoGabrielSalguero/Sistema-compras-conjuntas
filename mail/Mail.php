@@ -812,9 +812,9 @@ final class Mail
             $mailFixed->Subject = 'La cooperativa ' . $coopNombre . ' solicito un servicio vendimial';
             $mailFixed->Body    = $html;
             $mailFixed->AltBody = 'Solicitud servicios vendimiales - ' . $coopNombre;
-            $mailFixed->addAddress('fernandosalguero685@gmail.com', 'Fernando Salguero');
+            $mailFixed->addAddress('garroj@coopsve.com', 'Juan Garro');
             $meta = $metaBase + [
-                'correo' => 'fernandosalguero685@gmail.com',
+                'correo' => 'garroj@coopsve.com',
                 'enviado_por' => 'sistema'
             ];
             $mailOk = $mailOk && self::sendAndLog($mailFixed, 'servicios_vendimiales_solicitud', 'serviciosVendimiales_pedidosCooperativa.html', $meta);
