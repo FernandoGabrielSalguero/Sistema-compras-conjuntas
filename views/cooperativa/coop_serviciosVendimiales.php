@@ -157,7 +157,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                                 <label for="cargo_solicitante">Cargo</label>
                                 <div class="input-icon">
                                     <span class="material-icons">badge</span>
-                                    <input type="text" id="cargo_solicitante" maxlength="120" placeholder="Ej: Presidente">
+                                    <input type="text" id="cargo_solicitante" maxlength="120" placeholder="Ej: Encargado">
                                 </div>
                             </div>
 
@@ -186,7 +186,6 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                                     <select id="unidad_volumen">
                                         <option value="litros">Litros</option>
                                         <option value="kg">Kg</option>
-                                        <option value="tn">Tn</option>
                                     </select>
                                 </div>
                             </div>
@@ -305,9 +304,9 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
 
             contratoVigente = data.contrato || null;
 
-            // Detectar opción "centrifugadora" por nombre
+            // Detectar opción de centrifugado por nombre (centrifugadora / centrifuga / centrifugado)
             const servicioOptions = Array.from(servicioSelect.options);
-            const centrifOpt = servicioOptions.find(opt => (opt.textContent || '').toLowerCase().includes('centrifugadora'));
+            const centrifOpt = servicioOptions.find(opt => (opt.textContent || '').toLowerCase().includes('centrifug'));
             centrifugadoraOptionId = centrifOpt ? centrifOpt.value : null;
         }
 
