@@ -217,7 +217,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                             </div>
 
                         </div>
-
+<br>
                         <div class="card" style="box-shadow:none; border:1px solid #e2e8f0; background:transparent;">
                             <div style="font-size:0.85rem; font-weight:600; color:#6b7280; margin-bottom:8px;">Términos</div>
                             <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
