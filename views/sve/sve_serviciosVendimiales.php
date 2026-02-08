@@ -32,6 +32,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 
+    <!-- text Editor -->
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
     <style>
         .estado-pill {
             display: inline-block;
@@ -46,6 +49,34 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             text-align: center;
             color: #6b7280;
             padding: 16px 8px;
+        }
+
+        #modalContratos .editor-card {
+            margin-top: 0.25rem;
+            background: #ffffff;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+            overflow: hidden;
+            width: 100%;
+        }
+
+        #modalContratos .editor-card .ql-toolbar.ql-snow {
+            border: none;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+            padding: 0.5rem 0.75rem;
+        }
+
+        #modalContratos .editor-card .ql-container.ql-snow {
+            border: none;
+        }
+
+        #modalContratos .editor-card .ql-editor {
+            min-height: 200px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 0.75rem 0.9rem;
         }
     </style>
 </head>
@@ -141,7 +172,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <p>Administración de servicios vendimiales. Usá el botón para gestionar los servicios ofrecidos.</p>
                     <div class="form-buttons" style="margin-top: 16px;">
                         <button type="button" class="btn btn-aceptar" onclick="openModalServiciosOfrecidos()">Servicios ofrecidos</button>
-                        <button type="button" class="btn" onclick="openModalCentrifugadoras()">Centrifugadoras</button>
+                        <button type="button" class="btn btn-aceptar" onclick="openModalCentrifugadoras()">Centrifugadoras</button>
+                        <button type="button" class="btn btn-aceptar" onclick="openModalContratos()">Contratos</button>
                     </div>
                 </div>
 
@@ -287,7 +319,89 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
+    <!-- Modal contratos -->
+    <div id="modalContratos" class="modal hidden">
+        <div class="modal-content" style="max-width: 980px; width: 95%;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                <h3 style="margin:0;">Contratos</h3>
+                <button class="btn-icon" onclick="closeModalContratos()" aria-label="Cerrar">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+                <h4>Nuevo contrato</h4>
+                <form class="form-modern" id="formContrato">
+                    <input type="hidden" id="contrato_id" name="id">
+                    <div class="form-grid grid-3">
+                        <div class="input-group">
+                            <label for="contrato_nombre">Nombre</label>
+                            <div class="input-icon">
+                                <span class="material-icons">assignment</span>
+                                <input type="text" id="contrato_nombre" name="nombre" required maxlength="160" placeholder="Ej: Contrato vendimia 2026">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="contrato_version">Versión</label>
+                            <div class="input-icon">
+                                <span class="material-icons">tag</span>
+                                <input type="number" id="contrato_version" name="version" min="1" step="1" value="1">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="contrato_vigente">Vigente</label>
+                            <div class="input-icon">
+                                <span class="material-icons">toggle_on</span>
+                                <select id="contrato_vigente" name="vigente" required>
+                                    <option value="1">Sí</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group input-group-descripcion" style="margin-top: 16px;">
+                        <label for="contrato_editor">Contenido del contrato</label>
+                        <div id="contrato_editor_container" class="editor-card editor-card-full">
+                            <div id="contrato_editor" class="quill-editor"></div>
+                            <textarea id="contrato_contenido" name="contenido" style="display: none;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-buttons" style="margin-top: 16px;">
+                        <button type="submit" class="btn btn-aceptar">Guardar</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+                <h4>Listado de contratos</h4>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Versión</th>
+                                <th>Vigente</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaContratosBody">
+                            <tr>
+                                <td colspan="4" class="empty-row">Sin contratos cargados.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
     <script>
+        let quillContrato = null;
+
         function openModalServiciosOfrecidos() {
             const modal = document.getElementById('modalServiciosOfrecidos');
             if (modal) {
@@ -318,6 +432,21 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
+        function openModalContratos() {
+            const modal = document.getElementById('modalContratos');
+            if (modal) {
+                modal.classList.remove('hidden');
+                cargarContratos();
+            }
+        }
+
+        function closeModalContratos() {
+            const modal = document.getElementById('modalContratos');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
         function setForm(servicio) {
             document.getElementById('servicio_id').value = servicio?.id ?? '';
             document.getElementById('nombre').value = servicio?.nombre ?? '';
@@ -330,6 +459,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             document.getElementById('centrifugadora_precio').value = item?.precio ?? '';
             document.getElementById('centrifugadora_moneda').value = item?.moneda ?? '';
             document.getElementById('centrifugadora_activo').value = item?.activo ?? '1';
+        }
+
+        function setContratoForm(item) {
+            document.getElementById('contrato_id').value = item?.id ?? '';
+            document.getElementById('contrato_nombre').value = item?.nombre ?? '';
+            document.getElementById('contrato_version').value = item?.version ?? 1;
+            document.getElementById('contrato_vigente').value = item?.vigente ?? '1';
+            if (quillContrato) {
+                quillContrato.root.innerHTML = item?.contenido ?? '';
+            }
         }
 
         async function cargarServiciosVendimiales() {
@@ -430,7 +569,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 return;
             }
             setForm(data.servicio);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         }
 
         async function cargarCentrifugadoras() {
@@ -532,7 +674,118 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 return;
             }
             setCentrifugadoraForm(data.centrifugadora);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        async function cargarContratos() {
+            const tbody = document.getElementById('tablaContratosBody');
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-row">Cargando...</td></tr>';
+
+            try {
+                const res = await fetch('/controllers/sve_contratosVendimialesController.php');
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudo cargar la información.');
+                }
+
+                const items = Array.isArray(data.contratos) ? data.contratos : [];
+                if (items.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="empty-row">Sin contratos cargados.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                items.forEach((item) => {
+                    const estado = Number(item.vigente) === 1 ? 'Sí' : 'No';
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${item.nombre ?? 'Sin nombre'}</td>
+                        <td>${item.version ?? 1}</td>
+                        <td><span class="estado-pill">${estado}</span></td>
+                        <td>
+                            <button class="btn-icon" data-id="${item.id}" data-action="editar" data-tooltip="Editar">
+                                <span class="material-icons">edit</span>
+                            </button>
+                            <button class="btn-icon" data-id="${item.id}" data-action="eliminar" data-tooltip="Eliminar" style="color: red;">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(fila);
+                });
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-row">${error.message}</td></tr>`;
+            }
+        }
+
+        async function guardarContrato(e) {
+            e.preventDefault();
+            const form = e.target;
+            const hidden = document.getElementById('contrato_contenido');
+            if (quillContrato && hidden) {
+                hidden.value = quillContrato.root.innerHTML;
+            }
+            const formData = new FormData(form);
+            const payload = new URLSearchParams(formData);
+
+            const res = await fetch('/controllers/sve_contratosVendimialesController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: payload.toString()
+            });
+
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || 'Error al guardar.');
+                return;
+            }
+
+            setContratoForm(null);
+            await cargarContratos();
+        }
+
+        async function eliminarContrato(id) {
+            if (!confirm('¿Eliminar contrato?')) return;
+
+            const payload = new URLSearchParams();
+            payload.append('_method', 'delete');
+            payload.append('id', id);
+
+            const res = await fetch('/controllers/sve_contratosVendimialesController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: payload.toString()
+            });
+
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || 'Error al eliminar.');
+                return;
+            }
+
+            await cargarContratos();
+        }
+
+        async function editarContrato(id) {
+            const res = await fetch(`/controllers/sve_contratosVendimialesController.php?id=${id}`);
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || 'No se pudo cargar el contrato.');
+                return;
+            }
+            setContratoForm(data.contrato);
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -582,6 +835,45 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 modalCentrifugadoras.addEventListener('click', (e) => {
                     if (e.target === modalCentrifugadoras) {
                         closeModalCentrifugadoras();
+                    }
+                });
+            }
+
+            const editorContainer = document.getElementById('contrato_editor');
+            if (editorContainer) {
+                quillContrato = new Quill('#contrato_editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'underline'],
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                            [{ 'indent': '-1' }, { 'indent': '+1' }]
+                        ]
+                    }
+                });
+            }
+
+            setContratoForm(null);
+            document.getElementById('formContrato').addEventListener('submit', guardarContrato);
+
+            document.getElementById('tablaContratosBody').addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-action]');
+                if (!btn) return;
+                const id = btn.getAttribute('data-id');
+                const action = btn.getAttribute('data-action');
+                if (action === 'editar') {
+                    editarContrato(id);
+                }
+                if (action === 'eliminar') {
+                    eliminarContrato(id);
+                }
+            });
+
+            const modalContratos = document.getElementById('modalContratos');
+            if (modalContratos) {
+                modalContratos.addEventListener('click', (e) => {
+                    if (e.target === modalContratos) {
+                        closeModalContratos();
                     }
                 });
             }
