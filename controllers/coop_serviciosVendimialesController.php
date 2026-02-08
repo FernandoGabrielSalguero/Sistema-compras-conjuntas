@@ -139,6 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'pedido_id' => $pedidoId,
             'cooperativa_nombre' => $coopNombre,
             'cooperativa_correo' => $coopCorreo,
+            'cooperativa_id_real' => $coopIdReal,
             'solicitante_nombre' => $nombre,
             'solicitante_cargo' => $cargo,
             'servicio_nombre' => $servicioNombre,

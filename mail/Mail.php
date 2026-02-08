@@ -499,6 +499,7 @@ final class Mail
      * $data = [
      *   'cooperativa_nombre' => string,
      *   'cooperativa_correo' => ?string,
+     *   'cooperativa_id_real' => ?string,
      *   'productor_nombre' => string,
      *   'productor_correo' => ?string,
      *   'operativo_nombre' => ?string,
@@ -787,6 +788,10 @@ final class Mail
             $html = self::renderTemplate($tplPath, $content, 'Solicitud de servicios vendimiales');
 
             $mailOk = true;
+            $metaBase = [
+                'contrato_id' => (int)($data['pedido_id'] ?? 0),
+                'cooperativa_id_real' => $data['cooperativa_id_real'] ?? null,
+            ];
 
             // 1) Envio a cooperativa (asunto específico)
             if (!empty($data['cooperativa_correo'])) {
@@ -795,7 +800,11 @@ final class Mail
                 $mailCoop->Body    = $html;
                 $mailCoop->AltBody = 'Solicitud de servicios vendimiales - ' . $coopNombre;
                 $mailCoop->addAddress((string)$data['cooperativa_correo'], $coopNombre);
-                $mailOk = $mailOk && self::sendAndLog($mailCoop, 'servicios_vendimiales_solicitud', 'serviciosVendimiales_pedidosCooperativa.html');
+                $meta = $metaBase + [
+                    'correo' => (string)$data['cooperativa_correo'],
+                    'enviado_por' => 'cooperativa'
+                ];
+                $mailOk = $mailOk && self::sendAndLog($mailCoop, 'servicios_vendimiales_solicitud', 'serviciosVendimiales_pedidosCooperativa.html', $meta);
             }
 
             // 2) Envio a correo fijo
@@ -804,7 +813,11 @@ final class Mail
             $mailFixed->Body    = $html;
             $mailFixed->AltBody = 'Solicitud servicios vendimiales - ' . $coopNombre;
             $mailFixed->addAddress('fernandosalguero685@gmail.com', 'Fernando Salguero');
-            $mailOk = $mailOk && self::sendAndLog($mailFixed, 'servicios_vendimiales_solicitud', 'serviciosVendimiales_pedidosCooperativa.html');
+            $meta = $metaBase + [
+                'correo' => 'fernandosalguero685@gmail.com',
+                'enviado_por' => 'sistema'
+            ];
+            $mailOk = $mailOk && self::sendAndLog($mailFixed, 'servicios_vendimiales_solicitud', 'serviciosVendimiales_pedidosCooperativa.html', $meta);
 
             return ['ok' => (bool)$mailOk];
         } catch (\Throwable $e) {
