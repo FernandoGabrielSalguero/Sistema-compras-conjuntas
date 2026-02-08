@@ -75,6 +75,10 @@ $cierre_info = $_SESSION['cierre_info'] ?? null;
                         <span class="material-icons"
                             style="color: #5b21b6;">agriculture</span><span class="link-text">Cosecha Mecanica</span>
                     </li>
+                    <li onclick="location.href='coop_serviciosVendimiales.php'">
+                        <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
+                        <span class="link-text">Servicios Vendimiales</span>
+                    </li>
                     <li onclick="location.href='../../../logout.php'">
                         <span class="material-icons" style="color: red;">logout</span><span
                             class="link-text">Salir</span>
