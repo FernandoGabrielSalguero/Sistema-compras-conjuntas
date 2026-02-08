@@ -446,6 +446,9 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             }
         });
     </script>
+
+    <!-- Spinner Global -->
+    <script src="../../views/partials/spinner-global.js"></script>
 </body>
 
 </html>
