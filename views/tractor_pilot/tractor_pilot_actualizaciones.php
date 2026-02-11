@@ -16,7 +16,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SVE - Piloto Tractor</title>
+    <title>SVE - Panel Evaluación de Finca</title>
 
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
