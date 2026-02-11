@@ -358,7 +358,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
             <p style="margin:16px 0 24px; color:#475569;">¿Querés eliminar este servicio contratado? Esta acción no se puede deshacer.</p>
             <div class="form-buttons" style="justify-content:flex-end;">
-                <button type="button" class="btn btn-secundario" onclick="closeModalEliminarPedido()">Cancelar</button>
+                <button type="button" class="btn btn-cancelar" onclick="closeModalEliminarPedido()">Cancelar</button>
                 <button type="button" class="btn btn-aceptar" onclick="confirmarEliminarPedido()" style="background:#dc2626;">Eliminar</button>
             </div>
         </div>
