@@ -377,12 +377,21 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <h4>Nuevo contrato</h4>
                 <form class="form-modern" id="formContrato">
                     <input type="hidden" id="contrato_id" name="id">
-                    <div class="form-grid grid-3">
+                    <div class="form-grid grid-4">
                         <div class="input-group">
                             <label for="contrato_nombre">Nombre</label>
                             <div class="input-icon">
                                 <span class="material-icons">assignment</span>
                                 <input type="text" id="contrato_nombre" name="nombre" required maxlength="160" placeholder="Ej: Contrato vendimia 2026">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="contrato_servicio">Servicio</label>
+                            <div class="input-icon">
+                                <span class="material-icons">local_offer</span>
+                                <select id="contrato_servicio" name="servicio_id" required>
+                                    <option value="">Seleccioná un servicio</option>
+                                </select>
                             </div>
                         </div>
                         <div class="input-group">
@@ -425,6 +434,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <thead>
                             <tr>
                                 <th>Nombre</th>
+                                <th>Servicio</th>
                                 <th>Versión</th>
                                 <th>Vigente</th>
                                 <th>Acciones</th>
@@ -432,7 +442,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         </thead>
                         <tbody id="tablaContratosBody">
                             <tr>
-                                <td colspan="4" class="empty-row">Sin contratos cargados.</td>
+                                <td colspan="5" class="empty-row">Sin contratos cargados.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -480,6 +490,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const modal = document.getElementById('modalContratos');
             if (modal) {
                 modal.classList.remove('hidden');
+                cargarServiciosParaContratos();
                 cargarContratos();
             }
         }
@@ -510,6 +521,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             document.getElementById('contrato_nombre').value = item?.nombre ?? '';
             document.getElementById('contrato_version').value = item?.version ?? 1;
             document.getElementById('contrato_vigente').value = item?.vigente ?? '1';
+            const servicioSelect = document.getElementById('contrato_servicio');
+            if (servicioSelect) {
+                servicioSelect.value = item?.servicio_id ?? '';
+            }
             if (quillContrato) {
                 quillContrato.root.innerHTML = item?.contenido ?? '';
             }
@@ -726,7 +741,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         async function cargarContratos() {
             const tbody = document.getElementById('tablaContratosBody');
-            tbody.innerHTML = '<tr><td colspan="4" class="empty-row">Cargando...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Cargando...</td></tr>';
 
             try {
                 const res = await fetch('/controllers/sve_contratosVendimialesController.php');
@@ -738,7 +753,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 const items = Array.isArray(data.contratos) ? data.contratos : [];
                 if (items.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="empty-row">Sin contratos cargados.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Sin contratos cargados.</td></tr>';
                     return;
                 }
 
@@ -748,6 +763,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     const fila = document.createElement('tr');
                     fila.innerHTML = `
                         <td>${item.nombre ?? 'Sin nombre'}</td>
+                        <td>${item.servicio_nombre ?? '-'}</td>
                         <td>${item.version ?? 1}</td>
                         <td><span class="estado-pill">${estado}</span></td>
                         <td>
@@ -826,10 +842,46 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 return;
             }
             setContratoForm(data.contrato);
+            await cargarServiciosParaContratos(data.contrato?.servicio_id ?? '');
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
             });
+        }
+
+        async function cargarServiciosParaContratos(selectedId = '') {
+            const select = document.getElementById('contrato_servicio');
+            if (!select) return;
+            select.innerHTML = '<option value="">Cargando...</option>';
+
+            try {
+                const res = await fetch('/controllers/sve_serviciosVendimialesController.php');
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudo cargar servicios.');
+                }
+
+                const servicios = Array.isArray(data.servicios) ? data.servicios : [];
+                if (servicios.length === 0) {
+                    select.innerHTML = '<option value="">Sin servicios disponibles</option>';
+                    return;
+                }
+
+                select.innerHTML = '<option value="">Seleccioná un servicio</option>';
+                servicios.forEach((servicio) => {
+                    const option = document.createElement('option');
+                    option.value = servicio.id;
+                    option.textContent = servicio.nombre ?? 'Sin nombre';
+                    select.appendChild(option);
+                });
+
+                if (selectedId !== '') {
+                    select.value = String(selectedId);
+                }
+            } catch (error) {
+                select.innerHTML = `<option value="">${error.message}</option>`;
+            }
         }
 
         async function cargarServiciosContratados() {
@@ -940,6 +992,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
 
             setContratoForm(null);
+            cargarServiciosParaContratos();
             document.getElementById('formContrato').addEventListener('submit', guardarContrato);
 
             document.getElementById('tablaContratosBody').addEventListener('click', (e) => {

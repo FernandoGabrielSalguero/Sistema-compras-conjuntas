@@ -11,13 +11,25 @@ class ContratosVendimialesModel
 
     public function obtenerTodos()
     {
-        $stmt = $this->pdo->query("SELECT * FROM serviciosVendimiales_contratos ORDER BY id DESC");
+        $stmt = $this->pdo->query(
+            "SELECT c.*, so.nombre AS servicio_nombre
+             FROM serviciosVendimiales_contratos c
+             LEFT JOIN serviciosVendimiales_serviciosOfrecidos so
+                ON so.id = c.servicio_id
+             ORDER BY c.id DESC"
+        );
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function obtenerPorId($id)
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM serviciosVendimiales_contratos WHERE id = ?");
+        $stmt = $this->pdo->prepare(
+            "SELECT c.*, so.nombre AS servicio_nombre
+             FROM serviciosVendimiales_contratos c
+             LEFT JOIN serviciosVendimiales_serviciosOfrecidos so
+                ON so.id = c.servicio_id
+             WHERE c.id = ?"
+        );
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -27,7 +39,7 @@ class ContratosVendimialesModel
         $this->pdo->prepare("UPDATE serviciosVendimiales_contratos SET vigente = 0")->execute();
     }
 
-    public function crear($nombre, $descripcion, $contenido, $version, $vigente)
+    public function crear($nombre, $descripcion, $contenido, $version, $vigente, $servicioId)
     {
         $this->pdo->beginTransaction();
         try {
@@ -36,10 +48,10 @@ class ContratosVendimialesModel
             }
 
             $stmt = $this->pdo->prepare(
-                "INSERT INTO serviciosVendimiales_contratos (nombre, descripcion, contenido, version, vigente)
-                 VALUES (?, ?, ?, ?, ?)"
+                "INSERT INTO serviciosVendimiales_contratos (nombre, descripcion, contenido, version, vigente, servicio_id)
+                 VALUES (?, ?, ?, ?, ?, ?)"
             );
-            $stmt->execute([$nombre, $descripcion, $contenido, $version, $vigente]);
+            $stmt->execute([$nombre, $descripcion, $contenido, $version, $vigente, $servicioId]);
             $id = $this->pdo->lastInsertId();
             $this->pdo->commit();
             return $id;
@@ -49,7 +61,7 @@ class ContratosVendimialesModel
         }
     }
 
-    public function actualizar($id, $nombre, $descripcion, $contenido, $version, $vigente)
+    public function actualizar($id, $nombre, $descripcion, $contenido, $version, $vigente, $servicioId)
     {
         $this->pdo->beginTransaction();
         try {
@@ -59,10 +71,10 @@ class ContratosVendimialesModel
 
             $stmt = $this->pdo->prepare(
                 "UPDATE serviciosVendimiales_contratos
-                 SET nombre = ?, descripcion = ?, contenido = ?, version = ?, vigente = ?
+                 SET nombre = ?, descripcion = ?, contenido = ?, version = ?, vigente = ?, servicio_id = ?
                  WHERE id = ?"
             );
-            $ok = $stmt->execute([$nombre, $descripcion, $contenido, $version, $vigente, $id]);
+            $ok = $stmt->execute([$nombre, $descripcion, $contenido, $version, $vigente, $servicioId, $id]);
             $this->pdo->commit();
             return $ok;
         } catch (Throwable $e) {

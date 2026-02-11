@@ -37,18 +37,23 @@ if ($method === 'POST') {
     $version = $_POST['version'] ?? 1;
     $vigente = isset($_POST['vigente']) ? (int)$_POST['vigente'] : 0;
     $descripcion = $_POST['descripcion'] ?? null;
+    $servicioId = (int)($_POST['servicio_id'] ?? 0);
 
     if (!$nombre || !$contenido) {
         echo json_encode(['success' => false, 'message' => 'Nombre y contenido son obligatorios.']);
         exit;
     }
+    if ($servicioId <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Debés seleccionar un servicio.']);
+        exit;
+    }
 
     try {
         if ($id) {
-            $model->actualizar($id, $nombre, $descripcion, $contenido, $version, $vigente);
+            $model->actualizar($id, $nombre, $descripcion, $contenido, $version, $vigente, $servicioId);
             echo json_encode(['success' => true, 'message' => 'Contrato actualizado correctamente.']);
         } else {
-            $nuevoId = $model->crear($nombre, $descripcion, $contenido, $version, $vigente);
+            $nuevoId = $model->crear($nombre, $descripcion, $contenido, $version, $vigente, $servicioId);
             echo json_encode(['success' => true, 'message' => 'Contrato creado correctamente.', 'id' => $nuevoId]);
         }
     } catch (Exception $e) {
