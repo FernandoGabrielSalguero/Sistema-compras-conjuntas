@@ -46,6 +46,23 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
             min-height: var(--row-height);
         }
 
+        .table-scroll .data-table.fincas-operativos-table {
+            table-layout: auto;
+            width: max-content;
+            min-width: 100%;
+        }
+
+        .table-scroll .data-table.fincas-operativos-table th,
+        .table-scroll .data-table.fincas-operativos-table td {
+            white-space: normal;
+            vertical-align: top;
+        }
+
+        .table-scroll .data-table.fincas-operativos-table td.cell-wrap-3 {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
         .filters-card .form-grid {
             margin-top: 0.5rem;
         }
@@ -401,7 +418,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                         <strong>Pendientes:</strong> <span id="fincas-pending-count">0</span>
                     </div>
                     <div class="tabla-wrapper table-scroll">
-                        <table class="data-table" aria-label="Fincas participantes de operativos">
+                        <table class="data-table fincas-operativos-table" aria-label="Fincas participantes de operativos">
                             <thead>
                                 <tr>
                                     <th>Acciones</th>
@@ -1121,6 +1138,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     tr.appendChild(tdAcciones);
 
                     const tdVariedad = document.createElement('td');
+                    tdVariedad.className = 'cell-wrap-3';
                     aplicarSaltoTerceraPalabra(tdVariedad, fila.variedad || '-');
                     tr.appendChild(tdVariedad);
 
@@ -1135,6 +1153,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
                     celdas.forEach((valor) => {
                         const td = document.createElement('td');
+                        td.className = 'cell-wrap-3';
                         aplicarSaltoTerceraPalabra(td, valor);
                         tr.appendChild(td);
                     });
@@ -1153,6 +1172,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
                     celdasFinales.forEach((valor) => {
                         const td = document.createElement('td');
+                        td.className = 'cell-wrap-3';
                         aplicarSaltoTerceraPalabra(td, valor);
                         tr.appendChild(td);
                     });
