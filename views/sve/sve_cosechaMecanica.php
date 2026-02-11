@@ -722,7 +722,21 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             let contratoSeleccionadoId = null;
 
+            const lastAlert = {
+                type: '',
+                message: '',
+                time: 0
+            };
+
             function showUserAlert(type, message) {
+                const now = Date.now();
+                if (lastAlert.type === type && lastAlert.message === message && (now - lastAlert.time) < 1200) {
+                    return;
+                }
+                lastAlert.type = type;
+                lastAlert.message = message;
+                lastAlert.time = now;
+
                 if (typeof showAlert === 'function') {
                     showAlert(type, message);
                     return;
@@ -1105,13 +1119,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 }
                 document.getElementById('ancho-callejon-norte').value = data.ancho_callejon_norte ?? '';
                 document.getElementById('ancho-callejon-sur').value = data.ancho_callejon_sur ?? '';
-                document.getElementById('interfilar').value = data.interfilar ?? '';
+                setSelectValue(document.getElementById('interfilar'), data.interfilar);
                 document.getElementById('cantidad-postes').value = data.cantidad_postes ?? '';
                 document.getElementById('postes-mal-estado').value = data.postes_mal_estado ?? '';
-                document.getElementById('estructura-separadores').value = data.estructura_separadores ?? '';
-                document.getElementById('agua-lavado').value = data.agua_lavado ?? '';
-                document.getElementById('prep-acequias').value = data.preparacion_acequias ?? '';
-                document.getElementById('prep-obstaculos').value = data.preparacion_obstaculos ?? '';
+                setSelectValue(document.getElementById('estructura-separadores'), data.estructura_separadores);
+                setSelectValue(document.getElementById('agua-lavado'), data.agua_lavado);
+                setSelectValue(document.getElementById('prep-acequias'), data.preparacion_acequias);
+                setSelectValue(document.getElementById('prep-obstaculos'), data.preparacion_obstaculos);
                 document.getElementById('observaciones').value = data.observaciones ?? '';
                 actualizarPromedioCallejon();
                 actualizarPorcentajePostesMalEstado();
@@ -1192,6 +1206,32 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 const porcentaje = (mal / total) * 100;
                 porcentajeEl.textContent = `${porcentaje.toFixed(1)}%`;
+            }
+
+            function setSelectValue(select, value) {
+                if (!select) return;
+                const raw = value === null || value === undefined ? '' : String(value).trim();
+                if (!raw) {
+                    select.value = '';
+                    return;
+                }
+                const options = Array.from(select.options);
+                const exact = options.find((opt) => opt.value === raw);
+                if (exact) {
+                    select.value = exact.value;
+                    return;
+                }
+                const normalized = raw.toLowerCase();
+                const similar = options.find((opt) => String(opt.value).trim().toLowerCase() === normalized);
+                if (similar) {
+                    select.value = similar.value;
+                    return;
+                }
+                const extra = document.createElement('option');
+                extra.value = raw;
+                extra.textContent = raw;
+                select.appendChild(extra);
+                select.value = raw;
             }
 
             function aplicarSaltoTerceraPalabra(td, valor) {
@@ -1293,7 +1333,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const params = construirQueryFiltros();
                 try {
                     const res = await fetch(`${API_FINCAS_URL}?action=fincas&${params.toString()}`, {
-                        credentials: 'same-origin'
+                        credentials: 'same-origin',
+                        cache: 'no-store'
                     });
                     const payload = await res.json();
                     if (!res.ok || !payload.ok) {
@@ -1411,7 +1452,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     participacion_id: String(participacionId)
                 });
                 const res = await fetch(`${API_FINCAS_URL}?${params.toString()}`, {
-                    credentials: 'same-origin'
+                    credentials: 'same-origin',
+                    cache: 'no-store'
                 });
                 const payload = await res.json();
                 if (!res.ok || !payload.ok) {
@@ -1445,8 +1487,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     ...payload,
                 });
 
-                showUserAlert('info', 'Guardando relevamiento...');
-
                 const res = await fetch(API_FINCAS_URL, {
                     method: 'POST',
                     credentials: 'same-origin',
@@ -1454,6 +1494,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
                     },
                     body,
+                    cache: 'no-store'
                 });
                 const responsePayload = await res.json();
                 if (!res.ok || !responsePayload.ok) {
@@ -1461,6 +1502,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 }
 
                 return responsePayload.data || null;
+            }
+
+            function actualizarBotonRelevamiento(participacionId, tieneRelevamiento) {
+                if (!participacionId) return;
+                const btn = document.querySelector(
+                    `button[data-action="abrir-modal"][data-participacion-id="${participacionId}"]`
+                );
+                if (!btn) return;
+                btn.textContent = tieneRelevamiento ? 'Modificar' : 'Calificar';
+                if (tieneRelevamiento) {
+                    btn.classList.add('btn-modificar');
+                } else {
+                    btn.classList.remove('btn-modificar');
+                }
             }
 
             function initFincasOperativos() {
@@ -1488,12 +1543,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                     modal.dataset.participacionId = String(participacionId);
                     abrirModalFinca();
-                    showUserAlert('info', 'Cargando relevamiento...');
                     try {
                         const relevamiento = await cargarRelevamiento(participacionId);
                         setModalData(relevamiento);
-                        const msg = relevamiento ? 'Relevamiento cargado.' : 'Sin relevamiento previo.';
-                        showUserAlert('success', msg);
                     } catch (error) {
                         console.error(error);
                         setModalData(null);
@@ -1520,7 +1572,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         return;
                     }
                     try {
-                        await guardarRelevamiento(participacionId);
+                        const resultado = await guardarRelevamiento(participacionId);
+                        actualizarBotonRelevamiento(participacionId, true);
                         showUserAlert('success', 'Relevamiento guardado.');
                         cerrarModalFinca();
                         cargarFincasOperativos();
