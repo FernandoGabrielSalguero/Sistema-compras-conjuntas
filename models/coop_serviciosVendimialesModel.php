@@ -43,8 +43,8 @@ class CoopServiciosVendimialesModel
         $stmt = $this->pdo->prepare(
             "SELECT *
              FROM serviciosVendimiales_contratos
-             WHERE vigente = 1 AND servicio_id = ?
-             ORDER BY id DESC
+             WHERE servicio_id = ?
+             ORDER BY vigente DESC, id DESC
              LIMIT 1"
         );
         $stmt->execute([$servicioId]);

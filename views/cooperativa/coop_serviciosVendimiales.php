@@ -293,8 +293,8 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                 servicioSelect.appendChild(opt);
             });
 
-            contratoVigente = data.contrato || null;
-            actualizarContratoLabel(contratoVigente);
+            contratoVigente = null;
+            actualizarContratoLabel(null);
         }
 
         async function cargarContratoPorServicio(servicioId) {
@@ -326,7 +326,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                 return;
             }
             if (!contrato) {
-                label.textContent = 'Contrato: Sin contrato seleccionado';
+                label.textContent = 'Contrato: Sin contrato para este servicio';
                 return;
             }
             const nombre = contrato.nombre ?? 'Contrato vigente';
@@ -478,7 +478,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             const modal = document.getElementById('modalContrato');
             const body = document.getElementById('contratoModalBody');
             if (body) {
-                body.innerHTML = contratoVigente ? (contratoVigente.contenido || 'Contrato sin contenido.') : 'No hay contrato vigente.';
+                body.innerHTML = contratoVigente ? (contratoVigente.contenido || 'Contrato sin contenido.') : 'Seleccioná un servicio para ver su contrato.';
             }
             if (modal) modal.classList.remove('hidden');
         }
