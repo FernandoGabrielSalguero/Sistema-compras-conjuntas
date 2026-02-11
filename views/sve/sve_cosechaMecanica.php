@@ -1527,6 +1527,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const anchoCallejonSur = document.getElementById('ancho-callejon-sur');
                 const cantidadPostes = document.getElementById('cantidad-postes');
                 const postesMalEstado = document.getElementById('postes-mal-estado');
+                let ultimoBotonSeleccionado = null;
 
                 cargarFincasOperativos();
 
@@ -1542,6 +1543,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     }
 
                     modal.dataset.participacionId = String(participacionId);
+                    ultimoBotonSeleccionado = btn;
                     abrirModalFinca();
                     try {
                         const relevamiento = await cargarRelevamiento(participacionId);
@@ -1574,6 +1576,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     try {
                         const resultado = await guardarRelevamiento(participacionId);
                         actualizarBotonRelevamiento(participacionId, true);
+                        if (ultimoBotonSeleccionado && Number(ultimoBotonSeleccionado.dataset.participacionId || 0) === participacionId) {
+                            ultimoBotonSeleccionado.textContent = 'Modificar';
+                            ultimoBotonSeleccionado.classList.add('btn-modificar');
+                        }
                         showUserAlert('success', 'Relevamiento guardado.');
                         cerrarModalFinca();
                         cargarFincasOperativos();
