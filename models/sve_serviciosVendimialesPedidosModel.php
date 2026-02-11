@@ -40,11 +40,47 @@ class ServiciosVendimialesPedidosModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function obtenerCooperativas()
+    {
+        $stmt = $this->pdo->query(
+            "SELECT id_real, razon_social, usuario, cuit
+             FROM usuarios
+             WHERE rol = 'cooperativa'
+             ORDER BY razon_social ASC, usuario ASC"
+        );
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function obtenerPorId($id)
     {
         $stmt = $this->pdo->prepare("SELECT * FROM serviciosVendimiales_pedidos WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function crear($data)
+    {
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO serviciosVendimiales_pedidos
+             (cooperativa, nombre, cargo, servicioAcontratar, volumenAproximado, unidad_volumen,
+              fecha_entrada_equipo, equipo_centrifugadora, estado, observaciones)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+
+        $stmt->execute([
+            $data['cooperativa'],
+            $data['nombre'],
+            $data['cargo'],
+            $data['servicioAcontratar'],
+            $data['volumenAproximado'],
+            $data['unidad_volumen'],
+            $data['fecha_entrada_equipo'],
+            $data['equipo_centrifugadora'],
+            $data['estado'],
+            $data['observaciones']
+        ]);
+
+        return $this->pdo->lastInsertId();
     }
 
     public function actualizar($id, $data)

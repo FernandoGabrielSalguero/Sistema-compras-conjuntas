@@ -67,6 +67,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             overflow-x: hidden;
         }
 
+        .modal-content {
+    background: #fff;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    max-width: 800px;
+    width: 90%;
+    text-align: center;
+    animation: fadeInModal 0.3s ease;
+}
+
         #modalServiciosOfrecidos .table-container,
         #modalCentrifugadoras .table-container,
         #modalFiltracion .table-container,
@@ -205,6 +216,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <div class="card">
                     <h2>Servicios contratados</h2>
+                    <div class="form-buttons" style="margin-top: 16px;">
+                        <button type="button" class="btn btn-aceptar" onclick="openModalPedidoCreate()">Nuevo pedido</button>
+                    </div>
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
@@ -250,7 +264,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <label for="pedido_cooperativa">Cooperativa</label>
                             <div class="input-icon">
                                 <span class="material-icons">apartment</span>
-                                <input type="text" id="pedido_cooperativa" name="cooperativa" required maxlength="160">
+                                <select id="pedido_cooperativa" name="cooperativa" required></select>
                             </div>
                         </div>
                         <div class="input-group">
@@ -754,6 +768,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             if (modal) {
                 modal.classList.add('hidden');
             }
+        }
+
+        async function openModalPedidoCreate() {
+            setPedidoForm(null);
+            await cargarCooperativasSelectPedido();
+            await cargarServiciosSelectPedido();
+            await cargarCentrifugadorasSelectPedido();
+            openModalPedidoEdit();
         }
 
         function openModalFiltracion() {
@@ -1539,6 +1561,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 alert(data.message || 'No se pudo cargar el pedido.');
                 return;
             }
+            await cargarCooperativasSelectPedido(data.pedido?.cooperativa ?? '');
             await cargarServiciosSelectPedido(data.pedido?.servicioAcontratar ?? '');
             await cargarCentrifugadorasSelectPedido(data.pedido?.equipo_centrifugadora ?? '');
             setPedidoForm(data.pedido);
@@ -1591,6 +1614,37 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             closeModalPedidoEdit();
             await cargarServiciosContratados();
+        }
+
+        async function cargarCooperativasSelectPedido(selectedValue = '') {
+            const select = document.getElementById('pedido_cooperativa');
+            if (!select) return;
+            select.innerHTML = '<option value="">Cargando...</option>';
+
+            try {
+                const res = await fetch('/controllers/sve_serviciosVendimialesPedidosController.php?action=cooperativas');
+                const data = await res.json();
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudo cargar cooperativas.');
+                }
+                const cooperativas = Array.isArray(data.cooperativas) ? data.cooperativas : [];
+                if (cooperativas.length === 0) {
+                    select.innerHTML = '<option value="">Sin cooperativas</option>';
+                    return;
+                }
+                select.innerHTML = '<option value="">Seleccioná cooperativa</option>';
+                cooperativas.forEach((coop) => {
+                    const option = document.createElement('option');
+                    option.value = coop.valor ?? '';
+                    option.textContent = coop.texto ?? coop.valor ?? 'Sin nombre';
+                    select.appendChild(option);
+                });
+                if (selectedValue !== '') {
+                    select.value = String(selectedValue);
+                }
+            } catch (error) {
+                select.innerHTML = `<option value="">${error.message}</option>`;
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {

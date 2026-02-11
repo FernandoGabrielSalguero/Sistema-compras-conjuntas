@@ -11,6 +11,25 @@ header('Content-Type: application/json; charset=utf-8');
 $model = new ServiciosVendimialesPedidosModel($pdo);
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Listado de cooperativas
+if ($method === 'GET' && ($_GET['action'] ?? '') === 'cooperativas') {
+    try {
+        $rows = $model->obtenerCooperativas();
+        $cooperativas = array_map(function ($row) {
+            $nombre = $row['razon_social'] ?: ($row['usuario'] ?: $row['id_real']);
+            $texto = $row['cuit'] ? ($nombre . ' - ' . $row['cuit']) : $nombre;
+            return [
+                'valor' => $nombre,
+                'texto' => $texto
+            ];
+        }, $rows);
+        echo json_encode(['success' => true, 'cooperativas' => $cooperativas]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error al cargar cooperativas: ' . $e->getMessage()]);
+    }
+    exit;
+}
+
 // Simulación de DELETE vía POST
 if ($method === 'POST' && ($_POST['_method'] ?? '') === 'delete') {
     $id = $_POST['id'] ?? null;
@@ -43,13 +62,13 @@ if ($method === 'POST') {
     $estado = $_POST['estado'] ?? 'BORRADOR';
     $observaciones = $_POST['observaciones'] ?? null;
 
-    if (!$id || !$cooperativa || !$nombre || $servicioAcontratar <= 0) {
+    if (!$cooperativa || !$nombre || $servicioAcontratar <= 0) {
         echo json_encode(['success' => false, 'message' => 'Cooperativa, nombre y servicio son obligatorios.']);
         exit;
     }
 
     try {
-        $model->actualizar($id, [
+        $payload = [
             'cooperativa' => $cooperativa,
             'nombre' => $nombre,
             'cargo' => $cargo,
@@ -60,8 +79,15 @@ if ($method === 'POST') {
             'equipo_centrifugadora' => $equipo_centrifugadora,
             'estado' => $estado,
             'observaciones' => $observaciones
-        ]);
-        echo json_encode(['success' => true, 'message' => 'Pedido actualizado correctamente.']);
+        ];
+
+        if ($id) {
+            $model->actualizar($id, $payload);
+            echo json_encode(['success' => true, 'message' => 'Pedido actualizado correctamente.']);
+        } else {
+            $nuevoId = $model->crear($payload);
+            echo json_encode(['success' => true, 'message' => 'Pedido creado correctamente.', 'id' => $nuevoId]);
+        }
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'message' => 'Error al procesar: ' . $e->getMessage()]);
     }
