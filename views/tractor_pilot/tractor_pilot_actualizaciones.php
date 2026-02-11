@@ -278,7 +278,7 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
 
             <section class="content">
                 <div class="card" id="estado-card">
-                    <h2>Panel relevador de fincas</h2>
+                    <h2>Panel Evaluación de Finca</h2>
                     <p>Hola, <?php echo htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8'); ?>.</p>
                     <p>Esta página permite asociar fincas a los productores que no la tengan además de generar productores y cooperativas por fuera del circuito de SVE</p>
                 </div>
