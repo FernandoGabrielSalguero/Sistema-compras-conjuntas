@@ -57,8 +57,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         #modalServiciosOfrecidos .modal-content,
         #modalCentrifugadoras .modal-content,
-        #modalFiltracion .modal-content,
-        #modalColumna .modal-content,
+        #modalProductos .modal-content,
         #modalContratos .modal-content {
             width: 80vw;
             height: 80vh;
@@ -68,20 +67,19 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         .modal-content {
-    background: #fff;
-    padding: 2rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    max-width: 800px;
-    width: 90%;
-    text-align: center;
-    animation: fadeInModal 0.3s ease;
-}
+            background: #fff;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+            animation: fadeInModal 0.3s ease;
+        }
 
         #modalServiciosOfrecidos .table-container,
         #modalCentrifugadoras .table-container,
-        #modalFiltracion .table-container,
-        #modalColumna .table-container,
+        #modalProductos .table-container,
         #modalContratos .table-container {
             overflow-x: hidden;
         }
@@ -208,8 +206,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <div class="form-buttons" style="margin-top: 16px;">
                         <button type="button" class="btn btn-aceptar" onclick="openModalServiciosOfrecidos()">Servicios ofrecidos</button>
                         <button type="button" class="btn btn-aceptar" onclick="openModalCentrifugadoras()">Centrifugadoras</button>
-                        <button type="button" class="btn btn-aceptar" onclick="openModalFiltracion()">Filtración</button>
-                        <button type="button" class="btn btn-aceptar" onclick="openModalColumna()">Columna</button>
+                        <button type="button" class="btn btn-aceptar" onclick="openModalProductos()">Productos por servicio</button>
                         <button type="button" class="btn btn-aceptar" onclick="openModalContratos()">Contratos</button>
                     </div>
                 </div>
@@ -232,16 +229,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <th>Estado</th>
                                     <th>Contrato</th>
                                     <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaPedidosBody">
-                            <tr>
-                                <td colspan="9" class="empty-row">Sin pedidos cargados.</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaPedidosBody">
+                                <tr>
+                                    <td colspan="9" class="empty-row">Sin pedidos cargados.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
 
             </section>
         </div>
@@ -487,47 +484,54 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-    <!-- Modal filtración -->
-    <div id="modalFiltracion" class="modal hidden">
+    <!-- Modal productos por servicio -->
+    <div id="modalProductos" class="modal hidden">
         <div class="modal-content">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
-                <h3 style="margin:0;">Filtración</h3>
-                <button class="btn-icon" onclick="closeModalFiltracion()" aria-label="Cerrar">
+                <h3 style="margin:0;">Productos por servicio</h3>
+                <button class="btn-icon" onclick="closeModalProductos()" aria-label="Cerrar">
                     <span class="material-icons">close</span>
                 </button>
             </div>
 
             <div class="card" style="margin-top: 16px;">
-                <h4>Nuevo producto de filtración</h4>
-                <form class="form-modern" id="formFiltracion">
-                    <input type="hidden" id="filtracion_id" name="id">
-                    <div class="form-grid grid-4">
+                <h4>Nuevo producto</h4>
+                <form class="form-modern" id="formProducto">
+                    <input type="hidden" id="producto_id" name="id">
+                    <div class="form-grid grid-5">
                         <div class="input-group">
-                            <label for="filtracion_nombre">Nombre</label>
+                            <label for="producto_servicio">Servicio</label>
+                            <div class="input-icon">
+                                <span class="material-icons">local_offer</span>
+                                <select id="producto_servicio" name="servicio_id" required></select>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="producto_nombre">Nombre</label>
                             <div class="input-icon">
                                 <span class="material-icons">precision_manufacturing</span>
-                                <input type="text" id="filtracion_nombre" name="nombre" required maxlength="120" placeholder="Ej: Filtro X-200">
+                                <input type="text" id="producto_nombre" name="nombre" required maxlength="120" placeholder="Ej: Producto X-200">
                             </div>
                         </div>
                         <div class="input-group">
-                            <label for="filtracion_precio">Precio</label>
+                            <label for="producto_precio">Precio</label>
                             <div class="input-icon">
                                 <span class="material-icons">payments</span>
-                                <input type="number" id="filtracion_precio" name="precio" required min="0" step="0.01" placeholder="0.00">
+                                <input type="number" id="producto_precio" name="precio" required min="0" step="0.01" placeholder="0.00">
                             </div>
                         </div>
                         <div class="input-group">
-                            <label for="filtracion_moneda">Moneda</label>
+                            <label for="producto_moneda">Moneda</label>
                             <div class="input-icon">
                                 <span class="material-icons">paid</span>
-                                <input type="text" id="filtracion_moneda" name="moneda" required maxlength="3" placeholder="ARS">
+                                <input type="text" id="producto_moneda" name="moneda" required maxlength="3" placeholder="ARS">
                             </div>
                         </div>
                         <div class="input-group">
-                            <label for="filtracion_activo">Activo</label>
+                            <label for="producto_activo">Activo</label>
                             <div class="input-icon">
                                 <span class="material-icons">toggle_on</span>
-                                <select id="filtracion_activo" name="activo" required>
+                                <select id="producto_activo" name="activo" required>
                                     <option value="1">Sí</option>
                                     <option value="0">No</option>
                                 </select>
@@ -541,11 +545,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
 
             <div class="card" style="margin-top: 16px;">
-                <h4>Listado de productos de filtración</h4>
+                <h4>Listado de productos</h4>
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
                             <tr>
+                                <th>Servicio</th>
                                 <th>Nombre</th>
                                 <th>Precio</th>
                                 <th>Moneda</th>
@@ -553,86 +558,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tablaFiltracionBody">
+                        <tbody id="tablaProductosBody">
                             <tr>
-                                <td colspan="5" class="empty-row">Sin productos cargados.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal columna -->
-    <div id="modalColumna" class="modal hidden">
-        <div class="modal-content">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
-                <h3 style="margin:0;">Columna</h3>
-                <button class="btn-icon" onclick="closeModalColumna()" aria-label="Cerrar">
-                    <span class="material-icons">close</span>
-                </button>
-            </div>
-
-            <div class="card" style="margin-top: 16px;">
-                <h4>Nuevo producto de columna</h4>
-                <form class="form-modern" id="formColumna">
-                    <input type="hidden" id="columna_id" name="id">
-                    <div class="form-grid grid-4">
-                        <div class="input-group">
-                            <label for="columna_nombre">Nombre</label>
-                            <div class="input-icon">
-                                <span class="material-icons">precision_manufacturing</span>
-                                <input type="text" id="columna_nombre" name="nombre" required maxlength="120" placeholder="Ej: Columna Z-10">
-                            </div>
-                        </div>
-                        <div class="input-group">
-                            <label for="columna_precio">Precio</label>
-                            <div class="input-icon">
-                                <span class="material-icons">payments</span>
-                                <input type="number" id="columna_precio" name="precio" required min="0" step="0.01" placeholder="0.00">
-                            </div>
-                        </div>
-                        <div class="input-group">
-                            <label for="columna_moneda">Moneda</label>
-                            <div class="input-icon">
-                                <span class="material-icons">paid</span>
-                                <input type="text" id="columna_moneda" name="moneda" required maxlength="3" placeholder="ARS">
-                            </div>
-                        </div>
-                        <div class="input-group">
-                            <label for="columna_activo">Activo</label>
-                            <div class="input-icon">
-                                <span class="material-icons">toggle_on</span>
-                                <select id="columna_activo" name="activo" required>
-                                    <option value="1">Sí</option>
-                                    <option value="0">No</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-buttons" style="margin-top: 16px;">
-                        <button type="submit" class="btn btn-aceptar">Guardar</button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="card" style="margin-top: 16px;">
-                <h4>Listado de productos de columna</h4>
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Precio</th>
-                                <th>Moneda</th>
-                                <th>Activo</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaColumnaBody">
-                            <tr>
-                                <td colspan="5" class="empty-row">Sin productos cargados.</td>
+                                <td colspan="6" class="empty-row">Sin productos cargados.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -786,31 +714,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             openModalPedidoEdit();
         }
 
-        function openModalFiltracion() {
-            const modal = document.getElementById('modalFiltracion');
+        function openModalProductos() {
+            const modal = document.getElementById('modalProductos');
             if (modal) {
                 modal.classList.remove('hidden');
-                cargarFiltracion();
+                setProductoForm(null);
+                cargarServiciosSelectProducto();
+                cargarProductos();
             }
         }
 
-        function closeModalFiltracion() {
-            const modal = document.getElementById('modalFiltracion');
-            if (modal) {
-                modal.classList.add('hidden');
-            }
-        }
-
-        function openModalColumna() {
-            const modal = document.getElementById('modalColumna');
-            if (modal) {
-                modal.classList.remove('hidden');
-                cargarColumna();
-            }
-        }
-
-        function closeModalColumna() {
-            const modal = document.getElementById('modalColumna');
+        function closeModalProductos() {
+            const modal = document.getElementById('modalProductos');
             if (modal) {
                 modal.classList.add('hidden');
             }
@@ -861,20 +776,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             document.getElementById('pedido_observaciones').value = item?.observaciones ?? '';
         }
 
-        function setFiltracionForm(item) {
-            document.getElementById('filtracion_id').value = item?.id ?? '';
-            document.getElementById('filtracion_nombre').value = item?.nombre ?? '';
-            document.getElementById('filtracion_precio').value = item?.precio ?? '';
-            document.getElementById('filtracion_moneda').value = item?.moneda ?? '';
-            document.getElementById('filtracion_activo').value = item?.activo ?? '1';
-        }
-
-        function setColumnaForm(item) {
-            document.getElementById('columna_id').value = item?.id ?? '';
-            document.getElementById('columna_nombre').value = item?.nombre ?? '';
-            document.getElementById('columna_precio').value = item?.precio ?? '';
-            document.getElementById('columna_moneda').value = item?.moneda ?? '';
-            document.getElementById('columna_activo').value = item?.activo ?? '1';
+        function setProductoForm(item) {
+            document.getElementById('producto_id').value = item?.id ?? '';
+            document.getElementById('producto_servicio').value = item?.servicio_id ?? '';
+            document.getElementById('producto_nombre').value = item?.nombre ?? '';
+            document.getElementById('producto_precio').value = item?.precio ?? '';
+            document.getElementById('producto_moneda').value = item?.moneda ?? '';
+            document.getElementById('producto_activo').value = item?.activo ?? '1';
         }
 
         function setContratoForm(item) {
@@ -1100,21 +1008,21 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             });
         }
 
-        async function cargarFiltracion() {
-            const tbody = document.getElementById('tablaFiltracionBody');
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Cargando...</td></tr>';
+        async function cargarProductos() {
+            const tbody = document.getElementById('tablaProductosBody');
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Cargando...</td></tr>';
 
             try {
-                const res = await fetch('/controllers/sve_filtracionController.php');
+                const res = await fetch('/controllers/sve_productosVendimialesController.php');
                 const data = await res.json();
 
                 if (!data.success) {
                     throw new Error(data.message || 'No se pudo cargar la información.');
                 }
 
-                const items = Array.isArray(data.filtracion) ? data.filtracion : [];
+                const items = Array.isArray(data.productos) ? data.productos : [];
                 if (items.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Sin productos cargados.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Sin productos cargados.</td></tr>';
                     return;
                 }
 
@@ -1123,6 +1031,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     const estado = Number(item.activo) === 1 ? 'Sí' : 'No';
                     const fila = document.createElement('tr');
                     fila.innerHTML = `
+                        <td>${item.servicio_nombre ?? '-'}</td>
                         <td>${item.nombre ?? 'Sin nombre'}</td>
                         <td>${item.precio ?? '0.00'}</td>
                         <td>${item.moneda ?? ''}</td>
@@ -1139,17 +1048,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     tbody.appendChild(fila);
                 });
             } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-row">${error.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="empty-row">${error.message}</td></tr>`;
             }
         }
 
-        async function guardarFiltracion(e) {
+        async function guardarProducto(e) {
             e.preventDefault();
             const form = e.target;
             const formData = new FormData(form);
             const payload = new URLSearchParams(formData);
 
-            const res = await fetch('/controllers/sve_filtracionController.php', {
+            const res = await fetch('/controllers/sve_productosVendimialesController.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
@@ -1163,18 +1072,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 return;
             }
 
-            setFiltracionForm(null);
-            await cargarFiltracion();
+            setProductoForm(null);
+            await cargarProductos();
         }
 
-        async function eliminarFiltracion(id) {
+        async function eliminarProducto(id) {
             if (!confirm('¿Eliminar producto?')) return;
 
             const payload = new URLSearchParams();
             payload.append('_method', 'delete');
             payload.append('id', id);
 
-            const res = await fetch('/controllers/sve_filtracionController.php', {
+            const res = await fetch('/controllers/sve_productosVendimialesController.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
@@ -1188,126 +1097,53 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 return;
             }
 
-            await cargarFiltracion();
+            await cargarProductos();
         }
 
-        async function editarFiltracion(id) {
-            const res = await fetch(`/controllers/sve_filtracionController.php?id=${id}`);
+        async function editarProducto(id) {
+            const res = await fetch(`/controllers/sve_productosVendimialesController.php?id=${id}`);
             const data = await res.json();
             if (!data.success) {
                 alert(data.message || 'No se pudo cargar el producto.');
                 return;
             }
-            setFiltracionForm(data.producto);
+            await cargarServiciosSelectProducto(data.producto?.servicio_id ?? '');
+            setProductoForm(data.producto);
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
             });
         }
 
-        async function cargarColumna() {
-            const tbody = document.getElementById('tablaColumnaBody');
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Cargando...</td></tr>';
+        async function cargarServiciosSelectProducto(selectedId = '') {
+            const select = document.getElementById('producto_servicio');
+            if (!select) return;
+            select.innerHTML = '<option value="">Cargando...</option>';
 
             try {
-                const res = await fetch('/controllers/sve_columnaController.php');
+                const res = await fetch('/controllers/sve_serviciosVendimialesController.php');
                 const data = await res.json();
-
                 if (!data.success) {
-                    throw new Error(data.message || 'No se pudo cargar la información.');
+                    throw new Error(data.message || 'No se pudo cargar servicios.');
                 }
-
-                const items = Array.isArray(data.columna) ? data.columna : [];
-                if (items.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Sin productos cargados.</td></tr>';
+                const servicios = Array.isArray(data.servicios) ? data.servicios : [];
+                if (servicios.length === 0) {
+                    select.innerHTML = '<option value="">Sin servicios disponibles</option>';
                     return;
                 }
-
-                tbody.innerHTML = '';
-                items.forEach((item) => {
-                    const estado = Number(item.activo) === 1 ? 'Sí' : 'No';
-                    const fila = document.createElement('tr');
-                    fila.innerHTML = `
-                        <td>${item.nombre ?? 'Sin nombre'}</td>
-                        <td>${item.precio ?? '0.00'}</td>
-                        <td>${item.moneda ?? ''}</td>
-                        <td><span class="estado-pill">${estado}</span></td>
-                        <td>
-                            <button class="btn-icon" data-id="${item.id}" data-action="editar" data-tooltip="Editar">
-                                <span class="material-icons">edit</span>
-                            </button>
-                            <button class="btn-icon" data-id="${item.id}" data-action="eliminar" data-tooltip="Eliminar" style="color: red;">
-                                <span class="material-icons">delete</span>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(fila);
+                select.innerHTML = '<option value="">Seleccioná un servicio</option>';
+                servicios.forEach((servicio) => {
+                    const option = document.createElement('option');
+                    option.value = servicio.id;
+                    option.textContent = servicio.nombre ?? 'Sin nombre';
+                    select.appendChild(option);
                 });
+                if (selectedId !== '') {
+                    select.value = String(selectedId);
+                }
             } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-row">${error.message}</td></tr>`;
+                select.innerHTML = `<option value="">${error.message}</option>`;
             }
-        }
-
-        async function guardarColumna(e) {
-            e.preventDefault();
-            const form = e.target;
-            const formData = new FormData(form);
-            const payload = new URLSearchParams(formData);
-
-            const res = await fetch('/controllers/sve_columnaController.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                },
-                body: payload.toString()
-            });
-
-            const data = await res.json();
-            if (!data.success) {
-                alert(data.message || 'Error al guardar.');
-                return;
-            }
-
-            setColumnaForm(null);
-            await cargarColumna();
-        }
-
-        async function eliminarColumna(id) {
-            if (!confirm('¿Eliminar producto?')) return;
-
-            const payload = new URLSearchParams();
-            payload.append('_method', 'delete');
-            payload.append('id', id);
-
-            const res = await fetch('/controllers/sve_columnaController.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                },
-                body: payload.toString()
-            });
-
-            const data = await res.json();
-            if (!data.success) {
-                alert(data.message || 'Error al eliminar.');
-                return;
-            }
-
-            await cargarColumna();
-        }
-
-        async function editarColumna(id) {
-            const res = await fetch(`/controllers/sve_columnaController.php?id=${id}`);
-            const data = await res.json();
-            if (!data.success) {
-                alert(data.message || 'No se pudo cargar el producto.');
-                return;
-            }
-            setColumnaForm(data.producto);
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
         }
 
         async function cargarContratos() {
@@ -1746,52 +1582,28 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
             }
 
-            setFiltracionForm(null);
-            document.getElementById('formFiltracion').addEventListener('submit', guardarFiltracion);
+            setProductoForm(null);
+            cargarServiciosSelectProducto();
+            document.getElementById('formProducto').addEventListener('submit', guardarProducto);
 
-            document.getElementById('tablaFiltracionBody').addEventListener('click', (e) => {
+            document.getElementById('tablaProductosBody').addEventListener('click', (e) => {
                 const btn = e.target.closest('button[data-action]');
                 if (!btn) return;
                 const id = btn.getAttribute('data-id');
                 const action = btn.getAttribute('data-action');
                 if (action === 'editar') {
-                    editarFiltracion(id);
+                    editarProducto(id);
                 }
                 if (action === 'eliminar') {
-                    eliminarFiltracion(id);
+                    eliminarProducto(id);
                 }
             });
 
-            const modalFiltracion = document.getElementById('modalFiltracion');
-            if (modalFiltracion) {
-                modalFiltracion.addEventListener('click', (e) => {
-                    if (e.target === modalFiltracion) {
-                        closeModalFiltracion();
-                    }
-                });
-            }
-
-            setColumnaForm(null);
-            document.getElementById('formColumna').addEventListener('submit', guardarColumna);
-
-            document.getElementById('tablaColumnaBody').addEventListener('click', (e) => {
-                const btn = e.target.closest('button[data-action]');
-                if (!btn) return;
-                const id = btn.getAttribute('data-id');
-                const action = btn.getAttribute('data-action');
-                if (action === 'editar') {
-                    editarColumna(id);
-                }
-                if (action === 'eliminar') {
-                    eliminarColumna(id);
-                }
-            });
-
-            const modalColumna = document.getElementById('modalColumna');
-            if (modalColumna) {
-                modalColumna.addEventListener('click', (e) => {
-                    if (e.target === modalColumna) {
-                        closeModalColumna();
+            const modalProductos = document.getElementById('modalProductos');
+            if (modalProductos) {
+                modalProductos.addEventListener('click', (e) => {
+                    if (e.target === modalProductos) {
+                        closeModalProductos();
                     }
                 });
             }
@@ -1803,8 +1615,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     modules: {
                         toolbar: [
                             ['bold', 'underline'],
-                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                            [{ 'indent': '-1' }, { 'indent': '+1' }]
+                            [{
+                                'list': 'ordered'
+                            }, {
+                                'list': 'bullet'
+                            }],
+                            [{
+                                'indent': '-1'
+                            }, {
+                                'indent': '+1'
+                            }]
                         ]
                     }
                 });
