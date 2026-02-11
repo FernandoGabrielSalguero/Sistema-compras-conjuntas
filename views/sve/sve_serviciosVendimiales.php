@@ -347,6 +347,23 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
+    <!-- Modal confirmar eliminación -->
+    <div id="modalEliminarPedido" class="modal hidden">
+        <div class="modal-content" style="max-width: 480px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                <h3 style="margin:0;">Eliminar servicio contratado</h3>
+                <button class="btn-icon" onclick="closeModalEliminarPedido()" aria-label="Cerrar">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <p style="margin:16px 0 24px; color:#475569;">¿Querés eliminar este servicio contratado? Esta acción no se puede deshacer.</p>
+            <div class="form-buttons" style="justify-content:flex-end;">
+                <button type="button" class="btn btn-secundario" onclick="closeModalEliminarPedido()">Cancelar</button>
+                <button type="button" class="btn btn-aceptar" onclick="confirmarEliminarPedido()" style="background:#dc2626;">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal servicios ofrecidos -->
     <div id="modalServiciosOfrecidos" class="modal hidden">
         <div class="modal-content">
@@ -582,6 +599,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <script>
         let quillContrato = null;
@@ -1137,42 +1155,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         function descargarServiciosContratados() {
             const table = document.querySelector('.card .table-container table');
-            if (!table) return;
+            if (!table || typeof XLSX === 'undefined') return;
 
-            const tableHtml = `
-                <html xmlns:o="urn:schemas-microsoft-com:office:office"
-                      xmlns:x="urn:schemas-microsoft-com:office:excel"
-                      xmlns="http://www.w3.org/TR/REC-html40">
-                    <head>
-                        <meta charset="UTF-8" />
-                        <!--[if gte mso 9]>
-                        <xml>
-                            <x:ExcelWorkbook>
-                                <x:ExcelWorksheets>
-                                    <x:ExcelWorksheet>
-                                        <x:Name>Servicios contratados</x:Name>
-                                        <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
-                                    </x:ExcelWorksheet>
-                                </x:ExcelWorksheets>
-                            </x:ExcelWorkbook>
-                        </xml>
-                        <![endif]-->
-                    </head>
-                    <body>
-                        ${table.outerHTML}
-                    </body>
-                </html>
-            `;
-
-            const blob = new Blob([tableHtml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'servicios_contratados.xls';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            const wb = XLSX.utils.table_to_book(table, { sheet: 'Servicios contratados' });
+            XLSX.writeFile(wb, 'servicios_contratados.xlsx', { compression: true });
         }
 
         async function cargarServiciosSelectPedido(selectedId = '') {
@@ -1257,9 +1243,28 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             openModalPedidoEdit();
         }
 
-        async function eliminarPedido(id) {
-            if (!confirm('¿Eliminar servicio contratado?')) return;
+        let pedidoEliminarId = null;
 
+        function openModalEliminarPedido(id) {
+            pedidoEliminarId = id;
+            const modal = document.getElementById('modalEliminarPedido');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+        }
+
+        function closeModalEliminarPedido() {
+            pedidoEliminarId = null;
+            const modal = document.getElementById('modalEliminarPedido');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        async function confirmarEliminarPedido() {
+            if (!pedidoEliminarId) return;
+            const id = pedidoEliminarId;
+            closeModalEliminarPedido();
             const payload = new URLSearchParams();
             payload.append('_method', 'delete');
             payload.append('id', id);
@@ -1279,6 +1284,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
 
             await cargarServiciosContratados();
+        }
+
+        async function eliminarPedido(id) {
+            openModalEliminarPedido(id);
         }
 
         async function guardarPedidoEdit(e) {
@@ -1456,6 +1465,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 modalPedido.addEventListener('click', (e) => {
                     if (e.target === modalPedido) {
                         closeModalPedidoEdit();
+                    }
+                });
+            }
+
+            const modalEliminar = document.getElementById('modalEliminarPedido');
+            if (modalEliminar) {
+                modalEliminar.addEventListener('click', (e) => {
+                    if (e.target === modalEliminar) {
+                        closeModalEliminarPedido();
                     }
                 });
             }
