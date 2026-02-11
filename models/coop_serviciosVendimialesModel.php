@@ -17,6 +17,18 @@ class CoopServiciosVendimialesModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function obtenerProductosActivosPorServicio($servicioId)
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT id, nombre, precio, moneda
+             FROM serviciosVendimiales_productos
+             WHERE servicio_id = ? AND activo = 1
+             ORDER BY nombre"
+        );
+        $stmt->execute([$servicioId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function obtenerContratoVigente()
     {
         $stmt = $this->pdo->query(
@@ -30,9 +42,9 @@ class CoopServiciosVendimialesModel
     {
         $stmt = $this->pdo->prepare(
             "INSERT INTO serviciosVendimiales_pedidos
-            (cooperativa, nombre, cargo, servicioAcontratar, volumenAproximado, unidad_volumen,
+            (cooperativa, nombre, cargo, servicioAcontratar, producto_id, volumenAproximado, unidad_volumen,
              fecha_entrada_equipo, estado, observaciones)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
 
         $stmt->execute([
@@ -40,6 +52,7 @@ class CoopServiciosVendimialesModel
             $data['nombre'],
             $data['cargo'],
             $data['servicioAcontratar'],
+            $data['producto_id'],
             $data['volumenAproximado'],
             $data['unidad_volumen'],
             $data['fecha_entrada_equipo'],
@@ -75,11 +88,14 @@ class CoopServiciosVendimialesModel
             SELECT
                 p.*,
                 so.nombre AS servicio_nombre,
+                pr.nombre AS producto_nombre,
                 f.aceptado AS contrato_aceptado,
                 f.firmado_en AS contrato_firmado_en
             FROM serviciosVendimiales_pedidos p
             LEFT JOIN serviciosVendimiales_serviciosOfrecidos so
                 ON so.id = p.servicioAcontratar
+            LEFT JOIN serviciosVendimiales_productos pr
+                ON pr.id = p.producto_id
             LEFT JOIN (
                 SELECT f1.*
                 FROM serviciosVendimiales_pedido_contrato_firma f1

@@ -37,6 +37,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         exit;
     }
 
+    if ($action === 'productos') {
+        $servicioId = (int)($_GET['servicio_id'] ?? 0);
+        if ($servicioId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Servicio inválido.']);
+            exit;
+        }
+        echo json_encode([
+            'success' => true,
+            'productos' => $model->obtenerProductosActivosPorServicio($servicioId)
+        ]);
+        exit;
+    }
+
     if ($action === 'listar_pedidos') {
         echo json_encode([
             'success' => true,
@@ -59,6 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = trim((string)($data['nombre'] ?? ''));
     $cargo = trim((string)($data['cargo'] ?? ''));
     $servicio = (int)($data['servicioAcontratar'] ?? 0);
+    $productoId = (int)($data['producto_id'] ?? 0);
     $volumen = $data['volumenAproximado'] ?? null;
     $unidad = trim((string)($data['unidad_volumen'] ?? 'litros'));
     $fechaEntrada = $data['fecha_entrada_equipo'] ?? null;
@@ -83,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'nombre' => $nombre,
             'cargo' => $cargo ?: null,
             'servicioAcontratar' => $servicio,
+            'producto_id' => $productoId > 0 ? $productoId : null,
             'volumenAproximado' => $volumen !== '' ? $volumen : null,
             'unidad_volumen' => $unidad ?: 'litros',
             'fecha_entrada_equipo' => $fechaEntrada ?: null,

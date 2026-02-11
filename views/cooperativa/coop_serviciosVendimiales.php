@@ -172,6 +172,16 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                             </div>
 
                             <div class="input-group">
+                                <label for="producto">Producto</label>
+                                <div class="input-icon">
+                                    <span class="material-icons">inventory_2</span>
+                                    <select id="producto" disabled>
+                                        <option value="">Seleccionar servicio primero</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
                                 <label for="volumen">Volumen aproximado</label>
                                 <div class="input-icon">
                                     <span class="material-icons">scale</span>
@@ -232,6 +242,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                             <thead>
                                 <tr>
                                     <th>Servicio</th>
+                                    <th>Producto</th>
                                     <th>Volumen</th>
                                     <th>Estado</th>
                                     <th>Contrato</th>
@@ -240,7 +251,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                             </thead>
                             <tbody id="tablaPedidosBody">
                                 <tr>
-                                    <td colspan="5" class="empty-row">Sin solicitudes cargadas.</td>
+                                    <td colspan="6" class="empty-row">Sin solicitudes cargadas.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -284,20 +295,64 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             contratoVigente = data.contrato || null;
         }
 
+        async function cargarProductosPorServicio(servicioId, selectedId = '') {
+            const productoSelect = document.getElementById('producto');
+            if (!productoSelect) return;
+
+            if (!servicioId) {
+                productoSelect.innerHTML = '<option value="">Seleccionar servicio primero</option>';
+                productoSelect.disabled = true;
+                return;
+            }
+
+            productoSelect.disabled = true;
+            productoSelect.innerHTML = '<option value="">Cargando...</option>';
+
+            try {
+                const res = await fetch(`/controllers/coop_serviciosVendimialesController.php?action=productos&servicio_id=${servicioId}`);
+                const data = await res.json();
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudo cargar productos.');
+                }
+
+                const productos = data.productos || [];
+                if (productos.length === 0) {
+                    productoSelect.innerHTML = '<option value="">Sin productos disponibles</option>';
+                    productoSelect.disabled = true;
+                    return;
+                }
+
+                productoSelect.innerHTML = '<option value="">Seleccionar producto...</option>';
+                productos.forEach((p) => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = `${p.nombre ?? 'Sin nombre'} (${p.moneda ?? ''} ${p.precio ?? ''})`;
+                    productoSelect.appendChild(opt);
+                });
+                if (selectedId) {
+                    productoSelect.value = String(selectedId);
+                }
+                productoSelect.disabled = false;
+            } catch (error) {
+                productoSelect.innerHTML = `<option value="">${error.message}</option>`;
+                productoSelect.disabled = true;
+            }
+        }
+
         async function cargarPedidos() {
             const tbody = document.getElementById('tablaPedidosBody');
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Cargando...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Cargando...</td></tr>';
 
             const res = await fetch('/controllers/coop_serviciosVendimialesController.php?action=listar_pedidos');
             const data = await res.json();
             if (!data.success) {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Error al cargar.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Error al cargar.</td></tr>';
                 return;
             }
 
             const pedidos = data.pedidos || [];
             if (pedidos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Sin solicitudes cargadas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Sin solicitudes cargadas.</td></tr>';
                 return;
             }
 
@@ -308,6 +363,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
                     <td>${p.servicio_nombre ?? '-'}</td>
+                    <td>${p.producto_nombre ?? '-'}</td>
                     <td>${volumen}</td>
                     <td>${p.estado ?? '-'}</td>
                     <td><span class="estado-pill">${contrato}</span></td>
@@ -325,6 +381,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                 nombre: document.getElementById('nombre_solicitante').value.trim(),
                 cargo: document.getElementById('cargo_solicitante').value.trim(),
                 servicioAcontratar: document.getElementById('servicio').value,
+                producto_id: document.getElementById('producto').value,
                 volumenAproximado: document.getElementById('volumen').value,
                 unidad_volumen: document.getElementById('unidad_volumen').value,
                 fecha_entrada_equipo: document.getElementById('fecha_entrada').value,
@@ -356,11 +413,13 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             const tbody = document.getElementById('tablaPedidosBody');
             if (tbody) {
                 const servicioText = document.getElementById('servicio').selectedOptions[0]?.textContent || '-';
+                const productoText = document.getElementById('producto').selectedOptions[0]?.textContent || '-';
                 const volumenTxt = payload.volumenAproximado ? `${payload.volumenAproximado} ${payload.unidad_volumen}` : '-';
                 const contratoTxt = payload.acepta_contrato ? 'Firmado' : 'Sin firma';
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
                     <td>${servicioText}</td>
+                    <td>${productoText}</td>
                     <td>${volumenTxt}</td>
                     <td>SOLICITADO</td>
                     <td><span class="estado-pill">${contratoTxt}</span></td>
@@ -394,6 +453,9 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             cargarInit();
             cargarPedidos();
             document.getElementById('formSolicitud').addEventListener('submit', enviarSolicitud);
+            document.getElementById('servicio').addEventListener('change', (e) => {
+                cargarProductosPorServicio(e.target.value);
+            });
 
             const modalContrato = document.getElementById('modalContrato');
             if (modalContrato) {
