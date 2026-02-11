@@ -703,6 +703,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 nombre: '',
                 estado: ''
             };
+            const relevamientosGuardados = new Set();
 
             /** Elementos DOM */
             const filtroNombreInput = document.getElementById('filtroNombre');
@@ -1146,6 +1147,30 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 };
             }
 
+            function modalTieneCamposObligatorios() {
+                const payload = getModalPayload();
+                const requeridos = [
+                    payload.ancho_callejon_norte,
+                    payload.ancho_callejon_sur,
+                    payload.interfilar,
+                    payload.cantidad_postes,
+                    payload.postes_mal_estado,
+                    payload.estructura_separadores,
+                    payload.agua_lavado,
+                    payload.preparacion_acequias,
+                    payload.preparacion_obstaculos,
+                ];
+                return !requeridos.some((valor) => !valor);
+            }
+
+            function intentarCerrarModalFinca() {
+                if (!modalTieneCamposObligatorios()) {
+                    showUserAlert('warning', 'Completá todos los campos obligatorios antes de cerrar.');
+                    return;
+                }
+                cerrarModalFinca();
+            }
+
             function abrirModalFinca() {
                 const modal = document.getElementById('fincaModal');
                 if (!modal) return;
@@ -1387,8 +1412,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         if (fila.finca_id !== null && fila.finca_id !== undefined) {
                             btn.dataset.fincaId = String(fila.finca_id);
                         }
-                        btn.textContent = fila.relevamiento_id ? 'Modificar' : 'Calificar';
-                        if (fila.relevamiento_id) {
+                        const tieneRelevamiento = Boolean(fila.relevamiento_id) || relevamientosGuardados.has(fila.id);
+                        btn.textContent = tieneRelevamiento ? 'Modificar' : 'Calificar';
+                        if (tieneRelevamiento) {
                             btn.classList.add('btn-modificar');
                         } else {
                             const idPedido = fila.id ?? '';
@@ -1506,6 +1532,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             function actualizarBotonRelevamiento(participacionId, tieneRelevamiento) {
                 if (!participacionId) return;
+                if (tieneRelevamiento) {
+                    relevamientosGuardados.add(participacionId);
+                }
                 const btn = document.querySelector(
                     `button[data-action="abrir-modal"][data-participacion-id="${participacionId}"]`
                 );
@@ -1555,10 +1584,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     }
                 });
 
-                closeBtn?.addEventListener('click', cerrarModalFinca);
+                closeBtn?.addEventListener('click', intentarCerrarModalFinca);
                 modal?.addEventListener('click', (event) => {
                     if (event.target === modal) {
-                        cerrarModalFinca();
+                        intentarCerrarModalFinca();
                     }
                 });
 
