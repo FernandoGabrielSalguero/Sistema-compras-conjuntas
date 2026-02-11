@@ -50,6 +50,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         exit;
     }
 
+    if ($action === 'contrato') {
+        $servicioId = (int)($_GET['servicio_id'] ?? 0);
+        if ($servicioId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Servicio inválido.']);
+            exit;
+        }
+        echo json_encode([
+            'success' => true,
+            'contrato' => $model->obtenerContratoVigentePorServicio($servicioId)
+        ]);
+        exit;
+    }
+
     if ($action === 'listar_pedidos') {
         echo json_encode([
             'success' => true,

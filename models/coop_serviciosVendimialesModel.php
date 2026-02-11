@@ -38,6 +38,20 @@ class CoopServiciosVendimialesModel
         return $row ?: null;
     }
 
+    public function obtenerContratoVigentePorServicio($servicioId)
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT *
+             FROM serviciosVendimiales_contratos
+             WHERE vigente = 1 AND servicio_id = ?
+             ORDER BY id DESC
+             LIMIT 1"
+        );
+        $stmt->execute([$servicioId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
     public function crearPedido(array $data)
     {
         $stmt = $this->pdo->prepare(

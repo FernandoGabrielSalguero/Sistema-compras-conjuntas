@@ -227,6 +227,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                                 </label>
                                 <button type="button" class="btn btn-info" onclick="openModalContrato()">Ver contrato</button>
                             </div>
+                            <div id="contratoNombreLabel" style="margin-top:10px; font-size:0.85rem; color:#6b7280;">Contrato: Sin contrato seleccionado</div>
                         </div>
 
                         <div class="form-buttons" style="margin-top: 20px;">
@@ -293,6 +294,44 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             });
 
             contratoVigente = data.contrato || null;
+            actualizarContratoLabel(contratoVigente);
+        }
+
+        async function cargarContratoPorServicio(servicioId) {
+            if (!servicioId) {
+                contratoVigente = null;
+                actualizarContratoLabel(null);
+                return;
+            }
+
+            try {
+                const res = await fetch(`/controllers/coop_serviciosVendimialesController.php?action=contrato&servicio_id=${servicioId}`);
+                const data = await res.json();
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudo cargar contrato.');
+                }
+                contratoVigente = data.contrato || null;
+                actualizarContratoLabel(contratoVigente);
+            } catch (error) {
+                contratoVigente = null;
+                actualizarContratoLabel(null, error.message);
+            }
+        }
+
+        function actualizarContratoLabel(contrato, errorMsg = '') {
+            const label = document.getElementById('contratoNombreLabel');
+            if (!label) return;
+            if (errorMsg) {
+                label.textContent = `Contrato: ${errorMsg}`;
+                return;
+            }
+            if (!contrato) {
+                label.textContent = 'Contrato: Sin contrato seleccionado';
+                return;
+            }
+            const nombre = contrato.nombre ?? 'Contrato vigente';
+            const version = contrato.version ? ` v${contrato.version}` : '';
+            label.textContent = `Contrato: ${nombre}${version}`;
         }
 
         async function cargarProductosPorServicio(servicioId, selectedId = '') {
@@ -455,6 +494,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             document.getElementById('formSolicitud').addEventListener('submit', enviarSolicitud);
             document.getElementById('servicio').addEventListener('change', (e) => {
                 cargarProductosPorServicio(e.target.value);
+                cargarContratoPorServicio(e.target.value);
             });
 
             const modalContrato = document.getElementById('modalContrato');
