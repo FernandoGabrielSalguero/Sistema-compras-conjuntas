@@ -103,6 +103,7 @@ class CoopServiciosVendimialesModel
                 p.*,
                 so.nombre AS servicio_nombre,
                 pr.nombre AS producto_nombre,
+                ct.nombre AS contrato_nombre,
                 f.aceptado AS contrato_aceptado,
                 f.firmado_en AS contrato_firmado_en
             FROM serviciosVendimiales_pedidos p
@@ -119,6 +120,8 @@ class CoopServiciosVendimialesModel
                     GROUP BY pedido_id
                 ) f2 ON f1.pedido_id = f2.pedido_id AND f1.id = f2.max_id
             ) f ON f.pedido_id = p.id
+            LEFT JOIN serviciosVendimiales_contratos ct
+                ON ct.id = f.contrato_id
             WHERE p.cooperativa = ?
             ORDER BY p.id DESC
         ";

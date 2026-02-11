@@ -238,7 +238,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
 
                 <div class="card">
                     <h2>Mis solicitudes</h2>
-                    <div class="table-container tabla-wrap">
+                <div class="table-container tabla-wrap" style="overflow-x:auto;">
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -378,6 +378,13 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             }
         }
 
+        function formatVolumenSinDecimales(value) {
+            if (value === null || value === undefined || value === '') return '';
+            const num = Number(value);
+            if (Number.isNaN(num)) return String(value);
+            return Math.round(num).toString();
+        }
+
         async function cargarPedidos() {
             const tbody = document.getElementById('tablaPedidosBody');
             tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Cargando...</td></tr>';
@@ -397,7 +404,8 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
 
             tbody.innerHTML = '';
             pedidos.forEach((p) => {
-                const volumen = p.volumenAproximado ? `${p.volumenAproximado} ${p.unidad_volumen ?? ''}` : '-';
+                const volumenVal = p.volumenAproximado ? formatVolumenSinDecimales(p.volumenAproximado) : '';
+                const volumen = volumenVal ? `${volumenVal} ${p.unidad_volumen ?? ''}` : '-';
                 const contrato = p.contrato_aceptado === null ? 'Sin firma' : (Number(p.contrato_aceptado) === 1 ? 'Firmado' : 'No aceptado');
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
@@ -405,7 +413,12 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                     <td>${p.producto_nombre ?? '-'}</td>
                     <td>${volumen}</td>
                     <td>${p.estado ?? '-'}</td>
-                    <td><span class="estado-pill">${contrato}</span></td>
+                    <td>
+                        <span class="estado-pill">${contrato}</span>
+                        <div style="margin-top:4px; font-size:0.8rem; color:#64748b;">
+                            ${p.contrato_nombre ?? '-'}
+                        </div>
+                    </td>
                     <td>${p.created_at ?? '-'}</td>
                 `;
                 tbody.appendChild(fila);
@@ -453,7 +466,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             if (tbody) {
                 const servicioText = document.getElementById('servicio').selectedOptions[0]?.textContent || '-';
                 const productoText = document.getElementById('producto').selectedOptions[0]?.textContent || '-';
-                const volumenTxt = payload.volumenAproximado ? `${payload.volumenAproximado} ${payload.unidad_volumen}` : '-';
+                const volumenTxt = payload.volumenAproximado ? `${formatVolumenSinDecimales(payload.volumenAproximado)} ${payload.unidad_volumen}` : '-';
                 const contratoTxt = payload.acepta_contrato ? 'Firmado' : 'Sin firma';
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
@@ -461,7 +474,12 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                     <td>${productoText}</td>
                     <td>${volumenTxt}</td>
                     <td>SOLICITADO</td>
-                    <td><span class="estado-pill">${contratoTxt}</span></td>
+                    <td>
+                        <span class="estado-pill">${contratoTxt}</span>
+                        <div style="margin-top:4px; font-size:0.8rem; color:#64748b;">
+                            ${contratoVigente?.nombre ?? '-'}
+                        </div>
+                    </td>
                     <td>Recién creado</td>
                 `;
                 tbody.prepend(fila);
