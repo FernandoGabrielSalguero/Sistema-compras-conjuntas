@@ -79,6 +79,23 @@ try {
                 'observaciones' => trim((string) ($_POST['observaciones'] ?? '')),
             ];
 
+            $norteRaw = $data['ancho_callejon_norte'];
+            $surRaw = $data['ancho_callejon_sur'];
+            $totalPostesRaw = $data['cantidad_postes'];
+            $postesMalRaw = $data['postes_mal_estado'];
+
+            $tieneNorte = $norteRaw !== '';
+            $tieneSur = $surRaw !== '';
+            if ($tieneNorte xor $tieneSur) {
+                jsonResponse(false, null, 'Debés completar ambos anchos de callejón para calcular el promedio.', 422);
+            }
+
+            $tieneTotalPostes = $totalPostesRaw !== '';
+            $tienePostesMal = $postesMalRaw !== '';
+            if ($tieneTotalPostes xor $tienePostesMal) {
+                jsonResponse(false, null, 'Debés completar cantidad de postes y postes en mal estado para calcular el porcentaje.', 422);
+            }
+
             $resultado = $model->guardarRelevamiento($participacionId, $data);
             jsonResponse(true, $resultado, 'Relevamiento guardado.');
         }

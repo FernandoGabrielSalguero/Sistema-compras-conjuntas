@@ -1467,6 +1467,21 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             async function guardarRelevamiento(participacionId) {
                 const payload = getModalPayload();
+
+                const tieneNorte = payload.ancho_callejon_norte !== '';
+                const tieneSur = payload.ancho_callejon_sur !== '';
+                if (tieneNorte !== tieneSur) {
+                    showUserAlert('warning', 'Completá ambos anchos de callejón para calcular el promedio.');
+                    return;
+                }
+
+                const tieneTotalPostes = payload.cantidad_postes !== '';
+                const tienePostesMal = payload.postes_mal_estado !== '';
+                if (tieneTotalPostes !== tienePostesMal) {
+                    showUserAlert('warning', 'Completá cantidad de postes y postes en mal estado para calcular el porcentaje.');
+                    return;
+                }
+
                 const body = new URLSearchParams({
                     action: 'guardar_relevamiento',
                     participacion_id: String(participacionId),

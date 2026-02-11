@@ -339,6 +339,8 @@ class SveCosechaMecanicaFincasModel
             return ['id' => (int) $existente['id'], 'accion' => 'actualizado'];
         }
 
+        $payload = $this->applyInsertDefaults($payload);
+
         $sqlInsert = "INSERT INTO cosechaMecanica_relevamiento_finca (
                 participacion_id,
                 ancho_callejon_norte,
@@ -373,5 +375,40 @@ class SveCosechaMecanicaFincasModel
         $stmtInsert->execute($payload);
 
         return ['id' => (int) $this->pdo->lastInsertId(), 'accion' => 'creado'];
+    }
+
+    private function applyInsertDefaults(array $payload): array
+    {
+        $numericKeys = [
+            ':ancho_callejon_norte',
+            ':ancho_callejon_sur',
+            ':promedio_callejon',
+            ':cantidad_postes',
+            ':postes_mal_estado',
+            ':porcentaje_postes_mal_estado',
+        ];
+
+        foreach ($numericKeys as $key) {
+            if (!array_key_exists($key, $payload) || $payload[$key] === null || $payload[$key] === '') {
+                $payload[$key] = '0';
+            }
+        }
+
+        $textKeys = [
+            ':interfilar',
+            ':estructura_separadores',
+            ':agua_lavado',
+            ':preparacion_acequias',
+            ':preparacion_obstaculos',
+            ':observaciones',
+        ];
+
+        foreach ($textKeys as $key) {
+            if (!array_key_exists($key, $payload) || $payload[$key] === null) {
+                $payload[$key] = '';
+            }
+        }
+
+        return $payload;
     }
 }
