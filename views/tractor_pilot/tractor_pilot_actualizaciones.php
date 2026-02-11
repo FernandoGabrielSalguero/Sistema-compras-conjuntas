@@ -405,12 +405,12 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                             <thead>
                                 <tr>
                                     <th>Acciones</th>
+                                    <th>Variedad</th>
                                     <th>Cooperativa</th>
                                     <th>Productor</th>
                                     <th>Tipo</th>
                                     <th>Finca</th>
                                     <th>Superficie (ha)</th>
-                                    <th>Variedad</th>
                                 </tr>
                             </thead>
                             <tbody id="fincas-table-body">
@@ -1120,6 +1120,10 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     tdAcciones.appendChild(btn);
                     tr.appendChild(tdAcciones);
 
+                    const tdVariedad = document.createElement('td');
+                    aplicarSaltoTerceraPalabra(tdVariedad, fila.variedad || '-');
+                    tr.appendChild(tdVariedad);
+
                     const codigoFinca = String(fila.codigo_finca ?? '');
                     const esExterno = codigoFinca.startsWith('EXT-');
                     const tipoLabel = esExterno ? 'Externo' : 'Interno';
@@ -1145,7 +1149,6 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     const celdasFinales = [
                         fincaLabel,
                         fila.superficie ?? '-',
-                        fila.variedad || '-',
                     ];
 
                     celdasFinales.forEach((valor) => {
