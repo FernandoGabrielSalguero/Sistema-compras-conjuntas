@@ -1,4 +1,4 @@
-📄 Tabla: CosechaMecanica
+ Tabla: CosechaMecanica
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(10) unsigned	NO	PRI		auto_increment
 nombre	varchar(150)	NO			
@@ -875,6 +875,7 @@ updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	bigint(20) unsigned	NO	PRI		auto_increment
 nombre	varchar(160)	NO	MUL		
+servicio_id	bigint(20) unsigned	YES	MUL		
 descripcion	text	YES			
 contenido	longtext	NO			
 version	int(11)	NO		1	
@@ -882,7 +883,9 @@ vigente	tinyint(1)	NO	MUL	0
 created_at	timestamp	NO		current_timestamp()	
 updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()
 
-🔁 Relaciones (entrantes): serviciosVendimiales_pedido_contrato_firma
+🔗 Relaciones (salientes):
+Columna servicio_id referencia a serviciosVendimiales_serviciosOfrecidos.id
+🔁 Relaciones (entrantes): serviciosVendimiales_serviciosOfrecidos, serviciosVendimiales_pedido_contrato_firma
 📄 Tabla: serviciosVendimiales_pedido_contrato_firma
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	bigint(20) unsigned	NO	PRI		auto_increment
@@ -927,7 +930,7 @@ activo	tinyint(1)	NO		1
 created_at	timestamp	NO		current_timestamp()	
 updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()
 
-🔁 Relaciones (entrantes): serviciosVendimiales_pedidos
+🔁 Relaciones (entrantes): serviciosVendimiales_pedidos, serviciosVendimiales_contratos
 📄 Tabla: subcategorias_publicaciones
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(11)	NO	PRI		auto_increment
