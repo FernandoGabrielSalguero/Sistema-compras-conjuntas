@@ -59,7 +59,6 @@ if ($method === 'POST') {
     $volumenAproximado = $_POST['volumenAproximado'] !== '' ? $_POST['volumenAproximado'] : null;
     $unidad_volumen = $_POST['unidad_volumen'] ?? 'litros';
     $fecha_entrada_equipo = $_POST['fecha_entrada_equipo'] ?? null;
-    $equipo_centrifugadora = $_POST['equipo_centrifugadora'] !== '' ? $_POST['equipo_centrifugadora'] : null;
     $estado = $_POST['estado'] ?? 'BORRADOR';
     $observaciones = $_POST['observaciones'] ?? null;
 
@@ -78,7 +77,6 @@ if ($method === 'POST') {
             'volumenAproximado' => $volumenAproximado,
             'unidad_volumen' => $unidad_volumen,
             'fecha_entrada_equipo' => $fecha_entrada_equipo,
-            'equipo_centrifugadora' => $equipo_centrifugadora,
             'estado' => $estado,
             'observaciones' => $observaciones
         ];

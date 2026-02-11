@@ -32,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         echo json_encode([
             'success' => true,
             'servicios' => $model->obtenerServiciosActivos(),
-            'centrifugadoras' => $model->obtenerCentrifugadorasActivas(),
             'contrato' => $model->obtenerContratoVigente()
         ]);
         exit;
@@ -63,7 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $volumen = $data['volumenAproximado'] ?? null;
     $unidad = trim((string)($data['unidad_volumen'] ?? 'litros'));
     $fechaEntrada = $data['fecha_entrada_equipo'] ?? null;
-    $equipo = $data['equipo_centrifugadora'] ?? null;
     $observaciones = trim((string)($data['observaciones'] ?? ''));
     $aceptaContrato = isset($data['acepta_contrato']) ? (bool)$data['acepta_contrato'] : false;
     $contratoId = (int)($data['contrato_id'] ?? 0);
@@ -88,7 +86,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'volumenAproximado' => $volumen !== '' ? $volumen : null,
             'unidad_volumen' => $unidad ?: 'litros',
             'fecha_entrada_equipo' => $fechaEntrada ?: null,
-            'equipo_centrifugadora' => $equipo ?: null,
             'estado' => 'SOLICITADO',
             'observaciones' => $observaciones ?: null
         ]);
@@ -128,13 +125,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $servicioNombre = $stmt->fetchColumn() ?: null;
         }
 
-        $centrifugadoraNombre = null;
-        if (!empty($equipo)) {
-            $stmt = $pdo->prepare("SELECT nombre FROM serviciosVendimiales_centrifugadores WHERE id = ? LIMIT 1");
-            $stmt->execute([$equipo]);
-            $centrifugadoraNombre = $stmt->fetchColumn() ?: null;
-        }
-
         $mailResp = Mail::enviarSolicitudServiciosVendimiales([
             'pedido_id' => $pedidoId,
             'cooperativa_nombre' => $coopNombre,
@@ -146,7 +136,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'volumen' => $volumen,
             'unidad' => $unidad,
             'fecha_entrada' => $fechaEntrada,
-            'centrifugadora' => $centrifugadoraNombre,
             'observaciones' => $observaciones,
             'contrato_aceptado' => $aceptaContrato ? 'Sí' : 'No'
         ]);

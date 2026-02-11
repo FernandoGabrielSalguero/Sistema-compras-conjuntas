@@ -1,4 +1,4 @@
- Tabla: CosechaMecanica
+Tabla: CosechaMecanica
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(10) unsigned	NO	PRI		auto_increment
 nombre	varchar(150)	NO			
@@ -871,6 +871,16 @@ created_at	timestamp	NO		current_timestamp()
 updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()
 
 🔁 Relaciones (entrantes): serviciosVendimiales_pedidos
+📄 Tabla: serviciosVendimiales_columna
+Columna	Tipo	Nulo	Clave	Default	Extra
+id	bigint(20) unsigned	NO	PRI		auto_increment
+nombre	varchar(120)	NO	UNI		
+precio	decimal(12,2)	NO			
+moneda	char(3)	NO			
+activo	tinyint(1)	NO		1	
+created_at	timestamp	NO		current_timestamp()	
+updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()
+
 📄 Tabla: serviciosVendimiales_contratos
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	bigint(20) unsigned	NO	PRI		auto_increment
@@ -886,6 +896,16 @@ updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()
 🔗 Relaciones (salientes):
 Columna servicio_id referencia a serviciosVendimiales_serviciosOfrecidos.id
 🔁 Relaciones (entrantes): serviciosVendimiales_serviciosOfrecidos, serviciosVendimiales_pedido_contrato_firma
+📄 Tabla: serviciosVendimiales_filtrado
+Columna	Tipo	Nulo	Clave	Default	Extra
+id	bigint(20) unsigned	NO	PRI		auto_increment
+nombre	varchar(120)	NO	UNI		
+precio	decimal(12,2)	NO			
+moneda	char(3)	NO			
+activo	tinyint(1)	NO		1	
+created_at	timestamp	NO		current_timestamp()	
+updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()
+
 📄 Tabla: serviciosVendimiales_pedido_contrato_firma
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	bigint(20) unsigned	NO	PRI		auto_increment
@@ -909,6 +929,7 @@ cooperativa	varchar(160)	NO
 nombre	varchar(160)	NO			
 cargo	varchar(120)	YES			
 servicioAcontratar	bigint(20) unsigned	NO	MUL		
+producto_id	bigint(20) unsigned	YES	MUL		
 volumenAproximado	decimal(14,3)	YES			
 unidad_volumen	varchar(20)	NO		litros	
 fecha_entrada_equipo	date	YES			
@@ -921,7 +942,22 @@ updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()
 🔗 Relaciones (salientes):
 Columna equipo_centrifugadora referencia a serviciosVendimiales_centrifugadores.id
 Columna servicioAcontratar referencia a serviciosVendimiales_serviciosOfrecidos.id
-🔁 Relaciones (entrantes): serviciosVendimiales_centrifugadores, serviciosVendimiales_serviciosOfrecidos, serviciosVendimiales_pedido_contrato_firma
+Columna producto_id referencia a serviciosVendimiales_productos.id
+🔁 Relaciones (entrantes): serviciosVendimiales_centrifugadores, serviciosVendimiales_serviciosOfrecidos, serviciosVendimiales_productos, serviciosVendimiales_pedido_contrato_firma
+📄 Tabla: serviciosVendimiales_productos
+Columna	Tipo	Nulo	Clave	Default	Extra
+id	bigint(20) unsigned	NO	PRI		auto_increment
+servicio_id	bigint(20) unsigned	NO	MUL		
+nombre	varchar(120)	NO			
+precio	decimal(12,2)	NO			
+moneda	char(3)	NO			
+activo	tinyint(1)	NO		1	
+created_at	timestamp	NO		current_timestamp()	
+updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()
+
+🔗 Relaciones (salientes):
+Columna servicio_id referencia a serviciosVendimiales_serviciosOfrecidos.id
+🔁 Relaciones (entrantes): serviciosVendimiales_pedidos, serviciosVendimiales_serviciosOfrecidos
 📄 Tabla: serviciosVendimiales_serviciosOfrecidos
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	bigint(20) unsigned	NO	PRI		auto_increment
@@ -930,7 +966,7 @@ activo	tinyint(1)	NO		1
 created_at	timestamp	NO		current_timestamp()	
 updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()
 
-🔁 Relaciones (entrantes): serviciosVendimiales_pedidos, serviciosVendimiales_contratos
+🔁 Relaciones (entrantes): serviciosVendimiales_pedidos, serviciosVendimiales_productos, serviciosVendimiales_contratos
 📄 Tabla: subcategorias_publicaciones
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(11)	NO	PRI		auto_increment

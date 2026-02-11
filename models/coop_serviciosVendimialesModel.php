@@ -17,14 +17,6 @@ class CoopServiciosVendimialesModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function obtenerCentrifugadorasActivas()
-    {
-        $stmt = $this->pdo->query(
-            "SELECT id, nombre, precio, moneda FROM serviciosVendimiales_centrifugadores WHERE activo = 1 ORDER BY nombre"
-        );
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
     public function obtenerContratoVigente()
     {
         $stmt = $this->pdo->query(
@@ -39,8 +31,8 @@ class CoopServiciosVendimialesModel
         $stmt = $this->pdo->prepare(
             "INSERT INTO serviciosVendimiales_pedidos
             (cooperativa, nombre, cargo, servicioAcontratar, volumenAproximado, unidad_volumen,
-             fecha_entrada_equipo, equipo_centrifugadora, estado, observaciones)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+             fecha_entrada_equipo, estado, observaciones)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
 
         $stmt->execute([
@@ -51,7 +43,6 @@ class CoopServiciosVendimialesModel
             $data['volumenAproximado'],
             $data['unidad_volumen'],
             $data['fecha_entrada_equipo'],
-            $data['equipo_centrifugadora'],
             $data['estado'],
             $data['observaciones']
         ]);
@@ -84,14 +75,11 @@ class CoopServiciosVendimialesModel
             SELECT
                 p.*,
                 so.nombre AS servicio_nombre,
-                c.nombre AS centrifugadora_nombre,
                 f.aceptado AS contrato_aceptado,
                 f.firmado_en AS contrato_firmado_en
             FROM serviciosVendimiales_pedidos p
             LEFT JOIN serviciosVendimiales_serviciosOfrecidos so
                 ON so.id = p.servicioAcontratar
-            LEFT JOIN serviciosVendimiales_centrifugadores c
-                ON c.id = p.equipo_centrifugadora
             LEFT JOIN (
                 SELECT f1.*
                 FROM serviciosVendimiales_pedido_contrato_firma f1

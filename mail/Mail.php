@@ -733,7 +733,6 @@ final class Mail
      *   'volumen' => ?string|float,
      *   'unidad' => ?string,
      *   'fecha_entrada' => ?string,
-     *   'centrifugadora' => ?string,
      *   'observaciones' => ?string,
      *   'contrato_aceptado' => ?string
      * ]
@@ -751,7 +750,6 @@ final class Mail
             $volumen = $data['volumen'] ?? '';
             $unidad = (string)($data['unidad'] ?? '');
             $fecha = (string)($data['fecha_entrada'] ?? '');
-            $centrifugadora = (string)($data['centrifugadora'] ?? '');
             $observaciones = (string)($data['observaciones'] ?? '');
             $contrato = (string)($data['contrato_aceptado'] ?? 'No');
 
@@ -768,7 +766,6 @@ final class Mail
                         <tr><td style="background:#f9fafb;">Servicio</td><td>%s</td></tr>
                         <tr><td style="background:#f9fafb;">Volumen</td><td>%s</td></tr>
                         <tr><td style="background:#f9fafb;">Fecha entrada equipo</td><td>%s</td></tr>
-                        <tr><td style="background:#f9fafb;">Centrifugadora</td><td>%s</td></tr>
                         <tr><td style="background:#f9fafb;">Contrato aceptado</td><td>%s</td></tr>
                         <tr><td style="background:#f9fafb;">Observaciones</td><td>%s</td></tr>
                     </tbody>
@@ -780,7 +777,6 @@ final class Mail
                 htmlspecialchars($servicio ?: '—', ENT_QUOTES, 'UTF-8'),
                 htmlspecialchars($volumenTxt ?: '—', ENT_QUOTES, 'UTF-8'),
                 htmlspecialchars($fecha !== '' ? $fecha : '—', ENT_QUOTES, 'UTF-8'),
-                htmlspecialchars($centrifugadora ?: '—', ENT_QUOTES, 'UTF-8'),
                 htmlspecialchars($contrato ?: 'No', ENT_QUOTES, 'UTF-8'),
                 nl2br(htmlspecialchars($observaciones ?: '—', ENT_QUOTES, 'UTF-8'))
             );

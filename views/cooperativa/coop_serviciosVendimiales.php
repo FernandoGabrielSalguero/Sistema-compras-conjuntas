@@ -171,16 +171,6 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                                 </div>
                             </div>
 
-                            <div class="input-group" id="grupo_centrifugadora" style="display:none;">
-                                <label for="equipo_centrifugadora">Centrifugadora</label>
-                                <div class="input-icon">
-                                    <span class="material-icons">precision_manufacturing</span>
-                                    <select id="equipo_centrifugadora">
-                                        <option value="">Sin seleccionar</option>
-                                    </select>
-                                </div>
-                            </div>
-
                             <div class="input-group">
                                 <label for="volumen">Volumen aproximado</label>
                                 <div class="input-icon">
@@ -243,7 +233,6 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                                 <tr>
                                     <th>Servicio</th>
                                     <th>Volumen</th>
-                                    <th>Equipo</th>
                                     <th>Estado</th>
                                     <th>Contrato</th>
                                     <th>Fecha</th>
@@ -251,7 +240,7 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                             </thead>
                             <tbody id="tablaPedidosBody">
                                 <tr>
-                                    <td colspan="6" class="empty-row">Sin solicitudes cargadas.</td>
+                                    <td colspan="5" class="empty-row">Sin solicitudes cargadas.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -278,8 +267,6 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
 
     <script>
         let contratoVigente = null;
-        const CENTRIFUGA_SERVICIO_ID = '1';
-
         async function cargarInit() {
             const res = await fetch('/controllers/coop_serviciosVendimialesController.php?action=init');
             const data = await res.json();
@@ -294,34 +281,23 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                 servicioSelect.appendChild(opt);
             });
 
-            const equipoSelect = document.getElementById('equipo_centrifugadora');
-            equipoSelect.innerHTML = '<option value="">Sin seleccionar</option>';
-            (data.centrifugadoras || []).forEach((c) => {
-                const opt = document.createElement('option');
-                opt.value = c.id;
-                opt.textContent = `${c.nombre} (${c.moneda} ${c.precio})`;
-                equipoSelect.appendChild(opt);
-            });
-
             contratoVigente = data.contrato || null;
-
-            // Id fijo de servicio "Centrífuga"
         }
 
         async function cargarPedidos() {
             const tbody = document.getElementById('tablaPedidosBody');
-            tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Cargando...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Cargando...</td></tr>';
 
             const res = await fetch('/controllers/coop_serviciosVendimialesController.php?action=listar_pedidos');
             const data = await res.json();
             if (!data.success) {
-                tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Error al cargar.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Error al cargar.</td></tr>';
                 return;
             }
 
             const pedidos = data.pedidos || [];
             if (pedidos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Sin solicitudes cargadas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Sin solicitudes cargadas.</td></tr>';
                 return;
             }
 
@@ -333,7 +309,6 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                 fila.innerHTML = `
                     <td>${p.servicio_nombre ?? '-'}</td>
                     <td>${volumen}</td>
-                    <td>${p.centrifugadora_nombre ?? '-'}</td>
                     <td>${p.estado ?? '-'}</td>
                     <td><span class="estado-pill">${contrato}</span></td>
                     <td>${p.created_at ?? '-'}</td>
@@ -353,7 +328,6 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                 volumenAproximado: document.getElementById('volumen').value,
                 unidad_volumen: document.getElementById('unidad_volumen').value,
                 fecha_entrada_equipo: document.getElementById('fecha_entrada').value,
-                equipo_centrifugadora: document.getElementById('equipo_centrifugadora').value,
                 observaciones: document.getElementById('observaciones').value.trim(),
                 acepta_contrato: document.getElementById('acepta_contrato').checked,
                 contrato_id: contratoVigente ? contratoVigente.id : null,
@@ -382,14 +356,12 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             const tbody = document.getElementById('tablaPedidosBody');
             if (tbody) {
                 const servicioText = document.getElementById('servicio').selectedOptions[0]?.textContent || '-';
-                const equipoText = document.getElementById('equipo_centrifugadora').selectedOptions[0]?.textContent || '-';
                 const volumenTxt = payload.volumenAproximado ? `${payload.volumenAproximado} ${payload.unidad_volumen}` : '-';
                 const contratoTxt = payload.acepta_contrato ? 'Firmado' : 'Sin firma';
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
                     <td>${servicioText}</td>
                     <td>${volumenTxt}</td>
-                    <td>${equipoText}</td>
                     <td>SOLICITADO</td>
                     <td><span class="estado-pill">${contratoTxt}</span></td>
                     <td>Recién creado</td>
@@ -402,18 +374,6 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
                 showAlert('success', 'Solicitud creada correctamente.');
             }
             await cargarPedidos();
-        }
-
-        function toggleCentrifugadora() {
-            const servicioId = document.getElementById('servicio').value;
-            const grupo = document.getElementById('grupo_centrifugadora');
-            if (!grupo) return;
-            if (servicioId === CENTRIFUGA_SERVICIO_ID) {
-                grupo.style.display = '';
-            } else {
-                grupo.style.display = 'none';
-                document.getElementById('equipo_centrifugadora').value = '';
-            }
         }
 
         function openModalContrato() {
@@ -434,7 +394,6 @@ $id_cooperativa_real = $_SESSION['id_real'] ?? null;
             cargarInit();
             cargarPedidos();
             document.getElementById('formSolicitud').addEventListener('submit', enviarSolicitud);
-            document.getElementById('servicio').addEventListener('change', toggleCentrifugadora);
 
             const modalContrato = document.getElementById('modalContrato');
             if (modalContrato) {
