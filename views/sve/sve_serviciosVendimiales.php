@@ -1103,6 +1103,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
+        function formatVolumen(value) {
+            if (value === null || value === undefined || value === '') return '';
+            const num = Number(value);
+            if (Number.isNaN(num)) return String(value);
+            return num.toFixed(3).replace(/\.?0+$/, '');
+        }
+
         async function cargarServiciosContratados() {
             const tbody = document.getElementById('tablaPedidosBody');
             tbody.innerHTML = '<tr><td colspan="8" class="empty-row">Cargando...</td></tr>';
@@ -1123,7 +1130,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 tbody.innerHTML = '';
                 pedidos.forEach((p) => {
-                    const volumen = p.volumenAproximado ? `${p.volumenAproximado} ${p.unidad_volumen ?? ''}` : '-';
+                    const volumenVal = p.volumenAproximado ? formatVolumen(p.volumenAproximado) : '';
+                    const volumen = volumenVal ? `${volumenVal} ${p.unidad_volumen ?? ''}` : '-';
                     const contrato = p.contrato_aceptado === null ? 'Sin firma' : (Number(p.contrato_aceptado) === 1 ? 'Firmado' : 'No aceptado');
                     const fila = document.createElement('tr');
                     fila.innerHTML = `
