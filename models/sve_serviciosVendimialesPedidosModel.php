@@ -39,4 +39,41 @@ class ServiciosVendimialesPedidosModel
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function obtenerPorId($id)
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM serviciosVendimiales_pedidos WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function actualizar($id, $data)
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE serviciosVendimiales_pedidos
+             SET cooperativa = ?, nombre = ?, cargo = ?, servicioAcontratar = ?, volumenAproximado = ?,
+                 unidad_volumen = ?, fecha_entrada_equipo = ?, equipo_centrifugadora = ?, estado = ?, observaciones = ?
+             WHERE id = ?"
+        );
+
+        return $stmt->execute([
+            $data['cooperativa'],
+            $data['nombre'],
+            $data['cargo'],
+            $data['servicioAcontratar'],
+            $data['volumenAproximado'],
+            $data['unidad_volumen'],
+            $data['fecha_entrada_equipo'],
+            $data['equipo_centrifugadora'],
+            $data['estado'],
+            $data['observaciones'],
+            $id
+        ]);
+    }
+
+    public function eliminar($id)
+    {
+        $stmt = $this->pdo->prepare("DELETE FROM serviciosVendimiales_pedidos WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
 }

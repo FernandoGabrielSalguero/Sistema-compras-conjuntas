@@ -213,21 +213,117 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <th>Nombre</th>
                                     <th>Servicio</th>
                                     <th>Volumen</th>
-                                    <th>Equipo</th>
-                                    <th>Estado</th>
-                                    <th>Contrato</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaPedidosBody">
-                                <tr>
-                                    <td colspan="7" class="empty-row">Sin pedidos cargados.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                                <th>Equipo</th>
+                                <th>Estado</th>
+                                <th>Contrato</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaPedidosBody">
+                            <tr>
+                                <td colspan="8" class="empty-row">Sin pedidos cargados.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
+            </div>
 
             </section>
+        </div>
+    </div>
+
+    <!-- Modal editar servicio contratado -->
+    <div id="modalPedidoEdit" class="modal hidden">
+        <div class="modal-content">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                <h3 style="margin:0;">Editar servicio contratado</h3>
+                <button class="btn-icon" onclick="closeModalPedidoEdit()" aria-label="Cerrar">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+                <form class="form-modern" id="formPedidoEdit">
+                    <input type="hidden" id="pedido_id" name="id">
+                    <div class="form-grid grid-3">
+                        <div class="input-group">
+                            <label for="pedido_cooperativa">Cooperativa</label>
+                            <div class="input-icon">
+                                <span class="material-icons">apartment</span>
+                                <input type="text" id="pedido_cooperativa" name="cooperativa" required maxlength="160">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="pedido_nombre">Nombre</label>
+                            <div class="input-icon">
+                                <span class="material-icons">person</span>
+                                <input type="text" id="pedido_nombre" name="nombre" required maxlength="160">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="pedido_cargo">Cargo</label>
+                            <div class="input-icon">
+                                <span class="material-icons">badge</span>
+                                <input type="text" id="pedido_cargo" name="cargo" maxlength="120">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="pedido_servicio">Servicio</label>
+                            <div class="input-icon">
+                                <span class="material-icons">local_offer</span>
+                                <select id="pedido_servicio" name="servicioAcontratar" required></select>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="pedido_volumen">Volumen aproximado</label>
+                            <div class="input-icon">
+                                <span class="material-icons">scale</span>
+                                <input type="number" id="pedido_volumen" name="volumenAproximado" min="0" step="0.001">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="pedido_unidad_volumen">Unidad</label>
+                            <div class="input-icon">
+                                <span class="material-icons">straighten</span>
+                                <input type="text" id="pedido_unidad_volumen" name="unidad_volumen" maxlength="20" placeholder="litros">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="pedido_fecha_entrada">Fecha entrada equipo</label>
+                            <div class="input-icon">
+                                <span class="material-icons">event</span>
+                                <input type="date" id="pedido_fecha_entrada" name="fecha_entrada_equipo">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="pedido_equipo">Equipo centrifugadora</label>
+                            <div class="input-icon">
+                                <span class="material-icons">precision_manufacturing</span>
+                                <select id="pedido_equipo" name="equipo_centrifugadora"></select>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="pedido_estado">Estado</label>
+                            <div class="input-icon">
+                                <span class="material-icons">toggle_on</span>
+                                <select id="pedido_estado" name="estado" required>
+                                    <option value="SOLICITADO">SOLICITADO</option>
+                                    <option value="BORRADOR">BORRADOR</option>
+                                    <option value="CONFIRMADO">CONFIRMADO</option>
+                                    <option value="CANCELADO">CANCELADO</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group input-group-descripcion" style="margin-top: 16px;">
+                        <label for="pedido_observaciones">Observaciones</label>
+                        <textarea id="pedido_observaciones" name="observaciones" rows="4"></textarea>
+                    </div>
+                    <div class="form-buttons" style="margin-top: 16px;">
+                        <button type="submit" class="btn btn-aceptar">Guardar</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -646,6 +742,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
         }
 
+        function openModalPedidoEdit() {
+            const modal = document.getElementById('modalPedidoEdit');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+        }
+
+        function closeModalPedidoEdit() {
+            const modal = document.getElementById('modalPedidoEdit');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
         function openModalFiltracion() {
             const modal = document.getElementById('modalFiltracion');
             if (modal) {
@@ -704,6 +814,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             document.getElementById('centrifugadora_precio').value = item?.precio ?? '';
             document.getElementById('centrifugadora_moneda').value = item?.moneda ?? '';
             document.getElementById('centrifugadora_activo').value = item?.activo ?? '1';
+        }
+
+        function setPedidoForm(item) {
+            document.getElementById('pedido_id').value = item?.id ?? '';
+            document.getElementById('pedido_cooperativa').value = item?.cooperativa ?? '';
+            document.getElementById('pedido_nombre').value = item?.nombre ?? '';
+            document.getElementById('pedido_cargo').value = item?.cargo ?? '';
+            document.getElementById('pedido_servicio').value = item?.servicioAcontratar ?? '';
+            document.getElementById('pedido_volumen').value = item?.volumenAproximado ?? '';
+            document.getElementById('pedido_unidad_volumen').value = item?.unidad_volumen ?? 'litros';
+            document.getElementById('pedido_fecha_entrada').value = item?.fecha_entrada_equipo ?? '';
+            document.getElementById('pedido_equipo').value = item?.equipo_centrifugadora ?? '';
+            document.getElementById('pedido_estado').value = item?.estado ?? 'BORRADOR';
+            document.getElementById('pedido_observaciones').value = item?.observaciones ?? '';
         }
 
         function setFiltracionForm(item) {
@@ -1302,7 +1426,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         async function cargarServiciosContratados() {
             const tbody = document.getElementById('tablaPedidosBody');
-            tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Cargando...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-row">Cargando...</td></tr>';
 
             try {
                 const res = await fetch('/controllers/sve_serviciosVendimialesPedidosController.php');
@@ -1314,7 +1438,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 const pedidos = Array.isArray(data.pedidos) ? data.pedidos : [];
                 if (pedidos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Sin pedidos cargados.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="empty-row">Sin pedidos cargados.</td></tr>';
                     return;
                 }
 
@@ -1334,12 +1458,139 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <td>${p.centrifugadora_nombre ?? '-'}</td>
                         <td>${p.estado ?? '-'}</td>
                         <td><span class="estado-pill">${contrato}</span></td>
+                        <td>
+                            <button class="btn-icon" data-id="${p.id}" data-action="editar" data-tooltip="Editar">
+                                <span class="material-icons">edit</span>
+                            </button>
+                            <button class="btn-icon" data-id="${p.id}" data-action="eliminar" data-tooltip="Eliminar" style="color: red;">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </td>
                     `;
                     tbody.appendChild(fila);
                 });
             } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="7" class="empty-row">${error.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="empty-row">${error.message}</td></tr>`;
             }
+        }
+
+        async function cargarServiciosSelectPedido(selectedId = '') {
+            const select = document.getElementById('pedido_servicio');
+            if (!select) return;
+            select.innerHTML = '<option value="">Cargando...</option>';
+
+            try {
+                const res = await fetch('/controllers/sve_serviciosVendimialesController.php');
+                const data = await res.json();
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudo cargar servicios.');
+                }
+                const servicios = Array.isArray(data.servicios) ? data.servicios : [];
+                if (servicios.length === 0) {
+                    select.innerHTML = '<option value="">Sin servicios disponibles</option>';
+                    return;
+                }
+                select.innerHTML = '<option value="">Seleccioná un servicio</option>';
+                servicios.forEach((servicio) => {
+                    const option = document.createElement('option');
+                    option.value = servicio.id;
+                    option.textContent = servicio.nombre ?? 'Sin nombre';
+                    select.appendChild(option);
+                });
+                if (selectedId !== '') {
+                    select.value = String(selectedId);
+                }
+            } catch (error) {
+                select.innerHTML = `<option value="">${error.message}</option>`;
+            }
+        }
+
+        async function cargarCentrifugadorasSelectPedido(selectedId = '') {
+            const select = document.getElementById('pedido_equipo');
+            if (!select) return;
+            select.innerHTML = '<option value="">Cargando...</option>';
+
+            try {
+                const res = await fetch('/controllers/sve_centrifugadoresController.php');
+                const data = await res.json();
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudo cargar centrifugadoras.');
+                }
+                const items = Array.isArray(data.centrifugadoras) ? data.centrifugadoras : [];
+                select.innerHTML = '<option value="">Sin seleccionar</option>';
+                items.forEach((item) => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = `${item.nombre ?? 'Sin nombre'} (${item.moneda ?? ''} ${item.precio ?? ''})`;
+                    select.appendChild(option);
+                });
+                if (selectedId !== '') {
+                    select.value = String(selectedId);
+                }
+            } catch (error) {
+                select.innerHTML = `<option value="">${error.message}</option>`;
+            }
+        }
+
+        async function editarPedido(id) {
+            const res = await fetch(`/controllers/sve_serviciosVendimialesPedidosController.php?id=${id}`);
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || 'No se pudo cargar el pedido.');
+                return;
+            }
+            await cargarServiciosSelectPedido(data.pedido?.servicioAcontratar ?? '');
+            await cargarCentrifugadorasSelectPedido(data.pedido?.equipo_centrifugadora ?? '');
+            setPedidoForm(data.pedido);
+            openModalPedidoEdit();
+        }
+
+        async function eliminarPedido(id) {
+            if (!confirm('¿Eliminar servicio contratado?')) return;
+
+            const payload = new URLSearchParams();
+            payload.append('_method', 'delete');
+            payload.append('id', id);
+
+            const res = await fetch('/controllers/sve_serviciosVendimialesPedidosController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: payload.toString()
+            });
+
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || 'Error al eliminar.');
+                return;
+            }
+
+            await cargarServiciosContratados();
+        }
+
+        async function guardarPedidoEdit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const payload = new URLSearchParams(formData);
+
+            const res = await fetch('/controllers/sve_serviciosVendimialesPedidosController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: payload.toString()
+            });
+
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || 'Error al guardar.');
+                return;
+            }
+
+            closeModalPedidoEdit();
+            await cargarServiciosContratados();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1479,6 +1730,30 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 modalContratos.addEventListener('click', (e) => {
                     if (e.target === modalContratos) {
                         closeModalContratos();
+                    }
+                });
+            }
+
+            document.getElementById('formPedidoEdit').addEventListener('submit', guardarPedidoEdit);
+
+            document.getElementById('tablaPedidosBody').addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-action]');
+                if (!btn) return;
+                const id = btn.getAttribute('data-id');
+                const action = btn.getAttribute('data-action');
+                if (action === 'editar') {
+                    editarPedido(id);
+                }
+                if (action === 'eliminar') {
+                    eliminarPedido(id);
+                }
+            });
+
+            const modalPedido = document.getElementById('modalPedidoEdit');
+            if (modalPedido) {
+                modalPedido.addEventListener('click', (e) => {
+                    if (e.target === modalPedido) {
+                        closeModalPedidoEdit();
                     }
                 });
             }
