@@ -35,6 +35,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- text Editor -->
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 
+    <!-- Descarga de archivos-->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
     <style>
         .estado-pill {
             display: inline-block;
@@ -53,6 +56,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         .table-container {
             overflow-x: hidden;
+        }
+
+        .table-scroll-x {
+            overflow-x: auto;
         }
 
         #modalServiciosOfrecidos .modal-content,
@@ -209,11 +216,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 </div>
 
                 <div class="card">
-                    <h2>Servicios contratados</h2>
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+                        <h2 style="margin:0;">Servicios contratados</h2>
+                        <button type="button" class="btn-icon" onclick="descargarServiciosContratados()" aria-label="Descargar">
+                            <span class="material-icons">download</span>
+                        </button>
+                    </div>
                     <div class="form-buttons" style="margin-top: 16px;">
                         <button type="button" class="btn btn-aceptar" onclick="openModalPedidoCreate()">Nuevo pedido</button>
                     </div>
-                    <div class="table-container">
+                    <div class="table-container table-scroll-x">
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -1121,6 +1133,32 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             } catch (error) {
                 tbody.innerHTML = `<tr><td colspan="8" class="empty-row">${error.message}</td></tr>`;
             }
+        }
+
+        function descargarServiciosContratados() {
+            const table = document.querySelector('.card .table-container table');
+            if (!table) return;
+
+            const rows = Array.from(table.querySelectorAll('tr'));
+            if (rows.length === 0) return;
+
+            const csv = rows.map((row) => {
+                const cells = Array.from(row.querySelectorAll('th, td'));
+                return cells.map((cell) => {
+                    const text = (cell.textContent ?? '').replace(/\s+/g, ' ').trim();
+                    return `"${text.replace(/"/g, '""')}"`;
+                }).join(',');
+            }).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'servicios_contratados.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         async function cargarServiciosSelectPedido(selectedId = '') {
