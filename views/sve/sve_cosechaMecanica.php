@@ -1412,7 +1412,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         if (fila.finca_id !== null && fila.finca_id !== undefined) {
                             btn.dataset.fincaId = String(fila.finca_id);
                         }
-                        const tieneRelevamiento = Boolean(fila.relevamiento_id) || relevamientosGuardados.has(fila.id);
+                        const filaIdKey = String(fila.id);
+                        const tieneRelevamiento = Boolean(fila.relevamiento_id) || relevamientosGuardados.has(filaIdKey);
                         btn.textContent = tieneRelevamiento ? 'Modificar' : 'Calificar';
                         if (tieneRelevamiento) {
                             btn.classList.add('btn-modificar');
@@ -1533,7 +1534,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             function actualizarBotonRelevamiento(participacionId, tieneRelevamiento) {
                 if (!participacionId) return;
                 if (tieneRelevamiento) {
-                    relevamientosGuardados.add(participacionId);
+                    relevamientosGuardados.add(String(participacionId));
                 }
                 const btn = document.querySelector(
                     `button[data-action="abrir-modal"][data-participacion-id="${participacionId}"]`
