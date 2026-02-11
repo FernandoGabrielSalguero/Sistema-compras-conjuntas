@@ -1139,22 +1139,36 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const table = document.querySelector('.card .table-container table');
             if (!table) return;
 
-            const rows = Array.from(table.querySelectorAll('tr'));
-            if (rows.length === 0) return;
+            const tableHtml = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office"
+                      xmlns:x="urn:schemas-microsoft-com:office:excel"
+                      xmlns="http://www.w3.org/TR/REC-html40">
+                    <head>
+                        <meta charset="UTF-8" />
+                        <!--[if gte mso 9]>
+                        <xml>
+                            <x:ExcelWorkbook>
+                                <x:ExcelWorksheets>
+                                    <x:ExcelWorksheet>
+                                        <x:Name>Servicios contratados</x:Name>
+                                        <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+                                    </x:ExcelWorksheet>
+                                </x:ExcelWorksheets>
+                            </x:ExcelWorkbook>
+                        </xml>
+                        <![endif]-->
+                    </head>
+                    <body>
+                        ${table.outerHTML}
+                    </body>
+                </html>
+            `;
 
-            const csv = rows.map((row) => {
-                const cells = Array.from(row.querySelectorAll('th, td'));
-                return cells.map((cell) => {
-                    const text = (cell.textContent ?? '').replace(/\s+/g, ' ').trim();
-                    return `"${text.replace(/"/g, '""')}"`;
-                }).join(',');
-            }).join('\n');
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const blob = new Blob([tableHtml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = 'servicios_contratados.csv';
+            link.download = 'servicios_contratados.xls';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
