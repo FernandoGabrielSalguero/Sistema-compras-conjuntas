@@ -155,7 +155,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Vendimiales</span>
+                        <span class="link-text">Servicios Auxiliares Enológicos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
