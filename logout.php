@@ -26,5 +26,18 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 
 // Redirigir al login
-header("Location: /index.php");
+$redirect = '/index.php';
+if (!headers_sent()) {
+    header('Location: ' . $redirect);
+    exit;
+}
+
+// Fallback si los headers ya fueron enviados
+echo '<!doctype html><html lang="es"><head>';
+echo '<meta charset="utf-8">';
+echo '<meta http-equiv="refresh" content="0;url=' . htmlspecialchars($redirect, ENT_QUOTES, 'UTF-8') . '">';
+echo '<title>Redireccionando...</title>';
+echo '</head><body>';
+echo '<script>window.location.href=' . json_encode($redirect) . ';</script>';
+echo '</body></html>';
 exit;
