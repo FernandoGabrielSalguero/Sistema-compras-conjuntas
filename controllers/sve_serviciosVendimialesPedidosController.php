@@ -55,6 +55,7 @@ if ($method === 'POST') {
     $nombre = $_POST['nombre'] ?? '';
     $cargo = $_POST['cargo'] ?? null;
     $servicioAcontratar = (int)($_POST['servicioAcontratar'] ?? 0);
+    $producto_id = $_POST['producto_id'] !== '' ? (int)$_POST['producto_id'] : null;
     $volumenAproximado = $_POST['volumenAproximado'] !== '' ? $_POST['volumenAproximado'] : null;
     $unidad_volumen = $_POST['unidad_volumen'] ?? 'litros';
     $fecha_entrada_equipo = $_POST['fecha_entrada_equipo'] ?? null;
@@ -73,6 +74,7 @@ if ($method === 'POST') {
             'nombre' => $nombre,
             'cargo' => $cargo,
             'servicioAcontratar' => $servicioAcontratar,
+            'producto_id' => $producto_id,
             'volumenAproximado' => $volumenAproximado,
             'unidad_volumen' => $unidad_volumen,
             'fecha_entrada_equipo' => $fecha_entrada_equipo,

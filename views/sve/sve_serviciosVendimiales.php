@@ -226,16 +226,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <th>Cooperativa</th>
                                     <th>Nombre</th>
                                     <th>Servicio</th>
+                                    <th>Producto</th>
                                     <th>Volumen</th>
-                                <th>Equipo</th>
-                                <th>Estado</th>
-                                <th>Contrato</th>
-                                <th>Acciones</th>
+                                    <th>Equipo</th>
+                                    <th>Estado</th>
+                                    <th>Contrato</th>
+                                    <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tablaPedidosBody">
                             <tr>
-                                <td colspan="8" class="empty-row">Sin pedidos cargados.</td>
+                                <td colspan="9" class="empty-row">Sin pedidos cargados.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -286,6 +287,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-icon">
                                 <span class="material-icons">local_offer</span>
                                 <select id="pedido_servicio" name="servicioAcontratar" required></select>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="pedido_producto">Producto</label>
+                            <div class="input-icon">
+                                <span class="material-icons">inventory_2</span>
+                                <select id="pedido_producto" name="producto_id"></select>
                             </div>
                         </div>
                         <div class="input-group">
@@ -844,6 +852,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             document.getElementById('pedido_nombre').value = item?.nombre ?? '';
             document.getElementById('pedido_cargo').value = item?.cargo ?? '';
             document.getElementById('pedido_servicio').value = item?.servicioAcontratar ?? '';
+            document.getElementById('pedido_producto').value = item?.producto_id ?? '';
             document.getElementById('pedido_volumen').value = item?.volumenAproximado ?? '';
             document.getElementById('pedido_unidad_volumen').value = item?.unidad_volumen ?? 'litros';
             document.getElementById('pedido_fecha_entrada').value = item?.fecha_entrada_equipo ?? '';
@@ -1448,7 +1457,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         async function cargarServiciosContratados() {
             const tbody = document.getElementById('tablaPedidosBody');
-            tbody.innerHTML = '<tr><td colspan="8" class="empty-row">Cargando...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="empty-row">Cargando...</td></tr>';
 
             try {
                 const res = await fetch('/controllers/sve_serviciosVendimialesPedidosController.php');
@@ -1460,7 +1469,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 const pedidos = Array.isArray(data.pedidos) ? data.pedidos : [];
                 if (pedidos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" class="empty-row">Sin pedidos cargados.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="9" class="empty-row">Sin pedidos cargados.</td></tr>';
                     return;
                 }
 
@@ -1476,6 +1485,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div style="color: #5b21b6; font-size: 0.85rem;">${p.cargo ?? ''}</div>
                         </td>
                         <td>${p.servicio_nombre ?? '-'}</td>
+                        <td>${p.producto_nombre ?? '-'}</td>
                         <td>${volumen}</td>
                         <td>${p.centrifugadora_nombre ?? '-'}</td>
                         <td>${p.estado ?? '-'}</td>
@@ -1492,7 +1502,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     tbody.appendChild(fila);
                 });
             } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="8" class="empty-row">${error.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="empty-row">${error.message}</td></tr>`;
             }
         }
 
@@ -1517,6 +1527,43 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     const option = document.createElement('option');
                     option.value = servicio.id;
                     option.textContent = servicio.nombre ?? 'Sin nombre';
+                    select.appendChild(option);
+                });
+                if (selectedId !== '') {
+                    select.value = String(selectedId);
+                }
+                await cargarProductosSelectPedido(select.value);
+            } catch (error) {
+                select.innerHTML = `<option value="">${error.message}</option>`;
+            }
+        }
+
+        async function cargarProductosSelectPedido(servicioId, selectedId = '') {
+            const select = document.getElementById('pedido_producto');
+            if (!select) return;
+            if (!servicioId) {
+                select.innerHTML = '<option value="">Seleccioná un servicio primero</option>';
+                return;
+            }
+
+            select.innerHTML = '<option value="">Cargando...</option>';
+
+            try {
+                const res = await fetch(`/controllers/sve_productosVendimialesController.php?servicio_id=${servicioId}`);
+                const data = await res.json();
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudo cargar productos.');
+                }
+                const items = Array.isArray(data.productos) ? data.productos : [];
+                if (items.length === 0) {
+                    select.innerHTML = '<option value="">Sin productos</option>';
+                    return;
+                }
+                select.innerHTML = '<option value="">Seleccioná un producto</option>';
+                items.forEach((item) => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = `${item.nombre ?? 'Sin nombre'} (${item.moneda ?? ''} ${item.precio ?? ''})`;
                     select.appendChild(option);
                 });
                 if (selectedId !== '') {
@@ -1564,6 +1611,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             await cargarCooperativasSelectPedido(data.pedido?.cooperativa ?? '');
             await cargarServiciosSelectPedido(data.pedido?.servicioAcontratar ?? '');
             await cargarCentrifugadorasSelectPedido(data.pedido?.equipo_centrifugadora ?? '');
+            await cargarProductosSelectPedido(data.pedido?.servicioAcontratar ?? '', data.pedido?.producto_id ?? '');
             setPedidoForm(data.pedido);
             openModalPedidoEdit();
         }
@@ -1809,6 +1857,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     if (e.target === modalPedido) {
                         closeModalPedidoEdit();
                     }
+                });
+            }
+
+            const servicioSelectPedido = document.getElementById('pedido_servicio');
+            if (servicioSelectPedido) {
+                servicioSelectPedido.addEventListener('change', (e) => {
+                    cargarProductosSelectPedido(e.target.value);
                 });
             }
 

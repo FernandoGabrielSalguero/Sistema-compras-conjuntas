@@ -15,6 +15,7 @@ class ServiciosVendimialesPedidosModel
             SELECT
                 p.*,
                 so.nombre AS servicio_nombre,
+                pr.nombre AS producto_nombre,
                 c.nombre AS centrifugadora_nombre,
                 f.aceptado AS contrato_aceptado,
                 f.firmado_en AS contrato_firmado_en,
@@ -22,6 +23,8 @@ class ServiciosVendimialesPedidosModel
             FROM serviciosVendimiales_pedidos p
             LEFT JOIN serviciosVendimiales_serviciosOfrecidos so
                 ON so.id = p.servicioAcontratar
+            LEFT JOIN serviciosVendimiales_productos pr
+                ON pr.id = p.producto_id
             LEFT JOIN serviciosVendimiales_centrifugadores c
                 ON c.id = p.equipo_centrifugadora
             LEFT JOIN (
@@ -62,9 +65,9 @@ class ServiciosVendimialesPedidosModel
     {
         $stmt = $this->pdo->prepare(
             "INSERT INTO serviciosVendimiales_pedidos
-             (cooperativa, nombre, cargo, servicioAcontratar, volumenAproximado, unidad_volumen,
+             (cooperativa, nombre, cargo, servicioAcontratar, producto_id, volumenAproximado, unidad_volumen,
               fecha_entrada_equipo, equipo_centrifugadora, estado, observaciones)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
 
         $stmt->execute([
@@ -72,6 +75,7 @@ class ServiciosVendimialesPedidosModel
             $data['nombre'],
             $data['cargo'],
             $data['servicioAcontratar'],
+            $data['producto_id'],
             $data['volumenAproximado'],
             $data['unidad_volumen'],
             $data['fecha_entrada_equipo'],
@@ -87,7 +91,7 @@ class ServiciosVendimialesPedidosModel
     {
         $stmt = $this->pdo->prepare(
             "UPDATE serviciosVendimiales_pedidos
-             SET cooperativa = ?, nombre = ?, cargo = ?, servicioAcontratar = ?, volumenAproximado = ?,
+             SET cooperativa = ?, nombre = ?, cargo = ?, servicioAcontratar = ?, producto_id = ?, volumenAproximado = ?,
                  unidad_volumen = ?, fecha_entrada_equipo = ?, equipo_centrifugadora = ?, estado = ?, observaciones = ?
              WHERE id = ?"
         );
@@ -97,6 +101,7 @@ class ServiciosVendimialesPedidosModel
             $data['nombre'],
             $data['cargo'],
             $data['servicioAcontratar'],
+            $data['producto_id'],
             $data['volumenAproximado'],
             $data['unidad_volumen'],
             $data['fecha_entrada_equipo'],
