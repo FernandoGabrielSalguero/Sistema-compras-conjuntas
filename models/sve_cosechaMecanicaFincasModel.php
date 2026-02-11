@@ -243,25 +243,79 @@ class SveCosechaMecanicaFincasModel
 
     public function guardarRelevamiento(int $participacionId, array $data): array
     {
-        $sqlExiste = "SELECT id FROM cosechaMecanica_relevamiento_finca WHERE participacion_id = :participacion_id LIMIT 1";
+        $sqlExiste = "SELECT
+                id,
+                ancho_callejon_norte,
+                ancho_callejon_sur,
+                promedio_callejon,
+                interfilar,
+                cantidad_postes,
+                postes_mal_estado,
+                porcentaje_postes_mal_estado,
+                estructura_separadores,
+                agua_lavado,
+                preparacion_acequias,
+                preparacion_obstaculos,
+                observaciones
+            FROM cosechaMecanica_relevamiento_finca
+            WHERE participacion_id = :participacion_id
+            LIMIT 1";
         $stmtExiste = $this->pdo->prepare($sqlExiste);
         $stmtExiste->execute([':participacion_id' => $participacionId]);
         $existente = $stmtExiste->fetch(PDO::FETCH_ASSOC);
 
+        $fields = [
+            'ancho_callejon_norte',
+            'ancho_callejon_sur',
+            'promedio_callejon',
+            'interfilar',
+            'cantidad_postes',
+            'postes_mal_estado',
+            'porcentaje_postes_mal_estado',
+            'estructura_separadores',
+            'agua_lavado',
+            'preparacion_acequias',
+            'preparacion_obstaculos',
+            'observaciones',
+        ];
+
+        $merged = [];
+        foreach ($fields as $field) {
+            $incoming = $data[$field] ?? null;
+            if ($incoming === '' || $incoming === null) {
+                $merged[$field] = $existente[$field] ?? null;
+            } else {
+                $merged[$field] = $incoming;
+            }
+        }
+
+        $norte = $merged['ancho_callejon_norte'];
+        $sur = $merged['ancho_callejon_sur'];
+        $totalPostes = $merged['cantidad_postes'];
+        $postesMal = $merged['postes_mal_estado'];
+
+        if (is_numeric($norte) && is_numeric($sur) && (float) $norte >= 0 && (float) $sur >= 0) {
+            $merged['promedio_callejon'] = (string) round((((float) $norte) + ((float) $sur)) / 2, 2);
+        }
+
+        if (is_numeric($totalPostes) && is_numeric($postesMal) && (float) $totalPostes > 0 && (float) $postesMal >= 0) {
+            $merged['porcentaje_postes_mal_estado'] = (string) round((((float) $postesMal) / ((float) $totalPostes)) * 100, 2);
+        }
+
         $payload = [
             ':participacion_id' => $participacionId,
-            ':ancho_callejon_norte' => $data['ancho_callejon_norte'],
-            ':ancho_callejon_sur' => $data['ancho_callejon_sur'],
-            ':promedio_callejon' => $data['promedio_callejon'],
-            ':interfilar' => $data['interfilar'],
-            ':cantidad_postes' => $data['cantidad_postes'],
-            ':postes_mal_estado' => $data['postes_mal_estado'],
-            ':porcentaje_postes_mal_estado' => $data['porcentaje_postes_mal_estado'],
-            ':estructura_separadores' => $data['estructura_separadores'],
-            ':agua_lavado' => $data['agua_lavado'],
-            ':preparacion_acequias' => $data['preparacion_acequias'],
-            ':preparacion_obstaculos' => $data['preparacion_obstaculos'],
-            ':observaciones' => $data['observaciones'],
+            ':ancho_callejon_norte' => $merged['ancho_callejon_norte'],
+            ':ancho_callejon_sur' => $merged['ancho_callejon_sur'],
+            ':promedio_callejon' => $merged['promedio_callejon'],
+            ':interfilar' => $merged['interfilar'],
+            ':cantidad_postes' => $merged['cantidad_postes'],
+            ':postes_mal_estado' => $merged['postes_mal_estado'],
+            ':porcentaje_postes_mal_estado' => $merged['porcentaje_postes_mal_estado'],
+            ':estructura_separadores' => $merged['estructura_separadores'],
+            ':agua_lavado' => $merged['agua_lavado'],
+            ':preparacion_acequias' => $merged['preparacion_acequias'],
+            ':preparacion_obstaculos' => $merged['preparacion_obstaculos'],
+            ':observaciones' => $merged['observaciones'],
         ];
 
         if ($existente) {

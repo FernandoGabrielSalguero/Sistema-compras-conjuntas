@@ -1147,30 +1147,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 };
             }
 
-            function modalTieneCamposObligatorios() {
-                const payload = getModalPayload();
-                const requeridos = [
-                    payload.ancho_callejon_norte,
-                    payload.ancho_callejon_sur,
-                    payload.interfilar,
-                    payload.cantidad_postes,
-                    payload.postes_mal_estado,
-                    payload.estructura_separadores,
-                    payload.agua_lavado,
-                    payload.preparacion_acequias,
-                    payload.preparacion_obstaculos,
-                ];
-                return !requeridos.some((valor) => !valor);
-            }
-
-            function intentarCerrarModalFinca() {
-                if (!modalTieneCamposObligatorios()) {
-                    showUserAlert('warning', 'Completá todos los campos obligatorios antes de cerrar.');
-                    return;
-                }
-                cerrarModalFinca();
-            }
-
             function abrirModalFinca() {
                 const modal = document.getElementById('fincaModal');
                 if (!modal) return;
@@ -1491,23 +1467,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             async function guardarRelevamiento(participacionId) {
                 const payload = getModalPayload();
-                const requeridos = [
-                    payload.ancho_callejon_norte,
-                    payload.ancho_callejon_sur,
-                    payload.interfilar,
-                    payload.cantidad_postes,
-                    payload.postes_mal_estado,
-                    payload.estructura_separadores,
-                    payload.agua_lavado,
-                    payload.preparacion_acequias,
-                    payload.preparacion_obstaculos,
-                ];
-
-                if (requeridos.some((valor) => !valor)) {
-                    showUserAlert('warning', 'Completá todos los campos obligatorios.');
-                    return;
-                }
-
                 const body = new URLSearchParams({
                     action: 'guardar_relevamiento',
                     participacion_id: String(participacionId),
@@ -1585,10 +1544,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     }
                 });
 
-                closeBtn?.addEventListener('click', intentarCerrarModalFinca);
+                closeBtn?.addEventListener('click', cerrarModalFinca);
                 modal?.addEventListener('click', (event) => {
                     if (event.target === modal) {
-                        intentarCerrarModalFinca();
+                        cerrarModalFinca();
                     }
                 });
 
