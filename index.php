@@ -4,8 +4,7 @@
 // Página de login con PHP 8+, PDO y MySQL 5.7/8
 // - Maneja: validación, auditoría, cierre de operativos vencidos,
 //   seteo de sesión y redirección por rol.
-// - Frontend: formulario accesible, menú "3 puntos", modo offline,
-//   y modal de reseteo de caché.
+// - Frontend: formulario accesible y menú de opciones.
 // -------------------------------------------------------------
 
 declare(strict_types=1);
@@ -82,11 +81,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 refreshSessionCookie();
             }
 
-            // Si es piloto_drone, guardar flag para activar sesión offline
-            $saveOffline = ($user['rol'] ?? '') === 'piloto_drone';
-            $_SESSION['save_offline_session'] = $saveOffline;
-            $_SESSION['user_data_for_offline'] = $saveOffline ? $user : null;
-
             // Redirección por rol (fail-safe a "/")
             $destinos = [
                 'cooperativa'  => '/views/cooperativa/coop_dashboard.php',
@@ -135,13 +129,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Iniciar Sesión</title>
-
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#0ea5e9" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
     <!-- Framework visual del proyecto -->
     <link rel="preconnect" href="https://framework.impulsagroup.com" />
@@ -268,125 +255,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             user-select: none;
         }
 
-        /* ===== Menú 3 puntos (esquina superior derecha) ===== */
-        .sve-topmenu {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-
-        .sve-menu-trigger {
-            width: 36px;
-            height: 36px;
-            min-width: 36px;
-            border-radius: 8px;
-            border: 1px solid var(--sve-gray-200);
-            background: #fff;
-            color: var(--sve-gray-500);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 20px;
-            line-height: 1;
-        }
-
-
-        .sve-menu {
-            position: absolute;
-            right: 0;
-            margin-top: 6px;
-            background: #fff;
-            border: 1px solid var(--sve-gray-200);
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
-            min-width: 260px;
-            padding: 6px;
-            display: none;
-            z-index: 10;
-        }
-
-        .sve-menu.open {
-            display: block;
-        }
-
-        .sve-menu-item {
-            width: 100%;
-            text-align: left;
-            padding: 10px 12px;
-            border-radius: 8px;
-            border: 0;
-            background: #fff;
-            color: #111827;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .sve-menu-item:hover {
-            background: var(--sve-gray-100);
-        }
-
-
-        /* Modal de reset offline */
-        #sve-cache-reset-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, .35);
-            display: none;
-            z-index: 100000;
-        }
-
-        #sve-cache-reset-modal {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            background: #fff;
-            max-width: 360px;
-            width: 92%;
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
-            font-family: system-ui;
-        }
-
-        #sve-cache-reset-modal .row {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-        }
-
-        #sve-cache-reset-modal .btn {
-            padding: 6px 10px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        #sve-cache-reset-modal .btn.cancel {
-            border: 1px solid var(--sve-gray-200);
-            background: #fff;
-        }
-
-        #sve-cache-reset-modal .btn.ok {
-            border: 0;
-            background: var(--sve-primary);
-            color: #fff;
-        }
     </style>
 </head>
 
 <body>
     <div class="login-container">
-        <!-- Menú de opciones (3 puntos) -->
-        <div class="sve-topmenu">
-            <button type="button" class="sve-menu-trigger" id="sve-menu-trigger" aria-haspopup="true" aria-expanded="false" title="Más opciones">⋮</button>
-            <div class="sve-menu" id="sve-menu" role="menu" aria-hidden="true" inert>
-                <button type="button" role="menuitem" id="sve-cache-reset-inline" title="Restablecer versión offline" aria-label="Restablecer versión offline" class="sve-menu-item">
-                    ↺ Restablecer versión offline
-                </button>
-            </div>
-        </div>
-
         <h1>Iniciar Sesión</h1>
 
         <?php if ($error !== ''): ?>
@@ -413,68 +286,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
     </div>
 
-    <!-- Modal reset offline -->
-    <div id="sve-cache-reset-overlay" aria-hidden="true">
-        <div id="sve-cache-reset-modal" role="dialog" aria-modal="true" aria-labelledby="reset-offline-title">
-            <h3 id="reset-offline-title" style="margin:0 0 8px;font-size:16px;">¿Restablecer la versión offline?</h3>
-            <p style="margin:0 0 12px;font-size:14px;line-height:1.4">
-                Esto <strong>borra caches</strong>, <strong>storage</strong> y <strong>desregistra</strong> el Service Worker. Se recargará la página.
-            </p>
-            <div class="row">
-                <button class="btn btn-cancelar" id="sve-cancel">Cancelar</button>
-                <button class="btn ok" id="sve-confirm">Sí, borrar</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Spinner Global (si existe) -->
     <script src="views/partials/spinner-global.js"></script>
     <!-- Framework JS del proyecto -->
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
-    <!-- Sistema offline -->
-    <script src="offline-sync.js?v=4.1"></script>
 
     <script>
-        // =========================================================
-        // Utilidades de limpieza offline (fallback si offline.js no está)
-        // =========================================================
-        if (!window.SVE_ClearAll) {
-            window.SVE_ClearAll = async function() {
-                try {
-                    // Caches
-                    if (window.caches?.keys) {
-                        const keys = await caches.keys();
-                        await Promise.all(keys.map(k => caches.delete(k)));
-                    }
-                    // Storages propios
-                    try {
-                        localStorage.removeItem('sve_offline_cred');
-                    } catch {}
-                    try {
-                        localStorage.removeItem('sve_offline_session');
-                    } catch {}
-                    try {
-                        sessionStorage.clear();
-                    } catch {}
-                    // IndexedDB
-                    try {
-                        if (indexedDB && indexedDB.databases) {
-                            const dbs = await indexedDB.databases();
-                            await Promise.all(dbs.map(db => db.name && indexedDB.deleteDatabase(db.name)));
-                        }
-                    } catch {}
-                    // Service Workers
-                    if ('serviceWorker' in navigator) {
-                        const regs = await navigator.serviceWorker.getRegistrations();
-                        await Promise.all(regs.map(r => r.unregister()));
-                    }
-                    console.log('[SVE] Limpieza completa ejecutada');
-                } catch (e) {
-                    console.warn('[SVE] Error limpiando', e);
-                }
-            }
-        }
-
         // =========================================================
         // Módulo: Toggle de contraseña (accesible)
         // =========================================================
@@ -494,182 +311,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         })();
 
-        // =========================================================
-        // Módulo: Modal de reset offline
-        // =========================================================
-        (function() {
-            const btn = document.getElementById('sve-cache-reset-inline');
-            const overlay = document.getElementById('sve-cache-reset-overlay');
-            const cancel = document.getElementById('sve-cancel');
-            const confirm = document.getElementById('sve-confirm');
-
-            if (!btn || !overlay || !cancel || !confirm) return;
-
-            function openModal() {
-                overlay.style.display = 'block';
-                overlay.setAttribute('aria-hidden', 'false');
-            }
-
-            function closeModal() {
-                overlay.style.display = 'none';
-                overlay.setAttribute('aria-hidden', 'true');
-            }
-
-            btn.addEventListener('click', openModal);
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) closeModal();
-            });
-            cancel.addEventListener('click', closeModal);
-            confirm.addEventListener('click', async () => {
-                closeModal();
-                await window.SVE_ClearAll();
-                location.reload();
-            });
-        })();
-
-        // =========================================================
-        // Módulo: Menú "3 puntos" simplificado
-        // =========================================================
-        (function() {
-            const trigger = document.getElementById('sve-menu-trigger');
-            const menu = document.getElementById('sve-menu');
-
-            if (!trigger || !menu) return;
-
-            function openMenu() {
-                menu.classList.add('open');
-                trigger.setAttribute('aria-expanded', 'true');
-                menu.setAttribute('aria-hidden', 'false');
-                menu.removeAttribute('inert');
-                const firstItem = menu.querySelector('.sve-menu-item');
-                if (firstItem) firstItem.focus();
-            }
-
-            function closeMenu() {
-                if (menu.contains(document.activeElement)) trigger.focus();
-                menu.classList.remove('open');
-                trigger.setAttribute('aria-expanded', 'false');
-                menu.setAttribute('aria-hidden', 'true');
-                menu.setAttribute('inert', '');
-            }
-
-            function toggleMenu() {
-                menu.classList.contains('open') ? closeMenu() : openMenu();
-            }
-
-            trigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleMenu();
-            });
-            document.addEventListener('click', (e) => {
-                if (!menu.contains(e.target) && e.target !== trigger) closeMenu();
-            });
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') closeMenu();
-            });
-            menu.addEventListener('click', (e) => {
-                const item = e.target.closest('.sve-menu-item');
-                if (item) {
-                    item.blur();
-                    closeMenu();
-                }
-            });
-        })();
-
-        // =========================================================
-        // =========================================================
-        // Autenticación offline para pilotos
-        // =========================================================
-        (function() {
-            let redirecting = false;
-
-            // Esperar a que offlineSync esté disponible
-            function waitForOfflineSync(callback, maxAttempts = 50) {
-                let attempts = 0;
-
-                function check() {
-                    attempts++;
-                    if (window.offlineSync && window.offlineSync.db) {
-                        callback();
-                    } else if (attempts < maxAttempts) {
-                        setTimeout(check, 100);
-                    } else {
-                        console.warn('[SVE] offlineSync no disponible después de', maxAttempts, 'intentos');
-                        callback(); // Llamar igual para mostrar mensaje de error
-                    }
-                }
-
-                check();
-            }
-
-            // Verificar si estamos offline y hay sesión válida
-            async function checkOfflineAuth() {
-                if (redirecting) {
-                    console.log('[SVE] Redirección ya en proceso');
-                    return false;
-                }
-
-                if (!navigator.onLine && window.offlineSync) {
-                    const session = window.offlineSync.getOfflineSession();
-                    if (session && session.rol === 'piloto_drone') {
-                        console.log('[SVE] Sesión offline válida encontrada');
-
-                        // Verificar que el Service Worker esté activo
-                        if ('serviceWorker' in navigator) {
-                            try {
-                                const registration = await navigator.serviceWorker.ready;
-                                if (registration.active) {
-                                    console.log('[SVE] Service Worker activo, redirigiendo...');
-                                    redirecting = true;
-
-                                    // Pequeño delay para asegurar que SW está listo
-                                    setTimeout(() => {
-                                        window.location.href = '/views/drone_pilot/drone_pilot_dashboard.php?offline=1';
-                                    }, 300);
-                                    return true;
-                                } else {
-                                    console.warn('[SVE] Service Worker no está activo');
-                                }
-                            } catch (error) {
-                                console.error('[SVE] Error verificando Service Worker:', error);
-                            }
-                        } else {
-                            console.warn('[SVE] Service Worker no soportado');
-                        }
-                    } else {
-                        console.log('[SVE] Sin sesión offline válida');
-                    }
-                }
-                return false;
-            }
-
-            // Mostrar mensaje de error offline
-            function showOfflineError() {
-                const errorDiv = document.querySelector('.error');
-                if (errorDiv && !navigator.onLine) {
-                    errorDiv.textContent = 'Sin conexión. Para trabajar offline, debes haber iniciado sesión al menos una vez con conexión.';
-                    errorDiv.style.display = 'block';
-                }
-            }
-
-            // Ejecutar al cargar
-            waitForOfflineSync(async () => {
-                // Si estamos offline, intentar auto-login
-                if (!navigator.onLine) {
-                    const redirected = await checkOfflineAuth();
-                    if (!redirected) {
-                        showOfflineError();
-                    }
-                }
-            });
-
-            // Listener para detectar cuando pierde la conexión
-            window.addEventListener('offline', async () => {
-                await checkOfflineAuth();
-            });
-        })();
-
-        // =========================================================
         // (Opcional para debug): imprimir sesión/cierre en consola
         // =========================================================
         <?php if (!empty($_SESSION)): ?>

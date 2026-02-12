@@ -4,51 +4,16 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Detectar si viene del modo offline
-$isOfflineMode = isset($_GET['offline']) && $_GET['offline'] === '1';
+// Autenticación estándar (requiere conexión)
+require_once '../../middleware/authMiddleware.php';
+checkAccess('piloto_drone');
 
-if ($isOfflineMode) {
-    // Modo offline: crear sesión simulada (los datos se cargan desde localStorage en JavaScript)
-    // No verificamos autenticación contra el servidor
-    session_start();
-
-    // Marcar como sesión offline
-    $_SESSION['offline_mode'] = true;
-    $_SESSION['rol'] = 'piloto_drone'; // Forzar rol para que pase checkAccess
-
-    // Los datos reales se cargarán desde localStorage en JavaScript
-    $nombre = 'Cargando...';
-    $correo = 'offline@mode';
-    $cuit = '';
-    $telefono = '';
-    $observaciones = '';
-
-} else {
-    // Modo online normal: autenticación estándar
-    require_once '../../middleware/authMiddleware.php';
-    checkAccess('piloto_drone');
-
-    // Datos del usuario en sesión
-    $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
-    $correo = $_SESSION['correo'] ?? 'Sin correo';
-    $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-    $telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
-    $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
-
-    // Preparar datos para guardar offline
-    $userDataForOffline = [
-        'id' => $_SESSION['usuario_id'] ?? null,
-        'usuario' => $_SESSION['usuario'] ?? '',
-        'rol' => $_SESSION['rol'] ?? '',
-        'nombre' => $nombre,
-        'correo' => $correo,
-        'telefono' => $telefono,
-        'direccion' => $_SESSION['direccion'] ?? '',
-        'usuario_id' => $_SESSION['usuario_id'] ?? null,
-        'id_real' => $_SESSION['id_real'] ?? '',
-        'cuit' => $cuit
-    ];
-}
+// Datos del usuario en sesión
+$nombre = $_SESSION['nombre'] ?? 'Sin nombre';
+$correo = $_SESSION['correo'] ?? 'Sin correo';
+$cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
+$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
+$observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 $sesionDebug = [
     'nombre' => $nombre,
@@ -57,8 +22,7 @@ $sesionDebug = [
     'telefono' => $telefono,
     'observaciones' => $observaciones,
     'usuario_id' => $_SESSION['usuario_id'] ?? ($_SESSION['id'] ?? null),
-    'rol' => $_SESSION['rol'] ?? null,
-    'offline_mode' => $isOfflineMode
+    'rol' => $_SESSION['rol'] ?? null
 ];
 ?>
 
@@ -78,13 +42,6 @@ $sesionDebug = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE - Piloto Drone</title>
 
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#0ea5e9" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-
     <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -95,15 +52,6 @@ $sesionDebug = [
 
     <!-- CDN firma con dedo -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" defer></script>
-
-    <!-- Sistema de sincronización offline -->
-    <script src="../../offline-sync.js?v=4.1" defer></script>
-    <script src="../../offline-init.js?v=1.1" defer></script>
-
-    <?php if (isset($_GET['debug']) && $_GET['debug'] === '1'): ?>
-    <!-- Herramientas de diagnóstico (solo en modo debug) -->
-    <script src="../../offline-diagnostics.js?v=1.0" defer></script>
-    <?php endif; ?>
 
     <style>
         /* Overlay del modal */
@@ -493,68 +441,6 @@ $sesionDebug = [
             margin: 0 0 .75rem 0;
         }
 
-        /* Indicador de estado offline/online */
-        .sync-status {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #fff;
-            border-radius: 12px;
-            padding: 12px 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 1000;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .sync-status.online {
-            border-left: 4px solid #22c55e;
-        }
-
-        .sync-status.offline {
-            border-left: 4px solid #ef4444;
-        }
-
-        .sync-status.syncing {
-            border-left: 4px solid #f59e0b;
-        }
-
-        .sync-status .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        .sync-status.online .status-dot {
-            background: #22c55e;
-        }
-
-        .sync-status.offline .status-dot {
-            background: #ef4444;
-        }
-
-        .sync-status.syncing .status-dot {
-            background: #f59e0b;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .sync-badge {
-            background: #ef4444;
-            color: white;
-            font-size: 11px;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 4px;
-        }
     </style>
 </head>
 
@@ -901,78 +787,7 @@ $sesionDebug = [
         </div>
     </div>
 
-    <!-- Indicador de estado de sincronización -->
-    <div class="sync-status online" id="sync-status">
-        <div class="status-dot"></div>
-        <span id="sync-status-text">En línea</span>
-        <span id="sync-pending-badge" class="sync-badge" style="display: none;">0</span>
-    </div>
-
     <script>
-        // =========================================================
-        // Gestión de sesión offline
-        // =========================================================
-        (function() {
-            const isOfflineMode = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
-
-            function setupOfflineSession() {
-                if (!window.offlineSync) {
-                    setTimeout(setupOfflineSession, 100);
-                    return;
-                }
-
-                if (isOfflineMode) {
-                    // Modo offline: cargar datos desde localStorage
-                    console.log('[Dashboard] Modo offline activado');
-                    const session = window.offlineSync.getOfflineSession();
-                    if (session) {
-                        console.log('[Dashboard] Sesión offline cargada:', session.usuario);
-                        // Los datos ya están en la página, no necesitamos hacer nada más
-                    } else {
-                        console.error('[Dashboard] No hay sesión offline válida');
-                        alert('Sesión offline inválida o expirada. Necesitas conectarte a internet.');
-                        window.location.href = '/';
-                    }
-                } else {
-                    // Modo online: guardar sesión offline
-                    <?php if (!$isOfflineMode && isset($userDataForOffline)): ?>
-                    const userData = <?php echo json_encode($userDataForOffline, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
-                    const saved = window.offlineSync.saveOfflineSession(userData);
-                    if (saved) {
-                        console.log('[Dashboard] Sesión offline guardada correctamente');
-                    }
-                    <?php endif; ?>
-
-                    // Renovar token cada vez que hay conexión
-                    window.addEventListener('online', () => {
-                        if (window.offlineSync) {
-                            window.offlineSync.renewOfflineToken();
-                        }
-                    });
-                }
-            }
-
-            document.addEventListener('DOMContentLoaded', setupOfflineSession);
-        })();
-
-        // =========================================================
-        // Registro del Service Worker
-        // =========================================================
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                // Cache busting: agregar parámetro de versión
-                navigator.serviceWorker.register('/service-worker.js?v=4.2')
-                    .then(registration => {
-                        console.log('Service Worker registrado:', registration.scope);
-                        // Forzar actualización si hay nueva versión
-                        registration.update();
-                    })
-                    .catch(error => {
-                        console.error('Error al registrar Service Worker:', error);
-                    });
-            });
-        }
-
         // listeners, detalle, reporte, firma
         let signatureCliente, signaturePiloto;
 
@@ -1106,52 +921,7 @@ $sesionDebug = [
             setIfExists('nom_cliente', nomCliente);
             setIfExists('nom_piloto', <?php echo json_encode($nombre); ?>);
 
-            // Detectar si estamos offline
-            const isOffline = !navigator.onLine;
-
-            if (isOffline) {
-                // Modo offline: intentar cargar desde cache
-                console.log('[Dashboard] Modo offline: intentando cargar desde cache...');
-
-                try {
-                    if (window.offlineSync && window.offlineSync.getCachedSolicitud) {
-                        const cachedSolicitud = await window.offlineSync.getCachedSolicitud(id);
-
-                        if (cachedSolicitud) {
-                            console.log('[Dashboard] Solicitud encontrada en cache:', cachedSolicitud);
-
-                            // Pre-llenar campos desde cache
-                            setIfExists('nom_cliente', cachedSolicitud.nom_cliente || nomCliente);
-                            setIfExists('nom_piloto', <?php echo json_encode($nombre); ?>);
-
-                            // Llenar otros campos si están disponibles en cache
-                            if (cachedSolicitud.finca) {
-                                setIfExists('nombre_finca', cachedSolicitud.finca);
-                            }
-                            if (cachedSolicitud.cuartel) {
-                                setIfExists('cuadro_cuartel', cachedSolicitud.cuartel);
-                            }
-
-                            showAlert?.('info', 'Modo offline: Datos básicos cargados desde cache. Se guardará localmente.');
-                        } else {
-                            console.log('[Dashboard] No se encontró solicitud en cache');
-                            showAlert?.('warning', 'Modo offline: Completa el formulario manualmente. Se guardará localmente.');
-                        }
-                    }
-                } catch (error) {
-                    console.warn('[Dashboard] Error cargando desde cache:', error);
-                    showAlert?.('info', 'Modo offline: Completa el formulario manualmente. Se guardará localmente.');
-                }
-
-                // Inicializar tabla de receta vacía
-                buildTablaReceta([], id);
-
-                // Abrir modal
-                openModalReporte();
-                return;
-            }
-
-            // Modo online: intentar cargar datos del servidor
+            // Cargar datos del servidor
             try {
                 const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=reporte_solicitud&id=${encodeURIComponent(id)}`, {
                     credentials: 'same-origin'
@@ -1645,64 +1415,33 @@ $sesionDebug = [
         async function cargarSolicitudes() {
             try {
                 cardsSkeleton(3);
+                const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
+                    credentials: 'same-origin'
+                });
 
-                // Intentar cargar desde servidor si hay conexión
-                if (navigator.onLine) {
-                    try {
-                        const res = await fetch(`../../controllers/drone_pilot_dashboardController.php?action=mis_solicitudes`, {
-                            credentials: 'same-origin'
-                        });
-
-                        if (!res.ok) {
-                            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-                        }
-
-                        // Verificar que la respuesta sea JSON
-                        const contentType = res.headers.get('content-type');
-                        if (!contentType || !contentType.includes('application/json')) {
-                            const text = await res.text();
-                            console.error('[Dashboard] Respuesta no es JSON:', text.substring(0, 200));
-
-                            if (text.includes('<!DOCTYPE') || text.includes('<html')) {
-                                throw new Error('Sesión expirada. Recarga la página e inicia sesión.');
-                            }
-
-                            throw new Error('Respuesta del servidor inválida');
-                        }
-
-                        const payload = await res.json();
-                        const solicitudes = payload.data || [];
-
-                        // Cachear solicitudes para uso offline
-                        if (window.offlineSync && window.offlineSync.cacheSolicitudes) {
-                            await window.offlineSync.cacheSolicitudes(solicitudes);
-                            console.log('[Dashboard] Solicitudes cacheadas para uso offline');
-                        }
-
-                        renderCards(solicitudes);
-                        return;
-                    } catch (fetchError) {
-                        console.warn('[Dashboard] Error al cargar desde servidor, intentando cache...', fetchError);
-                    }
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
                 }
 
-                // Si estamos offline o falló el fetch, cargar desde cache
-                console.log('[Dashboard] Cargando solicitudes desde cache offline...');
-                if (window.offlineSync && window.offlineSync.getCachedSolicitudes) {
-                    const cachedSolicitudes = await window.offlineSync.getCachedSolicitudes();
-                    if (cachedSolicitudes && cachedSolicitudes.length > 0) {
-                        console.log(`[Dashboard] ${cachedSolicitudes.length} solicitudes cargadas desde cache`);
-                        renderCards(cachedSolicitudes);
-                        showAlert?.('info', 'Modo offline: Mostrando solicitudes cacheadas');
-                    } else {
-                        throw new Error('No hay solicitudes en cache');
+                // Verificar que la respuesta sea JSON
+                const contentType = res.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await res.text();
+                    console.error('[Dashboard] Respuesta no es JSON:', text.substring(0, 200));
+
+                    if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+                        throw new Error('Sesión expirada. Recarga la página e inicia sesión.');
                     }
-                } else {
-                    throw new Error('Sistema offline no disponible');
+
+                    throw new Error('Respuesta del servidor inválida');
                 }
+
+                const payload = await res.json();
+                const solicitudes = payload.data || [];
+                renderCards(solicitudes);
             } catch (e) {
                 console.error('[Dashboard] Error cargando solicitudes:', e);
-                document.getElementById('cards-solicitudes').innerHTML = `<div class="alert danger"><span class="material-icons">error</span>Sin conexión y sin datos cacheados. Conéctate al menos una vez para trabajar offline.</div>`;
+                document.getElementById('cards-solicitudes').innerHTML = `<div class="alert danger"><span class="material-icons">error</span>No se pudieron cargar las solicitudes. Verifica tu conexión e intenta nuevamente.</div>`;
             }
         }
 
@@ -1742,8 +1481,7 @@ $sesionDebug = [
         // Evita doble submit (bloquea mientras procesa)
         let submitting = false;
 
-        // NOTA: El event listener del submit se agrega más abajo en el módulo de sincronización offline
-        // para manejar correctamente el modo online/offline
+        // El submit del reporte se maneja al final del script.
 
         // Cargar catálogo liviano para datalist (por nombre)
         async function cargarCatalogoProductos() {
@@ -1884,209 +1622,80 @@ $sesionDebug = [
         document.addEventListener('DOMContentLoaded', setupNumericInputs);
 
         // =========================================================
-        // Sistema de sincronización offline
+        // Envío del reporte (online)
         // =========================================================
         (function() {
-            const statusEl = document.getElementById('sync-status');
-            const statusText = document.getElementById('sync-status-text');
-            const pendingBadge = document.getElementById('sync-pending-badge');
-
-            // Actualizar estado visual
-            function updateSyncStatus() {
-                const isOnline = navigator.onLine;
-
-                if (window.offlineSync) {
-                    window.offlineSync.getPendingCount().then(count => {
-                        if (count > 0) {
-                            pendingBadge.textContent = count;
-                            pendingBadge.style.display = 'inline-block';
-                        } else {
-                            pendingBadge.style.display = 'none';
-                        }
-                    }).catch(err => {
-                        console.error('Error obteniendo pendientes:', err);
-                    });
-                }
-
-                if (isOnline) {
-                    statusEl.className = 'sync-status online';
-                    statusText.textContent = 'En línea';
-                } else {
-                    statusEl.className = 'sync-status offline';
-                    statusText.textContent = 'Sin conexión';
-                }
-            }
-
-            // Event listeners de conexión
-            window.addEventListener('online', () => {
-                updateSyncStatus();
-                showAlert?.('success', 'Conexión restaurada. Sincronizando...');
-            });
-
-            window.addEventListener('offline', () => {
-                updateSyncStatus();
-                showAlert?.('info', 'Sin conexión. Los datos se guardarán localmente.');
-            });
-
-            // Event listeners de sincronización
-            if (window.offlineSync) {
-                window.offlineSync.on('sync-start', () => {
-                    statusEl.className = 'sync-status syncing';
-                    statusText.textContent = 'Sincronizando...';
-                });
-
-                window.offlineSync.on('sync-complete', (detail) => {
-                    updateSyncStatus();
-                    if (detail.success > 0) {
-                        showAlert?.('success', `${detail.success} reporte(s) sincronizado(s) correctamente`);
-                        // Recargar solicitudes para reflejar cambios
-                        cargarSolicitudes();
-                    }
-                    if (detail.errors > 0) {
-                        showAlert?.('warning', `${detail.errors} reporte(s) con errores al sincronizar`);
-                    }
-                });
-
-                window.offlineSync.on('sync-error', (detail) => {
-                    updateSyncStatus();
-                    showAlert?.('error', 'Error al sincronizar datos');
-                });
-
-                window.offlineSync.on('report-saved', (detail) => {
-                    updateSyncStatus();
-                    showAlert?.('info', 'Reporte guardado localmente. Se sincronizará cuando haya conexión.');
-                });
-
-                // Listener para mensajes del service worker
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.addEventListener('message', (event) => {
-                        if (event.data?.type === 'SYNC_REPORTS') {
-                            console.log('Service Worker solicitó sincronización');
-                            window.offlineSync.syncPendingData();
-                        }
-                    });
-                }
-            }
-
-            // Actualizar estado inicial
-            document.addEventListener('DOMContentLoaded', () => {
-                setTimeout(updateSyncStatus, 500);
-                // Actualizar cada 30 segundos
-                setInterval(updateSyncStatus, 30000);
-            });
-
-            // Modificar el submit del formulario de reporte para soportar offline
             const formReporte = document.getElementById('form-reporte');
-            if (formReporte) {
-                // Remover el listener existente y agregar uno nuevo
-                const oldSubmit = formReporte.onsubmit;
-                formReporte.removeEventListener('submit', oldSubmit);
+            if (!formReporte) return;
 
-                formReporte.addEventListener('submit', async (ev) => {
-                    ev.preventDefault();
-                    if (submitting) return;
-                    submitting = true;
+            formReporte.addEventListener('submit', async (ev) => {
+                ev.preventDefault();
+                if (submitting) return;
+                submitting = true;
 
-                    try {
-                        const sid = ev.currentTarget.dataset.sid;
+                try {
+                    const sid = ev.currentTarget.dataset.sid;
 
-                        // Actualizar receta editable primero (si está online)
-                        if (sid && navigator.onLine) {
-                            const rows = Array.from(document.querySelectorAll('#tbody-receta tr')).map(tr => {
-                                return {
-                                    id: tr.dataset.id,
-                                    cant_prod_usado: tr.querySelector('.inp-cant')?.value || null,
-                                    fecha_vencimiento: tr.querySelector('.inp-fecha')?.value || null
-                                }
-                            });
-                            try {
-                                await fetch(`../../controllers/drone_pilot_dashboardController.php`, {
-                                    method: 'POST',
-                                    credentials: 'same-origin',
-                                    body: new URLSearchParams({
-                                        action: 'actualizar_receta',
-                                        solicitud_id: sid,
-                                        recetas_json: JSON.stringify(rows)
-                                    })
-                                });
-                            } catch (e) {
-                                console.error('actualizar_receta', e);
-                            }
-                        }
-
-                        // Validar fotos
-                        const fotos = document.getElementById('fotos');
-                        if (fotos.files.length > 10) {
-                            showAlert?.('info', 'Máximo 10 fotos.');
-                            submitting = false;
-                            return;
-                        }
-
-                        // Capturar firmas
-                        const firmaCliente = signatureCliente && !signatureCliente.isEmpty() ?
-                            signatureCliente.toDataURL('image/png') : '';
-                        const firmaPiloto = signaturePiloto && !signaturePiloto.isEmpty() ?
-                            signaturePiloto.toDataURL('image/png') : '';
-
-                        // Preparar datos del reporte
-                        const formData = new FormData(ev.target);
-                        const reportData = {
-                            solicitud_id: formData.get('solicitud_id'),
-                            nom_cliente: formData.get('nom_cliente'),
-                            nom_piloto: formData.get('nom_piloto'),
-                            nom_encargado: formData.get('nom_encargado'),
-                            fecha_visita: formData.get('fecha_visita'),
-                            hora_ingreso: formData.get('hora_ingreso'),
-                            hora_egreso: formData.get('hora_egreso'),
-                            nombre_finca: formData.get('nombre_finca'),
-                            cultivo_pulverizado: formData.get('cultivo_pulverizado'),
-                            cuadro_cuartel: formData.get('cuadro_cuartel'),
-                            sup_pulverizada: formData.get('sup_pulverizada'),
-                            vol_aplicado: formData.get('vol_aplicado'),
-                            vel_viento: formData.get('vel_viento'),
-                            temperatura: formData.get('temperatura'),
-                            humedad_relativa: formData.get('humedad_relativa'),
-                            lavado_dron_miner: formData.get('lavado_dron_miner'),
-                            triple_lavado_envases: formData.get('triple_lavado_envases'),
-                            observaciones: formData.get('observaciones')
-                        };
-
-                        // Si está offline, guardar localmente
-                        if (!navigator.onLine && window.offlineSync) {
-                            const photos = Array.from(fotos.files || []);
-                            await window.offlineSync.saveReportOffline(
-                                reportData,
-                                photos,
-                                firmaCliente,
-                                firmaPiloto
-                            );
-                            showAlert?.('success', 'Reporte guardado offline. Se sincronizará automáticamente.');
-                            closeModalReporte();
-                            updateSyncStatus();
-                        } else {
-                            // Online: enviar normalmente
-                            document.getElementById('firma_cliente_base64').value = firmaCliente;
-                            document.getElementById('firma_piloto_base64').value = firmaPiloto;
-
-                            const res = await fetch(`../../controllers/drone_pilot_dashboardController.php`, {
+                    // Actualizar receta editable primero
+                    if (sid) {
+                        const rows = Array.from(document.querySelectorAll('#tbody-receta tr')).map(tr => {
+                            return {
+                                id: tr.dataset.id,
+                                cant_prod_usado: tr.querySelector('.inp-cant')?.value || null,
+                                fecha_vencimiento: tr.querySelector('.inp-fecha')?.value || null
+                            };
+                        });
+                        try {
+                            await fetch(`../../controllers/drone_pilot_dashboardController.php`, {
                                 method: 'POST',
-                                body: formData,
-                                credentials: 'same-origin'
+                                credentials: 'same-origin',
+                                body: new URLSearchParams({
+                                    action: 'actualizar_receta',
+                                    solicitud_id: sid,
+                                    recetas_json: JSON.stringify(rows)
+                                })
                             });
-                            const payload = await res.json();
-                            if (!res.ok || !payload.ok) throw new Error(payload.message || 'Error API');
-                            showAlert?.('success', 'Reporte guardado correctamente.');
-                            closeModalReporte();
-                            cargarSolicitudes();
+                        } catch (e) {
+                            console.error('actualizar_receta', e);
                         }
-                    } catch (err) {
-                        console.error(err);
-                        showAlert?.('error', 'No se pudo guardar el reporte.');
-                    } finally {
-                        submitting = false;
                     }
-                });
-            }
+
+                    // Validar fotos
+                    const fotos = document.getElementById('fotos');
+                    if (fotos.files.length > 10) {
+                        showAlert?.('info', 'Máximo 10 fotos.');
+                        submitting = false;
+                        return;
+                    }
+
+                    // Capturar firmas
+                    const firmaCliente = signatureCliente && !signatureCliente.isEmpty() ?
+                        signatureCliente.toDataURL('image/png') : '';
+                    const firmaPiloto = signaturePiloto && !signaturePiloto.isEmpty() ?
+                        signaturePiloto.toDataURL('image/png') : '';
+
+                    // Enviar normalmente
+                    document.getElementById('firma_cliente_base64').value = firmaCliente;
+                    document.getElementById('firma_piloto_base64').value = firmaPiloto;
+
+                    const formData = new FormData(ev.target);
+                    const res = await fetch(`../../controllers/drone_pilot_dashboardController.php`, {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'same-origin'
+                    });
+                    const payload = await res.json();
+                    if (!res.ok || !payload.ok) throw new Error(payload.message || 'Error API');
+                    showAlert?.('success', 'Reporte guardado correctamente.');
+                    closeModalReporte();
+                    cargarSolicitudes();
+                } catch (err) {
+                    console.error(err);
+                    showAlert?.('error', 'No se pudo guardar el reporte.');
+                } finally {
+                    submitting = false;
+                }
+            });
         })();
 
         // =========================================================
@@ -2094,79 +1703,8 @@ $sesionDebug = [
         // =========================================================
         function handleLogout() {
             console.log('[Dashboard] Cerrando sesión...');
-
-            // Verificar si estamos en modo offline
-            const isOfflineMode = <?php echo json_encode($isOfflineMode); ?>;
-
-            if (isOfflineMode || !navigator.onLine) {
-                // Modo offline: redirigir a index.php directamente
-                // No intentar logout.php porque no hay conexión
-                console.log('[Dashboard] Modo offline: redirigiendo a login');
-                window.location.href = '/index.php';
-            } else {
-                // Modo online: logout normal que destruye sesión en servidor
-                console.log('[Dashboard] Modo online: cerrando sesión en servidor');
-                window.location.href = '/logout.php';
-            }
+            window.location.href = '/logout.php';
         }
-
-        // =========================================================
-        // Manejo silencioso de errores CORS de recursos externos
-        // =========================================================
-        (function() {
-            // Los errores CORS de framework.impulsagroup.com son normales y están manejados
-            // por el Service Worker. Este código simplemente los silencia en la consola.
-
-            // Interceptar errores de carga de recursos
-            window.addEventListener('error', function(e) {
-                // Si es un error de carga de recurso externo, registrarlo silenciosamente
-                if (e.target && (e.target.tagName === 'LINK' || e.target.tagName === 'SCRIPT')) {
-                    const url = e.target.src || e.target.href;
-                    if (url && (url.includes('framework.impulsagroup.com') || url.includes('fonts.googleapis.com'))) {
-                        console.info('[SVE] Recurso externo no disponible (normal en offline):', url);
-                        // Prevenir que el error se propague a la consola
-                        e.preventDefault();
-                        return false;
-                    }
-                }
-            }, true);
-
-            // Agregar onerror handlers a recursos externos ya cargados
-            document.addEventListener('DOMContentLoaded', function() {
-                const externalScripts = document.querySelectorAll('script[src*="framework.impulsagroup.com"], script[src*="googleapis.com"], script[src*="jsdelivr.net"]');
-                const externalLinks = document.querySelectorAll('link[href*="framework.impulsagroup.com"], link[href*="googleapis.com"]');
-
-                externalScripts.forEach(script => {
-                    if (!script.onerror) {
-                        script.onerror = function() {
-                            console.info('[SVE] Script externo no cargado (normal en offline):', script.src);
-                        };
-                    }
-                });
-
-                externalLinks.forEach(link => {
-                    if (!link.onerror) {
-                        link.onerror = function() {
-                            console.info('[SVE] CSS externo no cargado (normal en offline):', link.href);
-                        };
-                    }
-                });
-            });
-
-            // Interceptar errores de fetch de CORS (aunque el SW los maneja)
-            const originalFetch = window.fetch;
-            window.fetch = function(...args) {
-                return originalFetch.apply(this, args).catch(error => {
-                    const url = args[0];
-                    if (typeof url === 'string' && url.includes('framework.impulsagroup.com')) {
-                        console.info('[SVE] Fetch CORS silenciado (manejado por SW):', url);
-                        // Retornar respuesta vacía en lugar de error
-                        return new Response('', { status: 200 });
-                    }
-                    throw error;
-                });
-            };
-        })();
     </script>
 
 </body>

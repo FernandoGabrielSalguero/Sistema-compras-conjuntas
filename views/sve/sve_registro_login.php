@@ -78,7 +78,6 @@ unset($_SESSION['cierre_info']);
             width: 100%;
         }
     </style>
-<link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0ea5e9">
 <link rel="preconnect" href="https://www.impulsagroup.com" crossorigin>
 <script>
@@ -395,7 +394,6 @@ unset($_SESSION['cierre_info']);
             document.addEventListener('DOMContentLoaded', fetchData);
         })();
     </script>
-<script src="/assets/js/offline.js"></script>
 </body>
 
 </html>
