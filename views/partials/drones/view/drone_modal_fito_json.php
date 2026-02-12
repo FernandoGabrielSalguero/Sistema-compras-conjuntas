@@ -355,7 +355,9 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             const raw = String(path).replace(/\\/g, '/');
             if (/^(https?:)?\/\//i.test(raw)) return raw;
             if (raw.startsWith('data:') || raw.startsWith('blob:')) return raw;
-            return raw;
+            if (raw.startsWith('/')) return raw;
+            // Normalizamos rutas relativas guardadas en DB (p.ej. "uploads/ReporteDrones/...")
+            return '/' + raw.replace(/^\.?\/*/, '');
         }
 
         function buildImg(url, altText) {

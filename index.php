@@ -1,11 +1,5 @@
 <?php
-// login.php
-// -------------------------------------------------------------
-// Página de login con PHP 8+, PDO y MySQL 5.7/8
-// - Maneja: validación, auditoría, cierre de operativos vencidos,
-//   seteo de sesión y redirección por rol.
-// - Frontend: formulario accesible y menú de opciones.
-// -------------------------------------------------------------
+
 
 declare(strict_types=1);
 
