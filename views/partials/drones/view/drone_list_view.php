@@ -29,7 +29,7 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
     }
 </style>
 
-<!-- Descarga de consolidado -->
+<!-- Descarga de consolidado (carga on-demand en JS, dejamos el tag por compatibilidad) -->
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -746,8 +746,33 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             return json.data.items || [];
         }
 
+        function loadScriptOnce(src, testFn) {
+            if (testFn && testFn()) return Promise.resolve();
+            return new Promise((resolve, reject) => {
+                const existing = document.querySelector(`script[src="${src}"]`);
+                if (existing) {
+                    existing.addEventListener('load', () => resolve(), { once: true });
+                    existing.addEventListener('error', () => reject(new Error('No se pudo cargar ' + src)), { once: true });
+                    return;
+                }
+                const s = document.createElement('script');
+                s.src = src;
+                s.defer = true;
+                s.onload = () => resolve();
+                s.onerror = () => reject(new Error('No se pudo cargar ' + src));
+                document.head.appendChild(s);
+            });
+        }
+
+        async function ensureXLSX() {
+            if (window.XLSX) return;
+            await loadScriptOnce('https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js', () => !!window.XLSX);
+            if (!window.XLSX) throw new Error('La librería XLSX no está disponible.');
+        }
+
         async function exportExcel() {
             try {
+                await ensureXLSX();
                 btn.disabled = true;
                 const rows = await fetchRows();
                 if (!rows.length) {
