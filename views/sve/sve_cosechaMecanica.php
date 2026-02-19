@@ -227,6 +227,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             font-size: 0.9rem;
         }
 
+        .modal-readonly-field.text-block {
+            white-space: pre-wrap;
+        }
+
         .modal-table-wrapper {
             max-height: 320px;
             overflow-y: auto;
@@ -572,6 +576,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <?php require_once __DIR__ . '/../partials/cosechaMecanicaModales/verContratoModal_view.php'; ?>
     <?php require_once __DIR__ . '/../partials/cosechaMecanicaModales/verCoopProdModal_view.php'; ?>
     <?php require_once __DIR__ . '/../partials/cosechaMecanicaModales/eliminarContratoModal_view.php'; ?>
+    <?php require_once __DIR__ . '/sve_cosechaMecanicaCalificaciones.php'; ?>
 
     <div id="fincaModal" class="modal hidden" aria-hidden="true">
         <div class="modal-content">
@@ -715,6 +720,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const modalVerContrato = document.getElementById('modalVerContrato');
             const modalCoopProd = document.getElementById('modalCoopProd');
             const modalEliminar = document.getElementById('modalEliminarContrato');
+            const modalCalificacion = document.getElementById('modalCalificacion');
 
             const formNuevoContrato = document.getElementById('formNuevoContrato');
             const modalVerContratoBody = document.getElementById('modalVerContratoBody');
@@ -760,7 +766,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
 
             function cerrarTodosLosModales() {
-                [modalNuevo, modalVerContrato, modalCoopProd, modalEliminar].forEach(cerrarModal);
+                [modalNuevo, modalVerContrato, modalCoopProd, modalEliminar, modalCalificacion].forEach(cerrarModal);
             }
 
             async function apiRequest(action, payload = {}) {
@@ -1398,6 +1404,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             btn.title = idPedido ? `Calificar ID ${idPedido}` : 'Calificar';
                         }
                         tdAcciones.appendChild(btn);
+
+                        if (tieneRelevamiento) {
+                            const btnCalificacion = document.createElement('button');
+                            btnCalificacion.className = 'btn btn-info';
+                            btnCalificacion.dataset.action = 'ver-calificacion';
+                            btnCalificacion.dataset.participacionId = String(fila.id);
+                            btnCalificacion.textContent = 'Calificación';
+                            tdAcciones.appendChild(btnCalificacion);
+                        }
                         tr.appendChild(tdAcciones);
 
                         const tdVariedad = document.createElement('td');
@@ -1520,6 +1535,71 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 } else {
                     btn.classList.remove('btn-modificar');
                 }
+
+                const cell = btn.closest('td');
+                if (!cell) return;
+                const existente = cell.querySelector('button[data-action="ver-calificacion"]');
+                if (tieneRelevamiento) {
+                    if (!existente) {
+                        const btnCalificacion = document.createElement('button');
+                        btnCalificacion.className = 'btn btn-info';
+                        btnCalificacion.dataset.action = 'ver-calificacion';
+                        btnCalificacion.dataset.participacionId = String(participacionId);
+                        btnCalificacion.textContent = 'Calificación';
+                        cell.appendChild(btnCalificacion);
+                    }
+                } else if (existente) {
+                    existente.remove();
+                }
+            }
+
+            function construirTextoCalificacion(data) {
+                if (!data) {
+                    return 'Sin calificación registrada.';
+                }
+                const fields = [
+                    { label: 'Ancho callejón norte', value: data.ancho_callejon_norte },
+                    { label: 'Ancho callejón sur', value: data.ancho_callejon_sur },
+                    { label: 'Promedio callejón', value: data.promedio_callejon },
+                    { label: 'Interfilar', value: data.interfilar },
+                    { label: 'Cantidad postes', value: data.cantidad_postes },
+                    { label: 'Postes mal estado', value: data.postes_mal_estado },
+                    { label: '% postes mal estado', value: data.porcentaje_postes_mal_estado },
+                    { label: 'Estructura separadores', value: data.estructura_separadores },
+                    { label: 'Agua para el lavado', value: data.agua_lavado },
+                    { label: 'Preparación acequias', value: data.preparacion_acequias },
+                    { label: 'Preparación obstáculos', value: data.preparacion_obstaculos },
+                    { label: 'Observaciones', value: data.observaciones },
+                    { label: 'Creado', value: data.created_at },
+                    { label: 'Actualizado', value: data.updated_at },
+                ];
+                return fields.map((item) => {
+                    const raw = (item.value === null || item.value === undefined || String(item.value).trim() === '')
+                        ? 'Sin dato'
+                        : String(item.value);
+                    return `${item.label}: ${raw}`;
+                }).join('\n');
+            }
+
+            async function abrirModalCalificacion(participacionId) {
+                const textoEl = document.getElementById('modalCalificacionTexto');
+                if (textoEl) {
+                    textoEl.textContent = 'Cargando calificación...';
+                }
+                abrirModal(modalCalificacion);
+                try {
+                    const relevamiento = await cargarRelevamiento(participacionId);
+                    const texto = construirTextoCalificacion(relevamiento);
+                    if (textoEl) {
+                        textoEl.textContent = texto;
+                    }
+                } catch (error) {
+                    console.error('[CosechaMecanica] Error al cargar calificación:', error);
+                    if (textoEl) {
+                        textoEl.textContent = 'No se pudo cargar la calificación.';
+                    }
+                    showUserAlert('error', 'No se pudo cargar la calificación.');
+                }
             }
 
             function initFincasOperativos() {
@@ -1537,25 +1617,33 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 tbody?.addEventListener('click', async (event) => {
                     const target = event.target;
-                    const btn = target instanceof HTMLElement ? target.closest('button[data-action="abrir-modal"]') : null;
+                    const btn = target instanceof HTMLElement ? target.closest('button[data-action]') : null;
                     if (!btn) return;
 
+                    const action = btn.dataset.action || '';
                     const participacionId = Number(btn.dataset.participacionId || 0);
                     if (!participacionId) {
                         showUserAlert('error', 'No se encontró el ID de participación.');
                         return;
                     }
 
-                    modal.dataset.participacionId = String(participacionId);
-                    ultimoBotonSeleccionado = btn;
-                    abrirModalFinca();
-                    try {
-                        const relevamiento = await cargarRelevamiento(participacionId);
-                        setModalData(relevamiento);
-                    } catch (error) {
-                        console.error(error);
-                        setModalData(null);
-                        showUserAlert('error', 'No se pudo cargar el relevamiento.');
+                    if (action === 'abrir-modal') {
+                        modal.dataset.participacionId = String(participacionId);
+                        ultimoBotonSeleccionado = btn;
+                        abrirModalFinca();
+                        try {
+                            const relevamiento = await cargarRelevamiento(participacionId);
+                            setModalData(relevamiento);
+                        } catch (error) {
+                            console.error(error);
+                            setModalData(null);
+                            showUserAlert('error', 'No se pudo cargar el relevamiento.');
+                        }
+                        return;
+                    }
+
+                    if (action === 'ver-calificacion') {
+                        await abrirModalCalificacion(participacionId);
                     }
                 });
 
@@ -1688,7 +1776,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     });
                 });
 
-                [modalNuevo, modalVerContrato, modalCoopProd, modalEliminar].forEach(modalEl => {
+                [modalNuevo, modalVerContrato, modalCoopProd, modalEliminar, modalCalificacion].forEach(modalEl => {
                     if (!modalEl) return;
                     modalEl.addEventListener('click', function(e) {
                         if (e.target === modalEl) {
