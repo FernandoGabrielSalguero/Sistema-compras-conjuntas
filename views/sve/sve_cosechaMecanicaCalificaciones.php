@@ -100,7 +100,7 @@
         function puntajeSeparadores(valor) {
             const raw = String(valor ?? '').toLowerCase();
             if (raw.includes('todos asegurados')) return 4;
-            if (raw.includes('algunos olvidados') || raw.includes('medianamente')) return 2;
+            if (raw.includes('algunos olvidados') || raw.includes('asegurados y tensados')) return 2;
             if (raw.includes('sin atar') || raw.includes('sin tensar')) return 0;
             return 0;
         }
@@ -126,10 +126,10 @@
 
         function puntajeMalezas(valor) {
             const raw = String(valor ?? '').toLowerCase();
-            if (raw.includes('ausencia de malesas') || raw.includes('ausencia de malezas') || raw.includes('libre')) return 4;
-            if (raw.includes('mayoria') || raw.includes('mayoría')) return 2.5;
-            if (raw.includes('menores a 40cm')) return 1;
-            if (raw.includes('suelo enmalezado')) return 0;
+            if (raw.includes('ausencia de malesas') || raw.includes('ausencia de malezas')) return 4;
+            if (raw.includes('mayoria') || raw.includes('mayoría')) return 3;
+            if (raw.includes('menores a 40cm')) return 2;
+            if (raw.includes('suelo enmalezado')) return 1;
             if (raw.includes('sobre el alambre')) return 0;
             return 0;
         }
