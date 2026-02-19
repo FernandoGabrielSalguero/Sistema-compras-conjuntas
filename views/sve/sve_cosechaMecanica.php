@@ -167,7 +167,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         .modal-content {
             background: #ffffff;
             border-radius: 0.75rem;
-            max-width: 640px;
+            max-width: 800px;
             width: 100%;
             padding: 1.5rem 1.75rem;
             box-shadow: 0 20px 40px rgba(15, 23, 42, 0.35);
