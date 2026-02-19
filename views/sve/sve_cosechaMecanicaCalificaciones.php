@@ -65,7 +65,21 @@
             return 0;
         }
 
-        function puntajeInterfilar(metros) {
+        function parseInterfilar(valor) {
+            if (valor === null || valor === undefined) return null;
+            const raw = String(valor).toLowerCase().trim();
+            if (!raw) return null;
+            const numeric = raw.match(/(\d+[.,]?\d*)/g);
+            if (numeric && numeric.length) {
+                const last = numeric[numeric.length - 1].replace(',', '.');
+                const num = Number(last);
+                if (Number.isFinite(num)) return num;
+            }
+            return null;
+        }
+
+        function puntajeInterfilar(metrosOrText) {
+            const metros = typeof metrosOrText === 'number' ? metrosOrText : parseInterfilar(metrosOrText);
             if (metros === null) return 0;
             if (metros >= 2.5) return 4;
             if (metros >= 2.3) return 3;
@@ -169,7 +183,7 @@
                 : (norte !== null && sur !== null) ? (norte + sur) / 2
                 : null;
 
-            const interfilar = toNumber(data.interfilar);
+            const interfilar = parseInterfilar(data.interfilar);
             const postesPct = toNumber(data.porcentaje_postes_mal_estado);
 
             const puntos = {
