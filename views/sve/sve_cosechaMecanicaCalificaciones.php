@@ -7,12 +7,10 @@
             </button>
         </div>
 
-        <div class="modal-section-title">Resultado</div>
-        <div id="modalCalificacionResumen" class="modal-readonly-field text-block">
-            Sin calificación registrada.
-        </div>
+        <div class="modal-section-title">Detalle de la evaluación</div>
+        <div id="modalCalificacionTexto" class="modal-readonly-field text-block">Sin calificación registrada.</div>
 
-        <div class="modal-section-title">Detalle de puntos</div>
+        <div class="modal-section-title">Ponderación / Calificación</div>
         <div class="modal-table-wrapper">
             <table class="data-table">
                 <thead>
@@ -31,8 +29,10 @@
             </table>
         </div>
 
-        <div class="modal-section-title">Detalle en texto</div>
-        <div id="modalCalificacionTexto" class="modal-readonly-field text-block">Sin calificación registrada.</div>
+        <div class="modal-section-title">Puntaje obtenido</div>
+        <div id="modalCalificacionResumen" class="modal-readonly-field text-block">
+            Sin calificación registrada.
+        </div>
 
         <div class="modal-footer">
             <button type="button" class="btn btn-cancelar" data-close-modal="modalCalificacion">Cerrar</button>
