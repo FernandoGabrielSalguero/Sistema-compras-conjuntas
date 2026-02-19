@@ -322,6 +322,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             color: #111827;
         }
 
+        .btn-icono-calificacion {
+            width: 32px;
+            min-width: 32px;
+            height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icono-calificacion .material-icons {
+            font-size: 18px;
+        }
+
         .badge-tipo {
             display: inline-flex;
             align-items: center;
@@ -1407,7 +1421,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                         if (tieneRelevamiento) {
                             const btnCalificacion = document.createElement('button');
-                            btnCalificacion.className = 'btn btn-info';
+                            btnCalificacion.className = 'btn btn-info btn-icono-calificacion';
                             btnCalificacion.dataset.action = 'ver-calificacion';
                             btnCalificacion.dataset.participacionId = String(fila.id);
                             btnCalificacion.title = 'Ver calificación';
@@ -1544,7 +1558,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 if (tieneRelevamiento) {
                     if (!existente) {
                         const btnCalificacion = document.createElement('button');
-                        btnCalificacion.className = 'btn btn-info';
+                        btnCalificacion.className = 'btn btn-info btn-icono-calificacion';
                         btnCalificacion.dataset.action = 'ver-calificacion';
                         btnCalificacion.dataset.participacionId = String(participacionId);
                         btnCalificacion.title = 'Ver calificación';
