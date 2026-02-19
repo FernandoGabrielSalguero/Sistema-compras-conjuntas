@@ -148,8 +148,8 @@
                 { label: 'Preparación acequias', value: data.preparacion_acequias },
                 { label: 'Preparación obstáculos', value: data.preparacion_obstaculos },
                 { label: 'Observaciones', value: data.observaciones },
-                { label: 'Creado', value: data.created_at },
-                { label: 'Actualizado', value: data.updated_at },
+                { label: 'Creado', value: data.created_at ?? data.relevamiento_creado },
+                { label: 'Actualizado', value: data.updated_at ?? data.relevamiento_actualizado },
             ];
             return fields.map((item) => {
                 const raw = (item.value === null || item.value === undefined || String(item.value).trim() === '')
