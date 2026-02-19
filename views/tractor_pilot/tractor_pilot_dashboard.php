@@ -184,11 +184,11 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                             <thead>
                                 <tr>
                                     <th>Acciones</th>
+                                    <th>Variedad</th>
                                     <th>Cooperativa</th>
                                     <th>Productor</th>
                                     <th>Finca</th>
                                     <th>Superficie (ha)</th>
-                                    <th>Variedad</th>
                                 </tr>
                             </thead>
                             <tbody id="fincas-table-body">
@@ -587,11 +587,11 @@ $nombre = $_SESSION['nombre'] ?? 'Piloto de tractor';
                     tr.appendChild(tdAcciones);
 
                     const celdas = [
+                        fila.variedad || '-',
                         fila.nom_cooperativa || '-',
                         fila.productor || '-',
                         fincaLabel,
                         fila.superficie ?? '-',
-                        fila.variedad || '-',
                     ];
 
                     celdas.forEach((valor) => {
