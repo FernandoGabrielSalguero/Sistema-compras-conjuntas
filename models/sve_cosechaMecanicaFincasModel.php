@@ -229,7 +229,9 @@ class SveCosechaMecanicaFincasModel
                     agua_lavado,
                     preparacion_acequias,
                     preparacion_obstaculos,
-                    observaciones
+                    observaciones,
+                    created_at,
+                    updated_at
                 FROM cosechaMecanica_relevamiento_finca
                 WHERE participacion_id = :participacion_id
                 LIMIT 1";
