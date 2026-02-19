@@ -1571,51 +1571,26 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 }
             }
 
-            function construirTextoCalificacion(data) {
-                if (!data) {
-                    return 'Sin calificación registrada.';
-                }
-                const fields = [
-                    { label: 'Ancho callejón norte', value: data.ancho_callejon_norte },
-                    { label: 'Ancho callejón sur', value: data.ancho_callejon_sur },
-                    { label: 'Promedio callejón', value: data.promedio_callejon },
-                    { label: 'Interfilar', value: data.interfilar },
-                    { label: 'Cantidad postes', value: data.cantidad_postes },
-                    { label: 'Postes mal estado', value: data.postes_mal_estado },
-                    { label: '% postes mal estado', value: data.porcentaje_postes_mal_estado },
-                    { label: 'Estructura separadores', value: data.estructura_separadores },
-                    { label: 'Agua para el lavado', value: data.agua_lavado },
-                    { label: 'Preparación acequias', value: data.preparacion_acequias },
-                    { label: 'Preparación obstáculos', value: data.preparacion_obstaculos },
-                    { label: 'Observaciones', value: data.observaciones },
-                    { label: 'Creado', value: data.created_at },
-                    { label: 'Actualizado', value: data.updated_at },
-                ];
-                return fields.map((item) => {
-                    const raw = (item.value === null || item.value === undefined || String(item.value).trim() === '')
-                        ? 'Sin dato'
-                        : String(item.value);
-                    return `${item.label}: ${raw}`;
-                }).join('\n');
-            }
-
             async function abrirModalCalificacion(participacionId) {
                 const textoEl = document.getElementById('modalCalificacionTexto');
-                if (textoEl) {
-                    textoEl.textContent = 'Cargando calificación...';
-                }
+                const resumenEl = document.getElementById('modalCalificacionResumen');
+                const bodyEl = document.getElementById('modalCalificacionBody');
+                if (textoEl) textoEl.textContent = 'Cargando calificación...';
+                if (resumenEl) resumenEl.textContent = 'Cargando calificación...';
+                if (bodyEl) bodyEl.innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
                 abrirModal(modalCalificacion);
                 try {
                     const relevamiento = await cargarRelevamiento(participacionId);
-                    const texto = construirTextoCalificacion(relevamiento);
-                    if (textoEl) {
-                        textoEl.textContent = texto;
+                    if (typeof window.renderCalificacionModal === 'function') {
+                        window.renderCalificacionModal(relevamiento);
+                    } else if (textoEl) {
+                        textoEl.textContent = 'No se encontró el render de calificación.';
                     }
                 } catch (error) {
                     console.error('[CosechaMecanica] Error al cargar calificación:', error);
-                    if (textoEl) {
-                        textoEl.textContent = 'No se pudo cargar la calificación.';
-                    }
+                    if (textoEl) textoEl.textContent = 'No se pudo cargar la calificación.';
+                    if (resumenEl) resumenEl.textContent = 'No se pudo cargar la calificación.';
+                    if (bodyEl) bodyEl.innerHTML = '<tr><td colspan="4">No se pudo cargar.</td></tr>';
                     showUserAlert('error', 'No se pudo cargar la calificación.');
                 }
             }
