@@ -1410,7 +1410,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             btnCalificacion.className = 'btn btn-info';
                             btnCalificacion.dataset.action = 'ver-calificacion';
                             btnCalificacion.dataset.participacionId = String(fila.id);
-                            btnCalificacion.textContent = 'Calificación';
+                            btnCalificacion.title = 'Ver calificación';
+                            btnCalificacion.setAttribute('aria-label', 'Ver calificación');
+                            btnCalificacion.innerHTML = '<span class="material-icons">grade</span>';
                             tdAcciones.appendChild(btnCalificacion);
                         }
                         tr.appendChild(tdAcciones);
@@ -1545,7 +1547,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         btnCalificacion.className = 'btn btn-info';
                         btnCalificacion.dataset.action = 'ver-calificacion';
                         btnCalificacion.dataset.participacionId = String(participacionId);
-                        btnCalificacion.textContent = 'Calificación';
+                        btnCalificacion.title = 'Ver calificación';
+                        btnCalificacion.setAttribute('aria-label', 'Ver calificación');
+                        btnCalificacion.innerHTML = '<span class="material-icons">grade</span>';
                         cell.appendChild(btnCalificacion);
                     }
                 } else if (existente) {
