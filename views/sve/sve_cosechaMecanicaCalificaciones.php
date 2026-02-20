@@ -8,7 +8,21 @@
         </div>
 
         <div class="modal-section-title">Detalle de la evaluación</div>
-        <div id="modalCalificacionTexto" class="modal-readonly-field text-block">Sin calificación registrada.</div>
+        <div class="modal-table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Campo</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody id="modalCalificacionTexto">
+                    <tr>
+                        <td colspan="2">Sin calificación registrada.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
         <div class="modal-section-title">Ponderación / Calificación</div>
         <div class="modal-table-wrapper">
@@ -145,32 +159,39 @@
             return { label: 'Regular', descuento: '0 USD' };
         }
 
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
         function buildTextoCalificacion(data) {
             if (!data) {
-                return 'Sin calificación registrada.';
+                return '<tr><td colspan="2">Sin calificación registrada.</td></tr>';
             }
             const fields = [
-                { label: 'Ancho callejón norte', value: data.ancho_callejon_norte },
-                { label: 'Ancho callejón sur', value: data.ancho_callejon_sur },
-                { label: 'Promedio callejón', value: data.promedio_callejon },
-                { label: 'Interfilar', value: data.interfilar },
-                { label: 'Cantidad postes', value: data.cantidad_postes },
-                { label: 'Postes mal estado', value: data.postes_mal_estado },
-                { label: '% postes mal estado', value: data.porcentaje_postes_mal_estado },
-                { label: 'Estructura separadores', value: data.estructura_separadores },
-                { label: 'Agua para el lavado', value: data.agua_lavado },
-                { label: 'Preparación acequias', value: data.preparacion_acequias },
-                { label: 'Preparación obstáculos', value: data.preparacion_obstaculos },
-                { label: 'Observaciones', value: data.observaciones },
-                { label: 'Creado', value: data.created_at ?? data.relevamiento_creado },
-                { label: 'Actualizado', value: data.updated_at ?? data.relevamiento_actualizado },
+                { label: 'Ancho del callejón Norte', value: data.ancho_callejon_norte },
+                { label: 'Ancho del callejón Sur', value: data.ancho_callejon_sur },
+                { label: 'Metros promedio del callejón', value: data.promedio_callejon },
+                { label: 'Ancho del interfilar', value: data.interfilar },
+                { label: 'Cantidad de postes evaluados', value: data.cantidad_postes },
+                { label: 'Cantidad de postes en mal estado', value: data.postes_mal_estado },
+                { label: 'Porcentaje de postes en mal estado', value: data.porcentaje_postes_mal_estado },
+                { label: 'Alambres y separadores', value: data.estructura_separadores },
+                { label: 'Agua para lavado', value: data.agua_lavado },
+                { label: 'Preparación del suelo', value: data.preparacion_acequias },
+                { label: 'Malezas y obstáculos', value: data.preparacion_obstaculos },
+                { label: 'Observaciones', value: data.observaciones, emptyText: 'Sin observación' },
+                { label: 'Fecha de la evaluación', value: data.created_at ?? data.relevamiento_creado },
             ];
             return fields.map((item) => {
                 const raw = (item.value === null || item.value === undefined || String(item.value).trim() === '')
-                    ? 'Sin dato'
+                    ? (item.emptyText ?? 'Sin dato')
                     : String(item.value);
-                return `${item.label}: ${raw}`;
-            }).join('\n');
+                return `<tr><td>${escapeHtml(item.label)}</td><td>${escapeHtml(raw)}</td></tr>`;
+            }).join('');
         }
 
         function calcularCalificacion(data) {
@@ -240,7 +261,7 @@
             const textoEl = document.getElementById('modalCalificacionTexto');
 
             const texto = buildTextoCalificacion(data);
-            if (textoEl) textoEl.textContent = texto;
+            if (textoEl) textoEl.innerHTML = texto;
 
             if (!data) {
                 if (resumenEl) resumenEl.textContent = 'Sin calificación registrada.';
