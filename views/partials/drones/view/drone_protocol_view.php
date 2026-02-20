@@ -305,12 +305,14 @@ declare(strict_types=1);
   /* Inputs readonly con fondo suave */
   input[readonly],
   select[readonly] {
-    background: #f8fafc;
+    background: transparent;
+    box-shadow: none;
   }
 
   /* Textareas readonly SIN fondo: el contenedor ya estiliza */
   textarea[readonly] {
     background: transparent !important;
+    box-shadow: none;
     width: 100%;
     min-height: 64px;
     resize: none;
@@ -458,6 +460,16 @@ declare(strict_types=1);
   .data-table td {
     word-break: break-word;
     white-space: normal;
+  }
+
+  /* Evitar “subcampo” gris: el fondo lo da el contenedor input-icon */
+  .input-icon {
+    background: #f8fafc;
+    border-radius: 8px;
+  }
+  .input-icon input[readonly],
+  .input-icon textarea[readonly] {
+    background: transparent !important;
   }
 
   /* ===== Tabla Servicios (columna por contenido, centrada) ===== */
