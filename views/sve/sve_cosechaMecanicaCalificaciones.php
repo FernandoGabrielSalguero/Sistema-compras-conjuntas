@@ -278,7 +278,7 @@
 
             const total = clamp(calc.total, 0, 100);
             const calif = getCalificacion(total);
-            const flagsText = calc.flags.length ? `\n\n- ${calc.flags.join('\n- ')}` : '';
+            const flagsText = '';
 
             if (resumenEl) {
                 resumenEl.textContent = `Puntaje total: ${formatPonderado(total)} / 100\n` +
