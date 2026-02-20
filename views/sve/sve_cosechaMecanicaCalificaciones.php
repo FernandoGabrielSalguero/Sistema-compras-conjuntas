@@ -2,9 +2,22 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3>Calificación</h3>
-            <button type="button" class="modal-close-btn" data-close-modal="modalCalificacion" aria-label="Cerrar">
+            <button type="button" class="modal-close-btn" data-close-modal="modalCalificacion" data-export-ignore="true" aria-label="Cerrar">
                 <span class="material-icons">close</span>
             </button>
+        </div>
+
+        <div class="modal-calificacion-header" id="modalCalificacionHeader" style="display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
+            <div class="modal-calificacion-logo">
+                <img id="modalCalificacionLogo" src="../../assets/png/logo_con_color_original.png" alt="SVE" style="height:56px; width:auto;">
+            </div>
+            <div class="modal-calificacion-info" style="display:grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap:6px 16px;">
+                <div><strong>Cooperativa:</strong> <span id="modalCalificacionCooperativa">-</span></div>
+                <div><strong>Productor:</strong> <span id="modalCalificacionProductor">-</span></div>
+                <div><strong>Finca:</strong> <span id="modalCalificacionFinca">-</span></div>
+                <div><strong>Variedad:</strong> <span id="modalCalificacionVariedad">-</span></div>
+                <div><strong>Superficie (ha):</strong> <span id="modalCalificacionSuperficie">-</span></div>
+            </div>
         </div>
 
         <div class="modal-section-title">Detalle de la evaluación</div>
@@ -48,15 +61,34 @@
             Sin calificación registrada.
         </div>
 
-        <div class="modal-footer">
+        <div class="modal-footer" data-export-ignore="true">
+            <button type="button" class="btn btn-aceptar" id="modalCalificacionPdfBtn">Descargar PDF</button>
             <button type="button" class="btn btn-cancelar" data-close-modal="modalCalificacion">Cerrar</button>
         </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <script>
     (function() {
         'use strict';
+
+        function setHeaderInfo(meta) {
+            const cooperativaEl = document.getElementById('modalCalificacionCooperativa');
+            const productorEl = document.getElementById('modalCalificacionProductor');
+            const fincaEl = document.getElementById('modalCalificacionFinca');
+            const variedadEl = document.getElementById('modalCalificacionVariedad');
+            const superficieEl = document.getElementById('modalCalificacionSuperficie');
+
+            const info = meta || {};
+            if (cooperativaEl) cooperativaEl.textContent = info.cooperativa || '-';
+            if (productorEl) productorEl.textContent = info.productor || '-';
+            if (fincaEl) fincaEl.textContent = info.finca || '-';
+            if (variedadEl) variedadEl.textContent = info.variedad || '-';
+            if (superficieEl) superficieEl.textContent = info.superficie || '-';
+        }
 
         function toNumber(value) {
             if (value === null || value === undefined) return null;
@@ -255,10 +287,11 @@
             return { filas, total, flags };
         }
 
-        window.renderCalificacionModal = function(data) {
+        window.renderCalificacionModal = function(data, meta) {
             const resumenEl = document.getElementById('modalCalificacionResumen');
             const bodyEl = document.getElementById('modalCalificacionBody');
             const textoEl = document.getElementById('modalCalificacionTexto');
+            setHeaderInfo(meta);
 
             const texto = buildTextoCalificacion(data);
             if (textoEl) textoEl.innerHTML = texto;
@@ -300,5 +333,56 @@
                 }).join('');
             }
         };
+
+        async function descargarPdfCalificacion() {
+            const modalContent = document.querySelector('#modalCalificacion .modal-content');
+            if (!modalContent || !window.html2canvas || !window.jspdf) return;
+
+            const ignoreEls = modalContent.querySelectorAll('[data-export-ignore="true"]');
+            ignoreEls.forEach((el) => {
+                el.dataset.prevDisplay = el.style.display;
+                el.style.display = 'none';
+            });
+
+            try {
+                const canvas = await window.html2canvas(modalContent, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    scrollX: 0,
+                    scrollY: -window.scrollY
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.98);
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = pageWidth;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                let heightLeft = imgHeight;
+                let position = 0;
+                pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                pdf.save('calificacion_finca.pdf');
+            } finally {
+                ignoreEls.forEach((el) => {
+                    el.style.display = el.dataset.prevDisplay || '';
+                    delete el.dataset.prevDisplay;
+                });
+            }
+        }
+
+        const pdfBtn = document.getElementById('modalCalificacionPdfBtn');
+        pdfBtn?.addEventListener('click', descargarPdfCalificacion);
     })();
 </script>

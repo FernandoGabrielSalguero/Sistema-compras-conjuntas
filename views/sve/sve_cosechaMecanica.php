@@ -723,6 +723,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 estado: ''
             };
             const relevamientosGuardados = new Set();
+            const participacionesInfo = new Map();
 
             /** Elementos DOM */
             const filtroNombreInput = document.getElementById('filtroNombre');
@@ -1367,6 +1368,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     const totales = data.totales || {};
 
                     actualizarContadoresTotales(totales, filas);
+                    participacionesInfo.clear();
 
                     const selectCooperativa = document.getElementById('filtro-cooperativa');
                     const selectProductor = document.getElementById('filtro-productor');
@@ -1399,6 +1401,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         const tr = document.createElement('tr');
 
                         const fincaLabel = fila.nombre_finca || fila.codigo_finca || (fila.finca_id ? `Finca #${fila.finca_id}` : 'Sin finca');
+                        const participacionKey = String(fila.id ?? '');
+                        if (participacionKey) {
+                            participacionesInfo.set(participacionKey, {
+                                cooperativa: fila.nom_cooperativa || '-',
+                                productor: fila.productor || '-',
+                                finca: fincaLabel,
+                                variedad: fila.variedad || '-',
+                                superficie: fila.superficie ?? '-'
+                            });
+                        }
 
                         const tdAcciones = document.createElement('td');
                         const btn = document.createElement('button');
@@ -1575,6 +1587,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const textoEl = document.getElementById('modalCalificacionTexto');
                 const resumenEl = document.getElementById('modalCalificacionResumen');
                 const bodyEl = document.getElementById('modalCalificacionBody');
+                const meta = participacionesInfo.get(String(participacionId)) || null;
                 if (textoEl) textoEl.textContent = 'Cargando calificación...';
                 if (resumenEl) resumenEl.textContent = 'Cargando calificación...';
                 if (bodyEl) bodyEl.innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
@@ -1582,7 +1595,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 try {
                     const relevamiento = await cargarRelevamiento(participacionId);
                     if (typeof window.renderCalificacionModal === 'function') {
-                        window.renderCalificacionModal(relevamiento);
+                        window.renderCalificacionModal(relevamiento, meta);
                     } else if (textoEl) {
                         textoEl.textContent = 'No se encontró el render de calificación.';
                     }
