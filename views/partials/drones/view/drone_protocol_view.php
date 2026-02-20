@@ -603,6 +603,22 @@ declare(strict_types=1);
       return isInteger ? String(Math.trunc(n)) : String(+n.toFixed(3)).replace(/\.?0+$/, '');
     }
 
+    function loadScriptOnce(src) {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[data-src="${src}"]`)) {
+          resolve();
+          return;
+        }
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.dataset.src = src;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('No se pudo cargar: ' + src));
+        document.head.appendChild(s);
+      });
+    }
+
     // Bind acciones
     btnDescargar?.addEventListener('click', descargarComoPDFExacto);
     btnModificar?.addEventListener('click', onClickModificarGuardar);
@@ -769,9 +785,24 @@ declare(strict_types=1);
           }
         });
 
-        const {
-          jsPDF
-        } = window.jspdf;
+        let jspdfNS = window.jspdf;
+        if (!jspdfNS || !jspdfNS.jsPDF) {
+          try {
+            await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+          } catch (e1) {
+            try {
+              await loadScriptOnce('https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js');
+            } catch (e2) {
+              // fallthrough
+            }
+          }
+          jspdfNS = window.jspdf;
+        }
+        if (!jspdfNS || !jspdfNS.jsPDF) {
+          showAlert('error', 'No se pudo generar el PDF: la librería jsPDF no está disponible. Verificá la carga del CDN o CSP.');
+          return;
+        }
+        const { jsPDF } = jspdfNS;
         // Crear PDF con tamaño EXACTO al canvas (unidad en px para evitar reflow)
         const pdf = new jsPDF({
           orientation: canvas.width >= canvas.height ? 'landscape' : 'portrait',
