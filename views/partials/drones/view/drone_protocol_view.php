@@ -763,12 +763,17 @@ declare(strict_types=1);
             // --- Fix: Textareas e inputs se pintan como texto envuelto en el CLON ---
             const style = doc.createElement('style');
             style.textContent = `
+          /* En export, el borde/fondo lo pone el contenedor, no el “subcampo” */
+          .input-icon{
+            background:#f8fafc; border:1px solid #d1d5db; border-radius:8px;
+            padding:5px 7px;
+          }
           .export-input{
-            display:block; padding:5px 7px; border:1px solid #d1d5db; border-radius:8px;
-            background:#f8fafc; line-height:1.3; font-size:12px; white-space:pre-wrap; word-break:break-word;
+            display:block; padding:0; border:0; border-radius:0;
+            background:transparent; line-height:1.3; font-size:12px; white-space:pre-wrap; word-break:break-word;
           }
           .export-area{
-            display:block; padding:7px 8px; border:1px solid #d1d5db; border-radius:8px;
+            display:block; padding:0; border:0; border-radius:0;
             background:transparent; line-height:1.3; font-size:12px; white-space:pre-wrap; word-break:break-word; min-height:56px;
           }
           #protocolo-contenido{ font-size:12px; }
