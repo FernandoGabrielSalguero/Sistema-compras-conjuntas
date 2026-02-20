@@ -1,7 +1,7 @@
 <div id="modalCalificacion" class="modal hidden" aria-hidden="true">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Calificación</h3>
+            <h3></h3>
             <button type="button" class="modal-close-btn" data-close-modal="modalCalificacion" data-export-ignore="true" aria-label="Cerrar">
                 <span class="material-icons">close</span>
             </button>
@@ -346,13 +346,23 @@
             clone.style.maxHeight = 'none';
             clone.style.overflow = 'visible';
             clone.style.backgroundColor = '#ffffff';
+            clone.style.fontSize = '12px';
+            clone.style.lineHeight = '1.3';
 
             clone.querySelectorAll('[data-export-ignore="true"]').forEach((el) => el.remove());
+            clone.querySelectorAll('table.data-table th, table.data-table td').forEach((el) => {
+                el.style.padding = '6px 8px';
+                el.style.fontSize = '11px';
+            });
+            clone.querySelectorAll('.modal-section-title').forEach((el) => {
+                el.style.margin = '8px 0 6px';
+                el.style.fontSize = '12px';
+            });
             document.body.appendChild(clone);
 
             try {
                 const canvas = await window.html2canvas(clone, {
-                    scale: 2,
+                    scale: 1.5,
                     useCORS: true,
                     backgroundColor: '#ffffff',
                     scrollX: 0,
