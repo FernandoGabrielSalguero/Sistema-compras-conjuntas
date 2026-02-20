@@ -338,19 +338,25 @@
             const modalContent = document.querySelector('#modalCalificacion .modal-content');
             if (!modalContent || !window.html2canvas || !window.jspdf) return;
 
-            const ignoreEls = modalContent.querySelectorAll('[data-export-ignore="true"]');
-            ignoreEls.forEach((el) => {
-                el.dataset.prevDisplay = el.style.display;
-                el.style.display = 'none';
-            });
+            const clone = modalContent.cloneNode(true);
+            clone.style.position = 'fixed';
+            clone.style.left = '-9999px';
+            clone.style.top = '0';
+            clone.style.width = `${modalContent.offsetWidth}px`;
+            clone.style.maxHeight = 'none';
+            clone.style.overflow = 'visible';
+            clone.style.backgroundColor = '#ffffff';
+
+            clone.querySelectorAll('[data-export-ignore="true"]').forEach((el) => el.remove());
+            document.body.appendChild(clone);
 
             try {
-                const canvas = await window.html2canvas(modalContent, {
+                const canvas = await window.html2canvas(clone, {
                     scale: 2,
                     useCORS: true,
                     backgroundColor: '#ffffff',
                     scrollX: 0,
-                    scrollY: -window.scrollY
+                    scrollY: 0
                 });
 
                 const imgData = canvas.toDataURL('image/jpeg', 0.98);
@@ -375,10 +381,7 @@
 
                 pdf.save('calificacion_finca.pdf');
             } finally {
-                ignoreEls.forEach((el) => {
-                    el.style.display = el.dataset.prevDisplay || '';
-                    delete el.dataset.prevDisplay;
-                });
+                clone.remove();
             }
         }
 
