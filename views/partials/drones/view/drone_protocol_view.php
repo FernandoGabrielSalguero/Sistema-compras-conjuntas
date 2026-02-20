@@ -752,13 +752,18 @@ declare(strict_types=1);
             const style = doc.createElement('style');
             style.textContent = `
           .export-input{
-            display:block; padding:6px 8px; border:1px solid #d1d5db; border-radius:8px;
-            background:#f8fafc; line-height:1.35; font-size:13px; white-space:pre-wrap; word-break:break-word;
+            display:block; padding:5px 7px; border:1px solid #d1d5db; border-radius:8px;
+            background:#f8fafc; line-height:1.3; font-size:12px; white-space:pre-wrap; word-break:break-word;
           }
           .export-area{
-            display:block; padding:8px 9px; border:1px solid #d1d5db; border-radius:8px;
-            background:transparent; line-height:1.35; font-size:13px; white-space:pre-wrap; word-break:break-word; min-height:64px;
+            display:block; padding:7px 8px; border:1px solid #d1d5db; border-radius:8px;
+            background:transparent; line-height:1.3; font-size:12px; white-space:pre-wrap; word-break:break-word; min-height:56px;
           }
+          #protocolo-contenido{ font-size:12px; }
+          #protocolo-contenido h3{ font-size:14px; margin:6px 0; }
+          #protocolo-contenido .input-group label{ font-size:12px; }
+          #protocolo-contenido .data-table th,
+          #protocolo-contenido .data-table td{ padding-top:.3rem; padding-bottom:.3rem; }
         `;
             doc.head.appendChild(style);
 
