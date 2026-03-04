@@ -30,9 +30,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-        <!-- Exportar a PDF-->
+    <!-- Exportar a PDF-->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Exportar a Excel (.xlsx) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
@@ -1563,17 +1565,26 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
             }
 
-            function descargarExcel(htmlTable, filename) {
-                const blob = new Blob([`\ufeff${htmlTable}`], {
-                    type: 'application/vnd.ms-excel;charset=utf-8;'
+            function descargarExcelXlsx(columns, rows, filename) {
+                if (!window.XLSX) {
+                    showUserAlert('error', 'No se pudo generar el Excel (librería XLSX no disponible).');
+                    return;
+                }
+
+                const data = rows.map((row) => {
+                    const out = {};
+                    columns.forEach((col) => {
+                        out[col.label] = row[col.key];
+                    });
+                    return out;
                 });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+
+                const sheet = window.XLSX.utils.json_to_sheet(data, {
+                    header: columns.map((col) => col.label)
+                });
+                const wb = window.XLSX.utils.book_new();
+                window.XLSX.utils.book_append_sheet(wb, sheet, 'Fincas');
+                window.XLSX.writeFile(wb, filename);
             }
 
             function mapPonderacion(filas) {
@@ -1705,9 +1716,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     rows.push(row);
                 }
 
-                const html = buildExcelTable(columnas, rows);
                 const stamp = new Date().toISOString().slice(0, 10);
-                descargarExcel(html, `fincas_operativos_${stamp}.xls`);
+                descargarExcelXlsx(columnas, rows, `fincas_operativos_${stamp}.xlsx`);
                 showUserAlert('success', 'Excel generado correctamente.');
             }
 
