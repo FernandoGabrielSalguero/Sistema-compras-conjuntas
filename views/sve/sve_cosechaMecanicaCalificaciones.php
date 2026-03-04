@@ -334,6 +334,58 @@
             }
         };
 
+        function formatExportValue(value) {
+            if (value === null || value === undefined) return '';
+            if (typeof value === 'number') {
+                return Number.isInteger(value) ? String(value) : value.toFixed(1);
+            }
+            return String(value);
+        }
+
+        window.buildCalificacionExport = function(data) {
+            if (!data) return null;
+
+            const norte = toNumber(data.ancho_callejon_norte);
+            const sur = toNumber(data.ancho_callejon_sur);
+            const promedioRaw = toNumber(data.promedio_callejon);
+            const promedio = (promedioRaw !== null) ? promedioRaw
+                : (norte !== null && sur !== null) ? (norte + sur) / 2
+                : null;
+
+            const cantidadPostes = toNumber(data.cantidad_postes);
+            const postesMal = toNumber(data.postes_mal_estado);
+            let porcentajePostes = toNumber(data.porcentaje_postes_mal_estado);
+            if (porcentajePostes === null && cantidadPostes && postesMal !== null && cantidadPostes > 0) {
+                porcentajePostes = (postesMal / cantidadPostes) * 100;
+            }
+
+            const calc = calcularCalificacion(data);
+            const total = calc ? clamp(calc.total, 0, 100) : null;
+            const calif = (total !== null) ? getCalificacion(total) : null;
+
+            return {
+                texto: {
+                    ancho_callejon_norte: formatExportValue(norte),
+                    ancho_callejon_sur: formatExportValue(sur),
+                    promedio_callejon: formatExportValue(promedio),
+                    interfilar: formatExportValue(data.interfilar ?? ''),
+                    cantidad_postes: formatExportValue(cantidadPostes),
+                    postes_mal_estado: formatExportValue(postesMal),
+                    porcentaje_postes_mal_estado: formatExportValue(porcentajePostes),
+                    estructura_separadores: formatExportValue(data.estructura_separadores ?? ''),
+                    agua_lavado: formatExportValue(data.agua_lavado ?? ''),
+                    preparacion_acequias: formatExportValue(data.preparacion_acequias ?? ''),
+                    preparacion_obstaculos: formatExportValue(data.preparacion_obstaculos ?? ''),
+                    observaciones: formatExportValue(data.observaciones ?? ''),
+                    fecha_evaluacion: formatExportValue(data.created_at ?? data.relevamiento_creado ?? ''),
+                },
+                ponderacion: (calc && Array.isArray(calc.filas)) ? calc.filas : [],
+                total: (total !== null) ? formatExportValue(total) : '',
+                calificacion: calif ? calif.label : '',
+                descuento: calif ? calif.descuento : '',
+            };
+        };
+
         async function descargarPdfCalificacion() {
             const modalContent = document.querySelector('#modalCalificacion .modal-content');
             if (!modalContent || !window.html2canvas || !window.jspdf) return;

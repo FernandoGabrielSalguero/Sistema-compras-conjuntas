@@ -30,6 +30,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
+        <!-- Exportar a PDF-->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
@@ -56,6 +60,44 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         .cosecha-table-card {
             margin-top: 1rem;
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .table-header h2 {
+            margin: 0;
+        }
+
+        .icon-export-btn {
+            border: none;
+            background: rgba(37, 99, 235, 0.08);
+            color: #2563eb;
+            cursor: pointer;
+            padding: 0.35rem;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+        }
+
+        .icon-export-btn:focus-visible {
+            outline: 2px solid #5b21b6;
+            outline-offset: 2px;
+        }
+
+        .icon-export-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+        }
+
+        .icon-export-btn .material-icons {
+            font-size: 20px;
         }
 
         .cosecha-table-wrapper {
@@ -550,7 +592,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 </div>
 
                 <div class="card tabla-card">
-                    <h2>Fincas participantes de operativos</h2>
+                    <div class="table-header">
+                        <h2>Fincas participantes de operativos</h2>
+                        <button id="btnExportFincas" type="button" class="icon-export-btn" title="Descargar Excel" aria-label="Descargar Excel">
+                            <span class="material-icons">download</span>
+                        </button>
+                    </div>
                     <div class="table-meta">
                         <strong>Registros:</strong> <span id="fincas-count">0</span>
                         <span class="table-meta-sep">|</span>
@@ -724,6 +771,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             };
             const relevamientosGuardados = new Set();
             const participacionesInfo = new Map();
+            let latestFincasRows = [];
 
             /** Elementos DOM */
             const filtroNombreInput = document.getElementById('filtroNombre');
@@ -741,6 +789,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const modalVerContratoBody = document.getElementById('modalVerContratoBody');
             const modalCoopProdBody = document.getElementById('modalCoopProdBody');
             const btnConfirmEliminar = document.getElementById('btnConfirmEliminarContrato');
+            const btnExportFincas = document.getElementById('btnExportFincas');
 
             let contratoSeleccionadoId = null;
 
@@ -1367,6 +1416,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     const filtros = data.filtros || {};
                     const totales = data.totales || {};
 
+                    latestFincasRows = filas;
+
                     actualizarContadoresTotales(totales, filas);
                     participacionesInfo.clear();
 
@@ -1488,8 +1539,176 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     console.error(e);
                     tbody.innerHTML = '<tr><td colspan="7">No se pudieron cargar las fincas.</td></tr>';
                     actualizarContadoresTotales({}, []);
+                    latestFincasRows = [];
                     showUserAlert('error', 'No se pudieron cargar las fincas.');
                 }
+            }
+
+            function escapeExcel(value) {
+                return String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;')
+                    .replace(/\n/g, '<br>');
+            }
+
+            function buildExcelTable(columns, rows) {
+                const head = columns.map((col) => `<th>${escapeExcel(col.label)}</th>`).join('');
+                const body = rows.map((row) => {
+                    const cells = columns.map((col) => `<td>${escapeExcel(row[col.key])}</td>`).join('');
+                    return `<tr>${cells}</tr>`;
+                }).join('');
+                return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+            }
+
+            function descargarExcel(htmlTable, filename) {
+                const blob = new Blob([`\ufeff${htmlTable}`], {
+                    type: 'application/vnd.ms-excel;charset=utf-8;'
+                });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+            }
+
+            function mapPonderacion(filas) {
+                const map = new Map();
+                (filas || []).forEach((row) => map.set(row.label, row));
+                return map;
+            }
+
+            async function exportarFincasExcel() {
+                if (!latestFincasRows || latestFincasRows.length === 0) {
+                    showUserAlert('warning', 'No hay registros para exportar.');
+                    return;
+                }
+
+                showUserAlert('info', 'Generando Excel, por favor esperá...');
+
+                const columnas = [
+                    { key: 'participacion_id', label: 'ID Participación' },
+                    { key: 'variedad', label: 'Variedad' },
+                    { key: 'cooperativa', label: 'Cooperativa' },
+                    { key: 'productor', label: 'Productor' },
+                    { key: 'tipo', label: 'Tipo' },
+                    { key: 'finca', label: 'Finca' },
+                    { key: 'superficie', label: 'Superficie (ha)' },
+                    { key: 'ancho_callejon_norte', label: 'Ancho callejón Norte' },
+                    { key: 'ancho_callejon_sur', label: 'Ancho callejón Sur' },
+                    { key: 'promedio_callejon', label: 'Promedio callejón' },
+                    { key: 'interfilar', label: 'Interfilar' },
+                    { key: 'cantidad_postes', label: 'Cantidad postes' },
+                    { key: 'postes_mal_estado', label: 'Postes mal estado' },
+                    { key: 'porcentaje_postes', label: '% postes mal estado' },
+                    { key: 'estructura_separadores', label: 'Alambres y separadores' },
+                    { key: 'agua_lavado', label: 'Agua para lavado' },
+                    { key: 'prep_acequias', label: 'Preparación suelo (acequias)' },
+                    { key: 'prep_obstaculos', label: 'Malezas y obstáculos' },
+                    { key: 'observaciones', label: 'Observaciones' },
+                    { key: 'fecha_evaluacion', label: 'Fecha evaluación' },
+                    { key: 'puntos_callejon', label: 'Puntos - Ancho callejón' },
+                    { key: 'impacto_callejon', label: 'Impacto - Ancho callejón' },
+                    { key: 'ponderado_callejon', label: 'Ponderado - Ancho callejón' },
+                    { key: 'puntos_interfilar', label: 'Puntos - Interfilar' },
+                    { key: 'impacto_interfilar', label: 'Impacto - Interfilar' },
+                    { key: 'ponderado_interfilar', label: 'Ponderado - Interfilar' },
+                    { key: 'puntos_palos', label: 'Puntos - Estructura palos' },
+                    { key: 'impacto_palos', label: 'Impacto - Estructura palos' },
+                    { key: 'ponderado_palos', label: 'Ponderado - Estructura palos' },
+                    { key: 'puntos_alambres', label: 'Puntos - Estructura alambres' },
+                    { key: 'impacto_alambres', label: 'Impacto - Estructura alambres' },
+                    { key: 'ponderado_alambres', label: 'Ponderado - Estructura alambres' },
+                    { key: 'puntos_agua', label: 'Puntos - Agua de lavado' },
+                    { key: 'impacto_agua', label: 'Impacto - Agua de lavado' },
+                    { key: 'ponderado_agua', label: 'Ponderado - Agua de lavado' },
+                    { key: 'puntos_acequias', label: 'Puntos - Prep. suelo acequias' },
+                    { key: 'impacto_acequias', label: 'Impacto - Prep. suelo acequias' },
+                    { key: 'ponderado_acequias', label: 'Ponderado - Prep. suelo acequias' },
+                    { key: 'puntos_malezas', label: 'Puntos - Prep. suelo malezas' },
+                    { key: 'impacto_malezas', label: 'Impacto - Prep. suelo malezas' },
+                    { key: 'ponderado_malezas', label: 'Ponderado - Prep. suelo malezas' },
+                    { key: 'puntaje_total', label: 'Puntaje total' },
+                    { key: 'calificacion', label: 'Calificación' },
+                    { key: 'descuento', label: 'Descuento' },
+                ];
+
+                const rows = [];
+                for (const fila of latestFincasRows) {
+                    let relevamiento = null;
+                    try {
+                        relevamiento = await cargarRelevamiento(fila.id);
+                    } catch (_) {
+                        relevamiento = null;
+                    }
+
+                    const exportData = (typeof window.buildCalificacionExport === 'function')
+                        ? window.buildCalificacionExport(relevamiento)
+                        : null;
+
+                    const codigoFinca = String(fila.codigo_finca ?? '');
+                    const esExterno = codigoFinca.startsWith('EXT-');
+                    const tipoLabel = esExterno ? 'Externo' : 'Interno';
+                    const fincaLabel = fila.nombre_finca || fila.codigo_finca || (fila.finca_id ? `Finca #${fila.finca_id}` : '');
+
+                    const ponderacion = exportData ? mapPonderacion(exportData.ponderacion) : new Map();
+                    const row = {
+                        participacion_id: fila.id ?? '',
+                        variedad: fila.variedad ?? '',
+                        cooperativa: fila.nom_cooperativa ?? '',
+                        productor: fila.productor ?? '',
+                        tipo: tipoLabel,
+                        finca: fincaLabel,
+                        superficie: fila.superficie ?? '',
+                        ancho_callejon_norte: exportData?.texto.ancho_callejon_norte ?? '',
+                        ancho_callejon_sur: exportData?.texto.ancho_callejon_sur ?? '',
+                        promedio_callejon: exportData?.texto.promedio_callejon ?? '',
+                        interfilar: exportData?.texto.interfilar ?? '',
+                        cantidad_postes: exportData?.texto.cantidad_postes ?? '',
+                        postes_mal_estado: exportData?.texto.postes_mal_estado ?? '',
+                        porcentaje_postes: exportData?.texto.porcentaje_postes_mal_estado ?? '',
+                        estructura_separadores: exportData?.texto.estructura_separadores ?? '',
+                        agua_lavado: exportData?.texto.agua_lavado ?? '',
+                        prep_acequias: exportData?.texto.preparacion_acequias ?? '',
+                        prep_obstaculos: exportData?.texto.preparacion_obstaculos ?? '',
+                        observaciones: exportData?.texto.observaciones ?? '',
+                        fecha_evaluacion: exportData?.texto.fecha_evaluacion ?? '',
+                        puntos_callejon: ponderacion.get('Ancho callejón')?.puntos ?? '',
+                        impacto_callejon: ponderacion.get('Ancho callejón')?.impacto ?? '',
+                        ponderado_callejon: ponderacion.get('Ancho callejón')?.ponderado ?? '',
+                        puntos_interfilar: ponderacion.get('Interfilar')?.puntos ?? '',
+                        impacto_interfilar: ponderacion.get('Interfilar')?.impacto ?? '',
+                        ponderado_interfilar: ponderacion.get('Interfilar')?.ponderado ?? '',
+                        puntos_palos: ponderacion.get('Estructura palos')?.puntos ?? '',
+                        impacto_palos: ponderacion.get('Estructura palos')?.impacto ?? '',
+                        ponderado_palos: ponderacion.get('Estructura palos')?.ponderado ?? '',
+                        puntos_alambres: ponderacion.get('Estructura alambres')?.puntos ?? '',
+                        impacto_alambres: ponderacion.get('Estructura alambres')?.impacto ?? '',
+                        ponderado_alambres: ponderacion.get('Estructura alambres')?.ponderado ?? '',
+                        puntos_agua: ponderacion.get('Agua de lavado')?.puntos ?? '',
+                        impacto_agua: ponderacion.get('Agua de lavado')?.impacto ?? '',
+                        ponderado_agua: ponderacion.get('Agua de lavado')?.ponderado ?? '',
+                        puntos_acequias: ponderacion.get('Prep. suelo acequias')?.puntos ?? '',
+                        impacto_acequias: ponderacion.get('Prep. suelo acequias')?.impacto ?? '',
+                        ponderado_acequias: ponderacion.get('Prep. suelo acequias')?.ponderado ?? '',
+                        puntos_malezas: ponderacion.get('Prep. suelo malezas')?.puntos ?? '',
+                        impacto_malezas: ponderacion.get('Prep. suelo malezas')?.impacto ?? '',
+                        ponderado_malezas: ponderacion.get('Prep. suelo malezas')?.ponderado ?? '',
+                        puntaje_total: exportData?.total ?? '',
+                        calificacion: exportData?.calificacion ?? '',
+                        descuento: exportData?.descuento ?? '',
+                    };
+                    rows.push(row);
+                }
+
+                const html = buildExcelTable(columnas, rows);
+                const stamp = new Date().toISOString().slice(0, 10);
+                descargarExcel(html, `fincas_operativos_${stamp}.xls`);
+                showUserAlert('success', 'Excel generado correctamente.');
             }
 
             async function cargarRelevamiento(participacionId) {
@@ -1664,6 +1883,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 anchoCallejonSur?.addEventListener('input', actualizarPromedioCallejon);
                 cantidadPostes?.addEventListener('input', actualizarPorcentajePostesMalEstado);
                 postesMalEstado?.addEventListener('input', actualizarPorcentajePostesMalEstado);
+                btnExportFincas?.addEventListener('click', exportarFincasExcel);
 
                 guardarBtn?.addEventListener('click', async () => {
                     const participacionId = Number(modal?.dataset.participacionId || 0);
