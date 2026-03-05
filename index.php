@@ -249,11 +249,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             user-select: none;
         }
 
+        .menu-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 36px;
+            height: 36px;
+            border: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--sve-gray-700);
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+        }
+
+        .menu-button:hover {
+            background: var(--sve-gray-100);
+        }
+
+        .menu {
+            position: absolute;
+            top: 48px;
+            right: 10px;
+            background: #fff;
+            border: 1px solid var(--sve-gray-200);
+            border-radius: 10px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+            padding: 6px;
+            min-width: 180px;
+            z-index: 5;
+        }
+
+        .menu.hidden {
+            display: none;
+        }
+
+        .menu-item {
+            width: 100%;
+            border: 0;
+            background: transparent;
+            text-align: left;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--sve-gray-700);
+        }
+
+        .menu-item:hover {
+            background: var(--sve-gray-100);
+        }
+
     </style>
 </head>
 
 <body>
     <div class="login-container">
+        <button class="menu-button" id="menu-button" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="login-menu" title="Opciones">
+            <span class="material-icons" aria-hidden="true">more_vert</span>
+        </button>
+        <div class="menu hidden" id="login-menu" role="menu" aria-labelledby="menu-button">
+            <button class="menu-item" id="clear-site-cache" type="button" role="menuitem">Borrar cache</button>
+        </div>
+
         <h1>Iniciar Sesión</h1>
 
         <?php if ($error !== ''): ?>
@@ -302,6 +361,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             toggle.addEventListener('click', () => {
                 const show = field.type === 'password';
                 setState(show);
+            });
+        })();
+
+        // =========================================================
+        // Módulo: Menú y borrado de cache/almacenamiento del sitio
+        // =========================================================
+        (function() {
+            const menuButton = document.getElementById('menu-button');
+            const menu = document.getElementById('login-menu');
+            const clearButton = document.getElementById('clear-site-cache');
+
+            if (!menuButton || !menu || !clearButton) return;
+
+            function closeMenu() {
+                menu.classList.add('hidden');
+                menuButton.setAttribute('aria-expanded', 'false');
+            }
+
+            function toggleMenu() {
+                const isOpen = !menu.classList.contains('hidden');
+                if (isOpen) {
+                    closeMenu();
+                } else {
+                    menu.classList.remove('hidden');
+                    menuButton.setAttribute('aria-expanded', 'true');
+                }
+            }
+
+            menuButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                toggleMenu();
+            });
+
+            document.addEventListener('click', () => {
+                closeMenu();
+            });
+
+            async function clearSiteData() {
+                try {
+                    // Cache Storage
+                    if ('caches' in window) {
+                        const keys = await caches.keys();
+                        await Promise.all(keys.map((key) => caches.delete(key)));
+                    }
+
+                    // Service Workers
+                    if ('serviceWorker' in navigator) {
+                        const regs = await navigator.serviceWorker.getRegistrations();
+                        await Promise.all(regs.map((reg) => reg.unregister()));
+                    }
+
+                    // Web Storage
+                    try {
+                        localStorage.clear();
+                        sessionStorage.clear();
+                    } catch {}
+
+                    // IndexedDB
+                    if (indexedDB && indexedDB.databases) {
+                        const dbs = await indexedDB.databases();
+                        await Promise.all(dbs.map((db) => {
+                            if (!db.name) return Promise.resolve();
+                            return new Promise((resolve) => {
+                                const req = indexedDB.deleteDatabase(db.name);
+                                req.onsuccess = () => resolve();
+                                req.onerror = () => resolve();
+                                req.onblocked = () => resolve();
+                            });
+                        }));
+                    }
+
+                    // Cookies del sitio
+                    document.cookie.split(';').forEach((cookie) => {
+                        const name = cookie.split('=')[0].trim();
+                        if (!name) return;
+                        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+                    });
+
+                    alert('Se limpió el almacenamiento del sitio. Es posible que debas recargar la página.');
+                } catch (err) {
+                    console.error('[SVE] Error limpiando cache del sitio:', err);
+                    alert('No se pudo limpiar el almacenamiento del sitio.');
+                }
+            }
+
+            clearButton.addEventListener('click', async (event) => {
+                event.preventDefault();
+                closeMenu();
+                const ok = confirm('Esto eliminará datos offline del sitio (cache, service workers, almacenamiento). ¿Continuar?');
+                if (!ok) return;
+                await clearSiteData();
             });
         })();
 
