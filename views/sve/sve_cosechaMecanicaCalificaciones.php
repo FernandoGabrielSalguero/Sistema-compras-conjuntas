@@ -106,7 +106,7 @@
             if (metros === null) return 0;
             if (metros > 6) return 4;
             if (metros >= 5.7) return 3;
-            if (metros >= 5.4) return 2;
+            if (metros >= 5.3) return 2;
             if (metros >= 5.0) return 1;
             return 0;
         }
@@ -129,18 +129,31 @@
             if (metros === null) return 0;
             if (metros >= 2.5) return 4;
             if (metros >= 2.3) return 3;
-            if (metros >= 2.1) return 2;
+            if (metros >= 2.2) return 2;
             if (metros >= 2.0) return 1;
             return 0;
         }
 
         function puntajePostes(porcentaje) {
             if (porcentaje === null) return 0;
-            if (porcentaje <= 10) return 4;
-            if (porcentaje <= 20) return 3;
-            if (porcentaje <= 30) return 2;
-            if (porcentaje <= 40) return 1;
+            if (porcentaje < 5) return 4;
+            if (porcentaje < 10) return 3;
+            if (porcentaje < 25) return 2;
+            if (porcentaje < 40) return 1;
             return 0;
+        }
+
+        function resolvePorcentajePostes(data) {
+            const porcentaje = toNumber(data?.porcentaje_postes_mal_estado);
+            if (porcentaje !== null) return porcentaje;
+
+            const cantidadPostes = toNumber(data?.cantidad_postes);
+            const postesMal = toNumber(data?.postes_mal_estado);
+            if (cantidadPostes !== null && postesMal !== null && cantidadPostes > 0) {
+                return (postesMal / cantidadPostes) * 100;
+            }
+
+            return null;
         }
 
         function puntajeSeparadores(valor) {
@@ -237,7 +250,7 @@
                 : null;
 
             const interfilar = parseInterfilar(data.interfilar);
-            const postesPct = toNumber(data.porcentaje_postes_mal_estado);
+            const postesPct = resolvePorcentajePostes(data);
 
             const puntos = {
                 callejon: puntajeCallejon(promedioCalc),
@@ -354,10 +367,7 @@
 
             const cantidadPostes = toNumber(data.cantidad_postes);
             const postesMal = toNumber(data.postes_mal_estado);
-            let porcentajePostes = toNumber(data.porcentaje_postes_mal_estado);
-            if (porcentajePostes === null && cantidadPostes && postesMal !== null && cantidadPostes > 0) {
-                porcentajePostes = (postesMal / cantidadPostes) * 100;
-            }
+            const porcentajePostes = resolvePorcentajePostes(data);
 
             const calc = calcularCalificacion(data);
             const total = calc ? clamp(calc.total, 0, 100) : null;
