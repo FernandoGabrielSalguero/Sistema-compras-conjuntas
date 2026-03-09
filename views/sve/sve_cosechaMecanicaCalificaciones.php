@@ -102,6 +102,16 @@
             return Math.min(Math.max(num, min), max);
         }
 
+        function resolvePromedioCallejon(data) {
+            const norte = toNumber(data?.ancho_callejon_norte);
+            const sur = toNumber(data?.ancho_callejon_sur);
+            if (norte !== null && sur !== null) {
+                return (norte + sur) / 2;
+            }
+
+            return toNumber(data?.promedio_callejon);
+        }
+
         function puntajeCallejon(metros) {
             if (metros === null) return 0;
             if (metros > 6) return 4;
@@ -216,10 +226,11 @@
             if (!data) {
                 return '<tr><td colspan="2">Sin calificación registrada.</td></tr>';
             }
+            const promedioCallejon = resolvePromedioCallejon(data);
             const fields = [
                 { label: 'Ancho del callejón Norte', value: data.ancho_callejon_norte },
                 { label: 'Ancho del callejón Sur', value: data.ancho_callejon_sur },
-                { label: 'Metros promedio del callejón', value: data.promedio_callejon },
+                { label: 'Metros promedio del callejón', value: formatExportValue(promedioCallejon) },
                 { label: 'Ancho del interfilar', value: data.interfilar },
                 { label: 'Cantidad de postes evaluados', value: data.cantidad_postes },
                 { label: 'Cantidad de postes en mal estado', value: data.postes_mal_estado },
@@ -242,12 +253,7 @@
         function calcularCalificacion(data) {
             if (!data) return null;
 
-            const promedio = toNumber(data.promedio_callejon);
-            const norte = toNumber(data.ancho_callejon_norte);
-            const sur = toNumber(data.ancho_callejon_sur);
-            const promedioCalc = (promedio !== null) ? promedio
-                : (norte !== null && sur !== null) ? (norte + sur) / 2
-                : null;
+            const promedioCalc = resolvePromedioCallejon(data);
 
             const interfilar = parseInterfilar(data.interfilar);
             const postesPct = resolvePorcentajePostes(data);
@@ -360,10 +366,7 @@
 
             const norte = toNumber(data.ancho_callejon_norte);
             const sur = toNumber(data.ancho_callejon_sur);
-            const promedioRaw = toNumber(data.promedio_callejon);
-            const promedio = (promedioRaw !== null) ? promedioRaw
-                : (norte !== null && sur !== null) ? (norte + sur) / 2
-                : null;
+            const promedio = resolvePromedioCallejon(data);
 
             const cantidadPostes = toNumber(data.cantidad_postes);
             const postesMal = toNumber(data.postes_mal_estado);
