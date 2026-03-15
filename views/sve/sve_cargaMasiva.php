@@ -415,7 +415,10 @@ checkAccess('sve');
                 }
 
                 if (!response.ok || !json.ok) {
-                    throw new Error((json && json.error) ? json.error : ('HTTP ' + response.status));
+                    const err = new Error((json && json.error) ? json.error : ('HTTP ' + response.status));
+                    err.detail = json?.detail || null;
+                    err.raw = json || null;
+                    throw err;
                 }
 
                 return json.data;
@@ -579,10 +582,13 @@ checkAccess('sve');
                     console.error('[CargaMasiva][APPLY_ERROR]', {
                         message: String(err?.message || err),
                         error: err,
+                        detail: err?.detail || null,
+                        raw: err?.raw || null,
                         cooperativa_id_real: coopIdReal.value.trim(),
                         archivo: csvFile?.files?.[0]?.name || null
                     });
-                    setStatus('ERROR al aplicar: ' + String(err.message || err));
+                    const detailText = err?.detail ? ('\nDetalle: ' + String(err.detail)) : '';
+                    setStatus('ERROR al aplicar: ' + String(err.message || err) + detailText);
                 } finally {
                     btnConfirmModal.disabled = false;
                 }

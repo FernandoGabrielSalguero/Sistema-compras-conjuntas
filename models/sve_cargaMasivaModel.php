@@ -972,26 +972,33 @@ final class CargaMasivaModel
             throw new InvalidArgumentException('No se puede actualizar id_real a "' . $newIdReal . '" porque ya existe en otro usuario.');
         }
 
-        $qUpdateUserIdReal = $this->pdo->prepare('UPDATE usuarios SET id_real = :new_id_real WHERE id = :id');
-        $qUpdateUserIdReal->execute([
-            ':new_id_real' => $newIdReal,
-            ':id' => $userId,
-        ]);
+        // En esta migración hay FKs sobre usuarios.id_real. Para evitar violaciones
+        // intermedias, hacemos el bloque con checks deshabilitados dentro de la sesión.
+        $this->pdo->exec('SET FOREIGN_KEY_CHECKS=0');
+        try {
+            $updates = [
+                'UPDATE rel_productor_coop SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
+                'UPDATE prod_fincas SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
+                'UPDATE rel_productor_finca SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
+                'UPDATE prod_cuartel SET id_responsable_real = :new_id_real WHERE id_responsable_real = :old_id_real',
+                'UPDATE drones_solicitud SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
+            ];
 
-        $updates = [
-            'UPDATE rel_productor_coop SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
-            'UPDATE prod_fincas SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
-            'UPDATE rel_productor_finca SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
-            'UPDATE prod_cuartel SET id_responsable_real = :new_id_real WHERE id_responsable_real = :old_id_real',
-            'UPDATE drones_solicitud SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
-        ];
+            foreach ($updates as $sql) {
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->execute([
+                    ':new_id_real' => $newIdReal,
+                    ':old_id_real' => $oldIdReal,
+                ]);
+            }
 
-        foreach ($updates as $sql) {
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([
+            $qUpdateUserIdReal = $this->pdo->prepare('UPDATE usuarios SET id_real = :new_id_real WHERE id = :id');
+            $qUpdateUserIdReal->execute([
                 ':new_id_real' => $newIdReal,
-                ':old_id_real' => $oldIdReal,
+                ':id' => $userId,
             ]);
+        } finally {
+            $this->pdo->exec('SET FOREIGN_KEY_CHECKS=1');
         }
     }
 

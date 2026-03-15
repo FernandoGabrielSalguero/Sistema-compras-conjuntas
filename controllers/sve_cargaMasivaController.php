@@ -85,11 +85,17 @@ try {
     ]);
     exit;
 } catch (Throwable $e) {
+    $detail = $e->getMessage();
+    if (function_exists('mb_substr')) {
+        $detail = mb_substr($detail, 0, 180);
+    } else {
+        $detail = substr($detail, 0, 180);
+    }
     http_response_code(500);
     echo json_encode([
         'ok' => false,
         'error' => 'Error interno procesando carga masiva.',
-        'detail' => mb_substr($e->getMessage(), 0, 180),
+        'detail' => $detail,
     ]);
     exit;
 }
