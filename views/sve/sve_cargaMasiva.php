@@ -19,6 +19,44 @@ checkAccess('sve');
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+    <style>
+        .massive-table-wrap {
+            max-height: 46vh;
+            overflow: auto;
+            border: 1px solid rgba(0, 0, 0, .08);
+            border-radius: 10px;
+            margin-top: 12px;
+        }
+
+        .massive-status {
+            margin-top: 12px;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+
+        .massive-warnings {
+            margin-top: 12px;
+            color: #b45309;
+            font-size: 13px;
+            white-space: pre-wrap;
+            max-height: 120px;
+            overflow: auto;
+        }
+
+        .modal .modal-content {
+            width: min(1100px, 92vw);
+            max-height: 88vh;
+            overflow: auto;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 14px;
+        }
+    </style>
 </head>
 
 <body>
@@ -31,81 +69,320 @@ checkAccess('sve');
 
             <nav class="sidebar-menu">
                 <ul>
-                    <li onclick="location.href='sve_dashboard.php'">
-                        <span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span>
-                    </li>
-                    <li onclick="location.href='sve_consolidado.php'">
-                        <span class="material-icons" style="color: #5b21b6;">analytics</span><span class="link-text">Consolidado</span>
-                    </li>
-                    <li onclick="location.href='sve_altausuarios.php'">
-                        <span class="material-icons" style="color: #5b21b6;">person</span><span class="link-text">Alta usuarios</span>
-                    </li>
-                    <li onclick="location.href='sve_asociarProductores.php'">
-                        <span class="material-icons" style="color: #5b21b6;">link</span><span class="link-text">Asociaciones</span>
-                    </li>
-                    <li onclick="location.href='sve_cargaMasiva.php'">
-                        <span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Carga masiva</span>
-                    </li>
-                    <li onclick="location.href='sve_registro_login.php'">
-                        <span class="material-icons" style="color: #5b21b6;">login</span><span class="link-text">Ingresos</span>
-                    </li>
-                    <li onclick="location.href='sve_operativos.php'">
-                        <span class="material-icons" style="color: #5b21b6;">assignment</span><span class="link-text">Operativos</span>
-                    </li>
-                    <li onclick="location.href='sve_mercadodigital.php'">
-                        <span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span>
-                    </li>
-                    <li onclick="location.href='sve_listadoPedidos.php'">
-                        <span class="material-icons" style="color: #5b21b6;">assignment_turned_in</span><span class="link-text">Listado Pedidos</span>
-                    </li>
-                    <li onclick="location.href='sve_productos.php'">
-                        <span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span>
-                    </li>
-                    <li onclick="location.href='sve_pulverizacionDrone.php'">
-                        <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
-                        <span class="link-text">Drones</span>
-                    </li>
-                    <li onclick="location.href='sve_cosechaMecanica.php'">
-                        <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha Mecánica</span>
-                    </li>
-                    <li onclick="location.href='sve_serviciosVendimiales.php'">
-                        <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares Enológicos</span>
-                    </li>
-                    <li onclick="location.href='sve_publicaciones.php'">
-                        <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
-                    </li>
-                    <li onclick="location.href='../../../logout.php'">
-                        <span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span>
-                    </li>
+                    <li onclick="location.href='sve_dashboard.php'"><span class="material-icons" style="color: #5b21b6;">home</span><span class="link-text">Inicio</span></li>
+                    <li onclick="location.href='sve_consolidado.php'"><span class="material-icons" style="color: #5b21b6;">analytics</span><span class="link-text">Consolidado</span></li>
+                    <li onclick="location.href='sve_altausuarios.php'"><span class="material-icons" style="color: #5b21b6;">person</span><span class="link-text">Alta usuarios</span></li>
+                    <li onclick="location.href='sve_asociarProductores.php'"><span class="material-icons" style="color: #5b21b6;">link</span><span class="link-text">Asociaciones</span></li>
+                    <li onclick="location.href='sve_cargaMasiva.php'"><span class="material-icons" style="color: #5b21b6;">upload_file</span><span class="link-text">Carga masiva</span></li>
+                    <li onclick="location.href='sve_registro_login.php'"><span class="material-icons" style="color: #5b21b6;">login</span><span class="link-text">Ingresos</span></li>
+                    <li onclick="location.href='sve_operativos.php'"><span class="material-icons" style="color: #5b21b6;">assignment</span><span class="link-text">Operativos</span></li>
+                    <li onclick="location.href='sve_mercadodigital.php'"><span class="material-icons" style="color: #5b21b6;">shopping_cart</span><span class="link-text">Mercado Digital</span></li>
+                    <li onclick="location.href='sve_listadoPedidos.php'"><span class="material-icons" style="color: #5b21b6;">assignment_turned_in</span><span class="link-text">Listado Pedidos</span></li>
+                    <li onclick="location.href='sve_productos.php'"><span class="material-icons" style="color: #5b21b6;">inventory</span><span class="link-text">Productos</span></li>
+                    <li onclick="location.href='sve_pulverizacionDrone.php'"><span class="material-symbols-outlined" style="color:#5b21b6;">drone</span><span class="link-text">Drones</span></li>
+                    <li onclick="location.href='sve_cosechaMecanica.php'"><span class="material-icons" style="color:#5b21b6;">agriculture</span><span class="link-text">Cosecha Mecánica</span></li>
+                    <li onclick="location.href='sve_serviciosVendimiales.php'"><span class="material-icons" style="color:#5b21b6;">wine_bar</span><span class="link-text">Servicios Auxiliares Enológicos</span></li>
+                    <li onclick="location.href='sve_publicaciones.php'"><span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span></li>
+                    <li onclick="location.href='../../../logout.php'"><span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span></li>
                 </ul>
             </nav>
 
             <div class="sidebar-footer">
-                <button class="btn-icon" onclick="toggleSidebar()">
-                    <span class="material-icons" id="collapseIcon">chevron_left</span>
-                </button>
+                <button class="btn-icon" onclick="toggleSidebar()"><span class="material-icons" id="collapseIcon">chevron_left</span></button>
             </div>
         </aside>
 
         <div class="main">
             <header class="navbar">
-                <button class="btn-icon" onclick="toggleSidebar()">
-                    <span class="material-icons">menu</span>
-                </button>
-                <div class="navbar-title">Carga masiva de usuarios</div>
+                <button class="btn-icon" onclick="toggleSidebar()"><span class="material-icons">menu</span></button>
+                <div class="navbar-title">Actualización masiva por CSV</div>
             </header>
 
             <section class="content">
                 <div class="card">
-                    <h2>Módulo en reconstrucción</h2>
-                    <p>Se eliminó toda la lógica de carga masiva anterior para reconstruirla desde cero.</p>
-                    <p>Esta pantalla queda como base visual hasta implementar el nuevo flujo.</p>
+                    <h2>Actualización de productores (CSV UTF-8, delimitado por comas)</h2>
+                    <p>Seleccioná el archivo CSV, indicá la cooperativa y previsualizá antes de confirmar.</p>
+
+                    <div class="form-grid grid-3">
+                        <div class="input-group">
+                            <label for="csvFile">Archivo CSV</label>
+                            <div class="input-icon input-icon-file-upload">
+                                <input id="csvFile" type="file" accept=".csv,text/csv" />
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="coopIdReal">ID real cooperativa</label>
+                            <div class="input-icon input-icon-id-card">
+                                <input id="coopIdReal" type="text" placeholder="Ej: 30001" />
+                            </div>
+                        </div>
+                        <div class="input-group" style="display:flex;align-items:flex-end;gap:10px;">
+                            <button class="btn btn-info" id="btnPreview" type="button">Previsualizar cambios</button>
+                            <button class="btn btn-aceptar" id="btnApply" type="button" disabled>Confirmar actualización</button>
+                        </div>
+                    </div>
+
+                    <div id="statusBox" class="massive-status"></div>
+                    <div id="warningsBox" class="massive-warnings"></div>
                 </div>
             </section>
         </div>
     </div>
+
+    <div id="previewModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Confirmación de cambios</h3>
+            <div id="modalSummary" style="font-size:14px; white-space:pre-wrap;"></div>
+            <div class="massive-table-wrap">
+                <table class="table" id="previewTable">
+                    <thead>
+                        <tr>
+                            <th>Línea</th>
+                            <th>CUIT</th>
+                            <th>ID real</th>
+                            <th>Finca</th>
+                            <th>Cuartel</th>
+                            <th>Resultado</th>
+                            <th>Detalle</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewBody"></tbody>
+                </table>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-cancelar" type="button" id="btnCloseModal">Cancelar</button>
+                <button class="btn btn-aceptar" type="button" id="btnConfirmModal">Sí, aplicar cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            const REQUIRED_HEADERS = [
+                'rol', 'permiso_ingreso', 'cuit', 'razon_social', 'id_real',
+                'nombre', 'direccion', 'telefono', 'correo', 'fecha_nacimiento',
+                'categorizacion', 'tipo_relacion', 'zona_asignada',
+                'codigo_finca', 'nombre_finca', 'variedad',
+                'departamento', 'localidad', 'calle', 'numero', 'latitud', 'longitud',
+                'codigo_cuartel', 'sistema_conduccion', 'superficie_ha',
+                'porcentaje_cepas_produccion', 'forma_cosecha_actual',
+                'porcentaje_malla_buen_estado', 'edad_promedio_encepado_anios',
+                'estado_estructura_sistema', 'labores_mecanizables', 'numero_inv'
+            ];
+
+            const csvFile = document.getElementById('csvFile');
+            const coopIdReal = document.getElementById('coopIdReal');
+            const btnPreview = document.getElementById('btnPreview');
+            const btnApply = document.getElementById('btnApply');
+            const statusBox = document.getElementById('statusBox');
+            const warningsBox = document.getElementById('warningsBox');
+
+            const previewModal = document.getElementById('previewModal');
+            const modalSummary = document.getElementById('modalSummary');
+            const previewBody = document.getElementById('previewBody');
+            const btnCloseModal = document.getElementById('btnCloseModal');
+            const btnConfirmModal = document.getElementById('btnConfirmModal');
+
+            let parsedRows = [];
+            let lastPreviewResponse = null;
+
+            function normalizeHeader(h) {
+                return String(h || '').trim().toLowerCase();
+            }
+
+            function setStatus(text) {
+                statusBox.textContent = text || '';
+            }
+
+            function setWarnings(items) {
+                if (!Array.isArray(items) || items.length === 0) {
+                    warningsBox.textContent = '';
+                    return;
+                }
+                warningsBox.textContent = 'Advertencias:\n- ' + items.join('\n- ');
+            }
+
+            function ensureInputs() {
+                if (!csvFile.files || !csvFile.files[0]) {
+                    throw new Error('Seleccioná un archivo CSV.');
+                }
+                if (!coopIdReal.value.trim()) {
+                    throw new Error('Indicá el id_real de la cooperativa.');
+                }
+            }
+
+            function parseCsv(file) {
+                return new Promise((resolve, reject) => {
+                    Papa.parse(file, {
+                        header: true,
+                        delimiter: ',',
+                        skipEmptyLines: true,
+                        encoding: 'utf-8',
+                        transformHeader: (h) => String(h || '').trim(),
+                        complete: (results) => {
+                            if (results.errors && results.errors.length) {
+                                reject(new Error(results.errors[0].message || 'Error parseando CSV.'));
+                                return;
+                            }
+                            resolve(Array.isArray(results.data) ? results.data : []);
+                        },
+                        error: (err) => reject(err)
+                    });
+                });
+            }
+
+            function validateHeaders(rows) {
+                if (!rows.length) {
+                    throw new Error('El CSV no tiene filas.');
+                }
+                const headers = Object.keys(rows[0]).map(normalizeHeader);
+                const missing = REQUIRED_HEADERS.filter((h) => !headers.includes(h));
+                if (missing.length) {
+                    throw new Error('Faltan columnas requeridas: ' + missing.join(', '));
+                }
+            }
+
+            async function postToController(action, rows) {
+                const response = await fetch('../../controllers/sve_cargaMasivaController.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action,
+                        cooperativa_id_real: coopIdReal.value.trim(),
+                        rows
+                    })
+                });
+
+                const text = await response.text();
+                let json;
+                try {
+                    json = JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Respuesta no JSON: ' + text);
+                }
+
+                if (!response.ok || !json.ok) {
+                    throw new Error((json && json.error) ? json.error : ('HTTP ' + response.status));
+                }
+
+                return json.data;
+            }
+
+            function renderSummary(summary) {
+                if (!summary) return '';
+                return [
+                    `Cooperativa: ${summary.cooperativa?.id_real || '-'} (${summary.cooperativa?.razon_social || 'Sin nombre'})`,
+                    `Filas totales CSV: ${summary.rows_total || 0}`,
+                    `Filas a procesar: ${summary.rows_processable || 0}`,
+                    `Filas omitidas: ${summary.rows_omitted || 0}`,
+                    `Usuarios -> revisado = "Esta revisado": ${summary.usuarios_a_revisado_si || 0}`,
+                    `Usuarios -> revisado = "No esta revisado": ${summary.usuarios_a_revisado_no || 0}`
+                ].join('\n');
+            }
+
+            function renderPreviewTable(rows) {
+                previewBody.innerHTML = '';
+                const max = Math.min(rows.length, 300);
+
+                for (let i = 0; i < max; i++) {
+                    const r = rows[i] || {};
+                    const detalle = r.detalle || [r.accion_finca, r.accion_cuartel, r.accion_relacion].filter(Boolean).join(' | ');
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${r.linea ?? ''}</td>
+                        <td>${r.cuit ?? ''}</td>
+                        <td>${r.id_real_usuario ?? ''}</td>
+                        <td>${r.codigo_finca ?? ''}</td>
+                        <td>${r.codigo_cuartel ?? ''}</td>
+                        <td>${r.resultado ?? ''}</td>
+                        <td>${detalle}</td>
+                    `;
+                    previewBody.appendChild(tr);
+                }
+            }
+
+            function openPreviewModal() {
+                previewModal.classList.remove('hidden');
+            }
+
+            function closePreviewModal() {
+                previewModal.classList.add('hidden');
+            }
+
+            csvFile.addEventListener('change', () => {
+                if (!coopIdReal.value.trim()) {
+                    setStatus('Archivo seleccionado. Ahora indicá el id_real de la cooperativa para continuar.');
+                    coopIdReal.focus();
+                }
+            });
+
+            btnPreview.addEventListener('click', async () => {
+                try {
+                    ensureInputs();
+                    setWarnings([]);
+                    setStatus('Leyendo CSV y generando previsualización...');
+                    btnApply.disabled = true;
+
+                    parsedRows = await parseCsv(csvFile.files[0]);
+                    validateHeaders(parsedRows);
+
+                    lastPreviewResponse = await postToController('preview', parsedRows);
+
+                    setStatus('Previsualización lista. Revisá el modal y confirmá si querés aplicar los cambios.');
+                    setWarnings(lastPreviewResponse.warnings || []);
+                    modalSummary.textContent = renderSummary(lastPreviewResponse.summary || {});
+                    renderPreviewTable(lastPreviewResponse.preview_rows || []);
+                    btnApply.disabled = false;
+                    openPreviewModal();
+                } catch (err) {
+                    setStatus('ERROR: ' + String(err.message || err));
+                    setWarnings([]);
+                    btnApply.disabled = true;
+                }
+            });
+
+            btnApply.addEventListener('click', () => {
+                if (!lastPreviewResponse) {
+                    setStatus('Primero hacé la previsualización.');
+                    return;
+                }
+                openPreviewModal();
+            });
+
+            btnConfirmModal.addEventListener('click', async () => {
+                try {
+                    btnConfirmModal.disabled = true;
+                    setStatus('Aplicando cambios en base de datos...');
+
+                    const result = await postToController('apply', parsedRows);
+                    closePreviewModal();
+
+                    const applied = result.applied || {};
+                    setStatus(
+                        'Actualización finalizada.\n' +
+                        `Usuarios actualizados: ${applied.usuarios_updated || 0}\n` +
+                        `Usuarios_info upsert: ${applied.usuarios_info_upserted || 0}\n` +
+                        `Fincas insertadas/actualizadas: ${applied.fincas_inserted || 0}/${applied.fincas_updated || 0}\n` +
+                        `Cuarteles insertados/actualizados: ${applied.cuarteles_inserted || 0}/${applied.cuarteles_updated || 0}\n` +
+                        `Relaciones productor-coop ajustadas: ${applied.rel_productor_coop_adjusted || 0}\n` +
+                        `Usuarios marcados "No esta revisado": ${applied.revisado_to_no || 0}`
+                    );
+                    setWarnings(result.warnings || []);
+                } catch (err) {
+                    setStatus('ERROR al aplicar: ' + String(err.message || err));
+                } finally {
+                    btnConfirmModal.disabled = false;
+                }
+            });
+
+            btnCloseModal.addEventListener('click', closePreviewModal);
+            previewModal.addEventListener('click', (e) => {
+                if (e.target === previewModal) closePreviewModal();
+            });
+        })();
+    </script>
 
     <script src="../../views/partials/spinner-global.js"></script>
 </body>
