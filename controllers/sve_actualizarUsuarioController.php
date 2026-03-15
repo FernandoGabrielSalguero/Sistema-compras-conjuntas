@@ -86,7 +86,26 @@ try {
     $rol       = $_POST['rol'] ?? null;
     $permiso   = $_POST['permiso_ingreso'] ?? null;
     $cuitPost  = $_POST['cuit'] ?? null;
-    $idReal    = $_POST['id_real'] ?? null;
+    $idReal    = isset($_POST['id_real']) ? trim((string) $_POST['id_real']) : null;
+
+    $stmtOld = $pdo->prepare("SELECT id_real FROM usuarios WHERE id = :id LIMIT 1");
+    $stmtOld->execute(['id' => $id]);
+    $oldIdReal = $stmtOld->fetchColumn();
+    if ($oldIdReal === false) {
+        responderError('Usuario no encontrado', null, 404);
+    }
+
+    if ($idReal === null || $idReal === '') {
+        $idReal = (string) $oldIdReal;
+    }
+
+    $willChangeIdReal = ((string) $oldIdReal !== (string) $idReal);
+
+    $pdo->beginTransaction();
+
+    if ($willChangeIdReal) {
+        $pdo->exec("SET FOREIGN_KEY_CHECKS=0");
+    }
 
     // Actualizar tabla usuarios
     $stmt = $pdo->prepare("
@@ -102,6 +121,28 @@ try {
         'id_real'         => $idReal,
         'id'              => $id
     ]);
+
+    if ($willChangeIdReal) {
+        $refUpdates = [
+            ['table' => 'rel_coop_ingeniero', 'column' => 'cooperativa_id_real'],
+            ['table' => 'rel_coop_ingeniero', 'column' => 'ingeniero_id_real'],
+            ['table' => 'rel_productor_coop', 'column' => 'cooperativa_id_real'],
+            ['table' => 'rel_productor_coop', 'column' => 'productor_id_real'],
+            ['table' => 'operativos_cooperativas_participacion', 'column' => 'cooperativa_id_real'],
+            ['table' => 'prod_cuartel', 'column' => 'cooperativa_id_real'],
+            ['table' => 'prod_fincas', 'column' => 'productor_id_real'],
+            ['table' => 'drones_solicitud', 'column' => 'productor_id_real'],
+        ];
+
+        foreach ($refUpdates as $ref) {
+            $sql = "UPDATE {$ref['table']} SET {$ref['column']} = :new_id WHERE {$ref['column']} = :old_id";
+            $stmtRef = $pdo->prepare($sql);
+            $stmtRef->execute([
+                'new_id' => $idReal,
+                'old_id' => $oldIdReal,
+            ]);
+        }
+    }
 
     // Actualizar usuarios_info (crear si no existe)
     $check = $pdo->prepare("SELECT 1 FROM usuarios_info WHERE usuario_id = ?");
@@ -131,8 +172,24 @@ try {
         'zona_asignada'  => $zonaAsignada,
     ]);
 
+    if ($willChangeIdReal) {
+        $pdo->exec("SET FOREIGN_KEY_CHECKS=1");
+    }
+    $pdo->commit();
+
     echo json_encode(['success' => true, 'message' => 'Usuario actualizado correctamente']);
 } catch (Throwable $e) {
+    if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    if (isset($pdo) && $pdo instanceof PDO) {
+        try {
+            $pdo->exec("SET FOREIGN_KEY_CHECKS=1");
+        } catch (Throwable $inner) {
+            // No-op: evitamos ocultar el error principal
+        }
+    }
+
     $context = [];
 
     if ($method === 'GET') {

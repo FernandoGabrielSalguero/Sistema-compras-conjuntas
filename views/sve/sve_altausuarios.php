@@ -160,7 +160,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Formulario -->
                 <div class="card">
-                    <h2>Crear nuevo usuario 2</h2>
+                    <h2>Crear nuevo usuario</h2>
                     <form class="form-modern" id="formUsuario">
                         <div class="form-grid grid-2">
 
@@ -737,14 +737,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         document.getElementById('modal').classList.add('hidden');
                         cargarUsuarios();
                     } else {
-                        const detalle = data.error_detail ? `${data.message}: ${data.error_detail}` : data.message;
                         console.error('❌ Error backend al actualizar usuario:', data);
-                        showAlert('error', detalle);
+                        showAlert('error', 'No se pudo actualizar el usuario');
                     }
                 })
                 .catch(error => {
                     console.error('❌ Error al actualizar usuario:', error);
-                    showAlert('error', error.message || 'No se pudo guardar los cambios.');
+                    showAlert('error', 'No se pudo actualizar el usuario');
                 });
         });
 
