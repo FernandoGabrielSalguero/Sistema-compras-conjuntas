@@ -22,7 +22,7 @@ checkAccess('sve');
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
     <style>
         .massive-table-wrap {
-            max-height: 46vh;
+            max-height: 58vh;
             overflow: auto;
             border: 1px solid rgba(0, 0, 0, .08);
             border-radius: 10px;
@@ -45,7 +45,8 @@ checkAccess('sve');
         }
 
         .modal .modal-content {
-            width: min(1100px, 92vw);
+            /* AJUSTE ANCHO MODAL: modificá este valor para hacerlo más angosto/ancho */
+            width: min(1450px, 96vw);
             max-height: 88vh;
             overflow: auto;
         }
@@ -55,6 +56,52 @@ checkAccess('sve');
             justify-content: flex-end;
             gap: 10px;
             margin-top: 14px;
+        }
+
+        #previewTable {
+            font-size: 13px;
+        }
+
+        #previewTable thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #f8fafc;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+        #previewTable tbody tr:nth-child(even) {
+            background: rgba(0, 0, 0, .02);
+        }
+
+        #previewTable td {
+            vertical-align: top;
+        }
+
+        .result-pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .result-pill.ok {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .result-pill.skip {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .cell-detail {
+            max-width: 320px;
+            white-space: normal;
+            word-break: break-word;
         }
     </style>
 </head>
@@ -143,6 +190,11 @@ checkAccess('sve');
                             <th>Finca</th>
                             <th>Cuartel</th>
                             <th>Resultado</th>
+                            <th>Usuario</th>
+                            <th>ID real</th>
+                            <th>Relación</th>
+                            <th>Finca</th>
+                            <th>Cuartel</th>
                             <th>Detalle</th>
                         </tr>
                     </thead>
@@ -200,6 +252,15 @@ checkAccess('sve');
                     return;
                 }
                 warningsBox.textContent = 'Advertencias:\n- ' + items.join('\n- ');
+            }
+
+            function escapeHtml(value) {
+                return String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
             }
 
             function ensureInputs() {
@@ -332,16 +393,28 @@ checkAccess('sve');
 
                 for (let i = 0; i < max; i++) {
                     const r = rows[i] || {};
-                    const detalle = r.detalle || [r.accion_finca, r.accion_cuartel, r.accion_relacion].filter(Boolean).join(' | ');
+                    const resultado = String(r.resultado || '');
+                    const pillClass = resultado === 'procesar' ? 'ok' : 'skip';
+                    const detalle = r.detalle || '-';
+                    const accionUsuario = r.accion_usuario || (resultado === 'procesar' ? 'actualizar' : '-');
+                    const accionIdReal = r.accion_id_real || '-';
+                    const accionRelacion = r.accion_relacion || '-';
+                    const accionFinca = r.accion_finca || '-';
+                    const accionCuartel = r.accion_cuartel || '-';
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${r.linea ?? ''}</td>
-                        <td>${r.cuit ?? ''}</td>
-                        <td>${r.id_real_usuario ?? ''}</td>
-                        <td>${r.codigo_finca ?? ''}</td>
-                        <td>${r.codigo_cuartel ?? ''}</td>
-                        <td>${r.resultado ?? ''}</td>
-                        <td>${detalle}</td>
+                        <td>${escapeHtml(r.linea ?? '')}</td>
+                        <td>${escapeHtml(r.cuit ?? '')}</td>
+                        <td>${escapeHtml(r.id_real_usuario ?? '')}</td>
+                        <td>${escapeHtml(r.codigo_finca ?? '')}</td>
+                        <td>${escapeHtml(r.codigo_cuartel ?? '')}</td>
+                        <td><span class="result-pill ${pillClass}">${escapeHtml(resultado || '-')}</span></td>
+                        <td>${escapeHtml(accionUsuario)}</td>
+                        <td>${escapeHtml(accionIdReal)}</td>
+                        <td>${escapeHtml(accionRelacion)}</td>
+                        <td>${escapeHtml(accionFinca)}</td>
+                        <td>${escapeHtml(accionCuartel)}</td>
+                        <td class="cell-detail">${escapeHtml(detalle)}</td>
                     `;
                     previewBody.appendChild(tr);
                 }
