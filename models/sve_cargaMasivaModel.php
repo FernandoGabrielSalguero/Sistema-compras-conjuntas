@@ -570,10 +570,12 @@ final class CargaMasivaModel
             'cooperativa' => [
                 'id_real' => $coop['id_real'],
                 'razon_social' => $coop['razon_social'],
+                'nombre' => $coop['nombre_cooperativa'],
             ],
             'rows_total' => count($normalizedRows),
             'rows_processable' => count($processable),
             'rows_omitted' => count($normalizedRows) - count($processable),
+            'usuarios_nuevos_estimados' => $this->countEstimatedNewUsers($processable),
             'usuarios_a_revisado_si' => count($processableByCuit),
             'usuarios_a_revisado_no' => count($notInCsvIds),
         ];
@@ -595,7 +597,14 @@ final class CargaMasivaModel
             throw new InvalidArgumentException('Debes indicar el id_real de la cooperativa.');
         }
 
-        $stmt = $this->pdo->prepare('SELECT id, id_real, razon_social, rol FROM usuarios WHERE id_real = :id_real LIMIT 1');
+        $stmt = $this->pdo->prepare(
+            'SELECT u.id, u.id_real, u.razon_social, u.rol, u.usuario,
+                    ui.nombre AS info_nombre
+             FROM usuarios u
+             LEFT JOIN usuarios_info ui ON ui.usuario_id = u.id
+             WHERE u.id_real = :id_real
+             LIMIT 1'
+        );
         $stmt->execute([':id_real' => $coopId]);
         $coop = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -607,7 +616,33 @@ final class CargaMasivaModel
             throw new InvalidArgumentException('El id_real indicado no pertenece a una cooperativa.');
         }
 
+        $displayName = $this->firstNonEmpty(
+            $coop['razon_social'] ?? null,
+            $coop['info_nombre'] ?? null,
+            $coop['usuario'] ?? null
+        ) ?? 'Sin nombre';
+        $coop['nombre_cooperativa'] = $displayName;
+
         return $coop;
+    }
+
+    private function countEstimatedNewUsers(array $processable): int
+    {
+        $newByCuit = [];
+        foreach ($processable as $item) {
+            if (($item['user'] ?? null) !== null) {
+                continue;
+            }
+            $row = $item['row'] ?? null;
+            if (!is_array($row)) {
+                continue;
+            }
+            $cuit = $row['cuit'] ?? null;
+            if ($cuit !== null) {
+                $newByCuit[(string)$cuit] = true;
+            }
+        }
+        return count($newByCuit);
     }
 
     private function fetchUsersByCuit(array $cuitValues): array

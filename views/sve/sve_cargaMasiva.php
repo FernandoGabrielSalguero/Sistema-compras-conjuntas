@@ -314,11 +314,13 @@ checkAccess('sve');
 
             function renderSummary(summary) {
                 if (!summary) return '';
+                const coopNombre = summary.cooperativa?.nombre || summary.cooperativa?.razon_social || 'Sin nombre';
                 return [
-                    `Cooperativa: ${summary.cooperativa?.id_real || '-'} (${summary.cooperativa?.razon_social || 'Sin nombre'})`,
+                    `Cooperativa: ${summary.cooperativa?.id_real || '-'} (${coopNombre})`,
                     `Filas totales CSV: ${summary.rows_total || 0}`,
                     `Filas a procesar: ${summary.rows_processable || 0}`,
                     `Filas omitidas: ${summary.rows_omitted || 0}`,
+                    `Usuarios nuevos a crear: ${summary.usuarios_nuevos_estimados || 0}`,
                     `Usuarios -> revisado = "Esta revisado": ${summary.usuarios_a_revisado_si || 0}`,
                     `Usuarios -> revisado = "No esta revisado": ${summary.usuarios_a_revisado_no || 0}`
                 ].join('\n');
@@ -411,6 +413,7 @@ checkAccess('sve');
                     const applied = result.applied || {};
                     setStatus(
                         'Actualización finalizada.\n' +
+                        `Usuarios creados: ${applied.usuarios_created || 0}\n` +
                         `Usuarios actualizados: ${applied.usuarios_updated || 0}\n` +
                         `Usuarios_info upsert: ${applied.usuarios_info_upserted || 0}\n` +
                         `Fincas insertadas/actualizadas: ${applied.fincas_inserted || 0}/${applied.fincas_updated || 0}\n` +
