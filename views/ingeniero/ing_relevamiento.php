@@ -202,43 +202,48 @@ unset($_SESSION['cierre_info']);
             color: rgba(15, 23, 42, 0.8);
         }
 
-        #productor-modificar-view form {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(220px, 1fr));
-            gap: 0.75rem 1rem;
-        }
-
-        #productor-modificar-view p,
-        #productor-modificar-view h3,
-        #productor-modificar-view h4,
-        #productor-modificar-view hr,
-        #productor-modificar-view .form-switch,
-        #productor-modificar-view .relevamiento-finca-header,
-        #productor-modificar-view .relevamiento-finca-subtitle {
-            grid-column: 1 / -1;
+        #productor-modificar-view .table-form-intro {
+            margin-bottom: 1rem;
         }
 
         #productor-modificar-view .input-group {
             margin-bottom: 0;
         }
 
-        #productor-modificar-view .relevamiento-finca-block {
-            grid-column: 1 / -1;
+        #productor-modificar-view .table-section-card {
+            margin-bottom: 0.9rem;
+        }
+
+        #productor-modificar-view .table-section-head {
+            margin-bottom: 0.8rem;
+        }
+
+        #productor-modificar-view .table-section-title {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        #productor-modificar-view .table-section-subtitle {
+            margin: 0.2rem 0 0;
+            font-size: 0.85rem;
+            opacity: 0.75;
+        }
+
+        #productor-modificar-view .table-section-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(220px, 1fr));
             gap: 0.75rem 1rem;
         }
 
         @media (max-width: 1200px) {
-            #productor-modificar-view form,
-            #productor-modificar-view .relevamiento-finca-block {
+            #productor-modificar-view .table-section-grid {
                 grid-template-columns: repeat(2, minmax(220px, 1fr));
             }
         }
 
         @media (max-width: 700px) {
-            #productor-modificar-view form,
-            #productor-modificar-view .relevamiento-finca-block {
+            #productor-modificar-view .table-section-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -602,6 +607,200 @@ unset($_SESSION['cierre_info']);
             applyVisibility();
         }
 
+        function parseTableMetaFromTitle(titleRaw) {
+            const title = String(titleRaw ?? '').trim();
+            const m = title.match(/^(.*)\(([^)]+)\)\s*$/);
+            if (!m) {
+                return { label: title || 'Tabla', tableName: '' };
+            }
+            return {
+                label: String(m[1] ?? '').trim(),
+                tableName: String(m[2] ?? '').trim()
+            };
+        }
+
+        function createTableSectionCard(titleRaw, subtitle = '') {
+            const meta = parseTableMetaFromTitle(titleRaw);
+
+            const card = document.createElement('div');
+            card.className = 'card table-section-card';
+
+            const head = document.createElement('div');
+            head.className = 'table-section-head';
+
+            const h = document.createElement('h4');
+            h.className = 'table-section-title';
+            h.textContent = meta.label || 'Tabla';
+            head.appendChild(h);
+
+            const small = document.createElement('p');
+            small.className = 'table-section-subtitle';
+            small.textContent = meta.tableName
+                ? `${meta.tableName}${subtitle ? ` - ${subtitle}` : ''}`
+                : subtitle;
+            if (small.textContent.trim() !== '') {
+                head.appendChild(small);
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'table-section-grid';
+
+            card.appendChild(head);
+            card.appendChild(grid);
+
+            return { card, grid };
+        }
+
+        function normalizeFragment(html) {
+            const tpl = document.createElement('template');
+            tpl.innerHTML = String(html ?? '');
+            return tpl.content;
+        }
+
+        function toElementNodes(nodes) {
+            return (nodes || []).filter((n) => n && n.nodeType === Node.ELEMENT_NODE);
+        }
+
+        function buildFamiliaFormCards(htmlFamilia) {
+            const frag = normalizeFragment(htmlFamilia);
+            const sourceForm = frag.querySelector('#familia-form');
+            if (!sourceForm) return null;
+
+            const form = document.createElement('form');
+            form.id = 'familia-form';
+
+            const children = toElementNodes(Array.from(sourceForm.childNodes));
+            const introNodes = [];
+            const sections = [];
+            let current = null;
+
+            children.forEach((node) => {
+                if (node.matches('h4.relevamiento-section-title')) {
+                    current = { title: node.textContent || 'Tabla', nodes: [] };
+                    sections.push(current);
+                    return;
+                }
+
+                if (node.matches('hr')) {
+                    return;
+                }
+
+                if (current) {
+                    current.nodes.push(node);
+                } else {
+                    introNodes.push(node);
+                }
+            });
+
+            if (introNodes.length) {
+                const intro = document.createElement('div');
+                intro.className = 'table-form-intro';
+                introNodes.forEach((n) => intro.appendChild(n));
+                form.appendChild(intro);
+            }
+
+            sections.forEach((sec) => {
+                const { card, grid } = createTableSectionCard(sec.title);
+                sec.nodes.forEach((n) => grid.appendChild(n));
+                form.appendChild(card);
+            });
+
+            return form;
+        }
+
+        function buildProduccionFormCards(htmlProduccion) {
+            const frag = normalizeFragment(htmlProduccion);
+            const sourceForm = frag.querySelector('#produccion-form');
+            if (!sourceForm) return null;
+
+            const form = document.createElement('form');
+            form.id = 'produccion-form';
+
+            const hiddenInputs = Array.from(sourceForm.querySelectorAll(':scope > input[type="hidden"]'));
+            hiddenInputs.forEach((hidden) => form.appendChild(hidden));
+
+            const intro = document.createElement('div');
+            intro.className = 'table-form-intro';
+            Array.from(sourceForm.children).forEach((node) => {
+                if (node.matches('input[type="hidden"]') || node.matches('.relevamiento-finca-block')) return;
+                intro.appendChild(node);
+            });
+            if (intro.children.length > 0) {
+                form.appendChild(intro);
+            }
+
+            const fincaBlocks = Array.from(sourceForm.querySelectorAll('.relevamiento-finca-block'));
+            fincaBlocks.forEach((block) => {
+                const fincaHeader = (block.querySelector('.relevamiento-finca-header')?.textContent || '').trim();
+                const fincaSub = (block.querySelector('.relevamiento-finca-subtitle')?.textContent || '').trim();
+                const fincaSubtitle = [fincaHeader, fincaSub].filter(Boolean).join(' - ');
+
+                const sectionNodes = toElementNodes(Array.from(block.childNodes));
+                let current = null;
+                const sections = [];
+
+                sectionNodes.forEach((node) => {
+                    if (
+                        node.matches('input[type="hidden"]') ||
+                        node.matches('.relevamiento-finca-header') ||
+                        node.matches('.relevamiento-finca-subtitle') ||
+                        node.matches('hr')
+                    ) {
+                        if (node.matches('input[type="hidden"]')) {
+                            form.appendChild(node);
+                        }
+                        return;
+                    }
+
+                    if (node.matches('h4.relevamiento-section-title')) {
+                        current = { title: node.textContent || 'Tabla', nodes: [] };
+                        sections.push(current);
+                        return;
+                    }
+
+                    if (current) {
+                        current.nodes.push(node);
+                    }
+                });
+
+                sections.forEach((sec) => {
+                    const { card, grid } = createTableSectionCard(sec.title, fincaSubtitle);
+                    sec.nodes.forEach((n) => grid.appendChild(n));
+                    form.appendChild(card);
+                });
+            });
+
+            return form;
+        }
+
+        function buildCuartelesCards(htmlCuarteles) {
+            const frag = normalizeFragment(htmlCuarteles);
+            const wrapper = document.createElement('div');
+            wrapper.id = 'cuarteles-form';
+
+            const card = document.createElement('div');
+            card.className = 'card table-section-card';
+
+            const title = document.createElement('h4');
+            title.className = 'table-section-title';
+            title.textContent = 'Cuarteles';
+
+            const body = document.createElement('div');
+            body.className = 'table-section-grid';
+
+            Array.from(frag.childNodes).forEach((node) => {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    body.appendChild(node);
+                }
+            });
+
+            card.appendChild(title);
+            card.appendChild(body);
+            wrapper.appendChild(card);
+
+            return wrapper;
+        }
+
         async function fetchPartialHtml(controllerFile, productorIdReal) {
             const params = new URLSearchParams({
                 productor_id_real: productorIdReal
@@ -661,33 +860,16 @@ unset($_SESSION['cierre_info']);
                             <span>ID: ${idReal}</span>
                             <span>CUIT: ${cuit}</span>
                         </div>
-                    </div>
-                </div>
-                <div id="productor-modificar-view">
-                    <div class="card">
-                        <h3>Familia (usuarios / usuarios_info / info_productor / prod_colaboradores / prod_hijos)</h3>
-                        <div id="slot-familia"><p>Cargando formulario de familia...</p></div>
-                        <div class="form-buttons">
-                            <button class="btn btn-aceptar" onclick="guardarFamiliaDesdeVista('${idRealJs}')">Guardar Familia</button>
+                        <div class="form-buttons" style="margin-top:0;">
+                            <button class="btn btn-aceptar" onclick="guardarFamiliaDesdeVista('${idRealJs}')">Guardar tablas personales</button>
+                            <button class="btn btn-aceptar" onclick="guardarProduccionDesdeVista('${idRealJs}')">Guardar tablas productivas</button>
                         </div>
                     </div>
-                    <div class="card">
-                        <h3>Producción (prod_fincas y tablas asociadas)</h3>
-                        <div id="slot-produccion"><p>Cargando formulario de producción...</p></div>
-                        <div class="form-buttons">
-                            <button class="btn btn-aceptar" onclick="guardarProduccionDesdeVista('${idRealJs}')">Guardar Producción</button>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <h3>Cuarteles (prod_cuartel y tablas asociadas)</h3>
-                        <div id="slot-cuarteles"><p>Cargando formulario de cuarteles...</p></div>
-                    </div>
                 </div>
+                <div id="productor-modificar-view"></div>
             `;
 
-            const slotFamilia = container.querySelector('#slot-familia');
-            const slotProduccion = container.querySelector('#slot-produccion');
-            const slotCuarteles = container.querySelector('#slot-cuarteles');
+            const slotView = container.querySelector('#productor-modificar-view');
 
             try {
                 const [htmlFamilia, htmlProduccion, htmlCuarteles] = await Promise.all([
@@ -696,12 +878,19 @@ unset($_SESSION['cierre_info']);
                     fetchPartialHtml('relevamiento_cuarteles_controller.php', productorIdReal)
                 ]);
 
-                if (slotFamilia) slotFamilia.innerHTML = htmlFamilia;
-                if (slotProduccion) slotProduccion.innerHTML = htmlProduccion;
-                if (slotCuarteles) slotCuarteles.innerHTML = htmlCuarteles;
+                const familiaForm = buildFamiliaFormCards(htmlFamilia);
+                const produccionForm = buildProduccionFormCards(htmlProduccion);
+                const cuartelesForm = buildCuartelesCards(htmlCuarteles);
 
-                initAdvancedToggleInScope(slotFamilia, 'familia-advanced-toggle');
-                initAdvancedToggleInScope(slotProduccion, 'produccion-advanced-toggle');
+                if (slotView) {
+                    slotView.innerHTML = '';
+                    if (familiaForm) slotView.appendChild(familiaForm);
+                    if (produccionForm) slotView.appendChild(produccionForm);
+                    if (cuartelesForm) slotView.appendChild(cuartelesForm);
+                }
+
+                initAdvancedToggleInScope(slotView, 'familia-advanced-toggle');
+                initAdvancedToggleInScope(slotView, 'produccion-advanced-toggle');
             } catch (e) {
                 console.error('[Relevamiento] Error al cargar vista de modificación:', e);
                 container.innerHTML = `<div class="card card-error">Error al cargar formulario del productor: ${escapeHtml(e.message)}</div>`;
