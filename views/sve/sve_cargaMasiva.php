@@ -213,44 +213,63 @@ checkAccess('sve');
 
             function parseCsv(file) {
                 return new Promise((resolve, reject) => {
-                    Papa.parse(file, {
-                        header: true,
-                        delimiter: ',',
-                        skipEmptyLines: true,
-                        encoding: 'utf-8',
-                        transformHeader: (h) => String(h || '').trim(),
-                        complete: (results) => {
-                            if (results.errors && results.errors.length) {
-                                const sampleErrors = results.errors.slice(0, 8).map((e) => ({
-                                    type: e.type,
-                                    code: e.code,
-                                    message: e.message,
-                                    row: e.row,
-                                    index: e.index
-                                }));
-                                const details = {
-                                    file: {
-                                        name: file?.name || null,
-                                        size: file?.size || null,
-                                        type: file?.type || null,
-                                        lastModified: file?.lastModified || null
-                                    },
-                                    parserMeta: results.meta || {},
-                                    sampleErrors
-                                };
-                                console.error('[CargaMasiva][CSV_PARSE_ERROR]', details);
-                                const err = new Error(results.errors[0].message || 'Error parseando CSV.');
-                                err.details = details;
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const text = String(reader.result || '');
+                        const firstLine = (text.split(/\r\n|\n|\r/)[0] || '').replace(/^\uFEFF/, '');
+                        const commaCount = (firstLine.match(/,/g) || []).length;
+                        const semicolonCount = (firstLine.match(/;/g) || []).length;
+                        const delimiter = semicolonCount > commaCount ? ';' : ',';
+
+                        console.log('[CargaMasiva][CSV_DELIMITER_DETECT]', {
+                            file: file?.name || null,
+                            firstLine,
+                            commaCount,
+                            semicolonCount,
+                            chosenDelimiter: delimiter
+                        });
+
+                        Papa.parse(file, {
+                            header: true,
+                            delimiter,
+                            skipEmptyLines: true,
+                            encoding: 'utf-8',
+                            transformHeader: (h) => String(h || '').trim(),
+                            complete: (results) => {
+                                if (results.errors && results.errors.length) {
+                                    const sampleErrors = results.errors.slice(0, 8).map((e) => ({
+                                        type: e.type,
+                                        code: e.code,
+                                        message: e.message,
+                                        row: e.row,
+                                        index: e.index
+                                    }));
+                                    const details = {
+                                        file: {
+                                            name: file?.name || null,
+                                            size: file?.size || null,
+                                            type: file?.type || null,
+                                            lastModified: file?.lastModified || null
+                                        },
+                                        parserMeta: results.meta || {},
+                                        sampleErrors
+                                    };
+                                    console.error('[CargaMasiva][CSV_PARSE_ERROR]', details);
+                                    const err = new Error(results.errors[0].message || 'Error parseando CSV.');
+                                    err.details = details;
+                                    reject(err);
+                                    return;
+                                }
+                                resolve(Array.isArray(results.data) ? results.data : []);
+                            },
+                            error: (err) => {
+                                console.error('[CargaMasiva][CSV_FATAL_ERROR]', err);
                                 reject(err);
-                                return;
                             }
-                            resolve(Array.isArray(results.data) ? results.data : []);
-                        },
-                        error: (err) => {
-                            console.error('[CargaMasiva][CSV_FATAL_ERROR]', err);
-                            reject(err);
-                        }
-                    });
+                        });
+                    };
+                    reader.onerror = () => reject(reader.error || new Error('No se pudo leer el CSV.'));
+                    reader.readAsText(file, 'utf-8');
                 });
             }
 
