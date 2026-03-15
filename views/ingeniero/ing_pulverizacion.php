@@ -521,14 +521,14 @@ unset($_SESSION['cierre_info']);
                 <ul class="submenu-root">
                     <li>
                         <a href="ing_servicios.php">
-                            <span class="material-symbols-outlined">add</span>
+                            <span class="material-symbols-outlined" style="color:#5b21b6">add</span>
                             <span class="link-text">Solicitar Servicio</span>
                         </a>
                     </li>
 
                     <li>
                         <a href="ing_pulverizacion.php">
-                            <span class="material-symbols-outlined">drone</span>
+                            <span class="material-symbols-outlined" style="color:#5b21b6">drone</span>
                             <span class="link-text">Servicios Solicitados</span>
                         </a>
                     </li>
@@ -543,7 +543,7 @@ unset($_SESSION['cierre_info']);
                 <ul class="submenu-root">
                     <li>
                         <a href="ing_relevamiento.php">
-                            <span class="material-symbols-outlined">map</span>
+                            <span class="material-symbols-outlined" style="color:#5b21b6">map</span>
                             <span class="link-text">Relevamiento</span>
                         </a>
                     </li>

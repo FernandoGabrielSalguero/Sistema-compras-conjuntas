@@ -183,6 +183,65 @@ unset($_SESSION['cierre_info']);
         .form-switch input[type="checkbox"] {
             cursor: pointer;
         }
+
+        /* ===== Vista Modificar Productor ===== */
+        .productor-edit-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .productor-edit-summary {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem 1rem;
+            color: rgba(15, 23, 42, 0.8);
+        }
+
+        #productor-modificar-view form {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(220px, 1fr));
+            gap: 0.75rem 1rem;
+        }
+
+        #productor-modificar-view p,
+        #productor-modificar-view h3,
+        #productor-modificar-view h4,
+        #productor-modificar-view hr,
+        #productor-modificar-view .form-switch,
+        #productor-modificar-view .relevamiento-finca-header,
+        #productor-modificar-view .relevamiento-finca-subtitle {
+            grid-column: 1 / -1;
+        }
+
+        #productor-modificar-view .input-group {
+            margin-bottom: 0;
+        }
+
+        #productor-modificar-view .relevamiento-finca-block {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(220px, 1fr));
+            gap: 0.75rem 1rem;
+        }
+
+        @media (max-width: 1200px) {
+            #productor-modificar-view form,
+            #productor-modificar-view .relevamiento-finca-block {
+                grid-template-columns: repeat(2, minmax(220px, 1fr));
+            }
+        }
+
+        @media (max-width: 700px) {
+            #productor-modificar-view form,
+            #productor-modificar-view .relevamiento-finca-block {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 
 </head>
@@ -331,6 +390,7 @@ unset($_SESSION['cierre_info']);
         const PRODUCTORES_MAP = {};
         let PRODUCTORES_LIST = [];
         let currentProductor = null;
+        let currentCoop = null;
 
         console.log('[Relevamiento] Script cargado');
 
@@ -481,9 +541,7 @@ unset($_SESSION['cierre_info']);
                             <td>${idReal}</td>
                             <td>${cuit}</td>
                             <td class="cell-actions">
-                                <button class="btn btn-info" onclick="relevamientoOpenModal('familia','${idRealJs}')">Familia</button>
-                                <button class="btn btn-info" onclick="relevamientoOpenModal('produccion','${idRealJs}')">Producción</button>
-                                <button class="btn btn-info" onclick="relevamientoOpenModal('cuarteles','${idRealJs}')">Cuarteles</button>
+                                <button class="btn btn-info" onclick="abrirModificarProductor('${idRealJs}')">Modificar datos</button>
                                 <button class="icon-btn" title="Consolidar JSON (Familia + Producción)" onclick="relevamientoLogProductorFull('${idRealJs}')">
                                     <span class="material-symbols-outlined">code</span>
                                 </button>
@@ -520,6 +578,173 @@ unset($_SESSION['cierre_info']);
                 searchInput.addEventListener('input', applyFilter);
             }
             buildRows(PRODUCTORES_LIST);
+        }
+
+        function initAdvancedToggleInScope(scopeEl, roleName) {
+            if (!scopeEl) return;
+            const toggle = scopeEl.querySelector(`[data-role="${roleName}"]`);
+            const advancedFields = scopeEl.querySelectorAll('[data-advanced="1"]');
+
+            if (!toggle || !advancedFields.length) return;
+
+            const applyVisibility = () => {
+                advancedFields.forEach((el) => {
+                    if (toggle.checked) {
+                        el.classList.remove('relevamiento-advanced-hidden');
+                    } else {
+                        el.classList.add('relevamiento-advanced-hidden');
+                    }
+                });
+            };
+
+            toggle.addEventListener('change', applyVisibility);
+            toggle.checked = false;
+            applyVisibility();
+        }
+
+        async function fetchPartialHtml(controllerFile, productorIdReal) {
+            const params = new URLSearchParams({
+                productor_id_real: productorIdReal
+            });
+            const resp = await fetch(`${RELEVAMIENTO_PARTIAL_BASE}/${controllerFile}?${params.toString()}`, {
+                credentials: 'same-origin'
+            });
+            if (!resp.ok) {
+                throw new Error(`${controllerFile}: Error HTTP ${resp.status}`);
+            }
+            return resp.text();
+        }
+
+        async function guardarFormularioParcial(formId, controllerFile, productorIdReal, mensajeExito) {
+            const form = document.querySelector(`#productor-modificar-view #${formId}`);
+            if (!form) {
+                throw new Error(`No se encontró el formulario ${formId}`);
+            }
+
+            const formData = new FormData(form);
+            formData.append('productor_id_real', productorIdReal);
+
+            const resp = await fetch(`${RELEVAMIENTO_PARTIAL_BASE}/${controllerFile}`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: formData
+            });
+            const data = await resp.json();
+            if (!data.ok) {
+                throw new Error(data.error || `Error al guardar ${formId}`);
+            }
+
+            if (typeof showToastBoton === 'function') {
+                showToastBoton('success', mensajeExito);
+            }
+        }
+
+        async function abrirModificarProductor(productorIdReal) {
+            const container = document.getElementById('cards-container');
+            if (!container) return;
+
+            const productor = PRODUCTORES_MAP[productorIdReal] || null;
+            currentProductor = productor;
+
+            const nombre = escapeHtml(productor?.nombre ?? 'Sin nombre');
+            const cuit = escapeHtml(productor?.cuit ?? 'Sin CUIT');
+            const idReal = escapeHtml(productorIdReal);
+
+            setCardsTitle(`Modificar productor ${idReal}`);
+            container.innerHTML = `
+                <div class="card">
+                    <div class="productor-edit-toolbar">
+                        <button class="btn btn-cancelar" onclick="volverAProductores()">Volver a productores</button>
+                        <div class="productor-edit-summary">
+                            <strong>${nombre}</strong>
+                            <span>ID: ${idReal}</span>
+                            <span>CUIT: ${cuit}</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="productor-modificar-view">
+                    <div class="card">
+                        <h3>Familia (usuarios / usuarios_info / info_productor / prod_colaboradores / prod_hijos)</h3>
+                        <div id="slot-familia"><p>Cargando formulario de familia...</p></div>
+                        <div class="form-buttons">
+                            <button class="btn btn-aceptar" onclick="guardarFamiliaDesdeVista('${idReal}')">Guardar Familia</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Producción (prod_fincas y tablas asociadas)</h3>
+                        <div id="slot-produccion"><p>Cargando formulario de producción...</p></div>
+                        <div class="form-buttons">
+                            <button class="btn btn-aceptar" onclick="guardarProduccionDesdeVista('${idReal}')">Guardar Producción</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Cuarteles (prod_cuartel y tablas asociadas)</h3>
+                        <div id="slot-cuarteles"><p>Cargando formulario de cuarteles...</p></div>
+                    </div>
+                </div>
+            `;
+
+            const slotFamilia = container.querySelector('#slot-familia');
+            const slotProduccion = container.querySelector('#slot-produccion');
+            const slotCuarteles = container.querySelector('#slot-cuarteles');
+
+            try {
+                const [htmlFamilia, htmlProduccion, htmlCuarteles] = await Promise.all([
+                    fetchPartialHtml('relevamiento_familia_controller.php', productorIdReal),
+                    fetchPartialHtml('relevamiento_produccion_controller.php', productorIdReal),
+                    fetchPartialHtml('relevamiento_cuarteles_controller.php', productorIdReal)
+                ]);
+
+                if (slotFamilia) slotFamilia.innerHTML = htmlFamilia;
+                if (slotProduccion) slotProduccion.innerHTML = htmlProduccion;
+                if (slotCuarteles) slotCuarteles.innerHTML = htmlCuarteles;
+
+                initAdvancedToggleInScope(slotFamilia, 'familia-advanced-toggle');
+                initAdvancedToggleInScope(slotProduccion, 'produccion-advanced-toggle');
+            } catch (e) {
+                console.error('[Relevamiento] Error al cargar vista de modificación:', e);
+                container.innerHTML = `<div class="card card-error">Error al cargar formulario del productor: ${escapeHtml(e.message)}</div>`;
+            }
+        }
+
+        function volverAProductores() {
+            if (currentCoop) {
+                cargarProductores(currentCoop);
+                return;
+            }
+            cargarCooperativas();
+        }
+
+        async function guardarFamiliaDesdeVista(productorIdReal) {
+            try {
+                await guardarFormularioParcial(
+                    'familia-form',
+                    'relevamiento_familia_controller.php',
+                    productorIdReal,
+                    'Datos de familia guardados correctamente'
+                );
+            } catch (e) {
+                console.error('[Relevamiento] Error al guardar familia:', e);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', `Error al guardar familia: ${e.message}`);
+                }
+            }
+        }
+
+        async function guardarProduccionDesdeVista(productorIdReal) {
+            try {
+                await guardarFormularioParcial(
+                    'produccion-form',
+                    'relevamiento_produccion_controller.php',
+                    productorIdReal,
+                    'Datos de producción guardados correctamente'
+                );
+            } catch (e) {
+                console.error('[Relevamiento] Error al guardar producción:', e);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', `Error al guardar producción: ${e.message}`);
+                }
+            }
         }
 
         function getFormValuesAsObject(doc, formSelector) {
