@@ -42,6 +42,48 @@ final class CargaMasivaModel
         'numero_inv',
     ];
 
+    private const CUARTEL_LIMITANTES_FIELDS = [
+        'limitantes_suelo',
+        'observaciones',
+        'categoria_1',
+        'limitante_1',
+        'inversion_accion1_1',
+        'obs_inversion_accion1_1',
+        'ciclo_agricola1_1',
+        'inversion_accion2_1',
+        'obs_inversion_accion2_1',
+        'ciclo_agricola2_1',
+        'categoria_2',
+        'limitante_2',
+        'inversion_accion1_2',
+        'obs_inversion_accion1_2',
+        'ciclo_agricola1_2',
+        'inversion_accion2_2',
+        'obs_inversion_accion2_2',
+        'ciclo_agricola2_2',
+    ];
+
+    private const CUARTEL_RENDIMIENTOS_FIELDS = [
+        'rend_2020_qq_ha',
+        'rend_2021_qq_ha',
+        'rend_2022_qq_ha',
+        'ing_2023_kg',
+        'rend_2023_qq_ha',
+        'ing_2024_kg',
+        'rend_2024_qq_ha',
+        'ing_2025_kg',
+        'rend_2025_qq_ha',
+        'rend_promedio_5anios_qq_ha',
+    ];
+
+    private const CUARTEL_RIESGOS_FIELDS = [
+        'tiene_seguro_agricola',
+        'porcentaje_dano_granizo',
+        'heladas_dano_promedio_5anios',
+        'presencia_freatica',
+        'plagas_no_convencionales',
+    ];
+
     public function __construct()
     {
         global $pdo;
@@ -195,6 +237,57 @@ final class CargaMasivaModel
                  WHERE id = :id'
             );
 
+            $qResetCuartelLimitantes = $this->pdo->prepare(
+                'INSERT INTO prod_cuartel_limitantes (cuartel_id)
+                 VALUES (:cuartel_id)
+                 ON DUPLICATE KEY UPDATE
+                    limitantes_suelo = NULL,
+                    observaciones = NULL,
+                    categoria_1 = NULL,
+                    limitante_1 = NULL,
+                    inversion_accion1_1 = NULL,
+                    obs_inversion_accion1_1 = NULL,
+                    ciclo_agricola1_1 = NULL,
+                    inversion_accion2_1 = NULL,
+                    obs_inversion_accion2_1 = NULL,
+                    ciclo_agricola2_1 = NULL,
+                    categoria_2 = NULL,
+                    limitante_2 = NULL,
+                    inversion_accion1_2 = NULL,
+                    obs_inversion_accion1_2 = NULL,
+                    ciclo_agricola1_2 = NULL,
+                    inversion_accion2_2 = NULL,
+                    obs_inversion_accion2_2 = NULL,
+                    ciclo_agricola2_2 = NULL'
+            );
+
+            $qResetCuartelRendimientos = $this->pdo->prepare(
+                'INSERT INTO prod_cuartel_rendimientos (cuartel_id)
+                 VALUES (:cuartel_id)
+                 ON DUPLICATE KEY UPDATE
+                    rend_2020_qq_ha = NULL,
+                    rend_2021_qq_ha = NULL,
+                    rend_2022_qq_ha = NULL,
+                    ing_2023_kg = NULL,
+                    rend_2023_qq_ha = NULL,
+                    ing_2024_kg = NULL,
+                    rend_2024_qq_ha = NULL,
+                    ing_2025_kg = NULL,
+                    rend_2025_qq_ha = NULL,
+                    rend_promedio_5anios_qq_ha = NULL'
+            );
+
+            $qResetCuartelRiesgos = $this->pdo->prepare(
+                'INSERT INTO prod_cuartel_riesgos (cuartel_id)
+                 VALUES (:cuartel_id)
+                 ON DUPLICATE KEY UPDATE
+                    tiene_seguro_agricola = NULL,
+                    porcentaje_dano_granizo = NULL,
+                    heladas_dano_promedio_5anios = NULL,
+                    presencia_freatica = NULL,
+                    plagas_no_convencionales = NULL'
+            );
+
             $applied = [
                 'rows_received' => count($rows),
                 'rows_processable' => count($processable),
@@ -208,6 +301,9 @@ final class CargaMasivaModel
                 'rel_productor_finca_inserted' => 0,
                 'cuarteles_inserted' => 0,
                 'cuarteles_updated' => 0,
+                'cuartel_limitantes_null_reset' => 0,
+                'cuartel_rendimientos_null_reset' => 0,
+                'cuartel_riesgos_null_reset' => 0,
                 'revisado_to_no' => 0,
             ];
             $createdUsersByCuit = [];
@@ -369,8 +465,9 @@ final class CargaMasivaModel
                 ];
 
                 if ($cuartelId) {
+                    $cuartelId = (int)$cuartelId;
                     $qUpdateCuartel->execute([
-                        ':id' => (int)$cuartelId,
+                        ':id' => $cuartelId,
                         ':id_responsable_real' => $u['id_real'],
                         ':nombre_finca' => $r['nombre_finca'],
                         ':variedad' => $r['variedad'],
@@ -388,8 +485,16 @@ final class CargaMasivaModel
                     $applied['cuarteles_updated']++;
                 } else {
                     $qInsertCuartel->execute($cuartelParams);
+                    $cuartelId = (int)$this->pdo->lastInsertId();
                     $applied['cuarteles_inserted']++;
                 }
+
+                $qResetCuartelLimitantes->execute([':cuartel_id' => $cuartelId]);
+                $qResetCuartelRendimientos->execute([':cuartel_id' => $cuartelId]);
+                $qResetCuartelRiesgos->execute([':cuartel_id' => $cuartelId]);
+                $applied['cuartel_limitantes_null_reset']++;
+                $applied['cuartel_rendimientos_null_reset']++;
+                $applied['cuartel_riesgos_null_reset']++;
             }
 
             if (!$skipRevisadoNo) {
@@ -598,6 +703,7 @@ final class CargaMasivaModel
         }
 
         $notInCsvIds = array_values(array_diff($associatedProducerIds, $inCsvUserIds));
+        $relatedTablesSummary = $this->buildRelatedTablesSummary($cooperativaIdReal, $processable);
 
         $summary = [
             'cooperativa' => [
@@ -611,6 +717,7 @@ final class CargaMasivaModel
             'usuarios_nuevos_estimados' => $this->countEstimatedNewUsers($processable),
             'usuarios_a_revisado_si' => count($processableByCuit),
             'usuarios_a_revisado_no' => count($notInCsvIds),
+            'tablas_relacionadas' => $relatedTablesSummary,
         ];
 
         return [
@@ -657,6 +764,111 @@ final class CargaMasivaModel
         $coop['nombre_cooperativa'] = $displayName;
 
         return $coop;
+    }
+
+    private function buildRelatedTablesSummary(string $cooperativaIdReal, array $processable): array
+    {
+        $targetProducerIds = [];
+        foreach ($processable as $item) {
+            $target = $this->nullableString($item['target_id_real'] ?? null);
+            if ($target !== null) {
+                $targetProducerIds[$target] = $target;
+            }
+        }
+        $targetProducerIds = array_values($targetProducerIds);
+
+        if (empty($targetProducerIds)) {
+            return [];
+        }
+
+        $producerPh = implode(',', array_fill(0, count($targetProducerIds), '?'));
+
+        return [
+            [
+                'tabla' => 'rel_productor_coop',
+                'filas_existentes' => $this->countFromSql(
+                    "SELECT COUNT(*) FROM rel_productor_coop WHERE cooperativa_id_real = ? AND productor_id_real IN ($producerPh)",
+                    array_merge([$cooperativaIdReal], $targetProducerIds)
+                ),
+                'accion' => 'normalizar_relacion',
+            ],
+            [
+                'tabla' => 'prod_fincas',
+                'filas_existentes' => $this->countFromSql(
+                    "SELECT COUNT(*) FROM prod_fincas WHERE productor_id_real IN ($producerPh)",
+                    $targetProducerIds
+                ),
+                'accion' => 'upsert_csv',
+            ],
+            [
+                'tabla' => 'prod_finca_direccion',
+                'filas_existentes' => $this->countFromSql(
+                    "SELECT COUNT(*) FROM prod_finca_direccion d
+                     INNER JOIN prod_fincas f ON f.id = d.finca_id
+                     WHERE f.productor_id_real IN ($producerPh)",
+                    $targetProducerIds
+                ),
+                'accion' => 'upsert_csv',
+            ],
+            [
+                'tabla' => 'rel_productor_finca',
+                'filas_existentes' => $this->countFromSql(
+                    "SELECT COUNT(*) FROM rel_productor_finca WHERE productor_id_real IN ($producerPh)",
+                    $targetProducerIds
+                ),
+                'accion' => 'asegurar_relacion',
+            ],
+            [
+                'tabla' => 'prod_cuartel',
+                'filas_existentes' => $this->countFromSql(
+                    "SELECT COUNT(*) FROM prod_cuartel
+                     WHERE cooperativa_id_real = ?
+                       AND id_responsable_real IN ($producerPh)",
+                    array_merge([$cooperativaIdReal], $targetProducerIds)
+                ),
+                'accion' => 'upsert_csv',
+            ],
+            [
+                'tabla' => 'prod_cuartel_limitantes',
+                'filas_existentes' => $this->countFromSql(
+                    "SELECT COUNT(*) FROM prod_cuartel_limitantes l
+                     INNER JOIN prod_cuartel c ON c.id = l.cuartel_id
+                     WHERE c.cooperativa_id_real = ?
+                       AND c.id_responsable_real IN ($producerPh)",
+                    array_merge([$cooperativaIdReal], $targetProducerIds)
+                ),
+                'accion' => 'reset_null_no_csv',
+            ],
+            [
+                'tabla' => 'prod_cuartel_rendimientos',
+                'filas_existentes' => $this->countFromSql(
+                    "SELECT COUNT(*) FROM prod_cuartel_rendimientos r
+                     INNER JOIN prod_cuartel c ON c.id = r.cuartel_id
+                     WHERE c.cooperativa_id_real = ?
+                       AND c.id_responsable_real IN ($producerPh)",
+                    array_merge([$cooperativaIdReal], $targetProducerIds)
+                ),
+                'accion' => 'reset_null_no_csv',
+            ],
+            [
+                'tabla' => 'prod_cuartel_riesgos',
+                'filas_existentes' => $this->countFromSql(
+                    "SELECT COUNT(*) FROM prod_cuartel_riesgos r
+                     INNER JOIN prod_cuartel c ON c.id = r.cuartel_id
+                     WHERE c.cooperativa_id_real = ?
+                       AND c.id_responsable_real IN ($producerPh)",
+                    array_merge([$cooperativaIdReal], $targetProducerIds)
+                ),
+                'accion' => 'reset_null_no_csv',
+            ],
+        ];
+    }
+
+    private function countFromSql(string $sql, array $params): int
+    {
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(array_values($params));
+        return (int)$stmt->fetchColumn();
     }
 
     private function countEstimatedNewUsers(array $processable): int
@@ -826,6 +1038,19 @@ final class CargaMasivaModel
             'labores_mecanizables' => $row['labores_mecanizables'],
         ];
 
+        $beforeLimitantes = null;
+        $beforeRendimientos = null;
+        $beforeRiesgos = null;
+        if ($beforeCuartel && isset($beforeCuartel['id'])) {
+            $cuartelId = (int)$beforeCuartel['id'];
+            $beforeLimitantes = $this->fetchCuartelLimitantesByCuartelId($cuartelId);
+            $beforeRendimientos = $this->fetchCuartelRendimientosByCuartelId($cuartelId);
+            $beforeRiesgos = $this->fetchCuartelRiesgosByCuartelId($cuartelId);
+        }
+        $afterLimitantes = array_fill_keys(self::CUARTEL_LIMITANTES_FIELDS, null);
+        $afterRendimientos = array_fill_keys(self::CUARTEL_RENDIMIENTOS_FIELDS, null);
+        $afterRiesgos = array_fill_keys(self::CUARTEL_RIESGOS_FIELDS, null);
+
         $relBefore = $this->fetchRelProductorCoop($targetIdReal);
         $relAfter = [
             'productor_id_real' => $targetIdReal,
@@ -838,6 +1063,9 @@ final class CargaMasivaModel
         $changes = array_merge($changes, $this->collectDiffRows('prod_fincas', ['codigo_finca', 'productor_id_real', 'nombre_finca', 'variedad'], $beforeFinca, $afterFinca));
         $changes = array_merge($changes, $this->collectDiffRows('prod_finca_direccion', ['departamento', 'localidad', 'calle', 'numero', 'latitud', 'longitud'], $beforeDir, $afterDir));
         $changes = array_merge($changes, $this->collectDiffRows('prod_cuartel', ['id_responsable_real', 'cooperativa_id_real', 'codigo_finca', 'nombre_finca', 'codigo_cuartel', 'variedad', 'numero_inv', 'sistema_conduccion', 'superficie_ha', 'porcentaje_cepas_produccion', 'forma_cosecha_actual', 'porcentaje_malla_buen_estado', 'edad_promedio_encepado_anios', 'estado_estructura_sistema', 'labores_mecanizables'], $beforeCuartel, $afterCuartel));
+        $changes = array_merge($changes, $this->collectDiffRows('prod_cuartel_limitantes', self::CUARTEL_LIMITANTES_FIELDS, $beforeLimitantes, $afterLimitantes));
+        $changes = array_merge($changes, $this->collectDiffRows('prod_cuartel_rendimientos', self::CUARTEL_RENDIMIENTOS_FIELDS, $beforeRendimientos, $afterRendimientos));
+        $changes = array_merge($changes, $this->collectDiffRows('prod_cuartel_riesgos', self::CUARTEL_RIESGOS_FIELDS, $beforeRiesgos, $afterRiesgos));
         $changes = array_merge($changes, $this->collectRelationDiffRows('rel_productor_coop', $relBefore, $relAfter));
         $changes = array_merge($changes, $this->buildIdRealCascadePreview($user, $targetIdReal));
 
@@ -1014,7 +1242,7 @@ final class CargaMasivaModel
     private function fetchCuartelByKeys(string $cooperativaIdReal, string $codigoFinca, string $codigoCuartel): ?array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT id_responsable_real, cooperativa_id_real, codigo_finca, nombre_finca, codigo_cuartel, variedad, numero_inv,
+            'SELECT id, id_responsable_real, cooperativa_id_real, codigo_finca, nombre_finca, codigo_cuartel, variedad, numero_inv,
                     sistema_conduccion, superficie_ha, porcentaje_cepas_produccion, forma_cosecha_actual,
                     porcentaje_malla_buen_estado, edad_promedio_encepado_anios, estado_estructura_sistema, labores_mecanizables
              FROM prod_cuartel
@@ -1041,6 +1269,50 @@ final class CargaMasivaModel
         );
         $stmt->execute([':productor_id_real' => $productorIdReal]);
         return $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    }
+
+    private function fetchCuartelLimitantesByCuartelId(int $cuartelId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT limitantes_suelo, observaciones, categoria_1, limitante_1, inversion_accion1_1,
+                    obs_inversion_accion1_1, ciclo_agricola1_1, inversion_accion2_1, obs_inversion_accion2_1,
+                    ciclo_agricola2_1, categoria_2, limitante_2, inversion_accion1_2, obs_inversion_accion1_2,
+                    ciclo_agricola1_2, inversion_accion2_2, obs_inversion_accion2_2, ciclo_agricola2_2
+             FROM prod_cuartel_limitantes
+             WHERE cuartel_id = :cuartel_id
+             LIMIT 1'
+        );
+        $stmt->execute([':cuartel_id' => $cuartelId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    private function fetchCuartelRendimientosByCuartelId(int $cuartelId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT rend_2020_qq_ha, rend_2021_qq_ha, rend_2022_qq_ha, ing_2023_kg, rend_2023_qq_ha,
+                    ing_2024_kg, rend_2024_qq_ha, ing_2025_kg, rend_2025_qq_ha, rend_promedio_5anios_qq_ha
+             FROM prod_cuartel_rendimientos
+             WHERE cuartel_id = :cuartel_id
+             LIMIT 1'
+        );
+        $stmt->execute([':cuartel_id' => $cuartelId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    private function fetchCuartelRiesgosByCuartelId(int $cuartelId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT tiene_seguro_agricola, porcentaje_dano_granizo, heladas_dano_promedio_5anios,
+                    presencia_freatica, plagas_no_convencionales
+             FROM prod_cuartel_riesgos
+             WHERE cuartel_id = :cuartel_id
+             LIMIT 1'
+        );
+        $stmt->execute([':cuartel_id' => $cuartelId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
     }
 
     private function fincaExists(string $productorIdReal, string $codigoFinca): bool
