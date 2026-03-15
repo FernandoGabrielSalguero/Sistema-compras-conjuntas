@@ -645,6 +645,7 @@ unset($_SESSION['cierre_info']);
 
             const productor = PRODUCTORES_MAP[productorIdReal] || null;
             currentProductor = productor;
+            const idRealJs = String(productorIdReal ?? '').replaceAll('\\', '\\\\').replaceAll("'", "\\'");
 
             const nombre = escapeHtml(productor?.nombre ?? 'Sin nombre');
             const cuit = escapeHtml(productor?.cuit ?? 'Sin CUIT');
@@ -667,14 +668,14 @@ unset($_SESSION['cierre_info']);
                         <h3>Familia (usuarios / usuarios_info / info_productor / prod_colaboradores / prod_hijos)</h3>
                         <div id="slot-familia"><p>Cargando formulario de familia...</p></div>
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" onclick="guardarFamiliaDesdeVista('${idReal}')">Guardar Familia</button>
+                            <button class="btn btn-aceptar" onclick="guardarFamiliaDesdeVista('${idRealJs}')">Guardar Familia</button>
                         </div>
                     </div>
                     <div class="card">
                         <h3>Producción (prod_fincas y tablas asociadas)</h3>
                         <div id="slot-produccion"><p>Cargando formulario de producción...</p></div>
                         <div class="form-buttons">
-                            <button class="btn btn-aceptar" onclick="guardarProduccionDesdeVista('${idReal}')">Guardar Producción</button>
+                            <button class="btn btn-aceptar" onclick="guardarProduccionDesdeVista('${idRealJs}')">Guardar Producción</button>
                         </div>
                     </div>
                     <div class="card">
@@ -1035,6 +1036,7 @@ unset($_SESSION['cierre_info']);
             const container = document.getElementById('cards-container');
             if (!container) return;
 
+            currentCoop = coop;
             setCardsTitle(`Productores de ${coop.nombre}`);
             container.innerHTML = '<div class="card">Cargando productores...</div>';
 
@@ -1367,6 +1369,10 @@ unset($_SESSION['cierre_info']);
         window.relevamientoOpenModal = relevamientoOpenModal;
         window.relevamientoCloseModal = relevamientoCloseModal;
         window.relevamientoLogProductorFull = relevamientoLogProductorFull;
+        window.abrirModificarProductor = abrirModificarProductor;
+        window.guardarFamiliaDesdeVista = guardarFamiliaDesdeVista;
+        window.guardarProduccionDesdeVista = guardarProduccionDesdeVista;
+        window.volverAProductores = volverAProductores;
 
         // Cargar cooperativas una vez que el DOM esté listo
         window.addEventListener('DOMContentLoaded', () => {
