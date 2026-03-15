@@ -498,6 +498,7 @@ checkAccess('sve');
                     const accionCuartel = r.accion_cuartel || '-';
                     const cambios = Number(r.changes_count || 0);
                     const tr = document.createElement('tr');
+                    const hasDetail = Array.isArray(r.changes_flat) && r.changes_flat.length > 0;
                     tr.innerHTML = `
                         <td>${escapeHtml(r.linea ?? '')}</td>
                         <td>${escapeHtml(r.cuit ?? '')}</td>
@@ -511,7 +512,7 @@ checkAccess('sve');
                         <td>${escapeHtml(accionFinca)}</td>
                         <td>${escapeHtml(accionCuartel)}</td>
                         <td><span class="changes-count">${escapeHtml(cambios)}</span></td>
-                        <td><button type="button" class="btn btn-info btn-sm" data-row-idx="${i}">Ver</button></td>
+                        <td>${hasDetail ? `<button type="button" class="btn btn-info btn-sm" data-row-idx="${i}">Ver</button>` : '-'}</td>
                         <td class="cell-detail">${escapeHtml(detalle)}</td>
                     `;
                     previewBody.appendChild(tr);

@@ -839,6 +839,7 @@ final class CargaMasivaModel
         $changes = array_merge($changes, $this->collectDiffRows('prod_finca_direccion', ['departamento', 'localidad', 'calle', 'numero', 'latitud', 'longitud'], $beforeDir, $afterDir));
         $changes = array_merge($changes, $this->collectDiffRows('prod_cuartel', ['id_responsable_real', 'cooperativa_id_real', 'codigo_finca', 'nombre_finca', 'codigo_cuartel', 'variedad', 'numero_inv', 'sistema_conduccion', 'superficie_ha', 'porcentaje_cepas_produccion', 'forma_cosecha_actual', 'porcentaje_malla_buen_estado', 'edad_promedio_encepado_anios', 'estado_estructura_sistema', 'labores_mecanizables'], $beforeCuartel, $afterCuartel));
         $changes = array_merge($changes, $this->collectRelationDiffRows('rel_productor_coop', $relBefore, $relAfter));
+        $changes = array_merge($changes, $this->buildIdRealCascadePreview($user, $targetIdReal));
 
         $changedCount = 0;
         foreach ($changes as $ch) {
@@ -856,6 +857,77 @@ final class CargaMasivaModel
             'changes_count' => $changedCount,
             'changes_flat' => $changes,
         ];
+    }
+
+    private function buildIdRealCascadePreview(?array $user, string $targetIdReal): array
+    {
+        if (!$user || !isset($user['id_real'])) {
+            return [];
+        }
+
+        $oldIdReal = (string)$user['id_real'];
+        if ($oldIdReal === '' || $targetIdReal === '' || $oldIdReal === $targetIdReal) {
+            return [];
+        }
+
+        $tables = [
+            ['table' => 'rel_productor_coop', 'column' => 'productor_id_real'],
+            ['table' => 'prod_fincas', 'column' => 'productor_id_real'],
+            ['table' => 'rel_productor_finca', 'column' => 'productor_id_real'],
+            ['table' => 'prod_cuartel', 'column' => 'id_responsable_real'],
+            ['table' => 'drones_solicitud', 'column' => 'productor_id_real'],
+            ['table' => 'login_auditoria', 'column' => 'usuario_id_real'],
+            ['table' => 'rel_productor_coop', 'column' => 'cooperativa_id_real'],
+            ['table' => 'rel_coop_ingeniero', 'column' => 'cooperativa_id_real'],
+            ['table' => 'rel_coop_ingeniero', 'column' => 'ingeniero_id_real'],
+            ['table' => 'operativos_cooperativas_participacion', 'column' => 'cooperativa_id_real'],
+            ['table' => 'prod_cuartel', 'column' => 'cooperativa_id_real'],
+            ['table' => 'cooperativas_rangos', 'column' => 'cooperativa_id_real'],
+            ['table' => 'cosechaMecanica_coop_contrato_firma', 'column' => 'cooperativa_id_real'],
+            ['table' => 'cosechaMecanica_coop_correo_log', 'column' => 'cooperativa_id_real'],
+            ['table' => 'log_correos', 'column' => 'cooperativa_id_real'],
+        ];
+
+        $out = [];
+        foreach ($tables as $item) {
+            $count = $this->countByIdReal($item['table'], $item['column'], $oldIdReal);
+            $out[] = [
+                'tabla' => $item['table'],
+                'campo' => $item['column'],
+                'actual' => $count > 0 ? ($oldIdReal . ' (filas: ' . $count . ')') : ('Sin coincidencias de ' . $oldIdReal),
+                'nuevo' => $targetIdReal . ($count > 0 ? (' (actualiza ' . $count . ' filas)') : ' (sin cambios)'),
+                'cambia' => $count > 0,
+            ];
+        }
+
+        return $out;
+    }
+
+    private function countByIdReal(string $table, string $column, string $idReal): int
+    {
+        $allowed = [
+            'rel_productor_coop' => ['productor_id_real', 'cooperativa_id_real'],
+            'prod_fincas' => ['productor_id_real'],
+            'rel_productor_finca' => ['productor_id_real'],
+            'prod_cuartel' => ['id_responsable_real', 'cooperativa_id_real'],
+            'drones_solicitud' => ['productor_id_real'],
+            'login_auditoria' => ['usuario_id_real'],
+            'rel_coop_ingeniero' => ['cooperativa_id_real', 'ingeniero_id_real'],
+            'operativos_cooperativas_participacion' => ['cooperativa_id_real'],
+            'cooperativas_rangos' => ['cooperativa_id_real'],
+            'cosechaMecanica_coop_contrato_firma' => ['cooperativa_id_real'],
+            'cosechaMecanica_coop_correo_log' => ['cooperativa_id_real'],
+            'log_correos' => ['cooperativa_id_real'],
+        ];
+
+        if (!isset($allowed[$table]) || !in_array($column, $allowed[$table], true)) {
+            return 0;
+        }
+
+        $sql = "SELECT COUNT(*) FROM {$table} WHERE {$column} = :id_real";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':id_real' => $idReal]);
+        return (int)$stmt->fetchColumn();
     }
 
     private function collectDiffRows(string $table, array $fields, ?array $before, array $after): array
