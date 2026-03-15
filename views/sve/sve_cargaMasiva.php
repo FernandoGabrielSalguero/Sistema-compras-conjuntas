@@ -221,12 +221,35 @@ checkAccess('sve');
                         transformHeader: (h) => String(h || '').trim(),
                         complete: (results) => {
                             if (results.errors && results.errors.length) {
-                                reject(new Error(results.errors[0].message || 'Error parseando CSV.'));
+                                const sampleErrors = results.errors.slice(0, 8).map((e) => ({
+                                    type: e.type,
+                                    code: e.code,
+                                    message: e.message,
+                                    row: e.row,
+                                    index: e.index
+                                }));
+                                const details = {
+                                    file: {
+                                        name: file?.name || null,
+                                        size: file?.size || null,
+                                        type: file?.type || null,
+                                        lastModified: file?.lastModified || null
+                                    },
+                                    parserMeta: results.meta || {},
+                                    sampleErrors
+                                };
+                                console.error('[CargaMasiva][CSV_PARSE_ERROR]', details);
+                                const err = new Error(results.errors[0].message || 'Error parseando CSV.');
+                                err.details = details;
+                                reject(err);
                                 return;
                             }
                             resolve(Array.isArray(results.data) ? results.data : []);
                         },
-                        error: (err) => reject(err)
+                        error: (err) => {
+                            console.error('[CargaMasiva][CSV_FATAL_ERROR]', err);
+                            reject(err);
+                        }
                     });
                 });
             }
@@ -337,6 +360,13 @@ checkAccess('sve');
                     btnApply.disabled = false;
                     openPreviewModal();
                 } catch (err) {
+                    console.error('[CargaMasiva][PREVIEW_ERROR]', {
+                        message: String(err?.message || err),
+                        error: err,
+                        details: err?.details || null,
+                        cooperativa_id_real: coopIdReal.value.trim(),
+                        archivo: csvFile?.files?.[0]?.name || null
+                    });
                     setStatus('ERROR: ' + String(err.message || err));
                     setWarnings([]);
                     btnApply.disabled = true;
@@ -371,6 +401,12 @@ checkAccess('sve');
                     );
                     setWarnings(result.warnings || []);
                 } catch (err) {
+                    console.error('[CargaMasiva][APPLY_ERROR]', {
+                        message: String(err?.message || err),
+                        error: err,
+                        cooperativa_id_real: coopIdReal.value.trim(),
+                        archivo: csvFile?.files?.[0]?.name || null
+                    });
                     setStatus('ERROR al aplicar: ' + String(err.message || err));
                 } finally {
                     btnConfirmModal.disabled = false;
