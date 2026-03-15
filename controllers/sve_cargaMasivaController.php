@@ -37,7 +37,7 @@ $action = (string)($payload['action'] ?? '');
 $rows = $payload['rows'] ?? null;
 $cooperativaIdReal = trim((string)($payload['cooperativa_id_real'] ?? ''));
 
-if (!in_array($action, ['preview', 'apply'], true)) {
+if (!in_array($action, ['preview', 'apply', 'apply_batch'], true)) {
     http_response_code(400);
     echo json_encode([
         'ok' => false,
@@ -67,9 +67,18 @@ if ($cooperativaIdReal === '') {
 try {
     $model = new CargaMasivaModel();
 
-    $data = $action === 'preview'
-        ? $model->previewFromRows($rows, $cooperativaIdReal)
-        : $model->applyFromRows($rows, $cooperativaIdReal);
+    if ($action === 'preview') {
+        $data = $model->previewFromRows($rows, $cooperativaIdReal);
+    } elseif ($action === 'apply_batch') {
+        $finalize = !empty($payload['finalize']);
+        $allCsvCuits = is_array($payload['all_csv_cuits'] ?? null) ? $payload['all_csv_cuits'] : [];
+        $data = $model->applyFromRows($rows, $cooperativaIdReal, [
+            'skip_revisado_no' => !$finalize,
+            'all_csv_cuits' => $finalize ? $allCsvCuits : null,
+        ]);
+    } else {
+        $data = $model->applyFromRows($rows, $cooperativaIdReal);
+    }
 
     echo json_encode([
         'ok' => true,

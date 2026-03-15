@@ -56,8 +56,11 @@ final class CargaMasivaModel
         return $this->buildPlan($rawRows, $cooperativaIdReal);
     }
 
-    public function applyFromRows(array $rawRows, string $cooperativaIdReal): array
+    public function applyFromRows(array $rawRows, string $cooperativaIdReal, array $options = []): array
     {
+        $skipRevisadoNo = !empty($options['skip_revisado_no']);
+        $allCsvCuits = is_array($options['all_csv_cuits'] ?? null) ? $options['all_csv_cuits'] : null;
+
         $plan = $this->buildPlan($rawRows, $cooperativaIdReal);
 
         $rows = $plan['normalized_rows'];
@@ -107,14 +110,14 @@ final class CargaMasivaModel
                  WHERE productor_id_real = :productor_id_real
                    AND cooperativa_id_real <> :cooperativa_id_real'
             );
-            $qInsertRelCoop = $this->pdo->prepare(
+            $qDeleteSameCoopDup = $this->pdo->prepare(
+                'DELETE FROM rel_productor_coop
+                 WHERE productor_id_real = :productor_id_real
+                   AND cooperativa_id_real = :cooperativa_id_real'
+            );
+            $qInsertRelCoopSimple = $this->pdo->prepare(
                 'INSERT INTO rel_productor_coop (productor_id_real, cooperativa_id_real)
-                 SELECT :productor_id_real, :cooperativa_id_real
-                 WHERE NOT EXISTS (
-                    SELECT 1 FROM rel_productor_coop
-                    WHERE productor_id_real = :productor_id_real_chk
-                      AND cooperativa_id_real = :cooperativa_id_real_chk
-                 )'
+                 VALUES (:productor_id_real, :cooperativa_id_real)'
             );
 
             $qSelectFinca = $this->pdo->prepare(
@@ -143,13 +146,14 @@ final class CargaMasivaModel
                     longitud = VALUES(longitud)'
             );
 
+            $qSelectRelFinca = $this->pdo->prepare(
+                'SELECT id FROM rel_productor_finca
+                 WHERE productor_id = :productor_id AND finca_id = :finca_id
+                 LIMIT 1'
+            );
             $qInsertRelFinca = $this->pdo->prepare(
                 'INSERT INTO rel_productor_finca (productor_id, productor_id_real, finca_id)
-                 SELECT :productor_id, :productor_id_real, :finca_id
-                 WHERE NOT EXISTS (
-                    SELECT 1 FROM rel_productor_finca
-                    WHERE productor_id = :productor_id_chk AND finca_id = :finca_id_chk
-                 )'
+                 VALUES (:productor_id, :productor_id_real, :finca_id)'
             );
 
             $qSelectCuartel = $this->pdo->prepare(
@@ -278,11 +282,13 @@ final class CargaMasivaModel
                     ':productor_id_real' => $u['id_real'],
                     ':cooperativa_id_real' => $cooperativaIdReal,
                 ]);
-                $qInsertRelCoop->execute([
+                $qDeleteSameCoopDup->execute([
                     ':productor_id_real' => $u['id_real'],
                     ':cooperativa_id_real' => $cooperativaIdReal,
-                    ':productor_id_real_chk' => $u['id_real'],
-                    ':cooperativa_id_real_chk' => $cooperativaIdReal,
+                ]);
+                $qInsertRelCoopSimple->execute([
+                    ':productor_id_real' => $u['id_real'],
+                    ':cooperativa_id_real' => $cooperativaIdReal,
                 ]);
                 $applied['rel_productor_coop_adjusted']++;
 
@@ -322,14 +328,17 @@ final class CargaMasivaModel
                 ]);
                 $applied['direcciones_upserted']++;
 
-                $qInsertRelFinca->execute([
+                $qSelectRelFinca->execute([
                     ':productor_id' => $u['id'],
-                    ':productor_id_real' => $u['id_real'],
                     ':finca_id' => $fincaId,
-                    ':productor_id_chk' => $u['id'],
-                    ':finca_id_chk' => $fincaId,
                 ]);
-                if ($qInsertRelFinca->rowCount() > 0) {
+                $hasRelFinca = (bool)$qSelectRelFinca->fetchColumn();
+                if (!$hasRelFinca) {
+                    $qInsertRelFinca->execute([
+                        ':productor_id' => $u['id'],
+                        ':productor_id_real' => $u['id_real'],
+                        ':finca_id' => $fincaId,
+                    ]);
                     $applied['rel_productor_finca_inserted']++;
                 }
 
@@ -369,6 +378,16 @@ final class CargaMasivaModel
                 }
             }
 
+            if (!$skipRevisadoNo) {
+                if (is_array($allCsvCuits) && !empty($allCsvCuits)) {
+                    $associatedProducerIds = $this->fetchProducerIdsByCoop($cooperativaIdReal);
+                    $allCsvUserIds = $this->fetchUserIdsByCuits($allCsvCuits);
+                    $notInCsvIds = array_values(array_diff($associatedProducerIds, $allCsvUserIds));
+                }
+            } else {
+                $notInCsvIds = [];
+            }
+
             if (!empty($notInCsvIds)) {
                 $placeholders = implode(',', array_fill(0, count($notInCsvIds), '?'));
                 $sql = "UPDATE usuarios SET revisado = 'No esta revisado' WHERE id IN ($placeholders)";
@@ -384,6 +403,10 @@ final class CargaMasivaModel
                 'preview_rows' => $plan['preview_rows'],
                 'warnings' => $plan['warnings'],
                 'applied' => $applied,
+                'meta' => [
+                    'skip_revisado_no' => $skipRevisadoNo,
+                    'rows_in_batch' => count($rows),
+                ],
             ];
         } catch (Throwable $e) {
             if ($this->pdo->inTransaction()) {
@@ -675,6 +698,28 @@ final class CargaMasivaModel
                AND u.rol = "productor"'
         );
         $stmt->execute([':cooperativa_id_real' => $cooperativaIdReal]);
+
+        return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+    }
+
+    private function fetchUserIdsByCuits(array $cuitValues): array
+    {
+        $normalized = [];
+        foreach ($cuitValues as $cuit) {
+            $n = $this->normalizeCuit($cuit);
+            if ($n !== null) {
+                $normalized[$n] = $n;
+            }
+        }
+        $normalized = array_values($normalized);
+        if (empty($normalized)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($normalized), '?'));
+        $sql = "SELECT id FROM usuarios WHERE cuit IN ($placeholders)";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($normalized);
 
         return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
     }

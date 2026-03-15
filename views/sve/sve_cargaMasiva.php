@@ -35,6 +35,36 @@ checkAccess('sve');
             white-space: pre-wrap;
         }
 
+        .massive-local-spinner {
+            margin-top: 12px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border: 1px solid rgba(0, 0, 0, .12);
+            border-radius: 10px;
+            background: #f8fafc;
+            font-size: 13px;
+        }
+
+        .massive-local-spinner.is-active {
+            display: flex;
+        }
+
+        .massive-local-spinner .dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 999px;
+            border: 2px solid #cbd5e1;
+            border-top-color: #2563eb;
+            animation: spinMassive .8s linear infinite;
+        }
+
+        @keyframes spinMassive {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         .massive-warnings {
             margin-top: 12px;
             color: #b45309;
@@ -195,6 +225,10 @@ checkAccess('sve');
                     </div>
 
                     <div id="statusBox" class="massive-status"></div>
+                    <div id="localSpinner" class="massive-local-spinner">
+                        <div class="dot"></div>
+                        <div id="localSpinnerText">Procesando...</div>
+                    </div>
                     <div id="warningsBox" class="massive-warnings"></div>
                 </div>
             </section>
@@ -254,6 +288,7 @@ checkAccess('sve');
 
     <script>
         (() => {
+            const APPLY_BATCH_SIZE = 50;
             const REQUIRED_HEADERS = [
                 'rol', 'permiso_ingreso', 'cuit', 'razon_social', 'id_real',
                 'nombre', 'direccion', 'telefono', 'correo', 'fecha_nacimiento',
@@ -272,6 +307,8 @@ checkAccess('sve');
             const btnApply = document.getElementById('btnApply');
             const statusBox = document.getElementById('statusBox');
             const warningsBox = document.getElementById('warningsBox');
+            const localSpinner = document.getElementById('localSpinner');
+            const localSpinnerText = document.getElementById('localSpinnerText');
 
             const previewModal = document.getElementById('previewModal');
             const modalSummary = document.getElementById('modalSummary');
@@ -300,6 +337,11 @@ checkAccess('sve');
                     return;
                 }
                 warningsBox.textContent = 'Advertencias:\n- ' + items.join('\n- ');
+            }
+
+            function setLocalSpinner(active, text = 'Procesando...') {
+                localSpinnerText.textContent = text;
+                localSpinner.classList.toggle('is-active', !!active);
             }
 
             function escapeHtml(value) {
@@ -393,7 +435,7 @@ checkAccess('sve');
                 }
             }
 
-            async function postToController(action, rows) {
+            async function postToController(action, rows, extra = {}) {
                 const response = await fetch('../../controllers/sve_cargaMasivaController.php', {
                     method: 'POST',
                     headers: {
@@ -402,7 +444,8 @@ checkAccess('sve');
                     body: JSON.stringify({
                         action,
                         cooperativa_id_real: coopIdReal.value.trim(),
-                        rows
+                        rows,
+                        ...extra
                     })
                 });
 
@@ -523,6 +566,7 @@ checkAccess('sve');
                     ensureInputs();
                     setWarnings([]);
                     setStatus('Leyendo CSV y generando previsualización...');
+                    setLocalSpinner(true, 'Parseando CSV y armando previsualización...');
                     btnApply.disabled = true;
 
                     parsedRows = await parseCsv(csvFile.files[0]);
@@ -547,6 +591,8 @@ checkAccess('sve');
                     setStatus('ERROR: ' + String(err.message || err));
                     setWarnings([]);
                     btnApply.disabled = true;
+                } finally {
+                    setLocalSpinner(false);
                 }
             });
 
@@ -561,23 +607,60 @@ checkAccess('sve');
             btnConfirmModal.addEventListener('click', async () => {
                 try {
                     btnConfirmModal.disabled = true;
-                    setStatus('Aplicando cambios en base de datos...');
+                    setLocalSpinner(true, 'Aplicando cambios por bloques...');
+                    const totalRows = parsedRows.length;
+                    const totalBatches = Math.max(1, Math.ceil(totalRows / APPLY_BATCH_SIZE));
+                    const allCsvCuits = [...new Set(parsedRows.map(r => String(r?.cuit ?? '').replace(/\D+/g, '')).filter(Boolean))];
+                    let aggregated = {
+                        usuarios_created: 0,
+                        usuarios_updated: 0,
+                        usuarios_info_upserted: 0,
+                        fincas_inserted: 0,
+                        fincas_updated: 0,
+                        cuarteles_inserted: 0,
+                        cuarteles_updated: 0,
+                        rel_productor_coop_adjusted: 0,
+                        revisado_to_no: 0
+                    };
+                    let finalWarnings = [];
 
-                    const result = await postToController('apply', parsedRows);
+                    for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+                        const start = batchIndex * APPLY_BATCH_SIZE;
+                        const end = start + APPLY_BATCH_SIZE;
+                        const batchRows = parsedRows.slice(start, end);
+                        const isFinal = batchIndex === (totalBatches - 1);
+
+                        setStatus(`Aplicando cambios en base de datos... Bloque ${batchIndex + 1}/${totalBatches} (${batchRows.length} filas)`);
+                        setLocalSpinner(true, `Procesando bloque ${batchIndex + 1}/${totalBatches}...`);
+
+                        const result = await postToController('apply_batch', batchRows, {
+                            finalize: isFinal ? 1 : 0,
+                            all_csv_cuits: isFinal ? allCsvCuits : []
+                        });
+                        const applied = result.applied || {};
+                        aggregated.usuarios_created += Number(applied.usuarios_created || 0);
+                        aggregated.usuarios_updated += Number(applied.usuarios_updated || 0);
+                        aggregated.usuarios_info_upserted += Number(applied.usuarios_info_upserted || 0);
+                        aggregated.fincas_inserted += Number(applied.fincas_inserted || 0);
+                        aggregated.fincas_updated += Number(applied.fincas_updated || 0);
+                        aggregated.cuarteles_inserted += Number(applied.cuarteles_inserted || 0);
+                        aggregated.cuarteles_updated += Number(applied.cuarteles_updated || 0);
+                        aggregated.rel_productor_coop_adjusted += Number(applied.rel_productor_coop_adjusted || 0);
+                        aggregated.revisado_to_no += Number(applied.revisado_to_no || 0);
+                        finalWarnings = result.warnings || finalWarnings;
+                    }
                     closePreviewModal();
-
-                    const applied = result.applied || {};
                     setStatus(
                         'Actualización finalizada.\n' +
-                        `Usuarios creados: ${applied.usuarios_created || 0}\n` +
-                        `Usuarios actualizados: ${applied.usuarios_updated || 0}\n` +
-                        `Usuarios_info upsert: ${applied.usuarios_info_upserted || 0}\n` +
-                        `Fincas insertadas/actualizadas: ${applied.fincas_inserted || 0}/${applied.fincas_updated || 0}\n` +
-                        `Cuarteles insertados/actualizados: ${applied.cuarteles_inserted || 0}/${applied.cuarteles_updated || 0}\n` +
-                        `Relaciones productor-coop ajustadas: ${applied.rel_productor_coop_adjusted || 0}\n` +
-                        `Usuarios marcados "No esta revisado": ${applied.revisado_to_no || 0}`
+                        `Usuarios creados: ${aggregated.usuarios_created || 0}\n` +
+                        `Usuarios actualizados: ${aggregated.usuarios_updated || 0}\n` +
+                        `Usuarios_info upsert: ${aggregated.usuarios_info_upserted || 0}\n` +
+                        `Fincas insertadas/actualizadas: ${aggregated.fincas_inserted || 0}/${aggregated.fincas_updated || 0}\n` +
+                        `Cuarteles insertados/actualizados: ${aggregated.cuarteles_inserted || 0}/${aggregated.cuarteles_updated || 0}\n` +
+                        `Relaciones productor-coop ajustadas: ${aggregated.rel_productor_coop_adjusted || 0}\n` +
+                        `Usuarios marcados "No esta revisado": ${aggregated.revisado_to_no || 0}`
                     );
-                    setWarnings(result.warnings || []);
+                    setWarnings(finalWarnings || []);
                 } catch (err) {
                     console.error('[CargaMasiva][APPLY_ERROR]', {
                         message: String(err?.message || err),
@@ -591,6 +674,7 @@ checkAccess('sve');
                     setStatus('ERROR al aplicar: ' + String(err.message || err) + detailText);
                 } finally {
                     btnConfirmModal.disabled = false;
+                    setLocalSpinner(false);
                 }
             });
 
