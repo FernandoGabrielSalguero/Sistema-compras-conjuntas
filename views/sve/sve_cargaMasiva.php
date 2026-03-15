@@ -48,6 +48,7 @@ checkAccess('sve');
             /* AJUSTE ANCHO MODAL: modificá este valor para hacerlo más angosto/ancho */
             width: min(1450px, 96vw);
             max-height: 88vh;
+            max-width: 1200px;
             overflow: auto;
         }
 
