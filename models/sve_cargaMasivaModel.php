@@ -75,6 +75,12 @@ final class CargaMasivaModel
                      revisado = "Esta revisado"
                  WHERE id = :id'
             );
+            $qInsertUsuario = $this->pdo->prepare(
+                'INSERT INTO usuarios
+                 (usuario, contrasena, rol, permiso_ingreso, cuit, razon_social, id_real, revisado)
+                 VALUES
+                 (:usuario, :contrasena, :rol, :permiso_ingreso, :cuit, :razon_social, :id_real, "Esta revisado")'
+            );
 
             $qSelectUserInfo = $this->pdo->prepare('SELECT id FROM usuarios_info WHERE usuario_id = :usuario_id LIMIT 1');
             $qInsertUserInfo = $this->pdo->prepare(
@@ -188,6 +194,7 @@ final class CargaMasivaModel
             $applied = [
                 'rows_received' => count($rows),
                 'rows_processable' => count($processable),
+                'usuarios_created' => 0,
                 'usuarios_updated' => 0,
                 'usuarios_info_upserted' => 0,
                 'rel_productor_coop_adjusted' => 0,
@@ -199,10 +206,37 @@ final class CargaMasivaModel
                 'cuarteles_updated' => 0,
                 'revisado_to_no' => 0,
             ];
+            $createdUsersByCuit = [];
 
             foreach ($processable as $item) {
                 $u = $item['user'];
                 $r = $item['row'];
+
+                if ($u === null) {
+                    if (isset($createdUsersByCuit[$r['cuit']])) {
+                        $u = $createdUsersByCuit[$r['cuit']];
+                    } else {
+                        $plainTempPassword = bin2hex(random_bytes(16));
+                        $qInsertUsuario->execute([
+                            ':usuario' => $this->firstNonEmpty($r['id_real'], $r['cuit']),
+                            ':contrasena' => password_hash($plainTempPassword, PASSWORD_DEFAULT),
+                            ':rol' => $this->firstNonEmpty($r['rol'], 'productor'),
+                            ':permiso_ingreso' => $this->firstNonEmpty($r['permiso_ingreso'], 'Habilitado'),
+                            ':cuit' => $r['cuit'],
+                            ':razon_social' => $r['razon_social'],
+                            ':id_real' => $r['id_real'],
+                        ]);
+                        $newUserId = (int)$this->pdo->lastInsertId();
+                        $u = [
+                            'id' => $newUserId,
+                            'id_real' => (string)$r['id_real'],
+                            'rol' => $this->firstNonEmpty($r['rol'], 'productor'),
+                            'permiso_ingreso' => $this->firstNonEmpty($r['permiso_ingreso'], 'Habilitado'),
+                        ];
+                        $createdUsersByCuit[$r['cuit']] = $u;
+                        $applied['usuarios_created']++;
+                    }
+                }
 
                 $qUpdateUsuario->execute([
                     ':id' => $u['id'],
@@ -398,19 +432,56 @@ final class CargaMasivaModel
         $previewRows = [];
         $warnings = [];
         $inCsvUserIds = [];
+        $processableByCuit = [];
 
         foreach ($normalizedRows as $row) {
             $user = $usersByCuit[$row['cuit']] ?? null;
 
             if ($user === null) {
+                if ($row['id_real'] === null) {
+                    $previewRows[] = [
+                        'linea' => $row['_csv_line'],
+                        'cuit' => $row['cuit'],
+                        'codigo_finca' => $row['codigo_finca'],
+                        'codigo_cuartel' => $row['codigo_cuartel'],
+                        'resultado' => 'omitido',
+                        'detalle' => 'CUIT no existe y la fila no trae id_real para crear usuario.',
+                    ];
+                    continue;
+                }
+
+                $sameIdReal = $this->findUserByIdReal($row['id_real']);
+                if ($sameIdReal !== null && $this->normalizeCuit($sameIdReal['cuit']) !== $row['cuit']) {
+                    $previewRows[] = [
+                        'linea' => $row['_csv_line'],
+                        'cuit' => $row['cuit'],
+                        'id_real_usuario' => $row['id_real'],
+                        'codigo_finca' => $row['codigo_finca'],
+                        'codigo_cuartel' => $row['codigo_cuartel'],
+                        'resultado' => 'omitido',
+                        'detalle' => 'id_real ya existe con otro CUIT. No se puede crear usuario.',
+                    ];
+                    continue;
+                }
+
                 $previewRows[] = [
                     'linea' => $row['_csv_line'],
                     'cuit' => $row['cuit'],
+                    'id_real_usuario' => $row['id_real'],
                     'codigo_finca' => $row['codigo_finca'],
                     'codigo_cuartel' => $row['codigo_cuartel'],
-                    'resultado' => 'omitido',
-                    'detalle' => 'CUIT no existe en usuarios.',
+                    'resultado' => 'procesar',
+                    'accion_usuario' => 'crear',
+                    'accion_finca' => 'insertar_o_actualizar',
+                    'accion_cuartel' => 'insertar_o_actualizar',
+                    'accion_relacion' => 'crear_o_reasignar',
                 ];
+
+                $processable[] = [
+                    'row' => $row,
+                    'user' => null,
+                ];
+                $processableByCuit[$row['cuit']] = true;
                 continue;
             }
 
@@ -451,6 +522,7 @@ final class CargaMasivaModel
                 'user' => $user,
             ];
             $inCsvUserIds[(int)$user['id']] = (int)$user['id'];
+            $processableByCuit[$row['cuit']] = true;
         }
 
         $notInCsvIds = array_values(array_diff($associatedProducerIds, $inCsvUserIds));
@@ -463,7 +535,7 @@ final class CargaMasivaModel
             'rows_total' => count($normalizedRows),
             'rows_processable' => count($processable),
             'rows_omitted' => count($normalizedRows) - count($processable),
-            'usuarios_a_revisado_si' => count($inCsvUserIds),
+            'usuarios_a_revisado_si' => count($processableByCuit),
             'usuarios_a_revisado_no' => count($notInCsvIds),
         ];
 
@@ -535,6 +607,19 @@ final class CargaMasivaModel
         $stmt->execute([':cooperativa_id_real' => $cooperativaIdReal]);
 
         return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+    }
+
+    private function findUserByIdReal(string $idReal): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id, id_real, rol, permiso_ingreso, razon_social, cuit
+             FROM usuarios
+             WHERE id_real = :id_real
+             LIMIT 1'
+        );
+        $stmt->execute([':id_real' => $idReal]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
     }
 
     private function fincaExists(string $productorIdReal, string $codigoFinca): bool
