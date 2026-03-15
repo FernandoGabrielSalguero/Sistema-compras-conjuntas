@@ -1,4 +1,6 @@
-Tabla: CosechaMecanica
+📚 Estructura completa de la base de datos: u952574624_compra_conjunt
+
+📄 Tabla: CosechaMecanica
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(10) unsigned	NO	PRI		auto_increment
 nombre	varchar(150)	NO			
@@ -1003,6 +1005,7 @@ permiso_ingreso	enum('Habilitado','Deshabilitado')	NO		Habilitado
 cuit	bigint(11)	NO			
 razon_social	varchar(150)	YES			
 id_real	varchar(20)	NO	UNI		
+revisado	enum('Esta revisado','No esta revisado')	YES			
 
 🔁 Relaciones (entrantes): drones_solicitud, prod_fincas, prod_hijos, rel_coop_ingeniero, prod_cuartel, drones_calendario_notas, relevamiento_fincas, productores_contactos_alternos, rel_productor_coop, info_productor, usuarios_info, operativos_cooperativas_participacion, rel_productor_finca, prod_colaboradores
 📄 Tabla: usuarios_info
