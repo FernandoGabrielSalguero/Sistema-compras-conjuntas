@@ -211,6 +211,7 @@ final class CargaMasivaModel
             foreach ($processable as $item) {
                 $u = $item['user'];
                 $r = $item['row'];
+                $targetIdReal = (string)($item['target_id_real'] ?? $r['id_real'] ?? '');
 
                 if ($u === null) {
                     if (isset($createdUsersByCuit[$r['cuit']])) {
@@ -224,18 +225,24 @@ final class CargaMasivaModel
                             ':permiso_ingreso' => $this->firstNonEmpty($r['permiso_ingreso'], 'Habilitado'),
                             ':cuit' => $r['cuit'],
                             ':razon_social' => $r['razon_social'],
-                            ':id_real' => $r['id_real'],
+                            ':id_real' => $targetIdReal !== '' ? $targetIdReal : (string)$r['cuit'],
                         ]);
                         $newUserId = (int)$this->pdo->lastInsertId();
                         $u = [
                             'id' => $newUserId,
-                            'id_real' => (string)$r['id_real'],
+                            'id_real' => $targetIdReal !== '' ? $targetIdReal : (string)$r['cuit'],
                             'rol' => $this->firstNonEmpty($r['rol'], 'productor'),
                             'permiso_ingreso' => $this->firstNonEmpty($r['permiso_ingreso'], 'Habilitado'),
                         ];
                         $createdUsersByCuit[$r['cuit']] = $u;
                         $applied['usuarios_created']++;
                     }
+                }
+
+                $currentIdReal = (string)$u['id_real'];
+                if ($targetIdReal !== '' && $targetIdReal !== $currentIdReal) {
+                    $this->migrateUserIdReal((int)$u['id'], $currentIdReal, $targetIdReal);
+                    $u['id_real'] = $targetIdReal;
                 }
 
                 $qUpdateUsuario->execute([
@@ -420,6 +427,18 @@ final class CargaMasivaModel
             $normalizedRows[] = $row;
         }
 
+        $csvTargetIdRealByCuit = [];
+        foreach ($normalizedRows as $row) {
+            if ($row['id_real'] === null) {
+                continue;
+            }
+            if (isset($csvTargetIdRealByCuit[$row['cuit']]) && $csvTargetIdRealByCuit[$row['cuit']] !== $row['id_real']) {
+                $errors[] = 'CUIT ' . $row['cuit'] . ': id_real inconsistente en CSV (' . $csvTargetIdRealByCuit[$row['cuit']] . ' vs ' . $row['id_real'] . ').';
+                continue;
+            }
+            $csvTargetIdRealByCuit[$row['cuit']] = $row['id_real'];
+        }
+
         if (!empty($errors)) {
             throw new InvalidArgumentException(implode(' | ', $errors));
         }
@@ -436,6 +455,7 @@ final class CargaMasivaModel
 
         foreach ($normalizedRows as $row) {
             $user = $usersByCuit[$row['cuit']] ?? null;
+            $targetIdReal = $row['id_real'];
 
             if ($user === null) {
                 if ($row['id_real'] === null) {
@@ -480,9 +500,30 @@ final class CargaMasivaModel
                 $processable[] = [
                     'row' => $row,
                     'user' => null,
+                    'target_id_real' => $targetIdReal,
                 ];
                 $processableByCuit[$row['cuit']] = true;
                 continue;
+            }
+
+            if ($targetIdReal === null) {
+                $targetIdReal = (string)$user['id_real'];
+            }
+
+            if ($targetIdReal !== (string)$user['id_real']) {
+                $sameIdReal = $this->findUserByIdReal($targetIdReal);
+                if ($sameIdReal !== null && (int)$sameIdReal['id'] !== (int)$user['id']) {
+                    $previewRows[] = [
+                        'linea' => $row['_csv_line'],
+                        'cuit' => $row['cuit'],
+                        'id_real_usuario' => $targetIdReal,
+                        'codigo_finca' => $row['codigo_finca'],
+                        'codigo_cuartel' => $row['codigo_cuartel'],
+                        'resultado' => 'omitido',
+                        'detalle' => 'id_real objetivo ya pertenece a otro usuario.',
+                    ];
+                    continue;
+                }
             }
 
             if (($user['rol'] ?? '') !== 'productor') {
@@ -501,17 +542,14 @@ final class CargaMasivaModel
             $cuartelExists = $this->cuartelExists($cooperativaIdReal, $row['codigo_finca'], $row['codigo_cuartel']);
             $relState = $this->relationState($user['id_real'], $cooperativaIdReal);
 
-            if ($row['id_real'] !== null && $row['id_real'] !== $user['id_real']) {
-                $warnings[] = 'CUIT ' . $row['cuit'] . ': id_real CSV (' . $row['id_real'] . ') difiere del usuario existente (' . $user['id_real'] . '). No se modifica id_real.';
-            }
-
             $previewRows[] = [
                 'linea' => $row['_csv_line'],
                 'cuit' => $row['cuit'],
-                'id_real_usuario' => $user['id_real'],
+                'id_real_usuario' => $targetIdReal,
                 'codigo_finca' => $row['codigo_finca'],
                 'codigo_cuartel' => $row['codigo_cuartel'],
                 'resultado' => 'procesar',
+                'accion_id_real' => $targetIdReal !== (string)$user['id_real'] ? 'actualizar' : 'sin_cambios',
                 'accion_finca' => $fincaExists ? 'actualizar' : 'insertar',
                 'accion_cuartel' => $cuartelExists ? 'actualizar' : 'insertar',
                 'accion_relacion' => $relState,
@@ -520,6 +558,7 @@ final class CargaMasivaModel
             $processable[] = [
                 'row' => $row,
                 'user' => $user,
+                'target_id_real' => $targetIdReal,
             ];
             $inCsvUserIds[(int)$user['id']] = (int)$user['id'];
             $processableByCuit[$row['cuit']] = true;
@@ -669,6 +708,40 @@ final class CargaMasivaModel
         }
 
         return 'reasignar';
+    }
+
+    private function migrateUserIdReal(int $userId, string $oldIdReal, string $newIdReal): void
+    {
+        if ($oldIdReal === $newIdReal) {
+            return;
+        }
+
+        $existing = $this->findUserByIdReal($newIdReal);
+        if ($existing !== null && (int)$existing['id'] !== $userId) {
+            throw new InvalidArgumentException('No se puede actualizar id_real a "' . $newIdReal . '" porque ya existe en otro usuario.');
+        }
+
+        $qUpdateUserIdReal = $this->pdo->prepare('UPDATE usuarios SET id_real = :new_id_real WHERE id = :id');
+        $qUpdateUserIdReal->execute([
+            ':new_id_real' => $newIdReal,
+            ':id' => $userId,
+        ]);
+
+        $updates = [
+            'UPDATE rel_productor_coop SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
+            'UPDATE prod_fincas SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
+            'UPDATE rel_productor_finca SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
+            'UPDATE prod_cuartel SET id_responsable_real = :new_id_real WHERE id_responsable_real = :old_id_real',
+            'UPDATE drones_solicitud SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
+        ];
+
+        foreach ($updates as $sql) {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':new_id_real' => $newIdReal,
+                ':old_id_real' => $oldIdReal,
+            ]);
+        }
     }
 
     private function missingHeaders(array $firstRow): array
