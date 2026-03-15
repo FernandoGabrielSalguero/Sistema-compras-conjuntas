@@ -607,6 +607,27 @@ unset($_SESSION['cierre_info']);
             applyVisibility();
         }
 
+        function initGlobalAdvancedToggle(scopeEl, toggleSelector) {
+            if (!scopeEl) return;
+            const toggle = document.querySelector(toggleSelector);
+            const advancedFields = scopeEl.querySelectorAll('[data-advanced="1"]');
+            if (!toggle || !advancedFields.length) return;
+
+            const applyVisibility = () => {
+                advancedFields.forEach((el) => {
+                    if (toggle.checked) {
+                        el.classList.remove('relevamiento-advanced-hidden');
+                    } else {
+                        el.classList.add('relevamiento-advanced-hidden');
+                    }
+                });
+            };
+
+            toggle.addEventListener('change', applyVisibility);
+            toggle.checked = false;
+            applyVisibility();
+        }
+
         function parseTableMetaFromTitle(titleRaw) {
             const title = String(titleRaw ?? '').trim();
             const m = title.match(/^(.*)\(([^)]+)\)\s*$/);
@@ -681,7 +702,7 @@ unset($_SESSION['cierre_info']);
                     return;
                 }
 
-                if (node.matches('hr')) {
+                if (node.matches('hr') || node.matches('.form-switch')) {
                     return;
                 }
 
@@ -722,7 +743,7 @@ unset($_SESSION['cierre_info']);
             const intro = document.createElement('div');
             intro.className = 'table-form-intro';
             Array.from(sourceForm.children).forEach((node) => {
-                if (node.matches('input[type="hidden"]') || node.matches('.relevamiento-finca-block')) return;
+                if (node.matches('input[type="hidden"]') || node.matches('.relevamiento-finca-block') || node.matches('.form-switch')) return;
                 intro.appendChild(node);
             });
             if (intro.children.length > 0) {
@@ -858,12 +879,17 @@ unset($_SESSION['cierre_info']);
                         <div class="productor-edit-summary">
                             <strong>${nombre}</strong>
                             <span>ID: ${idReal}</span>
-                            <span>CUIT: ${cuit}</span>
+                            <span id="productor-summary-cuit">CUIT: ${cuit}</span>
                         </div>
                         <div class="form-buttons" style="margin-top:0;">
-                            <button class="btn btn-aceptar" onclick="guardarFamiliaDesdeVista('${idRealJs}')">Guardar tablas personales</button>
-                            <button class="btn btn-aceptar" onclick="guardarProduccionDesdeVista('${idRealJs}')">Guardar tablas productivas</button>
+                            <button class="btn btn-aceptar" onclick="guardarTodoDesdeVista('${idRealJs}')">Guardar cambios</button>
                         </div>
+                    </div>
+                    <div class="form-switch" style="margin-bottom:0;">
+                        <label>
+                            <input type="checkbox" id="global-advanced-toggle">
+                            Mostrar campos avanzados
+                        </label>
                     </div>
                 </div>
                 <div id="productor-modificar-view"></div>
@@ -889,8 +915,14 @@ unset($_SESSION['cierre_info']);
                     if (cuartelesForm) slotView.appendChild(cuartelesForm);
                 }
 
-                initAdvancedToggleInScope(slotView, 'familia-advanced-toggle');
-                initAdvancedToggleInScope(slotView, 'produccion-advanced-toggle');
+                initGlobalAdvancedToggle(slotView, '#global-advanced-toggle');
+
+                const cuitInput = slotView?.querySelector('#familia-form input[name="cuit"]');
+                const cuitSpan = container.querySelector('#productor-summary-cuit');
+                const cuitValue = String(cuitInput?.value ?? '').trim();
+                if (cuitSpan && cuitValue !== '') {
+                    cuitSpan.textContent = `CUIT: ${cuitValue}`;
+                }
             } catch (e) {
                 console.error('[Relevamiento] Error al cargar vista de modificación:', e);
                 container.innerHTML = `<div class="card card-error">Error al cargar formulario del productor: ${escapeHtml(e.message)}</div>`;
@@ -933,6 +965,33 @@ unset($_SESSION['cierre_info']);
                 console.error('[Relevamiento] Error al guardar producción:', e);
                 if (typeof showToastBoton === 'function') {
                     showToastBoton('error', `Error al guardar producción: ${e.message}`);
+                }
+            }
+        }
+
+        async function guardarTodoDesdeVista(productorIdReal) {
+            try {
+                await guardarFormularioParcial(
+                    'familia-form',
+                    'relevamiento_familia_controller.php',
+                    productorIdReal,
+                    'Tablas personales guardadas correctamente'
+                );
+
+                await guardarFormularioParcial(
+                    'produccion-form',
+                    'relevamiento_produccion_controller.php',
+                    productorIdReal,
+                    'Cambios guardados correctamente'
+                );
+
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('success', 'Todos los cambios fueron guardados');
+                }
+            } catch (e) {
+                console.error('[Relevamiento] Error al guardar todo:', e);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', `Error al guardar cambios: ${e.message}`);
                 }
             }
         }
@@ -1561,6 +1620,7 @@ unset($_SESSION['cierre_info']);
         window.abrirModificarProductor = abrirModificarProductor;
         window.guardarFamiliaDesdeVista = guardarFamiliaDesdeVista;
         window.guardarProduccionDesdeVista = guardarProduccionDesdeVista;
+        window.guardarTodoDesdeVista = guardarTodoDesdeVista;
         window.volverAProductores = volverAProductores;
 
         // Cargar cooperativas una vez que el DOM esté listo
