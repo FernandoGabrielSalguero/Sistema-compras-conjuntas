@@ -491,11 +491,11 @@ final class CargaMasivaModel
                     'codigo_finca' => $row['codigo_finca'],
                     'codigo_cuartel' => $row['codigo_cuartel'],
                     'resultado' => 'procesar',
-                    'accion_usuario' => 'crear',
-                    'accion_finca' => 'insertar_o_actualizar',
-                    'accion_cuartel' => 'insertar_o_actualizar',
-                    'accion_relacion' => 'crear_o_reasignar',
+                    'usuario_encontrado' => 'no',
                 ];
+
+                $changeSet = $this->buildChangeSet(null, $row, $cooperativaIdReal, (string)$targetIdReal);
+                $previewRows[count($previewRows) - 1] = array_merge($previewRows[count($previewRows) - 1], $changeSet);
 
                 $processable[] = [
                     'row' => $row,
@@ -538,10 +538,6 @@ final class CargaMasivaModel
                 continue;
             }
 
-            $fincaExists = $this->fincaExists($user['id_real'], $row['codigo_finca']);
-            $cuartelExists = $this->cuartelExists($cooperativaIdReal, $row['codigo_finca'], $row['codigo_cuartel']);
-            $relState = $this->relationState($user['id_real'], $cooperativaIdReal);
-
             $previewRows[] = [
                 'linea' => $row['_csv_line'],
                 'cuit' => $row['cuit'],
@@ -549,11 +545,11 @@ final class CargaMasivaModel
                 'codigo_finca' => $row['codigo_finca'],
                 'codigo_cuartel' => $row['codigo_cuartel'],
                 'resultado' => 'procesar',
-                'accion_id_real' => $targetIdReal !== (string)$user['id_real'] ? 'actualizar' : 'sin_cambios',
-                'accion_finca' => $fincaExists ? 'actualizar' : 'insertar',
-                'accion_cuartel' => $cuartelExists ? 'actualizar' : 'insertar',
-                'accion_relacion' => $relState,
+                'usuario_encontrado' => 'si',
             ];
+
+            $changeSet = $this->buildChangeSet($user, $row, $cooperativaIdReal, (string)$targetIdReal);
+            $previewRows[count($previewRows) - 1] = array_merge($previewRows[count($previewRows) - 1], $changeSet);
 
             $processable[] = [
                 'row' => $row,
@@ -694,6 +690,226 @@ final class CargaMasivaModel
         $stmt->execute([':id_real' => $idReal]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ?: null;
+    }
+
+    private function buildChangeSet(?array $user, array $row, string $cooperativaIdReal, string $targetIdReal): array
+    {
+        $beforeUser = $user ? [
+            'cuit' => $this->normalizeCuit($user['cuit'] ?? null),
+            'id_real' => (string)($user['id_real'] ?? ''),
+            'rol' => $user['rol'] ?? null,
+            'permiso_ingreso' => $user['permiso_ingreso'] ?? null,
+            'razon_social' => $user['razon_social'] ?? null,
+            'revisado' => null,
+        ] : null;
+
+        $afterUser = [
+            'cuit' => $row['cuit'],
+            'id_real' => $targetIdReal,
+            'rol' => $this->firstNonEmpty($row['rol'], $user['rol'] ?? null, 'productor'),
+            'permiso_ingreso' => $this->firstNonEmpty($row['permiso_ingreso'], $user['permiso_ingreso'] ?? null, 'Habilitado'),
+            'razon_social' => $row['razon_social'],
+            'revisado' => 'Esta revisado',
+        ];
+
+        $beforeInfo = null;
+        if ($user && isset($user['id'])) {
+            $beforeInfo = $this->fetchUserInfoByUsuarioId((int)$user['id']);
+        }
+        $afterInfo = [
+            'nombre' => $row['nombre'],
+            'direccion' => $row['direccion'],
+            'telefono' => $row['telefono'],
+            'correo' => $row['correo'],
+            'fecha_nacimiento' => $row['fecha_nacimiento'],
+            'categorizacion' => $row['categorizacion'],
+            'tipo_relacion' => $row['tipo_relacion'],
+            'zona_asignada' => $this->nullableString($row['zona_asignada']) ?? '',
+        ];
+
+        $beforeFinca = $this->fetchFincaByProductorAndCodigo($targetIdReal, $row['codigo_finca']);
+        $afterFinca = [
+            'codigo_finca' => $row['codigo_finca'],
+            'productor_id_real' => $targetIdReal,
+            'nombre_finca' => $row['nombre_finca'],
+            'variedad' => $row['variedad'],
+        ];
+
+        $beforeDir = null;
+        if ($beforeFinca && isset($beforeFinca['id'])) {
+            $beforeDir = $this->fetchFincaDireccionByFincaId((int)$beforeFinca['id']);
+        }
+        $afterDir = [
+            'departamento' => $row['departamento'],
+            'localidad' => $row['localidad'],
+            'calle' => $row['calle'],
+            'numero' => $row['numero'],
+            'latitud' => $row['latitud'],
+            'longitud' => $row['longitud'],
+        ];
+
+        $beforeCuartel = $this->fetchCuartelByKeys($cooperativaIdReal, $row['codigo_finca'], $row['codigo_cuartel']);
+        $afterCuartel = [
+            'id_responsable_real' => $targetIdReal,
+            'cooperativa_id_real' => $cooperativaIdReal,
+            'codigo_finca' => $row['codigo_finca'],
+            'nombre_finca' => $row['nombre_finca'],
+            'codigo_cuartel' => $row['codigo_cuartel'],
+            'variedad' => $row['variedad'],
+            'numero_inv' => $row['numero_inv'],
+            'sistema_conduccion' => $row['sistema_conduccion'],
+            'superficie_ha' => $row['superficie_ha'],
+            'porcentaje_cepas_produccion' => $row['porcentaje_cepas_produccion'],
+            'forma_cosecha_actual' => $row['forma_cosecha_actual'],
+            'porcentaje_malla_buen_estado' => $row['porcentaje_malla_buen_estado'],
+            'edad_promedio_encepado_anios' => $row['edad_promedio_encepado_anios'],
+            'estado_estructura_sistema' => $row['estado_estructura_sistema'],
+            'labores_mecanizables' => $row['labores_mecanizables'],
+        ];
+
+        $relBefore = $this->fetchRelProductorCoop($targetIdReal);
+        $relAfter = [
+            'productor_id_real' => $targetIdReal,
+            'cooperativa_id_real' => $cooperativaIdReal,
+        ];
+
+        $changes = [];
+        $changes = array_merge($changes, $this->collectDiffRows('usuarios', ['cuit', 'id_real', 'rol', 'permiso_ingreso', 'razon_social', 'revisado'], $beforeUser, $afterUser));
+        $changes = array_merge($changes, $this->collectDiffRows('usuarios_info', ['nombre', 'direccion', 'telefono', 'correo', 'fecha_nacimiento', 'categorizacion', 'tipo_relacion', 'zona_asignada'], $beforeInfo, $afterInfo));
+        $changes = array_merge($changes, $this->collectDiffRows('prod_fincas', ['codigo_finca', 'productor_id_real', 'nombre_finca', 'variedad'], $beforeFinca, $afterFinca));
+        $changes = array_merge($changes, $this->collectDiffRows('prod_finca_direccion', ['departamento', 'localidad', 'calle', 'numero', 'latitud', 'longitud'], $beforeDir, $afterDir));
+        $changes = array_merge($changes, $this->collectDiffRows('prod_cuartel', ['id_responsable_real', 'cooperativa_id_real', 'codigo_finca', 'nombre_finca', 'codigo_cuartel', 'variedad', 'numero_inv', 'sistema_conduccion', 'superficie_ha', 'porcentaje_cepas_produccion', 'forma_cosecha_actual', 'porcentaje_malla_buen_estado', 'edad_promedio_encepado_anios', 'estado_estructura_sistema', 'labores_mecanizables'], $beforeCuartel, $afterCuartel));
+        $changes = array_merge($changes, $this->collectRelationDiffRows('rel_productor_coop', $relBefore, $relAfter));
+
+        $changedCount = 0;
+        foreach ($changes as $ch) {
+            if (!empty($ch['cambia'])) {
+                $changedCount++;
+            }
+        }
+
+        return [
+            'accion_usuario' => $user ? 'actualizar' : 'crear',
+            'accion_id_real' => ($user && (string)$user['id_real'] === $targetIdReal) ? 'sin_cambios' : 'actualizar',
+            'accion_finca' => $beforeFinca ? 'actualizar' : 'insertar',
+            'accion_cuartel' => $beforeCuartel ? 'actualizar' : 'insertar',
+            'accion_relacion' => $this->relationState($targetIdReal, $cooperativaIdReal),
+            'changes_count' => $changedCount,
+            'changes_flat' => $changes,
+        ];
+    }
+
+    private function collectDiffRows(string $table, array $fields, ?array $before, array $after): array
+    {
+        $rows = [];
+        foreach ($fields as $field) {
+            $from = $before[$field] ?? null;
+            $to = $after[$field] ?? null;
+            $rows[] = [
+                'tabla' => $table,
+                'campo' => $field,
+                'actual' => $from,
+                'nuevo' => $to,
+                'cambia' => $this->normCmp($from) !== $this->normCmp($to),
+            ];
+        }
+        return $rows;
+    }
+
+    private function collectRelationDiffRows(string $table, array $beforeRows, array $after): array
+    {
+        $beforePacked = empty($beforeRows) ? null : implode(', ', array_values(array_unique($beforeRows)));
+        $afterPacked = (string)$after['cooperativa_id_real'];
+        return [[
+            'tabla' => $table,
+            'campo' => 'cooperativa_id_real',
+            'actual' => $beforePacked,
+            'nuevo' => $afterPacked,
+            'cambia' => $beforePacked === null || strpos((string)$beforePacked, $afterPacked) === false || substr_count((string)$beforePacked, ',') > 0,
+        ]];
+    }
+
+    private function normCmp($value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+        return trim((string)$value);
+    }
+
+    private function fetchUserInfoByUsuarioId(int $usuarioId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT nombre, direccion, telefono, correo, fecha_nacimiento, categorizacion, tipo_relacion, zona_asignada
+             FROM usuarios_info
+             WHERE usuario_id = :usuario_id
+             LIMIT 1'
+        );
+        $stmt->execute([':usuario_id' => $usuarioId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    private function fetchFincaByProductorAndCodigo(string $productorIdReal, string $codigoFinca): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id, codigo_finca, productor_id_real, nombre_finca, variedad
+             FROM prod_fincas
+             WHERE productor_id_real = :productor_id_real
+               AND codigo_finca = :codigo_finca
+             LIMIT 1'
+        );
+        $stmt->execute([
+            ':productor_id_real' => $productorIdReal,
+            ':codigo_finca' => $codigoFinca,
+        ]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    private function fetchFincaDireccionByFincaId(int $fincaId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT departamento, localidad, calle, numero, latitud, longitud
+             FROM prod_finca_direccion
+             WHERE finca_id = :finca_id
+             LIMIT 1'
+        );
+        $stmt->execute([':finca_id' => $fincaId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    private function fetchCuartelByKeys(string $cooperativaIdReal, string $codigoFinca, string $codigoCuartel): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id_responsable_real, cooperativa_id_real, codigo_finca, nombre_finca, codigo_cuartel, variedad, numero_inv,
+                    sistema_conduccion, superficie_ha, porcentaje_cepas_produccion, forma_cosecha_actual,
+                    porcentaje_malla_buen_estado, edad_promedio_encepado_anios, estado_estructura_sistema, labores_mecanizables
+             FROM prod_cuartel
+             WHERE cooperativa_id_real = :cooperativa_id_real
+               AND codigo_finca = :codigo_finca
+               AND codigo_cuartel = :codigo_cuartel
+             LIMIT 1'
+        );
+        $stmt->execute([
+            ':cooperativa_id_real' => $cooperativaIdReal,
+            ':codigo_finca' => $codigoFinca,
+            ':codigo_cuartel' => $codigoCuartel,
+        ]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    private function fetchRelProductorCoop(string $productorIdReal): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT cooperativa_id_real
+             FROM rel_productor_coop
+             WHERE productor_id_real = :productor_id_real'
+        );
+        $stmt->execute([':productor_id_real' => $productorIdReal]);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
     }
 
     private function fincaExists(string $productorIdReal, string $codigoFinca): bool

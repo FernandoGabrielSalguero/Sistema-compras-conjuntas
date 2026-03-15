@@ -104,6 +104,30 @@ checkAccess('sve');
             white-space: normal;
             word-break: break-word;
         }
+
+        .changes-count {
+            font-weight: 700;
+            color: #1d4ed8;
+        }
+
+        .preview-detail-box {
+            margin-top: 14px;
+            border: 1px solid rgba(0, 0, 0, .08);
+            border-radius: 10px;
+            padding: 10px;
+            background: #fafafa;
+        }
+
+        .preview-detail-box h4 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+        }
+
+        .field-changed {
+            background: #ecfeff;
+            color: #155e75;
+            font-weight: 600;
+        }
     </style>
 </head>
 
@@ -196,11 +220,30 @@ checkAccess('sve');
                             <th>Relación</th>
                             <th>Finca</th>
                             <th>Cuartel</th>
+                            <th>Cambios</th>
+                            <th>Ver</th>
                             <th>Detalle</th>
                         </tr>
                     </thead>
                     <tbody id="previewBody"></tbody>
                 </table>
+            </div>
+            <div class="preview-detail-box" id="rowDetailBox" style="display:none;">
+                <h4 id="rowDetailTitle">Detalle de cambios</h4>
+                <div class="massive-table-wrap" style="max-height:35vh; margin-top:0;">
+                    <table class="table" id="detailTable">
+                        <thead>
+                            <tr>
+                                <th>Tabla</th>
+                                <th>Campo</th>
+                                <th>Valor actual</th>
+                                <th>Valor nuevo</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailBody"></tbody>
+                    </table>
+                </div>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-cancelar" type="button" id="btnCloseModal">Cancelar</button>
@@ -235,9 +278,13 @@ checkAccess('sve');
             const previewBody = document.getElementById('previewBody');
             const btnCloseModal = document.getElementById('btnCloseModal');
             const btnConfirmModal = document.getElementById('btnConfirmModal');
+            const rowDetailBox = document.getElementById('rowDetailBox');
+            const rowDetailTitle = document.getElementById('rowDetailTitle');
+            const detailBody = document.getElementById('detailBody');
 
             let parsedRows = [];
             let lastPreviewResponse = null;
+            let renderedPreviewRows = [];
 
             function normalizeHeader(h) {
                 return String(h || '').trim().toLowerCase();
@@ -390,6 +437,7 @@ checkAccess('sve');
 
             function renderPreviewTable(rows) {
                 previewBody.innerHTML = '';
+                renderedPreviewRows = Array.isArray(rows) ? rows : [];
                 const max = Math.min(rows.length, 300);
 
                 for (let i = 0; i < max; i++) {
@@ -402,6 +450,7 @@ checkAccess('sve');
                     const accionRelacion = r.accion_relacion || '-';
                     const accionFinca = r.accion_finca || '-';
                     const accionCuartel = r.accion_cuartel || '-';
+                    const cambios = Number(r.changes_count || 0);
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${escapeHtml(r.linea ?? '')}</td>
@@ -415,10 +464,40 @@ checkAccess('sve');
                         <td>${escapeHtml(accionRelacion)}</td>
                         <td>${escapeHtml(accionFinca)}</td>
                         <td>${escapeHtml(accionCuartel)}</td>
+                        <td><span class="changes-count">${escapeHtml(cambios)}</span></td>
+                        <td><button type="button" class="btn btn-info btn-sm" data-row-idx="${i}">Ver</button></td>
                         <td class="cell-detail">${escapeHtml(detalle)}</td>
                     `;
                     previewBody.appendChild(tr);
                 }
+
+                rowDetailBox.style.display = 'none';
+                detailBody.innerHTML = '';
+            }
+
+            function renderRowDetail(row) {
+                const changes = Array.isArray(row?.changes_flat) ? row.changes_flat : [];
+                rowDetailTitle.textContent = `Detalle de fila ${row?.linea ?? '-'} - CUIT ${row?.cuit ?? '-'}`;
+                detailBody.innerHTML = '';
+
+                if (!changes.length) {
+                    detailBody.innerHTML = '<tr><td colspan="5">Sin detalle de cambios.</td></tr>';
+                    rowDetailBox.style.display = 'block';
+                    return;
+                }
+
+                for (const ch of changes) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${escapeHtml(ch.tabla ?? '')}</td>
+                        <td>${escapeHtml(ch.campo ?? '')}</td>
+                        <td>${escapeHtml(ch.actual ?? '')}</td>
+                        <td>${escapeHtml(ch.nuevo ?? '')}</td>
+                        <td class="${ch.cambia ? 'field-changed' : ''}">${ch.cambia ? 'Actualiza' : 'Sin cambios'}</td>
+                    `;
+                    detailBody.appendChild(tr);
+                }
+                rowDetailBox.style.display = 'block';
             }
 
             function openPreviewModal() {
@@ -512,6 +591,16 @@ checkAccess('sve');
             btnCloseModal.addEventListener('click', closePreviewModal);
             previewModal.addEventListener('click', (e) => {
                 if (e.target === previewModal) closePreviewModal();
+            });
+
+            previewBody.addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-row-idx]');
+                if (!btn) return;
+                const idx = Number(btn.getAttribute('data-row-idx'));
+                if (!Number.isInteger(idx)) return;
+                const row = renderedPreviewRows[idx];
+                if (!row) return;
+                renderRowDetail(row);
             });
         })();
     </script>
