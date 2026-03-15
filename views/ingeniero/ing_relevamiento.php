@@ -79,6 +79,27 @@ unset($_SESSION['cierre_info']);
             align-items: center;
         }
 
+        .table-tools {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-tools input[type="search"] {
+            width: min(460px, 100%);
+            max-width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid rgba(15, 23, 42, 0.2);
+            border-radius: 0.5rem;
+        }
+
+        .table-tools small {
+            opacity: 0.75;
+        }
+
         .icon-btn {
             display: inline-flex;
             align-items: center;
@@ -308,6 +329,7 @@ unset($_SESSION['cierre_info']);
 
         // Mapa global para recuperar el productor por id_real
         const PRODUCTORES_MAP = {};
+        let PRODUCTORES_LIST = [];
         let currentProductor = null;
 
         console.log('[Relevamiento] Script cargado');
@@ -399,36 +421,20 @@ unset($_SESSION['cierre_info']);
             const container = document.getElementById('cards-container');
             if (!container) return;
 
-            productores.forEach((p) => {
-                PRODUCTORES_MAP[p.id_real] = p;
+            PRODUCTORES_LIST = Array.isArray(productores) ? productores : [];
+            Object.keys(PRODUCTORES_MAP).forEach((k) => delete PRODUCTORES_MAP[k]);
+            PRODUCTORES_LIST.forEach((p) => {
+                const idReal = String(p?.id_real ?? '').trim();
+                if (idReal !== '') PRODUCTORES_MAP[idReal] = p;
             });
-
-            const rows = productores.map((p, idx) => {
-                const nombre = escapeHtml(p.nombre);
-                const idReal = escapeHtml(p.id_real);
-                const cuit = escapeHtml(p.cuit ?? 'Sin CUIT');
-
-                return `
-                    <tr>
-                        <td>${idx + 1}</td>
-                        <td>${nombre}</td>
-                        <td>${idReal}</td>
-                        <td>${cuit}</td>
-                        <td class="cell-actions">
-                            <button class="btn btn-info" onclick="relevamientoOpenModal('familia','${idReal}')">Familia</button>
-                            <button class="btn btn-info" onclick="relevamientoOpenModal('produccion','${idReal}')">Producción</button>
-                            <button class="btn btn-info" onclick="relevamientoOpenModal('cuarteles','${idReal}')">Cuarteles</button>
-                            <button  class="icon-btn" title="Consolidar JSON (Familia + Producción)" onclick="relevamientoLogProductorFull('${idReal}')">
-                                <span class="material-symbols-outlined">code</span>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
 
             container.innerHTML = `
                 <div class="card tabla-card">
                     <h2>Productores</h2>
+                    <div class="table-tools">
+                        <input type="search" id="productores-search-input" placeholder="Buscar por CUIT, ID real o nombre" autocomplete="off">
+                        <small id="productores-search-count"></small>
+                    </div>
                     <div class="tabla-wrapper">
                         <table class="data-table">
                             <thead>
@@ -440,13 +446,80 @@ unset($_SESSION['cierre_info']);
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                ${rows}
-                            </tbody>
+                            <tbody id="productores-tbody"></tbody>
                         </table>
                     </div>
                 </div>
             `;
+
+            const tbody = container.querySelector('#productores-tbody');
+            const searchInput = container.querySelector('#productores-search-input');
+            const counter = container.querySelector('#productores-search-count');
+
+            const normalize = (value) =>
+                String(value ?? '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .trim();
+
+            const buildRows = (list) => {
+                const rows = list.map((p, idx) => {
+                    const nombreRaw = String(p?.nombre ?? '').trim();
+                    const idRealRaw = String(p?.id_real ?? '').trim();
+                    const cuitRaw = String(p?.cuit ?? '').trim();
+                    const idRealJs = idRealRaw.replaceAll('\\', '\\\\').replaceAll("'", "\\'");
+
+                    const nombre = escapeHtml(nombreRaw || 'Sin nombre');
+                    const idReal = escapeHtml(idRealRaw || 'Sin ID');
+                    const cuit = escapeHtml(cuitRaw || 'Sin CUIT');
+
+                    return `
+                        <tr>
+                            <td>${idx + 1}</td>
+                            <td>${nombre}</td>
+                            <td>${idReal}</td>
+                            <td>${cuit}</td>
+                            <td class="cell-actions">
+                                <button class="btn btn-info" onclick="relevamientoOpenModal('familia','${idRealJs}')">Familia</button>
+                                <button class="btn btn-info" onclick="relevamientoOpenModal('produccion','${idRealJs}')">Producción</button>
+                                <button class="btn btn-info" onclick="relevamientoOpenModal('cuarteles','${idRealJs}')">Cuarteles</button>
+                                <button class="icon-btn" title="Consolidar JSON (Familia + Producción)" onclick="relevamientoLogProductorFull('${idRealJs}')">
+                                    <span class="material-symbols-outlined">code</span>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                if (tbody) {
+                    tbody.innerHTML = rows || `<tr><td colspan="5">Sin resultados para la búsqueda.</td></tr>`;
+                }
+                if (counter) {
+                    counter.textContent = `${list.length} de ${PRODUCTORES_LIST.length} productores`;
+                }
+            };
+
+            const applyFilter = () => {
+                const query = normalize(searchInput?.value ?? '');
+                if (!query) {
+                    buildRows(PRODUCTORES_LIST);
+                    return;
+                }
+
+                const filtered = PRODUCTORES_LIST.filter((p) => {
+                    const nombre = normalize(p?.nombre);
+                    const idReal = normalize(p?.id_real);
+                    const cuit = normalize(p?.cuit);
+                    return nombre.includes(query) || idReal.includes(query) || cuit.includes(query);
+                });
+                buildRows(filtered);
+            };
+
+            if (searchInput) {
+                searchInput.addEventListener('input', applyFilter);
+            }
+            buildRows(PRODUCTORES_LIST);
         }
 
         function getFormValuesAsObject(doc, formSelector) {

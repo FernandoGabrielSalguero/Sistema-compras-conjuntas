@@ -19,7 +19,12 @@ class ingRelevamientoModel
     $sql = "
       SELECT
         u.id_real,
-        COALESCE(ui.nombre, u.usuario) AS nombre,
+        COALESCE(
+          NULLIF(TRIM(ui.nombre), ''),
+          NULLIF(TRIM(u.razon_social), ''),
+          NULLIF(TRIM(u.usuario), ''),
+          u.id_real
+        ) AS nombre,
         u.cuit
       FROM rel_coop_ingeniero rci
       JOIN usuarios u
@@ -46,11 +51,16 @@ class ingRelevamientoModel
   {
     $sql = "
       SELECT DISTINCT
-        u.id_real,
-        COALESCE(ui.nombre, u.usuario) AS nombre,
+        rpc.productor_id_real AS id_real,
+        COALESCE(
+          NULLIF(TRIM(ui.nombre), ''),
+          NULLIF(TRIM(u.razon_social), ''),
+          NULLIF(TRIM(u.usuario), ''),
+          rpc.productor_id_real
+        ) AS nombre,
         u.cuit
       FROM rel_productor_coop rpc
-      JOIN usuarios u
+      LEFT JOIN usuarios u
         ON u.id_real = rpc.productor_id_real
        AND u.rol = 'productor'
       LEFT JOIN usuarios_info ui
