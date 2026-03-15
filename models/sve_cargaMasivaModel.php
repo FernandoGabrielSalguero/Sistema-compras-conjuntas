@@ -1036,11 +1036,23 @@ final class CargaMasivaModel
         $this->pdo->exec('SET FOREIGN_KEY_CHECKS=0');
         try {
             $updates = [
+                // Relaciones directas de productor
                 'UPDATE rel_productor_coop SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
                 'UPDATE prod_fincas SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
                 'UPDATE rel_productor_finca SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
                 'UPDATE prod_cuartel SET id_responsable_real = :new_id_real WHERE id_responsable_real = :old_id_real',
                 'UPDATE drones_solicitud SET productor_id_real = :new_id_real WHERE productor_id_real = :old_id_real',
+                // Otras tablas con referencias/sombras a usuarios.id_real detectadas en estructura_bbdd.md
+                'UPDATE login_auditoria SET usuario_id_real = :new_id_real WHERE usuario_id_real = :old_id_real',
+                'UPDATE rel_productor_coop SET cooperativa_id_real = :new_id_real WHERE cooperativa_id_real = :old_id_real',
+                'UPDATE rel_coop_ingeniero SET cooperativa_id_real = :new_id_real WHERE cooperativa_id_real = :old_id_real',
+                'UPDATE rel_coop_ingeniero SET ingeniero_id_real = :new_id_real WHERE ingeniero_id_real = :old_id_real',
+                'UPDATE operativos_cooperativas_participacion SET cooperativa_id_real = :new_id_real WHERE cooperativa_id_real = :old_id_real',
+                'UPDATE prod_cuartel SET cooperativa_id_real = :new_id_real WHERE cooperativa_id_real = :old_id_real',
+                'UPDATE cooperativas_rangos SET cooperativa_id_real = :new_id_real WHERE cooperativa_id_real = :old_id_real',
+                'UPDATE cosechaMecanica_coop_contrato_firma SET cooperativa_id_real = :new_id_real WHERE cooperativa_id_real = :old_id_real',
+                'UPDATE cosechaMecanica_coop_correo_log SET cooperativa_id_real = :new_id_real WHERE cooperativa_id_real = :old_id_real',
+                'UPDATE log_correos SET cooperativa_id_real = :new_id_real WHERE cooperativa_id_real = :old_id_real',
             ];
 
             foreach ($updates as $sql) {
