@@ -368,7 +368,6 @@ final class CargaMasivaModel
 
         $normalizedRows = [];
         $errors = [];
-        $csvByCuit = [];
 
         foreach ($rawRows as $index => $rawRow) {
             if (!is_array($rawRow)) {
@@ -382,12 +381,6 @@ final class CargaMasivaModel
                 $errors[] = 'Fila ' . ($index + 2) . ': cuit vacio o invalido.';
                 continue;
             }
-
-            if (isset($csvByCuit[$row['cuit']])) {
-                $errors[] = 'CUIT repetido en CSV: ' . $row['cuit'] . ' (filas ' . $csvByCuit[$row['cuit']] . ' y ' . ($index + 2) . ').';
-                continue;
-            }
-            $csvByCuit[$row['cuit']] = $index + 2;
 
             $row['_csv_line'] = $index + 2;
             $normalizedRows[] = $row;
