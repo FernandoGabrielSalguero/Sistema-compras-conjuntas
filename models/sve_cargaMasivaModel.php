@@ -369,8 +369,22 @@ final class CargaMasivaModel
                 ];
 
                 if ($cuartelId) {
-                    $cuartelParams[':id'] = (int)$cuartelId;
-                    $qUpdateCuartel->execute($cuartelParams);
+                    $qUpdateCuartel->execute([
+                        ':id' => (int)$cuartelId,
+                        ':id_responsable_real' => $u['id_real'],
+                        ':nombre_finca' => $r['nombre_finca'],
+                        ':variedad' => $r['variedad'],
+                        ':numero_inv' => $r['numero_inv'],
+                        ':sistema_conduccion' => $r['sistema_conduccion'],
+                        ':superficie_ha' => $r['superficie_ha'],
+                        ':porcentaje_cepas_produccion' => $r['porcentaje_cepas_produccion'],
+                        ':forma_cosecha_actual' => $r['forma_cosecha_actual'],
+                        ':porcentaje_malla_buen_estado' => $r['porcentaje_malla_buen_estado'],
+                        ':edad_promedio_encepado_anios' => $r['edad_promedio_encepado_anios'],
+                        ':estado_estructura_sistema' => $r['estado_estructura_sistema'],
+                        ':labores_mecanizables' => $r['labores_mecanizables'],
+                        ':finca_id' => $fincaId,
+                    ]);
                     $applied['cuarteles_updated']++;
                 } else {
                     $qInsertCuartel->execute($cuartelParams);
