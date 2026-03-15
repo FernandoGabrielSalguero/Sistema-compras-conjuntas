@@ -202,6 +202,54 @@ unset($_SESSION['cierre_info']);
             color: rgba(15, 23, 42, 0.8);
         }
 
+        .productor-assets-summary {
+            margin-top: 0.85rem;
+            border-top: 1px solid rgba(15, 23, 42, 0.1);
+            padding-top: 0.85rem;
+        }
+
+        .summary-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem 1.25rem;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .summary-columns {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(260px, 1fr));
+            gap: 0.9rem;
+        }
+
+        .summary-list {
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 0.5rem;
+            padding: 0.45rem 0.55rem;
+            background: #fff;
+        }
+
+        .summary-item-text {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .summary-empty {
+            opacity: 0.8;
+            font-size: 0.92rem;
+        }
+
         #productor-modificar-view .table-form-intro {
             margin-bottom: 1rem;
         }
@@ -243,6 +291,10 @@ unset($_SESSION['cierre_info']);
         }
 
         @media (max-width: 700px) {
+            .summary-columns {
+                grid-template-columns: 1fr;
+            }
+
             #productor-modificar-view .table-section-grid {
                 grid-template-columns: 1fr;
             }
@@ -835,6 +887,160 @@ unset($_SESSION['cierre_info']);
             return resp.text();
         }
 
+        async function fetchResumenActivosProductor(productorIdReal) {
+            const params = new URLSearchParams({
+                action: 'resumen_activos_productor',
+                productor_id_real: productorIdReal
+            });
+
+            const resp = await fetch(`${API_RELEVAMIENTO}?${params.toString()}`, {
+                credentials: 'same-origin'
+            });
+            const data = await resp.json();
+            if (!resp.ok || !data.ok) {
+                throw new Error(data.error || `Error al cargar resumen del productor (${resp.status})`);
+            }
+            return data.data || null;
+        }
+
+        async function eliminarFincaProductor(productorIdReal, fincaId) {
+            const body = new URLSearchParams({
+                action: 'eliminar_finca_productor',
+                productor_id_real: productorIdReal,
+                finca_id: String(fincaId)
+            });
+            const resp = await fetch(API_RELEVAMIENTO, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                body: body.toString()
+            });
+            const data = await resp.json();
+            if (!resp.ok || !data.ok) {
+                throw new Error(data.error || 'No se pudo eliminar la finca');
+            }
+        }
+
+        async function eliminarCuartelProductor(productorIdReal, cuartelId) {
+            const body = new URLSearchParams({
+                action: 'eliminar_cuartel_productor',
+                productor_id_real: productorIdReal,
+                cuartel_id: String(cuartelId)
+            });
+            const resp = await fetch(API_RELEVAMIENTO, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                body: body.toString()
+            });
+            const data = await resp.json();
+            if (!resp.ok || !data.ok) {
+                throw new Error(data.error || 'No se pudo eliminar el cuartel');
+            }
+        }
+
+        function renderResumenActivosProductor(slot, productorIdReal, resumen) {
+            if (!slot) return;
+
+            const fincas = Array.isArray(resumen?.fincas) ? resumen.fincas : [];
+            const cuarteles = Array.isArray(resumen?.cuarteles) ? resumen.cuarteles : [];
+
+            const renderFincaItems = fincas.length
+                ? fincas.map((f) => {
+                    const id = Number(f.id || 0);
+                    const code = escapeHtml(f.codigo_finca || `ID ${id}`);
+                    const name = escapeHtml(f.nombre_finca || 'Sin nombre');
+                    return `
+                        <div class="summary-item">
+                            <span class="summary-item-text">#${id} - ${code} - ${name}</span>
+                            <button class="btn btn-cancelar" onclick="confirmarEliminarFinca('${String(productorIdReal).replaceAll('\\', '\\\\').replaceAll("'", "\\'")}', ${id})">Eliminar</button>
+                        </div>
+                    `;
+                }).join('')
+                : '<p class="summary-empty">Sin fincas asociadas.</p>';
+
+            const renderCuartelItems = cuarteles.length
+                ? cuarteles.map((c) => {
+                    const id = Number(c.id || 0);
+                    const code = escapeHtml(c.codigo_cuartel || `ID ${id}`);
+                    const fincaCode = escapeHtml(c.codigo_finca || 'Sin finca');
+                    return `
+                        <div class="summary-item">
+                            <span class="summary-item-text">#${id} - Cuartel ${code} (Finca ${fincaCode})</span>
+                            <button class="btn btn-cancelar" onclick="confirmarEliminarCuartel('${String(productorIdReal).replaceAll('\\', '\\\\').replaceAll("'", "\\'")}', ${id})">Eliminar</button>
+                        </div>
+                    `;
+                }).join('')
+                : '<p class="summary-empty">Sin cuarteles asociados.</p>';
+
+            slot.innerHTML = `
+                <div class="summary-meta">
+                    <span>Fincas: ${fincas.length}</span>
+                    <span>Cuarteles: ${cuarteles.length}</span>
+                </div>
+                <div class="summary-columns">
+                    <div>
+                        <strong>Fincas</strong>
+                        <div class="summary-list">${renderFincaItems}</div>
+                    </div>
+                    <div>
+                        <strong>Cuarteles</strong>
+                        <div class="summary-list">${renderCuartelItems}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function cargarResumenActivosProductor(productorIdReal) {
+            const slot = document.querySelector('#productor-assets-summary');
+            if (!slot) return;
+
+            slot.innerHTML = '<p>Cargando resumen de fincas y cuarteles...</p>';
+            try {
+                const resumen = await fetchResumenActivosProductor(productorIdReal);
+                renderResumenActivosProductor(slot, productorIdReal, resumen);
+            } catch (e) {
+                console.error('[Relevamiento] Error resumen activos:', e);
+                slot.innerHTML = `<p class="text-danger">Error al cargar resumen: ${escapeHtml(e.message)}</p>`;
+            }
+        }
+
+        async function confirmarEliminarFinca(productorIdReal, fincaId) {
+            if (!confirm(`Se va a eliminar la finca ID ${fincaId} y sus registros asociados. ¿Continuar?`)) {
+                return;
+            }
+            try {
+                await eliminarFincaProductor(productorIdReal, fincaId);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('success', `Finca ${fincaId} eliminada correctamente`);
+                }
+                await abrirModificarProductor(productorIdReal);
+            } catch (e) {
+                console.error('[Relevamiento] Error al eliminar finca:', e);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', `Error al eliminar finca: ${e.message}`);
+                }
+            }
+        }
+
+        async function confirmarEliminarCuartel(productorIdReal, cuartelId) {
+            if (!confirm(`Se va a eliminar el cuartel ID ${cuartelId}. ¿Continuar?`)) {
+                return;
+            }
+            try {
+                await eliminarCuartelProductor(productorIdReal, cuartelId);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('success', `Cuartel ${cuartelId} eliminado correctamente`);
+                }
+                await abrirModificarProductor(productorIdReal);
+            } catch (e) {
+                console.error('[Relevamiento] Error al eliminar cuartel:', e);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', `Error al eliminar cuartel: ${e.message}`);
+                }
+            }
+        }
+
         async function guardarFormularioParcial(formId, controllerFile, productorIdReal, mensajeExito) {
             const form = document.querySelector(`#productor-modificar-view #${formId}`);
             if (!form) {
@@ -891,6 +1097,9 @@ unset($_SESSION['cierre_info']);
                             Mostrar campos avanzados
                         </label>
                     </div>
+                    <div class="productor-assets-summary" id="productor-assets-summary">
+                        <p>Cargando resumen de fincas y cuarteles...</p>
+                    </div>
                 </div>
                 <div id="productor-modificar-view"></div>
             `;
@@ -923,6 +1132,8 @@ unset($_SESSION['cierre_info']);
                 if (cuitSpan && cuitValue !== '') {
                     cuitSpan.textContent = `CUIT: ${cuitValue}`;
                 }
+
+                await cargarResumenActivosProductor(productorIdReal);
             } catch (e) {
                 console.error('[Relevamiento] Error al cargar vista de modificación:', e);
                 container.innerHTML = `<div class="card card-error">Error al cargar formulario del productor: ${escapeHtml(e.message)}</div>`;
@@ -1622,6 +1833,8 @@ unset($_SESSION['cierre_info']);
         window.guardarProduccionDesdeVista = guardarProduccionDesdeVista;
         window.guardarTodoDesdeVista = guardarTodoDesdeVista;
         window.volverAProductores = volverAProductores;
+        window.confirmarEliminarFinca = confirmarEliminarFinca;
+        window.confirmarEliminarCuartel = confirmarEliminarCuartel;
 
         // Cargar cooperativas una vez que el DOM esté listo
         window.addEventListener('DOMContentLoaded', () => {

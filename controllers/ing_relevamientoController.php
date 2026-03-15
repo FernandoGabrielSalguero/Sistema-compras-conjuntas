@@ -71,6 +71,28 @@ try {
                 ]);
                 exit;
 
+            case 'resumen_activos_productor':
+                $productorIdReal = $_GET['productor_id_real'] ?? '';
+                if ($productorIdReal === '') {
+                    http_response_code(400);
+                    ob_clean();
+                    echo json_encode([
+                        'ok'    => false,
+                        'error' => 'Parámetro productor_id_real es requerido',
+                    ]);
+                    exit;
+                }
+
+                $resumen = $model->getResumenActivosProductor($productorIdReal, $idReal);
+
+                http_response_code(200);
+                ob_clean();
+                echo json_encode([
+                    'ok'   => true,
+                    'data' => $resumen,
+                ]);
+                exit;
+
             default:
                 http_response_code(400);
                 ob_clean();
@@ -82,7 +104,48 @@ try {
         }
     }
 
-    // Si no es GET, método no permitido
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $action = $_POST['action'] ?? '';
+
+        switch ($action) {
+            case 'eliminar_finca_productor':
+                $productorIdReal = (string)($_POST['productor_id_real'] ?? '');
+                $fincaId = (int)($_POST['finca_id'] ?? 0);
+
+                $model->eliminarFincaProductor($fincaId, $productorIdReal, $idReal);
+
+                http_response_code(200);
+                ob_clean();
+                echo json_encode([
+                    'ok' => true,
+                ]);
+                exit;
+
+            case 'eliminar_cuartel_productor':
+                $productorIdReal = (string)($_POST['productor_id_real'] ?? '');
+                $cuartelId = (int)($_POST['cuartel_id'] ?? 0);
+
+                $model->eliminarCuartelProductor($cuartelId, $productorIdReal, $idReal);
+
+                http_response_code(200);
+                ob_clean();
+                echo json_encode([
+                    'ok' => true,
+                ]);
+                exit;
+
+            default:
+                http_response_code(400);
+                ob_clean();
+                echo json_encode([
+                    'ok'    => false,
+                    'error' => 'Acción inválida',
+                ]);
+                exit;
+        }
+    }
+
+    // Si no es GET/POST, método no permitido
     http_response_code(405);
     ob_clean();
     echo json_encode(['ok' => false, 'error' => 'Método no permitido']);
