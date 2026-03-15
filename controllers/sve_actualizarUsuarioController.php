@@ -3,6 +3,32 @@ declare(strict_types=1);
 header('Content-Type: application/json');
 require_once __DIR__ . '/../config.php';
 
+function responderError(string $message, ?string $detail = null, int $statusCode = 500): void
+{
+    http_response_code($statusCode);
+
+    $payload = ['success' => false, 'message' => $message];
+    if ($detail !== null && $detail !== '') {
+        $payload['error_detail'] = $detail;
+    }
+
+    echo json_encode($payload);
+    exit;
+}
+
+function logActualizarUsuarioError(Throwable $e, string $method, array $context = []): void
+{
+    $log = [
+        'controller' => 'sve_actualizarUsuarioController',
+        'method' => $method,
+        'error' => $e->getMessage(),
+        'code' => $e->getCode(),
+        'context' => $context,
+    ];
+
+    error_log('[SVE editar usuario] ' . json_encode($log, JSON_UNESCAPED_UNICODE));
+}
+
 /**
  * Controlador unificado:
  * - GET  ?id=123  => devuelve datos del usuario + usuarios_info (incluye zona_asignada) para precargar el modal
@@ -16,8 +42,7 @@ try {
         // ------ LECTURA PARA PRECARGAR MODAL ------
         $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
         if ($id <= 0) {
-            echo json_encode(['success' => false, 'message' => 'ID inválido']);
-            exit;
+            responderError('ID inválido', null, 400);
         }
 
         $sql = "
@@ -43,8 +68,7 @@ try {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$user) {
-            echo json_encode(['success' => false, 'message' => 'Usuario no encontrado']);
-            exit;
+            responderError('Usuario no encontrado', null, 404);
         }
 
         echo json_encode(['success' => true, 'user' => $user]);
@@ -54,8 +78,7 @@ try {
     // ------ ACTUALIZACIÓN (POST) ------
     $id = $_POST['id'] ?? null;
     if (!$id) {
-        echo json_encode(['success' => false, 'message' => 'ID faltante']);
-        exit;
+        responderError('ID faltante', null, 400);
     }
 
     // Normalizo entradas (evita notices)
@@ -110,6 +133,25 @@ try {
 
     echo json_encode(['success' => true, 'message' => 'Usuario actualizado correctamente']);
 } catch (Throwable $e) {
-    // Podés loguear el error real: $e->getMessage()
-    echo json_encode(['success' => false, 'message' => 'Error al procesar la solicitud']);
+    $context = [];
+
+    if ($method === 'GET') {
+        $context['id'] = isset($_GET['id']) ? (int) $_GET['id'] : null;
+    }
+
+    if ($method === 'POST') {
+        $context = [
+            'id' => $_POST['id'] ?? null,
+            'usuario' => $_POST['usuario'] ?? null,
+            'rol' => $_POST['rol'] ?? null,
+            'permiso_ingreso' => $_POST['permiso_ingreso'] ?? null,
+            'cuit' => $_POST['cuit'] ?? null,
+            'id_real' => $_POST['id_real'] ?? null,
+            'correo' => $_POST['correo'] ?? null,
+            'zona_asignada' => $_POST['zona_asignada'] ?? null,
+        ];
+    }
+
+    logActualizarUsuarioError($e, $method, $context);
+    responderError('Error al procesar la solicitud', $e->getMessage(), 500);
 }

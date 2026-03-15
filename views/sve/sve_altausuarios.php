@@ -708,19 +708,43 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     method: 'POST',
                     body: formData
                 })
-                .then(res => res.json())
+                .then(async res => {
+                    const raw = await res.text();
+                    let data;
+
+                    try {
+                        data = JSON.parse(raw);
+                    } catch (parseError) {
+                        console.error('❌ Respuesta no JSON al actualizar usuario:', raw);
+                        throw new Error('La respuesta del servidor no fue un JSON válido.');
+                    }
+
+                    if (!res.ok) {
+                        const backendDetail = data.error_detail || data.message || `HTTP ${res.status}`;
+                        console.error('❌ Error HTTP al actualizar usuario:', {
+                            status: res.status,
+                            statusText: res.statusText,
+                            detail: backendDetail,
+                            response: data
+                        });
+                    }
+
+                    return data;
+                })
                 .then(data => {
                     if (data.success) {
                         showAlert('success', data.message);
                         document.getElementById('modal').classList.add('hidden');
                         cargarUsuarios();
                     } else {
-                        showAlert('error', data.message);
+                        const detalle = data.error_detail ? `${data.message}: ${data.error_detail}` : data.message;
+                        console.error('❌ Error backend al actualizar usuario:', data);
+                        showAlert('error', detalle);
                     }
                 })
                 .catch(error => {
                     console.error('❌ Error al actualizar usuario:', error);
-                    showAlert('error', 'No se pudo guardar los cambios.');
+                    showAlert('error', error.message || 'No se pudo guardar los cambios.');
                 });
         });
 
