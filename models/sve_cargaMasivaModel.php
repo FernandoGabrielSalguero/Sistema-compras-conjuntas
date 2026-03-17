@@ -98,10 +98,41 @@ final class CargaMasivaModel
         return $this->buildPlan($rawRows, $cooperativaIdReal);
     }
 
+    public function simulateStrictFromRows(array $rawRows, string $cooperativaIdReal): array
+    {
+        $plan = $this->buildPlan($rawRows, $cooperativaIdReal);
+        $snapshot = $this->buildSnapshotMapsFromProcessable($plan['processable_rows'] ?? []);
+        $cleanup = $this->syncStrictSnapshot(
+            $cooperativaIdReal,
+            $snapshot['producers'],
+            $snapshot['fincas'],
+            $snapshot['cuarteles'],
+            true
+        );
+
+        $blocked = ((int)($plan['summary']['rows_omitted'] ?? 0)) > 0;
+        $reason = $blocked
+            ? 'Hay filas omitidas en la sabana. La sincronizacion estricta se bloqueara hasta corregirlas.'
+            : null;
+
+        return [
+            'summary' => $plan['summary'],
+            'warnings' => $plan['warnings'],
+            'strict_sync' => [
+                'blocked' => $blocked,
+                'reason' => $reason,
+                'rel_productor_coop_to_delete' => (int)($cleanup['rel_productor_coop_deleted'] ?? 0),
+                'fincas_to_delete' => (int)($cleanup['fincas_deleted'] ?? 0),
+                'cuarteles_to_delete' => (int)($cleanup['cuarteles_deleted'] ?? 0),
+            ],
+        ];
+    }
+
     public function applyFromRows(array $rawRows, string $cooperativaIdReal, array $options = []): array
     {
         $skipRevisadoNo = !empty($options['skip_revisado_no']);
         $allCsvCuits = is_array($options['all_csv_cuits'] ?? null) ? $options['all_csv_cuits'] : null;
+        $allCsvRows = is_array($options['all_csv_rows'] ?? null) ? $options['all_csv_rows'] : null;
 
         $plan = $this->buildPlan($rawRows, $cooperativaIdReal);
 
@@ -201,6 +232,7 @@ final class CargaMasivaModel
             $qSelectCuartel = $this->pdo->prepare(
                 'SELECT id FROM prod_cuartel
                  WHERE cooperativa_id_real = :cooperativa_id_real
+                   AND id_responsable_real = :id_responsable_real
                    AND codigo_finca = :codigo_finca
                    AND codigo_cuartel = :codigo_cuartel
                  LIMIT 1'
@@ -305,8 +337,14 @@ final class CargaMasivaModel
                 'cuartel_rendimientos_null_reset' => 0,
                 'cuartel_riesgos_null_reset' => 0,
                 'revisado_to_no' => 0,
+                'rel_productor_coop_deleted' => 0,
+                'fincas_deleted' => 0,
+                'cuarteles_deleted' => 0,
             ];
             $createdUsersByCuit = [];
+            $snapshotProducerIdReals = [];
+            $snapshotFincaKeys = [];
+            $snapshotCuartelKeys = [];
 
             foreach ($processable as $item) {
                 $u = $item['user'];
@@ -440,6 +478,7 @@ final class CargaMasivaModel
 
                 $qSelectCuartel->execute([
                     ':cooperativa_id_real' => $cooperativaIdReal,
+                    ':id_responsable_real' => $u['id_real'],
                     ':codigo_finca' => $r['codigo_finca'],
                     ':codigo_cuartel' => $r['codigo_cuartel'],
                 ]);
@@ -495,6 +534,10 @@ final class CargaMasivaModel
                 $applied['cuartel_limitantes_null_reset']++;
                 $applied['cuartel_rendimientos_null_reset']++;
                 $applied['cuartel_riesgos_null_reset']++;
+
+                $snapshotProducerIdReals[(string)$u['id_real']] = true;
+                $snapshotFincaKeys[$this->buildSnapshotFincaKey((string)$u['id_real'], (string)$r['codigo_finca'])] = true;
+                $snapshotCuartelKeys[$this->buildSnapshotCuartelKey((string)$u['id_real'], (string)$r['codigo_finca'], (string)$r['codigo_cuartel'])] = true;
             }
 
             if (!$skipRevisadoNo) {
@@ -505,6 +548,30 @@ final class CargaMasivaModel
                 }
             } else {
                 $notInCsvIds = [];
+            }
+
+            if (!$skipRevisadoNo) {
+                if (is_array($allCsvRows) && !empty($allCsvRows)) {
+                    $fullPlan = $this->buildPlan($allCsvRows, $cooperativaIdReal);
+                    if (($fullPlan['summary']['rows_omitted'] ?? 0) > 0) {
+                        throw new InvalidArgumentException('No se puede ejecutar sincronizacion estricta: hay filas omitidas en el CSV. Corregi la sabana y volve a intentar.');
+                    }
+                    $snapshot = $this->buildSnapshotMapsFromProcessable($fullPlan['processable_rows'] ?? []);
+                    $snapshotProducerIdReals = $snapshot['producers'];
+                    $snapshotFincaKeys = $snapshot['fincas'];
+                    $snapshotCuartelKeys = $snapshot['cuarteles'];
+                } elseif (($plan['summary']['rows_omitted'] ?? 0) > 0) {
+                    throw new InvalidArgumentException('No se puede ejecutar sincronizacion estricta: hay filas omitidas en el CSV. Corregi la sabana y volve a intentar.');
+                }
+                $cleanup = $this->syncStrictSnapshot(
+                    $cooperativaIdReal,
+                    $snapshotProducerIdReals,
+                    $snapshotFincaKeys,
+                    $snapshotCuartelKeys
+                );
+                $applied['rel_productor_coop_deleted'] += (int)($cleanup['rel_productor_coop_deleted'] ?? 0);
+                $applied['fincas_deleted'] += (int)($cleanup['fincas_deleted'] ?? 0);
+                $applied['cuarteles_deleted'] += (int)($cleanup['cuarteles_deleted'] ?? 0);
             }
 
             if (!empty($notInCsvIds)) {
@@ -1019,7 +1086,7 @@ final class CargaMasivaModel
             'longitud' => $row['longitud'],
         ];
 
-        $beforeCuartel = $this->fetchCuartelByKeys($cooperativaIdReal, $row['codigo_finca'], $row['codigo_cuartel']);
+        $beforeCuartel = $this->fetchCuartelByKeys($cooperativaIdReal, $targetIdReal, $row['codigo_finca'], $row['codigo_cuartel']);
         $afterCuartel = [
             'id_responsable_real' => $targetIdReal,
             'cooperativa_id_real' => $cooperativaIdReal,
@@ -1239,7 +1306,7 @@ final class CargaMasivaModel
         return $row ?: null;
     }
 
-    private function fetchCuartelByKeys(string $cooperativaIdReal, string $codigoFinca, string $codigoCuartel): ?array
+    private function fetchCuartelByKeys(string $cooperativaIdReal, string $idResponsableReal, string $codigoFinca, string $codigoCuartel): ?array
     {
         $stmt = $this->pdo->prepare(
             'SELECT id, id_responsable_real, cooperativa_id_real, codigo_finca, nombre_finca, codigo_cuartel, variedad, numero_inv,
@@ -1247,12 +1314,14 @@ final class CargaMasivaModel
                     porcentaje_malla_buen_estado, edad_promedio_encepado_anios, estado_estructura_sistema, labores_mecanizables
              FROM prod_cuartel
              WHERE cooperativa_id_real = :cooperativa_id_real
+               AND id_responsable_real = :id_responsable_real
                AND codigo_finca = :codigo_finca
                AND codigo_cuartel = :codigo_cuartel
              LIMIT 1'
         );
         $stmt->execute([
             ':cooperativa_id_real' => $cooperativaIdReal,
+            ':id_responsable_real' => $idResponsableReal,
             ':codigo_finca' => $codigoFinca,
             ':codigo_cuartel' => $codigoCuartel,
         ]);
@@ -1325,17 +1394,19 @@ final class CargaMasivaModel
         return (bool)$stmt->fetchColumn();
     }
 
-    private function cuartelExists(string $cooperativaIdReal, string $codigoFinca, string $codigoCuartel): bool
+    private function cuartelExists(string $cooperativaIdReal, string $idResponsableReal, string $codigoFinca, string $codigoCuartel): bool
     {
         $stmt = $this->pdo->prepare(
             'SELECT 1 FROM prod_cuartel
              WHERE cooperativa_id_real = :coop
+               AND id_responsable_real = :id_responsable_real
                AND codigo_finca = :codigo_finca
                AND codigo_cuartel = :codigo_cuartel
              LIMIT 1'
         );
         $stmt->execute([
             ':coop' => $cooperativaIdReal,
+            ':id_responsable_real' => $idResponsableReal,
             ':codigo_finca' => $codigoFinca,
             ':codigo_cuartel' => $codigoCuartel,
         ]);
@@ -1414,6 +1485,224 @@ final class CargaMasivaModel
             ]);
         } finally {
             $this->pdo->exec('SET FOREIGN_KEY_CHECKS=1');
+        }
+    }
+
+    private function syncStrictSnapshot(
+        string $cooperativaIdReal,
+        array $snapshotProducerIdRealsMap,
+        array $snapshotFincaKeysMap,
+        array $snapshotCuartelKeysMap,
+        bool $dryRun = false
+    ): array {
+        $deletedCuarteles = 0;
+        $deletedFincas = 0;
+        $deletedRel = 0;
+
+        $snapshotProducerIdReals = array_values(array_keys($snapshotProducerIdRealsMap));
+
+        $stmtCuarteles = $this->pdo->prepare(
+            'SELECT id, id_responsable_real, codigo_finca, codigo_cuartel
+             FROM prod_cuartel
+             WHERE cooperativa_id_real = :cooperativa_id_real'
+        );
+        $stmtCuarteles->execute([':cooperativa_id_real' => $cooperativaIdReal]);
+        $existingCuarteles = $stmtCuarteles->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        foreach ($existingCuarteles as $cuartel) {
+            $key = $this->buildSnapshotCuartelKey(
+                (string)($cuartel['id_responsable_real'] ?? ''),
+                (string)($cuartel['codigo_finca'] ?? ''),
+                (string)($cuartel['codigo_cuartel'] ?? '')
+            );
+            if (!isset($snapshotCuartelKeysMap[$key])) {
+                if (!$dryRun) {
+                    $this->deleteCuartelById((int)$cuartel['id']);
+                }
+                $deletedCuarteles++;
+            }
+        }
+
+        $associatedProducerIdReals = $this->fetchProducerIdRealsByCoop($cooperativaIdReal);
+        if (!empty($associatedProducerIdReals)) {
+            $ph = implode(',', array_fill(0, count($associatedProducerIdReals), '?'));
+            $sql = "SELECT id, productor_id_real, codigo_finca
+                    FROM prod_fincas
+                    WHERE productor_id_real IN ($ph)";
+            $stmtFincas = $this->pdo->prepare($sql);
+            $stmtFincas->execute($associatedProducerIdReals);
+            $existingFincas = $stmtFincas->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+            foreach ($existingFincas as $finca) {
+                $key = $this->buildSnapshotFincaKey(
+                    (string)($finca['productor_id_real'] ?? ''),
+                    (string)($finca['codigo_finca'] ?? '')
+                );
+                if (!isset($snapshotFincaKeysMap[$key])) {
+                    if (!$dryRun) {
+                        $this->deleteFincaById((int)$finca['id'], (string)$finca['productor_id_real']);
+                    }
+                    $deletedFincas++;
+                }
+            }
+        }
+
+        if ($dryRun) {
+            if (empty($snapshotProducerIdReals)) {
+                $stmtRel = $this->pdo->prepare(
+                    'SELECT COUNT(*) FROM rel_productor_coop
+                     WHERE cooperativa_id_real = :cooperativa_id_real'
+                );
+                $stmtRel->execute([':cooperativa_id_real' => $cooperativaIdReal]);
+                $deletedRel += (int)$stmtRel->fetchColumn();
+            } else {
+                $ph = implode(',', array_fill(0, count($snapshotProducerIdReals), '?'));
+                $sql = "SELECT COUNT(*) FROM rel_productor_coop
+                        WHERE cooperativa_id_real = ?
+                          AND productor_id_real NOT IN ($ph)";
+                $stmtRel = $this->pdo->prepare($sql);
+                $stmtRel->execute(array_merge([$cooperativaIdReal], $snapshotProducerIdReals));
+                $deletedRel += (int)$stmtRel->fetchColumn();
+            }
+        } else {
+            if (empty($snapshotProducerIdReals)) {
+                $stmtRel = $this->pdo->prepare(
+                    'DELETE FROM rel_productor_coop
+                     WHERE cooperativa_id_real = :cooperativa_id_real'
+                );
+                $stmtRel->execute([':cooperativa_id_real' => $cooperativaIdReal]);
+                $deletedRel += $stmtRel->rowCount();
+            } else {
+                $ph = implode(',', array_fill(0, count($snapshotProducerIdReals), '?'));
+                $sql = "DELETE FROM rel_productor_coop
+                        WHERE cooperativa_id_real = ?
+                          AND productor_id_real NOT IN ($ph)";
+                $stmtRel = $this->pdo->prepare($sql);
+                $stmtRel->execute(array_merge([$cooperativaIdReal], $snapshotProducerIdReals));
+                $deletedRel += $stmtRel->rowCount();
+            }
+        }
+
+        return [
+            'rel_productor_coop_deleted' => $deletedRel,
+            'fincas_deleted' => $deletedFincas,
+            'cuarteles_deleted' => $deletedCuarteles,
+        ];
+    }
+
+    private function buildSnapshotMapsFromProcessable(array $processable): array
+    {
+        $producers = [];
+        $fincas = [];
+        $cuarteles = [];
+
+        foreach ($processable as $item) {
+            $u = $item['user'] ?? null;
+            $r = $item['row'] ?? null;
+            $targetIdReal = $this->nullableString($item['target_id_real'] ?? null);
+
+            if ($targetIdReal === null && is_array($u)) {
+                $targetIdReal = $this->nullableString($u['id_real'] ?? null);
+            }
+            if ($targetIdReal === null || !is_array($r)) {
+                continue;
+            }
+
+            $codigoFinca = $this->nullableString($r['codigo_finca'] ?? null);
+            $codigoCuartel = $this->nullableString($r['codigo_cuartel'] ?? null);
+            if ($codigoFinca === null || $codigoCuartel === null) {
+                continue;
+            }
+
+            $producers[$targetIdReal] = true;
+            $fincas[$this->buildSnapshotFincaKey($targetIdReal, $codigoFinca)] = true;
+            $cuarteles[$this->buildSnapshotCuartelKey($targetIdReal, $codigoFinca, $codigoCuartel)] = true;
+        }
+
+        return [
+            'producers' => $producers,
+            'fincas' => $fincas,
+            'cuarteles' => $cuarteles,
+        ];
+    }
+
+    private function fetchProducerIdRealsByCoop(string $cooperativaIdReal): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT DISTINCT productor_id_real
+             FROM rel_productor_coop
+             WHERE cooperativa_id_real = :cooperativa_id_real'
+        );
+        $stmt->execute([':cooperativa_id_real' => $cooperativaIdReal]);
+        $rows = $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+        $out = [];
+        foreach ($rows as $value) {
+            $v = $this->nullableString($value);
+            if ($v !== null) {
+                $out[$v] = $v;
+            }
+        }
+        return array_values($out);
+    }
+
+    private function buildSnapshotFincaKey(string $productorIdReal, string $codigoFinca): string
+    {
+        return trim($productorIdReal) . '|' . trim($codigoFinca);
+    }
+
+    private function buildSnapshotCuartelKey(string $productorIdReal, string $codigoFinca, string $codigoCuartel): string
+    {
+        return trim($productorIdReal) . '|' . trim($codigoFinca) . '|' . trim($codigoCuartel);
+    }
+
+    private function deleteCuartelById(int $cuartelId): void
+    {
+        if ($cuartelId <= 0) {
+            return;
+        }
+
+        $queries = [
+            'DELETE FROM prod_cuartel_limitantes WHERE cuartel_id = :cid',
+            'DELETE FROM prod_cuartel_rendimientos WHERE cuartel_id = :cid',
+            'DELETE FROM prod_cuartel_riesgos WHERE cuartel_id = :cid',
+            'DELETE FROM prod_cuartel WHERE id = :cid',
+        ];
+
+        foreach ($queries as $sql) {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':cid' => $cuartelId]);
+        }
+    }
+
+    private function deleteFincaById(int $fincaId, string $productorIdReal): void
+    {
+        if ($fincaId <= 0) {
+            return;
+        }
+
+        $queries = [
+            'DELETE FROM prod_cuartel_limitantes WHERE cuartel_id IN (SELECT id FROM prod_cuartel WHERE finca_id = :fid)',
+            'DELETE FROM prod_cuartel_rendimientos WHERE cuartel_id IN (SELECT id FROM prod_cuartel WHERE finca_id = :fid)',
+            'DELETE FROM prod_cuartel_riesgos WHERE cuartel_id IN (SELECT id FROM prod_cuartel WHERE finca_id = :fid)',
+            'DELETE FROM prod_cuartel WHERE finca_id = :fid',
+            'DELETE FROM relevamiento_fincas WHERE finca_id = :fid',
+            'DELETE FROM rel_productor_finca WHERE finca_id = :fid',
+            'DELETE FROM prod_finca_direccion WHERE finca_id = :fid',
+            'DELETE FROM prod_finca_superficie WHERE finca_id = :fid',
+            'DELETE FROM prod_finca_cultivos WHERE finca_id = :fid',
+            'DELETE FROM prod_finca_agua WHERE finca_id = :fid',
+            'DELETE FROM prod_finca_maquinaria WHERE finca_id = :fid',
+            'DELETE FROM prod_finca_gerencia WHERE finca_id = :fid',
+            'DELETE FROM prod_fincas WHERE id = :fid AND productor_id_real = :prod',
+        ];
+
+        foreach ($queries as $sql) {
+            $stmt = $this->pdo->prepare($sql);
+            $params = [':fid' => $fincaId];
+            if (strpos($sql, ':prod') !== false) {
+                $params[':prod'] = $productorIdReal;
+            }
+            $stmt->execute($params);
         }
     }
 

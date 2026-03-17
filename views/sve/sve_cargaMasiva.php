@@ -321,6 +321,7 @@ checkAccess('sve');
 
             let parsedRows = [];
             let lastPreviewResponse = null;
+            let lastSimulationResponse = null;
             let renderedPreviewRows = [];
 
             function normalizeHeader(h) {
@@ -492,6 +493,22 @@ checkAccess('sve');
                 return lines.join('\n');
             }
 
+            function renderStrictSimulation(sim) {
+                if (!sim || !sim.strict_sync) return '';
+                const strict = sim.strict_sync || {};
+                const lines = [];
+                lines.push('');
+                lines.push('Simulación sincronización estricta (sin escribir en BD):');
+                lines.push(`- Relaciones productor-coop a eliminar: ${Number(strict.rel_productor_coop_to_delete || 0)}`);
+                lines.push(`- Fincas a eliminar: ${Number(strict.fincas_to_delete || 0)}`);
+                lines.push(`- Cuarteles a eliminar: ${Number(strict.cuarteles_to_delete || 0)}`);
+                lines.push(`- Estado: ${strict.blocked ? 'BLOQUEADA' : 'OK para aplicar'}`);
+                if (strict.reason) {
+                    lines.push(`- Motivo: ${strict.reason}`);
+                }
+                return lines.join('\n');
+            }
+
             function renderPreviewTable(rows) {
                 previewBody.innerHTML = '';
                 renderedPreviewRows = Array.isArray(rows) ? rows : [];
@@ -585,12 +602,15 @@ checkAccess('sve');
                     validateHeaders(parsedRows);
 
                     lastPreviewResponse = await postToController('preview', parsedRows);
+                    lastSimulationResponse = await postToController('simulate', parsedRows);
 
                     setStatus('Previsualización lista. Revisá el modal y confirmá si querés aplicar los cambios.');
                     setWarnings(lastPreviewResponse.warnings || []);
-                    modalSummary.textContent = renderSummary(lastPreviewResponse.summary || {});
+                    modalSummary.textContent =
+                        renderSummary(lastPreviewResponse.summary || {}) +
+                        renderStrictSimulation(lastSimulationResponse || {});
                     renderPreviewTable(lastPreviewResponse.preview_rows || []);
-                    btnApply.disabled = false;
+                    btnApply.disabled = !!(lastSimulationResponse?.strict_sync?.blocked);
                     openPreviewModal();
                 } catch (err) {
                     console.error('[CargaMasiva][PREVIEW_ERROR]', {
@@ -613,11 +633,18 @@ checkAccess('sve');
                     setStatus('Primero hacé la previsualización.');
                     return;
                 }
+                if (lastSimulationResponse?.strict_sync?.blocked) {
+                    setStatus('No se puede aplicar: la simulación bloqueó la sincronización estricta. Corregí las filas omitidas y volvé a previsualizar.');
+                    return;
+                }
                 openPreviewModal();
             });
 
             btnConfirmModal.addEventListener('click', async () => {
                 try {
+                    if (lastSimulationResponse?.strict_sync?.blocked) {
+                        throw new Error('Simulación bloqueada: no se permite aplicar hasta corregir filas omitidas.');
+                    }
                     btnConfirmModal.disabled = true;
                     setLocalSpinner(true, 'Aplicando cambios por bloques...');
                     const totalRows = parsedRows.length;
@@ -629,12 +656,15 @@ checkAccess('sve');
                         usuarios_info_upserted: 0,
                         fincas_inserted: 0,
                         fincas_updated: 0,
+                        fincas_deleted: 0,
                         cuarteles_inserted: 0,
                         cuarteles_updated: 0,
+                        cuarteles_deleted: 0,
                         cuartel_limitantes_null_reset: 0,
                         cuartel_rendimientos_null_reset: 0,
                         cuartel_riesgos_null_reset: 0,
                         rel_productor_coop_adjusted: 0,
+                        rel_productor_coop_deleted: 0,
                         revisado_to_no: 0
                     };
                     let finalWarnings = [];
@@ -650,7 +680,8 @@ checkAccess('sve');
 
                         const result = await postToController('apply_batch', batchRows, {
                             finalize: isFinal ? 1 : 0,
-                            all_csv_cuits: isFinal ? allCsvCuits : []
+                            all_csv_cuits: isFinal ? allCsvCuits : [],
+                            all_csv_rows: isFinal ? parsedRows : []
                         });
                         const applied = result.applied || {};
                         aggregated.usuarios_created += Number(applied.usuarios_created || 0);
@@ -658,12 +689,15 @@ checkAccess('sve');
                         aggregated.usuarios_info_upserted += Number(applied.usuarios_info_upserted || 0);
                         aggregated.fincas_inserted += Number(applied.fincas_inserted || 0);
                         aggregated.fincas_updated += Number(applied.fincas_updated || 0);
+                        aggregated.fincas_deleted += Number(applied.fincas_deleted || 0);
                         aggregated.cuarteles_inserted += Number(applied.cuarteles_inserted || 0);
                         aggregated.cuarteles_updated += Number(applied.cuarteles_updated || 0);
+                        aggregated.cuarteles_deleted += Number(applied.cuarteles_deleted || 0);
                         aggregated.cuartel_limitantes_null_reset += Number(applied.cuartel_limitantes_null_reset || 0);
                         aggregated.cuartel_rendimientos_null_reset += Number(applied.cuartel_rendimientos_null_reset || 0);
                         aggregated.cuartel_riesgos_null_reset += Number(applied.cuartel_riesgos_null_reset || 0);
                         aggregated.rel_productor_coop_adjusted += Number(applied.rel_productor_coop_adjusted || 0);
+                        aggregated.rel_productor_coop_deleted += Number(applied.rel_productor_coop_deleted || 0);
                         aggregated.revisado_to_no += Number(applied.revisado_to_no || 0);
                         finalWarnings = result.warnings || finalWarnings;
                     }
@@ -673,12 +707,12 @@ checkAccess('sve');
                         `Usuarios creados: ${aggregated.usuarios_created || 0}\n` +
                         `Usuarios actualizados: ${aggregated.usuarios_updated || 0}\n` +
                         `Usuarios_info upsert: ${aggregated.usuarios_info_upserted || 0}\n` +
-                        `Fincas insertadas/actualizadas: ${aggregated.fincas_inserted || 0}/${aggregated.fincas_updated || 0}\n` +
-                        `Cuarteles insertados/actualizados: ${aggregated.cuarteles_inserted || 0}/${aggregated.cuarteles_updated || 0}\n` +
+                        `Fincas insertadas/actualizadas/eliminadas: ${aggregated.fincas_inserted || 0}/${aggregated.fincas_updated || 0}/${aggregated.fincas_deleted || 0}\n` +
+                        `Cuarteles insertados/actualizados/eliminados: ${aggregated.cuarteles_inserted || 0}/${aggregated.cuarteles_updated || 0}/${aggregated.cuarteles_deleted || 0}\n` +
                         `Cuartel limitantes reseteado a NULL: ${aggregated.cuartel_limitantes_null_reset || 0}\n` +
                         `Cuartel rendimientos reseteado a NULL: ${aggregated.cuartel_rendimientos_null_reset || 0}\n` +
                         `Cuartel riesgos reseteado a NULL: ${aggregated.cuartel_riesgos_null_reset || 0}\n` +
-                        `Relaciones productor-coop ajustadas: ${aggregated.rel_productor_coop_adjusted || 0}\n` +
+                        `Relaciones productor-coop ajustadas/eliminadas: ${aggregated.rel_productor_coop_adjusted || 0}/${aggregated.rel_productor_coop_deleted || 0}\n` +
                         `Usuarios marcados "No esta revisado": ${aggregated.revisado_to_no || 0}`
                     );
                     setWarnings(finalWarnings || []);

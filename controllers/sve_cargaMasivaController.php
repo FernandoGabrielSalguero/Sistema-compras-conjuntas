@@ -37,7 +37,7 @@ $action = (string)($payload['action'] ?? '');
 $rows = $payload['rows'] ?? null;
 $cooperativaIdReal = trim((string)($payload['cooperativa_id_real'] ?? ''));
 
-if (!in_array($action, ['preview', 'apply', 'apply_batch'], true)) {
+if (!in_array($action, ['preview', 'simulate', 'apply', 'apply_batch'], true)) {
     http_response_code(400);
     echo json_encode([
         'ok' => false,
@@ -69,12 +69,16 @@ try {
 
     if ($action === 'preview') {
         $data = $model->previewFromRows($rows, $cooperativaIdReal);
+    } elseif ($action === 'simulate') {
+        $data = $model->simulateStrictFromRows($rows, $cooperativaIdReal);
     } elseif ($action === 'apply_batch') {
         $finalize = !empty($payload['finalize']);
         $allCsvCuits = is_array($payload['all_csv_cuits'] ?? null) ? $payload['all_csv_cuits'] : [];
+        $allCsvRows = is_array($payload['all_csv_rows'] ?? null) ? $payload['all_csv_rows'] : [];
         $data = $model->applyFromRows($rows, $cooperativaIdReal, [
             'skip_revisado_no' => !$finalize,
             'all_csv_cuits' => $finalize ? $allCsvCuits : null,
+            'all_csv_rows' => $finalize ? $allCsvRows : null,
         ]);
     } else {
         $data = $model->applyFromRows($rows, $cooperativaIdReal);
