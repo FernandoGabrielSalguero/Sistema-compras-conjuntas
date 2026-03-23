@@ -3,6 +3,7 @@
 class SveCosechaMecanicaFincasModel
 {
     private PDO $pdo;
+    private array $columnExistsCache = [];
 
     public function __construct(PDO $pdo)
     {
@@ -381,12 +382,17 @@ class SveCosechaMecanicaFincasModel
 
     public function obtenerFacturacionPorParticipacion(int $participacionId): ?array
     {
+        $tieneCondicionPago = $this->columnExists('cosechaMecanica_facturacion', 'condicion_pago');
+        $selectCondicionPago = $tieneCondicionPago
+            ? "COALESCE(cf.condicion_pago, '') AS condicion_pago,"
+            : "'' AS condicion_pago,";
+
         $sql = "SELECT
                     p.id AS participacion_id,
                     p.productor,
                     COALESCE(ui_coop.nombre, u_coop.razon_social, u_coop.usuario, p.nom_cooperativa) AS cooperativa,
                     COALESCE(CAST(u_prod_name.cuit AS CHAR), CAST(u_prod_ui.cuit AS CHAR), '') AS cuit,
-                    COALESCE(cf.condicion_pago, '') AS condicion_pago,
+                    {$selectCondicionPago}
                     cf.fecha_servicio,
                     cf.hectareas_cosechadas,
                     cf.hectareas_anticipadas,
@@ -463,6 +469,7 @@ class SveCosechaMecanicaFincasModel
 
     public function guardarFacturacion(int $participacionId, array $data): array
     {
+        $tieneCondicionPago = $this->columnExists('cosechaMecanica_facturacion', 'condicion_pago');
         $sqlExiste = "SELECT id
             FROM cosechaMecanica_facturacion
             WHERE participacion_id = :participacion_id
@@ -473,18 +480,25 @@ class SveCosechaMecanicaFincasModel
 
         $payload = [
             ':participacion_id' => $participacionId,
-            ':condicion_pago' => ($data['condicion_pago'] ?? '') !== '' ? $data['condicion_pago'] : null,
             ':fecha_servicio' => ($data['fecha_servicio'] ?? '') !== '' ? $data['fecha_servicio'] : null,
             ':hectareas_cosechadas' => ($data['hectareas_cosechadas'] ?? '') !== '' ? $data['hectareas_cosechadas'] : null,
             ':hectareas_anticipadas' => ($data['hectareas_anticipadas'] ?? '') !== '' ? $data['hectareas_anticipadas'] : null,
         ];
+        if ($tieneCondicionPago) {
+            $payload[':condicion_pago'] = ($data['condicion_pago'] ?? '') !== '' ? $data['condicion_pago'] : null;
+        }
 
         if ($existente) {
+            $sqlSet = [];
+            if ($tieneCondicionPago) {
+                $sqlSet[] = 'condicion_pago = :condicion_pago';
+            }
+            $sqlSet[] = 'fecha_servicio = :fecha_servicio';
+            $sqlSet[] = 'hectareas_cosechadas = :hectareas_cosechadas';
+            $sqlSet[] = 'hectareas_anticipadas = :hectareas_anticipadas';
+
             $sqlUpdate = "UPDATE cosechaMecanica_facturacion
-                SET condicion_pago = :condicion_pago,
-                    fecha_servicio = :fecha_servicio,
-                    hectareas_cosechadas = :hectareas_cosechadas,
-                    hectareas_anticipadas = :hectareas_anticipadas
+                SET " . implode(",\n                    ", $sqlSet) . "
                 WHERE participacion_id = :participacion_id";
             $stmtUpdate = $this->pdo->prepare($sqlUpdate);
             $stmtUpdate->execute($payload);
@@ -492,18 +506,23 @@ class SveCosechaMecanicaFincasModel
             return ['id' => (int) $existente['id'], 'accion' => 'actualizado'];
         }
 
+        $insertColumns = ['participacion_id'];
+        $insertValues = [':participacion_id'];
+        if ($tieneCondicionPago) {
+            $insertColumns[] = 'condicion_pago';
+            $insertValues[] = ':condicion_pago';
+        }
+        $insertColumns[] = 'fecha_servicio';
+        $insertColumns[] = 'hectareas_cosechadas';
+        $insertColumns[] = 'hectareas_anticipadas';
+        $insertValues[] = ':fecha_servicio';
+        $insertValues[] = ':hectareas_cosechadas';
+        $insertValues[] = ':hectareas_anticipadas';
+
         $sqlInsert = "INSERT INTO cosechaMecanica_facturacion (
-                participacion_id,
-                condicion_pago,
-                fecha_servicio,
-                hectareas_cosechadas,
-                hectareas_anticipadas
+                " . implode(",\n                ", $insertColumns) . "
             ) VALUES (
-                :participacion_id,
-                :condicion_pago,
-                :fecha_servicio,
-                :hectareas_cosechadas,
-                :hectareas_anticipadas
+                " . implode(",\n                ", $insertValues) . "
             )";
         $stmtInsert = $this->pdo->prepare($sqlInsert);
         $stmtInsert->execute($payload);
@@ -687,6 +706,29 @@ class SveCosechaMecanicaFincasModel
         if (str_contains($raw, 'suelo enmalezado')) return 1;
         if (str_contains($raw, 'sobre el alambre')) return 0;
         return 0;
+    }
+
+    private function columnExists(string $tableName, string $columnName): bool
+    {
+        $cacheKey = $tableName . '.' . $columnName;
+        if (array_key_exists($cacheKey, $this->columnExistsCache)) {
+            return $this->columnExistsCache[$cacheKey];
+        }
+
+        $sql = "SELECT COUNT(*) 
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = :table_name
+              AND COLUMN_NAME = :column_name";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':table_name' => $tableName,
+            ':column_name' => $columnName,
+        ]);
+
+        $exists = ((int) $stmt->fetchColumn()) > 0;
+        $this->columnExistsCache[$cacheKey] = $exists;
+        return $exists;
     }
 
     private function applyInsertDefaults(array $payload): array
