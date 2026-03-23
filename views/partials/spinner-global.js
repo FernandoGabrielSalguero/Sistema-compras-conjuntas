@@ -55,6 +55,9 @@ let spinnerStart = null;
 let spinnerTimeout = null;
 
 window.showSpinner = function () {
+    if (window.__suppressGlobalSpinner === true) {
+        return;
+    }
     spinnerStart = Date.now();
     document.getElementById("globalSpinner").classList.remove("hidden");
 };

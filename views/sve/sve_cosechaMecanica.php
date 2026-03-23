@@ -907,6 +907,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             };
 
             function showUserAlert(type, message) {
+                if (window.__suppressExcelToast === true && type === 'info') {
+                    return;
+                }
                 const now = Date.now();
                 if (lastAlert.type === type && lastAlert.message === message && (now - lastAlert.time) < 1200) {
                     return;
@@ -1710,6 +1713,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             function mostrarExportLoader(total, message = 'Preparando datos...') {
                 if (!excelExportLoader) return;
+                window.__suppressGlobalSpinner = true;
+                window.__suppressExcelToast = true;
+                if (typeof window.hideSpinner === 'function') {
+                    window.hideSpinner();
+                }
                 excelExportLoader.classList.remove('hidden');
                 excelExportLoader.setAttribute('aria-hidden', 'false');
                 actualizarExportLoader(0, total, message);
@@ -1732,6 +1740,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 if (!excelExportLoader) return;
                 excelExportLoader.classList.add('hidden');
                 excelExportLoader.setAttribute('aria-hidden', 'true');
+                window.__suppressGlobalSpinner = false;
+                window.__suppressExcelToast = false;
             }
 
             async function exportarFincasExcel() {
