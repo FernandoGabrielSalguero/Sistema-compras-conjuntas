@@ -1807,7 +1807,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     actualizarExportLoader(currentStep, totalSteps, `Consultando relevamiento ${itemNumber} de ${latestFincasRows.length}...`);
                     let relevamiento = null;
                     try {
-                        relevamiento = await cargarRelevamiento(fila.id);
+                        relevamiento = await cargarRelevamiento(fila.id, { skipGlobalSpinner: true });
                     } catch (_) {
                         relevamiento = null;
                     }
@@ -1816,7 +1816,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                     let facturacion = null;
                     try {
-                        facturacion = await cargarFacturacion(fila.id);
+                        facturacion = await cargarFacturacion(fila.id, { skipGlobalSpinner: true });
                     } catch (_) {
                         facturacion = null;
                     }
@@ -1905,14 +1905,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 }
             }
 
-            async function cargarRelevamiento(participacionId) {
+            async function cargarRelevamiento(participacionId, fetchOptions = {}) {
                 const params = new URLSearchParams({
                     action: 'relevamiento',
                     participacion_id: String(participacionId)
                 });
                 const res = await fetch(`${API_FINCAS_URL}?${params.toString()}`, {
                     credentials: 'same-origin',
-                    cache: 'no-store'
+                    cache: 'no-store',
+                    ...fetchOptions
                 });
                 const payload = await res.json();
                 if (!res.ok || !payload.ok) {
@@ -2060,7 +2061,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 );
             }
 
-            async function cargarFacturacion(participacionId) {
+            async function cargarFacturacion(participacionId, fetchOptions = {}) {
                 const params = new URLSearchParams({
                     action: 'facturacion',
                     participacion_id: String(participacionId)
@@ -2068,7 +2069,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const res = await fetch(`${API_FINCAS_URL}?${params.toString()}`, {
                     method: 'GET',
                     credentials: 'same-origin',
-                    cache: 'no-store'
+                    cache: 'no-store',
+                    ...fetchOptions
                 });
                 const responsePayload = await res.json();
                 if (!res.ok || !responsePayload.ok) {

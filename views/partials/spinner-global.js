@@ -75,6 +75,10 @@ window.hideSpinner = function () {
 // Auto-wrap fetch
 const originalFetch = window.fetch;
 window.fetch = function (...args) {
+    const init = args[1] || {};
+    if (init && init.skipGlobalSpinner === true) {
+        return originalFetch(...args);
+    }
     showSpinner();
     return originalFetch(...args)
         .then(res => res)
