@@ -289,6 +289,64 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             color: #475569;
         }
 
+        .export-loader-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 80;
+        }
+
+        .export-loader-overlay.hidden {
+            display: none;
+        }
+
+        .export-loader-card {
+            width: min(420px, calc(100vw - 2rem));
+            background: #ffffff;
+            border-radius: 0.9rem;
+            padding: 1.5rem;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3);
+        }
+
+        .export-loader-card h3,
+        .export-loader-card p {
+            margin: 0;
+        }
+
+        .export-loader-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            margin-bottom: 1rem;
+        }
+
+        .export-loader-track {
+            width: 100%;
+            height: 12px;
+            border-radius: 999px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .export-loader-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%);
+            transition: width 0.2s ease;
+        }
+
+        .export-loader-meta {
+            margin-top: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            font-size: 0.95rem;
+            color: #475569;
+        }
+
         .chip {
             display: inline-flex;
             align-items: center;
@@ -664,6 +722,22 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <?php require_once __DIR__ . '/sve_cosechaMecanicaCalificaciones.php'; ?>
     <?php require_once __DIR__ . '/sve_cosechaMecanicaDatosFacturacion.php'; ?>
 
+    <div id="excelExportLoader" class="export-loader-overlay hidden" aria-hidden="true">
+        <div class="export-loader-card" role="status" aria-live="polite" aria-atomic="true">
+            <div class="export-loader-copy">
+                <h3>Generando Excel</h3>
+                <p id="excelExportLoaderMessage">Preparando datos...</p>
+            </div>
+            <div class="export-loader-track">
+                <div id="excelExportLoaderBar" class="export-loader-bar"></div>
+            </div>
+            <div class="export-loader-meta">
+                <span id="excelExportLoaderPercent">0%</span>
+                <span id="excelExportLoaderDetail">0 / 0</span>
+            </div>
+        </div>
+    </div>
+
     <div id="fincaModal" class="modal hidden" aria-hidden="true">
         <div class="modal-content">
             <h3>Relevamiento de finca</h3>
@@ -818,6 +892,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const btnConfirmEliminar = document.getElementById('btnConfirmEliminarContrato');
             const btnExportFincas = document.getElementById('btnExportFincas');
             const btnGuardarFacturacion = document.getElementById('btnGuardarFacturacion');
+            const excelExportLoader = document.getElementById('excelExportLoader');
+            const excelExportLoaderBar = document.getElementById('excelExportLoaderBar');
+            const excelExportLoaderPercent = document.getElementById('excelExportLoaderPercent');
+            const excelExportLoaderDetail = document.getElementById('excelExportLoaderDetail');
+            const excelExportLoaderMessage = document.getElementById('excelExportLoaderMessage');
 
             let contratoSeleccionadoId = null;
 
@@ -1629,6 +1708,32 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 return map;
             }
 
+            function mostrarExportLoader(total, message = 'Preparando datos...') {
+                if (!excelExportLoader) return;
+                excelExportLoader.classList.remove('hidden');
+                excelExportLoader.setAttribute('aria-hidden', 'false');
+                actualizarExportLoader(0, total, message);
+            }
+
+            function actualizarExportLoader(current, total, message = 'Procesando...') {
+                if (!excelExportLoaderBar || !excelExportLoaderPercent || !excelExportLoaderDetail || !excelExportLoaderMessage) {
+                    return;
+                }
+                const safeTotal = Math.max(Number(total) || 0, 1);
+                const safeCurrent = Math.min(Math.max(Number(current) || 0, 0), safeTotal);
+                const percent = Math.round((safeCurrent / safeTotal) * 100);
+                excelExportLoaderBar.style.width = `${percent}%`;
+                excelExportLoaderPercent.textContent = `${percent}%`;
+                excelExportLoaderDetail.textContent = `${Math.min(safeCurrent, total)} / ${total}`;
+                excelExportLoaderMessage.textContent = message;
+            }
+
+            function ocultarExportLoader() {
+                if (!excelExportLoader) return;
+                excelExportLoader.classList.add('hidden');
+                excelExportLoader.setAttribute('aria-hidden', 'true');
+            }
+
             async function exportarFincasExcel() {
                 if (!latestFincasRows || latestFincasRows.length === 0) {
                     showUserAlert('warning', 'No hay registros para exportar.');
@@ -1636,12 +1741,22 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 }
 
                 showUserAlert('info', 'Generando Excel, por favor esperá...');
+                const totalSteps = (latestFincasRows.length * 2) + 2;
+                let currentStep = 0;
+                mostrarExportLoader(totalSteps, 'Preparando exportación...');
 
                 const columnas = [
                     { key: 'participacion_id', label: 'ID Participación' },
                     { key: 'variedad', label: 'Variedad' },
                     { key: 'cooperativa', label: 'Cooperativa' },
                     { key: 'productor', label: 'Productor' },
+                    { key: 'cuit', label: 'CUIT' },
+                    { key: 'condicion_pago', label: 'CondiciÃ³n de pago' },
+                    { key: 'fecha_servicio', label: 'Fecha del servicio' },
+                    { key: 'hectareas_cosechadas', label: 'HectÃ¡reas cosechadas' },
+                    { key: 'hectareas_anticipadas', label: 'HectÃ¡reas anticipadas' },
+                    { key: 'bonificacion_aptitud_finca', label: 'BonificaciÃ³n por aptitud de finca' },
+                    { key: 'calificacion_aptitud_finca', label: 'CalificaciÃ³n aptitud de finca' },
                     { key: 'tipo', label: 'Tipo' },
                     { key: 'finca', label: 'Finca' },
                     { key: 'superficie', label: 'Superficie (ha)' },
@@ -1684,14 +1799,29 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     { key: 'descuento', label: 'Descuento' },
                 ];
 
+                try {
                 const rows = [];
-                for (const fila of latestFincasRows) {
+                for (let index = 0; index < latestFincasRows.length; index += 1) {
+                    const fila = latestFincasRows[index];
+                    const itemNumber = index + 1;
+                    actualizarExportLoader(currentStep, totalSteps, `Consultando relevamiento ${itemNumber} de ${latestFincasRows.length}...`);
                     let relevamiento = null;
                     try {
                         relevamiento = await cargarRelevamiento(fila.id);
                     } catch (_) {
                         relevamiento = null;
                     }
+                    currentStep += 1;
+                    actualizarExportLoader(currentStep, totalSteps, `Consultando facturación ${itemNumber} de ${latestFincasRows.length}...`);
+
+                    let facturacion = null;
+                    try {
+                        facturacion = await cargarFacturacion(fila.id);
+                    } catch (_) {
+                        facturacion = null;
+                    }
+                    currentStep += 1;
+                    actualizarExportLoader(currentStep, totalSteps, `Procesando fila ${itemNumber} de ${latestFincasRows.length}...`);
 
                     const exportData = (typeof window.buildCalificacionExport === 'function')
                         ? window.buildCalificacionExport(relevamiento)
@@ -1706,8 +1836,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     const row = {
                         participacion_id: fila.id ?? '',
                         variedad: fila.variedad ?? '',
-                        cooperativa: fila.nom_cooperativa ?? '',
+                        cooperativa: facturacion?.cooperativa ?? fila.nom_cooperativa ?? '',
                         productor: fila.productor ?? '',
+                        cuit: facturacion?.cuit ?? '',
+                        condicion_pago: facturacion?.condicion_pago ?? '',
+                        fecha_servicio: facturacion?.fecha_servicio ?? '',
+                        hectareas_cosechadas: facturacion?.hectareas_cosechadas ?? '',
+                        hectareas_anticipadas: facturacion?.hectareas_anticipadas ?? '',
+                        bonificacion_aptitud_finca: facturacion?.bonificacion_aptitud_finca ?? '',
+                        calificacion_aptitud_finca: facturacion?.calificacion_aptitud_label ?? '',
                         tipo: tipoLabel,
                         finca: fincaLabel,
                         superficie: fila.superficie ?? '',
@@ -1750,11 +1887,22 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         descuento: exportData?.descuento ?? '',
                     };
                     rows.push(row);
+                    await new Promise((resolve) => window.setTimeout(resolve, 0));
                 }
+
+                currentStep += 1;
+                actualizarExportLoader(currentStep, totalSteps, 'Armando archivo Excel...');
+                await new Promise((resolve) => window.setTimeout(resolve, 0));
 
                 const stamp = new Date().toISOString().slice(0, 10);
                 descargarExcelXlsx(columnas, rows, `fincas_operativos_${stamp}.xlsx`);
+                currentStep += 1;
+                actualizarExportLoader(currentStep, totalSteps, 'Descarga iniciada.');
+                await new Promise((resolve) => window.setTimeout(resolve, 250));
                 showUserAlert('success', 'Excel generado correctamente.');
+                } finally {
+                    ocultarExportLoader();
+                }
             }
 
             async function cargarRelevamiento(participacionId) {
