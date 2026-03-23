@@ -284,6 +284,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             width: 100%;
         }
 
+        #formFacturacion input[readonly] {
+            background-color: #f8fafc;
+            color: #475569;
+        }
+
         .chip {
             display: inline-flex;
             align-items: center;
@@ -807,10 +812,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const modalFacturacion = document.getElementById('modalFacturacion');
 
             const formNuevoContrato = document.getElementById('formNuevoContrato');
+            const formFacturacion = document.getElementById('formFacturacion');
             const modalVerContratoBody = document.getElementById('modalVerContratoBody');
             const modalCoopProdBody = document.getElementById('modalCoopProdBody');
             const btnConfirmEliminar = document.getElementById('btnConfirmEliminarContrato');
             const btnExportFincas = document.getElementById('btnExportFincas');
+            const btnGuardarFacturacion = document.getElementById('btnGuardarFacturacion');
 
             let contratoSeleccionadoId = null;
 
@@ -1869,10 +1876,97 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 }
             }
 
-            function abrirModalFacturacion(participacionId) {
+            function formatearMontoBonificacion(valor, calificacion) {
+                const numero = Number(valor ?? 0);
+                if (!Number.isFinite(numero)) {
+                    return calificacion ? `${calificacion} | Sin dato` : 'Sin dato';
+                }
+                const monto = `${numero.toFixed(2)} USD`;
+                return calificacion ? `${calificacion} | ${monto}` : monto;
+            }
+
+            function setFacturacionFormLoading() {
+                if (!formFacturacion) return;
+                formFacturacion.reset();
+                document.getElementById('facturacionProductor').value = 'Cargando...';
+                document.getElementById('facturacionCuit').value = 'Cargando...';
+                document.getElementById('facturacionCooperativa').value = 'Cargando...';
+                document.getElementById('facturacionCondicionPago').value = 'Cargando...';
+                document.getElementById('facturacionBonificacion').value = 'Cargando...';
+            }
+
+            function setFacturacionFormData(data, participacionId) {
+                if (!formFacturacion) return;
+                const payload = data || {};
+                document.getElementById('facturacionParticipacionId').value = String(participacionId || payload.participacion_id || '');
+                document.getElementById('facturacionProductor').value = payload.productor || '-';
+                document.getElementById('facturacionCuit').value = payload.cuit || '-';
+                document.getElementById('facturacionCooperativa').value = payload.cooperativa || '-';
+                document.getElementById('facturacionCondicionPago').value = payload.condicion_pago || '-';
+                document.getElementById('facturacionFechaServicio').value = payload.fecha_servicio || '';
+                document.getElementById('facturacionHectareasCosechadas').value = payload.hectareas_cosechadas ?? '';
+                document.getElementById('facturacionHectareasAnticipadas').value = payload.hectareas_anticipadas ?? '';
+                document.getElementById('facturacionBonificacion').value = formatearMontoBonificacion(
+                    payload.bonificacion_aptitud_finca,
+                    payload.calificacion_aptitud_label
+                );
+            }
+
+            async function cargarFacturacion(participacionId) {
+                const params = new URLSearchParams({
+                    action: 'facturacion',
+                    participacion_id: String(participacionId)
+                });
+                const res = await fetch(`${API_FINCAS_URL}?${params.toString()}`, {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store'
+                });
+                const responsePayload = await res.json();
+                if (!res.ok || !responsePayload.ok) {
+                    throw new Error(responsePayload.message || 'No se pudo cargar la facturación.');
+                }
+                return responsePayload.data || null;
+            }
+
+            async function guardarFacturacion(participacionId) {
+                const body = new URLSearchParams({
+                    action: 'guardar_facturacion',
+                    participacion_id: String(participacionId),
+                    fecha_servicio: document.getElementById('facturacionFechaServicio').value.trim(),
+                    hectareas_cosechadas: document.getElementById('facturacionHectareasCosechadas').value.trim(),
+                    hectareas_anticipadas: document.getElementById('facturacionHectareasAnticipadas').value.trim(),
+                });
+
+                const res = await fetch(API_FINCAS_URL, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    },
+                    body,
+                    cache: 'no-store'
+                });
+                const responsePayload = await res.json();
+                if (!res.ok || !responsePayload.ok) {
+                    throw new Error(responsePayload.message || 'No se pudo guardar la facturación.');
+                }
+                return responsePayload.data || null;
+            }
+
+            async function abrirModalFacturacion(participacionId) {
                 if (!modalFacturacion) return;
                 modalFacturacion.dataset.participacionId = String(participacionId);
+                setFacturacionFormLoading();
                 abrirModal(modalFacturacion);
+                try {
+                    const facturacion = await cargarFacturacion(participacionId);
+                    setFacturacionFormData(facturacion, participacionId);
+                } catch (error) {
+                    console.error('[CosechaMecanica] Error al cargar facturación:', error);
+                    setFacturacionFormData(null, participacionId);
+                    showUserAlert('error', error.message || 'No se pudo cargar la facturación.');
+                }
             }
 
             function initFincasOperativos() {
@@ -2047,6 +2141,26 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 if (btnConfirmEliminar) {
                     btnConfirmEliminar.addEventListener('click', onConfirmarEliminar);
+                }
+
+                if (btnGuardarFacturacion) {
+                    btnGuardarFacturacion.addEventListener('click', async function() {
+                        const participacionId = Number(modalFacturacion?.dataset.participacionId || 0);
+                        if (!participacionId) {
+                            showUserAlert('error', 'No se encontró el ID de participación.');
+                            return;
+                        }
+
+                        try {
+                            await guardarFacturacion(participacionId);
+                            const facturacion = await cargarFacturacion(participacionId);
+                            setFacturacionFormData(facturacion, participacionId);
+                            showUserAlert('success', 'Facturación guardada.');
+                        } catch (error) {
+                            console.error('[CosechaMecanica] Error al guardar facturación:', error);
+                            showUserAlert('error', error.message || 'No se pudo guardar la facturación.');
+                        }
+                    });
                 }
 
                 document.querySelectorAll('[data-close-modal]').forEach(btn => {

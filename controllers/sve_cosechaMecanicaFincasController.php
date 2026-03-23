@@ -31,6 +31,7 @@ try {
         if ($action === 'estado') {
             jsonResponse(true, $model->getEstado());
         }
+
         if ($action === 'fincas') {
             $filtros = [
                 'contrato_id' => $_GET['contrato_id'] ?? null,
@@ -46,6 +47,7 @@ try {
             ];
             jsonResponse(true, $data);
         }
+
         if ($action === 'relevamiento') {
             $participacionId = isset($_GET['participacion_id']) ? (int) $_GET['participacion_id'] : 0;
             if ($participacionId <= 0) {
@@ -54,6 +56,16 @@ try {
             $relevamiento = $model->obtenerRelevamientoPorParticipacion($participacionId);
             jsonResponse(true, $relevamiento);
         }
+
+        if ($action === 'facturacion') {
+            $participacionId = isset($_GET['participacion_id']) ? (int) $_GET['participacion_id'] : 0;
+            if ($participacionId <= 0) {
+                jsonResponse(false, null, 'participacion_id inválido.', 422);
+            }
+            $facturacion = $model->obtenerFacturacionPorParticipacion($participacionId);
+            jsonResponse(true, $facturacion);
+        }
+
         jsonResponse(false, null, 'Acción no soportada.', 400);
     }
 
@@ -98,6 +110,37 @@ try {
 
             $resultado = $model->guardarRelevamiento($participacionId, $data);
             jsonResponse(true, $resultado, 'Relevamiento guardado.');
+        }
+
+        if ($action === 'guardar_facturacion') {
+            $participacionId = isset($_POST['participacion_id']) ? (int) $_POST['participacion_id'] : 0;
+            if ($participacionId <= 0) {
+                jsonResponse(false, null, 'participacion_id inválido.', 422);
+            }
+
+            $fechaServicio = trim((string) ($_POST['fecha_servicio'] ?? ''));
+            $hectareasCosechadas = trim((string) ($_POST['hectareas_cosechadas'] ?? ''));
+            $hectareasAnticipadas = trim((string) ($_POST['hectareas_anticipadas'] ?? ''));
+
+            if ($fechaServicio !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaServicio)) {
+                jsonResponse(false, null, 'La fecha del servicio no tiene un formato válido.', 422);
+            }
+
+            foreach ([
+                'hectáreas cosechadas' => $hectareasCosechadas,
+                'hectáreas anticipadas' => $hectareasAnticipadas,
+            ] as $label => $value) {
+                if ($value !== '' && (!is_numeric($value) || (float) $value < 0)) {
+                    jsonResponse(false, null, 'El campo ' . $label . ' debe ser numérico y mayor o igual a cero.', 422);
+                }
+            }
+
+            $resultado = $model->guardarFacturacion($participacionId, [
+                'fecha_servicio' => $fechaServicio,
+                'hectareas_cosechadas' => $hectareasCosechadas,
+                'hectareas_anticipadas' => $hectareasAnticipadas,
+            ]);
+            jsonResponse(true, $resultado, 'Facturación guardada.');
         }
 
         jsonResponse(false, null, 'Acción no soportada.', 400);
