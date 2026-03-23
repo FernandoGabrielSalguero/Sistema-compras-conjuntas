@@ -366,7 +366,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             color: #111827;
         }
 
-        .btn-icono-calificacion {
+        .btn-icono-accion {
             width: 32px;
             min-width: 32px;
             height: 32px;
@@ -376,8 +376,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             justify-content: center;
         }
 
-        .btn-icono-calificacion .material-icons {
+        .btn-icono-accion .material-icons {
             font-size: 18px;
+        }
+
+        .btn-icono-facturacion {
+            background-color: #f97316;
+            border-color: #f97316;
+            color: #ffffff;
+        }
+
+        .btn-icono-facturacion:hover {
+            background-color: #ea580c;
+            border-color: #ea580c;
+            color: #ffffff;
         }
 
         .badge-tipo {
@@ -640,6 +652,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <?php require_once __DIR__ . '/../partials/cosechaMecanicaModales/verCoopProdModal_view.php'; ?>
     <?php require_once __DIR__ . '/../partials/cosechaMecanicaModales/eliminarContratoModal_view.php'; ?>
     <?php require_once __DIR__ . '/sve_cosechaMecanicaCalificaciones.php'; ?>
+    <?php require_once __DIR__ . '/sve_cosechaMecanicaDatosFacturacion.php'; ?>
 
     <div id="fincaModal" class="modal hidden" aria-hidden="true">
         <div class="modal-content">
@@ -786,6 +799,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const modalCoopProd = document.getElementById('modalCoopProd');
             const modalEliminar = document.getElementById('modalEliminarContrato');
             const modalCalificacion = document.getElementById('modalCalificacion');
+            const modalFacturacion = document.getElementById('modalFacturacion');
 
             const formNuevoContrato = document.getElementById('formNuevoContrato');
             const modalVerContratoBody = document.getElementById('modalVerContratoBody');
@@ -832,7 +846,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
 
             function cerrarTodosLosModales() {
-                [modalNuevo, modalVerContrato, modalCoopProd, modalEliminar, modalCalificacion].forEach(cerrarModal);
+                [modalNuevo, modalVerContrato, modalCoopProd, modalEliminar, modalCalificacion, modalFacturacion].forEach(cerrarModal);
             }
 
             async function apiRequest(action, payload = {}) {
@@ -1467,7 +1481,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                         const tdAcciones = document.createElement('td');
                         const btn = document.createElement('button');
-                        btn.className = 'btn btn-info';
+                        btn.className = 'btn btn-info btn-icono-accion';
                         btn.dataset.action = 'abrir-modal';
                         btn.dataset.participacionId = String(fila.id);
                         if (fila.finca_id !== null && fila.finca_id !== undefined) {
@@ -1475,25 +1489,35 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         }
                         const filaIdKey = String(fila.id);
                         const tieneRelevamiento = Boolean(fila.relevamiento_id) || relevamientosGuardados.has(filaIdKey);
-                        btn.textContent = tieneRelevamiento ? 'Modificar' : 'Calificar';
+                        btn.innerHTML = `<span class="material-icons">${tieneRelevamiento ? 'edit' : 'assignment_turned_in'}</span>`;
+                        btn.setAttribute('aria-label', tieneRelevamiento ? 'Modificar relevamiento' : 'Calificar finca');
                         if (tieneRelevamiento) {
                             btn.classList.add('btn-modificar');
+                            btn.title = 'Modificar relevamiento';
                         } else {
                             const idPedido = fila.id ?? '';
-                            btn.title = idPedido ? `Calificar ID ${idPedido}` : 'Calificar';
+                            btn.title = idPedido ? `Calificar ID ${idPedido}` : 'Calificar finca';
                         }
                         tdAcciones.appendChild(btn);
 
                         if (tieneRelevamiento) {
                             const btnCalificacion = document.createElement('button');
-                            btnCalificacion.className = 'btn btn-info btn-icono-calificacion';
+                            btnCalificacion.className = 'btn btn-info btn-icono-accion';
                             btnCalificacion.dataset.action = 'ver-calificacion';
                             btnCalificacion.dataset.participacionId = String(fila.id);
                             btnCalificacion.title = 'Ver calificación';
                             btnCalificacion.setAttribute('aria-label', 'Ver calificación');
-                            btnCalificacion.innerHTML = '<span class="material-icons">grade</span>';
+                            btnCalificacion.innerHTML = '<span class="material-icons">visibility</span>';
                             tdAcciones.appendChild(btnCalificacion);
                         }
+                        const btnFacturacion = document.createElement('button');
+                        btnFacturacion.className = 'btn btn-icono-accion btn-icono-facturacion';
+                        btnFacturacion.dataset.action = 'abrir-facturacion';
+                        btnFacturacion.dataset.participacionId = String(fila.id);
+                        btnFacturacion.title = 'Datos de facturación';
+                        btnFacturacion.setAttribute('aria-label', 'Datos de facturación');
+                        btnFacturacion.innerHTML = '<span class="material-icons">receipt_long</span>';
+                        tdAcciones.appendChild(btnFacturacion);
                         tr.appendChild(tdAcciones);
 
                         const tdVariedad = document.createElement('td');
@@ -1786,11 +1810,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     `button[data-action="abrir-modal"][data-participacion-id="${participacionId}"]`
                 );
                 if (!btn) return;
-                btn.textContent = tieneRelevamiento ? 'Modificar' : 'Calificar';
+                btn.innerHTML = `<span class="material-icons">${tieneRelevamiento ? 'edit' : 'assignment_turned_in'}</span>`;
+                btn.setAttribute('aria-label', tieneRelevamiento ? 'Modificar relevamiento' : 'Calificar finca');
                 if (tieneRelevamiento) {
                     btn.classList.add('btn-modificar');
+                    btn.title = 'Modificar relevamiento';
                 } else {
                     btn.classList.remove('btn-modificar');
+                    btn.title = 'Calificar finca';
                 }
 
                 const cell = btn.closest('td');
@@ -1799,12 +1826,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 if (tieneRelevamiento) {
                     if (!existente) {
                         const btnCalificacion = document.createElement('button');
-                        btnCalificacion.className = 'btn btn-info btn-icono-calificacion';
+                        btnCalificacion.className = 'btn btn-info btn-icono-accion';
                         btnCalificacion.dataset.action = 'ver-calificacion';
                         btnCalificacion.dataset.participacionId = String(participacionId);
                         btnCalificacion.title = 'Ver calificación';
                         btnCalificacion.setAttribute('aria-label', 'Ver calificación');
-                        btnCalificacion.innerHTML = '<span class="material-icons">grade</span>';
+                        btnCalificacion.innerHTML = '<span class="material-icons">visibility</span>';
                         cell.appendChild(btnCalificacion);
                     }
                 } else if (existente) {
@@ -1835,6 +1862,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     if (bodyEl) bodyEl.innerHTML = '<tr><td colspan="4">No se pudo cargar.</td></tr>';
                     showUserAlert('error', 'No se pudo cargar la calificación.');
                 }
+            }
+
+            function abrirModalFacturacion(participacionId) {
+                if (!modalFacturacion) return;
+                modalFacturacion.dataset.participacionId = String(participacionId);
+                abrirModal(modalFacturacion);
             }
 
             function initFincasOperativos() {
@@ -1879,6 +1912,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                     if (action === 'ver-calificacion') {
                         await abrirModalCalificacion(participacionId);
+                        return;
+                    }
+
+                    if (action === 'abrir-facturacion') {
+                        abrirModalFacturacion(participacionId);
                     }
                 });
 
@@ -1905,7 +1943,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         const resultado = await guardarRelevamiento(participacionId);
                         actualizarBotonRelevamiento(participacionId, true);
                         if (ultimoBotonSeleccionado && Number(ultimoBotonSeleccionado.dataset.participacionId || 0) === participacionId) {
-                            ultimoBotonSeleccionado.textContent = 'Modificar';
+                            ultimoBotonSeleccionado.innerHTML = '<span class="material-icons">edit</span>';
+                            ultimoBotonSeleccionado.setAttribute('aria-label', 'Modificar relevamiento');
+                            ultimoBotonSeleccionado.title = 'Modificar relevamiento';
                             ultimoBotonSeleccionado.classList.add('btn-modificar');
                         }
                         showUserAlert('success', 'Relevamiento guardado.');
@@ -2012,7 +2052,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     });
                 });
 
-                [modalNuevo, modalVerContrato, modalCoopProd, modalEliminar, modalCalificacion].forEach(modalEl => {
+                [modalNuevo, modalVerContrato, modalCoopProd, modalEliminar, modalCalificacion, modalFacturacion].forEach(modalEl => {
                     if (!modalEl) return;
                     modalEl.addEventListener('click', function(e) {
                         if (e.target === modalEl) {
