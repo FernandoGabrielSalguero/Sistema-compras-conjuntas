@@ -371,9 +371,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             min-width: 32px;
             height: 32px;
             padding: 0;
+            margin-right: 0.2rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .btn-icono-accion:last-child {
+            margin-right: 0;
         }
 
         .btn-icono-accion .material-icons {
