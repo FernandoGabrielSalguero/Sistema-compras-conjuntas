@@ -384,9 +384,9 @@ class SveCosechaMecanicaFincasModel
         $sql = "SELECT
                     p.id AS participacion_id,
                     p.productor,
-                    p.nom_cooperativa,
+                    COALESCE(ui_coop.nombre, u_coop.razon_social, u_coop.usuario, p.nom_cooperativa) AS cooperativa,
                     COALESCE(CAST(u_prod_name.cuit AS CHAR), CAST(u_prod_ui.cuit AS CHAR), '') AS cuit,
-                    COALESCE(ip_latest.condicion_cooperativa, '') AS condicion_pago,
+                    COALESCE(cf.condicion_pago, '') AS condicion_pago,
                     cf.fecha_servicio,
                     cf.hectareas_cosechadas,
                     cf.hectareas_anticipadas,
@@ -425,18 +425,13 @@ class SveCosechaMecanicaFincasModel
                 LEFT JOIN usuarios u_prod_ui
                     ON u_prod_ui.id = ui_prod_match.usuario_id
                     AND u_prod_ui.rol = 'productor'
-                LEFT JOIN (
-                    SELECT ip1.*
-                    FROM info_productor ip1
-                    INNER JOIN (
-                        SELECT productor_id, MAX(anio) AS max_anio
-                        FROM info_productor
-                        GROUP BY productor_id
-                    ) ip2
-                        ON ip2.productor_id = ip1.productor_id
-                       AND ip2.max_anio = ip1.anio
-                ) ip_latest
-                    ON ip_latest.productor_id = COALESCE(u_prod_name.id, u_prod_ui.id)
+                LEFT JOIN rel_productor_coop rpc
+                    ON rpc.productor_id_real = COALESCE(u_prod_name.id_real, u_prod_ui.id_real)
+                LEFT JOIN usuarios u_coop
+                    ON u_coop.id_real = rpc.cooperativa_id_real
+                   AND u_coop.rol = 'cooperativa'
+                LEFT JOIN usuarios_info ui_coop
+                    ON ui_coop.usuario_id = u_coop.id
                 LEFT JOIN (
                     SELECT r1.*
                     FROM cosechaMecanica_relevamiento_finca r1
@@ -478,6 +473,7 @@ class SveCosechaMecanicaFincasModel
 
         $payload = [
             ':participacion_id' => $participacionId,
+            ':condicion_pago' => ($data['condicion_pago'] ?? '') !== '' ? $data['condicion_pago'] : null,
             ':fecha_servicio' => ($data['fecha_servicio'] ?? '') !== '' ? $data['fecha_servicio'] : null,
             ':hectareas_cosechadas' => ($data['hectareas_cosechadas'] ?? '') !== '' ? $data['hectareas_cosechadas'] : null,
             ':hectareas_anticipadas' => ($data['hectareas_anticipadas'] ?? '') !== '' ? $data['hectareas_anticipadas'] : null,
@@ -485,7 +481,8 @@ class SveCosechaMecanicaFincasModel
 
         if ($existente) {
             $sqlUpdate = "UPDATE cosechaMecanica_facturacion
-                SET fecha_servicio = :fecha_servicio,
+                SET condicion_pago = :condicion_pago,
+                    fecha_servicio = :fecha_servicio,
                     hectareas_cosechadas = :hectareas_cosechadas,
                     hectareas_anticipadas = :hectareas_anticipadas
                 WHERE participacion_id = :participacion_id";
@@ -497,11 +494,13 @@ class SveCosechaMecanicaFincasModel
 
         $sqlInsert = "INSERT INTO cosechaMecanica_facturacion (
                 participacion_id,
+                condicion_pago,
                 fecha_servicio,
                 hectareas_cosechadas,
                 hectareas_anticipadas
             ) VALUES (
                 :participacion_id,
+                :condicion_pago,
                 :fecha_servicio,
                 :hectareas_cosechadas,
                 :hectareas_anticipadas

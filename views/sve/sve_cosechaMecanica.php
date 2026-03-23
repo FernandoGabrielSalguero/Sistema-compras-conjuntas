@@ -1891,7 +1891,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 document.getElementById('facturacionProductor').value = 'Cargando...';
                 document.getElementById('facturacionCuit').value = 'Cargando...';
                 document.getElementById('facturacionCooperativa').value = 'Cargando...';
-                document.getElementById('facturacionCondicionPago').value = 'Cargando...';
+                document.getElementById('facturacionCondicionPago').value = '';
                 document.getElementById('facturacionBonificacion').value = 'Cargando...';
             }
 
@@ -1902,7 +1902,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 document.getElementById('facturacionProductor').value = payload.productor || '-';
                 document.getElementById('facturacionCuit').value = payload.cuit || '-';
                 document.getElementById('facturacionCooperativa').value = payload.cooperativa || '-';
-                document.getElementById('facturacionCondicionPago').value = payload.condicion_pago || '-';
+                document.getElementById('facturacionCondicionPago').value = payload.condicion_pago || '';
                 document.getElementById('facturacionFechaServicio').value = payload.fecha_servicio || '';
                 document.getElementById('facturacionHectareasCosechadas').value = payload.hectareas_cosechadas ?? '';
                 document.getElementById('facturacionHectareasAnticipadas').value = payload.hectareas_anticipadas ?? '';
@@ -1933,6 +1933,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const body = new URLSearchParams({
                     action: 'guardar_facturacion',
                     participacion_id: String(participacionId),
+                    condicion_pago: document.getElementById('facturacionCondicionPago').value.trim(),
                     fecha_servicio: document.getElementById('facturacionFechaServicio').value.trim(),
                     hectareas_cosechadas: document.getElementById('facturacionHectareasCosechadas').value.trim(),
                     hectareas_anticipadas: document.getElementById('facturacionHectareasAnticipadas').value.trim(),

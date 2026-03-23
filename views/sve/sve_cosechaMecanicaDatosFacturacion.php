@@ -35,7 +35,12 @@
                 <div class="input-group">
                     <label for="facturacionCondicionPago">Condición de pago</label>
                     <div class="input-icon">
-                        <input type="text" id="facturacionCondicionPago" name="condicion_pago" readonly />
+                        <select id="facturacionCondicionPago" name="condicion_pago">
+                            <option value="">Seleccionar</option>
+                            <option value="Descuento por cooperativa">Descuento por cooperativa</option>
+                            <option value="E-check">E-check</option>
+                            <option value="Transferencia Bancaria">Transferencia Bancaria</option>
+                        </select>
                     </div>
                 </div>
 

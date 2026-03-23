@@ -136,6 +136,7 @@ try {
             }
 
             $resultado = $model->guardarFacturacion($participacionId, [
+                'condicion_pago' => trim((string) ($_POST['condicion_pago'] ?? '')),
                 'fecha_servicio' => $fechaServicio,
                 'hectareas_cosechadas' => $hectareasCosechadas,
                 'hectareas_anticipadas' => $hectareasAnticipadas,
