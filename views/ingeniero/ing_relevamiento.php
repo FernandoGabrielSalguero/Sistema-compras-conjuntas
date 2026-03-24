@@ -1395,20 +1395,203 @@ unset($_SESSION['cierre_info']);
             });
         }
 
+        function buildRowMap(rows, keyField) {
+            const map = new Map();
+            (Array.isArray(rows) ? rows : []).forEach((row) => {
+                const key = row?.[keyField];
+                if (key === null || key === undefined || key === '') return;
+                map.set(String(key), row);
+            });
+            return map;
+        }
+
+        function buildRowListMap(rows, keyField) {
+            const map = new Map();
+            (Array.isArray(rows) ? rows : []).forEach((row) => {
+                const key = row?.[keyField];
+                if (key === null || key === undefined || key === '') return;
+                const normalizedKey = String(key);
+                if (!map.has(normalizedKey)) map.set(normalizedKey, []);
+                map.get(normalizedKey).push(row);
+            });
+            return map;
+        }
+
+        function logSingleRowTable(title, row) {
+            console.groupCollapsed(title);
+            console.table(toKeyValueRows(row || {}));
+            console.groupEnd();
+        }
+
+        function logMultiRowTable(title, rows) {
+            const safeRows = Array.isArray(rows) ? rows : [];
+            console.groupCollapsed(`${title} (${safeRows.length})`);
+            if (!safeRows.length) {
+                console.table([{ columna_sql: '(sin filas)', valor: '' }]);
+            } else {
+                safeRows.forEach((rowObj, idx) => {
+                    console.log(`${title}[${idx}]`);
+                    console.table(toKeyValueRows(rowObj || {}));
+                });
+            }
+            console.groupEnd();
+        }
+
+        function logCompactTable(title, rows) {
+            const safeRows = Array.isArray(rows) ? rows : [];
+            console.groupCollapsed(`${title} (${safeRows.length})`);
+            if (!safeRows.length) {
+                console.table([{ estado: 'sin filas' }]);
+            } else {
+                console.table(safeRows);
+            }
+            console.groupEnd();
+        }
+
+        function buildProductorSummary(usuario, usuariosInfo, relProductorCoop, prodFincas, prodCuartel, cuartelesSinFinca) {
+            const info = usuariosInfo[0] || {};
+            return [{
+                id_real: usuario?.id_real ?? '',
+                razon_social: usuario?.razon_social ?? '',
+                nombre: info?.nombre ?? '',
+                cuit: usuario?.cuit ?? '',
+                estado_asociacion_cooperativa: usuario?.estado_asociacion_cooperativa ?? '',
+                cooperativas_relacionadas: relProductorCoop.length,
+                fincas: prodFincas.length,
+                cuarteles: prodCuartel.length,
+                cuarteles_sin_finca: cuartelesSinFinca.length,
+            }];
+        }
+
+        function buildFincasSummaryRows(prodFincas, direccionesByFincaId, cuartelesByFincaId) {
+            return prodFincas.map((finca) => {
+                const fincaId = String(finca?.id ?? '');
+                const direccion = direccionesByFincaId.get(fincaId) || {};
+                const cuarteles = cuartelesByFincaId.get(fincaId) || [];
+                return {
+                    finca_id: finca?.id ?? '',
+                    codigo_finca: finca?.codigo_finca ?? '',
+                    nombre_finca: finca?.nombre_finca ?? '',
+                    departamento: direccion?.departamento ?? '',
+                    localidad: direccion?.localidad ?? '',
+                    calle: direccion?.calle ?? '',
+                    numero: direccion?.numero ?? '',
+                    cuarteles: cuarteles.length,
+                };
+            });
+        }
+
+        function buildCuartelesSummaryRows(prodCuartel) {
+            return prodCuartel.map((cuartel) => ({
+                cuartel_id: cuartel?.id ?? '',
+                finca_id: cuartel?.finca_id ?? '',
+                codigo_finca: cuartel?.codigo_finca ?? '',
+                nombre_finca: cuartel?.nombre_finca ?? '',
+                codigo_cuartel: cuartel?.codigo_cuartel ?? '',
+                variedad: cuartel?.variedad ?? '',
+                superficie_ha: cuartel?.superficie_ha ?? '',
+            }));
+        }
+
+        function getFincaLabel(finca) {
+            const codigo = String(finca?.codigo_finca ?? '').trim() || 'Sin codigo';
+            const nombre = String(finca?.nombre_finca ?? '').trim() || 'Sin nombre';
+            const id = String(finca?.id ?? '').trim() || '-';
+            return `Finca ${codigo} | ${nombre} | id ${id}`;
+        }
+
+        function getCuartelLabel(cuartel) {
+            const codigo = String(cuartel?.codigo_cuartel ?? '').trim() || 'Sin codigo';
+            const variedad = String(cuartel?.variedad ?? '').trim() || 'Sin variedad';
+            const id = String(cuartel?.id ?? '').trim() || '-';
+            return `Cuartel ${codigo} | ${variedad} | id ${id}`;
+        }
 
 
         function prettyConsoleLogConsolidado(payload) {
-            console.log('[Relevamiento] Dump de tablas del productor');
-            logSectionAsTable('usuarios', payload?.usuario || null);
-            logSectionAsTable('usuarios_info', payload?.usuarios_info || null);
-            logSectionAsTable('rel_productor_coop', payload?.rel_productor_coop || null);
-            logSectionAsTable('prod_fincas', payload?.prod_fincas || null);
-            logSectionAsTable('prod_finca_direccion', payload?.prod_finca_direccion || null);
-            logSectionAsTable('rel_productor_finca', payload?.rel_productor_finca || null);
-            logSectionAsTable('prod_cuartel', payload?.prod_cuartel || null);
-            logSectionAsTable('prod_cuartel_limitantes', payload?.prod_cuartel_limitantes || null);
-            logSectionAsTable('prod_cuartel_rendimientos', payload?.prod_cuartel_rendimientos || null);
-            logSectionAsTable('prod_cuartel_riesgos', payload?.prod_cuartel_riesgos || null);
+            const usuario = payload?.usuario || null;
+            const usuariosInfo = Array.isArray(payload?.usuarios_info) ? payload.usuarios_info : [];
+            const relProductorCoop = Array.isArray(payload?.rel_productor_coop) ? payload.rel_productor_coop : [];
+            const prodFincas = Array.isArray(payload?.prod_fincas) ? payload.prod_fincas : [];
+            const prodFincaDireccion = Array.isArray(payload?.prod_finca_direccion) ? payload.prod_finca_direccion : [];
+            const relProductorFinca = Array.isArray(payload?.rel_productor_finca) ? payload.rel_productor_finca : [];
+            const prodCuartel = Array.isArray(payload?.prod_cuartel) ? payload.prod_cuartel : [];
+            const prodCuartelLimitantes = Array.isArray(payload?.prod_cuartel_limitantes) ? payload.prod_cuartel_limitantes : [];
+            const prodCuartelRendimientos = Array.isArray(payload?.prod_cuartel_rendimientos) ? payload.prod_cuartel_rendimientos : [];
+            const prodCuartelRiesgos = Array.isArray(payload?.prod_cuartel_riesgos) ? payload.prod_cuartel_riesgos : [];
+
+            const direccionesByFincaId = buildRowMap(prodFincaDireccion, 'finca_id');
+            const relFincaByFincaId = buildRowListMap(relProductorFinca, 'finca_id');
+            const cuartelesByFincaId = buildRowListMap(prodCuartel.filter(c => c?.finca_id !== null && c?.finca_id !== undefined), 'finca_id');
+            const cuartelesSinFinca = prodCuartel.filter(c => c?.finca_id === null || c?.finca_id === undefined || c?.finca_id === '');
+            const limitantesByCuartelId = buildRowMap(prodCuartelLimitantes, 'cuartel_id');
+            const rendimientosByCuartelId = buildRowMap(prodCuartelRendimientos, 'cuartel_id');
+            const riesgosByCuartelId = buildRowMap(prodCuartelRiesgos, 'cuartel_id');
+            const productorSummary = buildProductorSummary(usuario, usuariosInfo, relProductorCoop, prodFincas, prodCuartel, cuartelesSinFinca);
+            const fincasSummaryRows = buildFincasSummaryRows(prodFincas, direccionesByFincaId, cuartelesByFincaId);
+            const cuartelesSummaryRows = buildCuartelesSummaryRows(prodCuartel);
+
+            const productorLabel = String(usuario?.id_real ?? 'sin_id_real');
+            console.groupCollapsed(`[Relevamiento] Productor ${productorLabel} | Fincas: ${prodFincas.length} | Cuarteles: ${prodCuartel.length}`);
+
+            logCompactTable('Resumen general', productorSummary);
+
+            console.groupCollapsed('Datos del productor');
+            logSingleRowTable('usuarios', usuario);
+            logMultiRowTable('usuarios_info', usuariosInfo);
+            logMultiRowTable('rel_productor_coop', relProductorCoop);
+            console.groupEnd();
+
+            logCompactTable('Resumen de fincas', fincasSummaryRows);
+            logCompactTable('Resumen de cuarteles', cuartelesSummaryRows);
+
+            console.groupCollapsed(`Fincas (${prodFincas.length})`);
+            if (!prodFincas.length) {
+                console.table([{ columna_sql: '(sin fincas)', valor: '' }]);
+            } else {
+                prodFincas.forEach((finca) => {
+                    const fincaId = String(finca?.id ?? '');
+                    const cuarteles = cuartelesByFincaId.get(fincaId) || [];
+                    console.groupCollapsed(`${getFincaLabel(finca)} | Cuarteles: ${cuarteles.length}`);
+                    logSingleRowTable('prod_fincas', finca);
+                    logSingleRowTable('prod_finca_direccion', direccionesByFincaId.get(fincaId) || null);
+                    logMultiRowTable('rel_productor_finca', relFincaByFincaId.get(fincaId) || []);
+
+                    console.groupCollapsed(`Cuarteles de finca (${cuarteles.length})`);
+                    if (!cuarteles.length) {
+                        console.table([{ columna_sql: '(sin cuarteles)', valor: '' }]);
+                    } else {
+                        cuarteles.forEach((cuartel) => {
+                            const cuartelId = String(cuartel?.id ?? '');
+                            console.groupCollapsed(getCuartelLabel(cuartel));
+                            logSingleRowTable('prod_cuartel', cuartel);
+                            logSingleRowTable('prod_cuartel_limitantes', limitantesByCuartelId.get(cuartelId) || null);
+                            logSingleRowTable('prod_cuartel_rendimientos', rendimientosByCuartelId.get(cuartelId) || null);
+                            logSingleRowTable('prod_cuartel_riesgos', riesgosByCuartelId.get(cuartelId) || null);
+                            console.groupEnd();
+                        });
+                    }
+                    console.groupEnd();
+                    console.groupEnd();
+                });
+            }
+            console.groupEnd();
+
+            if (cuartelesSinFinca.length) {
+                console.groupCollapsed(`Cuarteles sin finca vinculada (${cuartelesSinFinca.length})`);
+                cuartelesSinFinca.forEach((cuartel) => {
+                    const cuartelId = String(cuartel?.id ?? '');
+                    console.groupCollapsed(`${getCuartelLabel(cuartel)} | Sin finca vinculada`);
+                    logSingleRowTable('prod_cuartel', cuartel);
+                    logSingleRowTable('prod_cuartel_limitantes', limitantesByCuartelId.get(cuartelId) || null);
+                    logSingleRowTable('prod_cuartel_rendimientos', rendimientosByCuartelId.get(cuartelId) || null);
+                    logSingleRowTable('prod_cuartel_riesgos', riesgosByCuartelId.get(cuartelId) || null);
+                    console.groupEnd();
+                });
+                console.groupEnd();
+            }
+
+            console.groupEnd();
         }
 
 
