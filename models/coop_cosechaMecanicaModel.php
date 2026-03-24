@@ -296,19 +296,46 @@ class CoopCosechaMecanicaModel
      */
     public function correoCierreEnviado(int $contratoId, string $cooperativaIdReal): bool
     {
-        $coopId = substr($cooperativaIdReal, 0, 11);
+        $coopId = trim($cooperativaIdReal);
+        $coopId11 = substr($coopId, 0, 11);
 
-        $sql = "SELECT 1
+        $sqlLogCorreos = "SELECT 1
                 FROM log_correos
                 WHERE contrato_id = :contrato_id
-                  AND cooperativa_id_real = :coop_id
                   AND tipo = 'cierre'
                   AND enviado_ok = 1
+                  AND (
+                        cooperativa_id_real = :coop_id
+                        OR cooperativa_id_real = :coop_id_11
+                        OR LEFT(COALESCE(cooperativa_id_real, ''), 11) = :coop_id_11
+                  )
                 LIMIT 1";
 
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare($sqlLogCorreos);
         $stmt->bindValue(':contrato_id', $contratoId, PDO::PARAM_INT);
         $stmt->bindValue(':coop_id', $coopId, PDO::PARAM_STR);
+        $stmt->bindValue(':coop_id_11', $coopId11, PDO::PARAM_STR);
+        $stmt->execute();
+
+        if ((bool) $stmt->fetchColumn()) {
+            return true;
+        }
+
+        $sqlLegacy = "SELECT 1
+                FROM cosechaMecanica_coop_correo_log
+                WHERE contrato_id = :contrato_id
+                  AND tipo = 'cierre'
+                  AND (
+                        cooperativa_id_real = :coop_id
+                        OR cooperativa_id_real = :coop_id_11
+                        OR LEFT(COALESCE(cooperativa_id_real, ''), 11) = :coop_id_11
+                  )
+                LIMIT 1";
+
+        $stmt = $this->pdo->prepare($sqlLegacy);
+        $stmt->bindValue(':contrato_id', $contratoId, PDO::PARAM_INT);
+        $stmt->bindValue(':coop_id', $coopId, PDO::PARAM_STR);
+        $stmt->bindValue(':coop_id_11', $coopId11, PDO::PARAM_STR);
         $stmt->execute();
 
         return (bool) $stmt->fetchColumn();
@@ -319,19 +346,19 @@ class CoopCosechaMecanicaModel
      */
     public function registrarCorreoCierre(int $contratoId, string $cooperativaIdReal, string $correo, string $enviadoPor): void
     {
-        $coopId = substr($cooperativaIdReal, 0, 11);
+        $coopId = trim($cooperativaIdReal);
         $correoNorm = mb_strtolower(trim($correo));
         $origen = in_array($enviadoPor, ['cron', 'manual', 'check_pendientes'], true) ? $enviadoPor : 'manual';
 
-        $sql = "INSERT INTO log_correos
-                    (tipo, contrato_id, cooperativa_id_real, correo, enviado_por, enviado_ok, created_at)
+        $sql = "INSERT INTO cosechaMecanica_coop_correo_log
+                    (tipo, contrato_id, cooperativa_id_real, correo, enviado_por, created_at)
                 VALUES
-                    ('cierre', :contrato_id, :coop_id, :correo, :enviado_por, 1, NOW())";
+                    ('cierre', :contrato_id, :coop_id, :correo, :enviado_por, NOW())";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':contrato_id' => $contratoId,
-            ':coop_id' => $coopId,
+            ':coop_id' => substr($coopId, 0, 11),
             ':correo' => $correoNorm,
             ':enviado_por' => $origen,
         ]);
