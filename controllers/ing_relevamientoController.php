@@ -93,6 +93,28 @@ try {
                 ]);
                 exit;
 
+            case 'dump_tablas_productor':
+                $productorIdReal = $_GET['productor_id_real'] ?? '';
+                if ($productorIdReal === '') {
+                    http_response_code(400);
+                    ob_clean();
+                    echo json_encode([
+                        'ok'    => false,
+                        'error' => 'Parámetro productor_id_real es requerido',
+                    ]);
+                    exit;
+                }
+
+                $dump = $model->getDumpTablasProductor($productorIdReal, $idReal);
+
+                http_response_code(200);
+                ob_clean();
+                echo json_encode([
+                    'ok'   => true,
+                    'data' => $dump,
+                ]);
+                exit;
+
             default:
                 http_response_code(400);
                 ob_clean();

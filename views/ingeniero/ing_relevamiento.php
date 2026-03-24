@@ -599,7 +599,7 @@ unset($_SESSION['cierre_info']);
                             <td>${cuit}</td>
                             <td class="cell-actions">
                                 <button class="btn btn-info" onclick="abrirModificarProductor('${idRealJs}')">Modificar datos</button>
-                                <button class="icon-btn" title="Consolidar JSON (Familia + Producción)" onclick="relevamientoLogProductorFull('${idRealJs}')">
+                                <button class="icon-btn" title="Imprimir tablas del productor en consola" onclick="relevamientoLogProductorFull('${idRealJs}')">
                                     <span class="material-symbols-outlined">code</span>
                                 </button>
                             </td>
@@ -1277,6 +1277,24 @@ unset($_SESSION['cierre_info']);
             return getFormValuesAsObject(doc, '#produccion-form');
         }
 
+        async function fetchTablasDumpData(productorIdReal) {
+            const params = new URLSearchParams({
+                action: 'dump_tablas_productor',
+                productor_id_real: productorIdReal
+            });
+
+            const resp = await fetch(`${API_RELEVAMIENTO}?${params.toString()}`, {
+                credentials: 'same-origin'
+            });
+
+            const data = await resp.json();
+            if (!data.ok) {
+                throw new Error(data.error || 'Error al obtener tablas del productor');
+            }
+
+            return data.data || {};
+        }
+
         function parseBracketKey(key) {
             // Soporta: fincas[0][campo] / fincas[campo] / fincas[0]
             const re = /^([^\[]+)\[(.*?)\](?:\[(.*?)\])?$/;
@@ -1380,52 +1398,17 @@ unset($_SESSION['cierre_info']);
 
 
         function prettyConsoleLogConsolidado(payload) {
-            const productor = payload?.productor || null;
-            const familia = payload?.familia || null;
-            const produccion = payload?.produccion || null;
-
-            console.log('[Relevamiento] Productor consolidado');
-
-            // "usuarios" (base)
-            logSectionAsTable('usuarios (productor base)', productor);
-
-            // "familia" (form)
-            logSectionAsTable('relevamiento_familia (form)', familia);
-
-            // "produccion": separar por tablas según keys bracket
-            if (produccion && !produccion.__error) {
-                const grouped = groupByTables(produccion);
-
-                // Campos no-bracket (ej: productor_id_real)
-                if (grouped.__flat) {
-                    logSectionAsTable('relevamiento_produccion (flat)', grouped.__flat);
-                } else {
-                    logSectionAsTable('relevamiento_produccion (flat)', null);
-                }
-
-                // Cada "tabla" detectada (ej: fincas)
-                Object.keys(grouped).forEach((tableName) => {
-                    if (tableName === '__flat') return;
-
-                    const block = grouped[tableName];
-                    const rows = block?.rows || {};
-                    const flat = block?.flat || {};
-
-                    if (Object.keys(flat).length > 0) {
-                        logSectionAsTable(`${tableName} (flat)`, flat);
-                    } else {
-                        logSectionAsTable(`${tableName} (flat)`, null);
-                    }
-
-                    const rowArr = Object.keys(rows)
-                        .map(k => ({ __index: Number(k), ...rows[k] }))
-                        .sort((a, b) => a.__index - b.__index);
-
-                    logSectionAsTable(`${tableName} (rows)`, rowArr.length ? rowArr : null);
-                });
-            } else {
-                logSectionAsTable('relevamiento_produccion (form)', produccion);
-            }
+            console.log('[Relevamiento] Dump de tablas del productor');
+            logSectionAsTable('usuarios', payload?.usuario || null);
+            logSectionAsTable('usuarios_info', payload?.usuarios_info || null);
+            logSectionAsTable('rel_productor_coop', payload?.rel_productor_coop || null);
+            logSectionAsTable('prod_fincas', payload?.prod_fincas || null);
+            logSectionAsTable('prod_finca_direccion', payload?.prod_finca_direccion || null);
+            logSectionAsTable('rel_productor_finca', payload?.rel_productor_finca || null);
+            logSectionAsTable('prod_cuartel', payload?.prod_cuartel || null);
+            logSectionAsTable('prod_cuartel_limitantes', payload?.prod_cuartel_limitantes || null);
+            logSectionAsTable('prod_cuartel_rendimientos', payload?.prod_cuartel_rendimientos || null);
+            logSectionAsTable('prod_cuartel_riesgos', payload?.prod_cuartel_riesgos || null);
         }
 
 
@@ -1440,20 +1423,10 @@ unset($_SESSION['cierre_info']);
             }
 
             try {
-                const [familia, produccion] = await Promise.all([
-                    fetchFamiliaData(productorIdReal).catch((e) => ({ __error: e.message })),
-                    fetchProduccionData(productorIdReal).catch((e) => ({ __error: e.message }))
-                ]);
-
-                const payload = {
-                    productor: prod,
-                    familia: familia,
-                    produccion: produccion
-                };
-
+                const payload = await fetchTablasDumpData(productorIdReal);
                 prettyConsoleLogConsolidado(payload);
             } catch (e) {
-                console.error('[Relevamiento] Error al consolidar JSON:', e);
+                console.error('[Relevamiento] Error al obtener dump de tablas:', e);
             }
         }
 

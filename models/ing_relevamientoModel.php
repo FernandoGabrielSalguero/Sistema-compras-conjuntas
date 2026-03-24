@@ -151,6 +151,158 @@ class ingRelevamientoModel
     ];
   }
 
+  public function getDumpTablasProductor(string $productorIdReal, string $ingenieroIdReal): array
+  {
+    if ($productorIdReal === '') {
+      throw new InvalidArgumentException('productor_id_real es requerido');
+    }
+
+    if (!$this->productorPerteneceAIngeniero($productorIdReal, $ingenieroIdReal)) {
+      throw new RuntimeException('No autorizado para ver este productor');
+    }
+
+    $stUsuario = $this->pdo->prepare("
+      SELECT *
+      FROM usuarios
+      WHERE id_real = :prod
+        AND rol = 'productor'
+      LIMIT 1
+    ");
+    $stUsuario->execute([':prod' => $productorIdReal]);
+    $usuario = $stUsuario->fetch() ?: null;
+
+    $usuarioId = (int)($usuario['id'] ?? 0);
+
+    $usuariosInfo = [];
+    if ($usuarioId > 0) {
+      $stInfo = $this->pdo->prepare("
+        SELECT *
+        FROM usuarios_info
+        WHERE usuario_id = :uid
+        ORDER BY id ASC
+      ");
+      $stInfo->execute([':uid' => $usuarioId]);
+      $usuariosInfo = $stInfo->fetchAll() ?: [];
+    }
+
+    $stRelCoop = $this->pdo->prepare("
+      SELECT *
+      FROM rel_productor_coop
+      WHERE productor_id_real = :prod
+      ORDER BY id ASC
+    ");
+    $stRelCoop->execute([':prod' => $productorIdReal]);
+    $relProductorCoop = $stRelCoop->fetchAll() ?: [];
+
+    $stFincas = $this->pdo->prepare("
+      SELECT *
+      FROM prod_fincas
+      WHERE productor_id_real = :prod
+      ORDER BY codigo_finca ASC, id ASC
+    ");
+    $stFincas->execute([':prod' => $productorIdReal]);
+    $fincas = $stFincas->fetchAll() ?: [];
+
+    $fincaIds = array_values(array_map('intval', array_column($fincas, 'id')));
+
+    $prodFincaDireccion = [];
+    $relProductorFinca = [];
+    if (!empty($fincaIds)) {
+      $phFincas = implode(',', array_fill(0, count($fincaIds), '?'));
+
+      $stDir = $this->pdo->prepare("
+        SELECT *
+        FROM prod_finca_direccion
+        WHERE finca_id IN ($phFincas)
+        ORDER BY finca_id ASC, id ASC
+      ");
+      $stDir->execute($fincaIds);
+      $prodFincaDireccion = $stDir->fetchAll() ?: [];
+
+      $paramsRelFinca = $fincaIds;
+      array_unshift($paramsRelFinca, $productorIdReal);
+      $stRelFinca = $this->pdo->prepare("
+        SELECT *
+        FROM rel_productor_finca
+        WHERE productor_id_real = ?
+           OR finca_id IN ($phFincas)
+        ORDER BY finca_id ASC, id ASC
+      ");
+      $stRelFinca->execute($paramsRelFinca);
+      $relProductorFinca = $stRelFinca->fetchAll() ?: [];
+    }
+
+    $paramsCuarteles = [$productorIdReal];
+    $sqlCuarteles = "
+      SELECT DISTINCT pc.*
+      FROM prod_cuartel pc
+      LEFT JOIN prod_fincas pf
+        ON pf.id = pc.finca_id
+      WHERE pc.id_responsable_real = ?
+    ";
+
+    if (!empty($fincaIds)) {
+      $phFincas = implode(',', array_fill(0, count($fincaIds), '?'));
+      $sqlCuarteles .= " OR pc.finca_id IN ($phFincas) OR pf.productor_id_real = ?";
+      $paramsCuarteles = array_merge($paramsCuarteles, $fincaIds, [$productorIdReal]);
+    }
+
+    $sqlCuarteles .= " ORDER BY pc.codigo_finca ASC, pc.codigo_cuartel ASC, pc.id ASC";
+    $stCuarteles = $this->pdo->prepare($sqlCuarteles);
+    $stCuarteles->execute($paramsCuarteles);
+    $prodCuartel = $stCuarteles->fetchAll() ?: [];
+
+    $cuartelIds = array_values(array_map('intval', array_column($prodCuartel, 'id')));
+
+    $prodCuartelLimitantes = [];
+    $prodCuartelRendimientos = [];
+    $prodCuartelRiesgos = [];
+
+    if (!empty($cuartelIds)) {
+      $phCuarteles = implode(',', array_fill(0, count($cuartelIds), '?'));
+
+      $stLimitantes = $this->pdo->prepare("
+        SELECT *
+        FROM prod_cuartel_limitantes
+        WHERE cuartel_id IN ($phCuarteles)
+        ORDER BY cuartel_id ASC, id ASC
+      ");
+      $stLimitantes->execute($cuartelIds);
+      $prodCuartelLimitantes = $stLimitantes->fetchAll() ?: [];
+
+      $stRend = $this->pdo->prepare("
+        SELECT *
+        FROM prod_cuartel_rendimientos
+        WHERE cuartel_id IN ($phCuarteles)
+        ORDER BY cuartel_id ASC, id ASC
+      ");
+      $stRend->execute($cuartelIds);
+      $prodCuartelRendimientos = $stRend->fetchAll() ?: [];
+
+      $stRiesgos = $this->pdo->prepare("
+        SELECT *
+        FROM prod_cuartel_riesgos
+        WHERE cuartel_id IN ($phCuarteles)
+        ORDER BY cuartel_id ASC, id ASC
+      ");
+      $stRiesgos->execute($cuartelIds);
+      $prodCuartelRiesgos = $stRiesgos->fetchAll() ?: [];
+    }
+
+    return [
+      'usuario' => $usuario,
+      'usuarios_info' => $usuariosInfo,
+      'rel_productor_coop' => $relProductorCoop,
+      'prod_fincas' => $fincas,
+      'prod_finca_direccion' => $prodFincaDireccion,
+      'rel_productor_finca' => $relProductorFinca,
+      'prod_cuartel' => $prodCuartel,
+      'prod_cuartel_limitantes' => $prodCuartelLimitantes,
+      'prod_cuartel_rendimientos' => $prodCuartelRendimientos,
+      'prod_cuartel_riesgos' => $prodCuartelRiesgos,
+    ];
+  }
+
   public function eliminarCuartelProductor(int $cuartelId, string $productorIdReal, string $ingenieroIdReal): void
   {
     if ($cuartelId <= 0) {

@@ -16,7 +16,7 @@ anticipo	decimal(10,2)	NO		0.00
 created_at	timestamp	NO		current_timestamp()	
 updated_at	timestamp	YES		current_timestamp()	on update current_timestamp()
 
-🔁 Relaciones (entrantes): cosechaMecanica_coop_contrato_firma, cosechaMecanica_cooperativas_participacion
+🔁 Relaciones (entrantes): cosechaMecanica_cooperativas_participacion, cosechaMecanica_coop_contrato_firma
 📄 Tabla: categorias_publicaciones
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(11)	NO	PRI		auto_increment
@@ -76,7 +76,21 @@ created_at	timestamp	NO		current_timestamp()
 
 🔗 Relaciones (salientes):
 Columna contrato_id referencia a CosechaMecanica.id
-🔁 Relaciones (entrantes): CosechaMecanica, cosechaMecanica_relevamiento_finca
+🔁 Relaciones (entrantes): cosechaMecanica_facturacion, CosechaMecanica, cosechaMecanica_relevamiento_finca
+📄 Tabla: cosechaMecanica_facturacion
+Columna	Tipo	Nulo	Clave	Default	Extra
+id	bigint(20) unsigned	NO	PRI		auto_increment
+participacion_id	bigint(20) unsigned	NO	UNI		
+condicion_pago	varchar(100)	YES			
+fecha_servicio	date	YES			
+hectareas_cosechadas	decimal(10,2)	YES			
+hectareas_anticipadas	decimal(10,2)	YES			
+created_at	timestamp	NO		current_timestamp()	
+updated_at	timestamp	YES		current_timestamp()	on update current_timestamp()
+
+🔗 Relaciones (salientes):
+Columna participacion_id referencia a cosechaMecanica_cooperativas_participacion.id
+🔁 Relaciones (entrantes): cosechaMecanica_cooperativas_participacion
 📄 Tabla: cosechaMecanica_relevamiento_finca
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	bigint(20) unsigned	NO	PRI		auto_increment
@@ -821,6 +835,7 @@ Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(11)	NO	PRI		auto_increment
 productor_id_real	varchar(20)	NO	MUL		
 cooperativa_id_real	varchar(20)	NO	MUL		
+relacion_cooperativa	varchar(100)	YES			
 
 🔗 Relaciones (salientes):
 Columna cooperativa_id_real referencia a usuarios.id_real
@@ -1004,6 +1019,7 @@ rol	enum('ingeniero','cooperativa','productor','sve','piloto_drone','piloto_trac
 permiso_ingreso	enum('Habilitado','Deshabilitado')	NO		Habilitado	
 cuit	bigint(11)	NO			
 razon_social	varchar(150)	YES			
+estado_asociacion_cooperativa	varchar(100)	YES			
 id_real	varchar(20)	NO	UNI		
 revisado	enum('Esta revisado','No esta revisado')	YES			
 
