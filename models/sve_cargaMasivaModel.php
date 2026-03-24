@@ -13,6 +13,7 @@ final class CargaMasivaModel
         'cuit',
         'razon_social',
         'id_real',
+        'estado_asociacion_cooperativa',
         'nombre',
         'direccion',
         'telefono',
@@ -148,14 +149,15 @@ final class CargaMasivaModel
                  SET rol = :rol,
                      permiso_ingreso = :permiso_ingreso,
                      razon_social = :razon_social,
+                     estado_asociacion_cooperativa = :estado_asociacion_cooperativa,
                      revisado = "Esta revisado"
                  WHERE id = :id'
             );
             $qInsertUsuario = $this->pdo->prepare(
                 'INSERT INTO usuarios
-                 (usuario, contrasena, rol, permiso_ingreso, cuit, razon_social, id_real, revisado)
+                 (usuario, contrasena, rol, permiso_ingreso, cuit, razon_social, id_real, estado_asociacion_cooperativa, revisado)
                  VALUES
-                 (:usuario, :contrasena, :rol, :permiso_ingreso, :cuit, :razon_social, :id_real, "Esta revisado")'
+                 (:usuario, :contrasena, :rol, :permiso_ingreso, :cuit, :razon_social, :id_real, :estado_asociacion_cooperativa, "Esta revisado")'
             );
 
             $qSelectUserInfo = $this->pdo->prepare('SELECT id FROM usuarios_info WHERE usuario_id = :usuario_id LIMIT 1');
@@ -197,13 +199,12 @@ final class CargaMasivaModel
                 'SELECT id FROM prod_fincas WHERE productor_id_real = :productor_id_real AND codigo_finca = :codigo_finca LIMIT 1'
             );
             $qInsertFinca = $this->pdo->prepare(
-                'INSERT INTO prod_fincas (codigo_finca, productor_id_real, nombre_finca, variedad)
-                 VALUES (:codigo_finca, :productor_id_real, :nombre_finca, :variedad)'
+                'INSERT INTO prod_fincas (codigo_finca, productor_id_real, nombre_finca)
+                 VALUES (:codigo_finca, :productor_id_real, :nombre_finca)'
             );
             $qUpdateFinca = $this->pdo->prepare(
                 'UPDATE prod_fincas
-                 SET nombre_finca = :nombre_finca,
-                     variedad = :variedad
+                 SET nombre_finca = :nombre_finca
                  WHERE id = :id'
             );
 
@@ -364,6 +365,7 @@ final class CargaMasivaModel
                             ':cuit' => $r['cuit'],
                             ':razon_social' => $r['razon_social'],
                             ':id_real' => $targetIdReal !== '' ? $targetIdReal : (string)$r['cuit'],
+                            ':estado_asociacion_cooperativa' => $r['estado_asociacion_cooperativa'],
                         ]);
                         $newUserId = (int)$this->pdo->lastInsertId();
                         $u = [
@@ -388,6 +390,7 @@ final class CargaMasivaModel
                     ':rol' => $this->firstNonEmpty($r['rol'], $u['rol']) ?? 'productor',
                     ':permiso_ingreso' => $this->firstNonEmpty($r['permiso_ingreso'], $u['permiso_ingreso']) ?? 'Habilitado',
                     ':razon_social' => $r['razon_social'],
+                    ':estado_asociacion_cooperativa' => $r['estado_asociacion_cooperativa'],
                 ]);
                 $applied['usuarios_updated']++;
 
@@ -436,7 +439,6 @@ final class CargaMasivaModel
                     $qUpdateFinca->execute([
                         ':id' => (int)$fincaId,
                         ':nombre_finca' => $r['nombre_finca'],
-                        ':variedad' => $r['variedad'],
                     ]);
                     $fincaId = (int)$fincaId;
                     $applied['fincas_updated']++;
@@ -445,7 +447,6 @@ final class CargaMasivaModel
                         ':codigo_finca' => $r['codigo_finca'],
                         ':productor_id_real' => $u['id_real'],
                         ':nombre_finca' => $r['nombre_finca'],
-                        ':variedad' => $r['variedad'],
                     ]);
                     $fincaId = (int)$this->pdo->lastInsertId();
                     $applied['fincas_inserted']++;
@@ -964,7 +965,7 @@ final class CargaMasivaModel
         }
 
         $placeholders = implode(',', array_fill(0, count($cuitValues), '?'));
-        $sql = "SELECT id, id_real, rol, permiso_ingreso, razon_social, cuit
+        $sql = "SELECT id, id_real, rol, permiso_ingreso, razon_social, estado_asociacion_cooperativa, cuit
                 FROM usuarios
                 WHERE cuit IN ($placeholders)";
 
@@ -1020,7 +1021,7 @@ final class CargaMasivaModel
     private function findUserByIdReal(string $idReal): ?array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT id, id_real, rol, permiso_ingreso, razon_social, cuit
+            'SELECT id, id_real, rol, permiso_ingreso, razon_social, estado_asociacion_cooperativa, cuit
              FROM usuarios
              WHERE id_real = :id_real
              LIMIT 1'
@@ -1038,6 +1039,7 @@ final class CargaMasivaModel
             'rol' => $user['rol'] ?? null,
             'permiso_ingreso' => $user['permiso_ingreso'] ?? null,
             'razon_social' => $user['razon_social'] ?? null,
+            'estado_asociacion_cooperativa' => $user['estado_asociacion_cooperativa'] ?? null,
             'revisado' => null,
         ] : null;
 
@@ -1047,6 +1049,7 @@ final class CargaMasivaModel
             'rol' => $this->firstNonEmpty($row['rol'], $user['rol'] ?? null, 'productor'),
             'permiso_ingreso' => $this->firstNonEmpty($row['permiso_ingreso'], $user['permiso_ingreso'] ?? null, 'Habilitado'),
             'razon_social' => $row['razon_social'],
+            'estado_asociacion_cooperativa' => $row['estado_asociacion_cooperativa'],
             'revisado' => 'Esta revisado',
         ];
 
@@ -1070,7 +1073,6 @@ final class CargaMasivaModel
             'codigo_finca' => $row['codigo_finca'],
             'productor_id_real' => $targetIdReal,
             'nombre_finca' => $row['nombre_finca'],
-            'variedad' => $row['variedad'],
         ];
 
         $beforeDir = null;
@@ -1125,9 +1127,9 @@ final class CargaMasivaModel
         ];
 
         $changes = [];
-        $changes = array_merge($changes, $this->collectDiffRows('usuarios', ['cuit', 'id_real', 'rol', 'permiso_ingreso', 'razon_social', 'revisado'], $beforeUser, $afterUser));
+        $changes = array_merge($changes, $this->collectDiffRows('usuarios', ['cuit', 'id_real', 'rol', 'permiso_ingreso', 'razon_social', 'estado_asociacion_cooperativa', 'revisado'], $beforeUser, $afterUser));
         $changes = array_merge($changes, $this->collectDiffRows('usuarios_info', ['nombre', 'direccion', 'telefono', 'correo', 'fecha_nacimiento', 'categorizacion', 'tipo_relacion', 'zona_asignada'], $beforeInfo, $afterInfo));
-        $changes = array_merge($changes, $this->collectDiffRows('prod_fincas', ['codigo_finca', 'productor_id_real', 'nombre_finca', 'variedad'], $beforeFinca, $afterFinca));
+        $changes = array_merge($changes, $this->collectDiffRows('prod_fincas', ['codigo_finca', 'productor_id_real', 'nombre_finca'], $beforeFinca, $afterFinca));
         $changes = array_merge($changes, $this->collectDiffRows('prod_finca_direccion', ['departamento', 'localidad', 'calle', 'numero', 'latitud', 'longitud'], $beforeDir, $afterDir));
         $changes = array_merge($changes, $this->collectDiffRows('prod_cuartel', ['id_responsable_real', 'cooperativa_id_real', 'codigo_finca', 'nombre_finca', 'codigo_cuartel', 'variedad', 'numero_inv', 'sistema_conduccion', 'superficie_ha', 'porcentaje_cepas_produccion', 'forma_cosecha_actual', 'porcentaje_malla_buen_estado', 'edad_promedio_encepado_anios', 'estado_estructura_sistema', 'labores_mecanizables'], $beforeCuartel, $afterCuartel));
         $changes = array_merge($changes, $this->collectDiffRows('prod_cuartel_limitantes', self::CUARTEL_LIMITANTES_FIELDS, $beforeLimitantes, $afterLimitantes));
@@ -1244,15 +1246,34 @@ final class CargaMasivaModel
 
     private function collectRelationDiffRows(string $table, array $beforeRows, array $after): array
     {
-        $beforePacked = empty($beforeRows) ? null : implode(', ', array_values(array_unique($beforeRows)));
+        $beforeCoops = [];
+
+        foreach ($beforeRows as $row) {
+            if (is_array($row)) {
+                $coop = $this->nullableString($row['cooperativa_id_real'] ?? null);
+                if ($coop !== null) {
+                    $beforeCoops[] = $coop;
+                }
+                continue;
+            }
+
+            $coop = $this->nullableString($row);
+            if ($coop !== null) {
+                $beforeCoops[] = $coop;
+            }
+        }
+
+        $beforePacked = empty($beforeCoops) ? null : implode(', ', array_values(array_unique($beforeCoops)));
         $afterPacked = (string)$after['cooperativa_id_real'];
-        return [[
+        $rows = [[
             'tabla' => $table,
             'campo' => 'cooperativa_id_real',
             'actual' => $beforePacked,
             'nuevo' => $afterPacked,
             'cambia' => $beforePacked === null || strpos((string)$beforePacked, $afterPacked) === false || substr_count((string)$beforePacked, ',') > 0,
         ]];
+
+        return $rows;
     }
 
     private function normCmp($value): string
@@ -1279,7 +1300,7 @@ final class CargaMasivaModel
     private function fetchFincaByProductorAndCodigo(string $productorIdReal, string $codigoFinca): ?array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT id, codigo_finca, productor_id_real, nombre_finca, variedad
+            'SELECT id, codigo_finca, productor_id_real, nombre_finca
              FROM prod_fincas
              WHERE productor_id_real = :productor_id_real
                AND codigo_finca = :codigo_finca
@@ -1736,6 +1757,7 @@ final class CargaMasivaModel
             'cuit' => $this->normalizeCuit($r['cuit'] ?? null),
             'razon_social' => $this->nullableString($r['razon_social'] ?? null),
             'id_real' => $this->nullableString($r['id_real'] ?? null),
+            'estado_asociacion_cooperativa' => $this->nullableString($r['estado_asociacion_cooperativa'] ?? null),
             'nombre' => $this->nullableString($r['nombre'] ?? null),
             'direccion' => $this->nullableString($r['direccion'] ?? null),
             'telefono' => $this->nullableString($r['telefono'] ?? null),
@@ -1768,7 +1790,20 @@ final class CargaMasivaModel
 
     private function normalizeHeader(string $header): string
     {
-        return strtolower(trim($header));
+        $header = strtolower(trim($header));
+        $header = str_replace(
+            ['á', 'é', 'í', 'ó', 'ú', 'ü', 'ñ'],
+            ['a', 'e', 'i', 'o', 'u', 'u', 'n'],
+            $header
+        );
+
+        $aliases = [
+            'echa_nacimiento' => 'fecha_nacimiento',
+            'relacion_cooperativa' => 'estado_asociacion_cooperativa',
+            'relacion_con_cooperativa' => 'estado_asociacion_cooperativa',
+        ];
+
+        return $aliases[$header] ?? $header;
     }
 
     private function normalizeCuit($value): ?string

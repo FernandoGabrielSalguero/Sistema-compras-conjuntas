@@ -291,6 +291,7 @@ checkAccess('sve');
             const APPLY_BATCH_SIZE = 50;
             const REQUIRED_HEADERS = [
                 'rol', 'permiso_ingreso', 'cuit', 'razon_social', 'id_real',
+                'estado_asociacion_cooperativa',
                 'nombre', 'direccion', 'telefono', 'correo', 'fecha_nacimiento',
                 'categorizacion', 'tipo_relacion', 'zona_asignada',
                 'codigo_finca', 'nombre_finca', 'variedad',
@@ -325,7 +326,23 @@ checkAccess('sve');
             let renderedPreviewRows = [];
 
             function normalizeHeader(h) {
-                return String(h || '').trim().toLowerCase();
+                const normalized = String(h || '')
+                    .trim()
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '');
+
+                const aliases = {
+                    'direccion': 'direccion',
+                    'telefono': 'telefono',
+                    'fecha_nacimiento': 'fecha_nacimiento',
+                    'echa_nacimiento': 'fecha_nacimiento',
+                    'relacion_cooperativa': 'estado_asociacion_cooperativa',
+                    'relacion_con_cooperativa': 'estado_asociacion_cooperativa',
+                    'variedad': 'variedad'
+                };
+
+                return aliases[normalized] || normalized;
             }
 
             function setStatus(text) {
