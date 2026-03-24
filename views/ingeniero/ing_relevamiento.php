@@ -1418,14 +1418,13 @@ unset($_SESSION['cierre_info']);
         }
 
         function logSingleRowTable(title, row) {
-            console.groupCollapsed(title);
+            console.log(title);
             console.table(toKeyValueRows(row || {}));
-            console.groupEnd();
         }
 
         function logMultiRowTable(title, rows) {
             const safeRows = Array.isArray(rows) ? rows : [];
-            console.groupCollapsed(`${title} (${safeRows.length})`);
+            console.log(`${title} (${safeRows.length})`);
             if (!safeRows.length) {
                 console.table([{ columna_sql: '(sin filas)', valor: '' }]);
             } else {
@@ -1434,18 +1433,16 @@ unset($_SESSION['cierre_info']);
                     console.table(toKeyValueRows(rowObj || {}));
                 });
             }
-            console.groupEnd();
         }
 
         function logCompactTable(title, rows) {
             const safeRows = Array.isArray(rows) ? rows : [];
-            console.groupCollapsed(`${title} (${safeRows.length})`);
+            console.log(`${title} (${safeRows.length})`);
             if (!safeRows.length) {
                 console.table([{ estado: 'sin filas' }]);
             } else {
                 console.table(safeRows);
             }
-            console.groupEnd();
         }
 
         function buildProductorSummary(usuario, usuariosInfo, relProductorCoop, prodFincas, prodCuartel, cuartelesSinFinca) {
