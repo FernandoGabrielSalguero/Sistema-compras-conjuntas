@@ -424,6 +424,15 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             return img;
         }
 
+        function describeImage(img, index = 0) {
+            if (!img) return `img#${index}`;
+            if (img.id) return `#${img.id}`;
+            const alt = (img.getAttribute('alt') || '').trim();
+            if (alt) return `${alt} (${index})`;
+            const src = img.getAttribute('src') || '';
+            return `${src || 'sin-src'} (${index})`;
+        }
+
         function waitForImages(container) {
             const imgs = Array.from(container.querySelectorAll('img'));
             if (!imgs.length) return Promise.resolve();
@@ -434,6 +443,76 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                 img.addEventListener('error', done, { once: true });
             }));
             return Promise.all(waits).then(() => undefined);
+        }
+
+        function probeImage(img, index) {
+            return new Promise(resolve => {
+                const label = describeImage(img, index);
+                const src = img.getAttribute('src');
+
+                if (!src) {
+                    console.warn('[RF PDF] Imagen sin src, se omite:', label);
+                    return resolve({ ok: false, reason: 'missing-src', label });
+                }
+
+                if (src.startsWith('data:') || src.startsWith('blob:')) {
+                    console.log('[RF PDF] Imagen inline lista para exportar:', label);
+                    return resolve({ ok: true, reason: 'inline', label });
+                }
+
+                const tester = new Image();
+                let settled = false;
+                let timeoutId = null;
+                const finish = (ok, reason) => {
+                    if (settled) return;
+                    settled = true;
+                    if (timeoutId) clearTimeout(timeoutId);
+                    resolve({ ok, reason, label, src });
+                };
+
+                tester.crossOrigin = 'anonymous';
+                tester.referrerPolicy = 'no-referrer';
+                tester.onload = () => {
+                    console.log('[RF PDF] Imagen validada:', label, src);
+                    finish(true, 'loaded');
+                };
+                tester.onerror = () => {
+                    console.warn('[RF PDF] Imagen con error, se omite:', label, src);
+                    finish(false, 'error');
+                };
+
+                timeoutId = setTimeout(() => {
+                    console.warn('[RF PDF] Imagen con timeout, se omite:', label, src);
+                    finish(false, 'timeout');
+                }, 8000);
+
+                try {
+                    tester.src = src;
+                } catch (error) {
+                    console.warn('[RF PDF] Excepción al validar imagen, se omite:', label, error);
+                    finish(false, 'exception');
+                }
+            });
+        }
+
+        async function validateExportImages(container) {
+            if (!container) return [];
+            const imgs = Array.from(container.querySelectorAll('img'));
+            if (!imgs.length) {
+                console.log('[RF PDF] No hay imágenes para validar.');
+                return [];
+            }
+
+            console.log(`[RF PDF] Validando ${imgs.length} imagen(es) antes de exportar.`);
+            const results = await Promise.all(imgs.map((img, index) => probeImage(img, index)));
+
+            results.forEach((result, index) => {
+                if (!result.ok) {
+                    markOptionalImageMissing(imgs[index]);
+                }
+            });
+
+            return results;
         }
 
         function markOptionalImageMissing(img) {
@@ -710,9 +789,15 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             if (pdfExportInFlight) return;
             pdfExportInFlight = true;
             try {
+                console.groupCollapsed('[RF PDF] Inicio de exportación');
                 setPdfButtonState({ loading: true, label: 'Preparando PDF', progress: 5 });
                 await ensurePdfLibs();
                 if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
+                    console.error('[RF PDF] Librerías de PDF no disponibles.', {
+                        html2canvas: !!window.html2canvas,
+                        jspdf: !!window.jspdf,
+                        jsPDF: !!(window.jspdf && window.jspdf.jsPDF)
+                    });
                     if (typeof window.showAlert === 'function') window.showAlert('error', 'No se pudieron cargar las librerías de PDF.');
                     return;
                 }
@@ -724,11 +809,14 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                 // Área a exportar
                 const target = document.getElementById('fito-formato');
                 if (!target) {
+                    console.error('[RF PDF] No se encontró #fito-formato.');
                     if (typeof window.showAlert === 'function') window.showAlert('error', 'No se encontró el contenido a exportar.');
                     return;
                 }
                 await waitForImages(target);
+                const imageValidation = await validateExportImages(target);
                 sanitizeExportNode(target);
+                console.log('[RF PDF] Resultado validación imágenes:', imageValidation);
                 setPdfButtonState({ loading: true, label: 'Renderizando PDF', progress: 55 });
 
                 // html2canvas de alta calidad
@@ -744,6 +832,10 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                         sanitizeExportNode(clonedTarget);
                     }
                 });
+                console.log('[RF PDF] Canvas generado:', {
+                    width: canvas.width,
+                    height: canvas.height
+                });
 
                 setPdfButtonState({ loading: true, label: 'Armando páginas', progress: 78 });
                 const imgData = canvas.toDataURL('image/jpeg', 0.92);
@@ -756,6 +848,7 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 
                 let y = 0;
                 let remaining = imgH;
+                let pageCount = 0;
 
                 // Partimos la imagen si excede una página
                 while (remaining > 0) {
@@ -780,9 +873,14 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                     pdf.addImage(pageImg, 'JPEG', 0, 0, imgW, pageCanvas.height * (imgW / canvas.width));
                     remaining -= pageH;
                     y += pageH;
+                    pageCount += 1;
                 }
 
                 const num = (document.getElementById('fito-num')?.textContent || 'registro');
+                console.log('[RF PDF] PDF listo para descargar:', {
+                    archivo: `registro_fitosanitario_${num}.pdf`,
+                    paginas: pageCount
+                });
                 setPdfButtonState({ loading: true, label: 'Descargando', progress: 96 });
                 pdf.save(`registro_fitosanitario_${num}.pdf`);
                 setPdfButtonState({ loading: true, label: 'Completado', progress: 100 });
@@ -790,11 +888,12 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                 // Volver al estado previo
                 if (wasJSON) activate('json');
             } catch (err) {
-                console.error(err);
+                console.error('[RF PDF] Error generando PDF:', err);
                 if (typeof window.showAlert === 'function') window.showAlert('error', 'No se pudo generar el PDF.');
             } finally {
                 pdfExportInFlight = false;
                 setTimeout(() => setPdfButtonState({ loading: false }), 600);
+                console.groupEnd();
             }
         }
 
