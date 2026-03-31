@@ -436,11 +436,34 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         function waitForImages(container) {
             const imgs = Array.from(container.querySelectorAll('img'));
             if (!imgs.length) return Promise.resolve();
-            const waits = imgs.map(img => new Promise(resolve => {
-                if (img.complete && img.naturalWidth > 0) return resolve();
-                const done = () => resolve();
-                img.addEventListener('load', done, { once: true });
-                img.addEventListener('error', done, { once: true });
+            const waits = imgs.map((img, index) => new Promise(resolve => {
+                const label = describeImage(img, index);
+                const src = img.getAttribute('src');
+
+                if (!src) {
+                    console.warn('[RF PDF] waitForImages omite imagen sin src:', label);
+                    return resolve();
+                }
+
+                if (img.complete) {
+                    console.log('[RF PDF] waitForImages imagen ya resuelta:', label, {
+                        naturalWidth: img.naturalWidth,
+                        naturalHeight: img.naturalHeight
+                    });
+                    return resolve();
+                }
+
+                const done = (eventName) => {
+                    console.log('[RF PDF] waitForImages evento recibido:', label, eventName);
+                    resolve();
+                };
+                img.addEventListener('load', () => done('load'), { once: true });
+                img.addEventListener('error', () => done('error'), { once: true });
+
+                setTimeout(() => {
+                    console.warn('[RF PDF] waitForImages timeout, continúa igual:', label, src);
+                    resolve();
+                }, 8000);
             }));
             return Promise.all(waits).then(() => undefined);
         }
@@ -789,9 +812,10 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             if (pdfExportInFlight) return;
             pdfExportInFlight = true;
             try {
-                console.groupCollapsed('[RF PDF] Inicio de exportación');
+                console.log('[RF PDF] Inicio de exportación');
                 setPdfButtonState({ loading: true, label: 'Preparando PDF', progress: 5 });
                 await ensurePdfLibs();
+                console.log('[RF PDF] Librerías listas');
                 if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
                     console.error('[RF PDF] Librerías de PDF no disponibles.', {
                         html2canvas: !!window.html2canvas,
@@ -804,6 +828,7 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                 // Forzar pestaña Formato para capturar
                 const wasJSON = !paneJSON.classList.contains('hidden');
                 activate('formato');
+                console.log('[RF PDF] Pestaña formato activada');
                 setPdfButtonState({ loading: true, label: 'Revisando imágenes', progress: 20 });
 
                 // Área a exportar
@@ -813,7 +838,9 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                     if (typeof window.showAlert === 'function') window.showAlert('error', 'No se encontró el contenido a exportar.');
                     return;
                 }
+                console.log('[RF PDF] Inicia waitForImages');
                 await waitForImages(target);
+                console.log('[RF PDF] waitForImages finalizado');
                 const imageValidation = await validateExportImages(target);
                 sanitizeExportNode(target);
                 console.log('[RF PDF] Resultado validación imágenes:', imageValidation);
@@ -893,7 +920,7 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             } finally {
                 pdfExportInFlight = false;
                 setTimeout(() => setPdfButtonState({ loading: false }), 600);
-                console.groupEnd();
+                console.log('[RF PDF] Fin de exportación');
             }
         }
 
