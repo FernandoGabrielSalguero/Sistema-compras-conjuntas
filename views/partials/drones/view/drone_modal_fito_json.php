@@ -248,6 +248,47 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         object-fit: cover;
         width: 100%;
     }
+
+    #btn-fito-pdf.pdf-loading {
+        position: relative;
+        overflow: hidden;
+        min-width: 210px;
+        pointer-events: none;
+    }
+
+    #btn-fito-pdf.pdf-loading::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        width: calc(var(--pdf-progress, 0) * 1%);
+        background: rgba(255, 255, 255, 0.22);
+        transition: width .2s ease;
+        pointer-events: none;
+    }
+
+    #btn-fito-pdf .pdf-btn-content {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    #btn-fito-pdf .pdf-spinner {
+        width: 14px;
+        height: 14px;
+        border-radius: 999px;
+        border: 2px solid rgba(255, 255, 255, 0.35);
+        border-top-color: #fff;
+        animation: fito-pdf-spin .8s linear infinite;
+    }
+
+    @keyframes fito-pdf-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
 </style>
 
 <!-- Export a PDF -->
@@ -308,6 +349,7 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         const btnCa = document.getElementById('btn-fito-cancelar');
         const btnPrint = document.getElementById('btn-imprimir');
         const btnPDF = document.getElementById('btn-fito-pdf');
+        let pdfExportInFlight = false;
 
 
         // helpers
@@ -368,6 +410,17 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             img.decoding = 'async';
             img.crossOrigin = 'anonymous';
             img.referrerPolicy = 'no-referrer';
+            img.dataset.optionalMedia = '1';
+            img.addEventListener('error', () => {
+                img.dataset.mediaMissing = '1';
+                img.removeAttribute('src');
+                const figure = img.closest('figure');
+                if (figure) {
+                    figure.remove();
+                } else {
+                    img.style.display = 'none';
+                }
+            }, { once: true });
             return img;
         }
 
@@ -381,6 +434,86 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                 img.addEventListener('error', done, { once: true });
             }));
             return Promise.all(waits).then(() => undefined);
+        }
+
+        function markOptionalImageMissing(img) {
+            if (!img) return;
+            img.dataset.mediaMissing = '1';
+            img.removeAttribute('src');
+            img.style.display = 'none';
+            const wrapper = img.parentElement;
+            if (wrapper) wrapper.style.display = 'none';
+            const figure = img.closest('figure');
+            if (figure) figure.remove();
+        }
+
+        function bindOptionalImage(img, url) {
+            if (!img) return;
+            if (!url) {
+                markOptionalImageMissing(img);
+                return;
+            }
+
+            img.dataset.optionalMedia = '1';
+            img.dataset.mediaMissing = '0';
+            img.style.display = '';
+            const wrapper = img.parentElement;
+            if (wrapper) wrapper.style.display = '';
+            img.crossOrigin = 'anonymous';
+            img.referrerPolicy = 'no-referrer';
+            img.onerror = () => markOptionalImageMissing(img);
+            img.src = url;
+        }
+
+        function sanitizeExportNode(node) {
+            if (!node) return;
+
+            node.querySelectorAll('img').forEach(img => {
+                const src = img.getAttribute('src');
+                const missing = img.dataset.mediaMissing === '1';
+                const broken = !src || (img.complete && img.naturalWidth === 0);
+                if (missing || broken) {
+                    const figure = img.closest('figure');
+                    if (figure) {
+                        figure.remove();
+                    } else {
+                        const wrapper = img.parentElement;
+                        img.remove();
+                        const hasOtherImage = wrapper && wrapper.querySelector && wrapper.querySelector('img');
+                        if (!hasOtherImage && wrapper && wrapper.querySelector('div')) {
+                            wrapper.style.display = 'none';
+                        }
+                    }
+                }
+            });
+        }
+
+        function setPdfButtonState(state) {
+            if (!btnPDF) return;
+
+            if (!btnPDF.dataset.defaultLabel) {
+                btnPDF.dataset.defaultLabel = btnPDF.textContent.trim() || 'Descargar PDF';
+            }
+
+            if (!state || state.loading === false) {
+                btnPDF.disabled = false;
+                btnPDF.classList.remove('pdf-loading');
+                btnPDF.style.removeProperty('--pdf-progress');
+                btnPDF.innerHTML = btnPDF.dataset.defaultLabel;
+                return;
+            }
+
+            const progress = Math.max(0, Math.min(100, Number(state.progress ?? 0)));
+            const label = state.label || btnPDF.dataset.defaultLabel;
+            btnPDF.disabled = true;
+            btnPDF.classList.add('pdf-loading');
+            btnPDF.style.setProperty('--pdf-progress', progress);
+            btnPDF.innerHTML = `
+                <span class="pdf-btn-content">
+                    <span class="pdf-spinner" aria-hidden="true"></span>
+                    <span>${esc(label)} ${progress}%</span>
+                </span>
+            `;
         }
 
         function populateFormato(data) {
@@ -410,9 +543,7 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                 rep.vol_aplicado 
             );
 
-            if (hasCond) {
-                condBox.style.display = 'block';
-            }
+            condBox.style.display = hasCond ? 'block' : 'none';
             horaInEl.textContent = rep.hora_ingreso || '';
             horaOutEl.textContent = rep.hora_egreso || '';
             lavadoDronEl.textContent = rep.lavado_dron_miner || '';
@@ -438,6 +569,8 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 
             // galería + firmas
             galEl.innerHTML = '';
+            markOptionalImageMissing(firmaPrestadorEl);
+            markOptionalImageMissing(firmaClienteEl);
             let firmaPrestador = '';
             let firmaCliente = '';
             media.forEach(m => {
@@ -454,16 +587,8 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                     firmaCliente = url;
                 }
             });
-            if (firmaPrestador) {
-                firmaPrestadorEl.src = firmaPrestador;
-                firmaPrestadorEl.crossOrigin = 'anonymous';
-                firmaPrestadorEl.referrerPolicy = 'no-referrer';
-            }
-            if (firmaCliente) {
-                firmaClienteEl.src = firmaCliente;
-                firmaClienteEl.crossOrigin = 'anonymous';
-                firmaClienteEl.referrerPolicy = 'no-referrer';
-            }
+            bindOptionalImage(firmaPrestadorEl, firmaPrestador);
+            bindOptionalImage(firmaClienteEl, firmaCliente);
         }
 
         function openModal() {
@@ -476,8 +601,10 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
             pre.textContent = '';
             document.querySelector('#fito-tabla-productos tbody').innerHTML = '';
             document.getElementById('fito-galeria').innerHTML = '';
-            document.getElementById('fito-firma-prestador').removeAttribute('src');
-            document.getElementById('fito-firma-cliente').removeAttribute('src');
+            markOptionalImageMissing(document.getElementById('fito-firma-prestador'));
+            markOptionalImageMissing(document.getElementById('fito-firma-cliente'));
+            setPdfButtonState({ loading: false });
+            pdfExportInFlight = false;
         }
 
         async function fetchDeepJSON(id) {
@@ -580,7 +707,10 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         }
 
         async function exportPDF() {
+            if (pdfExportInFlight) return;
+            pdfExportInFlight = true;
             try {
+                setPdfButtonState({ loading: true, label: 'Preparando PDF', progress: 5 });
                 await ensurePdfLibs();
                 if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
                     if (typeof window.showAlert === 'function') window.showAlert('error', 'No se pudieron cargar las librerías de PDF.');
@@ -589,6 +719,7 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                 // Forzar pestaña Formato para capturar
                 const wasJSON = !paneJSON.classList.contains('hidden');
                 activate('formato');
+                setPdfButtonState({ loading: true, label: 'Revisando imágenes', progress: 20 });
 
                 // Área a exportar
                 const target = document.getElementById('fito-formato');
@@ -597,6 +728,8 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                     return;
                 }
                 await waitForImages(target);
+                sanitizeExportNode(target);
+                setPdfButtonState({ loading: true, label: 'Renderizando PDF', progress: 55 });
 
                 // html2canvas de alta calidad
                 const canvas = await html2canvas(target, {
@@ -605,9 +738,14 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                     allowTaint: true,
                     imageTimeout: 15000,
                     backgroundColor: '#ffffff',
-                    windowWidth: document.documentElement.scrollWidth
+                    windowWidth: document.documentElement.scrollWidth,
+                    onclone: (clonedDoc) => {
+                        const clonedTarget = clonedDoc.getElementById('fito-formato');
+                        sanitizeExportNode(clonedTarget);
+                    }
                 });
 
+                setPdfButtonState({ loading: true, label: 'Armando páginas', progress: 78 });
                 const imgData = canvas.toDataURL('image/jpeg', 0.92);
                 const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
 
@@ -645,13 +783,18 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                 }
 
                 const num = (document.getElementById('fito-num')?.textContent || 'registro');
+                setPdfButtonState({ loading: true, label: 'Descargando', progress: 96 });
                 pdf.save(`registro_fitosanitario_${num}.pdf`);
+                setPdfButtonState({ loading: true, label: 'Completado', progress: 100 });
 
                 // Volver al estado previo
                 if (wasJSON) activate('json');
             } catch (err) {
                 console.error(err);
                 if (typeof window.showAlert === 'function') window.showAlert('error', 'No se pudo generar el PDF.');
+            } finally {
+                pdfExportInFlight = false;
+                setTimeout(() => setPdfButtonState({ loading: false }), 600);
             }
         }
 
