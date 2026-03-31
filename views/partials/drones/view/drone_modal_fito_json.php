@@ -528,14 +528,25 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
 
             console.log(`[RF PDF] Validando ${imgs.length} imagen(es) antes de exportar.`);
             const results = await Promise.all(imgs.map((img, index) => probeImage(img, index)));
-
-            results.forEach((result, index) => {
-                if (!result.ok) {
-                    markOptionalImageMissing(imgs[index]);
-                }
-            });
-
             return results;
+        }
+
+        function createExportClone(node) {
+            if (!node) return null;
+            const clone = node.cloneNode(true);
+            clone.id = 'fito-formato-export-clone';
+            clone.style.position = 'fixed';
+            clone.style.left = '-20000px';
+            clone.style.top = '0';
+            clone.style.width = `${Math.ceil(node.getBoundingClientRect().width || node.offsetWidth || 1024)}px`;
+            clone.style.maxWidth = 'none';
+            clone.style.zIndex = '-1';
+            clone.style.pointerEvents = 'none';
+            clone.style.opacity = '1';
+            clone.style.visibility = 'visible';
+            clone.style.background = '#fff';
+            document.body.appendChild(clone);
+            return clone;
         }
 
         function markOptionalImageMissing(img) {
@@ -811,6 +822,7 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
         async function exportPDF() {
             if (pdfExportInFlight) return;
             pdfExportInFlight = true;
+            let exportTarget = null;
             try {
                 console.log('[RF PDF] Inicio de exportación');
                 setPdfButtonState({ loading: true, label: 'Preparando PDF', progress: 5 });
@@ -838,26 +850,30 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                     if (typeof window.showAlert === 'function') window.showAlert('error', 'No se encontró el contenido a exportar.');
                     return;
                 }
+                exportTarget = createExportClone(target);
+                console.log('[RF PDF] Clon de exportación creado');
                 console.log('[RF PDF] Inicia waitForImages');
-                await waitForImages(target);
+                await waitForImages(exportTarget);
                 console.log('[RF PDF] waitForImages finalizado');
-                const imageValidation = await validateExportImages(target);
-                sanitizeExportNode(target);
+                const imageValidation = await validateExportImages(exportTarget);
+                imageValidation.forEach((result, index) => {
+                    if (!result.ok) {
+                        const cloneImgs = exportTarget ? Array.from(exportTarget.querySelectorAll('img')) : [];
+                        if (cloneImgs[index]) markOptionalImageMissing(cloneImgs[index]);
+                    }
+                });
+                sanitizeExportNode(exportTarget);
                 console.log('[RF PDF] Resultado validación imágenes:', imageValidation);
                 setPdfButtonState({ loading: true, label: 'Renderizando PDF', progress: 55 });
 
                 // html2canvas de alta calidad
-                const canvas = await html2canvas(target, {
+                const canvas = await html2canvas(exportTarget, {
                     scale: 2, // más DPI
                     useCORS: true,
                     allowTaint: true,
                     imageTimeout: 15000,
                     backgroundColor: '#ffffff',
-                    windowWidth: document.documentElement.scrollWidth,
-                    onclone: (clonedDoc) => {
-                        const clonedTarget = clonedDoc.getElementById('fito-formato');
-                        sanitizeExportNode(clonedTarget);
-                    }
+                    windowWidth: Math.ceil(exportTarget.getBoundingClientRect().width || exportTarget.offsetWidth || document.documentElement.scrollWidth)
                 });
                 console.log('[RF PDF] Canvas generado:', {
                     width: canvas.width,
@@ -918,6 +934,10 @@ $isSVE = isset($_SESSION['rol']) && strtolower((string)$_SESSION['rol']) === 'sv
                 console.error('[RF PDF] Error generando PDF:', err);
                 if (typeof window.showAlert === 'function') window.showAlert('error', 'No se pudo generar el PDF.');
             } finally {
+                if (exportTarget && exportTarget.parentNode) {
+                    exportTarget.parentNode.removeChild(exportTarget);
+                    console.log('[RF PDF] Clon de exportación removido');
+                }
                 pdfExportInFlight = false;
                 setTimeout(() => setPdfButtonState({ loading: false }), 600);
                 console.log('[RF PDF] Fin de exportación');
