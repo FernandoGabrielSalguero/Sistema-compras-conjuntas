@@ -556,8 +556,8 @@ try {
         }
 
         .modal-content {
-            width: min(1040px, 100%);
-            max-width: (1040px);
+            width: 1040px !important;
+            max-width: calc(100vw - 3rem) !important;
             max-height: calc(100vh - 3rem);
             overflow-y: auto;
             padding: 2rem;
