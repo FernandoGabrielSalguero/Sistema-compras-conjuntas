@@ -116,8 +116,10 @@ try {
         }
 
         .layout {
-            display: block;
+            display: block !important;
+            width: 100%;
             padding: 1.1rem 0 2rem;
+            margin: 0;
         }
 
         .sidebar {
@@ -143,8 +145,12 @@ try {
         }
 
         .main {
+            display: block;
             width: 100%;
-            max-width: 100%;
+            max-width: none;
+            margin: 0;
+            padding: 0;
+            min-width: 0;
         }
 
         .categories-card {
