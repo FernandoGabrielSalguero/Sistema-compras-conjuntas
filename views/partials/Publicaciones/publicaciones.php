@@ -229,20 +229,32 @@ try {
             justify-content: center;
             align-items: center;
             gap: 1rem;
-            text-align: center;
         }
 
         .hero-brand {
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: stretch;
             gap: 0.85rem;
             width: 100%;
+            max-width: 820px;
+        }
+
+        .hero-heading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.1rem;
+        }
+
+        .hero-copy {
+            text-align: left;
         }
 
         .hero-brand .brand-logo {
-            width: 82px;
-            height: 82px;
+            width: 132px;
+            height: 132px;
+            flex: 0 0 auto;
         }
 
         .eyebrow {
@@ -271,6 +283,7 @@ try {
             max-width: 720px;
             color: var(--muted);
             line-height: 1.7;
+            text-align: left;
         }
 
         .accordion-item {
@@ -709,6 +722,22 @@ try {
                 align-items: stretch;
             }
 
+            .hero-heading {
+                flex-direction: column-reverse;
+                text-align: center;
+            }
+
+            .hero-copy,
+            .hero p {
+                text-align: center;
+            }
+
+            .hero-brand .brand-logo {
+                width: 104px;
+                height: 104px;
+                margin: 0 auto;
+            }
+
             .toolbar-actions {
                 justify-content: stretch;
             }
@@ -757,9 +786,13 @@ try {
                 <section class="hero">
                     <div class="hero-top">
                         <div class="hero-brand">
-                            <img class="brand-logo" src="/assets/png/logo_con_color_original.png" alt="Logo SVE">
-                            <span class="eyebrow">Centro de documentación</span>
-                            <h1>Publicaciones técnicas</h1>
+                            <div class="hero-heading">
+                                <div class="hero-copy">
+                                    <span class="eyebrow">Centro de documentación</span>
+                                    <h1>Publicaciones técnicas</h1>
+                                </div>
+                                <img class="brand-logo" src="/assets/png/logo_con_color_original.png" alt="Logo SVE">
+                            </div>
                             <p>
                                 Una biblioteca digital pensada para consultar ensayos, análisis y documentos de manera
                                 ordenada, clara e intuitiva desde cualquier dispositivo.
