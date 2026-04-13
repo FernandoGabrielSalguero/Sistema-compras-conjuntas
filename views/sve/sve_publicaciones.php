@@ -144,6 +144,33 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         .product-card {
             position: relative;
         }
+
+        .edit-mode-banner {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 12px 14px;
+            border: 1px solid #c4b5fd;
+            border-radius: 12px;
+            background: #f5f3ff;
+        }
+
+        .edit-mode-banner.visible {
+            display: flex;
+        }
+
+        .edit-mode-banner strong {
+            color: #4c1d95;
+        }
+
+        .form-actions {
+            grid-column: span 4;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
     </style>
 </head>
 
@@ -271,6 +298,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                         <div class="triple-form">
                             <h3>Realicemos una nueva publicación</h3>
                             <form class="form-grid grid-4" id="form-publicacion" enctype="multipart/form-data">
+                                <div class="edit-mode-banner" id="edit-mode-banner" style="grid-column: span 4;">
+                                    <strong>Editando publicación existente</strong>
+                                    <button type="button" class="btn btn-cancelar" onclick="resetearFormularioPublicacion()">Cancelar edición</button>
+                                </div>
                                 <!-- Título -->
                                 <div class="input-group">
                                     <label for="titulo">Título</label>
@@ -337,7 +368,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                                 </div>
 
                                 <!-- Botón guardar -->
-                                <div style="grid-column: span 4; text-align: right;">
+                                <div class="form-actions">
                                     <button type="submit" class="btn btn-disabled" id="btn-guardar" disabled>Guardar publicación</button>
                                 </div>
                             </form>
@@ -625,6 +656,47 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 });
         });
 
+        function formatearFecha(fecha) {
+            if (!fecha) return 'Sin fecha';
+
+            const partes = String(fecha).split('-');
+            if (partes.length === 3) {
+                const [year, month, day] = partes;
+                return `${month}/${day}/${year}`;
+            }
+
+            const parsed = new Date(fecha);
+            if (!Number.isNaN(parsed.getTime())) {
+                const month = String(parsed.getMonth() + 1).padStart(2, '0');
+                const day = String(parsed.getDate()).padStart(2, '0');
+                const year = parsed.getFullYear();
+                return `${month}/${day}/${year}`;
+            }
+
+            return fecha;
+        }
+
+        function resetearFormularioPublicacion() {
+            const form = document.getElementById('form-publicacion');
+            const inputHidden = document.getElementById('id_publicacion');
+            const subSelect = document.getElementById('select-subcategoria');
+            const archivoInput = document.getElementById('archivo');
+            const btn = document.getElementById('btn-guardar');
+            const banner = document.getElementById('edit-mode-banner');
+
+            form.reset();
+
+            if (inputHidden) {
+                inputHidden.remove();
+            }
+
+            subSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
+            subSelect.disabled = true;
+            archivoInput.required = true;
+            btn.textContent = 'Guardar publicación';
+            banner.classList.remove('visible');
+        }
+
         // funciones para enviar el formulario de publicación a la base de datos
         document.getElementById('form-publicacion').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -648,9 +720,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     if (resp.success) {
                         showToast('success', 'Publicación guardada correctamente.');
                         cargarPublicaciones();
-                        form.reset();
-                        document.getElementById('select-subcategoria').innerHTML = '<option value="">Seleccionar subcategoría</option>';
-                        document.getElementById('select-subcategoria').disabled = true;
+                        resetearFormularioPublicacion();
                     } else {
                         showToast('error', '❌ Error al guardar publicación.');
                         console.error(resp.error || 'Error desconocido');
@@ -662,7 +732,9 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 })
                 .finally(() => {
                     btn.disabled = false;
-                    btn.textContent = 'Guardar publicación';
+                    if (!document.getElementById('id_publicacion')) {
+                        btn.textContent = 'Guardar publicación';
+                    }
                 });
         });
 
@@ -704,7 +776,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                         <div class="user-info">
                             <div>
                                 <strong>${pub.autor}</strong>
-                                <div class="role">${pub.fecha_publicacion}</div>
+                                <div class="role">${formatearFecha(pub.fecha_publicacion)}</div>
                             </div>
                         </div>
 
@@ -818,6 +890,8 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     inputHidden.value = data.id;
 
                     // ✅ Acá habilitamos el botón sin exigir archivo
+                    document.getElementById('archivo').required = false;
+                    document.getElementById('edit-mode-banner').classList.add('visible');
                     const btn = document.getElementById('btn-guardar');
                     btn.textContent = 'Guardar cambios';
                     btn.classList.remove('btn-disabled');
@@ -847,3 +921,6 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
 
 </html>
+
+
+
