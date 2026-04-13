@@ -230,6 +230,12 @@ unset($_SESSION['cierre_info']);
                         <span class="material-icons" style="color:#5b21b6;">home</span>
                         <span class="link-text">Inicio</span>
                     </li>
+                    <li>
+                        <a href="https://compraconjunta.sve.com.ar/publicaciones" target="_blank" rel="noopener noreferrer">
+                            <span class="material-icons" style="color:#5b21b6;">menu_book</span>
+                            <span class="link-text">Biblioteca Virtual</span>
+                        </a>
+                    </li>
                 </ul>
 
                 <!-- Título de sección -->

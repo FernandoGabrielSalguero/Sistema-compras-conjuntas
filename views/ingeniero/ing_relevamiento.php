@@ -325,6 +325,12 @@ unset($_SESSION['cierre_info']);
                         <span class="material-icons" style="color:#5b21b6;">home</span>
                         <span class="link-text">Inicio</span>
                     </li>
+                    <li>
+                        <a href="https://compraconjunta.sve.com.ar/publicaciones" target="_blank" rel="noopener noreferrer">
+                            <span class="material-icons" style="color:#5b21b6;">menu_book</span>
+                            <span class="link-text">Biblioteca Virtual</span>
+                        </a>
+                    </li>
                 </ul>
 
                 <!-- Título de sección -->
@@ -684,7 +690,10 @@ unset($_SESSION['cierre_info']);
             const title = String(titleRaw ?? '').trim();
             const m = title.match(/^(.*)\(([^)]+)\)\s*$/);
             if (!m) {
-                return { label: title || 'Tabla', tableName: '' };
+                return {
+                    label: title || 'Tabla',
+                    tableName: ''
+                };
             }
             return {
                 label: String(m[1] ?? '').trim(),
@@ -708,9 +717,9 @@ unset($_SESSION['cierre_info']);
 
             const small = document.createElement('p');
             small.className = 'table-section-subtitle';
-            small.textContent = meta.tableName
-                ? `${meta.tableName}${subtitle ? ` - ${subtitle}` : ''}`
-                : subtitle;
+            small.textContent = meta.tableName ?
+                `${meta.tableName}${subtitle ? ` - ${subtitle}` : ''}` :
+                subtitle;
             if (small.textContent.trim() !== '') {
                 head.appendChild(small);
             }
@@ -721,7 +730,10 @@ unset($_SESSION['cierre_info']);
             card.appendChild(head);
             card.appendChild(grid);
 
-            return { card, grid };
+            return {
+                card,
+                grid
+            };
         }
 
         function normalizeFragment(html) {
@@ -749,7 +761,10 @@ unset($_SESSION['cierre_info']);
 
             children.forEach((node) => {
                 if (node.matches('h4.relevamiento-section-title')) {
-                    current = { title: node.textContent || 'Tabla', nodes: [] };
+                    current = {
+                        title: node.textContent || 'Tabla',
+                        nodes: []
+                    };
                     sections.push(current);
                     return;
                 }
@@ -773,7 +788,10 @@ unset($_SESSION['cierre_info']);
             }
 
             sections.forEach((sec) => {
-                const { card, grid } = createTableSectionCard(sec.title);
+                const {
+                    card,
+                    grid
+                } = createTableSectionCard(sec.title);
                 sec.nodes.forEach((n) => grid.appendChild(n));
                 form.appendChild(card);
             });
@@ -826,7 +844,10 @@ unset($_SESSION['cierre_info']);
                     }
 
                     if (node.matches('h4.relevamiento-section-title')) {
-                        current = { title: node.textContent || 'Tabla', nodes: [] };
+                        current = {
+                            title: node.textContent || 'Tabla',
+                            nodes: []
+                        };
                         sections.push(current);
                         return;
                     }
@@ -837,7 +858,10 @@ unset($_SESSION['cierre_info']);
                 });
 
                 sections.forEach((sec) => {
-                    const { card, grid } = createTableSectionCard(sec.title, fincaSubtitle);
+                    const {
+                        card,
+                        grid
+                    } = createTableSectionCard(sec.title, fincaSubtitle);
                     sec.nodes.forEach((n) => grid.appendChild(n));
                     form.appendChild(card);
                 });
@@ -912,7 +936,9 @@ unset($_SESSION['cierre_info']);
             const resp = await fetch(API_RELEVAMIENTO, {
                 method: 'POST',
                 credentials: 'same-origin',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
                 body: body.toString()
             });
             const data = await resp.json();
@@ -930,7 +956,9 @@ unset($_SESSION['cierre_info']);
             const resp = await fetch(API_RELEVAMIENTO, {
                 method: 'POST',
                 credentials: 'same-origin',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
                 body: body.toString()
             });
             const data = await resp.json();
@@ -945,8 +973,8 @@ unset($_SESSION['cierre_info']);
             const fincas = Array.isArray(resumen?.fincas) ? resumen.fincas : [];
             const cuarteles = Array.isArray(resumen?.cuarteles) ? resumen.cuarteles : [];
 
-            const renderFincaItems = fincas.length
-                ? fincas.map((f) => {
+            const renderFincaItems = fincas.length ?
+                fincas.map((f) => {
                     const id = Number(f.id || 0);
                     const code = escapeHtml(f.codigo_finca || `ID ${id}`);
                     const name = escapeHtml(f.nombre_finca || 'Sin nombre');
@@ -956,11 +984,11 @@ unset($_SESSION['cierre_info']);
                             <button class="btn btn-cancelar" onclick="confirmarEliminarFinca('${String(productorIdReal).replaceAll('\\', '\\\\').replaceAll("'", "\\'")}', ${id})">Eliminar</button>
                         </div>
                     `;
-                }).join('')
-                : '<p class="summary-empty">Sin fincas asociadas.</p>';
+                }).join('') :
+                '<p class="summary-empty">Sin fincas asociadas.</p>';
 
-            const renderCuartelItems = cuarteles.length
-                ? cuarteles.map((c) => {
+            const renderCuartelItems = cuarteles.length ?
+                cuarteles.map((c) => {
                     const id = Number(c.id || 0);
                     const code = escapeHtml(c.codigo_cuartel || `ID ${id}`);
                     const fincaCode = escapeHtml(c.codigo_finca || 'Sin finca');
@@ -970,8 +998,8 @@ unset($_SESSION['cierre_info']);
                             <button class="btn btn-cancelar" onclick="confirmarEliminarCuartel('${String(productorIdReal).replaceAll('\\', '\\\\').replaceAll("'", "\\'")}', ${id})">Eliminar</button>
                         </div>
                     `;
-                }).join('')
-                : '<p class="summary-empty">Sin cuarteles asociados.</p>';
+                }).join('') :
+                '<p class="summary-empty">Sin cuarteles asociados.</p>';
 
             slot.innerHTML = `
                 <div class="summary-meta">
@@ -1309,15 +1337,27 @@ unset($_SESSION['cierre_info']);
             const index = isIndex ? Number(part2) : null;
 
             if (index !== null && part3) {
-                return { table, index, field: part3 };
+                return {
+                    table,
+                    index,
+                    field: part3
+                };
             }
 
             if (index !== null && !part3) {
-                return { table, index, field: null };
+                return {
+                    table,
+                    index,
+                    field: null
+                };
             }
 
             // Caso fincas[campo]
-            return { table, index: null, field: part2 || null };
+            return {
+                table,
+                index: null,
+                field: part2 || null
+            };
         }
 
         function groupByTables(obj) {
@@ -1333,9 +1373,16 @@ unset($_SESSION['cierre_info']);
                     return;
                 }
 
-                const { table, index, field } = parsed;
+                const {
+                    table,
+                    index,
+                    field
+                } = parsed;
 
-                if (!grouped[table]) grouped[table] = { rows: {}, flat: {} };
+                if (!grouped[table]) grouped[table] = {
+                    rows: {},
+                    flat: {}
+                };
 
                 if (index !== null) {
                     if (!grouped[table].rows[index]) grouped[table].rows[index] = {};
@@ -1367,12 +1414,18 @@ unset($_SESSION['cierre_info']);
             console.log(`Tabla: ${sectionName}`);
 
             if (!data) {
-                console.table([{ columna_sql: '(vacío)', valor: '' }]);
+                console.table([{
+                    columna_sql: '(vacío)',
+                    valor: ''
+                }]);
                 return;
             }
 
             if (data.__error) {
-                console.table([{ columna_sql: '__error', valor: data.__error }]);
+                console.table([{
+                    columna_sql: '__error',
+                    valor: data.__error
+                }]);
                 return;
             }
 
@@ -1384,7 +1437,10 @@ unset($_SESSION['cierre_info']);
 
             // Caso 2: array de filas => una tabla columna/valor por fila
             if (data.length === 0) {
-                console.table([{ columna_sql: '(sin filas)', valor: '' }]);
+                console.table([{
+                    columna_sql: '(sin filas)',
+                    valor: ''
+                }]);
                 return;
             }
 
@@ -1426,7 +1482,10 @@ unset($_SESSION['cierre_info']);
             const safeRows = Array.isArray(rows) ? rows : [];
             console.log(`${title} (${safeRows.length})`);
             if (!safeRows.length) {
-                console.table([{ columna_sql: '(sin filas)', valor: '' }]);
+                console.table([{
+                    columna_sql: '(sin filas)',
+                    valor: ''
+                }]);
             } else {
                 safeRows.forEach((rowObj, idx) => {
                     console.log(`${title}[${idx}]`);
@@ -1439,7 +1498,9 @@ unset($_SESSION['cierre_info']);
             const safeRows = Array.isArray(rows) ? rows : [];
             console.log(`${title} (${safeRows.length})`);
             if (!safeRows.length) {
-                console.table([{ estado: 'sin filas' }]);
+                console.table([{
+                    estado: 'sin filas'
+                }]);
             } else {
                 console.table(safeRows);
             }
@@ -1544,7 +1605,10 @@ unset($_SESSION['cierre_info']);
 
             console.groupCollapsed(`Fincas (${prodFincas.length})`);
             if (!prodFincas.length) {
-                console.table([{ columna_sql: '(sin fincas)', valor: '' }]);
+                console.table([{
+                    columna_sql: '(sin fincas)',
+                    valor: ''
+                }]);
             } else {
                 prodFincas.forEach((finca) => {
                     const fincaId = String(finca?.id ?? '');
@@ -1556,7 +1620,10 @@ unset($_SESSION['cierre_info']);
 
                     console.groupCollapsed(`Cuarteles de finca (${cuarteles.length})`);
                     if (!cuarteles.length) {
-                        console.table([{ columna_sql: '(sin cuarteles)', valor: '' }]);
+                        console.table([{
+                            columna_sql: '(sin cuarteles)',
+                            valor: ''
+                        }]);
                     } else {
                         cuarteles.forEach((cuartel) => {
                             const cuartelId = String(cuartel?.id ?? '');
