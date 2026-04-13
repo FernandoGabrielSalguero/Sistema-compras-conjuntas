@@ -264,6 +264,7 @@ try {
             display: inline-flex;
             align-items: center;
             gap: 0.45rem;
+            align-self: flex-start;
             padding: 0.35rem 0.75rem;
             border-radius: 999px;
             background: var(--accent-soft);
@@ -272,6 +273,8 @@ try {
             font-weight: 600;
             letter-spacing: 0.06em;
             text-transform: uppercase;
+            width: auto;
+            max-width: max-content;
         }
 
         .hero h1 {
@@ -735,6 +738,10 @@ try {
             .hero-copy,
             .hero p {
                 text-align: center;
+            }
+
+            .eyebrow {
+                align-self: center;
             }
 
             .hero-brand .brand-logo {
