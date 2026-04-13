@@ -54,80 +54,70 @@ try {
             min-height: 100vh;
             font-family: 'Segoe UI', sans-serif;
             color: var(--text);
+            overflow-x: hidden;
             background:
                 radial-gradient(circle at top left, rgba(197, 210, 221, 0.28), transparent 28%),
                 radial-gradient(circle at top right, rgba(229, 224, 215, 0.35), transparent 22%),
                 linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
         }
 
+        .page-container {
+            width: min(1380px, calc(100vw - 2rem));
+            margin: 0 auto;
+        }
+
         header {
-            position: sticky;
-            top: 0;
-            z-index: 40;
-            margin: 1rem 1rem 0;
-            padding: 1rem 1.25rem;
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            border-radius: 22px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(14px);
-            box-shadow: var(--shadow);
+            margin-top: 1rem;
+            padding: 0.5rem 0 0;
         }
 
         .header-top {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
+            justify-content: center;
+            gap: 0.9rem;
+            text-align: center;
         }
 
         .brand {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 0.9rem;
+            gap: 0.75rem;
         }
 
         .brand-logo {
-            width: 54px;
-            height: 54px;
+            width: 76px;
+            height: 76px;
             object-fit: contain;
-            border-radius: 14px;
-            background: rgba(255, 255, 255, 0.82);
-            box-shadow: 0 12px 24px rgba(24, 52, 79, 0.1);
-            padding: 0.35rem;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+            padding: 0;
         }
 
         .brand-copy {
             display: flex;
             flex-direction: column;
             min-width: 0;
-            gap: 0.15rem;
+            gap: 0.25rem;
+            align-items: center;
         }
 
         .brand-copy strong {
-            font-size: 1.05rem;
+            font-size: clamp(1.45rem, 2.4vw, 2rem);
             letter-spacing: 0.04em;
         }
 
         .brand-copy span {
-            font-size: 0.88rem;
+            font-size: 0.98rem;
             color: var(--muted);
-        }
-
-        .menu-toggle {
-            display: none;
-            width: 42px;
-            height: 42px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            background: var(--surface-muted);
-            color: var(--accent);
-            font-size: 1.15rem;
-            cursor: pointer;
         }
 
         .layout {
             display: block;
-            padding: 1.25rem 1rem 2rem;
+            padding: 1.1rem 0 2rem;
         }
 
         .sidebar {
@@ -157,31 +147,42 @@ try {
             max-width: 100%;
         }
 
-        .header-nav {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-top: 1rem;
-            min-width: 0;
+        .categories-card {
+            margin-bottom: 1.25rem;
+            padding: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.72);
+            border-radius: var(--radius-xl);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(247, 246, 242, 0.94) 100%);
+            box-shadow: var(--shadow);
         }
 
-        .header-categories-wrap {
-            flex: 1;
-            min-width: 0;
-            overflow: hidden;
+        .categories-card-header {
+            margin-bottom: 1rem;
+        }
+
+        .categories-card-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: -0.02em;
+        }
+
+        .categories-card-header p {
+            margin: 0.35rem 0 0;
+            color: var(--muted);
+            font-size: 0.95rem;
         }
 
         .header-categories {
             display: flex;
-            align-items: center;
+            align-items: stretch;
             gap: 0.65rem;
             min-width: 0;
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
         }
 
         .header-category-item {
             position: relative;
-            flex: 0 0 auto;
+            flex: 0 1 auto;
         }
 
         .header-category-toggle {
@@ -203,7 +204,7 @@ try {
 
         .header-category-toggle:hover,
         .header-category-item.open .header-category-toggle,
-        .header-more.open > .header-category-toggle {
+        .header-category-item.open .header-category-toggle {
             border-color: rgba(23, 50, 77, 0.18);
             color: var(--accent);
             background: var(--accent-soft);
@@ -229,24 +230,8 @@ try {
             box-shadow: 0 24px 40px rgba(23, 34, 45, 0.12);
         }
 
-        .header-category-item.open .header-submenu,
-        .header-more.open .header-submenu {
+        .header-category-item.open .header-submenu {
             display: block;
-        }
-
-        .header-more {
-            position: relative;
-            display: none;
-            flex: 0 0 auto;
-        }
-
-        .header-more.visible {
-            display: block;
-        }
-
-        .header-more .header-submenu {
-            left: auto;
-            right: 0;
         }
 
         .hero {
@@ -728,27 +713,12 @@ try {
         }
 
         @media (max-width: 900px) {
-            .header-nav {
-                display: none;
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .header-nav.visible {
-                display: flex;
-            }
-
-            .header-categories-wrap {
-                overflow: visible;
-            }
-
             .header-categories {
                 flex-direction: column;
                 align-items: stretch;
             }
 
-            .header-category-item,
-            .header-more {
+            .header-category-item {
                 width: 100%;
             }
 
@@ -757,32 +727,31 @@ try {
                 justify-content: space-between;
             }
 
-            .header-submenu,
-            .header-more .header-submenu {
+            .header-submenu {
                 position: static;
                 min-width: 100%;
                 max-width: 100%;
                 margin-top: 0.5rem;
                 box-shadow: none;
             }
-
-            .menu-toggle {
-                display: block;
-            }
         }
 
         @media (max-width: 768px) {
             header {
-                margin: 0.9rem 0.9rem 0;
-                border-radius: 18px;
+                margin-top: 0.9rem;
             }
 
             .layout {
-                padding: 0.9rem;
+                padding: 0.9rem 0 2rem;
             }
 
+            .page-container {
+                width: min(100vw - 1.2rem, 1380px);
+            }
+
+            .categories-card,
             .hero {
-                padding: 1.35rem;
+                padding: 1.15rem;
             }
 
             .hero-top,
@@ -834,83 +803,81 @@ try {
 </head>
 
 <body>
-    <header>
-        <div class="header-top">
-            <div class="brand">
-                <img class="brand-logo" src="/assets/png/logo_con_color_original.png" alt="Logo SVE">
-                <div class="brand-copy">
-                    <strong>Biblioteca Técnica</strong>
-                    <span>Publicaciones y ensayos disponibles para consulta</span>
+    <div class="page-container">
+        <header>
+            <div class="header-top">
+                <div class="brand">
+                    <img class="brand-logo" src="/assets/png/logo_con_color_original.png" alt="Logo SVE">
+                    <div class="brand-copy">
+                        <strong>Biblioteca Técnica</strong>
+                        <span>Publicaciones y ensayos disponibles para consulta</span>
+                    </div>
                 </div>
             </div>
-            <button class="menu-toggle" id="menu-toggle" aria-label="Abrir categorías">☰</button>
-        </div>
+        </header>
 
-        <nav class="header-nav" id="header-nav">
-            <div class="header-categories-wrap">
-                <div class="header-categories" id="header-categories">
-                    <?php foreach ($categorias as $cat): ?>
-                        <div class="header-category-item" data-cat="<?= $cat['id'] ?>">
-                            <button class="header-category-toggle" type="button" data-cat="<?= $cat['id'] ?>" data-name="<?= htmlspecialchars($cat['nombre']) ?>">
-                                <span><?= htmlspecialchars($cat['nombre']) ?></span>
-                                <span>▾</span>
-                            </button>
-                            <div class="header-submenu" id="subcat-<?= $cat['id'] ?>">
-                                <p class="dropdown-state">Cargando...</p>
+        <div class="layout">
+            <main class="main">
+                <section class="categories-card">
+                    <div class="categories-card-header">
+                        <h2>Categorías</h2>
+                        <p>Elegí una categoría y después una subcategoría para filtrar el catálogo.</p>
+                    </div>
+
+                    <div class="header-categories" id="header-categories">
+                        <?php foreach ($categorias as $cat): ?>
+                            <?php if (mb_strtolower(trim($cat['nombre']), 'UTF-8') === 'otros ensayos') continue; ?>
+                            <div class="header-category-item" data-cat="<?= $cat['id'] ?>">
+                                <button class="header-category-toggle" type="button" data-cat="<?= $cat['id'] ?>" data-name="<?= htmlspecialchars($cat['nombre']) ?>">
+                                    <span><?= htmlspecialchars($cat['nombre']) ?></span>
+                                    <span>▾</span>
+                                </button>
+                                <div class="header-submenu" id="subcat-<?= $cat['id'] ?>">
+                                    <p class="dropdown-state">Cargando...</p>
+                                </div>
                             </div>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+
+                <section class="hero">
+                    <div class="hero-top">
+                        <div>
+                            <span class="eyebrow">Centro de documentación</span>
+                            <h1>Publicaciones técnicas</h1>
+                            <p>
+                                Una biblioteca digital pensada para consultar ensayos, análisis y documentos de manera
+                                ordenada, clara e intuitiva desde cualquier dispositivo.
+                            </p>
                         </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-            <div class="header-more" id="header-more">
-                <button class="header-category-toggle" type="button" id="header-more-toggle">
-                    <span>Más</span>
-                    <span>▾</span>
-                </button>
-                <div class="header-submenu" id="header-more-menu"></div>
-            </div>
-        </nav>
-    </header>
+                    </div>
 
-    <div class="layout">
-        <main class="main">
-            <section class="hero">
-                <div class="hero-top">
+                    <div class="hero-meta">
+                        <div class="hero-stat">
+                            <span>Documentos</span>
+                            <strong id="hero-total">0</strong>
+                        </div>
+                        <div class="hero-stat">
+                            <span>Filtro activo</span>
+                            <strong id="hero-filter">Todas</strong>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="content-toolbar">
                     <div>
-                        <span class="eyebrow">Centro de documentación</span>
-                        <h1>Publicaciones técnicas</h1>
-                        <p>
-                            Una biblioteca digital pensada para consultar ensayos, análisis y documentos de manera
-                            ordenada, clara e intuitiva desde cualquier dispositivo.
-                        </p>
+                        <h2>Catálogo disponible</h2>
+                        <p>Seleccioná una publicación para ver el detalle completo y acceder al archivo.</p>
+                    </div>
+                    <div class="toolbar-actions">
+                        <div class="active-filter" id="filtro-activo">Mostrando: todas las publicaciones</div>
+                        <button type="button" class="clear-filter-btn" id="clear-filter-btn">Eliminar filtro</button>
                     </div>
                 </div>
 
-                <div class="hero-meta">
-                    <div class="hero-stat">
-                        <span>Documentos</span>
-                        <strong id="hero-total">0</strong>
-                    </div>
-                    <div class="hero-stat">
-                        <span>Filtro activo</span>
-                        <strong id="hero-filter">Todas</strong>
-                    </div>
-                </div>
-            </section>
-
-            <div class="content-toolbar">
-                <div>
-                    <h2>Catálogo disponible</h2>
-                    <p>Seleccioná una publicación para ver el detalle completo y acceder al archivo.</p>
-                </div>
-                <div class="toolbar-actions">
-                    <div class="active-filter" id="filtro-activo">Mostrando: todas las publicaciones</div>
-                    <button type="button" class="clear-filter-btn" id="clear-filter-btn">Eliminar filtro</button>
-                </div>
-            </div>
-
-            <div class="grid" id="contenedor-publicaciones"></div>
-        </main>
+                <div class="grid" id="contenedor-publicaciones"></div>
+            </main>
+        </div>
     </div>
 
     <div class="modal hidden" id="modal-lectura">
@@ -942,14 +909,11 @@ try {
 
     <script>
         const contenedor = document.getElementById('contenedor-publicaciones');
-        const headerNav = document.getElementById('header-nav');
-        const menuToggle = document.getElementById('menu-toggle');
         const headerCategories = document.getElementById('header-categories');
-        const headerMore = document.getElementById('header-more');
-        const headerMoreMenu = document.getElementById('header-more-menu');
-        const headerMoreToggle = document.getElementById('header-more-toggle');
         const clearFilterBtn = document.getElementById('clear-filter-btn');
-        const categorias = <?= json_encode($categorias, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+        const categorias = <?= json_encode(array_values(array_filter($categorias, function ($cat) {
+            return mb_strtolower(trim($cat['nombre']), 'UTF-8') !== 'otros ensayos';
+        })), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
         const subcategoriasCache = {};
 
         if (typeof Framework === 'undefined') {
@@ -1014,7 +978,7 @@ try {
         }
 
         function closeAllCategoryMenus() {
-            document.querySelectorAll('.header-category-item.open, .header-more.open').forEach(item => item.classList.remove('open'));
+            document.querySelectorAll('.header-category-item.open').forEach(item => item.classList.remove('open'));
         }
 
         function syncActiveButtons() {
@@ -1120,38 +1084,6 @@ try {
             });
         }
 
-        function distribuirCategorias() {
-            const movedItems = Array.from(headerMoreMenu.querySelectorAll('.header-category-item'));
-            movedItems.forEach(item => {
-                item.querySelector('.header-submenu').dataset.loaded = item.querySelector('.header-submenu').dataset.loaded || '0';
-                headerCategories.appendChild(item);
-            });
-
-            headerMore.classList.remove('visible', 'open');
-
-            if (window.innerWidth <= 900) {
-                return;
-            }
-
-            const items = Array.from(headerCategories.children);
-            const availableWidth = headerCategories.parentElement.clientWidth;
-            let usedWidth = 0;
-            const overflowItems = [];
-
-            items.forEach((item, index) => {
-                usedWidth += item.offsetWidth + 10;
-                if (usedWidth > availableWidth - 95 && index > 0) {
-                    overflowItems.push(item);
-                }
-            });
-
-            overflowItems.forEach(item => headerMoreMenu.appendChild(item));
-
-            if (overflowItems.length) {
-                headerMore.classList.add('visible');
-            }
-        }
-
         function cargarPublicaciones(categoria_id = '', subcategoria_id = '') {
             const params = new URLSearchParams({
                 action: 'get_publicaciones'
@@ -1236,27 +1168,10 @@ try {
         }
 
         bindCategoryToggles();
-        distribuirCategorias();
-        menuToggle.addEventListener('click', () => {
-            headerNav.classList.toggle('visible');
-            closeAllCategoryMenus();
-        });
-        headerMoreToggle.addEventListener('click', () => {
-            const willOpen = !headerMore.classList.contains('open');
-            closeAllCategoryMenus();
-            headerMore.classList.toggle('open', willOpen);
-        });
         clearFilterBtn.addEventListener('click', limpiarFiltro);
         document.addEventListener('click', event => {
-            if (!event.target.closest('.header-category-item') && !event.target.closest('.header-more')) {
+            if (!event.target.closest('.header-category-item')) {
                 closeAllCategoryMenus();
-            }
-        });
-        window.addEventListener('resize', () => {
-            closeAllCategoryMenus();
-            distribuirCategorias();
-            if (window.innerWidth > 900) {
-                headerNav.classList.remove('visible');
             }
         });
         cargarPublicaciones();
