@@ -437,7 +437,7 @@ try {
             flex-direction: column;
             justify-content: space-between;
             padding: 1.35rem;
-            border: 1px solid rgba(255, 255, 255, 0.72);
+            border: 1px solid #000000;
             border-radius: var(--radius-lg);
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(250, 249, 246, 0.95) 100%);
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
