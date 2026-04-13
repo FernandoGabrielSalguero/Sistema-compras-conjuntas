@@ -66,27 +66,6 @@ try {
             margin: 0 auto;
         }
 
-        header {
-            margin-top: 1rem;
-            padding: 0.5rem 0 0;
-        }
-
-        .header-top {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.9rem;
-            text-align: center;
-        }
-
-        .brand {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
         .brand-logo {
             width: 76px;
             height: 76px;
@@ -95,24 +74,6 @@ try {
             background: transparent;
             box-shadow: none;
             padding: 0;
-        }
-
-        .brand-copy {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            gap: 0.25rem;
-            align-items: center;
-        }
-
-        .brand-copy strong {
-            font-size: clamp(1.45rem, 2.4vw, 2rem);
-            letter-spacing: 0.04em;
-        }
-
-        .brand-copy span {
-            font-size: 0.98rem;
-            color: var(--muted);
         }
 
         .layout {
@@ -265,9 +226,23 @@ try {
 
         .hero-top {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+            justify-content: center;
+            align-items: center;
             gap: 1rem;
+            text-align: center;
+        }
+
+        .hero-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.85rem;
+            width: 100%;
+        }
+
+        .hero-brand .brand-logo {
+            width: 82px;
+            height: 82px;
         }
 
         .eyebrow {
@@ -743,10 +718,6 @@ try {
         }
 
         @media (max-width: 768px) {
-            header {
-                margin-top: 0.9rem;
-            }
-
             .layout {
                 padding: 0.9rem 0 2rem;
             }
@@ -810,20 +781,33 @@ try {
 
 <body>
     <div class="page-container">
-        <header>
-            <div class="header-top">
-                <div class="brand">
-                    <img class="brand-logo" src="/assets/png/logo_con_color_original.png" alt="Logo SVE">
-                    <div class="brand-copy">
-                        <strong>Biblioteca Técnica</strong>
-                        <span>Publicaciones y ensayos disponibles para consulta</span>
-                    </div>
-                </div>
-            </div>
-        </header>
-
         <div class="layout">
             <main class="main">
+                <section class="hero">
+                    <div class="hero-top">
+                        <div class="hero-brand">
+                            <img class="brand-logo" src="/assets/png/logo_con_color_original.png" alt="Logo SVE">
+                            <span class="eyebrow">Centro de documentación</span>
+                            <h1>Publicaciones técnicas</h1>
+                            <p>
+                                Una biblioteca digital pensada para consultar ensayos, análisis y documentos de manera
+                                ordenada, clara e intuitiva desde cualquier dispositivo.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="hero-meta">
+                        <div class="hero-stat">
+                            <span>Documentos</span>
+                            <strong id="hero-total">0</strong>
+                        </div>
+                        <div class="hero-stat">
+                            <span>Filtro activo</span>
+                            <strong id="hero-filter">Todas</strong>
+                        </div>
+                    </div>
+                </section>
+
                 <section class="categories-card">
                     <div class="categories-card-header">
                         <h2>Categorías</h2>
@@ -843,30 +827,6 @@ try {
                                 </div>
                             </div>
                         <?php endforeach; ?>
-                    </div>
-                </section>
-
-                <section class="hero">
-                    <div class="hero-top">
-                        <div>
-                            <span class="eyebrow">Centro de documentación</span>
-                            <h1>Publicaciones técnicas</h1>
-                            <p>
-                                Una biblioteca digital pensada para consultar ensayos, análisis y documentos de manera
-                                ordenada, clara e intuitiva desde cualquier dispositivo.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="hero-meta">
-                        <div class="hero-stat">
-                            <span>Documentos</span>
-                            <strong id="hero-total">0</strong>
-                        </div>
-                        <div class="hero-stat">
-                            <span>Filtro activo</span>
-                            <strong id="hero-filter">Todas</strong>
-                        </div>
                     </div>
                 </section>
 
