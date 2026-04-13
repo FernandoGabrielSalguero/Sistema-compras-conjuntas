@@ -227,33 +227,36 @@ try {
         .hero-top {
             display: flex;
             justify-content: center;
-            align-items: center;
-            gap: 1rem;
+            align-items: stretch;
         }
 
         .hero-brand {
             display: flex;
             flex-direction: column;
             align-items: stretch;
-            gap: 0.85rem;
+            gap: 1.1rem;
             width: 100%;
-            max-width: 820px;
+            max-width: 980px;
         }
 
         .hero-heading {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 1.1rem;
+            justify-content: space-between;
+            gap: 2rem;
         }
 
         .hero-copy {
+            flex: 1;
             text-align: left;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .hero-brand .brand-logo {
-            width: 132px;
-            height: 132px;
+            width: 240px;
+            height: auto;
             flex: 0 0 auto;
         }
 
@@ -272,18 +275,19 @@ try {
         }
 
         .hero h1 {
-            margin: 0.9rem 0 0.6rem;
+            margin: 2.2rem 0 0;
             font-size: clamp(2rem, 4vw, 3rem);
             line-height: 1.05;
             letter-spacing: -0.03em;
+            text-align: center;
         }
 
         .hero p {
             margin: 0;
-            max-width: 720px;
+            max-width: 100%;
             color: var(--muted);
             line-height: 1.7;
-            text-align: left;
+            text-align: center;
         }
 
         .accordion-item {
@@ -725,6 +729,7 @@ try {
             .hero-heading {
                 flex-direction: column-reverse;
                 text-align: center;
+                gap: 1rem;
             }
 
             .hero-copy,
@@ -733,9 +738,13 @@ try {
             }
 
             .hero-brand .brand-logo {
-                width: 104px;
-                height: 104px;
+                width: 160px;
+                height: auto;
                 margin: 0 auto;
+            }
+
+            .hero h1 {
+                margin-top: 0.75rem;
             }
 
             .toolbar-actions {
