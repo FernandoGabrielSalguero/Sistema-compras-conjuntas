@@ -61,19 +61,23 @@ try {
         }
 
         header {
-            position: relative;
-            z-index: 10;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            margin: 1rem 1rem 0;
+            padding: 1rem 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(14px);
+            box-shadow: var(--shadow);
+        }
+
+        .header-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 1rem;
-            margin: 1.25rem 1.25rem 0;
-            padding: 1rem 1.25rem;
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            border-radius: 22px;
-            background: rgba(255, 255, 255, 0.86);
-            backdrop-filter: blur(14px);
-            box-shadow: var(--shadow);
         }
 
         .brand {
@@ -82,23 +86,20 @@ try {
             gap: 0.9rem;
         }
 
-        .brand-mark {
-            width: 44px;
-            height: 44px;
+        .brand-logo {
+            width: 54px;
+            height: 54px;
+            object-fit: contain;
             border-radius: 14px;
-            display: grid;
-            place-items: center;
-            color: var(--surface-solid);
-            font-size: 0.95rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            background: linear-gradient(135deg, #18344f 0%, #355c7d 100%);
-            box-shadow: 0 12px 24px rgba(24, 52, 79, 0.18);
+            background: rgba(255, 255, 255, 0.82);
+            box-shadow: 0 12px 24px rgba(24, 52, 79, 0.1);
+            padding: 0.35rem;
         }
 
         .brand-copy {
             display: flex;
             flex-direction: column;
+            min-width: 0;
             gap: 0.15rem;
         }
 
@@ -124,30 +125,13 @@ try {
             cursor: pointer;
         }
 
-        .sidebar-backdrop {
-            display: none;
-        }
-
         .layout {
-            display: flex;
-            align-items: flex-start;
-            gap: 1.25rem;
-            padding: 1.25rem;
+            display: block;
+            padding: 1.25rem 1rem 2rem;
         }
 
         .sidebar {
-            width: 295px;
-            position: sticky;
-            top: 1.25rem;
-            z-index: 2;
-            height: fit-content;
-            overflow-y: auto;
-            padding: 1.25rem;
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            border-radius: var(--radius-xl);
-            background: var(--surface);
-            backdrop-filter: blur(14px);
-            box-shadow: var(--shadow);
+            display: none;
         }
 
         .sidebar-header {
@@ -169,9 +153,100 @@ try {
         }
 
         .main {
-            flex: 1;
             width: 100%;
             max-width: 100%;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            min-width: 0;
+        }
+
+        .header-categories-wrap {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .header-categories {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            min-width: 0;
+            flex-wrap: nowrap;
+        }
+
+        .header-category-item {
+            position: relative;
+            flex: 0 0 auto;
+        }
+
+        .header-category-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 42px;
+            padding: 0.7rem 0.95rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.92);
+            color: var(--text);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: border-color var(--transition), color var(--transition), background var(--transition);
+        }
+
+        .header-category-toggle:hover,
+        .header-category-item.open .header-category-toggle,
+        .header-more.open > .header-category-toggle {
+            border-color: rgba(23, 50, 77, 0.18);
+            color: var(--accent);
+            background: var(--accent-soft);
+        }
+
+        .header-category-toggle.active {
+            border-color: var(--accent);
+            background: var(--accent);
+            color: var(--surface-solid);
+        }
+
+        .header-submenu {
+            position: absolute;
+            top: calc(100% + 0.55rem);
+            left: 0;
+            min-width: 260px;
+            max-width: 320px;
+            display: none;
+            padding: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.78);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 24px 40px rgba(23, 34, 45, 0.12);
+        }
+
+        .header-category-item.open .header-submenu,
+        .header-more.open .header-submenu {
+            display: block;
+        }
+
+        .header-more {
+            position: relative;
+            display: none;
+            flex: 0 0 auto;
+        }
+
+        .header-more.visible {
+            display: block;
+        }
+
+        .header-more .header-submenu {
+            left: auto;
+            right: 0;
         }
 
         .hero {
@@ -303,7 +378,7 @@ try {
         .subcat-link {
             display: block;
             width: 100%;
-            margin-top: 0.45rem;
+            margin-top: 0.35rem;
             padding: 0.7rem 0.85rem;
             border: 1px solid transparent;
             border-radius: 12px;
@@ -313,6 +388,12 @@ try {
             font-size: 0.9rem;
             cursor: pointer;
             transition: background var(--transition), color var(--transition), border-color var(--transition), transform var(--transition);
+        }
+
+        .dropdown-state {
+            margin: 0.2rem 0;
+            color: var(--muted);
+            font-size: 0.9rem;
         }
 
         .subcat-link:hover {
@@ -334,6 +415,14 @@ try {
             align-items: center;
             gap: 1rem;
             margin-bottom: 1rem;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            flex-wrap: wrap;
         }
 
         .content-toolbar h2 {
@@ -359,6 +448,24 @@ try {
             color: var(--accent);
             font-size: 0.9rem;
             font-weight: 600;
+        }
+
+        .clear-filter-btn {
+            min-height: 42px;
+            padding: 0.65rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface-solid);
+            color: var(--text);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--transition), border-color var(--transition), color var(--transition);
+        }
+
+        .clear-filter-btn:hover {
+            background: var(--surface-muted);
+            border-color: var(--border-strong);
         }
 
         .grid {
@@ -492,7 +599,7 @@ try {
         }
 
         .modal-content {
-            width: min(760px, 100%);
+            width: min(1040px, 100%);
             max-height: calc(100vh - 3rem);
             overflow-y: auto;
             padding: 2rem;
@@ -620,43 +727,58 @@ try {
             color: var(--muted);
         }
 
+        @media (max-width: 900px) {
+            .header-nav {
+                display: none;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header-nav.visible {
+                display: flex;
+            }
+
+            .header-categories-wrap {
+                overflow: visible;
+            }
+
+            .header-categories {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header-category-item,
+            .header-more {
+                width: 100%;
+            }
+
+            .header-category-toggle {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .header-submenu,
+            .header-more .header-submenu {
+                position: static;
+                min-width: 100%;
+                max-width: 100%;
+                margin-top: 0.5rem;
+                box-shadow: none;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+        }
+
         @media (max-width: 768px) {
             header {
                 margin: 0.9rem 0.9rem 0;
                 border-radius: 18px;
             }
 
-            .menu-toggle {
-                display: block;
-            }
-
             .layout {
                 padding: 0.9rem;
-            }
-
-            .sidebar {
-                position: fixed;
-                top: 84px;
-                left: 0;
-                width: min(86vw, 320px);
-                height: calc(100vh - 100px);
-                border-radius: 0 24px 24px 0;
-                transform: translateX(-100%);
-                transition: transform var(--transition);
-                z-index: 15;
-            }
-
-            .sidebar.visible {
-                transform: translateX(0);
-            }
-
-            .sidebar-backdrop.visible {
-                display: block;
-                position: fixed;
-                inset: 0;
-                z-index: 14;
-                background: rgba(20, 28, 36, 0.3);
-                backdrop-filter: blur(4px);
             }
 
             .hero {
@@ -670,9 +792,17 @@ try {
                 align-items: stretch;
             }
 
+            .toolbar-actions {
+                justify-content: stretch;
+            }
+
             .active-filter {
                 width: 100%;
                 justify-content: center;
+            }
+
+            .clear-filter-btn {
+                width: 100%;
             }
 
             .grid {
@@ -705,38 +835,44 @@ try {
 
 <body>
     <header>
-        <div class="brand">
-            <div class="brand-mark">SVE</div>
-            <div class="brand-copy">
-                <strong>Biblioteca Técnica</strong>
-                <span>Publicaciones y ensayos disponibles para consulta</span>
+        <div class="header-top">
+            <div class="brand">
+                <img class="brand-logo" src="/assets/png/logo_con_color_original.png" alt="Logo SVE">
+                <div class="brand-copy">
+                    <strong>Biblioteca Técnica</strong>
+                    <span>Publicaciones y ensayos disponibles para consulta</span>
+                </div>
             </div>
+            <button class="menu-toggle" id="menu-toggle" aria-label="Abrir categorías">☰</button>
         </div>
-        <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir categorías">☰</button>
+
+        <nav class="header-nav" id="header-nav">
+            <div class="header-categories-wrap">
+                <div class="header-categories" id="header-categories">
+                    <?php foreach ($categorias as $cat): ?>
+                        <div class="header-category-item" data-cat="<?= $cat['id'] ?>">
+                            <button class="header-category-toggle" type="button" data-cat="<?= $cat['id'] ?>" data-name="<?= htmlspecialchars($cat['nombre']) ?>">
+                                <span><?= htmlspecialchars($cat['nombre']) ?></span>
+                                <span>▾</span>
+                            </button>
+                            <div class="header-submenu" id="subcat-<?= $cat['id'] ?>">
+                                <p class="dropdown-state">Cargando...</p>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="header-more" id="header-more">
+                <button class="header-category-toggle" type="button" id="header-more-toggle">
+                    <span>Más</span>
+                    <span>▾</span>
+                </button>
+                <div class="header-submenu" id="header-more-menu"></div>
+            </div>
+        </nav>
     </header>
 
-    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
-
     <div class="layout">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h3>Categorías</h3>
-            </div>
-
-            <div class="menu" id="menu-categorias">
-                <?php foreach ($categorias as $cat): ?>
-                    <div class="accordion-item">
-                        <button class="accordion-toggle" data-cat="<?= $cat['id'] ?>">
-                            <?= htmlspecialchars($cat['nombre']) ?>
-                        </button>
-                        <div class="accordion-content hidden" id="subcat-<?= $cat['id'] ?>">
-                            <p class="muted">Cargando...</p>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </aside>
-
         <main class="main">
             <section class="hero">
                 <div class="hero-top">
@@ -767,7 +903,10 @@ try {
                     <h2>Catálogo disponible</h2>
                     <p>Seleccioná una publicación para ver el detalle completo y acceder al archivo.</p>
                 </div>
-                <div class="active-filter" id="filtro-activo">Mostrando: todas las publicaciones</div>
+                <div class="toolbar-actions">
+                    <div class="active-filter" id="filtro-activo">Mostrando: todas las publicaciones</div>
+                    <button type="button" class="clear-filter-btn" id="clear-filter-btn">Eliminar filtro</button>
+                </div>
             </div>
 
             <div class="grid" id="contenedor-publicaciones"></div>
@@ -804,8 +943,15 @@ try {
 
     <script>
         const contenedor = document.getElementById('contenedor-publicaciones');
-        const sidebar = document.querySelector('.sidebar');
-        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+        const headerNav = document.getElementById('header-nav');
+        const menuToggle = document.getElementById('menu-toggle');
+        const headerCategories = document.getElementById('header-categories');
+        const headerMore = document.getElementById('header-more');
+        const headerMoreMenu = document.getElementById('header-more-menu');
+        const headerMoreToggle = document.getElementById('header-more-toggle');
+        const clearFilterBtn = document.getElementById('clear-filter-btn');
+        const categorias = <?= json_encode($categorias, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+        const subcategoriasCache = {};
 
         if (typeof Framework === 'undefined') {
             window.Framework = {
@@ -822,20 +968,12 @@ try {
 
         let publicaciones = [];
         let filtroActivo = {
+            categoriaId: '',
             categoria: '',
+            subcategoriaId: '',
             subcategoria: '',
             etiqueta: 'Todas las publicaciones'
         };
-
-        function toggleSidebar() {
-            sidebar.classList.toggle('visible');
-            sidebarBackdrop.classList.toggle('visible');
-        }
-
-        function closeSidebar() {
-            sidebar.classList.remove('visible');
-            sidebarBackdrop.classList.remove('visible');
-        }
 
         function escapeHtml(value) {
             return String(value ?? '')
@@ -851,62 +989,169 @@ try {
             return texto.length > limite ? `${texto.slice(0, limite).trim()}...` : texto;
         }
 
+        function formatDate(value) {
+            if (!value) return 'Sin fecha';
+
+            const parsed = new Date(`${value}T00:00:00`);
+            if (!Number.isNaN(parsed.getTime())) {
+                const day = String(parsed.getDate()).padStart(2, '0');
+                const month = String(parsed.getMonth() + 1).padStart(2, '0');
+                const year = parsed.getFullYear();
+                return `${day}/${month}/${year}`;
+            }
+
+            const parts = String(value).split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+
+            return value;
+        }
+
         function actualizarResumen() {
             document.getElementById('hero-total').textContent = publicaciones.length;
             document.getElementById('hero-filter').textContent = filtroActivo.subcategoria || filtroActivo.categoria || 'Todas';
             document.getElementById('filtro-activo').textContent = `Mostrando: ${filtroActivo.etiqueta.toLowerCase()}`;
         }
 
-        function seleccionarSubcategoria(catId, subId, etiqueta, boton) {
-            document.querySelectorAll('.subcat-link').forEach(link => link.classList.remove('active'));
-            if (boton) boton.classList.add('active');
-
-            filtroActivo = {
-                categoria: '',
-                subcategoria: etiqueta,
-                etiqueta
-            };
-
-            cargarPublicaciones(catId, subId);
-            closeSidebar();
+        function closeAllCategoryMenus() {
+            document.querySelectorAll('.header-category-item.open, .header-more.open').forEach(item => item.classList.remove('open'));
         }
 
-        document.querySelectorAll('.accordion-toggle').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const catId = btn.dataset.cat;
-                const item = btn.closest('.accordion-item');
-                const content = document.getElementById(`subcat-${catId}`);
-                const estaOculto = content.classList.contains('hidden');
+        function syncActiveButtons() {
+            document.querySelectorAll('.header-category-toggle[data-cat]').forEach(btn => {
+                btn.classList.toggle('active', String(btn.dataset.cat) === String(filtroActivo.categoriaId));
+            });
 
-                document.querySelectorAll('.accordion-item').forEach(acc => {
-                    if (acc !== item) acc.classList.remove('is-open');
+            document.querySelectorAll('.subcat-link').forEach(link => {
+                link.classList.toggle('active', String(link.dataset.subcatId) === String(filtroActivo.subcategoriaId));
+            });
+        }
+
+        async function obtenerSubcategorias(catId) {
+            if (subcategoriasCache[catId]) return subcategoriasCache[catId];
+
+            const res = await fetch(`../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=${catId}`);
+            const data = await res.json();
+            subcategoriasCache[catId] = data;
+            return data;
+        }
+
+        async function cargarSubcategorias(catId, targetId, categoriaNombre) {
+            const content = document.getElementById(targetId);
+            if (!content) return;
+
+            if (content.dataset.loaded === '1') {
+                syncActiveButtons();
+                return;
+            }
+
+            try {
+                const data = await obtenerSubcategorias(catId);
+                content.innerHTML = '';
+
+                if (!data.length) {
+                    content.innerHTML = '<p class="dropdown-state">No hay subcategorías disponibles.</p>';
+                    content.dataset.loaded = '1';
+                    return;
+                }
+
+                data.forEach(sub => {
+                    const subBtn = document.createElement('button');
+                    subBtn.className = 'subcat-link';
+                    subBtn.dataset.subcatId = String(sub.id);
+                    subBtn.textContent = sub.nombre;
+                    subBtn.onclick = () => seleccionarSubcategoria(catId, categoriaNombre, sub.id, sub.nombre);
+                    content.appendChild(subBtn);
                 });
 
-                content.classList.toggle('hidden');
-                item.classList.toggle('is-open', estaOculto);
+                content.dataset.loaded = '1';
+                syncActiveButtons();
+            } catch (e) {
+                content.innerHTML = '<p class="dropdown-state">Error al cargar.</p>';
+            }
+        }
 
-                if (content.dataset.loaded === '1') return;
+        function seleccionarSubcategoria(catId, categoriaNombre, subId, subNombre) {
+            filtroActivo = {
+                categoriaId: String(catId),
+                categoria: categoriaNombre,
+                subcategoriaId: String(subId),
+                subcategoria: subNombre,
+                etiqueta: `${categoriaNombre} / ${subNombre}`
+            };
 
-                try {
-                    const res = await fetch(`../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=${catId}`);
-                    const data = await res.json();
+            syncActiveButtons();
+            closeAllCategoryMenus();
+            if (window.innerWidth <= 900) {
+                headerNav.classList.remove('visible');
+            }
+            cargarPublicaciones(catId, subId);
+        }
 
-                    content.innerHTML = '';
+        function limpiarFiltro() {
+            filtroActivo = {
+                categoriaId: '',
+                categoria: '',
+                subcategoriaId: '',
+                subcategoria: '',
+                etiqueta: 'Todas las publicaciones'
+            };
 
-                    data.forEach(sub => {
-                        const subBtn = document.createElement('button');
-                        subBtn.className = 'subcat-link';
-                        subBtn.textContent = sub.nombre;
-                        subBtn.onclick = () => seleccionarSubcategoria(catId, sub.id, sub.nombre, subBtn);
-                        content.appendChild(subBtn);
-                    });
+            syncActiveButtons();
+            closeAllCategoryMenus();
+            cargarPublicaciones();
+        }
 
-                    content.dataset.loaded = '1';
-                } catch (e) {
-                    content.innerHTML = '<p class="muted">Error al cargar.</p>';
+        function bindCategoryToggles() {
+            document.querySelectorAll('.header-category-toggle[data-cat]').forEach(btn => {
+                btn.onclick = async () => {
+                    const item = btn.closest('.header-category-item');
+                    const willOpen = !item.classList.contains('open');
+                    const catId = btn.dataset.cat;
+                    const categoriaNombre = btn.dataset.name;
+                    const targetId = item.querySelector('.header-submenu').id;
+
+                    closeAllCategoryMenus();
+                    item.classList.toggle('open', willOpen);
+                    if (!willOpen) return;
+
+                    await cargarSubcategorias(catId, targetId, categoriaNombre);
+                };
+            });
+        }
+
+        function distribuirCategorias() {
+            const movedItems = Array.from(headerMoreMenu.querySelectorAll('.header-category-item'));
+            movedItems.forEach(item => {
+                item.querySelector('.header-submenu').dataset.loaded = item.querySelector('.header-submenu').dataset.loaded || '0';
+                headerCategories.appendChild(item);
+            });
+
+            headerMore.classList.remove('visible', 'open');
+
+            if (window.innerWidth <= 900) {
+                return;
+            }
+
+            const items = Array.from(headerCategories.children);
+            const availableWidth = headerCategories.parentElement.clientWidth;
+            let usedWidth = 0;
+            const overflowItems = [];
+
+            items.forEach((item, index) => {
+                usedWidth += item.offsetWidth + 10;
+                if (usedWidth > availableWidth - 95 && index > 0) {
+                    overflowItems.push(item);
                 }
             });
-        });
+
+            overflowItems.forEach(item => headerMoreMenu.appendChild(item));
+
+            if (overflowItems.length) {
+                headerMore.classList.add('visible');
+            }
+        }
 
         function cargarPublicaciones(categoria_id = '', subcategoria_id = '') {
             const params = new URLSearchParams({
@@ -932,7 +1177,7 @@ try {
                 contenedor.innerHTML = `
                     <div class="empty-state">
                         <h3>No se encontraron publicaciones</h3>
-                        <p>Probá con otra categoría o subcategoría para seguir explorando la biblioteca.</p>
+                        <p>Probá con otra categoría o eliminá el filtro para seguir explorando la biblioteca.</p>
                     </div>
                 `;
                 return;
@@ -954,7 +1199,7 @@ try {
                         <p class="card-description">${escapeHtml(truncar(pub.descripcion))}</p>
                     </div>
                     <div class="card-footer">
-                        <span class="card-date">${escapeHtml(pub.fecha_publicacion || 'Sin fecha')}</span>
+                        <span class="card-date">${escapeHtml(formatDate(pub.fecha_publicacion))}</span>
                         <button class="btn" onclick="abrirModal(${pub.id})">Ver publicación</button>
                     </div>
                 `;
@@ -972,7 +1217,7 @@ try {
             document.getElementById('modal-titulo').textContent = pub.titulo;
             document.getElementById('modal-subtitulo').textContent = pub.subtitulo || 'Documento técnico disponible para consulta y descarga.';
             document.getElementById('modal-cat-subcat').textContent = `${pub.categoria} > ${pub.subcategoria}`;
-            document.getElementById('modal-autor-fecha').textContent = `${pub.autor} · ${pub.fecha_publicacion}`;
+            document.getElementById('modal-autor-fecha').textContent = `${pub.autor} · ${formatDate(pub.fecha_publicacion)}`;
             document.getElementById('modal-descripcion').textContent = pub.descripcion || 'Sin descripción disponible.';
 
             const archivoBtn = document.getElementById('modal-archivo');
@@ -991,12 +1236,30 @@ try {
             Framework.openModal('modal-lectura');
         }
 
-        document.addEventListener('keydown', event => {
-            if (event.key === 'Escape') {
-                closeSidebar();
+        bindCategoryToggles();
+        distribuirCategorias();
+        menuToggle.addEventListener('click', () => {
+            headerNav.classList.toggle('visible');
+            closeAllCategoryMenus();
+        });
+        headerMoreToggle.addEventListener('click', () => {
+            const willOpen = !headerMore.classList.contains('open');
+            closeAllCategoryMenus();
+            headerMore.classList.toggle('open', willOpen);
+        });
+        clearFilterBtn.addEventListener('click', limpiarFiltro);
+        document.addEventListener('click', event => {
+            if (!event.target.closest('.header-category-item') && !event.target.closest('.header-more')) {
+                closeAllCategoryMenus();
             }
         });
-
+        window.addEventListener('resize', () => {
+            closeAllCategoryMenus();
+            distribuirCategorias();
+            if (window.innerWidth > 900) {
+                headerNav.classList.remove('visible');
+            }
+        });
         cargarPublicaciones();
     </script>
 </body>
