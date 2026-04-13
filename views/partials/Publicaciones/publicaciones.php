@@ -273,35 +273,6 @@ try {
             line-height: 1.7;
         }
 
-        .hero-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.85rem;
-            margin-top: 1.4rem;
-        }
-
-        .hero-stat {
-            min-width: 130px;
-            padding: 0.95rem 1rem;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            background: rgba(255, 255, 255, 0.78);
-        }
-
-        .hero-stat span {
-            display: block;
-            margin-bottom: 0.35rem;
-            color: var(--muted-soft);
-            font-size: 0.82rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        .hero-stat strong {
-            font-size: 1.35rem;
-            letter-spacing: -0.03em;
-        }
-
         .accordion-item {
             margin-bottom: 0.5rem;
             border: 1px solid transparent;
@@ -795,17 +766,6 @@ try {
                             </p>
                         </div>
                     </div>
-
-                    <div class="hero-meta">
-                        <div class="hero-stat">
-                            <span>Documentos</span>
-                            <strong id="hero-total">0</strong>
-                        </div>
-                        <div class="hero-stat">
-                            <span>Filtro activo</span>
-                            <strong id="hero-filter">Todas</strong>
-                        </div>
-                    </div>
                 </section>
 
                 <section class="categories-card">
@@ -938,8 +898,6 @@ try {
         }
 
         function actualizarResumen() {
-            document.getElementById('hero-total').textContent = publicaciones.length;
-            document.getElementById('hero-filter').textContent = filtroActivo.subcategoria || filtroActivo.categoria || 'Todas';
             document.getElementById('filtro-activo').textContent = `Mostrando: ${filtroActivo.etiqueta.toLowerCase()}`;
         }
 
