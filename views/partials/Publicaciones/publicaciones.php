@@ -934,8 +934,7 @@ try {
             <div class="modal-actions">
                 <a id="modal-archivo" href="#" target="_blank" class="modal-download">Descargar archivo</a>
                 <div class="modal-primary-actions">
-                    <button class="btn-secondary" onclick="Framework.closeModal('modal-lectura')">Cerrar</button>
-                    <button class="btn-ghost" onclick="Framework.closeModal('modal-lectura')">Volver</button>
+                    <button class="btn-secondary" onclick="Framework.closeModal('modal-lectura')">Volver</button>
                 </div>
             </div>
         </div>
