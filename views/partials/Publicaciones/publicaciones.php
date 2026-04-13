@@ -721,7 +721,6 @@ try {
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h3>Categorías</h3>
-                <p>Explorá la biblioteca por línea técnica y encontrá cada publicación de forma clara y rápida.</p>
             </div>
 
             <div class="menu" id="menu-categorias">
