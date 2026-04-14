@@ -263,7 +263,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 <!-- Bienvenida -->
                 <div class="card">
                     <h2>Hola</h2>
-                    <p>En esta página vamos a poder publicar investigaciones publicas</p>
+                    <p>En esta página vamos a poder publicar investigaciones</p>
                 </div>
 
                 <!-- SECCIÓN TRIPLE PARA CREAR PUBLICACIONES Y PREVISUALIZARLAS -->

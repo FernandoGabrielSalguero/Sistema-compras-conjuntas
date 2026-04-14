@@ -8,7 +8,7 @@ try {
     $stmt = $pdo->query("SELECT id, nombre FROM categorias_publicaciones ORDER BY nombre");
     $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    die("Error al obtener categorÌas: " . $e->getMessage());
+    die("Error al obtener categor√≠as: " . $e->getMessage());
 }
 ?>
 
@@ -805,13 +805,13 @@ try {
                         <div class="hero-brand">
                             <div class="hero-heading">
                                 <div class="hero-copy">
-                                    <span class="eyebrow">Centro de documentaciÛn</span>
-                                    <h1>Publicaciones tÈcnicas</h1>
+                                    <span class="eyebrow">Centro de documentaci√≥n</span>
+                                    <h1>Publicaciones t√©cnicas</h1>
                                 </div>
                                 <img class="brand-logo" src="/assets/png/logo_con_color_original.png" alt="Logo SVE">
                             </div>
                             <p>
-                                Una biblioteca digital pensada para consultar ensayos, an·lisis y documentos de manera
+                                Una biblioteca digital pensada para consultar ensayos, an√°lisis y documentos de manera
                                 ordenada, clara e intuitiva desde cualquier dispositivo.
                             </p>
                         </div>
@@ -820,8 +820,8 @@ try {
 
                 <section class="categories-card">
                     <div class="categories-card-header">
-                        <h2>CategorÌas</h2>
-                        <p>ElegÌ una categorÌa y despuÈs una subcategorÌa para filtrar el cat·logo.</p>
+                        <h2>Categor√≠as</h2>
+                        <p>Eleg√≠ una categor√≠a y despu√©s una subcategor√≠a para filtrar el cat√°logo.</p>
                     </div>
 
                     <div class="header-categories" id="header-categories">
@@ -830,7 +830,7 @@ try {
                             <div class="header-category-item" data-cat="<?= $cat['id'] ?>">
                                 <button class="header-category-toggle" type="button" data-cat="<?= $cat['id'] ?>" data-name="<?= htmlspecialchars($cat['nombre']) ?>">
                                     <span><?= htmlspecialchars($cat['nombre']) ?></span>
-                                    <span>?</span>
+                                    <span aria-hidden="true">‚ñæ</span>
                                 </button>
                                 <div class="header-submenu" id="subcat-<?= $cat['id'] ?>">
                                     <p class="dropdown-state">Cargando...</p>
@@ -842,8 +842,8 @@ try {
 
                 <div class="content-toolbar">
                     <div>
-                        <h2>Cat·logo disponible</h2>
-                        <p>Seleccion· una publicaciÛn para ver el detalle completo y acceder al archivo.</p>
+                        <h2>Cat√°logo disponible</h2>
+                        <p>Seleccion√° una publicaci√≥n para ver el detalle completo y acceder al archivo.</p>
                     </div>
                     <div class="toolbar-actions">
                         <div class="active-filter" id="filtro-activo">Mostrando: todas las publicaciones</div>
@@ -859,7 +859,7 @@ try {
     <div class="modal hidden" id="modal-lectura">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modal-titulo" class="modal-title">TÌtulo de la publicaciÛn</h3>
+                <h3 id="modal-titulo" class="modal-title">T√≠tulo de la publicaci√≥n</h3>
                 <p id="modal-subtitulo" class="modal-subtitle"></p>
                 <div class="modal-badges">
                     <span id="modal-cat-subcat"></span>
@@ -924,7 +924,7 @@ try {
         }
 
         function truncar(texto, limite = 170) {
-            if (!texto) return 'Sin descripciÛn disponible.';
+            if (!texto) return 'Sin descripci√≥n disponible.';
             return texto.length > limite ? `${texto.slice(0, limite).trim()}...` : texto;
         }
 
@@ -988,7 +988,7 @@ try {
                 content.innerHTML = '';
 
                 if (!data.length) {
-                    content.innerHTML = '<p class="dropdown-state">No hay subcategorÌas disponibles.</p>';
+                    content.innerHTML = '<p class="dropdown-state">No hay subcategor√≠as disponibles.</p>';
                     content.dataset.loaded = '1';
                     return;
                 }
@@ -1082,7 +1082,7 @@ try {
                 contenedor.innerHTML = `
                     <div class="empty-state">
                         <h3>No se encontraron publicaciones</h3>
-                        <p>Prob· con otra categorÌa o elimin· el filtro para seguir explorando la biblioteca.</p>
+                        <p>Prob√° con otra categor√≠a o elimin√° el filtro para seguir explorando la biblioteca.</p>
                     </div>
                 `;
                 return;
@@ -1094,7 +1094,7 @@ try {
 
                 card.innerHTML = `
                     <div>
-                        <span class="card-kicker">${escapeHtml(pub.categoria || 'PublicaciÛn')}</span>
+                        <span class="card-kicker">${escapeHtml(pub.categoria || 'Publicaci√≥n')}</span>
                         <h3>${escapeHtml(pub.titulo)}</h3>
                         <p class="muted">${escapeHtml(pub.subtitulo || '')}</p>
                         <div class="card-meta">
@@ -1105,7 +1105,7 @@ try {
                     </div>
                     <div class="card-footer">
                         <span class="card-date">${escapeHtml(formatDate(pub.fecha_publicacion))}</span>
-                        <button class="btn" onclick="abrirModal(${pub.id})">Ver publicaciÛn</button>
+                        <button class="btn" onclick="abrirModal(${pub.id})">Ver publicaci√≥n</button>
                     </div>
                 `;
 
@@ -1120,10 +1120,10 @@ try {
             fetch(`../../controllers/sve_publicacionesController.php?action=incrementar_vista&id=${id}`);
 
             document.getElementById('modal-titulo').textContent = pub.titulo;
-            document.getElementById('modal-subtitulo').textContent = pub.subtitulo || 'Documento tÈcnico disponible para consulta y descarga.';
+            document.getElementById('modal-subtitulo').textContent = pub.subtitulo || 'Documento t√©cnico disponible para consulta y descarga.';
             document.getElementById('modal-cat-subcat').textContent = `${pub.categoria} > ${pub.subcategoria}`;
-            document.getElementById('modal-autor-fecha').textContent = `${pub.autor} ∑ ${formatDate(pub.fecha_publicacion)}`;
-            document.getElementById('modal-descripcion').textContent = pub.descripcion || 'Sin descripciÛn disponible.';
+            document.getElementById('modal-autor-fecha').textContent = `${pub.autor} ¬∑ ${formatDate(pub.fecha_publicacion)}`;
+            document.getElementById('modal-descripcion').textContent = pub.descripcion || 'Sin descripci√≥n disponible.';
 
             const archivoBtn = document.getElementById('modal-archivo');
 
