@@ -131,7 +131,9 @@ class ingRelevamientoModel
         pc.codigo_cuartel,
         pc.codigo_finca,
         pc.nombre_finca,
-        pc.finca_id
+        pc.finca_id,
+        pc.variedad,
+        pc.superficie_ha
       FROM prod_cuartel pc
       LEFT JOIN prod_fincas pf
         ON pf.id = pc.finca_id

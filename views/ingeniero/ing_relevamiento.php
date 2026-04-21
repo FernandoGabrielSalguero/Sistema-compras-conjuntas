@@ -258,6 +258,12 @@ unset($_SESSION['cierre_info']);
             margin-bottom: 0;
         }
 
+        #productor-modificar-view textarea {
+            width: 100%;
+            min-height: 88px;
+            resize: vertical;
+        }
+
         #productor-modificar-view .table-section-card {
             margin-bottom: 0.9rem;
         }
@@ -284,9 +290,134 @@ unset($_SESSION['cierre_info']);
             gap: 0.75rem 1rem;
         }
 
+        .asset-workspace {
+            display: grid;
+            grid-template-columns: minmax(280px, 360px) 1fr;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .asset-sidebar,
+        .asset-detail {
+            min-width: 0;
+        }
+
+        .asset-sidebar {
+            position: sticky;
+            top: 1rem;
+            max-height: calc(100vh - 2rem);
+            overflow: auto;
+        }
+
+        .asset-search {
+            width: 100%;
+            padding: 0.55rem 0.75rem;
+            border: 1px solid rgba(15, 23, 42, 0.16);
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .asset-tree {
+            display: grid;
+            gap: 0.55rem;
+        }
+
+        .asset-node,
+        .asset-child {
+            width: 100%;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            background: #fff;
+            border-radius: 0.5rem;
+            padding: 0.65rem 0.7rem;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .asset-node:hover,
+        .asset-child:hover,
+        .asset-node.is-active,
+        .asset-child.is-active {
+            border-color: #5b21b6;
+            background: rgba(91, 33, 182, 0.06);
+        }
+
+        .asset-node-title {
+            display: block;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .asset-node-meta {
+            display: block;
+            margin-top: 0.18rem;
+            font-size: 0.84rem;
+            color: rgba(15, 23, 42, 0.72);
+        }
+
+        .asset-children {
+            display: grid;
+            gap: 0.35rem;
+            margin: 0.4rem 0 0.15rem 0.8rem;
+            padding-left: 0.7rem;
+            border-left: 2px solid rgba(15, 23, 42, 0.1);
+        }
+
+        .asset-detail-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .asset-detail-title {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .detail-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .detail-tabs button {
+            border: 1px solid rgba(15, 23, 42, 0.16);
+            background: #fff;
+            border-radius: 0.5rem;
+            padding: 0.45rem 0.65rem;
+            cursor: pointer;
+        }
+
+        .detail-tabs button:hover {
+            background: rgba(15, 23, 42, 0.04);
+        }
+
+        .detail-form-panel[hidden],
+        .detail-panel[hidden],
+        .detail-section[hidden] {
+            display: none !important;
+        }
+
+        .asset-empty {
+            color: rgba(15, 23, 42, 0.72);
+        }
+
         @media (max-width: 1200px) {
             #productor-modificar-view .table-section-grid {
                 grid-template-columns: repeat(2, minmax(220px, 1fr));
+            }
+
+            .asset-workspace {
+                grid-template-columns: 1fr;
+            }
+
+            .asset-sidebar {
+                position: static;
+                max-height: none;
             }
         }
 
@@ -454,6 +585,10 @@ unset($_SESSION['cierre_info']);
         let PRODUCTORES_LIST = [];
         let currentProductor = null;
         let currentCoop = null;
+        let currentAssetSelection = {
+            type: 'productor',
+            id: ''
+        };
 
         console.log('[Relevamiento] Script cargado');
 
@@ -757,6 +892,9 @@ unset($_SESSION['cierre_info']);
 
             const form = document.createElement('form');
             form.id = 'familia-form';
+            form.className = 'detail-panel';
+            form.dataset.detailType = 'productor';
+            form.dataset.detailId = 'productor';
 
             const children = toElementNodes(Array.from(sourceForm.childNodes));
             const introNodes = [];
@@ -810,6 +948,8 @@ unset($_SESSION['cierre_info']);
 
             const form = document.createElement('form');
             form.id = 'produccion-form';
+            form.className = 'detail-form-panel';
+            form.dataset.detailType = 'finca';
 
             const hiddenInputs = Array.from(sourceForm.querySelectorAll(':scope > input[type="hidden"]'));
             hiddenInputs.forEach((hidden) => form.appendChild(hidden));
@@ -829,6 +969,7 @@ unset($_SESSION['cierre_info']);
                 const fincaHeader = (block.querySelector('.relevamiento-finca-header')?.textContent || '').trim();
                 const fincaSub = (block.querySelector('.relevamiento-finca-subtitle')?.textContent || '').trim();
                 const fincaSubtitle = [fincaHeader, fincaSub].filter(Boolean).join(' - ');
+                const fincaId = String(block.querySelector('input[name$="[finca_id]"]')?.value ?? '').trim();
 
                 const sectionNodes = toElementNodes(Array.from(block.childNodes));
                 let current = null;
@@ -866,6 +1007,9 @@ unset($_SESSION['cierre_info']);
                         card,
                         grid
                     } = createTableSectionCard(sec.title, fincaSubtitle);
+                    card.classList.add('detail-section');
+                    card.dataset.detailType = 'finca';
+                    card.dataset.detailId = fincaId;
                     sec.nodes.forEach((n) => grid.appendChild(n));
                     form.appendChild(card);
                 });
@@ -876,30 +1020,68 @@ unset($_SESSION['cierre_info']);
 
         function buildCuartelesCards(htmlCuarteles) {
             const frag = normalizeFragment(htmlCuarteles);
-            const wrapper = document.createElement('div');
-            wrapper.id = 'cuarteles-form';
+            const sourceForm = frag.querySelector('#cuarteles-form');
+            if (!sourceForm) return null;
 
-            const card = document.createElement('div');
-            card.className = 'card table-section-card';
+            const form = document.createElement('form');
+            form.id = 'cuarteles-form';
+            form.className = 'detail-form-panel';
+            form.dataset.detailType = 'cuartel';
 
-            const title = document.createElement('h4');
-            title.className = 'table-section-title';
-            title.textContent = 'Cuarteles';
+            const hiddenInputs = Array.from(sourceForm.querySelectorAll(':scope > input[type="hidden"]'));
+            hiddenInputs.forEach((hidden) => form.appendChild(hidden));
 
-            const body = document.createElement('div');
-            body.className = 'table-section-grid';
+            const cuartelBlocks = Array.from(sourceForm.querySelectorAll('.relevamiento-cuartel-block'));
+            cuartelBlocks.forEach((block) => {
+                const cuartelHeader = (block.querySelector('.relevamiento-cuartel-header')?.textContent || '').trim();
+                const cuartelSub = (block.querySelector('.relevamiento-cuartel-subtitle')?.textContent || '').trim();
+                const cuartelSubtitle = [cuartelHeader, cuartelSub].filter(Boolean).join(' - ');
+                const cuartelId = String(block.querySelector('input[name$="[cuartel_id]"]')?.value ?? '').trim();
 
-            Array.from(frag.childNodes).forEach((node) => {
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    body.appendChild(node);
-                }
+                Array.from(block.querySelectorAll(':scope > input[type="hidden"]')).forEach((hidden) => form.appendChild(hidden));
+
+                const sectionNodes = toElementNodes(Array.from(block.childNodes));
+                let current = null;
+                const sections = [];
+
+                sectionNodes.forEach((node) => {
+                    if (
+                        node.matches('input[type="hidden"]') ||
+                        node.matches('.relevamiento-cuartel-header') ||
+                        node.matches('.relevamiento-cuartel-subtitle') ||
+                        node.matches('hr')
+                    ) {
+                        return;
+                    }
+
+                    if (node.matches('h4.relevamiento-section-title')) {
+                        current = {
+                            title: node.textContent || 'Tabla',
+                            nodes: []
+                        };
+                        sections.push(current);
+                        return;
+                    }
+
+                    if (current) {
+                        current.nodes.push(node);
+                    }
+                });
+
+                sections.forEach((sec) => {
+                    const {
+                        card,
+                        grid
+                    } = createTableSectionCard(sec.title, cuartelSubtitle);
+                    card.classList.add('detail-section');
+                    card.dataset.detailType = 'cuartel';
+                    card.dataset.detailId = cuartelId;
+                    sec.nodes.forEach((n) => grid.appendChild(n));
+                    form.appendChild(card);
+                });
             });
 
-            card.appendChild(title);
-            card.appendChild(body);
-            wrapper.appendChild(card);
-
-            return wrapper;
+            return form;
         }
 
         async function fetchPartialHtml(controllerFile, productorIdReal) {
@@ -971,60 +1153,163 @@ unset($_SESSION['cierre_info']);
             }
         }
 
+        function safeJsValue(value) {
+            return String(value ?? '').replaceAll('\\', '\\\\').replaceAll("'", "\\'");
+        }
+
+        function getAssetSelectionTitle(type, id) {
+            const root = document.getElementById('asset-nav');
+            const btn = Array.from(root?.querySelectorAll('[data-asset-type]') || [])
+                .find((item) => item.dataset.assetType === String(type) && String(item.dataset.assetId) === String(id));
+            return btn?.querySelector('.asset-node-title')?.textContent?.trim() || btn?.textContent?.trim() || '';
+        }
+
+        function buildDetailTabs(cards) {
+            const tabs = document.getElementById('detail-tabs');
+            if (!tabs) return;
+
+            tabs.innerHTML = '';
+            cards.forEach((card, index) => {
+                const title = card.querySelector('.table-section-title')?.textContent?.trim() || `Seccion ${index + 1}`;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = title;
+                btn.addEventListener('click', () => {
+                    card.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                });
+                tabs.appendChild(btn);
+            });
+        }
+
+        function selectAssetDetail(type, id) {
+            currentAssetSelection = {
+                type: String(type),
+                id: String(id)
+            };
+
+            const detailTitle = document.getElementById('asset-detail-title');
+            const empty = document.getElementById('asset-empty-state');
+            const familiaForm = document.getElementById('familia-form');
+            const produccionForm = document.getElementById('produccion-form');
+            const cuartelesForm = document.getElementById('cuarteles-form');
+
+            if (familiaForm) familiaForm.hidden = type !== 'productor';
+            if (produccionForm) produccionForm.hidden = type !== 'finca';
+            if (cuartelesForm) cuartelesForm.hidden = type !== 'cuartel';
+
+            document.querySelectorAll('#productor-modificar-view .detail-section').forEach((card) => {
+                card.hidden = !(card.dataset.detailType === type && String(card.dataset.detailId) === String(id));
+            });
+
+            const visibleCards = Array.from(document.querySelectorAll('#productor-modificar-view .detail-section:not([hidden])'));
+            if (empty) empty.hidden = type === 'productor' || visibleCards.length > 0;
+
+            if (detailTitle) {
+                detailTitle.textContent = getAssetSelectionTitle(type, id) || 'Datos del productor';
+            }
+
+            buildDetailTabs(type === 'productor' ? Array.from(familiaForm?.querySelectorAll('.table-section-card') || []) : visibleCards);
+
+            document.querySelectorAll('#asset-nav [data-asset-type]').forEach((btn) => {
+                btn.classList.toggle('is-active', btn.dataset.assetType === String(type) && String(btn.dataset.assetId) === String(id));
+            });
+        }
+
+        function filterAssetTree(query) {
+            const q = String(query ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+            document.querySelectorAll('#asset-nav [data-search-text]').forEach((row) => {
+                const text = String(row.dataset.searchText || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                row.hidden = q !== '' && !text.includes(q);
+            });
+        }
+
         function renderResumenActivosProductor(slot, productorIdReal, resumen) {
             if (!slot) return;
 
             const fincas = Array.isArray(resumen?.fincas) ? resumen.fincas : [];
             const cuarteles = Array.isArray(resumen?.cuarteles) ? resumen.cuarteles : [];
 
-            const renderFincaItems = fincas.length ?
-                fincas.map((f) => {
-                    const id = Number(f.id || 0);
-                    const code = escapeHtml(f.codigo_finca || `ID ${id}`);
-                    const name = escapeHtml(f.nombre_finca || 'Sin nombre');
-                    return `
-                        <div class="summary-item">
-                            <span class="summary-item-text">#${id} - ${code} - ${name}</span>
-                            <button class="btn btn-cancelar" onclick="confirmarEliminarFinca('${String(productorIdReal).replaceAll('\\', '\\\\').replaceAll("'", "\\'")}', ${id})">Eliminar</button>
-                        </div>
-                    `;
-                }).join('') :
-                '<p class="summary-empty">Sin fincas asociadas.</p>';
+            const cuartelesByFinca = new Map();
+            cuarteles.forEach((c) => {
+                const fincaId = String(c.finca_id ?? '');
+                if (!cuartelesByFinca.has(fincaId)) cuartelesByFinca.set(fincaId, []);
+                cuartelesByFinca.get(fincaId).push(c);
+            });
 
-            const renderCuartelItems = cuarteles.length ?
-                cuarteles.map((c) => {
-                    const id = Number(c.id || 0);
-                    const code = escapeHtml(c.codigo_cuartel || `ID ${id}`);
-                    const fincaCode = escapeHtml(c.codigo_finca || 'Sin finca');
+            const productorIdJs = safeJsValue(productorIdReal);
+            const renderFinca = (f) => {
+                const id = String(f.id || '');
+                const code = escapeHtml(f.codigo_finca || `ID ${id}`);
+                const name = escapeHtml(f.nombre_finca || 'Sin nombre');
+                const children = cuartelesByFinca.get(id) || [];
+                const childSearches = [];
+                const childrenHtml = children.map((c) => {
+                    const cid = String(c.id || '');
+                    const ccode = escapeHtml(c.codigo_cuartel || `ID ${cid}`);
+                    const variedad = escapeHtml(c.variedad || 'Sin variedad');
+                    const sup = escapeHtml(c.superficie_ha || 'Sin superficie');
+                    const searchRaw = `${ccode} ${variedad} ${sup} ${code} ${name}`;
+                    childSearches.push(searchRaw);
+                    const search = escapeHtml(searchRaw);
                     return `
-                        <div class="summary-item">
-                            <span class="summary-item-text">#${id} - Cuartel ${code} (Finca ${fincaCode})</span>
-                            <button class="btn btn-cancelar" onclick="confirmarEliminarCuartel('${String(productorIdReal).replaceAll('\\', '\\\\').replaceAll("'", "\\'")}', ${id})">Eliminar</button>
-                        </div>
+                        <button type="button" class="asset-child" data-search-text="${search}" data-asset-type="cuartel" data-asset-id="${escapeHtml(cid)}" onclick="selectAssetDetail('cuartel', '${safeJsValue(cid)}')">
+                            <span class="asset-node-title">Cuartel ${ccode}</span>
+                            <span class="asset-node-meta">${variedad} - ${sup} ha</span>
+                        </button>
                     `;
-                }).join('') :
-                '<p class="summary-empty">Sin cuarteles asociados.</p>';
+                }).join('');
+                const search = escapeHtml(`${code} ${name} ${childSearches.join(' ')}`);
+
+                return `
+                    <div data-search-text="${search}">
+                        <button type="button" class="asset-node" data-asset-type="finca" data-asset-id="${escapeHtml(id)}" onclick="selectAssetDetail('finca', '${safeJsValue(id)}')">
+                            <span class="asset-node-title">Finca ${code}</span>
+                            <span class="asset-node-meta">${name} - ${children.length} cuartel(es)</span>
+                        </button>
+                        <div class="asset-children">
+                            ${childrenHtml || '<span class="summary-empty">Sin cuarteles.</span>'}
+                        </div>
+                    </div>
+                `;
+            };
+
+            const sinFinca = cuartelesByFinca.get('') || [];
+            const sinFincaHtml = sinFinca.map((c) => {
+                const cid = String(c.id || '');
+                const ccode = escapeHtml(c.codigo_cuartel || `ID ${cid}`);
+                const variedad = escapeHtml(c.variedad || 'Sin variedad');
+                return `
+                    <button type="button" class="asset-child" data-search-text="${ccode} ${variedad}" data-asset-type="cuartel" data-asset-id="${escapeHtml(cid)}" onclick="selectAssetDetail('cuartel', '${safeJsValue(cid)}')">
+                        <span class="asset-node-title">Cuartel ${ccode}</span>
+                        <span class="asset-node-meta">${variedad} - sin finca vinculada</span>
+                    </button>
+                `;
+            }).join('');
 
             slot.innerHTML = `
+                <input class="asset-search" type="search" placeholder="Buscar finca o cuartel" oninput="filterAssetTree(this.value)">
                 <div class="summary-meta">
-                    <span>Fincas: ${fincas.length}</span>
-                    <span>Cuarteles: ${cuarteles.length}</span>
+                    <span>${fincas.length} finca(s)</span>
+                    <span>${cuarteles.length} cuartel(es)</span>
                 </div>
-                <div class="summary-columns">
-                    <div>
-                        <strong>Fincas</strong>
-                        <div class="summary-list">${renderFincaItems}</div>
-                    </div>
-                    <div>
-                        <strong>Cuarteles</strong>
-                        <div class="summary-list">${renderCuartelItems}</div>
-                    </div>
+                <div class="asset-tree">
+                    <button type="button" class="asset-node" data-search-text="productor datos personales familia" data-asset-type="productor" data-asset-id="productor" onclick="selectAssetDetail('productor', 'productor')">
+                        <span class="asset-node-title">Datos del productor</span>
+                        <span class="asset-node-meta">Familia, contacto y razón social</span>
+                    </button>
+                    ${fincas.length ? fincas.map(renderFinca).join('') : '<p class="summary-empty">Sin fincas asociadas.</p>'}
+                    ${sinFincaHtml ? `<div class="asset-children">${sinFincaHtml}</div>` : ''}
                 </div>
             `;
+
+            selectAssetDetail(currentAssetSelection.type || 'productor', currentAssetSelection.id || 'productor');
         }
 
         async function cargarResumenActivosProductor(productorIdReal) {
-            const slot = document.querySelector('#productor-assets-summary');
+            const slot = document.querySelector('#asset-nav');
             if (!slot) return;
 
             slot.innerHTML = '<p>Cargando resumen de fincas y cuarteles...</p>';
@@ -1110,6 +1395,10 @@ unset($_SESSION['cierre_info']);
             const idReal = escapeHtml(productorIdReal);
 
             setCardsTitle(`Modificar productor ${idReal}`);
+            currentAssetSelection = {
+                type: 'productor',
+                id: 'productor'
+            };
             container.innerHTML = `
                 <div class="card">
                     <div class="productor-edit-toolbar">
@@ -1129,14 +1418,25 @@ unset($_SESSION['cierre_info']);
                             Mostrar campos avanzados
                         </label>
                     </div>
-                    <div class="productor-assets-summary" id="productor-assets-summary">
-                        <p>Cargando resumen de fincas y cuarteles...</p>
-                    </div>
                 </div>
-                <div id="productor-modificar-view"></div>
+                <div id="productor-modificar-view" class="asset-workspace">
+                    <aside class="card asset-sidebar" id="asset-nav">
+                        <p>Cargando fincas y cuarteles...</p>
+                    </aside>
+                    <section class="asset-detail">
+                        <div class="card">
+                            <div class="asset-detail-header">
+                                <h3 class="asset-detail-title" id="asset-detail-title">Datos del productor</h3>
+                            </div>
+                            <div class="detail-tabs" id="detail-tabs"></div>
+                            <p class="asset-empty" id="asset-empty-state" hidden>Sin datos para mostrar.</p>
+                            <div id="asset-detail-slot"></div>
+                        </div>
+                    </section>
+                </div>
             `;
 
-            const slotView = container.querySelector('#productor-modificar-view');
+            const slotView = container.querySelector('#asset-detail-slot');
 
             try {
                 const [htmlFamilia, htmlProduccion, htmlCuarteles] = await Promise.all([
@@ -1233,6 +1533,16 @@ unset($_SESSION['cierre_info']);
                     productorIdReal,
                     'Cambios guardados correctamente'
                 );
+
+                const cuartelesForm = document.querySelector('#productor-modificar-view #cuarteles-form');
+                if (cuartelesForm) {
+                    await guardarFormularioParcial(
+                        'cuarteles-form',
+                        'relevamiento_cuarteles_controller.php',
+                        productorIdReal,
+                        'Datos de cuarteles guardados correctamente'
+                    );
+                }
 
                 if (typeof showToastBoton === 'function') {
                     showToastBoton('success', 'Todos los cambios fueron guardados');
@@ -2072,6 +2382,8 @@ unset($_SESSION['cierre_info']);
         window.guardarTodoDesdeVista = guardarTodoDesdeVista;
         window.volverAProductores = volverAProductores;
         window.volverACooperativas = volverACooperativas;
+        window.selectAssetDetail = selectAssetDetail;
+        window.filterAssetTree = filterAssetTree;
         window.confirmarEliminarFinca = confirmarEliminarFinca;
         window.confirmarEliminarCuartel = confirmarEliminarCuartel;
 
