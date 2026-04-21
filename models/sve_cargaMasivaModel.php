@@ -148,6 +148,7 @@ final class CargaMasivaModel
                 'UPDATE usuarios
                  SET rol = :rol,
                      permiso_ingreso = :permiso_ingreso,
+                     cuit = :cuit,
                      razon_social = :razon_social,
                      estado_asociacion_cooperativa = :estado_asociacion_cooperativa,
                      revisado = "Esta revisado"
@@ -389,6 +390,7 @@ final class CargaMasivaModel
                     ':id' => $u['id'],
                     ':rol' => $this->firstNonEmpty($r['rol'], $u['rol']) ?? 'productor',
                     ':permiso_ingreso' => $this->firstNonEmpty($r['permiso_ingreso'], $u['permiso_ingreso']) ?? 'Habilitado',
+                    ':cuit' => $r['cuit'],
                     ':razon_social' => $r['razon_social'],
                     ':estado_asociacion_cooperativa' => $r['estado_asociacion_cooperativa'],
                 ]);

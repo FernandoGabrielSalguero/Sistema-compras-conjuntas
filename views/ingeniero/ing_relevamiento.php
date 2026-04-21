@@ -480,7 +480,8 @@ unset($_SESSION['cierre_info']);
             const rows = coops.map((c, idx) => {
                 const nombre = escapeHtml(c.nombre);
                 const idReal = escapeHtml(c.id_real);
-                const cuit = escapeHtml(c.cuit ?? 'Sin CUIT');
+                const cuitRaw = String(c.cuit ?? '').trim();
+                const cuit = escapeHtml(cuitRaw && cuitRaw !== '0' ? cuitRaw : 'Sin CUIT');
 
                 return `
                     <tr class="row-clickable" data-coop-id-real="${idReal}">

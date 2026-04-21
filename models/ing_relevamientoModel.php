@@ -25,7 +25,7 @@ class ingRelevamientoModel
           NULLIF(TRIM(u.usuario), ''),
           u.id_real
         ) AS nombre,
-        u.cuit
+        NULLIF(NULLIF(TRIM(CAST(u.cuit AS CHAR)), ''), '0') AS cuit
       FROM rel_coop_ingeniero rci
       JOIN usuarios u
         ON u.id_real = rci.cooperativa_id_real
@@ -58,7 +58,7 @@ class ingRelevamientoModel
           NULLIF(TRIM(u.usuario), ''),
           rpc.productor_id_real
         ) AS nombre,
-        u.cuit
+        NULLIF(NULLIF(TRIM(CAST(u.cuit AS CHAR)), ''), '0') AS cuit
       FROM rel_productor_coop rpc
       LEFT JOIN usuarios u
         ON u.id_real = rpc.productor_id_real
