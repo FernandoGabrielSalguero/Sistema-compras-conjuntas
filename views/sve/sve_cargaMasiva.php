@@ -513,16 +513,47 @@ checkAccess('sve');
             function renderStrictSimulation(sim) {
                 if (!sim || !sim.strict_sync) return '';
                 const strict = sim.strict_sync || {};
+                const omittedCount = Number(sim.summary?.rows_omitted || 0);
                 const lines = [];
                 lines.push('');
                 lines.push('Simulación sincronización estricta (sin escribir en BD):');
                 lines.push(`- Relaciones productor-coop a eliminar: ${Number(strict.rel_productor_coop_to_delete || 0)}`);
                 lines.push(`- Fincas a eliminar: ${Number(strict.fincas_to_delete || 0)}`);
                 lines.push(`- Cuarteles a eliminar: ${Number(strict.cuarteles_to_delete || 0)}`);
+                lines.push(`- Filas omitidas que bloquean la aplicación: ${omittedCount}`);
                 lines.push(`- Estado: ${strict.blocked ? 'BLOQUEADA' : 'OK para aplicar'}`);
                 if (strict.reason) {
                     lines.push(`- Motivo: ${strict.reason}`);
                 }
+                if (strict.blocked) {
+                    lines.push('- Revisá en la tabla las filas con resultado "omitido" y su columna "Detalle".');
+                }
+                return lines.join('\n');
+            }
+
+            function buildBlockedApplyMessage(limit = 12) {
+                const rows = Array.isArray(lastPreviewResponse?.preview_rows) ? lastPreviewResponse.preview_rows : [];
+                const omitted = rows.filter((row) => String(row?.resultado || '').toLowerCase() === 'omitido');
+                const total = Number(lastSimulationResponse?.summary?.rows_omitted || omitted.length || 0);
+                const lines = [
+                    `No se puede aplicar: hay ${total} fila(s) omitida(s).`,
+                    'La sincronización estricta queda bloqueada para evitar borrar o pisar datos con una sábana incompleta.',
+                    'Corregí estas filas y volvé a previsualizar antes de aplicar.'
+                ];
+
+                if (omitted.length) {
+                    lines.push('');
+                    lines.push(`Primeras ${Math.min(limit, omitted.length)} filas omitidas:`);
+                    for (const row of omitted.slice(0, limit)) {
+                        lines.push(
+                            `- Línea ${row?.linea ?? '-'} | CUIT ${row?.cuit ?? '-'} | Finca ${row?.codigo_finca ?? '-'} | Cuartel ${row?.codigo_cuartel ?? '-'}: ${row?.detalle || 'Sin detalle'}`
+                        );
+                    }
+                    if (omitted.length > limit) {
+                        lines.push(`- Hay ${omitted.length - limit} fila(s) omitida(s) más. Revisalas en la tabla de previsualización.`);
+                    }
+                }
+
                 return lines.join('\n');
             }
 
@@ -651,7 +682,7 @@ checkAccess('sve');
                     return;
                 }
                 if (lastSimulationResponse?.strict_sync?.blocked) {
-                    setStatus('No se puede aplicar: la simulación bloqueó la sincronización estricta. Corregí las filas omitidas y volvé a previsualizar.');
+                    setStatus(buildBlockedApplyMessage());
                     return;
                 }
                 openPreviewModal();
@@ -660,7 +691,8 @@ checkAccess('sve');
             btnConfirmModal.addEventListener('click', async () => {
                 try {
                     if (lastSimulationResponse?.strict_sync?.blocked) {
-                        throw new Error('Simulación bloqueada: no se permite aplicar hasta corregir filas omitidas.');
+                        setStatus(buildBlockedApplyMessage());
+                        return;
                     }
                     btnConfirmModal.disabled = true;
                     setLocalSpinner(true, 'Aplicando cambios por bloques...');
