@@ -554,7 +554,10 @@ unset($_SESSION['cierre_info']);
 
             container.innerHTML = `
                 <div class="card tabla-card">
-                    <h2>Productores</h2>
+                    <div class="productor-edit-toolbar">
+                        <button class="btn btn-cancelar" onclick="volverACooperativas()">Volver a cooperativas</button>
+                        <h2 style="margin:0;">Productores</h2>
+                    </div>
                     <div class="table-tools">
                         <input type="search" id="productores-search-input" placeholder="Buscar por CUIT, ID real o nombre" autocomplete="off">
                         <small id="productores-search-count"></small>
@@ -1177,6 +1180,12 @@ unset($_SESSION['cierre_info']);
             cargarCooperativas();
         }
 
+        function volverACooperativas() {
+            currentCoop = null;
+            currentProductor = null;
+            cargarCooperativas();
+        }
+
         async function guardarFamiliaDesdeVista(productorIdReal) {
             try {
                 await guardarFormularioParcial(
@@ -1739,7 +1748,15 @@ unset($_SESSION['cierre_info']);
                 const productores = Array.isArray(data.data) ? data.data : [];
 
                 if (productores.length === 0) {
-                    container.innerHTML = '<div class="card">No se encontraron productores para esta cooperativa.</div>';
+                    container.innerHTML = `
+                        <div class="card">
+                            <div class="productor-edit-toolbar">
+                                <button class="btn btn-cancelar" onclick="volverACooperativas()">Volver a cooperativas</button>
+                                <h2 style="margin:0;">Productores</h2>
+                            </div>
+                            <p>No se encontraron productores para esta cooperativa.</p>
+                        </div>
+                    `;
                     return;
                 }
 
@@ -2054,6 +2071,7 @@ unset($_SESSION['cierre_info']);
         window.guardarProduccionDesdeVista = guardarProduccionDesdeVista;
         window.guardarTodoDesdeVista = guardarTodoDesdeVista;
         window.volverAProductores = volverAProductores;
+        window.volverACooperativas = volverACooperativas;
         window.confirmarEliminarFinca = confirmarEliminarFinca;
         window.confirmarEliminarCuartel = confirmarEliminarCuartel;
 
