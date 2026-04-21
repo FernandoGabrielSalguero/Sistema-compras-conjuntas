@@ -557,13 +557,36 @@ checkAccess('sve');
                 return lines.join('\n');
             }
 
+            function renderOmittedRowsSummary(rows, limit = 12) {
+                const list = Array.isArray(rows) ? rows : [];
+                const omitted = list.filter((row) => String(row?.resultado || '').toLowerCase() === 'omitido');
+                if (!omitted.length) return '';
+
+                const lines = ['', 'Filas omitidas detectadas:'];
+                for (const row of omitted.slice(0, limit)) {
+                    lines.push(
+                        `- Línea ${row?.linea ?? '-'} | CUIT ${row?.cuit ?? '-'} | Finca ${row?.codigo_finca ?? '-'} | Cuartel ${row?.codigo_cuartel ?? '-'}: ${row?.detalle || 'Sin detalle'}`
+                    );
+                }
+                if (omitted.length > limit) {
+                    lines.push(`- Hay ${omitted.length - limit} fila(s) omitida(s) más. Filtrá o revisá la tabla completa.`);
+                }
+                return lines.join('\n');
+            }
+
             function renderPreviewTable(rows) {
                 previewBody.innerHTML = '';
-                renderedPreviewRows = Array.isArray(rows) ? rows : [];
-                const max = Math.min(rows.length, 300);
+                const sourceRows = Array.isArray(rows) ? rows : [];
+                renderedPreviewRows = [...sourceRows].sort((a, b) => {
+                    const aOmitted = String(a?.resultado || '').toLowerCase() === 'omitido';
+                    const bOmitted = String(b?.resultado || '').toLowerCase() === 'omitido';
+                    if (aOmitted !== bOmitted) return aOmitted ? -1 : 1;
+                    return Number(a?.linea || 0) - Number(b?.linea || 0);
+                });
+                const max = Math.min(renderedPreviewRows.length, 300);
 
                 for (let i = 0; i < max; i++) {
-                    const r = rows[i] || {};
+                    const r = renderedPreviewRows[i] || {};
                     const resultado = String(r.resultado || '');
                     const pillClass = resultado === 'procesar' ? 'ok' : 'skip';
                     const detalle = r.detalle || '-';
@@ -656,7 +679,8 @@ checkAccess('sve');
                     setWarnings(lastPreviewResponse.warnings || []);
                     modalSummary.textContent =
                         renderSummary(lastPreviewResponse.summary || {}) +
-                        renderStrictSimulation(lastSimulationResponse || {});
+                        renderStrictSimulation(lastSimulationResponse || {}) +
+                        renderOmittedRowsSummary(lastPreviewResponse.preview_rows || []);
                     renderPreviewTable(lastPreviewResponse.preview_rows || []);
                     btnApply.disabled = !!(lastSimulationResponse?.strict_sync?.blocked);
                     openPreviewModal();
