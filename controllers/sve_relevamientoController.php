@@ -135,7 +135,7 @@ try {
     ]);
 } catch (Throwable $e) {
     if ((int)($e->getCode()) === 23000) {
-        jsonResponse(409, [
+        jsonResponse(200, [
             'ok' => false,
             'error' => 'El codigo de variedad ya existe',
         ]);

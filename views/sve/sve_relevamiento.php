@@ -185,6 +185,13 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             margin-bottom: 0.75rem;
         }
 
+        .variedades-section-title {
+            margin: 0 0 0.45rem 0;
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
         .variedades-toolbar {
             display: flex;
             gap: 0.5rem;
@@ -450,7 +457,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
         </div>
     </div>
 
-    <div class="sve-modal" id="modalCodigosVariedades" aria-hidden="true">
+    <div class="sve-modal" id="modalCodigosVariedades" aria-hidden="true" inert>
         <div class="sve-modal-content" role="dialog" aria-modal="true" aria-labelledby="modalCodigosVariedadesTitulo">
             <div class="sve-modal-header">
                 <h3 id="modalCodigosVariedadesTitulo">Codigos de variedades</h3>
@@ -461,6 +468,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             <div class="sve-modal-body">
                 <form id="formVariedad">
                     <input type="hidden" id="variedadId" />
+                    <h4 class="variedades-section-title">Agregar nueva variedad</h4>
                     <div class="variedades-form-grid">
                         <div class="input-group">
                             <label for="codigoVariedad">Codigo de variedad</label>
@@ -478,6 +486,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                         </div>
                     </div>
                 </form>
+                <h4 class="variedades-section-title">Buscar variedad</h4>
                 <div class="variedades-toolbar">
                     <div class="input-group" style="margin:0; flex:1 1 240px;">
                         <div class="input-icon">
@@ -485,7 +494,6 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                             <input type="search" id="buscarVariedad" placeholder="Buscar por codigo o nombre" />
                         </div>
                     </div>
-                    <button type="button" class="btn btn-cancelar" id="btnLimpiarVariedad">Limpiar</button>
                 </div>
                 <div id="msgVariedades" class="variedades-msg"></div>
                 <div class="variedades-table-wrap">
@@ -514,6 +522,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             const perPage = 20;
             let page = 1;
             let totalPages = 1;
+            let lastFocusedElement = null;
 
             const $ = (id) => document.getElementById(id);
 
@@ -540,7 +549,6 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 codigoVariedad: $('codigoVariedad'),
                 nombreVariedad: $('nombreVariedad'),
                 buscarVariedad: $('buscarVariedad'),
-                btnLimpiarVariedad: $('btnLimpiarVariedad'),
                 tablaVariedadesBody: $('tablaVariedadesBody'),
                 msgVariedades: $('msgVariedades')
             };
@@ -751,15 +759,28 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             }
 
             function abrirModalCodigosVariedades() {
+                lastFocusedElement = document.activeElement;
+                ui.modalCodigosVariedades.removeAttribute('inert');
                 ui.modalCodigosVariedades.classList.add('active');
                 ui.modalCodigosVariedades.setAttribute('aria-hidden', 'false');
                 limpiarFormVariedad();
                 cargarVariedades();
+                setTimeout(() => {
+                    ui.codigoVariedad.focus();
+                }, 0);
             }
 
             function cerrarModalCodigosVariedades() {
+                if (ui.modalCodigosVariedades.contains(document.activeElement)) {
+                    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                        lastFocusedElement.focus();
+                    } else {
+                        ui.btnCodigosVariedades.focus();
+                    }
+                }
                 ui.modalCodigosVariedades.classList.remove('active');
                 ui.modalCodigosVariedades.setAttribute('aria-hidden', 'true');
+                ui.modalCodigosVariedades.setAttribute('inert', '');
             }
 
             function setMsgVariedades(msg, type) {
@@ -871,9 +892,14 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 ev.preventDefault();
                 guardarVariedad();
             });
-            ui.btnLimpiarVariedad.addEventListener('click', limpiarFormVariedad);
             ui.buscarVariedad.addEventListener('input', () => {
-                cargarVariedades();
+                const q = ui.buscarVariedad.value.trim();
+                if (q.length === 0 || q.length >= 3) {
+                    setMsgVariedades('', '');
+                    cargarVariedades();
+                    return;
+                }
+                setMsgVariedades('Escribi al menos 3 caracteres para buscar.', '');
             });
 
             ui.tablaVariedadesBody.addEventListener('click', async (ev) => {
