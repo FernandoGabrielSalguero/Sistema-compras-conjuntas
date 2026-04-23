@@ -1,18 +1,18 @@
-﻿<?php
-// Mostrar errores en pantalla (Ãºtil en desarrollo)
+<?php
+// Mostrar errores en pantalla (útil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesiÃ³n y configurar parÃ¡metros de seguridad
+// Iniciar sesión y configurar parámetros de seguridad
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesiÃ³n
+// Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin telÃ©fono';
+$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 //Cargamos los operativos cerrados
@@ -28,7 +28,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE</title>
 
-    <!-- Ãconos de Material Design -->
+    <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -37,7 +37,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 
     <style>
-        /* Oculta/expande subcategorÃ­as */
+        /* Oculta/expande subcategorías */
         ul.subcategorias {
             display: none;
             margin: 0;
@@ -48,7 +48,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             display: block;
         }
 
-        /* Tarjeta de categorÃ­a */
+        /* Tarjeta de categoría */
         .categoria-card {
             background: #f3f0ff;
             /* Color primario claro */
@@ -58,7 +58,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
         }
 
-        /* Encabezado con nombre + botÃ³n eliminar */
+        /* Encabezado con nombre + botón eliminar */
         .categoria-header {
             display: flex;
             justify-content: space-between;
@@ -71,7 +71,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             color: #4b0082;
         }
 
-        /* Lista de subcategorÃ­as como badges */
+        /* Lista de subcategorías como badges */
         .subcategorias-list {
             display: flex;
             flex-wrap: wrap;
@@ -91,7 +91,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             gap: 4px;
         }
 
-        /* Formulario para agregar subcategorÃ­a */
+        /* Formulario para agregar subcategoría */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr auto;
@@ -176,10 +176,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
 <body>
 
-    <!-- ðŸ”² CONTENEDOR PRINCIPAL -->
+    <!-- 🔲 CONTENEDOR PRINCIPAL -->
     <div class="layout">
 
-        <!-- ðŸ§­ SIDEBAR -->
+        <!-- 🧭 SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="material-icons logo-icon">dashboard</span>
@@ -228,11 +228,11 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha MecÃ¡nica</span>
+                        <span class="link-text">Cosecha Mecánica</span>
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares EnolÃ³gicos</span>
+                        <span class="link-text">Servicios Auxiliares Enológicos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -250,10 +250,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             </div>
         </aside>
 
-        <!-- ðŸ§± MAIN -->
+        <!-- 🧱 MAIN -->
         <div class="main">
 
-            <!-- ðŸŸª NAVBAR -->
+            <!-- 🟪 NAVBAR -->
             <header class="navbar">
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
@@ -261,63 +261,63 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 <div class="navbar-title">Inicio</div>
             </header>
 
-            <!-- ðŸ“¦ CONTENIDO -->
+            <!-- 📦 CONTENIDO -->
             <section class="content">
 
                 <!-- Bienvenida -->
                 <div class="card">
                     <h2>Hola</h2>
-                    <p>En esta pÃ¡gina vamos a poder publicar investigaciones</p>
+                    <p>En esta página vamos a poder publicar investigaciones</p>
                 </div>
 
-                <!-- SECCIÃ“N TRIPLE PARA CREAR PUBLICACIONES Y PREVISUALIZARLAS -->
+                <!-- SECCIÓN TRIPLE PARA CREAR PUBLICACIONES Y PREVISUALIZARLAS -->
                 <div class="triple-layout">
-                    <!-- Columna izquierda: categorÃ­as -->
+                    <!-- Columna izquierda: categorías -->
                     <div class="triple-categorias">
-                        <h3>CategorÃ­as</h3>
+                        <h3>Categorías</h3>
 
-                        <!-- Tarjeta para crear nueva categorÃ­a -->
+                        <!-- Tarjeta para crear nueva categoría -->
                         <div class="categoria-card" style="margin-bottom: 16px;">
-                            <strong>Nueva categorÃ­a</strong>
+                            <strong>Nueva categoría</strong>
                             <div class="subcat-form">
-                                <input type="text" id="nueva-categoria" class="input" placeholder="Nombre categorÃ­a" />
+                                <input type="text" id="nueva-categoria" class="input" placeholder="Nombre categoría" />
                                 <button class="btn-aceptar full-width" onclick="crearCategoria()">Agregar</button>
                             </div>
                         </div>
 
-                        <!-- Contenedor de categorÃ­as dinÃ¡mico -->
+                        <!-- Contenedor de categorías dinámico -->
                         <div id="lista-categorias"></div>
 
-                        <!-- BotÃ³n para ver pÃ¡gina pÃºblica -->
+                        <!-- Botón para ver página pública -->
                         <div style="margin-top: 24px; text-align: center;">
                             <a href="/publicaciones" target="_blank" class="btn btn-info full-width">
-                                Ir a la pÃ¡gina
+                                Ir a la página
                             </a>
                         </div>
                     </div>
 
 
-                    <!-- ðŸ“ Formulario para nueva publicaciÃ³n -->
+                    <!-- 📝 Formulario para nueva publicación -->
                     <div class="triple-derecha">
                         <div class="triple-form">
-                            <h3>Realicemos una nueva publicaciÃ³n</h3>
+                            <h3>Realicemos una nueva publicación</h3>
                             <form class="form-grid grid-4" id="form-publicacion" enctype="multipart/form-data">
                                 <div class="edit-mode-banner" id="edit-mode-banner" style="grid-column: span 4;">
-                                    <strong>Editando publicaciÃ³n existente</strong>
-                                    <button type="button" class="btn btn-cancelar" onclick="resetearFormularioPublicacion()">Cancelar ediciÃ³n</button>
+                                    <strong>Editando publicación existente</strong>
+                                    <button type="button" class="btn btn-cancelar" onclick="resetearFormularioPublicacion()">Cancelar edición</button>
                                 </div>
-                                <!-- TÃ­tulo -->
+                                <!-- Título -->
                                 <div class="input-group">
-                                    <label for="titulo">TÃ­tulo</label>
+                                    <label for="titulo">Título</label>
                                     <div class="input-icon">
                                         <span class="material-icons">title</span>
                                         <input type="text" name="titulo" id="titulo" required>
                                     </div>
                                 </div>
 
-                                <!-- SubtÃ­tulo -->
+                                <!-- Subtítulo -->
                                 <div class="input-group">
-                                    <label for="subtitulo">SubtÃ­tulo</label>
+                                    <label for="subtitulo">Subtítulo</label>
                                     <div class="input-icon">
                                         <span class="material-icons">subtitles</span>
                                         <input type="text" name="subtitulo" id="subtitulo" required>
@@ -333,24 +333,24 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                                     </div>
                                 </div>
 
-                                <!-- CategorÃ­a -->
+                                <!-- Categoría -->
                                 <div class="input-group">
-                                    <label for="categoria_id">CategorÃ­a</label>
+                                    <label for="categoria_id">Categoría</label>
                                     <div class="input-icon">
                                         <span class="material-icons">category</span>
                                         <select name="categoria_id" id="select-categoria" required>
-                                            <option value="">Seleccionar categorÃ­a</option>
+                                            <option value="">Seleccionar categoría</option>
                                         </select>
                                     </div>
                                 </div>
 
-                                <!-- SubcategorÃ­a -->
+                                <!-- Subcategoría -->
                                 <div class="input-group">
-                                    <label for="subcategoria_id">SubcategorÃ­a</label>
+                                    <label for="subcategoria_id">Subcategoría</label>
                                     <div class="input-icon">
                                         <span class="material-icons">category</span>
                                         <select name="subcategoria_id" id="select-subcategoria" required disabled>
-                                            <option value="">Seleccionar subcategorÃ­a</option>
+                                            <option value="">Seleccionar subcategoría</option>
                                         </select>
                                     </div>
                                 </div>
@@ -364,23 +364,23 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                                     </div>
                                 </div>
 
-                                <!-- DescripciÃ³n -->
+                                <!-- Descripción -->
                                 <div class="input-group" style="grid-column: span 4;">
-                                    <label for="descripcion">DescripciÃ³n</label>
+                                    <label for="descripcion">Descripción</label>
                                     <textarea name="descripcion" id="descripcion" rows="4"
-                                        placeholder="DescripciÃ³n de la publicaciÃ³n..." required></textarea>
+                                        placeholder="Descripción de la publicación..." required></textarea>
                                 </div>
 
-                                <!-- BotÃ³n guardar -->
+                                <!-- Botón guardar -->
                                 <div class="form-actions">
-                                    <button type="submit" class="btn btn-disabled" id="btn-guardar" disabled>Guardar publicaciÃ³n</button>
+                                    <button type="submit" class="btn btn-disabled" id="btn-guardar" disabled>Guardar publicación</button>
                                 </div>
                             </form>
                         </div>
 
                         <!-- Fila inferior: tarjetas -->
                         <div class="triple-tarjetas card-grid grid-3" id="contenedor-publicaciones">
-                            <!-- Las tarjetas se insertarÃ¡n dinÃ¡micamente con JS -->
+                            <!-- Las tarjetas se insertarán dinámicamente con JS -->
                         </div>
                     </div>
                 </div>
@@ -404,12 +404,12 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             <?php if (!empty($cierre_info)): ?>
                 const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
                 cierreData.pendientes.forEach(op => {
-                    const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} dÃ­a(s).`;
+                    const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
                     console.log(mensaje);
                     if (typeof showToastBoton === 'function') {
                         showToastBoton('info', mensaje);
                     } else {
-                        console.warn('âš ï¸ showToastBoton no estÃ¡ definido aÃºn.');
+                        console.warn('⚠️ showToastBoton no está definido aún.');
                     }
                 });
             <?php endif; ?>
@@ -434,21 +434,21 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     .then(res => res.json())
                     .then(resp => {
                         if (resp.success) {
-                            showToast('success', 'PublicaciÃ³n eliminada correctamente.');
+                            showToast('success', 'Publicación eliminada correctamente.');
                             cargarPublicaciones();
                         } else {
-                            showToast('error', 'No se pudo eliminar la publicaciÃ³n.');
+                            showToast('error', 'No se pudo eliminar la publicación.');
                         }
                     })
                     .catch(err => {
-                        console.error('âŒ Error al eliminar publicaciÃ³n:', err);
+                        console.error('❌ Error al eliminar publicación:', err);
                         showToast('error', 'Error en la solicitud.');
                     })
                     .finally(() => cerrarModalEliminar());
             });
         });
 
-        // FunciÃ³n para crear una nueva categorÃ­a
+        // Función para crear una nueva categoría
         function cargarCategorias() {
             fetch('../../controllers/sve_publicacionesController.php?action=get_categorias')
                 .then(r => r.json())
@@ -471,7 +471,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     <div id="subcat-${cat.id}" class="subcategorias-list">Cargando...</div>
 
                     <div class="subcat-form">
-                        <input type="text" id="input-subcat-${cat.id}" class="input" placeholder="Nueva subcategorÃ­a" />
+                        <input type="text" id="input-subcat-${cat.id}" class="input" placeholder="Nueva subcategoría" />
                         <button onclick="crearSubcategoria(${cat.id})" class="btn-aceptar full-width">Agregar</button>
                     </div>
                     `;
@@ -492,7 +492,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 .then(data => {
                     ul.innerHTML = '';
                     if (data.length === 0) {
-                        ul.innerHTML = '<span class="muted">Sin subcategorÃ­as</span>';
+                        ul.innerHTML = '<span class="muted">Sin subcategorías</span>';
                     } else {
                         data.forEach(sub => {
                             const span = document.createElement('span');
@@ -513,22 +513,22 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             const ul = document.getElementById('subcat-' + categoria_id);
 
             if (!ul) {
-                console.error('âŒ No se encontrÃ³ el UL con id subcat-' + categoria_id);
+                console.error('❌ No se encontró el UL con id subcat-' + categoria_id);
                 return;
             }
 
             const mostrar = !ul.classList.contains('visible');
 
             if (mostrar) {
-                ul.innerHTML = 'â³ Cargando...';
+                ul.innerHTML = '⏳ Cargando...';
                 fetch('../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=' + categoria_id)
                     .then(r => r.json())
                     .then(data => {
-                        console.log('ðŸ“¦ SubcategorÃ­as recibidas para categorÃ­a ID ' + categoria_id, data); // â¬…ï¸ DEBUG
+                        console.log('📦 Subcategorías recibidas para categoría ID ' + categoria_id, data); // ⬅️ DEBUG
 
                         ul.innerHTML = ''; // limpia el loading
                         if (data.length === 0) {
-                            ul.innerHTML = '<li><em>Sin subcategorÃ­as aÃºn</em></li>';
+                            ul.innerHTML = '<li><em>Sin subcategorías aún</em></li>';
                         } else {
                             data.forEach(sub => {
                                 const li = document.createElement('li');
@@ -543,8 +543,8 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                         ul.classList.add('visible');
                     })
                     .catch(err => {
-                        console.error('âš ï¸ Error al cargar subcategorÃ­as:', err);
-                        ul.innerHTML = '<li><em>Error al cargar subcategorÃ­as</em></li>';
+                        console.error('⚠️ Error al cargar subcategorías:', err);
+                        ul.innerHTML = '<li><em>Error al cargar subcategorías</em></li>';
                     });
             } else {
                 ul.classList.remove('visible');
@@ -570,7 +570,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         }
 
         function eliminarCategoria(id) {
-            if (!confirm('Â¿Eliminar esta categorÃ­a?')) return;
+            if (!confirm('¿Eliminar esta categoría?')) return;
             fetch('../../controllers/sve_publicacionesController.php', {
                 method: 'POST',
                 headers: {
@@ -606,7 +606,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         }
 
         function eliminarSubcategoria(id) {
-            if (!confirm('Â¿Eliminar esta subcategorÃ­a?')) return;
+            if (!confirm('¿Eliminar esta subcategoría?')) return;
             fetch('../../controllers/sve_publicacionesController.php', {
                 method: 'POST',
                 headers: {
@@ -619,13 +619,13 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             }).then(() => cargarCategorias());
         }
 
-        // Funciones para cargar categorias en el formulario de publicaciÃ³n
+        // Funciones para cargar categorias en el formulario de publicación
         function cargarCategoriasSelect() {
             fetch('../../controllers/sve_publicacionesController.php?action=get_categorias')
                 .then(r => r.json())
                 .then(data => {
                     const select = document.getElementById('select-categoria');
-                    select.innerHTML = '<option value="">Seleccionar categorÃ­a</option>';
+                    select.innerHTML = '<option value="">Seleccionar categoría</option>';
                     data.forEach(cat => {
                         const opt = document.createElement('option');
                         opt.value = cat.id;
@@ -642,14 +642,14 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             subSelect.innerHTML = '<option value="">Cargando...</option>';
 
             if (!catId) {
-                subSelect.innerHTML = '<option value="">Seleccionar subcategorÃ­a</option>';
+                subSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
                 return;
             }
 
             fetch(`../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=${catId}`)
                 .then(r => r.json())
                 .then(data => {
-                    subSelect.innerHTML = '<option value="">Seleccionar subcategorÃ­a</option>';
+                    subSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
                     data.forEach(sub => {
                         const opt = document.createElement('option');
                         opt.value = sub.id;
@@ -694,14 +694,14 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 inputHidden.remove();
             }
 
-            subSelect.innerHTML = '<option value="">Seleccionar subcategorÃ­a</option>';
+            subSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
             subSelect.disabled = true;
             archivoInput.required = true;
-            btn.textContent = 'Guardar publicaciÃ³n';
+            btn.textContent = 'Guardar publicación';
             banner.classList.remove('visible');
         }
 
-        // funciones para enviar el formulario de publicaciÃ³n a la base de datos
+        // funciones para enviar el formulario de publicación a la base de datos
         document.getElementById('form-publicacion').addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -722,22 +722,22 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 .then(r => r.json())
                 .then(resp => {
                     if (resp.success) {
-                        showToast('success', 'PublicaciÃ³n guardada correctamente.');
+                        showToast('success', 'Publicación guardada correctamente.');
                         cargarPublicaciones();
                         resetearFormularioPublicacion();
                     } else {
-                        showToast('error', 'âŒ Error al guardar publicaciÃ³n.');
+                        showToast('error', '❌ Error al guardar publicación.');
                         console.error(resp.error || 'Error desconocido');
                     }
                 })
                 .catch(err => {
-                    showToast('error', 'âŒ Error en la solicitud AJAX');
+                    showToast('error', '❌ Error en la solicitud AJAX');
                     console.error(err);
                 })
                 .finally(() => {
                     btn.disabled = false;
                     if (!document.getElementById('id_publicacion')) {
-                        btn.textContent = 'Guardar publicaciÃ³n';
+                        btn.textContent = 'Guardar publicación';
                     }
                 });
         });
@@ -766,7 +766,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                         <hr/>
 <p class="breadcrumb-cat">${pub.categoria} &gt; ${pub.subcategoria}</p>
 
-<!-- Botones de acciÃ³n -->
+<!-- Botones de acción -->
 <div style="position: absolute; top: 12px; right: 12px; display: flex; gap: 6px;">
     <button class="btn-icon blue" onclick="editarPublicacion(${pub.id})">
         <span class="material-icons">edit</span>
@@ -810,9 +810,9 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 });
         }
 
-        // funcion para eliminar una publicaciÃ³n
+        // funcion para eliminar una publicación
         function eliminarPublicacion(id) {
-            if (!confirm('Â¿Seguro que querÃ©s eliminar esta publicaciÃ³n?')) return;
+            if (!confirm('¿Seguro que querés eliminar esta publicación?')) return;
 
             fetch('../../controllers/sve_publicacionesController.php', {
                     method: 'POST',
@@ -827,14 +827,14 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 .then(r => r.json())
                 .then(resp => {
                     if (resp.success) {
-                        showToast('success', 'âœ… PublicaciÃ³n eliminada correctamente');
+                        showToast('success', '✅ Publicación eliminada correctamente');
                         cargarPublicaciones();
                     } else {
-                        showToast('error', 'âŒ Error al eliminar publicaciÃ³n');
+                        showToast('error', '❌ Error al eliminar publicación');
                     }
                 })
                 .catch(err => {
-                    showToast('error', 'âŒ Error inesperado');
+                    showToast('error', '❌ Error inesperado');
                     console.error(err);
                 });
         }
@@ -847,7 +847,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             if (modal) {
                 modal.classList.remove('hidden');
             } else {
-                console.error('No se encontrÃ³ el modal de eliminaciÃ³n.');
+                console.error('No se encontró el modal de eliminación.');
             }
         }
 
@@ -866,12 +866,12 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     document.getElementById('descripcion').value = data.descripcion;
                     document.getElementById('select-categoria').value = data.categoria_id;
 
-                    // Cargar subcategorÃ­as
+                    // Cargar subcategorías
                     fetch(`../../controllers/sve_publicacionesController.php?action=get_subcategorias&categoria_id=${data.categoria_id}`)
                         .then(r => r.json())
                         .then(subs => {
                             const subSelect = document.getElementById('select-subcategoria');
-                            subSelect.innerHTML = '<option value="">Seleccionar subcategorÃ­a</option>';
+                            subSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
                             subs.forEach(sub => {
                                 const opt = document.createElement('option');
                                 opt.value = sub.id;
@@ -893,7 +893,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     }
                     inputHidden.value = data.id;
 
-                    // âœ… AcÃ¡ habilitamos el botÃ³n sin exigir archivo
+                    // ✅ Acá habilitamos el botón sin exigir archivo
                     document.getElementById('archivo').required = false;
                     document.getElementById('edit-mode-banner').classList.add('visible');
                     const btn = document.getElementById('btn-guardar');
@@ -901,20 +901,20 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     btn.classList.remove('btn-disabled');
                     btn.disabled = false;
 
-                    // âš ï¸ Opcional: podÃ©s mostrar info del archivo actual
+                    // ⚠️ Opcional: podés mostrar info del archivo actual
                     // document.getElementById('archivo-info').textContent = 'Archivo actual: ' + data.archivo;
                 })
                 .catch(err => {
-                    showToast('error', 'No se pudo cargar la publicaciÃ³n');
-                    console.error('Error cargando publicaciÃ³n:', err);
+                    showToast('error', 'No se pudo cargar la publicación');
+                    console.error('Error cargando publicación:', err);
                 });
         }
     </script>
 
-    <!-- Modal de confirmaciÃ³n para eliminar publicaciÃ³n -->
+    <!-- Modal de confirmación para eliminar publicación -->
     <div id="modalEliminarPublicacion" class="modal hidden">
         <div class="modal-content">
-            <h3>Â¿EstÃ¡s seguro de eliminar esta publicaciÃ³n?</h3>
+            <h3>¿Estás seguro de eliminar esta publicación?</h3>
             <div class="form-buttons">
                 <button id="btnConfirmarEliminar" class="btn btn-aceptar">Eliminar</button>
                 <button class="btn btn-cancelar" onclick="cerrarModalEliminar()">Cancelar</button>

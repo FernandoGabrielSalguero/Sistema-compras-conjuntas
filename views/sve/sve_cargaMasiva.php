@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 declare(strict_types=1);
 
 ini_set('display_errors', '1');
@@ -75,7 +75,7 @@ checkAccess('sve');
         }
 
         .modal .modal-content {
-            /* AJUSTE ANCHO MODAL: modificÃ¡ este valor para hacerlo mÃ¡s angosto/ancho */
+            /* AJUSTE ANCHO MODAL: modificá este valor para hacerlo más angosto/ancho */
             width: min(1450px, 96vw);
             max-height: 88vh;
             max-width: 1200px;
@@ -186,8 +186,8 @@ checkAccess('sve');
                         <span class="material-icons" style="color:#5b21b6;">fact_check</span>
                         <span class="link-text">Relevamiento</span>
                     </li>
-                    <li onclick="location.href='sve_cosechaMecanica.php'"><span class="material-icons" style="color:#5b21b6;">agriculture</span><span class="link-text">Cosecha MecÃ¡nica</span></li>
-                    <li onclick="location.href='sve_serviciosVendimiales.php'"><span class="material-icons" style="color:#5b21b6;">wine_bar</span><span class="link-text">Servicios Auxiliares EnolÃ³gicos</span></li>
+                    <li onclick="location.href='sve_cosechaMecanica.php'"><span class="material-icons" style="color:#5b21b6;">agriculture</span><span class="link-text">Cosecha Mecánica</span></li>
+                    <li onclick="location.href='sve_serviciosVendimiales.php'"><span class="material-icons" style="color:#5b21b6;">wine_bar</span><span class="link-text">Servicios Auxiliares Enológicos</span></li>
                     <li onclick="location.href='sve_publicaciones.php'"><span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span></li>
                     <li onclick="location.href='../../../logout.php'"><span class="material-icons" style="color: red;">logout</span><span class="link-text">Salir</span></li>
                 </ul>
@@ -201,13 +201,13 @@ checkAccess('sve');
         <div class="main">
             <header class="navbar">
                 <button class="btn-icon" onclick="toggleSidebar()"><span class="material-icons">menu</span></button>
-                <div class="navbar-title">ActualizaciÃ³n masiva por CSV</div>
+                <div class="navbar-title">Actualización masiva por CSV</div>
             </header>
 
             <section class="content">
                 <div class="card">
-                    <h2>ActualizaciÃ³n de productores (CSV UTF-8, delimitado por comas)</h2>
-                    <p>SeleccionÃ¡ el archivo CSV, indicÃ¡ la cooperativa y previsualizÃ¡ antes de confirmar.</p>
+                    <h2>Actualización de productores (CSV UTF-8, delimitado por comas)</h2>
+                    <p>Seleccioná el archivo CSV, indicá la cooperativa y previsualizá antes de confirmar.</p>
 
                     <div class="form-grid grid-3">
                         <div class="input-group">
@@ -224,7 +224,7 @@ checkAccess('sve');
                         </div>
                         <div class="input-group" style="display:flex;align-items:flex-end;gap:10px;">
                             <button class="btn btn-info" id="btnPreview" type="button">Previsualizar cambios</button>
-                            <button class="btn btn-aceptar" id="btnApply" type="button" disabled>Confirmar actualizaciÃ³n</button>
+                            <button class="btn btn-aceptar" id="btnApply" type="button" disabled>Confirmar actualización</button>
                         </div>
                     </div>
 
@@ -241,13 +241,13 @@ checkAccess('sve');
 
     <div id="previewModal" class="modal hidden">
         <div class="modal-content">
-            <h3>ConfirmaciÃ³n de cambios</h3>
+            <h3>Confirmación de cambios</h3>
             <div id="modalSummary" style="font-size:14px; white-space:pre-wrap;"></div>
             <div class="massive-table-wrap">
                 <table class="table" id="previewTable">
                     <thead>
                         <tr>
-                            <th>LÃ­nea</th>
+                            <th>Línea</th>
                             <th>CUIT</th>
                             <th>ID real</th>
                             <th>Finca</th>
@@ -255,7 +255,7 @@ checkAccess('sve');
                             <th>Resultado</th>
                             <th>Usuario</th>
                             <th>ID real</th>
-                            <th>RelaciÃ³n</th>
+                            <th>Relación</th>
                             <th>Finca</th>
                             <th>Cuartel</th>
                             <th>Cambios</th>
@@ -285,7 +285,7 @@ checkAccess('sve');
             </div>
             <div class="modal-actions">
                 <button class="btn btn-cancelar" type="button" id="btnCloseModal">Cancelar</button>
-                <button class="btn btn-aceptar" type="button" id="btnConfirmModal">SÃ­, aplicar cambios</button>
+                <button class="btn btn-aceptar" type="button" id="btnConfirmModal">Sí, aplicar cambios</button>
             </div>
         </div>
     </div>
@@ -377,10 +377,10 @@ checkAccess('sve');
 
             function ensureInputs() {
                 if (!csvFile.files || !csvFile.files[0]) {
-                    throw new Error('SeleccionÃ¡ un archivo CSV.');
+                    throw new Error('Seleccioná un archivo CSV.');
                 }
                 if (!coopIdReal.value.trim()) {
-                    throw new Error('IndicÃ¡ el id_real de la cooperativa.');
+                    throw new Error('Indicá el id_real de la cooperativa.');
                 }
             }
 
@@ -520,17 +520,17 @@ checkAccess('sve');
                 const omittedCount = Number(sim.summary?.rows_omitted || 0);
                 const lines = [];
                 lines.push('');
-                lines.push('SimulaciÃ³n sincronizaciÃ³n estricta (sin escribir en BD):');
+                lines.push('Simulación sincronización estricta (sin escribir en BD):');
                 lines.push(`- Relaciones productor-coop a eliminar: ${Number(strict.rel_productor_coop_to_delete || 0)}`);
                 lines.push(`- Fincas a eliminar: ${Number(strict.fincas_to_delete || 0)}`);
                 lines.push(`- Cuarteles a eliminar: ${Number(strict.cuarteles_to_delete || 0)}`);
-                lines.push(`- Filas omitidas que bloquean la aplicaciÃ³n: ${omittedCount}`);
+                lines.push(`- Filas omitidas que bloquean la aplicación: ${omittedCount}`);
                 lines.push(`- Estado: ${strict.blocked ? 'BLOQUEADA' : 'OK para aplicar'}`);
                 if (strict.reason) {
                     lines.push(`- Motivo: ${strict.reason}`);
                 }
                 if (strict.blocked) {
-                    lines.push('- RevisÃ¡ en la tabla las filas con resultado "omitido" y su columna "Detalle".');
+                    lines.push('- Revisá en la tabla las filas con resultado "omitido" y su columna "Detalle".');
                 }
                 return lines.join('\n');
             }
@@ -541,8 +541,8 @@ checkAccess('sve');
                 const total = Number(lastSimulationResponse?.summary?.rows_omitted || omitted.length || 0);
                 const lines = [
                     `No se puede aplicar: hay ${total} fila(s) omitida(s).`,
-                    'La sincronizaciÃ³n estricta queda bloqueada para evitar borrar o pisar datos con una sÃ¡bana incompleta.',
-                    'CorregÃ­ estas filas y volvÃ© a previsualizar antes de aplicar.'
+                    'La sincronización estricta queda bloqueada para evitar borrar o pisar datos con una sábana incompleta.',
+                    'Corregí estas filas y volvé a previsualizar antes de aplicar.'
                 ];
 
                 if (omitted.length) {
@@ -550,11 +550,11 @@ checkAccess('sve');
                     lines.push(`Primeras ${Math.min(limit, omitted.length)} filas omitidas:`);
                     for (const row of omitted.slice(0, limit)) {
                         lines.push(
-                            `- LÃ­nea ${row?.linea ?? '-'} | CUIT ${row?.cuit ?? '-'} | Finca ${row?.codigo_finca ?? '-'} | Cuartel ${row?.codigo_cuartel ?? '-'}: ${row?.detalle || 'Sin detalle'}`
+                            `- Línea ${row?.linea ?? '-'} | CUIT ${row?.cuit ?? '-'} | Finca ${row?.codigo_finca ?? '-'} | Cuartel ${row?.codigo_cuartel ?? '-'}: ${row?.detalle || 'Sin detalle'}`
                         );
                     }
                     if (omitted.length > limit) {
-                        lines.push(`- Hay ${omitted.length - limit} fila(s) omitida(s) mÃ¡s. Revisalas en la tabla de previsualizaciÃ³n.`);
+                        lines.push(`- Hay ${omitted.length - limit} fila(s) omitida(s) más. Revisalas en la tabla de previsualización.`);
                     }
                 }
 
@@ -569,11 +569,11 @@ checkAccess('sve');
                 const lines = ['', 'Filas omitidas detectadas:'];
                 for (const row of omitted.slice(0, limit)) {
                     lines.push(
-                        `- LÃ­nea ${row?.linea ?? '-'} | CUIT ${row?.cuit ?? '-'} | Finca ${row?.codigo_finca ?? '-'} | Cuartel ${row?.codigo_cuartel ?? '-'}: ${row?.detalle || 'Sin detalle'}`
+                        `- Línea ${row?.linea ?? '-'} | CUIT ${row?.cuit ?? '-'} | Finca ${row?.codigo_finca ?? '-'} | Cuartel ${row?.codigo_cuartel ?? '-'}: ${row?.detalle || 'Sin detalle'}`
                     );
                 }
                 if (omitted.length > limit) {
-                    lines.push(`- Hay ${omitted.length - limit} fila(s) omitida(s) mÃ¡s. FiltrÃ¡ o revisÃ¡ la tabla completa.`);
+                    lines.push(`- Hay ${omitted.length - limit} fila(s) omitida(s) más. Filtrá o revisá la tabla completa.`);
                 }
                 return lines.join('\n');
             }
@@ -660,7 +660,7 @@ checkAccess('sve');
 
             csvFile.addEventListener('change', () => {
                 if (!coopIdReal.value.trim()) {
-                    setStatus('Archivo seleccionado. Ahora indicÃ¡ el id_real de la cooperativa para continuar.');
+                    setStatus('Archivo seleccionado. Ahora indicá el id_real de la cooperativa para continuar.');
                     coopIdReal.focus();
                 }
             });
@@ -669,8 +669,8 @@ checkAccess('sve');
                 try {
                     ensureInputs();
                     setWarnings([]);
-                    setStatus('Leyendo CSV y generando previsualizaciÃ³n...');
-                    setLocalSpinner(true, 'Parseando CSV y armando previsualizaciÃ³n...');
+                    setStatus('Leyendo CSV y generando previsualización...');
+                    setLocalSpinner(true, 'Parseando CSV y armando previsualización...');
                     btnApply.disabled = true;
 
                     parsedRows = await parseCsv(csvFile.files[0]);
@@ -679,7 +679,7 @@ checkAccess('sve');
                     lastPreviewResponse = await postToController('preview', parsedRows);
                     lastSimulationResponse = await postToController('simulate', parsedRows);
 
-                    setStatus('PrevisualizaciÃ³n lista. RevisÃ¡ el modal y confirmÃ¡ si querÃ©s aplicar los cambios.');
+                    setStatus('Previsualización lista. Revisá el modal y confirmá si querés aplicar los cambios.');
                     setWarnings(lastPreviewResponse.warnings || []);
                     modalSummary.textContent =
                         renderSummary(lastPreviewResponse.summary || {}) +
@@ -706,7 +706,7 @@ checkAccess('sve');
 
             btnApply.addEventListener('click', () => {
                 if (!lastPreviewResponse) {
-                    setStatus('Primero hacÃ© la previsualizaciÃ³n.');
+                    setStatus('Primero hacé la previsualización.');
                     return;
                 }
                 if (lastSimulationResponse?.strict_sync?.blocked) {
@@ -780,7 +780,7 @@ checkAccess('sve');
                     }
                     closePreviewModal();
                     setStatus(
-                        'ActualizaciÃ³n finalizada.\n' +
+                        'Actualización finalizada.\n' +
                         `Usuarios creados: ${aggregated.usuarios_created || 0}\n` +
                         `Usuarios actualizados: ${aggregated.usuarios_updated || 0}\n` +
                         `Usuarios_info upsert: ${aggregated.usuarios_info_upserted || 0}\n` +

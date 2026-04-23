@@ -1,18 +1,18 @@
-﻿<?php
-// Mostrar errores en pantalla (Ãºtil en desarrollo)
+<?php
+// Mostrar errores en pantalla (útil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesiÃ³n y configurar parÃ¡metros de seguridad
+// Iniciar sesión y configurar parámetros de seguridad
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesiÃ³n
+// Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin telÃ©fono';
+$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 ?>
 
@@ -24,7 +24,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE</title>
 
-    <!-- Ãconos de Material Design -->
+    <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -34,26 +34,26 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         <style>
         /* ===========================
-           ðŸ”§ EDITA ANCHOS POR COLUMNA AQUÃ
+           🔧 EDITA ANCHOS POR COLUMNA AQUÍ
            (Usa px/rem/% a gusto. Estos valores se aplican en desktop/tablet.)
            Orden de columnas:
            1) ID, 2) Nombre, 3) Detalle, 4) Precio, 5) Moneda,
            6) Unidad de venta, 7) Categoria, 8) Alicuota, 9) Acciones
         ============================ */
         :root {
-            --col-1-id: 80px;          /* â† AJUSTABLE */
-            --col-2-nombre: 240px;     /* â† AJUSTABLE */
-            --col-3-detalle: 320px;    /* â† AJUSTABLE */
-            --col-4-precio: 120px;     /* â† AJUSTABLE */
-            --col-5-moneda: 120px;     /* â† AJUSTABLE */
-            --col-6-unidad: 180px;     /* â† AJUSTABLE */
-            --col-7-categoria: 200px;  /* â† AJUSTABLE */
-            --col-8-alicuota: 120px;   /* â† AJUSTABLE */
-            --col-9-acciones: 140px;   /* â† AJUSTABLE */
+            --col-1-id: 80px;          /* ← AJUSTABLE */
+            --col-2-nombre: 240px;     /* ← AJUSTABLE */
+            --col-3-detalle: 320px;    /* ← AJUSTABLE */
+            --col-4-precio: 120px;     /* ← AJUSTABLE */
+            --col-5-moneda: 120px;     /* ← AJUSTABLE */
+            --col-6-unidad: 180px;     /* ← AJUSTABLE */
+            --col-7-categoria: 200px;  /* ← AJUSTABLE */
+            --col-8-alicuota: 120px;   /* ← AJUSTABLE */
+            --col-9-acciones: 140px;   /* ← AJUSTABLE */
 
-            /* Ancho mÃ­nimo de la tabla en mobile (suma aproximada de columnas).
+            /* Ancho mínimo de la tabla en mobile (suma aproximada de columnas).
                Si cambias muchos anchos arriba, puedes ajustar este valor. */
-            --table-min-width: 1500px; /* â† AJUSTABLE */
+            --table-min-width: 1500px; /* ← AJUSTABLE */
         }
 
         .table-container {
@@ -67,7 +67,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         .table-container::-webkit-scrollbar { height: 8px; width: 8px; }
         .table-container::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.2); border-radius: 4px; }
 
-        /* ðŸ’¡ Reglas base para evitar solapamientos */
+        /* 💡 Reglas base para evitar solapamientos */
         .data-table {
             table-layout: fixed; /* fija layout, respetando widths y evitando solapado */
             width: 100%;
@@ -76,12 +76,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         .data-table th, .data-table td {
-            white-space: normal;       /* permite saltos de lÃ­nea */
+            white-space: normal;       /* permite saltos de línea */
             word-break: break-word;    /* corta palabras largas */
             overflow-wrap: anywhere;   /* envuelve incluso strings sin espacios */
         }
 
-        /* AsignaciÃ³n de anchos por columna (desktop/tablet) */
+        /* Asignación de anchos por columna (desktop/tablet) */
         .data-table th:nth-child(1), .data-table td:nth-child(1) { width: var(--col-1-id); max-width: var(--col-1-id); }
         .data-table th:nth-child(2), .data-table td:nth-child(2) { width: var(--col-2-nombre); max-width: var(--col-2-nombre); }
         .data-table th:nth-child(3), .data-table td:nth-child(3) { width: var(--col-3-detalle); max-width: var(--col-3-detalle); }
@@ -92,7 +92,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         .data-table th:nth-child(8), .data-table td:nth-child(8) { width: var(--col-8-alicuota); max-width: var(--col-8-alicuota); text-align:center; }
         .data-table th:nth-child(9), .data-table td:nth-child(9) { width: var(--col-9-acciones); max-width: var(--col-9-acciones); }
 
-        /* ðŸ“± Mobile: scroll horizontal explÃ­cito + mantener wrapping */
+        /* 📱 Mobile: scroll horizontal explícito + mantener wrapping */
         @media (max-width: 768px) {
             .table-container { overflow-x: auto; }
             .data-table {
@@ -113,10 +113,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 <body>
 
-    <!-- ðŸ”² CONTENEDOR PRINCIPAL -->
+    <!-- 🔲 CONTENEDOR PRINCIPAL -->
     <div class="layout">
 
-        <!-- ðŸ§­ SIDEBAR -->
+        <!-- 🧭 SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="material-icons logo-icon">dashboard</span>
@@ -165,11 +165,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha MecÃ¡nica</span>
+                        <span class="link-text">Cosecha Mecánica</span>
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares EnolÃ³gicos</span>
+                        <span class="link-text">Servicios Auxiliares Enológicos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -187,10 +187,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
         </aside>
 
-        <!-- ðŸ§± MAIN -->
+        <!-- 🧱 MAIN -->
         <div class="main">
 
-            <!-- ðŸŸª NAVBAR -->
+            <!-- 🟪 NAVBAR -->
             <header class="navbar">
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
@@ -198,13 +198,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <div class="navbar-title">Productos</div>
             </header>
 
-            <!-- ðŸ“¦ CONTENIDO -->
+            <!-- 📦 CONTENIDO -->
             <section class="content">
 
                 <!-- Bienvenida -->
                 <div class="card">
-                    <h2>Hola ðŸ‘‹</h2>
-                    <p>En esta pÃ¡gina vamos a crear y modificar nuestro inventario.</p>
+                    <h2>Hola 👋</h2>
+                    <p>En esta página vamos a crear y modificar nuestro inventario.</p>
                 </div>
 
                 <!-- Formulario -->
@@ -249,14 +249,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <select id="moneda" name="moneda" required>
                                         <option value="Pesos" selected>Pesos</option>
                                         <option value="USD">USD</option>
-                                        <!-- Si en el futuro necesitÃ¡s mÃ¡s, agregÃ¡s aquÃ­ -->
+                                        <!-- Si en el futuro necesitás más, agregás aquí -->
                                     </select>
                                 </div>
                             </div>
 
                             <!-- Unidad_medida_venta -->
                             <div class="input-group">
-                                <label for="Unidad_medida_venta">Â¿Se vende por?</label>
+                                <label for="Unidad_medida_venta">¿Se vende por?</label>
                                 <div class="input-icon">
                                     <span class="material-icons">scale</span>
                                     <input type="text" id="Unidad_medida_venta" name="Unidad_medida_venta" placeholder="Ej: Botellas 1 litro" required>
@@ -269,9 +269,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-icon">
                                     <span class="material-icons">category</span>
                                     <select id="categoria" name="categoria" required>
-                                        <option value="Fertilizantes SÃ³lidos">Fertilizantes SÃ³lidos</option>
+                                        <option value="Fertilizantes Sólidos">Fertilizantes Sólidos</option>
                                         <option value="Fertilizantes Complejos">Fertilizantes Complejos</option>
-                                        <option value="Fertilizantes LÃ­quidos">Fertilizantes LÃ­quidos</option>
+                                        <option value="Fertilizantes Líquidos">Fertilizantes Líquidos</option>
                                         <option value="Fungicidas">Fungicidas</option>
                                         <option value="Insecticidas">Insecticidas</option>
                                         <option value="Feromona Asperjable">Feromona Asperjable</option>
@@ -281,22 +281,22 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                         <option value="Fertilizantes Foliares">Fertilizantes Foliares</option>
 
                                         <option value="Levadura SA Bayanus">Levadura SA Bayanus</option>
-                                        <option value="Levadura SA TRB GenÃ©rico">Levadura SA TRB GenÃ©rico</option>
+                                        <option value="Levadura SA TRB Genérico">Levadura SA TRB Genérico</option>
                                         <option value="Levadura SA Tinto Verietal">Levadura SA Tinto Verietal</option>
                                         <option value="Levadura SA Blanco Varietal">Levadura SA Blanco Varietal</option>
                                         <option value="Levadura SA Dulce Natural">Levadura SA Dulce Natural</option>
-                                        <option value="Nutriente enologico">Nutriente enolÃ³gico</option>
+                                        <option value="Nutriente enologico">Nutriente enológico</option>
                                         <option value="Desincrustante">Desincrustante</option>
                                         <option value="Clarificante">Clarificante</option>
                                         <option value="Acidulante">Acidulante</option>
                                         <option value="Acido columna">Acido columna</option>
                                         <option value="Enzima">Enzima</option>
 
-                                        <option value="EPP (Elementos de protecciÃ³n personal )">EPP (Elementos de protecciÃ³n personal )</option>
+                                        <option value="EPP (Elementos de protección personal )">EPP (Elementos de protección personal )</option>
                                         <option value="Indumentaria">Indumentaria</option>
                                         <option value="Calzado">Calzado</option>
                                         <option value="Elementos de limpieza">Elementos de limpieza</option>
-                                        <option value="CaÃ±erias">CaÃ±erias</option>
+                                        <option value="Cañerias">Cañerias</option>
                                         <option value="Accesorios">Accesorios</option>
 
                                         <option value="Otros">Otros</option>
@@ -373,7 +373,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </tr>
                             </thead>
                             <tbody id="tablaProductos">
-                                <!-- Contenido dinÃ¡mico -->
+                                <!-- Contenido dinámico -->
                             </tbody>
                         </table>
                     </div>
@@ -431,13 +431,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
 
                                 <div class="input-group">
-                                    <label for="edit_categoria">CategorÃ­a</label>
+                                    <label for="edit_categoria">Categoría</label>
                                     <div class="input-icon">
                                         <span class="material-icons">category</span>
                                         <select id="edit_categoria" name="categoria" required>
-                                            <option value="Fertilizantes SÃ³lidos">Fertilizantes SÃ³lidos</option>
+                                            <option value="Fertilizantes Sólidos">Fertilizantes Sólidos</option>
                                             <option value="Fertilizantes Complejos">Fertilizantes Complejos</option>
-                                            <option value="Fertilizantes LÃ­quidos">Fertilizantes LÃ­quidos</option>
+                                            <option value="Fertilizantes Líquidos">Fertilizantes Líquidos</option>
                                             <option value="Fungicidas">Fungicidas</option>
                                             <option value="Insecticidas">Insecticidas</option>
                                             <option value="Feromona Asperjable">Feromona Asperjable</option>
@@ -447,22 +447,22 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                             <option value="Fertilizantes Foliares">Fertilizantes Foliares</option>
 
                                             <option value="Levadura SA Bayanus">Levadura SA Bayanus</option>
-                                            <option value="Levadura SA TRB GenÃ©rico">Levadura SA TRB GenÃ©rico</option>
+                                            <option value="Levadura SA TRB Genérico">Levadura SA TRB Genérico</option>
                                             <option value="Levadura SA Tinto Verietal">Levadura SA Tinto Verietal</option>
                                             <option value="Levadura SA Blanco Varietal">Levadura SA Blanco Varietal</option>
                                             <option value="Levadura SA Dulce Natural">Levadura SA Dulce Natural</option>
-                                            <option value="Nutriente enologico">Nutriente enolÃ³gico</option>
+                                            <option value="Nutriente enologico">Nutriente enológico</option>
                                             <option value="Desincrustante">Desincrustante</option>
                                             <option value="Clarificante">Clarificante</option>
                                             <option value="Acidulante">Acidulante</option>
                                             <option value="Acido columna">Acido columna</option>
                                             <option value="Enzima">Enzima</option>
 
-                                            <option value="EPP (Elementos de protecciÃ³n personal )">EPP (Elementos de protecciÃ³n personal )</option>
+                                            <option value="EPP (Elementos de protección personal )">EPP (Elementos de protección personal )</option>
                                             <option value="Indumentaria">Indumentaria</option>
                                             <option value="Calzado">Calzado</option>
                                             <option value="Elementos de limpieza">Elementos de limpieza</option>
-                                            <option value="CaÃ±erias">CaÃ±erias</option>
+                                            <option value="Cañerias">Cañerias</option>
                                             <option value="Accesorios">Accesorios</option>
 
                                             <option value="Otros">Otros</option>
@@ -522,7 +522,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
         document.addEventListener('DOMContentLoaded', cargarProductos);
 
-        // Filtrar productos por nombre o categorÃ­a
+        // Filtrar productos por nombre o categoría
         document.addEventListener('DOMContentLoaded', () => {
             const inputNombre = document.getElementById('filtro_nombre');
             const inputCategoria = document.getElementById('filtro_categoria');
@@ -534,7 +534,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 filas.forEach(fila => {
                     const nombre = fila.children[1]?.textContent.toLowerCase() || '';
-                    // Columna 7 = "Categoria" => Ã­ndice 6
+                    // Columna 7 = "Categoria" => índice 6
                     const categoria = fila.children[6]?.textContent.toLowerCase() || '';
 
                     const coincideNombre = nombre.includes(nombreValor);
@@ -551,7 +551,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
         // Abrir modal para editar
         function abrirModalEditar(id) {
-            // console.log("ðŸ‘‰ Abrir modal para ID:", id);
+            // console.log("👉 Abrir modal para ID:", id);
 
             fetch(`/controllers/sve_productosController.php?accion=obtener&id=${id}`)
                 .then(async (res) => {
@@ -562,7 +562,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     return res.json();
                 })
                 .then(data => {
-                    // console.log("âœ… Producto recibido:", data);
+                    // console.log("✅ Producto recibido:", data);
 
                     document.getElementById('edit_id').value = data.producto.Id;
                     document.getElementById('edit_Nombre_producto').value = data.producto.Nombre_producto;
@@ -577,7 +577,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     openModalEditar();
                 })
                 .catch((err) => {
-                    console.error('â›” Error capturado:', err);
+                    console.error('⛔ Error capturado:', err);
                     showAlert('error', err.message);
                 });
         }
@@ -639,7 +639,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         });
 
         // Eliminar producto
-        // abrir modal para confirmaciÃ³n
+        // abrir modal para confirmación
         let productoIdAEliminar = null;
 
         function confirmarEliminacion(id) {
@@ -663,7 +663,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
 
             try {
-                // console.log("ðŸ‘‰ Eliminando producto ID:", productoIdAEliminar);
+                // console.log("👉 Eliminando producto ID:", productoIdAEliminar);
 
                 const response = await fetch('/controllers/sve_productosController.php', {
                     method: 'POST',
@@ -677,18 +677,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
 
                 const result = await response.json();
-                // console.log("âœ… Producto eliminado:", result);
+                // console.log("✅ Producto eliminado:", result);
 
                 if (result.success) {
                     showAlert('success', result.message);
                     closeModalConfirmacion();
                     cargarProductos();
                 } else {
-                    // console.log("âŒ Error al eliminar producto:", result);
+                    // console.log("❌ Error al eliminar producto:", result);
                     showAlert('error', result.message);
                 }
             } catch (error) {
-                // console.error('â›” Error capturado:', error);
+                // console.error('⛔ Error capturado:', error);
                 showAlert('error', error.message || 'Error inesperado.');
             }
         }
@@ -700,7 +700,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             if (modal) {
                 modal.classList.remove('hidden');
             } else {
-                console.error('âŒ No se encontrÃ³ el modal con ID modalEditar');
+                console.error('❌ No se encontró el modal con ID modalEditar');
             }
         }
 
@@ -713,20 +713,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             if (form) form.reset();
         }
 
-        // Asociar evento al botÃ³n de confirmar eliminaciÃ³n
+        // Asociar evento al botón de confirmar eliminación
         document.addEventListener('DOMContentLoaded', function() {
             const btnEliminar = document.getElementById('btnConfirmarEliminar');
             if (btnEliminar) {
                 btnEliminar.addEventListener('click', eliminarProductoConfirmado);
             } else {
-                console.warn("âš ï¸ No se encontrÃ³ el botÃ³n con ID 'btnConfirmarEliminar'");
+                console.warn("⚠️ No se encontró el botón con ID 'btnConfirmarEliminar'");
             }
         });
     </script>
 
     <div id="modalConfirmacion" class="modal hidden">
         <div class="modal-content">
-            <h3>Â¿EstÃ¡s seguro de eliminar este producto?</h3>
+            <h3>¿Estás seguro de eliminar este producto?</h3>
             <div class="form-buttons">
                 <button id="btnConfirmarEliminar" class="btn btn-aceptar">Eliminar</button>
                 <button class="btn btn-cancelar" onclick="closeModalConfirmacion()">Cancelar</button>

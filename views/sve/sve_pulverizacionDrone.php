@@ -1,18 +1,18 @@
-﻿<?php
-// Mostrar errores en pantalla (Ãºtil en desarrollo)
+<?php
+// Mostrar errores en pantalla (útil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesiÃ³n y configurar parÃ¡metros de seguridad
+// Iniciar sesión y configurar parámetros de seguridad
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesiÃ³n
+// Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin telÃ©fono';
+$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 //Cargamos los operativos cerrados
@@ -31,7 +31,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
   <!-- descargar imagen -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-  <!-- Ãconos de Material Design -->
+  <!-- Íconos de Material Design -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -71,10 +71,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
 <body>
 
-  <!-- ðŸ”² CONTENEDOR PRINCIPAL -->
+  <!-- 🔲 CONTENEDOR PRINCIPAL -->
   <div class="layout">
 
-    <!-- ðŸ§­ SIDEBAR -->
+    <!-- 🧭 SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <span class="material-icons logo-icon">dashboard</span>
@@ -123,11 +123,11 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha MecÃ¡nica</span>
+                        <span class="link-text">Cosecha Mecánica</span>
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares EnolÃ³gicos</span>
+                        <span class="link-text">Servicios Auxiliares Enológicos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -145,10 +145,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
       </div>
     </aside>
 
-    <!-- ðŸ§± MAIN -->
+    <!-- 🧱 MAIN -->
     <div class="main">
 
-      <!-- ðŸŸª NAVBAR -->
+      <!-- 🟪 NAVBAR -->
       <header class="navbar">
         <button class="btn-icon" onclick="toggleSidebar()">
           <span class="material-icons">menu</span>
@@ -156,15 +156,15 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         <div class="navbar-title">Inicio</div>
       </header>
 
-      <!-- ðŸ“¦ CONTENIDO -->
+      <!-- 📦 CONTENIDO -->
       <section class="content">
 
         <!-- Bienvenida -->
         <div class="card">
           <h2>Hola! </h2>
-          <p>Te presentamos el gestor de proyectos de vuelo. Desde acÃ¡, vas a controlar todo el servicio de pulverizaciÃ³n con drones.</p>
+          <p>Te presentamos el gestor de proyectos de vuelo. Desde acá, vas a controlar todo el servicio de pulverización con drones.</p>
 
-          <!-- ðŸ”˜ Tarjeta con los botones del tab -->
+          <!-- 🔘 Tarjeta con los botones del tab -->
           <div class="tabs">
             <div class="tab-buttons">
               <button class="tab-button" data-target="#panel-solicitudes">Solicitudes</button>
@@ -173,13 +173,13 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
               <button class="tab-button" data-target="#panel-calendario">Calendario</button>
               <button class="tab-button" data-target="#panel-stock">Stock</button>
               <button class="tab-button" data-target="#panel-variables">Variables</button>
-              <!-- BotÃ³n de actualizaciÃ³n on-demand -->
+              <!-- Botón de actualización on-demand -->
               <button id="btn-refresh" class="btn btn-aceptar" style="margin-left:auto">Actualizar</button>
             </div>
           </div>
         </div>
 
-        <!-- ðŸ§© Tarjeta separada para el contenido del tab -->
+        <!-- 🧩 Tarjeta separada para el contenido del tab -->
         <div class="card" id="tab-content-card" style="margin-top: 12px;">
 
           <!-- Panel: Solicitudes (lazy) -->
@@ -281,8 +281,8 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
           return;
         }
 
-        // Spinner mÃ­nimo (usa tus estilos)
-        panel.innerHTML = '<div class="loader" style="padding:16px">Cargandoâ€¦</div>';
+        // Spinner mínimo (usa tus estilos)
+        panel.innerHTML = '<div class="loader" style="padding:16px">Cargando…</div>';
 
         try {
           const res = await fetch(url, { credentials: 'same-origin' });
@@ -302,7 +302,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         buttons.forEach(b => b.classList.remove('active'));
         panels.forEach(p => p.classList.remove('active'));
 
-        // Activa botÃ³n/panel destino
+        // Activa botón/panel destino
         const btn   = Array.from(buttons).find(b => b.dataset.target === targetSel);
         const panel = document.querySelector(targetSel);
 
@@ -320,7 +320,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         loadPanel(targetSel);
       }
 
-      // Cambiar de pestaÃ±a SIN recargar
+      // Cambiar de pestaña SIN recargar
       buttons.forEach(btn => {
         btn.addEventListener('click', () => {
           if (!isTabButton(btn)) return;
@@ -331,7 +331,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         });
       });
 
-      // BotÃ³n "Actualizar" (recarga manual manteniendo pestaÃ±a)
+      // Botón "Actualizar" (recarga manual manteniendo pestaña)
       const refreshBtn = document.getElementById('btn-refresh');
       if (refreshBtn) {
         refreshBtn.addEventListener('click', () => {
@@ -343,14 +343,14 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         });
       }
 
-      // Activar la pestaÃ±a persistida (o default) y cargarla
+      // Activar la pestaña persistida (o default) y cargarla
       const initial = sessionStorage.getItem(STORAGE_KEY) || '#panel-solicitudes';
       activate(initial);
     });
   </script>
 
 
-  <!-- Contenedor exclusivo para impresiÃ³n -->
+  <!-- Contenedor exclusivo para impresión -->
   <div id="printArea" class="only-print"></div>
 </body>
 

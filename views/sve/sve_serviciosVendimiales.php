@@ -1,18 +1,18 @@
-﻿<?php
-// Mostrar errores en pantalla (Ãºtil en desarrollo)
+<?php
+// Mostrar errores en pantalla (útil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesiÃ³n y configurar parÃ¡metros de seguridad
+// Iniciar sesión y configurar parámetros de seguridad
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesiÃ³n
+// Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin telÃ©fono';
+$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 ?>
 
@@ -24,7 +24,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE</title>
 
-    <!-- Ãconos de Material Design -->
+    <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -121,10 +121,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 <body>
 
-    <!-- ðŸ”² CONTENEDOR PRINCIPAL -->
+    <!-- 🔲 CONTENEDOR PRINCIPAL -->
     <div class="layout">
 
-        <!-- ðŸ§­ SIDEBAR -->
+        <!-- 🧭 SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="material-icons logo-icon">dashboard</span>
@@ -173,11 +173,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha MecÃ¡nica</span>
+                        <span class="link-text">Cosecha Mecánica</span>
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares EnolÃ³gicos</span>
+                        <span class="link-text">Servicios Auxiliares Enológicos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -195,10 +195,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
         </aside>
 
-        <!-- ðŸ§± MAIN -->
+        <!-- 🧱 MAIN -->
         <div class="main">
 
-            <!-- ðŸŸª NAVBAR -->
+            <!-- 🟪 NAVBAR -->
             <header class="navbar">
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
@@ -206,12 +206,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <div class="navbar-title">Servicios vendimiales</div>
             </header>
 
-            <!-- ðŸ“¦ CONTENIDO -->
+            <!-- 📦 CONTENIDO -->
             <section class="content">
 
                 <div class="card">
                     <h2>Servicios vendimiales</h2>
-                    <p>AdministraciÃ³n de servicios vendimiales. UsÃ¡ el botÃ³n para gestionar los servicios ofrecidos.</p>
+                    <p>Administración de servicios vendimiales. Usá el botón para gestionar los servicios ofrecidos.</p>
                     <div class="form-buttons" style="margin-top: 16px;">
                         <button type="button" class="btn btn-aceptar" onclick="openModalServiciosOfrecidos()">Servicios ofrecidos</button>
                         <button type="button" class="btn btn-aceptar" onclick="openModalProductos()">Productos por servicio</button>
@@ -351,7 +351,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-    <!-- Modal confirmar eliminaciÃ³n -->
+    <!-- Modal confirmar eliminación -->
     <div id="modalEliminarPedido" class="modal hidden">
         <div class="modal-content" style="max-width: 480px;">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
@@ -360,7 +360,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <span class="material-icons">close</span>
                 </button>
             </div>
-            <p style="margin:16px 0 24px; color:#475569;">Â¿QuerÃ©s eliminar este servicio contratado? Esta acciÃ³n no se puede deshacer.</p>
+            <p style="margin:16px 0 24px; color:#475569;">¿Querés eliminar este servicio contratado? Esta acción no se puede deshacer.</p>
             <div class="form-buttons" style="justify-content:flex-end;">
                 <button type="button" class="btn btn-info" onclick="closeModalEliminarPedido()">Cancelar</button>
                 <button type="button" class="btn btn-aceptar" onclick="confirmarEliminarPedido()" style="background:#dc2626;">Eliminar</button>
@@ -395,7 +395,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-icon">
                                 <span class="material-icons">toggle_on</span>
                                 <select id="activo" name="activo" required>
-                                    <option value="1">SÃ­</option>
+                                    <option value="1">Sí</option>
                                     <option value="0">No</option>
                                 </select>
                             </div>
@@ -477,7 +477,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-icon">
                                 <span class="material-icons">toggle_on</span>
                                 <select id="producto_activo" name="activo" required>
-                                    <option value="1">SÃ­</option>
+                                    <option value="1">Sí</option>
                                     <option value="0">No</option>
                                 </select>
                             </div>
@@ -541,12 +541,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-icon">
                                 <span class="material-icons">local_offer</span>
                                 <select id="contrato_servicio" name="servicio_id" required>
-                                    <option value="">SeleccionÃ¡ un servicio</option>
+                                    <option value="">Seleccioná un servicio</option>
                                 </select>
                             </div>
                         </div>
                         <div class="input-group">
-                            <label for="contrato_version">VersiÃ³n</label>
+                            <label for="contrato_version">Versión</label>
                             <div class="input-icon">
                                 <span class="material-icons">tag</span>
                                 <input type="number" id="contrato_version" name="version" min="1" step="1" value="1">
@@ -557,7 +557,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <div class="input-icon">
                                 <span class="material-icons">toggle_on</span>
                                 <select id="contrato_vigente" name="vigente" required>
-                                    <option value="1">SÃ­</option>
+                                    <option value="1">Sí</option>
                                     <option value="0">No</option>
                                 </select>
                             </div>
@@ -586,7 +586,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <tr>
                                 <th>Nombre</th>
                                 <th>Servicio</th>
-                                <th>VersiÃ³n</th>
+                                <th>Versión</th>
                                 <th>Vigente</th>
                                 <th>Acciones</th>
                             </tr>
@@ -729,7 +729,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const data = await res.json();
 
                 if (!data.success) {
-                    throw new Error(data.message || 'No se pudo cargar la informaciÃ³n.');
+                    throw new Error(data.message || 'No se pudo cargar la información.');
                 }
 
                 const servicios = Array.isArray(data.servicios) ? data.servicios : [];
@@ -741,7 +741,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 tbody.innerHTML = '';
                 servicios.forEach((servicio) => {
-                    const estado = Number(servicio.activo) === 1 ? 'SÃ­' : 'No';
+                    const estado = Number(servicio.activo) === 1 ? 'Sí' : 'No';
                     const fila = document.createElement('tr');
                     fila.innerHTML = `
                         <td>${servicio.nombre ?? 'Sin nombre'}</td>
@@ -787,7 +787,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         async function eliminarServicio(id) {
-            if (!confirm('Â¿Eliminar servicio?')) return;
+            if (!confirm('¿Eliminar servicio?')) return;
 
             const payload = new URLSearchParams();
             payload.append('_method', 'delete');
@@ -833,7 +833,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const data = await res.json();
 
                 if (!data.success) {
-                    throw new Error(data.message || 'No se pudo cargar la informaciÃ³n.');
+                    throw new Error(data.message || 'No se pudo cargar la información.');
                 }
 
                 const items = Array.isArray(data.productos) ? data.productos : [];
@@ -844,7 +844,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 tbody.innerHTML = '';
                 items.forEach((item) => {
-                    const estado = Number(item.activo) === 1 ? 'SÃ­' : 'No';
+                    const estado = Number(item.activo) === 1 ? 'Sí' : 'No';
                     const fila = document.createElement('tr');
                     fila.innerHTML = `
                         <td>${item.servicio_nombre ?? '-'}</td>
@@ -893,7 +893,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         async function eliminarProducto(id) {
-            if (!confirm('Â¿Eliminar producto?')) return;
+            if (!confirm('¿Eliminar producto?')) return;
 
             const payload = new URLSearchParams();
             payload.append('_method', 'delete');
@@ -947,7 +947,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     select.innerHTML = '<option value="">Sin servicios disponibles</option>';
                     return;
                 }
-                select.innerHTML = '<option value="">SeleccionÃ¡ un servicio</option>';
+                select.innerHTML = '<option value="">Seleccioná un servicio</option>';
                 servicios.forEach((servicio) => {
                     const option = document.createElement('option');
                     option.value = servicio.id;
@@ -971,7 +971,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const data = await res.json();
 
                 if (!data.success) {
-                    throw new Error(data.message || 'No se pudo cargar la informaciÃ³n.');
+                    throw new Error(data.message || 'No se pudo cargar la información.');
                 }
 
                 const items = Array.isArray(data.contratos) ? data.contratos : [];
@@ -982,7 +982,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 tbody.innerHTML = '';
                 items.forEach((item) => {
-                    const estado = Number(item.vigente) === 1 ? 'SÃ­' : 'No';
+                    const estado = Number(item.vigente) === 1 ? 'Sí' : 'No';
                     const fila = document.createElement('tr');
                     fila.innerHTML = `
                         <td>${item.nombre ?? 'Sin nombre'}</td>
@@ -1034,7 +1034,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         async function eliminarContrato(id) {
-            if (!confirm('Â¿Eliminar contrato?')) return;
+            if (!confirm('¿Eliminar contrato?')) return;
 
             const payload = new URLSearchParams();
             payload.append('_method', 'delete');
@@ -1091,7 +1091,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     return;
                 }
 
-                select.innerHTML = '<option value="">SeleccionÃ¡ un servicio</option>';
+                select.innerHTML = '<option value="">Seleccioná un servicio</option>';
                 servicios.forEach((servicio) => {
                     const option = document.createElement('option');
                     option.value = servicio.id;
@@ -1123,7 +1123,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const data = await res.json();
 
                 if (!data.success) {
-                    throw new Error(data.message || 'No se pudo cargar la informaciÃ³n.');
+                    throw new Error(data.message || 'No se pudo cargar la información.');
                 }
 
                 const pedidos = Array.isArray(data.pedidos) ? data.pedidos : [];
@@ -1189,7 +1189,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     select.innerHTML = '<option value="">Sin servicios disponibles</option>';
                     return;
                 }
-                select.innerHTML = '<option value="">SeleccionÃ¡ un servicio</option>';
+                select.innerHTML = '<option value="">Seleccioná un servicio</option>';
                 servicios.forEach((servicio) => {
                     const option = document.createElement('option');
                     option.value = servicio.id;
@@ -1209,7 +1209,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const select = document.getElementById('pedido_producto');
             if (!select) return;
             if (!servicioId) {
-                select.innerHTML = '<option value="">SeleccionÃ¡ un servicio primero</option>';
+                select.innerHTML = '<option value="">Seleccioná un servicio primero</option>';
                 return;
             }
 
@@ -1226,7 +1226,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     select.innerHTML = '<option value="">Sin productos</option>';
                     return;
                 }
-                select.innerHTML = '<option value="">SeleccionÃ¡ un producto</option>';
+                select.innerHTML = '<option value="">Seleccioná un producto</option>';
                 items.forEach((item) => {
                     const option = document.createElement('option');
                     option.value = item.id;
@@ -1342,7 +1342,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     select.innerHTML = '<option value="">Sin cooperativas</option>';
                     return;
                 }
-                select.innerHTML = '<option value="">SeleccionÃ¡ cooperativa</option>';
+                select.innerHTML = '<option value="">Seleccioná cooperativa</option>';
                 cooperativas.forEach((coop) => {
                     const option = document.createElement('option');
                     option.value = coop.valor ?? '';

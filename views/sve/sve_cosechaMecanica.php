@@ -1,19 +1,18 @@
-﻿<?php
+<?php
 
-declare(strict_types=1);
 ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
-// Iniciar sesiÃ³n y configurar parÃ¡metros de seguridad
+// Iniciar sesión y configurar parámetros de seguridad
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesiÃ³n
+// Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin telÃ©fono';
+$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 ?>
 
@@ -23,9 +22,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SVE - Cosecha MecÃ¡nica</title>
+    <title>SVE - Cosecha Mecánica</title>
 
-    <!-- Ãconos de Material Design -->
+    <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -41,7 +40,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 
     <style>
-        /* Estilos especÃ­ficos de Cosecha MecÃ¡nica */
+        /* Estilos específicos de Cosecha Mecánica */
 
         .filters-card {
             display: flex;
@@ -105,7 +104,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         .cosecha-table-wrapper {
             margin-top: 0.75rem;
             overflow-y: auto;
-            /* ðŸ”§ Ajustar altura mÃ¡xima de la tabla aquÃ­ */
+            /* Ajustar altura máxima de la tabla aquí */
             max-height: 480px;
         }
 
@@ -524,10 +523,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 <body>
 
-    <!-- ðŸ”² CONTENEDOR PRINCIPAL -->
+    <!-- ?? CONTENEDOR PRINCIPAL -->
     <div class="layout">
 
-        <!-- ðŸ§­ SIDEBAR -->
+        <!-- ?? SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="material-icons logo-icon">dashboard</span>
@@ -576,11 +575,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha MecÃ¡nica</span>
+                        <span class="link-text">Cosecha Mecánica</span>
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares EnolÃ³gicos</span>
+                        <span class="link-text">Servicios Auxiliares Enológicos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -598,28 +597,28 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
         </aside>
 
-        <!-- ðŸ§± MAIN -->
+        <!-- ?? MAIN -->
         <div class="main">
 
-            <!-- ðŸŸª NAVBAR -->
+            <!-- ?? NAVBAR -->
             <header class="navbar">
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="navbar-title">Cosecha MecÃ¡nica</div>
+                <div class="navbar-title">Cosecha Mecánica</div>
             </header>
 
-            <!-- ðŸ“¦ CONTENIDO -->
+            <!-- ?? CONTENIDO -->
             <section class="content">
 
                 <!-- Bienvenida (se mantiene igual) -->
                 <div class="card">
-                    <h2>Hola ðŸ‘‹</h2>
-                    <p>En esta pÃ¡gina vamos a crear los contratos y vamos a poder visualizar las cooperativas que confirmaron asistencia con sus respectivos productores</p>
+                    <h2>Hola ??</h2>
+                    <p>En esta página vamos a crear los contratos y vamos a poder visualizar las cooperativas que confirmaron asistencia con sus respectivos productores</p>
                 </div>
 
-                <!-- Tarjeta filtros + botÃ³n nuevo contrato -->
-                <div class="card filters-card" aria-label="Filtros de contratos de cosecha mecÃ¡nica">
+                <!-- Tarjeta filtros + botón nuevo contrato -->
+                <div class="card filters-card" aria-label="Filtros de contratos de cosecha mecánica">
                     <h3>Filtros</h3>
                     <div class="filters-row">
                         <div class="input-group">
@@ -648,7 +647,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <button id="btnNuevoContrato"
                             type="button"
                             class="btn btn-aceptar"
-                            aria-label="Crear nuevo contrato de cosecha mecÃ¡nica">
+                            aria-label="Crear nuevo contrato de cosecha mecánica">
                             Nuevo contrato
                         </button>
                     </div>
@@ -656,9 +655,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Tabla de contratos -->
                 <div class="card tabla-card cosecha-table-card">
-                    <h2>Contratos de Cosecha MecÃ¡nica</h2>
+                    <h2>Contratos de Cosecha Mecánica</h2>
                     <div class="cosecha-table-wrapper">
-                        <table class="data-table" aria-label="Listado de contratos de cosecha mecÃ¡nica">
+                        <table class="data-table" aria-label="Listado de contratos de cosecha mecánica">
                             <thead>
                                 <tr>
                                     <th>Nombre</th>
@@ -806,7 +805,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         </div>
                     </div>
                     <div class="input-group">
-                        <label for="prep-acequias">PreparaciÃ³n del suelo <span class="label-subtext">Acequias</span></label>
+                        <label for="prep-acequias">Preparación del suelo <span class="label-subtext">Acequias</span></label>
                         <div class="input-icon">
                             <select id="prep-acequias" name="preparacion_acequias" required>
                                 <option value="">Seleccionar</option>
@@ -831,7 +830,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         </div>
                     </div>
                     <div class="input-group" style="grid-column: span 2;">
-                        <label for="prep-obstaculos">PreparaciÃ³n del suelo (obstÃ¡culos)</label>
+                        <label for="prep-obstaculos">Preparación del suelo (obstáculos)</label>
                         <div class="input-icon">
                             <select id="prep-obstaculos" name="preparacion_obstaculos" required>
                                 <option value="">Seleccionar</option>
@@ -846,7 +845,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <div class="input-group" style="grid-column: span 2;">
                         <label for="observaciones">Observaciones</label>
                         <div class="input-icon">
-                            <textarea id="observaciones" name="observaciones" rows="3" placeholder="EscribÃ­ observaciones..."></textarea>
+                            <textarea id="observaciones" name="observaciones" rows="3" placeholder="Escribí observaciones..."></textarea>
                         </div>
                     </div>
                 </div>
@@ -858,7 +857,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-    <!-- Script principal Cosecha MecÃ¡nica -->
+    <!-- Script principal Cosecha Mecánica -->
     <script>
         (function() {
             'use strict';
@@ -971,7 +970,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     }
 
                     if (!response.ok) {
-                        const msg = (json && (json.error || json.message)) ? (json.error || json.message) : 'Error de comunicaciÃ³n con el servidor.';
+                        const msg = (json && (json.error || json.message)) ? (json.error || json.message) : 'Error de comunicación con el servidor.';
                         console.error('[CosechaMecanica] HTTP error', response.status, json);
                         showAlert('error', msg);
                         throw new Error((json && json.error) ? json.error : ('HTTP ' + response.status));
@@ -1088,7 +1087,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const action = btn.getAttribute('data-action');
 
                 contratoSeleccionadoId = id;
-                console.log('[CosechaMecanica] AcciÃ³n en contrato:', action, 'ID:', id);
+                console.log('[CosechaMecanica] Acción en contrato:', action, 'ID:', id);
 
                 if (action === 'ver-contrato') {
                     abrirModalVerContrato(id);
@@ -1100,10 +1099,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             }
 
             function abrirModalVerContrato(contratoId) {
-                console.log('[CosechaMecanica] AcciÃ³n en contrato: ver-contrato ID:', contratoId);
+                console.log('[CosechaMecanica] Acción en contrato: ver-contrato ID:', contratoId);
 
                 if (!contratoId || Number.isNaN(Number(contratoId))) {
-                    showAlert('error', 'ID de contrato invÃ¡lido.');
+                    showAlert('error', 'ID de contrato inválido.');
                     return;
                 }
 
@@ -1132,14 +1131,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                         var contrato = resp.data || {};
 
-                        // Usamos la funciÃ³n definida en verContratoModal_view.php
+                        // Usamos la función definida en verContratoModal_view.php
                         if (typeof window.cargarContratoEnModal === 'function') {
                             window.cargarContratoEnModal(contrato);
                         } else {
-                            console.warn('[CosechaMecanica] window.cargarContratoEnModal no estÃ¡ definida.');
+                            console.warn('[CosechaMecanica] window.cargarContratoEnModal no está definida.');
                         }
 
-                        // Mostrar el modal (usa tu funciÃ³n utilitaria si ya existe)
+                        // Mostrar el modal (usa tu función utilitaria si ya existe)
                         var modal = document.getElementById('modalVerContrato');
                         if (modal) {
                             modal.classList.remove('hidden');
@@ -1148,7 +1147,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     })
                     .catch(function(error) {
                         console.error('[CosechaMecanica] Error al abrir modal ver contrato:', error);
-                        showAlert('error', 'Error de conexiÃ³n al obtener el contrato.');
+                        showAlert('error', 'Error de conexión al obtener el contrato.');
                     });
             }
 
@@ -1185,10 +1184,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             <td>${row.fecha_estimada ? formatearFecha(row.fecha_estimada) : ''}</td>
                             <td>${row.km_finca ?? ''}</td>
 
-                            <td>${row.firma ? 'SÃ­' : 'No'}</td>
-                            <td>${row.flete ? 'SÃ­' : 'No'}</td>
+                            <td>${row.firma ? 'Sí' : 'No'}</td>
+                            <td>${row.flete ? 'Sí' : 'No'}</td>
                             <td>${
-    (String(row.seguro_flete || '').toLowerCase() === 'si') ? 'SÃ­'
+    (String(row.seguro_flete || '').toLowerCase() === 'si') ? 'Sí'
   : (String(row.seguro_flete || '').toLowerCase() === 'no') ? 'No'
   : 'Sin definir'
 }</td>
@@ -1236,7 +1235,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 } catch (err) {
                     console.error('[CosechaMecanica] Error al abrir modal coop/prod:', err);
-                    modalCoopProdBody.innerHTML = 'No se pudo cargar la informaciÃ³n de cooperativas y productores.';
+                    modalCoopProdBody.innerHTML = 'No se pudo cargar la información de cooperativas y productores.';
                 }
             }
 
@@ -1603,8 +1602,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             btnCalificacion.className = 'btn btn-info btn-icono-accion';
                             btnCalificacion.dataset.action = 'ver-calificacion';
                             btnCalificacion.dataset.participacionId = String(fila.id);
-                            btnCalificacion.title = 'Ver calificaciÃ³n';
-                            btnCalificacion.setAttribute('aria-label', 'Ver calificaciÃ³n');
+                            btnCalificacion.title = 'Ver calificación';
+                            btnCalificacion.setAttribute('aria-label', 'Ver calificación');
                             btnCalificacion.innerHTML = '<span class="material-icons">visibility</span>';
                             tdAcciones.appendChild(btnCalificacion);
                         }
@@ -1612,8 +1611,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         btnFacturacion.className = 'btn btn-icono-accion btn-icono-facturacion';
                         btnFacturacion.dataset.action = 'abrir-facturacion';
                         btnFacturacion.dataset.participacionId = String(fila.id);
-                        btnFacturacion.title = 'Datos de facturaciÃ³n';
-                        btnFacturacion.setAttribute('aria-label', 'Datos de facturaciÃ³n');
+                        btnFacturacion.title = 'Datos de facturación';
+                        btnFacturacion.setAttribute('aria-label', 'Datos de facturación');
                         btnFacturacion.innerHTML = '<span class="material-icons">receipt_long</span>';
                         tdAcciones.appendChild(btnFacturacion);
                         tr.appendChild(tdAcciones);
@@ -1689,7 +1688,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
             function descargarExcelXlsx(columns, rows, filename) {
                 if (!window.XLSX) {
-                    showUserAlert('error', 'No se pudo generar el Excel (librerÃ­a XLSX no disponible).');
+                    showUserAlert('error', 'No se pudo generar el Excel (librería XLSX no disponible).');
                     return;
                 }
 
@@ -1754,42 +1753,42 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     return;
                 }
 
-                showUserAlert('info', 'Generando Excel, por favor esperÃ¡...');
+                showUserAlert('info', 'Generando Excel, por favor esperá...');
                 const totalSteps = (latestFincasRows.length * 2) + 2;
                 let currentStep = 0;
-                mostrarExportLoader(totalSteps, 'Preparando exportaciÃ³n...');
+                mostrarExportLoader(totalSteps, 'Preparando exportación...');
 
                 const columnas = [
-                    { key: 'participacion_id', label: 'ID ParticipaciÃ³n' },
+                    { key: 'participacion_id', label: 'ID Participación' },
                     { key: 'variedad', label: 'Variedad' },
                     { key: 'cooperativa', label: 'Cooperativa' },
                     { key: 'productor', label: 'Productor' },
                     { key: 'cuit', label: 'CUIT' },
-                    { key: 'condicion_pago', label: 'CondiciÃƒÂ³n de pago' },
+                    { key: 'condicion_pago', label: 'Condición de pago' },
                     { key: 'fecha_servicio', label: 'Fecha del servicio' },
-                    { key: 'hectareas_cosechadas', label: 'HectÃƒÂ¡reas cosechadas' },
-                    { key: 'hectareas_anticipadas', label: 'HectÃƒÂ¡reas anticipadas' },
-                    { key: 'bonificacion_aptitud_finca', label: 'BonificaciÃƒÂ³n por aptitud de finca' },
-                    { key: 'calificacion_aptitud_finca', label: 'CalificaciÃƒÂ³n aptitud de finca' },
+                    { key: 'hectareas_cosechadas', label: 'Hectáreas cosechadas' },
+                    { key: 'hectareas_anticipadas', label: 'Hectáreas anticipadas' },
+                    { key: 'bonificacion_aptitud_finca', label: 'Bonificación por aptitud de finca' },
+                    { key: 'calificacion_aptitud_finca', label: 'Calificación aptitud de finca' },
                     { key: 'tipo', label: 'Tipo' },
                     { key: 'finca', label: 'Finca' },
                     { key: 'superficie', label: 'Superficie (ha)' },
-                    { key: 'ancho_callejon_norte', label: 'Ancho callejÃ³n Norte' },
-                    { key: 'ancho_callejon_sur', label: 'Ancho callejÃ³n Sur' },
-                    { key: 'promedio_callejon', label: 'Promedio callejÃ³n' },
+                    { key: 'ancho_callejon_norte', label: 'Ancho callejón Norte' },
+                    { key: 'ancho_callejon_sur', label: 'Ancho callejón Sur' },
+                    { key: 'promedio_callejon', label: 'Promedio callejón' },
                     { key: 'interfilar', label: 'Interfilar' },
                     { key: 'cantidad_postes', label: 'Cantidad postes' },
                     { key: 'postes_mal_estado', label: 'Postes mal estado' },
                     { key: 'porcentaje_postes', label: '% postes mal estado' },
                     { key: 'estructura_separadores', label: 'Alambres y separadores' },
                     { key: 'agua_lavado', label: 'Agua para lavado' },
-                    { key: 'prep_acequias', label: 'PreparaciÃ³n suelo (acequias)' },
-                    { key: 'prep_obstaculos', label: 'Malezas y obstÃ¡culos' },
+                    { key: 'prep_acequias', label: 'Preparación suelo (acequias)' },
+                    { key: 'prep_obstaculos', label: 'Malezas y obstáculos' },
                     { key: 'observaciones', label: 'Observaciones' },
-                    { key: 'fecha_evaluacion', label: 'Fecha evaluaciÃ³n' },
-                    { key: 'puntos_callejon', label: 'Puntos - Ancho callejÃ³n' },
-                    { key: 'impacto_callejon', label: 'Impacto - Ancho callejÃ³n' },
-                    { key: 'ponderado_callejon', label: 'Ponderado - Ancho callejÃ³n' },
+                    { key: 'fecha_evaluacion', label: 'Fecha evaluación' },
+                    { key: 'puntos_callejon', label: 'Puntos - Ancho callejón' },
+                    { key: 'impacto_callejon', label: 'Impacto - Ancho callejón' },
+                    { key: 'ponderado_callejon', label: 'Ponderado - Ancho callejón' },
                     { key: 'puntos_interfilar', label: 'Puntos - Interfilar' },
                     { key: 'impacto_interfilar', label: 'Impacto - Interfilar' },
                     { key: 'ponderado_interfilar', label: 'Ponderado - Interfilar' },
@@ -1809,7 +1808,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     { key: 'impacto_malezas', label: 'Impacto - Prep. suelo malezas' },
                     { key: 'ponderado_malezas', label: 'Ponderado - Prep. suelo malezas' },
                     { key: 'puntaje_total', label: 'Puntaje total' },
-                    { key: 'calificacion', label: 'CalificaciÃ³n' },
+                    { key: 'calificacion', label: 'Calificación' },
                     { key: 'descuento', label: 'Descuento' },
                 ];
 
@@ -1826,7 +1825,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         relevamiento = null;
                     }
                     currentStep += 1;
-                    actualizarExportLoader(currentStep, totalSteps, `Consultando facturaciÃ³n ${itemNumber} de ${latestFincasRows.length}...`);
+                    actualizarExportLoader(currentStep, totalSteps, `Consultando facturación ${itemNumber} de ${latestFincasRows.length}...`);
 
                     let facturacion = null;
                     try {
@@ -1875,9 +1874,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         prep_obstaculos: exportData?.texto.preparacion_obstaculos ?? '',
                         observaciones: exportData?.texto.observaciones ?? '',
                         fecha_evaluacion: exportData?.texto.fecha_evaluacion ?? '',
-                        puntos_callejon: ponderacion.get('Ancho callejÃ³n')?.puntos ?? '',
-                        impacto_callejon: ponderacion.get('Ancho callejÃ³n')?.impacto ?? '',
-                        ponderado_callejon: ponderacion.get('Ancho callejÃ³n')?.ponderado ?? '',
+                        puntos_callejon: ponderacion.get('Ancho callejón')?.puntos ?? '',
+                        impacto_callejon: ponderacion.get('Ancho callejón')?.impacto ?? '',
+                        ponderado_callejon: ponderacion.get('Ancho callejón')?.ponderado ?? '',
                         puntos_interfilar: ponderacion.get('Interfilar')?.puntos ?? '',
                         impacto_interfilar: ponderacion.get('Interfilar')?.impacto ?? '',
                         ponderado_interfilar: ponderacion.get('Interfilar')?.ponderado ?? '',
@@ -1942,14 +1941,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const tieneNorte = payload.ancho_callejon_norte !== '';
                 const tieneSur = payload.ancho_callejon_sur !== '';
                 if (tieneNorte !== tieneSur) {
-                    showUserAlert('warning', 'CompletÃ¡ ambos anchos de callejÃ³n para calcular el promedio.');
+                    showUserAlert('warning', 'Completá ambos anchos de callejón para calcular el promedio.');
                     return;
                 }
 
                 const tieneTotalPostes = payload.cantidad_postes !== '';
                 const tienePostesMal = payload.postes_mal_estado !== '';
                 if (tieneTotalPostes !== tienePostesMal) {
-                    showUserAlert('warning', 'CompletÃ¡ cantidad de postes y postes en mal estado para calcular el porcentaje.');
+                    showUserAlert('warning', 'Completá cantidad de postes y postes en mal estado para calcular el porcentaje.');
                     return;
                 }
 
@@ -2004,8 +2003,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         btnCalificacion.className = 'btn btn-info btn-icono-accion';
                         btnCalificacion.dataset.action = 'ver-calificacion';
                         btnCalificacion.dataset.participacionId = String(participacionId);
-                        btnCalificacion.title = 'Ver calificaciÃ³n';
-                        btnCalificacion.setAttribute('aria-label', 'Ver calificaciÃ³n');
+                        btnCalificacion.title = 'Ver calificación';
+                        btnCalificacion.setAttribute('aria-label', 'Ver calificación');
                         btnCalificacion.innerHTML = '<span class="material-icons">visibility</span>';
                         cell.appendChild(btnCalificacion);
                     }
@@ -2019,8 +2018,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const resumenEl = document.getElementById('modalCalificacionResumen');
                 const bodyEl = document.getElementById('modalCalificacionBody');
                 const meta = participacionesInfo.get(String(participacionId)) || null;
-                if (textoEl) textoEl.textContent = 'Cargando calificaciÃ³n...';
-                if (resumenEl) resumenEl.textContent = 'Cargando calificaciÃ³n...';
+                if (textoEl) textoEl.textContent = 'Cargando calificación...';
+                if (resumenEl) resumenEl.textContent = 'Cargando calificación...';
                 if (bodyEl) bodyEl.innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
                 abrirModal(modalCalificacion);
                 try {
@@ -2028,14 +2027,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     if (typeof window.renderCalificacionModal === 'function') {
                         window.renderCalificacionModal(relevamiento, meta);
                     } else if (textoEl) {
-                        textoEl.textContent = 'No se encontrÃ³ el render de calificaciÃ³n.';
+                        textoEl.textContent = 'No se encontró el render de calificación.';
                     }
                 } catch (error) {
-                    console.error('[CosechaMecanica] Error al cargar calificaciÃ³n:', error);
-                    if (textoEl) textoEl.textContent = 'No se pudo cargar la calificaciÃ³n.';
-                    if (resumenEl) resumenEl.textContent = 'No se pudo cargar la calificaciÃ³n.';
+                    console.error('[CosechaMecanica] Error al cargar calificación:', error);
+                    if (textoEl) textoEl.textContent = 'No se pudo cargar la calificación.';
+                    if (resumenEl) resumenEl.textContent = 'No se pudo cargar la calificación.';
                     if (bodyEl) bodyEl.innerHTML = '<tr><td colspan="4">No se pudo cargar.</td></tr>';
-                    showUserAlert('error', 'No se pudo cargar la calificaciÃ³n.');
+                    showUserAlert('error', 'No se pudo cargar la calificación.');
                 }
             }
 
@@ -2088,7 +2087,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
                 const responsePayload = await res.json();
                 if (!res.ok || !responsePayload.ok) {
-                    throw new Error(responsePayload.message || 'No se pudo cargar la facturaciÃ³n.');
+                    throw new Error(responsePayload.message || 'No se pudo cargar la facturación.');
                 }
                 return responsePayload.data || null;
             }
@@ -2114,7 +2113,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
                 const responsePayload = await res.json();
                 if (!res.ok || !responsePayload.ok) {
-                    throw new Error(responsePayload.message || 'No se pudo guardar la facturaciÃ³n.');
+                    throw new Error(responsePayload.message || 'No se pudo guardar la facturación.');
                 }
                 return responsePayload.data || null;
             }
@@ -2128,9 +2127,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     const facturacion = await cargarFacturacion(participacionId);
                     setFacturacionFormData(facturacion, participacionId);
                 } catch (error) {
-                    console.error('[CosechaMecanica] Error al cargar facturaciÃ³n:', error);
+                    console.error('[CosechaMecanica] Error al cargar facturación:', error);
                     setFacturacionFormData(null, participacionId);
-                    showUserAlert('error', error.message || 'No se pudo cargar la facturaciÃ³n.');
+                    showUserAlert('error', error.message || 'No se pudo cargar la facturación.');
                 }
             }
 
@@ -2155,7 +2154,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     const action = btn.dataset.action || '';
                     const participacionId = Number(btn.dataset.participacionId || 0);
                     if (!participacionId) {
-                        showUserAlert('error', 'No se encontrÃ³ el ID de participaciÃ³n.');
+                        showUserAlert('error', 'No se encontró el ID de participación.');
                         return;
                     }
 
@@ -2200,7 +2199,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 guardarBtn?.addEventListener('click', async () => {
                     const participacionId = Number(modal?.dataset.participacionId || 0);
                     if (!participacionId) {
-                        showUserAlert('error', 'No se encontrÃ³ el ID de participaciÃ³n.');
+                        showUserAlert('error', 'No se encontró el ID de participación.');
                         return;
                     }
                     try {
@@ -2312,7 +2311,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     btnGuardarFacturacion.addEventListener('click', async function() {
                         const participacionId = Number(modalFacturacion?.dataset.participacionId || 0);
                         if (!participacionId) {
-                            showUserAlert('error', 'No se encontrÃ³ el ID de participaciÃ³n.');
+                            showUserAlert('error', 'No se encontró el ID de participación.');
                             return;
                         }
 
@@ -2320,10 +2319,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             await guardarFacturacion(participacionId);
                             const facturacion = await cargarFacturacion(participacionId);
                             setFacturacionFormData(facturacion, participacionId);
-                            showUserAlert('success', 'FacturaciÃ³n guardada.');
+                            showUserAlert('success', 'Facturación guardada.');
                         } catch (error) {
-                            console.error('[CosechaMecanica] Error al guardar facturaciÃ³n:', error);
-                            showUserAlert('error', error.message || 'No se pudo guardar la facturaciÃ³n.');
+                            console.error('[CosechaMecanica] Error al guardar facturación:', error);
+                            showUserAlert('error', error.message || 'No se pudo guardar la facturación.');
                         }
                     });
                 }
@@ -2345,7 +2344,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     });
                 });
 
-                // ðŸ”„ FunciÃ³n global para refrescar la tabla desde el modal (AJAX)
+                // ?? Función global para refrescar la tabla desde el modal (AJAX)
                 window.sveCosechaRefrescarContratos = async function() {
                     try {
                         console.log('[CosechaMecanica] Refrescando contratos desde modal...');
@@ -2372,5 +2371,6 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 </body>
 
 </html>
+
 
 

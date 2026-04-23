@@ -1,18 +1,18 @@
-﻿<?php
-// Mostrar errores en pantalla (Ãºtil en desarrollo)
+<?php
+// Mostrar errores en pantalla (útil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesiÃ³n y configurar parÃ¡metros de seguridad
+// Iniciar sesión y configurar parámetros de seguridad
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesiÃ³n
+// Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin telÃ©fono';
+$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 ?>
 
@@ -24,7 +24,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE</title>
 
-    <!-- Ãconos de Material Design -->
+    <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -105,10 +105,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 <body>
 
-    <!-- ðŸ”² CONTENEDOR PRINCIPAL -->
+    <!-- 🔲 CONTENEDOR PRINCIPAL -->
     <div class="layout">
 
-        <!-- ðŸ§­ SIDEBAR -->
+        <!-- 🧭 SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="material-icons logo-icon">dashboard</span>
@@ -157,11 +157,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha MecÃ¡nica</span>
+                        <span class="link-text">Cosecha Mecánica</span>
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares EnolÃ³gicos</span>
+                        <span class="link-text">Servicios Auxiliares Enológicos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -179,10 +179,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
         </aside>
 
-        <!-- ðŸ§± MAIN -->
+        <!-- 🧱 MAIN -->
         <div class="main">
 
-            <!-- ðŸŸª NAVBAR -->
+            <!-- 🟪 NAVBAR -->
             <header class="navbar">
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
@@ -190,13 +190,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <div class="navbar-title">Operativos</div>
             </header>
 
-            <!-- ðŸ“¦ CONTENIDO -->
+            <!-- 📦 CONTENIDO -->
             <section class="content">
 
                 <!-- Bienvenida -->
                 <div class="card">
-                    <h2>Hola ðŸ‘‹</h2>
-                    <p>En esta pÃ¡gina vamos a crear y administrar los operativos de compras.</p>
+                    <h2>Hola 👋</h2>
+                    <p>En esta página vamos a crear y administrar los operativos de compras.</p>
                 </div>
 
                 <!-- Formulario -->
@@ -244,12 +244,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             </div>
                         </div>
 
-                        <!-- DescripciÃ³n -->
+                        <!-- Descripción -->
                         <div class="input-group">
-                            <label for="descripcion">DescripciÃ³n</label>
+                            <label for="descripcion">Descripción</label>
                             <div class="input-icon">
                                 <span class="material-icons">notes</span>
-                                <input type="text" id="descripcion" name="descripcion" placeholder="Ej: Operativo correspondiente a la campaÃ±a invierno" maxlength="255">
+                                <input type="text" id="descripcion" name="descripcion" placeholder="Ej: Operativo correspondiente a la campaña invierno" maxlength="255">
                             </div>
                         </div>
 
@@ -324,7 +324,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             </div>
 
                             <div class="input-group">
-                                <label for="edit_descripcion">DescripciÃ³n</label>
+                                <label for="edit_descripcion">Descripción</label>
                                 <div class="input-icon">
                                     <span class="material-icons">notes</span>
                                     <input type="text" name="descripcion" id="edit_descripcion" placeholder="Ej: Operativo de cosecha invierno" maxlength="255">
@@ -342,8 +342,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <!-- modal eliminar operativo -->
                 <div id="modalEliminar" class="modal hidden">
                     <div class="modal-content">
-                        <h3>Â¿Eliminar operativo?</h3>
-                        <p>Â¿EstÃ¡s seguro de que querÃ©s eliminar este operativo? Esta acciÃ³n no se puede deshacer.</p>
+                        <h3>¿Eliminar operativo?</h3>
+                        <p>¿Estás seguro de que querés eliminar este operativo? Esta acción no se puede deshacer.</p>
                         <input type="hidden" id="delete_id">
 
                         <div class="form-buttons" style="margin-top: 20px;">
@@ -389,7 +389,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <script>
-        console.log('âœ… sve_operativo.js cargado correctamente');
+        console.log('✅ sve_operativo.js cargado correctamente');
 
         async function cargarOperativos() {
             const tabla = document.querySelector('#tablaOperativos');
@@ -431,7 +431,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
 
             } catch (err) {
-                console.error('âŒ Error cargando operativos:', err);
+                console.error('❌ Error cargando operativos:', err);
                 tabla.innerHTML = `<tr><td colspan="7" style="color:red;">${err.message}</td></tr>`;
             }
         }
@@ -458,7 +458,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     showAlert('error', result.message);
                 }
             } catch (err) {
-                console.error('âŒ Error al guardar:', err);
+                console.error('❌ Error al guardar:', err);
                 showAlert('error', 'Error al guardar el operativo.');
             }
         });
@@ -485,12 +485,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 openModalEditar();
             } catch (err) {
-                console.error('âŒ Error al editar:', err);
+                console.error('❌ Error al editar:', err);
                 showAlert('error', 'Error al cargar el operativo');
             }
         }
 
-        // Guardar ediciÃ³n
+        // Guardar edición
         document.getElementById('formEditarOperativo').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -512,7 +512,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     showAlert('error', result.message || 'No se pudo guardar');
                 }
             } catch (err) {
-                console.error('âŒ Error al guardar ediciÃ³n:', err);
+                console.error('❌ Error al guardar edición:', err);
                 showAlert('error', 'Error al guardar');
             }
         });
@@ -546,7 +546,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     showAlert('error', result.message || 'No se pudo eliminar');
                 }
             } catch (err) {
-                console.error('âŒ Error al eliminar:', err);
+                console.error('❌ Error al eliminar:', err);
                 showAlert('error', 'Error al eliminar el operativo.');
             }
         }
@@ -616,7 +616,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 openModalCooperativas();
 
             } catch (err) {
-                console.error('âŒ Error:', err);
+                console.error('❌ Error:', err);
                 lista.innerHTML = `<li style="color:red;">${err.message}</li>`;
                 openModalCooperativas();
             }
@@ -706,7 +706,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </script>
 
 
-    <!-- ðŸ› ï¸ SCRIPTS -->
+    <!-- 🛠️ SCRIPTS -->
     <!-- <script src="/assets/js/sve_operativo.js" defer></script> -->
 
     <style>

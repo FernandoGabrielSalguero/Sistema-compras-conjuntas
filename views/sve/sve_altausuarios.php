@@ -1,18 +1,18 @@
-﻿<?php
-// Mostrar errores en pantalla (Ãºtil en desarrollo)
+<?php
+// Mostrar errores en pantalla (útil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesiÃ³n y configurar parÃ¡metros de seguridad
+// Iniciar sesión y configurar parámetros de seguridad
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesiÃ³n
+// Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin telÃ©fono';
+$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 ?>
@@ -25,7 +25,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE</title>
 
-    <!-- Ãconos de Material Design -->
+    <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -55,9 +55,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             border-radius: 4px;
         }
 
-        /* tamaÃ±o del modal */
+        /* tamaño del modal */
 
-        .tamaÃ±o_modal {
+        .tamaño_modal {
             max-width: 800px;
         }
     </style>
@@ -65,10 +65,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 <body>
 
-    <!-- ðŸ”² CONTENEDOR PRINCIPAL -->
+    <!-- 🔲 CONTENEDOR PRINCIPAL -->
     <div class="layout">
 
-        <!-- ðŸ§­ SIDEBAR -->
+        <!-- 🧭 SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="material-icons logo-icon">dashboard</span>
@@ -118,12 +118,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha MecÃ¡nica</span>
+                        <span class="link-text">Cosecha Mecánica</span>
                     </li>
 
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares EnolÃ³gicos</span>
+                        <span class="link-text">Servicios Auxiliares Enológicos</span>
                     </li>
 
                     <li onclick="location.href='sve_publicaciones.php'">
@@ -142,10 +142,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
         </aside>
 
-        <!-- ðŸ§± MAIN -->
+        <!-- 🧱 MAIN -->
         <div class="main">
 
-            <!-- ðŸŸª NAVBAR -->
+            <!-- 🟪 NAVBAR -->
             <header class="navbar">
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
@@ -153,13 +153,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <div class="navbar-title">Alta de usuarios nuevos</div>
             </header>
 
-            <!-- ðŸ“¦ CONTENIDO -->
+            <!-- 📦 CONTENIDO -->
             <section class="content">
 
                 <!-- Bienvenida -->
                 <div class="card">
-                    <h2>Hola ðŸ‘‹</h2>
-                    <p>En esta pÃ¡gina vamos a habilitar el ingreso al sistema a nuevos usuarios.</p>
+                    <h2>Hola 👋</h2>
+                    <p>En esta página vamos a habilitar el ingreso al sistema a nuevos usuarios.</p>
                 </div>
 
                 <!-- Formulario -->
@@ -177,12 +177,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
                             </div>
 
-                            <!-- ContraseÃ±a con ojo -->
+                            <!-- Contraseña con ojo -->
                             <div class="input-group password-container">
-                                <label for="contrasena">ContraseÃ±a</label>
+                                <label for="contrasena">Contraseña</label>
                                 <div class="input-icon">
                                     <span class="material-icons">lock</span>
-                                    <input type="password" id="contrasena" name="contrasena" placeholder="Asigna una contraseÃ±a" required>
+                                    <input type="password" id="contrasena" name="contrasena" placeholder="Asigna una contraseña" required>
                                     <span class="material-icons toggle-password" onclick="togglePassword()">visibility</span>
                                 </div>
                             </div>
@@ -262,7 +262,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="buscarNombre">Podes buscar por nombre</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
-                                    <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan PÃ©rez">
+                                    <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
                                 </div>
                             </div>
                         </div>
@@ -285,14 +285,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <th>CUIT</th>
                                     <th>ID Real</th>
                                     <th>Nombre</th>
-                                    <th>DirecciÃ³n</th>
-                                    <th>TelÃ©fono</th>
+                                    <th>Dirección</th>
+                                    <th>Teléfono</th>
                                     <th>Correo</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaUsuarios">
-                                <!-- Contenido dinÃ¡mico -->
+                                <!-- Contenido dinámico -->
                             </tbody>
                         </table>
                     </div>
@@ -300,10 +300,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- Modal -->
                 <div id="modal" class="modal hidden">
-                    <div class="modal-content tamaÃ±o_modal">
+                    <div class="modal-content tamaño_modal">
                         <h3>Editar Usuario</h3>
 
-                        <!-- BotÃ³n cerrar arriba a la derecha -->
+                        <!-- Botón cerrar arriba a la derecha -->
                         <button class="btn-icon" onclick="cerrarModalEditar()" style="position:absolute; top:10px; right:10px;">
                             <span class="material-icons">close</span>
                         </button>
@@ -377,25 +377,25 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     </div>
                                 </div>
 
-                                <!-- DirecciÃ³n (ocupa 2 columnas) -->
+                                <!-- Dirección (ocupa 2 columnas) -->
                                 <div class="input-group col-span-2">
-                                    <label for="edit_direccion">DirecciÃ³n</label>
+                                    <label for="edit_direccion">Dirección</label>
                                     <div class="input-icon">
                                         <span class="material-icons">location_on</span>
                                         <input type="text" name="direccion" id="edit_direccion">
                                     </div>
                                 </div>
 
-                                <!-- TelÃ©fono -->
+                                <!-- Teléfono -->
                                 <div class="input-group">
-                                    <label for="edit_telefono">TelÃ©fono</label>
+                                    <label for="edit_telefono">Teléfono</label>
                                     <div class="input-icon">
                                         <span class="material-icons">phone</span>
                                         <input type="text" name="telefono" id="edit_telefono">
                                     </div>
                                 </div>
 
-                                <!-- Zonas (dropdown con checkboxes, mÃ¡x 4) -->
+                                <!-- Zonas (dropdown con checkboxes, máx 4) -->
                                 <div class="input-group col-span-3">
                                     <label for="zonasTrigger">Zonas</label>
 
@@ -404,11 +404,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                                         <!-- Trigger con mismo look & feel que un <select class="input"> -->
                                         <button type="button" id="zonasTrigger" class="input" aria-haspopup="listbox" aria-expanded="false">
-                                            <span id="zonasLabel">SeleccionÃ¡ zonas</span>
+                                            <span id="zonasLabel">Seleccioná zonas</span>
                                             <span class="material-icons" style="float:right;">expand_more</span>
                                         </button>
 
-                                        <!-- MenÃº -->
+                                        <!-- Menú -->
                                         <div id="zonasMenu" class="dropdown-menu hidden"
                                             role="listbox" aria-multiselectable="true"
                                             style="position:absolute; z-index:30; left:0; right:0; top:calc(100% + 4px);
@@ -429,7 +429,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                         </div>
                                     </div>
 
-                                    <small class="help-text">PodÃ©s seleccionar hasta 4 zonas.</small>
+                                    <small class="help-text">Podés seleccionar hasta 4 zonas.</small>
                                     <input type="hidden" name="zona_asignada" id="edit_zona_asignada" value="">
                                 </div>
 
@@ -466,7 +466,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const form = document.getElementById('formUsuario');
 
             if (!form) {
-                console.error("âš ï¸ No se encontrÃ³ el formulario con id='formUsuario'");
+                console.error("⚠️ No se encontró el formulario con id='formUsuario'");
                 return;
             }
 
@@ -484,15 +484,15 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                     if (result.success) {
                         form.reset();
-                        showAlert('success', result.message); // âœ… alerta verde
-                        cargarUsuarios(); // ðŸ‘ˆ actualiza la tabla
+                        showAlert('success', result.message); // ✅ alerta verde
+                        cargarUsuarios(); // 👈 actualiza la tabla
                     } else {
-                        showAlert('error', result.message); // âŒ alerta roja
+                        showAlert('error', result.message); // ❌ alerta roja
                     }
 
                 } catch (error) {
                     showAlert('error', 'Error inesperado al enviar el formulario.');
-                    console.error('âŒ Error en la solicitud AJAX:', error);
+                    console.error('❌ Error en la solicitud AJAX:', error);
                 }
             });
         });
@@ -508,14 +508,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     document.getElementById('tablaUsuarios').innerHTML = html;
                 })
                 .catch(error => {
-                    console.error('âŒ Error al cargar usuarios:', error);
+                    console.error('❌ Error al cargar usuarios:', error);
                     document.getElementById('tablaUsuarios').innerHTML = "<tr><td colspan='10'>Error al cargar datos.</td></tr>";
                 });
         }
 
         // cargar usuarios para mostrarlos en la tabla
         document.addEventListener('DOMContentLoaded', () => {
-            cargarUsuarios(); // ðŸ‘ˆ carga al entrar
+            cargarUsuarios(); // 👈 carga al entrar
 
             const bc = document.getElementById('buscarCuit');
             if (bc) bc.addEventListener('input', cargarUsuarios);
@@ -530,7 +530,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             icon.textContent = isPassword ? 'visibility_off' : 'visibility';
         }
 
-        // funcion restablecer contraseÃ±a
+        // funcion restablecer contraseña
         let usuarioResetID = null;
 
         function verContrasena(id) {
@@ -551,7 +551,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
 
-        // mostrar contraseÃ±a del modal
+        // mostrar contraseña del modal
         function togglePasswordReset() {
             const input = document.getElementById('nuevaContrasena');
             const icon = input.nextElementSibling;
@@ -561,8 +561,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             icon.textContent = isHidden ? 'visibility_off' : 'visibility';
         }
 
-        // ---- Zonas (select mÃºltiple con tope 4) ----
-        // ---- Zonas (dropdown con checkboxes, mÃ¡x 4) ----
+        // ---- Zonas (select múltiple con tope 4) ----
+        // ---- Zonas (dropdown con checkboxes, máx 4) ----
         const ZONAS_LIMIT = 4;
 
         function toggleZonasMenu(forceState) {
@@ -583,7 +583,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         function actualizarZonasLabel(valoresArr) {
             const label = document.getElementById('zonasLabel');
             if (!valoresArr || valoresArr.length === 0) {
-                label.textContent = 'SeleccionÃ¡ zonas';
+                label.textContent = 'Seleccioná zonas';
                 return;
             }
             label.textContent = valoresArr.join(', ');
@@ -593,9 +593,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             const checks = document.querySelectorAll('#zonasMenu input[name="zona_chk"]');
             const seleccionadas = Array.from(checks).filter(c => c.checked);
             if (seleccionadas.length > ZONAS_LIMIT) {
-                // desmarco el Ãºltimo cambio
+                // desmarco el último cambio
                 e.target.checked = false;
-                showAlert('error', `PodÃ©s seleccionar como mÃ¡ximo ${ZONAS_LIMIT} zonas.`);
+                showAlert('error', `Podés seleccionar como máximo ${ZONAS_LIMIT} zonas.`);
                 return;
             }
             zonasToCSV();
@@ -634,12 +634,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             });
         });
 
-        // funcion de contraseÃ±a
+        // funcion de contraseña
         function guardarNuevaContrasena() {
             const nuevaPass = document.getElementById('nuevaContrasena').value;
 
             if (!nuevaPass || !usuarioResetID) {
-                alert("La contraseÃ±a no puede estar vacÃ­a.");
+                alert("La contraseña no puede estar vacía.");
                 return;
             }
 
@@ -663,8 +663,8 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     }
                 })
                 .catch(err => {
-                    console.error('âŒ Error al actualizar contraseÃ±a:', err);
-                    showAlert('error', 'Error inesperado al intentar actualizar la contraseÃ±a.');
+                    console.error('❌ Error al actualizar contraseña:', err);
+                    showAlert('error', 'Error inesperado al intentar actualizar la contraseña.');
                 });
         }
 
@@ -695,7 +695,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     }
                 })
                 .catch(error => {
-                    console.error("âŒ Error al obtener usuario:", error);
+                    console.error("❌ Error al obtener usuario:", error);
                     showAlert('error', 'No se pudo cargar el usuario.');
                 });
         }
@@ -703,7 +703,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         document.getElementById('formEditarUsuario').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Garantizo que el hidden estÃ¡ sincronizado desde el select
+            // Garantizo que el hidden está sincronizado desde el select
             zonasToCSV();
 
             const formData = new FormData(this);
@@ -719,13 +719,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     try {
                         data = JSON.parse(raw);
                     } catch (parseError) {
-                        console.error('âŒ Respuesta no JSON al actualizar usuario:', raw);
-                        throw new Error('La respuesta del servidor no fue un JSON vÃ¡lido.');
+                        console.error('❌ Respuesta no JSON al actualizar usuario:', raw);
+                        throw new Error('La respuesta del servidor no fue un JSON válido.');
                     }
 
                     if (!res.ok) {
                         const backendDetail = data.error_detail || data.message || `HTTP ${res.status}`;
-                        console.error('âŒ Error HTTP al actualizar usuario:', {
+                        console.error('❌ Error HTTP al actualizar usuario:', {
                             status: res.status,
                             statusText: res.statusText,
                             detail: backendDetail,
@@ -741,12 +741,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         document.getElementById('modal').classList.add('hidden');
                         cargarUsuarios();
                     } else {
-                        console.error('âŒ Error backend al actualizar usuario:', data);
+                        console.error('❌ Error backend al actualizar usuario:', data);
                         showAlert('error', 'No se pudo actualizar el usuario');
                     }
                 })
                 .catch(error => {
-                    console.error('âŒ Error al actualizar usuario:', error);
+                    console.error('❌ Error al actualizar usuario:', error);
                     showAlert('error', 'No se pudo actualizar el usuario');
                 });
         });
@@ -756,7 +756,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             document.getElementById('modal').classList.add('hidden');
             const form = document.getElementById('formEditarUsuario');
             form.reset();
-            // Limpio selecciÃ³n de zonas
+            // Limpio selección de zonas
             initZonasFromCSV('');
         }
 
@@ -773,21 +773,21 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 .then(html => {
                     document.getElementById('tablaUsuarios').innerHTML = html;
                 })
-                .catch(err => console.error('âŒ Error al cargar usuarios:', err));
+                .catch(err => console.error('❌ Error al cargar usuarios:', err));
         }
     </script>
 
-    <!-- Modal para restablecer contraseÃ±a -->
+    <!-- Modal para restablecer contraseña -->
     <div id="modalResetPass" class="modal hidden">
         <div class="modal-content">
-            <h3>Restablecer contraseÃ±a</h3>
-            <p>EstÃ¡s por modificar la contraseÃ±a del usuario <span id="usuarioResetLabel" style="font-weight:bold;"></span>.</p>
+            <h3>Restablecer contraseña</h3>
+            <p>Estás por modificar la contraseña del usuario <span id="usuarioResetLabel" style="font-weight:bold;"></span>.</p>
 
             <div class="input-group password-container">
-                <label for="nuevaContrasena">ContraseÃ±a</label>
+                <label for="nuevaContrasena">Contraseña</label>
                 <div class="input-icon">
                     <span class="material-icons">lock</span>
-                    <input type="password" id="nuevaContrasena" placeholder="Coloca una nueva contraseÃ±a" required>
+                    <input type="password" id="nuevaContrasena" placeholder="Coloca una nueva contraseña" required>
                     <span class="material-icons toggle-password" onclick="togglePasswordReset()">visibility</span>
                 </div>
             </div>
@@ -799,17 +799,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-    <!-- Modal informativo de selecciÃ³n de rol -->
+    <!-- Modal informativo de selección de rol -->
     <div id="modalConfirmRol" class="modal hidden">
-        <div class="modal-content tamaÃ±o_modal">
-            <h3>ConfirmaciÃ³n de rol</h3>
+        <div class="modal-content tamaño_modal">
+            <h3>Confirmación de rol</h3>
 
             <!-- Cerrar arriba a la derecha -->
             <button class="btn-icon" onclick="cerrarModalConfirmRol()" style="position:absolute; top:10px; right:10px;">
                 <span class="material-icons">close</span>
             </button>
 
-            <p>EstÃ¡s seleccionando el rol SVE. Esto, habilita al usuario a poder ver todas las funcionalidades de la plataforma y le permite ademÃ¡s modificarlas. El rol seleccionado es: <strong id="rolConfirmLabel">SVE</strong>.</p>
+            <p>Estás seleccionando el rol SVE. Esto, habilita al usuario a poder ver todas las funcionalidades de la plataforma y le permite además modificarlas. El rol seleccionado es: <strong id="rolConfirmLabel">SVE</strong>.</p>
 
             <div class="form-buttons">
                 <button class="btn btn-aceptar" type="button" onclick="cerrarModalConfirmRol()">Aceptar</button>
@@ -832,9 +832,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             document.getElementById('modalConfirmRol').classList.add('hidden');
         }
 
-        // --- Listeners para selects de rol (alta y ediciÃ³n) ---
+        // --- Listeners para selects de rol (alta y edición) ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Forzar default "productor" en alta (ademÃ¡s del selected en HTML por si hay autofill del navegador)
+            // Forzar default "productor" en alta (además del selected en HTML por si hay autofill del navegador)
             const selAlta = document.getElementById('rol');
             if (selAlta && !selAlta.value) selAlta.value = 'productor';
 
@@ -847,7 +847,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
             }
 
-            // Mostrar modal al seleccionar SVE (ediciÃ³n)
+            // Mostrar modal al seleccionar SVE (edición)
             const selEdit = document.getElementById('edit_rol');
             if (selEdit) {
                 selEdit.addEventListener('change', (e) => {
