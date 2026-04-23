@@ -335,7 +335,14 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                     throw new Error('HTTP ' + res.status);
                 }
 
-                const payload = await res.json();
+                const raw = await res.text();
+                const normalized = raw.replace(/^\uFEFF/, '');
+                let payload;
+                try {
+                    payload = JSON.parse(normalized);
+                } catch (e) {
+                    throw new Error('Respuesta JSON inválida del servidor');
+                }
                 if (!payload.ok) {
                     throw new Error(payload.error || 'No se pudo cargar la informacion');
                 }

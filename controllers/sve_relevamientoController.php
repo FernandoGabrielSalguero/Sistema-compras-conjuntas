@@ -1,10 +1,10 @@
-﻿<?php
-
+<?php
 
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
+ob_start();
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../middleware/authMiddleware.php';
@@ -18,17 +18,26 @@ $model = new SveRelevamientoModel($pdo);
 
 $action = (string)($_GET['action'] ?? $_POST['action'] ?? 'list');
 
+function jsonResponse(int $status, array $payload): void
+{
+    http_response_code($status);
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 try {
     if ($action === 'resumen') {
         $q = trim((string)($_GET['q'] ?? $_POST['q'] ?? ''));
 
         $data = $model->obtenerResumenCooperativas($q);
 
-        echo json_encode([
+        jsonResponse(200, [
             'ok' => true,
             'data' => $data,
-        ], JSON_UNESCAPED_UNICODE);
-        exit;
+        ]);
     }
 
     if ($action === 'list') {
@@ -47,7 +56,7 @@ try {
         $total = $result['total'];
         $totalPages = (int) max(1, (int) ceil($total / $perPage));
 
-        echo json_encode([
+        jsonResponse(200, [
             'ok' => true,
             'data' => $result['rows'],
             'pagination' => [
@@ -56,20 +65,17 @@ try {
                 'total' => $total,
                 'total_pages' => $totalPages,
             ],
-        ], JSON_UNESCAPED_UNICODE);
-        exit;
+        ]);
     }
 
-    http_response_code(400);
-    echo json_encode([
+    jsonResponse(400, [
         'ok' => false,
         'error' => 'Accion no soportada',
-    ], JSON_UNESCAPED_UNICODE);
+    ]);
 } catch (Throwable $e) {
-    http_response_code(500);
-    echo json_encode([
+    jsonResponse(500, [
         'ok' => false,
         'error' => 'Error interno del servidor',
         'detail' => $e->getMessage(),
-    ], JSON_UNESCAPED_UNICODE);
+    ]);
 }
