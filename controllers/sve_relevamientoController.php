@@ -68,11 +68,78 @@ try {
         ]);
     }
 
+    if ($action === 'variedades_list') {
+        $q = trim((string)($_GET['q'] ?? $_POST['q'] ?? ''));
+        $rows = $model->listarCodigosVariedades($q);
+        jsonResponse(200, [
+            'ok' => true,
+            'data' => $rows,
+        ]);
+    }
+
+    if ($action === 'variedades_create') {
+        $codigoVariedad = (int)($_POST['codigo_variedad'] ?? 0);
+        $nombreVariedad = trim((string)($_POST['nombre_variedad'] ?? ''));
+
+        if ($codigoVariedad <= 0 || $nombreVariedad === '') {
+            jsonResponse(422, [
+                'ok' => false,
+                'error' => 'Codigo y nombre de variedad son obligatorios',
+            ]);
+        }
+
+        $row = $model->crearCodigoVariedad($codigoVariedad, $nombreVariedad);
+        jsonResponse(200, [
+            'ok' => true,
+            'data' => $row,
+        ]);
+    }
+
+    if ($action === 'variedades_update') {
+        $id = (int)($_POST['id'] ?? 0);
+        $codigoVariedad = (int)($_POST['codigo_variedad'] ?? 0);
+        $nombreVariedad = trim((string)($_POST['nombre_variedad'] ?? ''));
+
+        if ($id <= 0 || $codigoVariedad <= 0 || $nombreVariedad === '') {
+            jsonResponse(422, [
+                'ok' => false,
+                'error' => 'ID, codigo y nombre son obligatorios',
+            ]);
+        }
+
+        $row = $model->actualizarCodigoVariedad($id, $codigoVariedad, $nombreVariedad);
+        jsonResponse(200, [
+            'ok' => true,
+            'data' => $row,
+        ]);
+    }
+
+    if ($action === 'variedades_delete') {
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id <= 0) {
+            jsonResponse(422, [
+                'ok' => false,
+                'error' => 'ID invalido',
+            ]);
+        }
+
+        $model->eliminarCodigoVariedad($id);
+        jsonResponse(200, [
+            'ok' => true,
+        ]);
+    }
+
     jsonResponse(400, [
         'ok' => false,
         'error' => 'Accion no soportada',
     ]);
 } catch (Throwable $e) {
+    if ((int)($e->getCode()) === 23000) {
+        jsonResponse(409, [
+            'ok' => false,
+            'error' => 'El codigo de variedad ya existe',
+        ]);
+    }
     jsonResponse(500, [
         'ok' => false,
         'error' => 'Error interno del servidor',

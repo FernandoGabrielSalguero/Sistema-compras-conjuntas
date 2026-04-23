@@ -224,4 +224,96 @@ final class SveRelevamientoModel
             'total' => $total,
         ];
     }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function listarCodigosVariedades(string $q = ''): array
+    {
+        $where = '';
+        $params = [];
+
+        if ($q !== '') {
+            $where = "WHERE CAST(codigo_variedad AS CHAR) LIKE :q OR nombre_variedad LIKE :q";
+            $params[':q'] = '%' . $q . '%';
+        }
+
+        $sql = "
+            SELECT
+                id,
+                codigo_variedad,
+                nombre_variedad,
+                created_at,
+                updated_at
+            FROM codigo_variedades_fincas
+            {$where}
+            ORDER BY codigo_variedad ASC
+        ";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll() ?: [];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function crearCodigoVariedad(int $codigoVariedad, string $nombreVariedad): array
+    {
+        $sql = "
+            INSERT INTO codigo_variedades_fincas (codigo_variedad, nombre_variedad)
+            VALUES (:codigo_variedad, :nombre_variedad)
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':codigo_variedad' => $codigoVariedad,
+            ':nombre_variedad' => $nombreVariedad,
+        ]);
+
+        return $this->obtenerCodigoVariedadPorId((int) $this->pdo->lastInsertId());
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function actualizarCodigoVariedad(int $id, int $codigoVariedad, string $nombreVariedad): array
+    {
+        $sql = "
+            UPDATE codigo_variedades_fincas
+            SET
+                codigo_variedad = :codigo_variedad,
+                nombre_variedad = :nombre_variedad
+            WHERE id = :id
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':id' => $id,
+            ':codigo_variedad' => $codigoVariedad,
+            ':nombre_variedad' => $nombreVariedad,
+        ]);
+
+        return $this->obtenerCodigoVariedadPorId($id);
+    }
+
+    public function eliminarCodigoVariedad(int $id): void
+    {
+        $stmt = $this->pdo->prepare("DELETE FROM codigo_variedades_fincas WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function obtenerCodigoVariedadPorId(int $id): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT id, codigo_variedad, nombre_variedad, created_at, updated_at
+            FROM codigo_variedades_fincas
+            WHERE id = :id
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch();
+        return is_array($row) ? $row : [];
+    }
 }

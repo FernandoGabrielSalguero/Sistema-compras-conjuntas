@@ -177,6 +177,83 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             justify-content: flex-end;
             gap: 0.65rem;
         }
+
+        .variedades-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .variedades-toolbar {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+        }
+
+        .variedades-table-wrap {
+            max-height: 280px;
+            overflow: auto;
+            border: 1px solid rgba(15, 23, 42, 0.14);
+            border-radius: 0.5rem;
+            background: #fff;
+        }
+
+        .variedades-table-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .variedades-table-wrap th,
+        .variedades-table-wrap td {
+            padding: 0.45rem 0.55rem;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .variedades-table-wrap th {
+            position: sticky;
+            top: 0;
+            background: #f1f5f9;
+            z-index: 1;
+        }
+
+        .acciones-mini {
+            display: inline-flex;
+            gap: 0.35rem;
+            align-items: center;
+        }
+
+        .btn-mini {
+            border: 1px solid rgba(15, 23, 42, 0.18);
+            background: #fff;
+            border-radius: 0.4rem;
+            padding: 0.25rem 0.45rem;
+            cursor: pointer;
+            font-size: 0.78rem;
+        }
+
+        .btn-mini.danger {
+            color: #b91c1c;
+            border-color: rgba(185, 28, 28, 0.35);
+            background: #fff5f5;
+        }
+
+        .variedades-msg {
+            min-height: 20px;
+            font-size: 0.82rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .variedades-msg.ok {
+            color: #166534;
+        }
+
+        .variedades-msg.error {
+            color: #b91c1c;
+        }
     </style>
 </head>
 
@@ -382,6 +459,47 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 </button>
             </div>
             <div class="sve-modal-body">
+                <form id="formVariedad">
+                    <input type="hidden" id="variedadId" />
+                    <div class="variedades-form-grid">
+                        <div class="input-group">
+                            <label for="codigoVariedad">Codigo de variedad</label>
+                            <div class="input-icon">
+                                <span class="material-icons">tag</span>
+                                <input type="number" id="codigoVariedad" min="1" step="1" required />
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="nombreVariedad">Nombre de variedad</label>
+                            <div class="input-icon">
+                                <span class="material-icons">local_florist</span>
+                                <input type="text" id="nombreVariedad" maxlength="160" required />
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div class="variedades-toolbar">
+                    <div class="input-group" style="margin:0; flex:1 1 240px;">
+                        <div class="input-icon">
+                            <span class="material-icons">search</span>
+                            <input type="search" id="buscarVariedad" placeholder="Buscar por codigo o nombre" />
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-cancelar" id="btnLimpiarVariedad">Limpiar</button>
+                </div>
+                <div id="msgVariedades" class="variedades-msg"></div>
+                <div class="variedades-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Codigo</th>
+                                <th>Nombre</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaVariedadesBody"></tbody>
+                    </table>
+                </div>
             </div>
             <div class="sve-modal-footer">
                 <button type="button" class="btn btn-cancelar" id="btnCerrarModalCodigos">Cerrar</button>
@@ -416,7 +534,15 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 modalCodigosVariedades: $('modalCodigosVariedades'),
                 btnCerrarModalCodigosX: $('btnCerrarModalCodigosX'),
                 btnCerrarModalCodigos: $('btnCerrarModalCodigos'),
-                btnGuardarModalCodigos: $('btnGuardarModalCodigos')
+                btnGuardarModalCodigos: $('btnGuardarModalCodigos'),
+                formVariedad: $('formVariedad'),
+                variedadId: $('variedadId'),
+                codigoVariedad: $('codigoVariedad'),
+                nombreVariedad: $('nombreVariedad'),
+                buscarVariedad: $('buscarVariedad'),
+                btnLimpiarVariedad: $('btnLimpiarVariedad'),
+                tablaVariedadesBody: $('tablaVariedadesBody'),
+                msgVariedades: $('msgVariedades')
             };
 
             function escapeHtml(text) {
@@ -451,6 +577,39 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 }
                 if (!payload.ok) {
                     throw new Error(payload.error || 'No se pudo cargar la informacion');
+                }
+
+                return payload;
+            }
+
+            async function postJson(params) {
+                const body = new URLSearchParams();
+                Object.keys(params).forEach((k) => {
+                    if (params[k] !== undefined && params[k] !== null) {
+                        body.set(k, String(params[k]));
+                    }
+                });
+
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: body.toString()
+                });
+
+                const raw = await res.text();
+                const normalized = raw.replace(/^\uFEFF/, '');
+                let payload;
+                try {
+                    payload = JSON.parse(normalized);
+                } catch (e) {
+                    throw new Error('Respuesta JSON invalida del servidor');
+                }
+
+                if (!payload.ok) {
+                    throw new Error(payload.error || 'No se pudo procesar la solicitud');
                 }
 
                 return payload;
@@ -594,11 +753,91 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             function abrirModalCodigosVariedades() {
                 ui.modalCodigosVariedades.classList.add('active');
                 ui.modalCodigosVariedades.setAttribute('aria-hidden', 'false');
+                limpiarFormVariedad();
+                cargarVariedades();
             }
 
             function cerrarModalCodigosVariedades() {
                 ui.modalCodigosVariedades.classList.remove('active');
                 ui.modalCodigosVariedades.setAttribute('aria-hidden', 'true');
+            }
+
+            function setMsgVariedades(msg, type) {
+                ui.msgVariedades.className = 'variedades-msg' + (type ? (' ' + type) : '');
+                ui.msgVariedades.textContent = msg || '';
+            }
+
+            function limpiarFormVariedad() {
+                ui.variedadId.value = '';
+                ui.codigoVariedad.value = '';
+                ui.nombreVariedad.value = '';
+                ui.btnGuardarModalCodigos.textContent = 'Guardar';
+                setMsgVariedades('', '');
+            }
+
+            function renderTablaVariedades(rows) {
+                if (!Array.isArray(rows) || rows.length === 0) {
+                    ui.tablaVariedadesBody.innerHTML = '<tr><td colspan="3">No hay variedades cargadas.</td></tr>';
+                    return;
+                }
+
+                ui.tablaVariedadesBody.innerHTML = rows.map((row) => `
+                    <tr>
+                        <td>${escapeHtml(row.codigo_variedad)}</td>
+                        <td>${escapeHtml(row.nombre_variedad)}</td>
+                        <td>
+                            <div class="acciones-mini">
+                                <button type="button" class="btn-mini" data-edit-variedad='${escapeHtml(JSON.stringify(row))}'>Editar</button>
+                                <button type="button" class="btn-mini danger" data-delete-variedad="${escapeHtml(row.id)}">Eliminar</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            async function cargarVariedades() {
+                const q = ui.buscarVariedad.value.trim();
+                try {
+                    const payload = await getJson({ action: 'variedades_list', q });
+                    renderTablaVariedades(payload.data || []);
+                } catch (error) {
+                    ui.tablaVariedadesBody.innerHTML = `<tr><td colspan="3">${escapeHtml(error.message)}</td></tr>`;
+                }
+            }
+
+            async function guardarVariedad() {
+                const id = ui.variedadId.value.trim();
+                const codigo = ui.codigoVariedad.value.trim();
+                const nombre = ui.nombreVariedad.value.trim();
+
+                if (!codigo || !nombre) {
+                    setMsgVariedades('Completa codigo y nombre de variedad.', 'error');
+                    return;
+                }
+
+                try {
+                    if (id) {
+                        await postJson({
+                            action: 'variedades_update',
+                            id,
+                            codigo_variedad: codigo,
+                            nombre_variedad: nombre
+                        });
+                        setMsgVariedades('Variedad actualizada correctamente.', 'ok');
+                    } else {
+                        await postJson({
+                            action: 'variedades_create',
+                            codigo_variedad: codigo,
+                            nombre_variedad: nombre
+                        });
+                        setMsgVariedades('Variedad creada correctamente.', 'ok');
+                    }
+
+                    limpiarFormVariedad();
+                    await cargarVariedades();
+                } catch (error) {
+                    setMsgVariedades(error.message, 'error');
+                }
             }
 
             ui.btnBuscar.addEventListener('click', () => ejecutarBusqueda(true));
@@ -627,7 +866,49 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             ui.btnCodigosVariedades.addEventListener('click', abrirModalCodigosVariedades);
             ui.btnCerrarModalCodigosX.addEventListener('click', cerrarModalCodigosVariedades);
             ui.btnCerrarModalCodigos.addEventListener('click', cerrarModalCodigosVariedades);
-            ui.btnGuardarModalCodigos.addEventListener('click', cerrarModalCodigosVariedades);
+            ui.btnGuardarModalCodigos.addEventListener('click', guardarVariedad);
+            ui.formVariedad.addEventListener('submit', (ev) => {
+                ev.preventDefault();
+                guardarVariedad();
+            });
+            ui.btnLimpiarVariedad.addEventListener('click', limpiarFormVariedad);
+            ui.buscarVariedad.addEventListener('input', () => {
+                cargarVariedades();
+            });
+
+            ui.tablaVariedadesBody.addEventListener('click', async (ev) => {
+                const editBtn = ev.target.closest('[data-edit-variedad]');
+                if (editBtn) {
+                    const row = JSON.parse(editBtn.getAttribute('data-edit-variedad'));
+                    ui.variedadId.value = String(row.id || '');
+                    ui.codigoVariedad.value = String(row.codigo_variedad || '');
+                    ui.nombreVariedad.value = String(row.nombre_variedad || '');
+                    ui.btnGuardarModalCodigos.textContent = 'Guardar cambios';
+                    setMsgVariedades('', '');
+                    return;
+                }
+
+                const deleteBtn = ev.target.closest('[data-delete-variedad]');
+                if (deleteBtn) {
+                    const id = deleteBtn.getAttribute('data-delete-variedad');
+                    if (!id) return;
+                    if (!confirm('¿Eliminar esta variedad?')) return;
+
+                    try {
+                        await postJson({
+                            action: 'variedades_delete',
+                            id
+                        });
+                        setMsgVariedades('Variedad eliminada correctamente.', 'ok');
+                        if (ui.variedadId.value === String(id)) {
+                            limpiarFormVariedad();
+                        }
+                        await cargarVariedades();
+                    } catch (error) {
+                        setMsgVariedades(error.message, 'error');
+                    }
+                }
+            });
 
             ui.modalCodigosVariedades.addEventListener('click', (ev) => {
                 if (ev.target === ui.modalCodigosVariedades) {
