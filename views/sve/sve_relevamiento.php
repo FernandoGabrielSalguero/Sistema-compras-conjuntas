@@ -104,6 +104,79 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
             background: #fee2e2;
             color: #991b1b;
         }
+
+        .acciones-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .acciones-grid .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .sve-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1200;
+            padding: 1rem;
+        }
+
+        .sve-modal.active {
+            display: flex;
+        }
+
+        .sve-modal-content {
+            width: min(640px, 100%);
+            background: #fff;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 18px 38px rgba(2, 6, 23, 0.22);
+        }
+
+        .sve-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .sve-modal-header h3 {
+            margin: 0;
+        }
+
+        .sve-modal-close {
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #334155;
+        }
+
+        .sve-modal-body {
+            min-height: 180px;
+            border: 1px dashed rgba(15, 23, 42, 0.2);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            background: #f8fafc;
+        }
+
+        .sve-modal-footer {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.65rem;
+        }
     </style>
 </head>
 
@@ -213,6 +286,17 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 </div>
 
                 <div class="card">
+                    <h2>Herramientas</h2>
+                    <p>Acciones auxiliares del relevamiento.</p>
+                    <div class="acciones-grid">
+                        <button type="button" class="btn btn-info" id="btnCodigosVariedades">
+                            <span class="material-icons">code</span>
+                            <span>Codigos de variedades</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
                     <h2>Filtros</h2>
                     <div class="table-tools">
                         <div class="input-group">
@@ -289,6 +373,23 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
         </div>
     </div>
 
+    <div class="sve-modal" id="modalCodigosVariedades" aria-hidden="true">
+        <div class="sve-modal-content" role="dialog" aria-modal="true" aria-labelledby="modalCodigosVariedadesTitulo">
+            <div class="sve-modal-header">
+                <h3 id="modalCodigosVariedadesTitulo">Codigos de variedades</h3>
+                <button type="button" class="sve-modal-close" id="btnCerrarModalCodigosX" aria-label="Cerrar">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="sve-modal-body">
+            </div>
+            <div class="sve-modal-footer">
+                <button type="button" class="btn btn-cancelar" id="btnCerrarModalCodigos">Cerrar</button>
+                <button type="button" class="btn btn-aceptar" id="btnGuardarModalCodigos">Guardar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         (function() {
             const API_URL = '../../controllers/sve_relevamientoController.php';
@@ -310,7 +411,12 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 kpiTotal: $('kpiTotal'),
                 kpiFincas: $('kpiFincas'),
                 kpiCuarteles: $('kpiCuarteles'),
-                kpiSinCuarteles: $('kpiSinCuarteles')
+                kpiSinCuarteles: $('kpiSinCuarteles'),
+                btnCodigosVariedades: $('btnCodigosVariedades'),
+                modalCodigosVariedades: $('modalCodigosVariedades'),
+                btnCerrarModalCodigosX: $('btnCerrarModalCodigosX'),
+                btnCerrarModalCodigos: $('btnCerrarModalCodigos'),
+                btnGuardarModalCodigos: $('btnGuardarModalCodigos')
             };
 
             function escapeHtml(text) {
@@ -485,6 +591,16 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 }
             }
 
+            function abrirModalCodigosVariedades() {
+                ui.modalCodigosVariedades.classList.add('active');
+                ui.modalCodigosVariedades.setAttribute('aria-hidden', 'false');
+            }
+
+            function cerrarModalCodigosVariedades() {
+                ui.modalCodigosVariedades.classList.remove('active');
+                ui.modalCodigosVariedades.setAttribute('aria-hidden', 'true');
+            }
+
             ui.btnBuscar.addEventListener('click', () => ejecutarBusqueda(true));
             ui.filtroCoop.addEventListener('change', () => ejecutarBusqueda(true));
             ui.filtroBusqueda.addEventListener('keydown', (ev) => {
@@ -505,6 +621,23 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
                 if (page < totalPages) {
                     page += 1;
                     ejecutarBusqueda(false);
+                }
+            });
+
+            ui.btnCodigosVariedades.addEventListener('click', abrirModalCodigosVariedades);
+            ui.btnCerrarModalCodigosX.addEventListener('click', cerrarModalCodigosVariedades);
+            ui.btnCerrarModalCodigos.addEventListener('click', cerrarModalCodigosVariedades);
+            ui.btnGuardarModalCodigos.addEventListener('click', cerrarModalCodigosVariedades);
+
+            ui.modalCodigosVariedades.addEventListener('click', (ev) => {
+                if (ev.target === ui.modalCodigosVariedades) {
+                    cerrarModalCodigosVariedades();
+                }
+            });
+
+            document.addEventListener('keydown', (ev) => {
+                if (ev.key === 'Escape' && ui.modalCodigosVariedades.classList.contains('active')) {
+                    cerrarModalCodigosVariedades();
                 }
             });
 
