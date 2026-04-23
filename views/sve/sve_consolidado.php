@@ -1,17 +1,17 @@
-<?php
+﻿<?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesión y configurar parámetros de seguridad
+// Iniciar sesiÃ³n y configurar parÃ¡metros de seguridad
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesión
+// Datos del usuario en sesiÃ³n
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
+$telefono = $_SESSION['telefono'] ?? 'Sin telÃ©fono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 ?>
 
@@ -23,7 +23,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE</title>
 
-    <!-- Íconos de Material Design -->
+    <!-- Ãconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -38,10 +38,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 <body>
 
-    <!-- 🔲 CONTENEDOR PRINCIPAL -->
+    <!-- ðŸ”² CONTENEDOR PRINCIPAL -->
     <div class="layout">
 
-        <!-- 🧭 SIDEBAR -->
+        <!-- ðŸ§­ SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="material-icons logo-icon">dashboard</span>
@@ -84,13 +84,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
                         <span class="link-text">Drones</span>
                     </li>
+                    <li onclick="location.href='sve_relevamiento.php'">
+                        <span class="material-icons" style="color:#5b21b6;">fact_check</span>
+                        <span class="link-text">Relevamiento</span>
+                    </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha Mecánica</span>
+                        <span class="link-text">Cosecha MecÃ¡nica</span>
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares Enológicos</span>
+                        <span class="link-text">Servicios Auxiliares EnolÃ³gicos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -108,10 +112,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
         </aside>
 
-        <!-- 🧱 MAIN -->
+        <!-- ðŸ§± MAIN -->
         <div class="main">
 
-            <!-- 🟪 NAVBAR -->
+            <!-- ðŸŸª NAVBAR -->
             <header class="navbar">
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
@@ -119,17 +123,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <div class="navbar-title">Consolidado</div>
             </header>
 
-            <!-- 📦 CONTENIDO -->
+            <!-- ðŸ“¦ CONTENIDO -->
             <section class="content">
 
                 <!-- Bienvenida -->
                 <div class="card">
-                    <h4>Hola <?php echo htmlspecialchars($nombre); ?> 👋</h4>
-                    <p>En esta página, vas a ver el resumen de la cantidad de productos pedidos. Podes además descargar la información en un archivo Excel.</p>
+                    <h4>Hola <?php echo htmlspecialchars($nombre); ?> ðŸ‘‹</h4>
+                    <p>En esta pÃ¡gina, vas a ver el resumen de la cantidad de productos pedidos. Podes ademÃ¡s descargar la informaciÃ³n en un archivo Excel.</p>
                     <br>
                 </div>
 
-                <!-- 🟦 BUSCADOR Y EXPORTACIÓN -->
+                <!-- ðŸŸ¦ BUSCADOR Y EXPORTACIÃ“N -->
                 <div class="card card-grid grid-2 align-center justify-between">
                     <div>
                         <h2>Filtrar por operativo</h2>
@@ -160,7 +164,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </button>
                 </div>
 
-                <!-- Métricas redondas -->
+                <!-- MÃ©tricas redondas -->
                 <div class="card">
                     <h2>Resumen por producto</h2>
                     <div id="metricsContainer" class="metrics-round-grid">
@@ -168,12 +172,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     </div>
                 </div>
 
-                <!-- 🟨 TABLA DE CONSOLIDADO -->
+                <!-- ðŸŸ¨ TABLA DE CONSOLIDADO -->
                 <div class="card tabla-card">
                     <div class="d-flex justify-between align-center mb-2">
                         <h2>Consolidado de pedidos</h2>
                     </div>
-                    <p>Visualizá fácilmente la cantidad total de productos comprados por operativo.</p>
+                    <p>VisualizÃ¡ fÃ¡cilmente la cantidad total de productos comprados por operativo.</p>
 
                     <div class="tabla-wrapper">
                         <table class="data-table">
@@ -215,18 +219,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             cargarOperativos();
             cargarCooperativas();
             cargarConsolidado();
-            cargarMetricas(); // ⬅️ nuevo
+            cargarMetricas(); // â¬…ï¸ nuevo
 
             const onFilterChange = () => {
                 cargarConsolidado();
-                cargarMetricas(); // ⬅️ refresca métricas con filtros
+                cargarMetricas(); // â¬…ï¸ refresca mÃ©tricas con filtros
             };
 
             document.getElementById('operativo').addEventListener('change', onFilterChange);
             document.getElementById('cooperativa').addEventListener('change', onFilterChange);
         });
 
-        /* ===========================  Helpers (números, HTML, ids)     =========================== */
+        /* ===========================  Helpers (nÃºmeros, HTML, ids)     =========================== */
         function nfmt(n) {
             return new Intl.NumberFormat('es-AR').format(Number(n) || 0);
         }
@@ -381,12 +385,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     return;
                 }
 
-                // 🔄 Transformar los datos en hoja Excel
+                // ðŸ”„ Transformar los datos en hoja Excel
                 const worksheet = XLSX.utils.json_to_sheet(pedidos);
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, "Pedidos");
 
-                // 📥 Descargar el archivo
+                // ðŸ“¥ Descargar el archivo
                 XLSX.writeFile(workbook, "pedidos_extendido.xlsx");
 
             } catch (err) {
@@ -396,7 +400,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         /* ===========================
-           Métricas (reales)
+           MÃ©tricas (reales)
         =========================== */
 
 
@@ -417,13 +421,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 const res = await fetch(url);
                 const data = await res.json();
-                if (!data.success) throw new Error(data.message || 'No fue posible obtener métricas');
+                if (!data.success) throw new Error(data.message || 'No fue posible obtener mÃ©tricas');
 
                 renderMetricasProductos(data.productos);
 
             } catch (err) {
-                console.error('Error métricas:', err);
-                container.innerHTML = `<div class="alert alert-error">No fue posible cargar las métricas.</div>`;
+                console.error('Error mÃ©tricas:', err);
+                container.innerHTML = `<div class="alert alert-error">No fue posible cargar las mÃ©tricas.</div>`;
             }
         }
 
@@ -450,7 +454,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
           ${prod.detalle_cooperativas.map(c => `
             <li class="d-flex justify-between">
               <span>${escapeHtml(c.nombre_cooperativa || 'Sin nombre')}</span>
-              <strong>${nfmt(c.cantidad)} • ${cfmt(c.monto)}</strong>
+              <strong>${nfmt(c.cantidad)} â€¢ ${cfmt(c.monto)}</strong>
             </li>
           `).join('')}
         </ul>
@@ -536,3 +540,4 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 </body>
 
 </html>
+

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 // Mostrar errores en desarrollo
@@ -6,15 +6,15 @@ ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
-// Iniciar sesión y verificar acceso
+// Iniciar sesiÃ³n y verificar acceso
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesión (no usados aquí, pero mantenidos)
+// Datos del usuario en sesiÃ³n (no usados aquÃ­, pero mantenidos)
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
+$telefono = $_SESSION['telefono'] ?? 'Sin telÃ©fono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 // Limpieza de mensajes de cierre (si existieran)
@@ -29,7 +29,7 @@ unset($_SESSION['cierre_info']);
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE - Registro de ingresos</title>
 
-    <!-- Íconos de Material Design -->
+    <!-- Ãconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -90,8 +90,8 @@ unset($_SESSION['cierre_info']);
 
 <body>
     <div class="layout">
-        <!-- 🧭 SIDEBAR -->
-        <aside class="sidebar" id="sidebar" aria-label="Navegación principal">
+        <!-- ðŸ§­ SIDEBAR -->
+        <aside class="sidebar" id="sidebar" aria-label="NavegaciÃ³n principal">
             <div class="sidebar-header">
                 <span class="material-icons logo-icon" aria-hidden="true">dashboard</span>
                 <span class="logo-text">SVE</span>
@@ -132,13 +132,17 @@ unset($_SESSION['cierre_info']);
                         <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
                         <span class="link-text">Drones</span>
                     </li>
+                    <li onclick="location.href='sve_relevamiento.php'">
+                        <span class="material-icons" style="color:#5b21b6;">fact_check</span>
+                        <span class="link-text">Relevamiento</span>
+                    </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha Mecánica</span>
+                        <span class="link-text">Cosecha MecÃ¡nica</span>
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares Enológicos</span>
+                        <span class="link-text">Servicios Auxiliares EnolÃ³gicos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -153,15 +157,15 @@ unset($_SESSION['cierre_info']);
             </div>
         </aside>
 
-        <!-- 🧱 MAIN -->
+        <!-- ðŸ§± MAIN -->
         <div class="main">
-            <!-- 🟪 NAVBAR -->
+            <!-- ðŸŸª NAVBAR -->
             <header class="navbar">
-                <button class="btn-icon" onclick="toggleSidebar()" aria-label="Abrir menú"><span class="material-icons">menu</span></button>
+                <button class="btn-icon" onclick="toggleSidebar()" aria-label="Abrir menÃº"><span class="material-icons">menu</span></button>
                 <div class="navbar-title">Registro de ingresos</div>
             </header>
 
-            <!-- 📦 CONTENIDO -->
+            <!-- ðŸ“¦ CONTENIDO -->
             <section class="content">
                 <!-- Filtros -->
                 <div class="card filters-card" id="filtros" aria-labelledby="titulo-filtros">
@@ -202,9 +206,9 @@ unset($_SESSION['cierre_info']);
 
                 <!-- Tabla -->
                 <div class="card tabla-card">
-                    <h2>Inicios de sesión</h2>
+                    <h2>Inicios de sesiÃ³n</h2>
                     <div class="tabla-wrapper">
-                        <table class="data-table" aria-label="Tabla de inicios de sesión">
+                        <table class="data-table" aria-label="Tabla de inicios de sesiÃ³n">
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -219,15 +223,15 @@ unset($_SESSION['cierre_info']);
                                 </tr>
                             </thead>
                             <tbody id="tabla-body">
-                                <!-- filas dinámicas -->
+                                <!-- filas dinÃ¡micas -->
                             </tbody>
                         </table>
                     </div>
 
                     <div class="table-actions">
-                        <button class="btn btn-info" id="btn-prev" aria-label="Página anterior">Anterior</button>
+                        <button class="btn btn-info" id="btn-prev" aria-label="PÃ¡gina anterior">Anterior</button>
                         <span id="paginador-info" aria-live="polite"></span>
-                        <button class="btn btn-info" id="btn-next" aria-label="Página siguiente">Siguiente</button>
+                        <button class="btn btn-info" id="btn-next" aria-label="PÃ¡gina siguiente">Siguiente</button>
                     </div>
                 </div>
 
@@ -241,7 +245,7 @@ unset($_SESSION['cierre_info']);
         </div>
     </div>
 
-    <!-- JS de página -->
+    <!-- JS de pÃ¡gina -->
     <script>
         (function() {
             'use strict';
@@ -258,16 +262,16 @@ unset($_SESSION['cierre_info']);
             const $next = qs('#btn-next');
             const $pinfo = qs('#paginador-info');
 
-            // IMPORTANTE: esta vista está en /views/sve/, el controller en /controllers/
+            // IMPORTANTE: esta vista estÃ¡ en /views/sve/, el controller en /controllers/
             // Por eso subimos dos niveles.
             const API_URL = '../../controllers/sve_registro_login_controller.php';
 
             let page = 1;
-            const perPage = 20; // estética: máximo 20 en vista
+            const perPage = 20; // estÃ©tica: mÃ¡ximo 20 en vista
 
             function hoyISO() {
                 const now = new Date();
-                // Ajuste rápido a zona AR sólo para setear input date si el servidor está en UTC
+                // Ajuste rÃ¡pido a zona AR sÃ³lo para setear input date si el servidor estÃ¡ en UTC
                 const y = now.getFullYear();
                 const m = String(now.getMonth() + 1).padStart(2, '0');
                 const d = String(now.getDate()).padStart(2, '0');
@@ -346,7 +350,7 @@ unset($_SESSION['cierre_info']);
                     }
                     renderRows(json.data);
                     const p = json.pagination || {};
-                    $pinfo.textContent = `Página ${p.page} de ${p.total_pages} — ${p.total} registros`;
+                    $pinfo.textContent = `PÃ¡gina ${p.page} de ${p.total_pages} â€” ${p.total} registros`;
                     $prev.disabled = p.page <= 1;
                     $next.disabled = p.page >= p.total_pages;
                 } catch (err) {
@@ -397,3 +401,5 @@ unset($_SESSION['cierre_info']);
 </body>
 
 </html>
+
+

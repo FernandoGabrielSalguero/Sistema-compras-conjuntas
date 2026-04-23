@@ -1,17 +1,17 @@
-<?php
+﻿<?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesión y configurar parámetros de seguridad
+// Iniciar sesiÃ³n y configurar parÃ¡metros de seguridad
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesión
+// Datos del usuario en sesiÃ³n
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
+$telefono = $_SESSION['telefono'] ?? 'Sin telÃ©fono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 ?>
 
@@ -23,7 +23,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE</title>
 
-    <!-- Íconos de Material Design -->
+    <!-- Ãconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -76,9 +76,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 <body>
 
-    <!-- 🔲 CONTENEDOR PRINCIPAL -->
+    <!-- ðŸ”² CONTENEDOR PRINCIPAL -->
     <div class="layout">
-        <!-- 🧭 SIDEBAR -->
+        <!-- ðŸ§­ SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="material-icons logo-icon">dashboard</span>
@@ -121,13 +121,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
                         <span class="link-text">Drones</span>
                     </li>
+                    <li onclick="location.href='sve_relevamiento.php'">
+                        <span class="material-icons" style="color:#5b21b6;">fact_check</span>
+                        <span class="link-text">Relevamiento</span>
+                    </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha Mecánica</span>
+                        <span class="link-text">Cosecha MecÃ¡nica</span>
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares Enológicos</span>
+                        <span class="link-text">Servicios Auxiliares EnolÃ³gicos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -145,10 +149,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
         </aside>
 
-        <!-- 🧱 MAIN -->
+        <!-- ðŸ§± MAIN -->
         <div class="main">
 
-            <!-- 🟪 NAVBAR -->
+            <!-- ðŸŸª NAVBAR -->
             <header class="navbar">
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
@@ -156,12 +160,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <div class="navbar-title">Listado de pedidos</div>
             </header>
 
-            <!-- 📦 CONTENIDO -->
+            <!-- ðŸ“¦ CONTENIDO -->
             <section class="content">
                 <!-- Bienvenida -->
                 <div class="card">
-                    <h2>Hola 👋</h2>
-                    <p>En esta página, vamos a ver todos los pedidos realizados por las cooperativas y por nosotros, además de poder cargar sus facturas y modificarlos en caso de ser necesario</p>
+                    <h2>Hola ðŸ‘‹</h2>
+                    <p>En esta pÃ¡gina, vamos a ver todos los pedidos realizados por las cooperativas y por nosotros, ademÃ¡s de poder cargar sus facturas y modificarlos en caso de ser necesario</p>
                 </div>
 
                 <!-- tarjetas con contador de facturas -->
@@ -200,7 +204,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="buscarNombre">Podes buscar por Productor</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
-                                    <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
+                                    <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan PÃ©rez">
                                 </div>
                             </div>
                         </div>
@@ -217,7 +221,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     <th>ID</th>
                                     <th>Cooperativa</th>
                                     <th>Productor</th>
-                                    <th>Fecha de creación</th>
+                                    <th>Fecha de creaciÃ³n</th>
                                     <th>Total sin IVA</th>
                                     <th>IVA</th>
                                     <th>Total pedido</th>
@@ -226,7 +230,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </tr>
                             </thead>
                             <tbody id="tablaPedidos">
-                                <!-- Contenido dinámico -->
+                                <!-- Contenido dinÃ¡mico -->
                             </tbody>
                         </table>
                     </div>
@@ -249,7 +253,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const buscarNombre = document.getElementById('buscarNombre');
                 const tablaPedidos = document.getElementById('tablaPedidos');
 
-                // 🔹 Cargar tarjetas resumen
+                // ðŸ”¹ Cargar tarjetas resumen
                 async function cargarResumen() {
                     try {
                         const res = await fetch('/controllers/sve_listadoPedidosController.php?resumen=1');
@@ -267,11 +271,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         tarjetas[1].querySelector('p').textContent = `${con_factura} con factura`;
                         tarjetas[2].querySelector('p').textContent = `${sin_factura} sin factura`;
                     } catch (err) {
-                        console.error('❌ Error al cargar resumen:', err);
+                        console.error('âŒ Error al cargar resumen:', err);
                     }
                 }
 
-                // 🔹 Buscar y listar pedidos
+                // ðŸ”¹ Buscar y listar pedidos
                 async function cargarPedidos() {
                     const search = buscarNombre.value.trim() || buscarCuit.value.trim();
                     const url = `/controllers/sve_listadoPedidosController.php?listar=1&page=${paginaActual}&search=${encodeURIComponent(search)}`;
@@ -340,14 +344,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             tablaPedidos.appendChild(fila);
                         });
 
-                        // 🔁 Paginación futura (no implementada visualmente aún)
-                        console.log(`Mostrando página ${paginaActual} de ${paginasTotales}`);
+                        // ðŸ” PaginaciÃ³n futura (no implementada visualmente aÃºn)
+                        console.log(`Mostrando pÃ¡gina ${paginaActual} de ${paginasTotales}`);
                     } catch (err) {
-                        console.error('❌ Error al cargar pedidos:', err);
+                        console.error('âŒ Error al cargar pedidos:', err);
                     }
                 }
 
-                // 🔄 Buscar al escribir
+                // ðŸ”„ Buscar al escribir
                 buscarCuit.addEventListener('input', () => {
                     paginaActual = 1;
                     cargarPedidos();
@@ -358,11 +362,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     cargarPedidos();
                 });
 
-                // 🔹 Funciones de acciones (placeholder, las implementamos después)
+                // ðŸ”¹ Funciones de acciones (placeholder, las implementamos despuÃ©s)
                 window.verFactura = (ruta) => window.open(`/uploads/tax_invoices/${ruta}`, '_blank');
                 window.editarPedido = (id) => alert(`Editar pedido ID ${id}`);
 
-                // 🟢 Iniciar
+                // ðŸŸ¢ Iniciar
                 cargarResumen();
                 cargarPedidos();
 
@@ -374,18 +378,18 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     document.getElementById('textoPedidoEliminar').textContent = `Pedido #${id}`;
                     document.getElementById('modalEliminar').style.display = 'flex';
                 }
-                window.confirmarEliminacion = confirmarEliminacion; // 🔥 ESTA LÍNEA ES CLAVE
+                window.confirmarEliminacion = confirmarEliminacion; // ðŸ”¥ ESTA LÃNEA ES CLAVE
 
                 function cerrarModalEliminar() {
                     pedidoAEliminar = null;
                     document.getElementById('modalEliminar').style.display = 'none';
                 }
-                window.cerrarModalEliminar = cerrarModalEliminar; // por si lo usás con onclick
+                window.cerrarModalEliminar = cerrarModalEliminar; // por si lo usÃ¡s con onclick
 
 
                 document.getElementById('btnConfirmarEliminar').addEventListener('click', async () => {
                     if (!pedidoAEliminar) return;
-                    console.log('🧹 Eliminando pedido ID:', pedidoAEliminar);
+                    console.log('ðŸ§¹ Eliminando pedido ID:', pedidoAEliminar);
                     try {
                         const res = await fetch('/controllers/sve_listadoPedidosController.php', {
                             method: 'POST',
@@ -401,11 +405,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         const json = await res.json();
                         if (!json.success) throw new Error(json.message);
 
-                        showAlert('success', `Pedido eliminado correctamente ✅`);
+                        showAlert('success', `Pedido eliminado correctamente âœ…`);
                         cerrarModalEliminar();
                         setTimeout(() => location.reload(), 800);
                     } catch (err) {
-                        showAlert('error', `❌ No se pudo eliminar: ${err.message}`);
+                        showAlert('error', `âŒ No se pudo eliminar: ${err.message}`);
                         console.error(err);
                     }
                 });
@@ -415,7 +419,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     const modal = document.getElementById('modalVerPedido');
                     const contenedor = document.getElementById('contenidoPedido');
 
-                    contenedor.innerHTML = '<p>🔄 Cargando pedido...</p>';
+                    contenedor.innerHTML = '<p>ðŸ”„ Cargando pedido...</p>';
                     modal.style.display = 'flex';
 
                     try {
@@ -434,9 +438,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         <div><strong>Fecha pedido:</strong> ${p.fecha_pedido}</div>
 
         <div><strong>A nombre de:</strong> ${p.persona_facturacion}</div>
-        <div><strong>Condición de facturación:</strong> ${p.condicion_facturacion}</div>
+        <div><strong>CondiciÃ³n de facturaciÃ³n:</strong> ${p.condicion_facturacion}</div>
 
-        <div><strong>Afiliación:</strong> ${p.afiliacion}</div>
+        <div><strong>AfiliaciÃ³n:</strong> ${p.afiliacion}</div>
         <div><strong>Total sin IVA:</strong> $${parseFloat(p.total_sin_iva).toFixed(2)}</div>
 
         <div><strong>IVA:</strong> $${parseFloat(p.total_iva).toFixed(2)}</div>
@@ -450,7 +454,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 `;
 
-                        // 🧾 Agregar productos del pedido si existen
+                        // ðŸ§¾ Agregar productos del pedido si existen
                         if (json.productos && json.productos.length > 0) {
                             let tablaHTML = `
         <h4 style="margin-top: 1rem;">Productos del pedido:</h4>
@@ -458,7 +462,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             <thead>
                 <tr>
                     <th style="text-align:left; border-bottom:1px solid #ccc; padding: 4px;">Producto</th>
-                    <th style="text-align:left; border-bottom:1px solid #ccc; padding: 4px;">Categoría</th>
+                    <th style="text-align:left; border-bottom:1px solid #ccc; padding: 4px;">CategorÃ­a</th>
                     <th style="text-align:right; border-bottom:1px solid #ccc; padding: 4px;">Cantidad</th>
                     <th style="text-align:right; border-bottom:1px solid #ccc; padding: 4px;">Unidad</th>
                     <th style="text-align:right; border-bottom:1px solid #ccc; padding: 4px;">Precio</th>
@@ -488,7 +492,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         }
 
                     } catch (err) {
-                        contenedor.innerHTML = `<p style="color:red;">❌ Error al obtener el pedido: ${err.message}</p>`;
+                        contenedor.innerHTML = `<p style="color:red;">âŒ Error al obtener el pedido: ${err.message}</p>`;
                         console.error(err);
                     }
                 };
@@ -514,7 +518,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const json = await res.json();
                 if (!json.success) throw new Error(json.message);
 
-                showAlert('success', 'Factura eliminada correctamente ✅');
+                showAlert('success', 'Factura eliminada correctamente âœ…');
                 cerrarModalEliminarFactura();
                 getFacturasPedido();
             } catch (err) {
@@ -538,7 +542,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const p = json.data;
                 const productos = json.productos || [];
 
-                // Generar HTML de impresión
+                // Generar HTML de impresiÃ³n
                 const html = `
         <div style="font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background: white; color: #000;">
             <h2 style="text-align: center;">Detalle del pedido</h2>
@@ -548,13 +552,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <div><strong>Productor:</strong> ${p.nombre_productor || '-'}</div>
                 <div><strong>Fecha pedido:</strong> ${p.fecha_pedido}</div>
                 <div><strong>A nombre de:</strong> ${p.persona_facturacion}</div>
-                <div><strong>Condición de facturación:</strong> ${p.condicion_facturacion}</div>
-                <div><strong>Afiliación:</strong> ${p.afiliacion}</div>
+                <div><strong>CondiciÃ³n de facturaciÃ³n:</strong> ${p.condicion_facturacion}</div>
+                <div><strong>AfiliaciÃ³n:</strong> ${p.afiliacion}</div>
                 <div><strong>Total sin IVA:</strong> $${parseFloat(p.total_sin_iva).toFixed(2)}</div>
                 <div><strong>IVA:</strong> $${parseFloat(p.total_iva).toFixed(2)}</div>
                 <div><strong>Total Pedido:</strong> $${parseFloat(p.total_pedido).toFixed(2)}</div>
                 <div><strong>Factura:</strong> ${p.factura 
-                    ? `<span>✓ cargada</span>` 
+                    ? `<span>âœ“ cargada</span>` 
                     : 'No cargada'}
                 </div>
             </div>
@@ -565,7 +569,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     <thead>
                         <tr>
                             <th style="text-align:left; border-bottom:1px solid #ccc; padding: 4px;">Producto</th>
-                            <th style="text-align:left; border-bottom:1px solid #ccc; padding: 4px;">Categoría</th>
+                            <th style="text-align:left; border-bottom:1px solid #ccc; padding: 4px;">CategorÃ­a</th>
                             <th style="text-align:right; border-bottom:1px solid #ccc; padding: 4px;">Cantidad</th>
                             <th style="text-align:right; border-bottom:1px solid #ccc; padding: 4px;">Unidad</th>
                             <th style="text-align:right; border-bottom:1px solid #ccc; padding: 4px;">Precio</th>
@@ -604,19 +608,19 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
 
-                // Confirmar operación al usuario
-                showAlert('success', `Pedido #${p.id} descargado como imagen ✅`);
+                // Confirmar operaciÃ³n al usuario
+                showAlert('success', `Pedido #${p.id} descargado como imagen âœ…`);
 
                 // Limpiar
                 contenedor.style.display = 'none';
                 contenedor.innerHTML = '';
             } catch (err) {
-                alert(`❌ Error al imprimir: ${err.message}`);
+                alert(`âŒ Error al imprimir: ${err.message}`);
                 console.error(err);
             }
         };
 
-        // funcion para abrir el modal de edición
+        // funcion para abrir el modal de ediciÃ³n
         function abrirModalEdicion(pedidoId) {
             const modal = document.getElementById('iframeEditarModal');
             const iframe = document.getElementById('iframeEditar');
@@ -689,10 +693,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         window.cerrarModalEliminarFactura = cerrarModalEliminarFactura;
     </script>
 
-    <!-- Modal de confirmación para eliminar -->
+    <!-- Modal de confirmaciÃ³n para eliminar -->
     <div id="modalEliminar" class="modal" style="display: none;">
         <div class="modal-content">
-            <h3>¿Estás seguro de eliminar el pedido?</h3>
+            <h3>Â¿EstÃ¡s seguro de eliminar el pedido?</h3>
             <p id="textoPedidoEliminar"></p>
             <div class="modal-actions">
                 <button class="btn btn-aceptar" id="btnConfirmarEliminar">Eliminar</button>
@@ -701,11 +705,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         </div>
     </div>
 
-    <!-- Modal de confirmación para eliminar factura -->
+    <!-- Modal de confirmaciÃ³n para eliminar factura -->
     <div id="modalEliminarFactura" class="modal" style="display: none; z-index: 10001;">
         <div class="modal-content">
-            <h3>¿Estás seguro de eliminar esta factura?</h3>
-            <p>No se podrá recuperar una vez eliminada.</p>
+            <h3>Â¿EstÃ¡s seguro de eliminar esta factura?</h3>
+            <p>No se podrÃ¡ recuperar una vez eliminada.</p>
             <div class="modal-actions">
                 <button class="btn btn-aceptar" id="btnConfirmarEliminarFactura">Eliminar</button>
                 <button class="btn btn-cancelar" onclick="cerrarModalEliminarFactura()">Cancelar</button>
@@ -793,7 +797,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         <div class="modal-content" style="max-width: 600px; width: 90%;">
             <h3>Detalle del pedido</h3>
             <div id="contenidoPedido" class="pedido-detalle">
-                <p>Cargando información...</p>
+                <p>Cargando informaciÃ³n...</p>
             </div>
 
             <div class="modal-actions">
@@ -805,12 +809,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <!-- Modal: Facturas del Pedido -->
     <div id="modalFacturas" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 700px; width: 95%;">
-            <h3>Gestión de Facturas</h3>
-            <p><strong>Pedido #<span id="facturaPedidoId"></span></strong> &nbsp;—&nbsp; <span id="contadorFacturas"></span>/30 facturas</p>
+            <h3>GestiÃ³n de Facturas</h3>
+            <p><strong>Pedido #<span id="facturaPedidoId"></span></strong> &nbsp;â€”&nbsp; <span id="contadorFacturas"></span>/30 facturas</p>
 
-            <!-- Área Drag & Drop -->
+            <!-- Ãrea Drag & Drop -->
             <div id="dropArea" class="drop-area">
-                <p>Arrastrá hasta 30 archivos PDF/JPG/PNG aquí o hacé click para seleccionar</p>
+                <p>ArrastrÃ¡ hasta 30 archivos PDF/JPG/PNG aquÃ­ o hacÃ© click para seleccionar</p>
                 <input type="file" id="inputMultiFactura" accept=".pdf,.jpg,.jpeg,.png" multiple style="display: none;">
             </div>
 
@@ -824,7 +828,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     </div>
 
     <script>
-        // 🔄 Drag and Drop
+        // ðŸ”„ Drag and Drop
         const dropArea = document.getElementById('dropArea');
         const inputMulti = document.getElementById('inputMultiFactura');
 
@@ -848,12 +852,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 subirFacturas(e.target.files);
             });
         }
-        // Función para subir facturas
+        // FunciÃ³n para subir facturas
         async function subirFacturas(archivos) {
             const listaActual = document.getElementById('listaFacturas');
             const actuales = listaActual.childElementCount;
             if (actuales + archivos.length > 30) {
-                showAlert('error', 'Máximo 30 facturas por pedido');
+                showAlert('error', 'MÃ¡ximo 30 facturas por pedido');
                 return;
             }
 
@@ -882,3 +886,4 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 
 </html>
+

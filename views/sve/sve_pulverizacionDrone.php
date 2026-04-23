@@ -1,18 +1,18 @@
-<?php
-// Mostrar errores en pantalla (útil en desarrollo)
+﻿<?php
+// Mostrar errores en pantalla (Ãºtil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesión y configurar parámetros de seguridad
+// Iniciar sesiÃ³n y configurar parÃ¡metros de seguridad
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesión
+// Datos del usuario en sesiÃ³n
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
+$telefono = $_SESSION['telefono'] ?? 'Sin telÃ©fono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 //Cargamos los operativos cerrados
@@ -31,7 +31,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
   <!-- descargar imagen -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-  <!-- Íconos de Material Design -->
+  <!-- Ãconos de Material Design -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -71,10 +71,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
 <body>
 
-  <!-- 🔲 CONTENEDOR PRINCIPAL -->
+  <!-- ðŸ”² CONTENEDOR PRINCIPAL -->
   <div class="layout">
 
-    <!-- 🧭 SIDEBAR -->
+    <!-- ðŸ§­ SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <span class="material-icons logo-icon">dashboard</span>
@@ -117,13 +117,17 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                         <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
                         <span class="link-text">Drones</span>
                     </li>
+                    <li onclick="location.href='sve_relevamiento.php'">
+                        <span class="material-icons" style="color:#5b21b6;">fact_check</span>
+                        <span class="link-text">Relevamiento</span>
+                    </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha Mecánica</span>
+                        <span class="link-text">Cosecha MecÃ¡nica</span>
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares Enológicos</span>
+                        <span class="link-text">Servicios Auxiliares EnolÃ³gicos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -141,10 +145,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
       </div>
     </aside>
 
-    <!-- 🧱 MAIN -->
+    <!-- ðŸ§± MAIN -->
     <div class="main">
 
-      <!-- 🟪 NAVBAR -->
+      <!-- ðŸŸª NAVBAR -->
       <header class="navbar">
         <button class="btn-icon" onclick="toggleSidebar()">
           <span class="material-icons">menu</span>
@@ -152,15 +156,15 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         <div class="navbar-title">Inicio</div>
       </header>
 
-      <!-- 📦 CONTENIDO -->
+      <!-- ðŸ“¦ CONTENIDO -->
       <section class="content">
 
         <!-- Bienvenida -->
         <div class="card">
           <h2>Hola! </h2>
-          <p>Te presentamos el gestor de proyectos de vuelo. Desde acá, vas a controlar todo el servicio de pulverización con drones.</p>
+          <p>Te presentamos el gestor de proyectos de vuelo. Desde acÃ¡, vas a controlar todo el servicio de pulverizaciÃ³n con drones.</p>
 
-          <!-- 🔘 Tarjeta con los botones del tab -->
+          <!-- ðŸ”˜ Tarjeta con los botones del tab -->
           <div class="tabs">
             <div class="tab-buttons">
               <button class="tab-button" data-target="#panel-solicitudes">Solicitudes</button>
@@ -169,13 +173,13 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
               <button class="tab-button" data-target="#panel-calendario">Calendario</button>
               <button class="tab-button" data-target="#panel-stock">Stock</button>
               <button class="tab-button" data-target="#panel-variables">Variables</button>
-              <!-- Botón de actualización on-demand -->
+              <!-- BotÃ³n de actualizaciÃ³n on-demand -->
               <button id="btn-refresh" class="btn btn-aceptar" style="margin-left:auto">Actualizar</button>
             </div>
           </div>
         </div>
 
-        <!-- 🧩 Tarjeta separada para el contenido del tab -->
+        <!-- ðŸ§© Tarjeta separada para el contenido del tab -->
         <div class="card" id="tab-content-card" style="margin-top: 12px;">
 
           <!-- Panel: Solicitudes (lazy) -->
@@ -277,8 +281,8 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
           return;
         }
 
-        // Spinner mínimo (usa tus estilos)
-        panel.innerHTML = '<div class="loader" style="padding:16px">Cargando…</div>';
+        // Spinner mÃ­nimo (usa tus estilos)
+        panel.innerHTML = '<div class="loader" style="padding:16px">Cargandoâ€¦</div>';
 
         try {
           const res = await fetch(url, { credentials: 'same-origin' });
@@ -298,7 +302,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         buttons.forEach(b => b.classList.remove('active'));
         panels.forEach(p => p.classList.remove('active'));
 
-        // Activa botón/panel destino
+        // Activa botÃ³n/panel destino
         const btn   = Array.from(buttons).find(b => b.dataset.target === targetSel);
         const panel = document.querySelector(targetSel);
 
@@ -316,7 +320,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         loadPanel(targetSel);
       }
 
-      // Cambiar de pestaña SIN recargar
+      // Cambiar de pestaÃ±a SIN recargar
       buttons.forEach(btn => {
         btn.addEventListener('click', () => {
           if (!isTabButton(btn)) return;
@@ -327,7 +331,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         });
       });
 
-      // Botón "Actualizar" (recarga manual manteniendo pestaña)
+      // BotÃ³n "Actualizar" (recarga manual manteniendo pestaÃ±a)
       const refreshBtn = document.getElementById('btn-refresh');
       if (refreshBtn) {
         refreshBtn.addEventListener('click', () => {
@@ -339,15 +343,17 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
         });
       }
 
-      // Activar la pestaña persistida (o default) y cargarla
+      // Activar la pestaÃ±a persistida (o default) y cargarla
       const initial = sessionStorage.getItem(STORAGE_KEY) || '#panel-solicitudes';
       activate(initial);
     });
   </script>
 
 
-  <!-- Contenedor exclusivo para impresión -->
+  <!-- Contenedor exclusivo para impresiÃ³n -->
   <div id="printArea" class="only-print"></div>
 </body>
 
 </html>
+
+

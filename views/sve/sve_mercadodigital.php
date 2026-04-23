@@ -1,18 +1,18 @@
-<?php
-// Mostrar errores en pantalla (útil en desarrollo)
+﻿<?php
+// Mostrar errores en pantalla (Ãºtil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesión y configurar parámetros de seguridad
+// Iniciar sesiÃ³n y configurar parÃ¡metros de seguridad
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesión
+// Datos del usuario en sesiÃ³n
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
+$telefono = $_SESSION['telefono'] ?? 'Sin telÃ©fono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 ?>
 
@@ -24,7 +24,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE</title>
 
-    <!-- Íconos de Material Design -->
+    <!-- Ãconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -112,7 +112,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             padding-top: 0.5rem;
         }
 
-        /* icono de información */
+        /* icono de informaciÃ³n */
         .info-icon {
             color: #5b21b6;
         }
@@ -124,10 +124,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 <body>
 
-    <!-- 🔲 CONTENEDOR PRINCIPAL -->
+    <!-- ðŸ”² CONTENEDOR PRINCIPAL -->
     <div class="layout">
 
-        <!-- 🧭 SIDEBAR -->
+        <!-- ðŸ§­ SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="material-icons logo-icon">dashboard</span>
@@ -170,13 +170,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
                         <span class="link-text">Drones</span>
                     </li>
+                    <li onclick="location.href='sve_relevamiento.php'">
+                        <span class="material-icons" style="color:#5b21b6;">fact_check</span>
+                        <span class="link-text">Relevamiento</span>
+                    </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha Mecánica</span>
+                        <span class="link-text">Cosecha MecÃ¡nica</span>
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares Enológicos</span>
+                        <span class="link-text">Servicios Auxiliares EnolÃ³gicos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -194,10 +198,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
         </aside>
 
-        <!-- 🧱 MAIN -->
+        <!-- ðŸ§± MAIN -->
         <div class="main">
 
-            <!-- 🟪 NAVBAR -->
+            <!-- ðŸŸª NAVBAR -->
             <header class="navbar">
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
@@ -205,12 +209,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <div class="navbar-title">Mercado Digital</div>
             </header>
 
-            <!-- 📦 CONTENIDO -->
+            <!-- ðŸ“¦ CONTENIDO -->
             <section class="content">
                 <!-- Bienvenida -->
                 <div class="card">
-                    <h2>Hola 👋</h2>
-                    <p>En esta página vamos a comprar y administrar las compras de los usuarios</p>
+                    <h2>Hola ðŸ‘‹</h2>
+                    <p>En esta pÃ¡gina vamos a comprar y administrar las compras de los usuarios</p>
                 </div>
 
                 <div class="card">
@@ -224,7 +228,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <div class="input-icon">
                                     <span class="material-icons">event</span>
                                     <select id="operativo_id" name="operativo_id" required>
-                                        <option value="">Seleccioná un operativo...</option>
+                                        <option value="">SeleccionÃ¡ un operativo...</option>
                                     </select>
                                 </div>
                             </div>
@@ -251,16 +255,16 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <input type="hidden" name="productor" id="productor">
                             </div>
 
-                            <!-- Hectáreas -->
+                            <!-- HectÃ¡reas -->
                             <div class="input-group">
-                                <label for="hectareas">Hectáreas</label>
+                                <label for="hectareas">HectÃ¡reas</label>
                                 <div class="input-icon">
                                     <span class="material-icons">agriculture</span>
-                                    <input type="number" id="hectareas" name="hectareas" min="0" step="0.01" placeholder="Cantidad de hectáreas..." required>
+                                    <input type="number" id="hectareas" name="hectareas" min="0" step="0.01" placeholder="Cantidad de hectÃ¡reas..." required>
                                 </div>
                             </div>
 
-                            <!-- Persona de facturación -->
+                            <!-- Persona de facturaciÃ³n -->
                             <div class="input-group">
                                 <label for="persona_facturacion">Factura a nombre de</label>
                                 <div class="input-icon">
@@ -272,9 +276,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
                             </div>
 
-                            <!-- Condición de facturación -->
+                            <!-- CondiciÃ³n de facturaciÃ³n -->
                             <div class="input-group">
-                                <label for="condicion_facturacion">Condición de facturación</label>
+                                <label for="condicion_facturacion">CondiciÃ³n de facturaciÃ³n</label>
                                 <div class="input-icon">
                                     <span class="material-icons">assignment</span>
                                     <select id="condicion_facturacion" name="condicion_facturacion" required>
@@ -284,9 +288,9 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </div>
                             </div>
 
-                            <!-- Afiliación -->
+                            <!-- AfiliaciÃ³n -->
                             <div class="input-group">
-                                <label for="afiliacion">Afiliación</label>
+                                <label for="afiliacion">AfiliaciÃ³n</label>
                                 <div class="input-icon">
                                     <span class="material-icons">verified_user</span>
                                     <select id="afiliacion" name="afiliacion" required>
@@ -327,7 +331,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 
 
-                <!-- 🛠️ SCRIPTS -->
+                <!-- ðŸ› ï¸ SCRIPTS -->
                 <script>
                     // Cargamos operativos
                     async function cargarOperativos() {
@@ -339,11 +343,11 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             operativos.forEach(op => {
                                 const option = document.createElement('option');
                                 option.value = op.id;
-                                option.textContent = `${op.nombre} (${op.fecha_inicio} → ${op.fecha_cierre})`;
+                                option.textContent = `${op.nombre} (${op.fecha_inicio} â†’ ${op.fecha_cierre})`;
                                 select.appendChild(option);
                             });
                         } catch (err) {
-                            console.error('❌ Error al cargar operativos:', err);
+                            console.error('âŒ Error al cargar operativos:', err);
                         }
                     }
 
@@ -375,7 +379,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                     cargarProductores(id);
                                 });
                             } catch (err) {
-                                console.error('❌ Error al cargar cooperativas:', err);
+                                console.error('âŒ Error al cargar cooperativas:', err);
                             }
                         }
 
@@ -385,7 +389,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 productores = await res.json();
                                 activarBuscador(inputProd, listaProd, productores, hiddenProd);
                             } catch (err) {
-                                console.error('❌ Error al cargar productores:', err);
+                                console.error('âŒ Error al cargar productores:', err);
                             }
                         }
 
@@ -432,7 +436,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                             if (id) {
                                 cargarProductosPorOperativo(id);
                             } else {
-                                document.getElementById('acordeones-productos').innerHTML = '<p>Seleccioná un operativo para ver productos.</p>';
+                                document.getElementById('acordeones-productos').innerHTML = '<p>SeleccionÃ¡ un operativo para ver productos.</p>';
                             }
                         });
                     });
@@ -503,7 +507,7 @@ grupo.innerHTML = `
                                 contenedor.appendChild(acordeon);
                             }
                         } catch (err) {
-                            console.error('❌ Error al cargar productos del operativo:', err);
+                            console.error('âŒ Error al cargar productos del operativo:', err);
                         }
                     }
 
@@ -537,10 +541,10 @@ grupo.innerHTML = `
                             const item = document.createElement('div');
                             item.classList.add('resumen-item');
                             item.innerHTML = `
-                            <strong>🧾 ${texto}</strong>
-                            <small>📦 Cantidad: ${cantidad} ${unidad}</small>
-                            <small>💵 Subtotal: $${subtotal.toFixed(2)}</small>
-                            <small>🧾 IVA (${alicuota}%): $${iva.toFixed(2)}</small>
+                            <strong>ðŸ§¾ ${texto}</strong>
+                            <small>ðŸ“¦ Cantidad: ${cantidad} ${unidad}</small>
+                            <small>ðŸ’µ Subtotal: $${subtotal.toFixed(2)}</small>
+                            <small>ðŸ§¾ IVA (${alicuota}%): $${iva.toFixed(2)}</small>
                             <div class="resumen-total">Total: $${total.toFixed(2)}</div>
 `;
                             resumen.appendChild(item);
@@ -552,7 +556,7 @@ grupo.innerHTML = `
                             const totalFinal = document.createElement('div');
                             totalFinal.classList.add('resumen-item');
                             totalFinal.innerHTML = `
-    <strong>🧮 Total final con IVA:</strong>
+    <strong>ðŸ§® Total final con IVA:</strong>
     <div class="resumen-total" style="font-size: 1.2rem;">$${totalConIva.toFixed(2)}</div>
 `;
                             resumen.appendChild(totalFinal);
@@ -595,7 +599,7 @@ grupo.innerHTML = `
                             productosSeleccionados.push({
                                 id: parseInt(input.name.match(/\[(\d+)\]/)[1]),
                                 nombre: nombre,
-                                detalle: '', // si lo querés traer después
+                                detalle: '', // si lo querÃ©s traer despuÃ©s
                                 precio: precio,
                                 unidad: unidad,
                                 categoria: input.closest('.card')?.querySelector('.accordion-header')?.textContent.trim() || '',
@@ -633,7 +637,7 @@ grupo.innerHTML = `
                         let json;
                         try {
                             json = await res.json();
-                            console.log('✅ Respuesta JSON:', json);
+                            console.log('âœ… Respuesta JSON:', json);
 
                             if (json.success) {
                                 showAlert('success', json.message);
@@ -642,8 +646,8 @@ grupo.innerHTML = `
                                 showAlert('error', json.message);
                             }
                         } catch (err) {
-                            console.error('❌ Error al parsear JSON:', err);
-                            showAlert('error', '❌ Error inesperado en la respuesta del servidor.');
+                            console.error('âŒ Error al parsear JSON:', err);
+                            showAlert('error', 'âŒ Error inesperado en la respuesta del servidor.');
                         }
                     });
 
@@ -660,7 +664,7 @@ grupo.innerHTML = `
                     }
                 </script>
 
-                <!-- 🟢 Alertas -->
+                <!-- ðŸŸ¢ Alertas -->
                 <div class="alert-container" id="alertContainer"></div>
 
                 <!-- Spinner Global -->
@@ -670,7 +674,7 @@ grupo.innerHTML = `
                 <!-- Modal de detalle del producto -->
                 <div id="modalDetalleProducto" class="modal" style="display: none;">
                     <div class="modal-content">
-                        <h3>📝 Detalle del producto</h3>
+                        <h3>ðŸ“ Detalle del producto</h3>
                         <p id="detalleContenido" style="margin-top: 1rem; white-space: pre-wrap;"></p>
                         <div class="modal-actions">
                             <button class="btn btn-cancelar" onclick="cerrarModalDetalle()">Cerrar</button>
@@ -681,3 +685,4 @@ grupo.innerHTML = `
 </body>
 
 </html>
+

@@ -1,18 +1,18 @@
-<?php
-// Mostrar errores en pantalla (útil en desarrollo)
+﻿<?php
+// Mostrar errores en pantalla (Ãºtil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesión y configurar parámetros de seguridad
+// Iniciar sesiÃ³n y configurar parÃ¡metros de seguridad
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesión
+// Datos del usuario en sesiÃ³n
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
+$telefono = $_SESSION['telefono'] ?? 'Sin telÃ©fono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 ?>
 
@@ -24,7 +24,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE</title>
 
-    <!-- Íconos de Material Design -->
+    <!-- Ãconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -62,10 +62,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 <body>
 
-    <!-- 🔲 CONTENEDOR PRINCIPAL -->
+    <!-- ðŸ”² CONTENEDOR PRINCIPAL -->
     <div class="layout">
 
-        <!-- 🧭 SIDEBAR -->
+        <!-- ðŸ§­ SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="material-icons logo-icon">dashboard</span>
@@ -108,13 +108,17 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                         <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
                         <span class="link-text">Drones</span>
                     </li>
+                    <li onclick="location.href='sve_relevamiento.php'">
+                        <span class="material-icons" style="color:#5b21b6;">fact_check</span>
+                        <span class="link-text">Relevamiento</span>
+                    </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha Mecánica</span>
+                        <span class="link-text">Cosecha MecÃ¡nica</span>
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares Enológicos</span>
+                        <span class="link-text">Servicios Auxiliares EnolÃ³gicos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -132,10 +136,10 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             </div>
         </aside>
 
-        <!-- 🧱 MAIN -->
+        <!-- ðŸ§± MAIN -->
         <div class="main">
 
-            <!-- 🟪 NAVBAR -->
+            <!-- ðŸŸª NAVBAR -->
             <header class="navbar">
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
@@ -143,13 +147,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 <div class="navbar-title">Asociaciones</div>
             </header>
 
-            <!-- 📦 CONTENIDO -->
+            <!-- ðŸ“¦ CONTENIDO -->
             <section class="content">
 
                 <!-- Bienvenida -->
                 <div class="card">
-                    <h2>Hola 👋</h2>
-                    <p>En esta página, vamos a asignar a los usuarios productores, sus ingenieros, tecnicos, cooperativas, etc.</p>
+                    <h2>Hola ðŸ‘‹</h2>
+                    <p>En esta pÃ¡gina, vamos a asignar a los usuarios productores, sus ingenieros, tecnicos, cooperativas, etc.</p>
                 </div>
 
 
@@ -172,13 +176,13 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="buscarNombre">Podes buscar por nombre</label>
                                 <div class="input-icon">
                                     <span class="material-icons">person</span>
-                                    <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan Pérez">
+                                    <input type="text" id="buscarNombre" name="buscarNombre" placeholder="Ej: Juan PÃ©rez">
                                 </div>
                             </div>
 
-                            <!-- Filtro por asociación -->
+                            <!-- Filtro por asociaciÃ³n -->
                             <div class="input-group">
-                                <label for="filtroAsociacion">Filtrar por asociación</label>
+                                <label for="filtroAsociacion">Filtrar por asociaciÃ³n</label>
                                 <div class="input-icon">
                                     <span class="material-icons">filter_list</span>
                                     <select id="filtroAsociacion">
@@ -206,7 +210,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </tr>
                             </thead>
                             <tbody id="tablaAsociaciones">
-                                <!-- Contenido dinámico -->
+                                <!-- Contenido dinÃ¡mico -->
                             </tbody>
                         </table>
                     </div>
@@ -214,7 +218,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
                 <!-- ## ingenieros cooperativa ## -->
 
-                <!-- Tarjeta de filtros Coop ⇄ Ing -->
+                <!-- Tarjeta de filtros Coop â‡„ Ing -->
                 <div class="card" id="cardFiltrosCoopIng">
                     <h2>Filtros Cooperativas / Ingenieros</h2>
                     <form class="form-modern" aria-labelledby="filtros-coop-ing">
@@ -237,14 +241,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 <label for="buscarNombreIng">Nombre Ingeniero</label>
                                 <div class="input-icon">
                                     <span class="material-icons">engineering</span>
-                                    <input type="text" id="buscarNombreIng" name="buscarNombreIng" placeholder="Ej: Ana Gómez" autocomplete="off">
+                                    <input type="text" id="buscarNombreIng" name="buscarNombreIng" placeholder="Ej: Ana GÃ³mez" autocomplete="off">
                                 </div>
                             </div>
                         </div>
                     </form>
                 </div>
 
-                <!-- Tabla Cooperativas ↔ Ingenieros -->
+                <!-- Tabla Cooperativas â†” Ingenieros -->
                 <div class="card" id="cardCoopIng">
                     <h2>Asociar cooperativas con ingenieros</h2>
                     <div class="table-container" aria-live="polite">
@@ -258,7 +262,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                                 </tr>
                             </thead>
                             <tbody id="tablaCoopIng">
-                                <!-- Contenido dinámico -->
+                                <!-- Contenido dinÃ¡mico -->
                             </tbody>
                         </table>
                     </div>
@@ -285,7 +289,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
             };
         };
 
-        // ------- Productor ↔ Cooperativa (existente) -------
+        // ------- Productor â†” Cooperativa (existente) -------
         async function asociarProductor(select, id_productor) {
             const id_cooperativa = select.value;
             if (!id_cooperativa) return;
@@ -304,12 +308,12 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
                 const data = await res.json();
                 if (data.ok) {
-                    showAlert('success', 'Asociación guardada correctamente.');
+                    showAlert('success', 'AsociaciÃ³n guardada correctamente.');
                 } else {
-                    showAlert('error', data.error || 'No se pudo guardar la asociación.');
+                    showAlert('error', data.error || 'No se pudo guardar la asociaciÃ³n.');
                 }
             } catch (err) {
-                console.error('❌ Error en la asociación productor-coop:', err);
+                console.error('âŒ Error en la asociaciÃ³n productor-coop:', err);
                 showAlert('error', 'Error inesperado al asociar productor.');
             } finally {
                 select.disabled = false;
@@ -327,14 +331,14 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const html = await res.text();
                 tbody.innerHTML = html;
             } catch (err) {
-                console.error('❌ Error al cargar productores:', err);
+                console.error('âŒ Error al cargar productores:', err);
                 tbody.innerHTML = "<tr><td colspan='4'>Error al cargar datos.</td></tr>";
             } finally {
                 tbody.removeAttribute('aria-busy');
             }
         }
 
-        // ------- Cooperativa ↔ Ingeniero (nuevo) -------
+        // ------- Cooperativa â†” Ingeniero (nuevo) -------
         async function cargarCoopIng() {
             const cuitCoop = document.getElementById('buscarCuitCoop').value.trim();
             const nombreCoop = document.getElementById('buscarNombreCoop').value.trim();
@@ -347,7 +351,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 const html = await res.text();
                 tbody.innerHTML = html;
             } catch (err) {
-                console.error('❌ Error al cargar coop/ing:', err);
+                console.error('âŒ Error al cargar coop/ing:', err);
                 tbody.innerHTML = "<tr><td colspan='4'>Error al cargar datos.</td></tr>";
             } finally {
                 tbody.removeAttribute('aria-busy');
@@ -377,7 +381,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                     showAlert('error', data.error || 'No se pudo vincular.');
                 }
             } catch (err) {
-                console.error('❌ Error al vincular coop/ing:', err);
+                console.error('âŒ Error al vincular coop/ing:', err);
                 showAlert('error', 'Error inesperado al vincular.');
             } finally {
                 select.disabled = false;
@@ -386,7 +390,7 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
         }
 
         async function delCoopIng(coopIdReal, ingIdReal, btn) {
-            if (!confirm('¿Quitar esta vinculación?')) return;
+            if (!confirm('Â¿Quitar esta vinculaciÃ³n?')) return;
             btn.disabled = true;
             try {
                 const res = await fetch('/controllers/sve_asociarProductoresController.php?action=del_coop_ing', {
@@ -401,20 +405,20 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
                 });
                 const data = await res.json();
                 if (data.ok) {
-                    showAlert('success', 'Vinculación eliminada.');
+                    showAlert('success', 'VinculaciÃ³n eliminada.');
                     await cargarCoopIng();
                 } else {
                     showAlert('error', data.error || 'No se pudo eliminar.');
                 }
             } catch (err) {
-                console.error('❌ Error al eliminar vinculación:', err);
+                console.error('âŒ Error al eliminar vinculaciÃ³n:', err);
                 showAlert('error', 'Error inesperado al eliminar.');
             } finally {
                 btn.disabled = false;
             }
         }
 
-        // ------- Init & Listeners (únicos) -------
+        // ------- Init & Listeners (Ãºnicos) -------
         document.addEventListener('DOMContentLoaded', () => {
             // Inicial
             cargarProductores();
@@ -439,3 +443,4 @@ $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 </body>
 
 </html>
+

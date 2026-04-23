@@ -1,18 +1,18 @@
-<?php
-// Mostrar errores en pantalla (útil en desarrollo)
+﻿<?php
+// Mostrar errores en pantalla (Ãºtil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesión y configurar parámetros de seguridad
+// Iniciar sesiÃ³n y configurar parÃ¡metros de seguridad
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesión
+// Datos del usuario en sesiÃ³n
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 $correo = $_SESSION['correo'] ?? 'Sin correo';
 $cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
+$telefono = $_SESSION['telefono'] ?? 'Sin telÃ©fono';
 $observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
 
 //Cargamos los operativos cerrados
@@ -28,7 +28,7 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE</title>
 
-    <!-- Íconos de Material Design -->
+    <!-- Ãconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
@@ -39,10 +39,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
 <body>
 
-    <!-- 🔲 CONTENEDOR PRINCIPAL -->
+    <!-- ðŸ”² CONTENEDOR PRINCIPAL -->
     <div class="layout">
 
-        <!-- 🧭 SIDEBAR -->
+        <!-- ðŸ§­ SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="material-icons logo-icon">dashboard</span>
@@ -85,13 +85,17 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                         <span class="material-symbols-outlined" style="color:#5b21b6;">drone</span>
                         <span class="link-text">Drones</span>
                     </li>
+                    <li onclick="location.href='sve_relevamiento.php'">
+                        <span class="material-icons" style="color:#5b21b6;">fact_check</span>
+                        <span class="link-text">Relevamiento</span>
+                    </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha Mecánica</span>
+                        <span class="link-text">Cosecha MecÃ¡nica</span>
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares Enológicos</span>
+                        <span class="link-text">Servicios Auxiliares EnolÃ³gicos</span>
                     </li>
                     <li onclick="location.href='sve_publicaciones.php'">
                         <span class="material-icons" style="color: #5b21b6;">menu_book</span><span class="link-text">Biblioteca Virtual</span>
@@ -109,10 +113,10 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             </div>
         </aside>
 
-        <!-- 🧱 MAIN -->
+        <!-- ðŸ§± MAIN -->
         <div class="main">
 
-            <!-- 🟪 NAVBAR -->
+            <!-- ðŸŸª NAVBAR -->
             <header class="navbar">
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
@@ -120,21 +124,21 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                 <div class="navbar-title">Inicio</div>
             </header>
 
-            <!-- 📦 CONTENIDO -->
+            <!-- ðŸ“¦ CONTENIDO -->
             <section class="content">
 
                 <!-- Bienvenida -->
                 <div class="card">
                     <h2>Hola</h2>
-                    <p>Te presentamos el tablero Power BI. Vas a poder consultar todas las metricas desde esta página</p>
+                    <p>Te presentamos el tablero Power BI. Vas a poder consultar todas las metricas desde esta pÃ¡gina</p>
                 </div>
-                <!-- Métricas principales: 3 tarjetas apiladas (una columna, tres filas) -->
+                <!-- MÃ©tricas principales: 3 tarjetas apiladas (una columna, tres filas) -->
                 <div class="card" style="width:100%; margin-bottom:1rem;">
                     <h3>Compra conjunta</h3>
                     <?php include __DIR__ . '/../partials/sve_kpi/sve_kpi_compraConjuntaView.php'; ?>
                 </div>
                 <div class="card" style="width:100%; margin-bottom:1rem;">
-                    <h3>Pulverización con drones</h3>
+                    <h3>PulverizaciÃ³n con drones</h3>
                     <?php include __DIR__ . '/../partials/sve_kpi/sve_kpi_dronesView.php'; ?>
                 </div>
                 <div class="card" style="width:100%; margin-bottom:1rem;">
@@ -161,12 +165,12 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             <?php if (!empty($cierre_info)): ?>
                 const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
                 cierreData.pendientes.forEach(op => {
-                    const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
+                    const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} dÃ­a(s).`;
                     console.log(mensaje);
                     if (typeof showToastBoton === 'function') {
                         showToastBoton('info', mensaje);
                     } else {
-                        console.warn('⚠️ showToastBoton no está definido aún.');
+                        console.warn('âš ï¸ showToastBoton no estÃ¡ definido aÃºn.');
                     }
                 });
             <?php endif; ?>
@@ -177,3 +181,4 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 
 
 </html>
+
