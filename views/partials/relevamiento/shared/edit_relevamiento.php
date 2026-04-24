@@ -5,7 +5,7 @@ $appBasePath = $viewsPos !== false ? substr($scriptName, 0, $viewsPos) : '';
 $cierreInfo = $cierre_info ?? null;
 ?>
 <style>
-        /* ===== Tabla Relevamiento (estructura estÃ¡ndar) ===== */
+        /* ===== Tabla Relevamiento (estructura estándar) ===== */
         .tabla-wrapper {
             margin-top: 1rem;
             overflow-x: auto;
@@ -374,13 +374,13 @@ $cierreInfo = $cierre_info ?? null;
             }
         }
     </style>
-<!-- Encabezado del mÃ³dulo de relevamiento -->
+<!-- Encabezado del módulo de relevamiento -->
                 <div class="card">
                     <h2 id="cards-title">Relevamiento</h2>
-                    <p>SeleccionÃ¡ una cooperativa para ver sus productores asociados.</p>
+                    <p>Seleccioná una cooperativa para ver sus productores asociados.</p>
                 </div>
 
-                <!-- Contenedor donde se renderizan dinÃ¡micamente las tarjetas -->
+                <!-- Contenedor donde se renderizan dinámicamente las tarjetas -->
                 <div id="cards-container"></div>
 
                 <!-- contenedor del toastify -->
@@ -398,12 +398,12 @@ $cierreInfo = $cierre_info ?? null;
             <?php if (!empty($cierreInfo)): ?>
                 const cierreData = <?= json_encode($cierreInfo, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
                 cierreData.pendientes.forEach(op => {
-                    const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} dÃ­a(s).`;
+                    const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
                     console.log(mensaje);
                     if (typeof showToastBoton === 'function') {
                         showToastBoton('info', mensaje);
                     } else {
-                        console.warn('âš ï¸ showToastBoton no estÃ¡ definido aÃºn.');
+                        console.warn('⚠️ showToastBoton no está definido aún.');
                     }
                 });
             <?php endif; ?>
@@ -483,7 +483,7 @@ $cierreInfo = $cierre_info ?? null;
                                     <th>Nombre</th>
                                     <th>ID real</th>
                                     <th>CUIT</th>
-                                    <th>AcciÃ³n</th>
+                                    <th>Acción</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -594,7 +594,7 @@ $cierreInfo = $cierre_info ?? null;
                 }).join('');
 
                 if (tbody) {
-                    tbody.innerHTML = rows || `<tr><td colspan="5">Sin resultados para la bÃºsqueda.</td></tr>`;
+                    tbody.innerHTML = rows || `<tr><td colspan="5">Sin resultados para la búsqueda.</td></tr>`;
                 }
                 if (counter) {
                     counter.textContent = `${list.length} de ${PRODUCTORES_LIST.length} productores`;
@@ -1139,7 +1139,7 @@ $cierreInfo = $cierre_info ?? null;
                 <div class="asset-tree">
                     <button type="button" class="asset-node" data-search-text="productor datos personales familia" data-asset-type="productor" data-asset-id="productor" onclick="selectAssetDetail('productor', 'productor')">
                         <span class="asset-node-title">Datos del productor</span>
-                        <span class="asset-node-meta">Familia, contacto y razÃ³n social</span>
+                        <span class="asset-node-meta">Familia, contacto y razón social</span>
                     </button>
                     ${fincas.length ? fincas.map(renderFinca).join('') : '<p class="summary-empty">Sin fincas asociadas.</p>'}
                     ${sinFincaHtml ? `<div class="asset-children">${sinFincaHtml}</div>` : ''}
@@ -1164,7 +1164,7 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function confirmarEliminarFinca(productorIdReal, fincaId) {
-            if (!confirm(`Se va a eliminar la finca ID ${fincaId} y sus registros asociados. Â¿Continuar?`)) {
+            if (!confirm(`Se va a eliminar la finca ID ${fincaId} y sus registros asociados. ¿Continuar?`)) {
                 return;
             }
             try {
@@ -1182,7 +1182,7 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function confirmarEliminarCuartel(productorIdReal, cuartelId) {
-            if (!confirm(`Se va a eliminar el cuartel ID ${cuartelId}. Â¿Continuar?`)) {
+            if (!confirm(`Se va a eliminar el cuartel ID ${cuartelId}. ¿Continuar?`)) {
                 return;
             }
             try {
@@ -1202,7 +1202,7 @@ $cierreInfo = $cierre_info ?? null;
         async function guardarFormularioParcial(formId, controllerFile, productorIdReal, mensajeExito) {
             const form = document.querySelector(`#productor-modificar-view #${formId}`);
             if (!form) {
-                throw new Error(`No se encontrÃ³ el formulario ${formId}`);
+                throw new Error(`No se encontró el formulario ${formId}`);
             }
 
             const formData = new FormData(form);
@@ -1308,7 +1308,7 @@ $cierreInfo = $cierre_info ?? null;
 
                 await cargarResumenActivosProductor(productorIdReal);
             } catch (e) {
-                console.error('[Relevamiento] Error al cargar vista de modificaciÃ³n:', e);
+                console.error('[Relevamiento] Error al cargar vista de modificación:', e);
                 container.innerHTML = `<div class="card card-error">Error al cargar formulario del productor: ${escapeHtml(e.message)}</div>`;
             }
         }
@@ -1349,12 +1349,12 @@ $cierreInfo = $cierre_info ?? null;
                     'produccion-form',
                     'relevamiento_produccion_controller.php',
                     productorIdReal,
-                    'Datos de producciÃ³n guardados correctamente'
+                    'Datos de producción guardados correctamente'
                 );
             } catch (e) {
-                console.error('[Relevamiento] Error al guardar producciÃ³n:', e);
+                console.error('[Relevamiento] Error al guardar producción:', e);
                 if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al guardar producciÃ³n: ${e.message}`);
+                    showToastBoton('error', `Error al guardar producción: ${e.message}`);
                 }
             }
         }
@@ -1459,7 +1459,7 @@ $cierreInfo = $cierre_info ?? null;
                 credentials: 'same-origin'
             });
             if (!resp.ok) {
-                throw new Error(`ProducciÃ³n: Error HTTP ${resp.status}`);
+                throw new Error(`Producción: Error HTTP ${resp.status}`);
             }
             const html = await resp.text();
             const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -1576,7 +1576,7 @@ $cierreInfo = $cierre_info ?? null;
 
             if (!data) {
                 console.table([{
-                    columna_sql: '(vacÃ­o)',
+                    columna_sql: '(vacío)',
                     valor: ''
                 }]);
                 return;
@@ -1826,7 +1826,7 @@ $cierreInfo = $cierre_info ?? null;
         async function relevamientoLogProductorFull(productorIdReal) {
             const prod = PRODUCTORES_MAP[productorIdReal];
             if (!prod) {
-                console.warn('[Relevamiento] No se encontrÃ³ productor para log:', productorIdReal);
+                console.warn('[Relevamiento] No se encontró productor para log:', productorIdReal);
                 return;
             }
 
@@ -1859,12 +1859,12 @@ $cierreInfo = $cierre_info ?? null;
                 const coops = Array.isArray(data.data) ? data.data : [];
 
                 if (coops.length === 0) {
-                    setCardsTitle('No tenÃ©s cooperativas asociadas');
+                    setCardsTitle('No tenés cooperativas asociadas');
                     container.innerHTML = '<div class="card">No se encontraron cooperativas.</div>';
                     return;
                 }
 
-                setCardsTitle('SeleccionÃ¡ una cooperativa');
+                setCardsTitle('Seleccioná una cooperativa');
                 renderCooperativasTable(coops);
             } catch (e) {
                 console.error(e);
@@ -1919,7 +1919,7 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         // ===== Helpers simples de modales =====
-        // Usamos nombres especÃ­ficos para evitar conflicto con funciones globales del framework.
+        // Usamos nombres específicos para evitar conflicto con funciones globales del framework.
 
         function relevamientoGetModalElement(tipo) {
             const modalId = MODAL_IDS[tipo];
@@ -1929,7 +1929,7 @@ $cierreInfo = $cierre_info ?? null;
             }
             const modal = document.getElementById(modalId);
             if (!modal) {
-                console.warn('[Relevamiento] No se encontrÃ³ el elemento modal con id', modalId);
+                console.warn('[Relevamiento] No se encontró el elemento modal con id', modalId);
             }
             return modal;
         }
@@ -1952,7 +1952,7 @@ $cierreInfo = $cierre_info ?? null;
             if (!body) return;
 
             body.innerHTML = '<p>Cargando datos de familia...</p>';
-            // Guardamos el id_real tambiÃ©n en el dataset del modal
+            // Guardamos el id_real también en el dataset del modal
             modal.dataset.productorIdReal = productorIdReal;
 
             try {
@@ -2016,8 +2016,8 @@ $cierreInfo = $cierre_info ?? null;
             const body = modal.querySelector('[data-modal-body="produccion"]');
             if (!body) return;
 
-            body.innerHTML = '<p>Cargando formulario de producciÃ³n...</p>';
-            // Guardamos el id_real tambiÃ©n en el dataset del modal (por si luego queremos guardar)
+            body.innerHTML = '<p>Cargando formulario de producción...</p>';
+            // Guardamos el id_real también en el dataset del modal (por si luego queremos guardar)
             modal.dataset.productorIdReal = productorIdReal;
 
             try {
@@ -2040,8 +2040,8 @@ $cierreInfo = $cierre_info ?? null;
 
                 initProduccionModal();
             } catch (e) {
-                console.error('[Relevamiento] Error al cargar producciÃ³n:', e);
-                body.innerHTML = `<p class="text-danger">Error al cargar datos de producciÃ³n: ${e.message}</p>`;
+                console.error('[Relevamiento] Error al cargar producción:', e);
+                body.innerHTML = `<p class="text-danger">Error al cargar datos de producción: ${e.message}</p>`;
             }
         }
 
@@ -2107,7 +2107,7 @@ $cierreInfo = $cierre_info ?? null;
                     throw new Error(data.error || 'Error al guardar datos de familia');
                 }
 
-                // Si tenÃ©s showToastBoton / showToast podÃ©s usarlo:
+                // Si tenés showToastBoton / showToast podés usarlo:
                 if (typeof showToastBoton === 'function') {
                     showToastBoton('success', 'Datos de familia guardados correctamente');
                 } else {
@@ -2133,7 +2133,7 @@ $cierreInfo = $cierre_info ?? null;
 
             const form = modal.querySelector('#produccion-form');
             if (!form) {
-                // Si todavÃ­a no hay formulario definido, simplemente cerramos el modal
+                // Si todavía no hay formulario definido, simplemente cerramos el modal
                 relevamientoCloseModal('produccion');
                 return;
             }
@@ -2158,22 +2158,22 @@ $cierreInfo = $cierre_info ?? null;
                 const data = await resp.json();
 
                 if (!data.ok) {
-                    throw new Error(data.error || 'Error al guardar datos de producciÃ³n');
+                    throw new Error(data.error || 'Error al guardar datos de producción');
                 }
 
                 if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', 'Datos de producciÃ³n guardados correctamente');
+                    showToastBoton('success', 'Datos de producción guardados correctamente');
                 } else {
-                    alert('Datos de producciÃ³n guardados correctamente');
+                    alert('Datos de producción guardados correctamente');
                 }
 
                 relevamientoCloseModal('produccion');
             } catch (e) {
-                console.error('[Relevamiento] Error al guardar producciÃ³n:', e);
+                console.error('[Relevamiento] Error al guardar producción:', e);
                 if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', 'Error al guardar datos de producciÃ³n: ' + e.message);
+                    showToastBoton('error', 'Error al guardar datos de producción: ' + e.message);
                 } else {
-                    alert('Error al guardar datos de producciÃ³n: ' + e.message);
+                    alert('Error al guardar datos de producción: ' + e.message);
                 }
             }
         }
@@ -2184,7 +2184,7 @@ $cierreInfo = $cierre_info ?? null;
                 productorIdReal
             });
 
-            // Guardamos referencia por si despuÃ©s queremos usarla
+            // Guardamos referencia por si después queremos usarla
             const productor = PRODUCTORES_MAP[productorIdReal];
             if (!productor) {
                 console.warn('[Relevamiento] PRODUCTORES_MAP sin entrada para', productorIdReal);
@@ -2194,14 +2194,14 @@ $cierreInfo = $cierre_info ?? null;
 
             const modal = relevamientoGetModalElement(tipo);
             if (!modal) {
-                alert('No se encontrÃ³ el modal para: ' + tipo);
+                alert('No se encontró el modal para: ' + tipo);
                 return;
             }
 
             // Mostramos el modal
             modal.classList.remove('hidden');
 
-            // Cargar contenido especÃ­fico segÃºn tipo
+            // Cargar contenido específico según tipo
             if (tipo === 'familia') {
                 loadFamiliaForm(productorIdReal);
             } else if (tipo === 'produccion') {
@@ -2228,7 +2228,7 @@ $cierreInfo = $cierre_info ?? null;
         window.confirmarEliminarFinca = confirmarEliminarFinca;
         window.confirmarEliminarCuartel = confirmarEliminarCuartel;
 
-        // Cargar cooperativas una vez que el DOM estÃ© listo
+        // Cargar cooperativas una vez que el DOM esté listo
         window.addEventListener('DOMContentLoaded', () => {
             cargarCooperativas();
         });
@@ -2249,10 +2249,10 @@ $cierreInfo = $cierre_info ?? null;
         </div>
     </div>
 
-    <!-- Modal ProducciÃ³n -->
+    <!-- Modal Producción -->
     <div id="modal-produccion" class="modal hidden">
         <div class="modal-content">
-            <h3>ProducciÃ³n del productor</h3>
+            <h3>Producción del productor</h3>
             <div class="modal-body" data-modal-body="produccion">
                 <p>Cargando formulario de producción...</p>
             </div>
@@ -2276,3 +2276,4 @@ $cierreInfo = $cierre_info ?? null;
             </div>
         </div>
     </div>
+
