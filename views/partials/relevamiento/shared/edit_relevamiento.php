@@ -482,6 +482,7 @@ $cierreInfo = $cierre_info ?? null;
         };
         let relevamientoShowArchived = false;
         let pendingConfirmAction = null;
+        let VARIEDADES_LIST = null;
         function notifyToast(type, message) {
             if (typeof showToast === 'function') {
                 showToast(type, message);
@@ -887,13 +888,63 @@ $cierreInfo = $cierre_info ?? null;
             modal.dataset.productorIdReal = String(productorIdReal ?? '');
             modal.dataset.fincaId = String(fincaId ?? '');
 
-            const variedadInput = modal.querySelector('input[name="nuevo_variedad_cuartel"]');
+            const variedadInput = modal.querySelector('select[name="nuevo_variedad_cuartel"]');
             const superficieInput = modal.querySelector('input[name="nuevo_superficie_cuartel"]');
+            const variedadesStatus = modal.querySelector('[data-variedades-status]');
             if (variedadInput) variedadInput.value = '';
             if (superficieInput) superficieInput.value = '';
+            if (variedadesStatus) variedadesStatus.textContent = '';
 
             openSimpleModalById('modal-crear-cuartel');
-            if (variedadInput) variedadInput.focus();
+
+            try {
+                await cargarVariedadesNuevoCuartel();
+                if (variedadInput) variedadInput.focus();
+            } catch (e) {
+                console.error('[Relevamiento] Error al cargar variedades:', e);
+                if (variedadesStatus) variedadesStatus.textContent = 'No se pudieron cargar las variedades.';
+                notifyToast('error', `Error al cargar variedades: ${e.message}`);
+            }
+        }
+
+        async function fetchVariedades() {
+            if (Array.isArray(VARIEDADES_LIST)) {
+                return VARIEDADES_LIST;
+            }
+
+            const params = new URLSearchParams({
+                action: 'variedades'
+            });
+            const resp = await fetch(`${API_RELEVAMIENTO}?${params.toString()}`, {
+                credentials: 'same-origin'
+            });
+            const payload = await resp.json();
+            if (!resp.ok || !payload.ok) {
+                throw new Error(payload.error || `Error HTTP ${resp.status}`);
+            }
+
+            VARIEDADES_LIST = Array.isArray(payload.data) ? payload.data : [];
+            return VARIEDADES_LIST;
+        }
+
+        async function cargarVariedadesNuevoCuartel() {
+            const select = document.getElementById('nuevo-variedad-cuartel');
+            if (!select) return;
+
+            select.disabled = true;
+            select.innerHTML = '<option value="">Cargando variedades...</option>';
+
+            const variedades = await fetchVariedades();
+            const options = variedades.map((row) => {
+                const codigo = String(row?.codigo_variedad ?? '').trim();
+                const nombre = String(row?.nombre_variedad ?? '').trim();
+                if (codigo === '') return '';
+                const label = nombre !== '' ? `${nombre} (${codigo})` : codigo;
+                return `<option value="${escapeHtml(codigo)}">${escapeHtml(label)}</option>`;
+            }).join('');
+
+            select.innerHTML = `<option value="">Seleccionar variedad</option>${options}`;
+            select.disabled = variedades.length === 0;
         }
 
         async function guardarNuevoCuartelDesdeModal() {
@@ -902,7 +953,7 @@ $cierreInfo = $cierre_info ?? null;
 
             const productorIdReal = String(modal.dataset.productorIdReal ?? '').trim();
             const fincaId = String(modal.dataset.fincaId ?? '').trim();
-            const variedad = String(modal.querySelector('input[name="nuevo_variedad_cuartel"]')?.value ?? '').trim();
+            const variedad = String(modal.querySelector('select[name="nuevo_variedad_cuartel"]')?.value ?? '').trim();
             const superficieHa = String(modal.querySelector('input[name="nuevo_superficie_cuartel"]')?.value ?? '').trim();
             if (!productorIdReal || !fincaId || !variedad) {
                 notifyToast('error', 'Completa al menos variedad del cuartel');
@@ -2752,10 +2803,13 @@ $cierreInfo = $cierre_info ?? null;
             <h3>Nuevo cuartel</h3>
             <div class="modal-body">
                 <div class="input-group">
-                    <label for="nuevo-variedad-cuartel">Codigo de variedad</label>
+                    <label for="nuevo-variedad-cuartel">Variedad</label>
                     <div class="input-icon input-icon-name">
-                        <input id="nuevo-variedad-cuartel" name="nuevo_variedad_cuartel" type="text" autocomplete="off" />
+                        <select id="nuevo-variedad-cuartel" name="nuevo_variedad_cuartel">
+                            <option value="">Seleccionar variedad</option>
+                        </select>
                     </div>
+                    <small data-variedades-status></small>
                 </div>
                 <div class="input-group">
                     <label for="nuevo-superficie-cuartel">Superficie (ha)</label>

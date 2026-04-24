@@ -61,6 +61,13 @@ try {
                 echo json_encode(['ok' => true, 'data' => $productores]);
                 exit;
 
+            case 'variedades':
+                $variedades = $model->listarCodigosVariedades();
+                http_response_code(200);
+                ob_clean();
+                echo json_encode(['ok' => true, 'data' => $variedades]);
+                exit;
+
             case 'resumen_activos_productor':
                 $productorIdReal = (string)($_GET['productor_id_real'] ?? '');
                 $includeArchived = asBool($_GET['include_archived'] ?? '0');

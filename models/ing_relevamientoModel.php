@@ -84,6 +84,20 @@ class ingRelevamientoModel
         }
     }
 
+    public function listarCodigosVariedades(): array
+    {
+        $st = $this->pdo->query("
+            SELECT
+                id,
+                codigo_variedad,
+                nombre_variedad
+            FROM codigo_variedades_fincas
+            ORDER BY nombre_variedad ASC, codigo_variedad ASC
+        ");
+
+        return $st->fetchAll() ?: [];
+    }
+
     private function productorPerteneceAIngeniero(string $productorIdReal, string $ingenieroIdReal, bool $includeArchived = true): bool
     {
         $sql = "
