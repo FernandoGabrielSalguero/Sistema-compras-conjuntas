@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
 $viewsPos = strpos($scriptName, '/views/');
 $appBasePath = $viewsPos !== false ? substr($scriptName, 0, $viewsPos) : '';
@@ -271,7 +271,7 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         .asset-tree-group {
-            border: 1px solid rgba(15, 23, 42, 0.1);
+            border: 6px solid rgba(15, 23, 42, 0.1);
             border-radius: 0.6rem;
             padding: 0.55rem;
             background: rgba(255, 255, 255, 0.75);
@@ -445,13 +445,9 @@ $cierreInfo = $cierre_info ?? null;
             <?php if (!empty($cierreInfo)): ?>
                 const cierreData = <?= json_encode($cierreInfo, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
                 cierreData.pendientes.forEach(op => {
-                    const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
+                    const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} dia(s).`;
                     console.log(mensaje);
-                    if (typeof showToastBoton === 'function') {
-                        showToastBoton('info', mensaje);
-                    } else {
-                        console.warn('⚠️ showToastBoton no está definido aún.');
-                    }
+                    notifyToast('info', mensaje);
                 });
             <?php endif; ?>
         });
@@ -479,6 +475,17 @@ $cierreInfo = $cierre_info ?? null;
         };
         let relevamientoShowArchived = false;
         let pendingConfirmAction = null;
+        function notifyToast(type, message) {
+            if (typeof showToast === 'function') {
+                showToast(type, message);
+                return;
+            }
+            if (typeof showToastBoton === 'function') {
+                showToastBoton(type, message);
+                return;
+            }
+            console.log(`[Toast][${type}] ${message}`);
+        }
 
         console.log('[Relevamiento] Script cargado');
 
@@ -768,9 +775,7 @@ $cierreInfo = $cierre_info ?? null;
             const usuario = String(modal.querySelector('input[name="nuevo_usuario"]')?.value ?? '').trim();
             const cuit = String(modal.querySelector('input[name="nuevo_cuit"]')?.value ?? '').trim();
             if (!usuario || !cuit) {
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', 'Completa usuario y CUIT');
-                }
+                notifyToast('error', 'Completa usuario y CUIT');
                 return;
             }
 
@@ -781,15 +786,11 @@ $cierreInfo = $cierre_info ?? null;
                     cuit
                 });
                 closeSimpleModalById('modal-crear-productor');
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', 'Productor creado correctamente');
-                }
+                notifyToast('success', 'Productor creado correctamente');
                 await cargarProductores(currentCoop);
             } catch (e) {
                 console.error('[Relevamiento] Error al crear productor:', e);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al crear productor: ${e.message}`);
-                }
+                notifyToast('error', `Error al crear productor: ${e.message}`);
             }
         }
 
@@ -802,15 +803,11 @@ $cierreInfo = $cierre_info ?? null;
                         await apiPostAction('archivar_productor', {
                             productor_id_real: String(productorIdReal)
                         });
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('success', 'Productor archivado');
-                        }
+                        notifyToast('success', 'Productor archivado');
                         if (currentCoop) await cargarProductores(currentCoop);
                     } catch (e) {
                         console.error('[Relevamiento] Error al archivar productor:', e);
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('error', `Error al archivar productor: ${e.message}`);
-                        }
+                        notifyToast('error', `Error al archivar productor: ${e.message}`);
                     }
                 }
             );
@@ -825,15 +822,11 @@ $cierreInfo = $cierre_info ?? null;
                         await apiPostAction('desarchivar_productor', {
                             productor_id_real: String(productorIdReal)
                         });
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('success', 'Productor desarchivado');
-                        }
+                        notifyToast('success', 'Productor desarchivado');
                         if (currentCoop) await cargarProductores(currentCoop);
                     } catch (e) {
                         console.error('[Relevamiento] Error al desarchivar productor:', e);
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('error', `Error al desarchivar productor: ${e.message}`);
-                        }
+                        notifyToast('error', `Error al desarchivar productor: ${e.message}`);
                     }
                 }
             );
@@ -861,9 +854,7 @@ $cierreInfo = $cierre_info ?? null;
             const codigoFinca = String(modal.querySelector('input[name="nuevo_codigo_finca"]')?.value ?? '').trim();
             const nombreFinca = String(modal.querySelector('input[name="nuevo_nombre_finca"]')?.value ?? '').trim();
             if (!productorIdReal || !codigoFinca || !nombreFinca) {
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', 'Completa código y nombre de finca');
-                }
+                notifyToast('error', 'Completa código y nombre de finca');
                 return;
             }
 
@@ -874,15 +865,11 @@ $cierreInfo = $cierre_info ?? null;
                     nombre_finca: nombreFinca
                 });
                 closeSimpleModalById('modal-crear-finca');
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', 'Finca creada correctamente');
-                }
+                notifyToast('success', 'Finca creada correctamente');
                 await abrirModificarProductor(productorIdReal);
             } catch (e) {
                 console.error('[Relevamiento] Error al crear finca:', e);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al crear finca: ${e.message}`);
-                }
+                notifyToast('error', `Error al crear finca: ${e.message}`);
             }
         }
 
@@ -911,9 +898,7 @@ $cierreInfo = $cierre_info ?? null;
             const variedad = String(modal.querySelector('input[name="nuevo_variedad_cuartel"]')?.value ?? '').trim();
             const superficieHa = String(modal.querySelector('input[name="nuevo_superficie_cuartel"]')?.value ?? '').trim();
             if (!productorIdReal || !fincaId || !variedad) {
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', 'Completa al menos variedad del cuartel');
-                }
+                notifyToast('error', 'Completa al menos variedad del cuartel');
                 return;
             }
 
@@ -925,15 +910,11 @@ $cierreInfo = $cierre_info ?? null;
                     superficie_ha: superficieHa
                 });
                 closeSimpleModalById('modal-crear-cuartel');
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', 'Cuartel creado correctamente');
-                }
+                notifyToast('success', 'Cuartel creado correctamente');
                 await abrirModificarProductor(productorIdReal);
             } catch (e) {
                 console.error('[Relevamiento] Error al crear cuartel:', e);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al crear cuartel: ${e.message}`);
-                }
+                notifyToast('error', `Error al crear cuartel: ${e.message}`);
             }
         }
 
@@ -1521,15 +1502,11 @@ $cierreInfo = $cierre_info ?? null;
                 async () => {
                     try {
                         await archivarFincaProductor(productorIdReal, fincaId);
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('success', `Finca ${fincaId} archivada correctamente`);
-                        }
+                        notifyToast('success', `Finca ${fincaId} archivada correctamente`);
                         await abrirModificarProductor(productorIdReal);
                     } catch (e) {
                         console.error('[Relevamiento] Error al archivar finca:', e);
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('error', `Error al archivar finca: ${e.message}`);
-                        }
+                        notifyToast('error', `Error al archivar finca: ${e.message}`);
                     }
                 }
             );
@@ -1542,15 +1519,11 @@ $cierreInfo = $cierre_info ?? null;
                 async () => {
                     try {
                         await desarchivarFincaProductor(productorIdReal, fincaId);
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('success', `Finca ${fincaId} desarchivada correctamente`);
-                        }
+                        notifyToast('success', `Finca ${fincaId} desarchivada correctamente`);
                         await abrirModificarProductor(productorIdReal);
                     } catch (e) {
                         console.error('[Relevamiento] Error al desarchivar finca:', e);
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('error', `Error al desarchivar finca: ${e.message}`);
-                        }
+                        notifyToast('error', `Error al desarchivar finca: ${e.message}`);
                     }
                 }
             );
@@ -1563,15 +1536,11 @@ $cierreInfo = $cierre_info ?? null;
                 async () => {
                     try {
                         await archivarCuartelProductor(productorIdReal, cuartelId);
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('success', `Cuartel ${cuartelId} archivado correctamente`);
-                        }
+                        notifyToast('success', `Cuartel ${cuartelId} archivado correctamente`);
                         await abrirModificarProductor(productorIdReal);
                     } catch (e) {
                         console.error('[Relevamiento] Error al archivar cuartel:', e);
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('error', `Error al archivar cuartel: ${e.message}`);
-                        }
+                        notifyToast('error', `Error al archivar cuartel: ${e.message}`);
                     }
                 }
             );
@@ -1584,15 +1553,11 @@ $cierreInfo = $cierre_info ?? null;
                 async () => {
                     try {
                         await desarchivarCuartelProductor(productorIdReal, cuartelId);
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('success', `Cuartel ${cuartelId} desarchivado correctamente`);
-                        }
+                        notifyToast('success', `Cuartel ${cuartelId} desarchivado correctamente`);
                         await abrirModificarProductor(productorIdReal);
                     } catch (e) {
                         console.error('[Relevamiento] Error al desarchivar cuartel:', e);
-                        if (typeof showToastBoton === 'function') {
-                            showToastBoton('error', `Error al desarchivar cuartel: ${e.message}`);
-                        }
+                        notifyToast('error', `Error al desarchivar cuartel: ${e.message}`);
                     }
                 }
             );
@@ -1617,9 +1582,7 @@ $cierreInfo = $cierre_info ?? null;
                 throw new Error(data.error || `Error al guardar ${formId}`);
             }
 
-            if (typeof showToastBoton === 'function') {
-                showToastBoton('success', mensajeExito);
-            }
+            notifyToast('success', mensajeExito);
         }
 
         async function abrirModificarProductor(productorIdReal) {
@@ -1739,9 +1702,7 @@ $cierreInfo = $cierre_info ?? null;
                 );
             } catch (e) {
                 console.error('[Relevamiento] Error al guardar familia:', e);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al guardar familia: ${e.message}`);
-                }
+                notifyToast('error', `Error al guardar familia: ${e.message}`);
             }
         }
 
@@ -1755,9 +1716,7 @@ $cierreInfo = $cierre_info ?? null;
                 );
             } catch (e) {
                 console.error('[Relevamiento] Error al guardar producción:', e);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al guardar producción: ${e.message}`);
-                }
+                notifyToast('error', `Error al guardar producción: ${e.message}`);
             }
         }
 
@@ -1787,14 +1746,10 @@ $cierreInfo = $cierre_info ?? null;
                     );
                 }
 
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', 'Todos los cambios fueron guardados');
-                }
+                notifyToast('success', 'Todos los cambios fueron guardados');
             } catch (e) {
                 console.error('[Relevamiento] Error al guardar todo:', e);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al guardar cambios: ${e.message}`);
-                }
+                notifyToast('error', `Error al guardar cambios: ${e.message}`);
             }
         }
 
@@ -2519,21 +2474,13 @@ $cierreInfo = $cierre_info ?? null;
                     throw new Error(data.error || 'Error al guardar datos de familia');
                 }
 
-                // Si tenés showToastBoton / showToast podés usarlo:
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', 'Datos de familia guardados correctamente');
-                } else {
-                    alert('Datos de familia guardados correctamente');
-                }
+                // Toast del sitio (auto-dismiss)
+                notifyToast('success', 'Datos de familia guardados correctamente');
 
                 relevamientoCloseModal('familia');
             } catch (e) {
                 console.error('[Relevamiento] Error al guardar familia:', e);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', 'Error al guardar datos de familia: ' + e.message);
-                } else {
-                    alert('Error al guardar datos de familia: ' + e.message);
-                }
+                notifyToast('error', 'Error al guardar datos de familia: ' + e.message);
             }
         }
 
@@ -2573,20 +2520,12 @@ $cierreInfo = $cierre_info ?? null;
                     throw new Error(data.error || 'Error al guardar datos de producción');
                 }
 
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', 'Datos de producción guardados correctamente');
-                } else {
-                    alert('Datos de producción guardados correctamente');
-                }
+                notifyToast('success', 'Datos de producción guardados correctamente');
 
                 relevamientoCloseModal('produccion');
             } catch (e) {
                 console.error('[Relevamiento] Error al guardar producción:', e);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', 'Error al guardar datos de producción: ' + e.message);
-                } else {
-                    alert('Error al guardar datos de producción: ' + e.message);
-                }
+                notifyToast('error', 'Error al guardar datos de producción: ' + e.message);
             }
         }
 
