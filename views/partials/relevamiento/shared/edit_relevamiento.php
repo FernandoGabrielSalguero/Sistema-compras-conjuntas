@@ -478,6 +478,7 @@ $cierreInfo = $cierre_info ?? null;
             id: ''
         };
         let relevamientoShowArchived = false;
+        let pendingConfirmAction = null;
 
         console.log('[Relevamiento] Script cargado');
 
@@ -719,6 +720,30 @@ $cierreInfo = $cierre_info ?? null;
             modal.classList.add('hidden');
         }
 
+        function openConfirmActionModal(title, message, onConfirm) {
+            const modal = document.getElementById('modal-confirm-action');
+            if (!modal) return;
+            const titleEl = modal.querySelector('[data-confirm-title]');
+            const messageEl = modal.querySelector('[data-confirm-message]');
+            if (titleEl) titleEl.textContent = title || 'Confirmar acción';
+            if (messageEl) messageEl.textContent = message || '';
+            pendingConfirmAction = typeof onConfirm === 'function' ? onConfirm : null;
+            openSimpleModalById('modal-confirm-action');
+        }
+
+        function closeConfirmActionModal() {
+            pendingConfirmAction = null;
+            closeSimpleModalById('modal-confirm-action');
+        }
+
+        async function runConfirmActionModal() {
+            const action = pendingConfirmAction;
+            pendingConfirmAction = null;
+            closeSimpleModalById('modal-confirm-action');
+            if (!action) return;
+            await action();
+        }
+
         async function promptCrearProductor() {
             if (!currentCoop?.id_real) {
                 return;
@@ -769,39 +794,49 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function confirmarArchivarProductor(productorIdReal) {
-            if (!confirm(`Se archivara el productor ${productorIdReal} y sus fincas/cuarteles. ¿Continuar?`)) return;
-            try {
-                await apiPostAction('archivar_productor', {
-                    productor_id_real: String(productorIdReal)
-                });
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', 'Productor archivado');
+            openConfirmActionModal(
+                'Archivar productor',
+                `Se archivara el productor ${productorIdReal} y sus fincas/cuarteles.`,
+                async () => {
+                    try {
+                        await apiPostAction('archivar_productor', {
+                            productor_id_real: String(productorIdReal)
+                        });
+                        if (typeof showToastBoton === 'function') {
+                            showToastBoton('success', 'Productor archivado');
+                        }
+                        if (currentCoop) await cargarProductores(currentCoop);
+                    } catch (e) {
+                        console.error('[Relevamiento] Error al archivar productor:', e);
+                        if (typeof showToastBoton === 'function') {
+                            showToastBoton('error', `Error al archivar productor: ${e.message}`);
+                        }
+                    }
                 }
-                if (currentCoop) await cargarProductores(currentCoop);
-            } catch (e) {
-                console.error('[Relevamiento] Error al archivar productor:', e);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al archivar productor: ${e.message}`);
-                }
-            }
+            );
         }
 
         async function confirmarDesarchivarProductor(productorIdReal) {
-            if (!confirm(`Se desarchivara el productor ${productorIdReal} y sus fincas/cuarteles. ¿Continuar?`)) return;
-            try {
-                await apiPostAction('desarchivar_productor', {
-                    productor_id_real: String(productorIdReal)
-                });
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', 'Productor desarchivado');
+            openConfirmActionModal(
+                'Desarchivar productor',
+                `Se desarchivara el productor ${productorIdReal} y sus fincas/cuarteles.`,
+                async () => {
+                    try {
+                        await apiPostAction('desarchivar_productor', {
+                            productor_id_real: String(productorIdReal)
+                        });
+                        if (typeof showToastBoton === 'function') {
+                            showToastBoton('success', 'Productor desarchivado');
+                        }
+                        if (currentCoop) await cargarProductores(currentCoop);
+                    } catch (e) {
+                        console.error('[Relevamiento] Error al desarchivar productor:', e);
+                        if (typeof showToastBoton === 'function') {
+                            showToastBoton('error', `Error al desarchivar productor: ${e.message}`);
+                        }
+                    }
                 }
-                if (currentCoop) await cargarProductores(currentCoop);
-            } catch (e) {
-                console.error('[Relevamiento] Error al desarchivar productor:', e);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al desarchivar productor: ${e.message}`);
-                }
-            }
+            );
         }
 
         async function promptCrearFinca(productorIdReal) {
@@ -852,9 +887,35 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function promptCrearCuartel(productorIdReal, fincaId) {
-            const variedad = String(prompt('Variedad (obligatorio):', '') ?? '').trim();
-            if (!variedad) return;
-            const superficieHa = String(prompt('Superficie en ha (opcional):', '') ?? '').trim();
+            const modal = document.getElementById('modal-crear-cuartel');
+            if (!modal) return;
+
+            modal.dataset.productorIdReal = String(productorIdReal ?? '');
+            modal.dataset.fincaId = String(fincaId ?? '');
+
+            const variedadInput = modal.querySelector('input[name="nuevo_variedad_cuartel"]');
+            const superficieInput = modal.querySelector('input[name="nuevo_superficie_cuartel"]');
+            if (variedadInput) variedadInput.value = '';
+            if (superficieInput) superficieInput.value = '';
+
+            openSimpleModalById('modal-crear-cuartel');
+            if (variedadInput) variedadInput.focus();
+        }
+
+        async function guardarNuevoCuartelDesdeModal() {
+            const modal = document.getElementById('modal-crear-cuartel');
+            if (!modal) return;
+
+            const productorIdReal = String(modal.dataset.productorIdReal ?? '').trim();
+            const fincaId = String(modal.dataset.fincaId ?? '').trim();
+            const variedad = String(modal.querySelector('input[name="nuevo_variedad_cuartel"]')?.value ?? '').trim();
+            const superficieHa = String(modal.querySelector('input[name="nuevo_superficie_cuartel"]')?.value ?? '').trim();
+            if (!productorIdReal || !fincaId || !variedad) {
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', 'Completa al menos variedad del cuartel');
+                }
+                return;
+            }
 
             try {
                 await apiPostAction('crear_cuartel', {
@@ -863,6 +924,7 @@ $cierreInfo = $cierre_info ?? null;
                     variedad,
                     superficie_ha: superficieHa
                 });
+                closeSimpleModalById('modal-crear-cuartel');
                 if (typeof showToastBoton === 'function') {
                     showToastBoton('success', 'Cuartel creado correctamente');
                 }
@@ -1453,75 +1515,87 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function confirmarArchivarFinca(productorIdReal, fincaId) {
-            if (!confirm(`Se va a archivar la finca ID ${fincaId} y sus cuarteles. ¿Continuar?`)) {
-                return;
-            }
-            try {
-                await archivarFincaProductor(productorIdReal, fincaId);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', `Finca ${fincaId} archivada correctamente`);
+            openConfirmActionModal(
+                'Archivar finca',
+                `Se archivara la finca ID ${fincaId} y sus cuarteles.`,
+                async () => {
+                    try {
+                        await archivarFincaProductor(productorIdReal, fincaId);
+                        if (typeof showToastBoton === 'function') {
+                            showToastBoton('success', `Finca ${fincaId} archivada correctamente`);
+                        }
+                        await abrirModificarProductor(productorIdReal);
+                    } catch (e) {
+                        console.error('[Relevamiento] Error al archivar finca:', e);
+                        if (typeof showToastBoton === 'function') {
+                            showToastBoton('error', `Error al archivar finca: ${e.message}`);
+                        }
+                    }
                 }
-                await abrirModificarProductor(productorIdReal);
-            } catch (e) {
-                console.error('[Relevamiento] Error al archivar finca:', e);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al archivar finca: ${e.message}`);
-                }
-            }
+            );
         }
 
         async function confirmarDesarchivarFinca(productorIdReal, fincaId) {
-            if (!confirm(`Se va a desarchivar la finca ID ${fincaId}. ¿Continuar?`)) {
-                return;
-            }
-            try {
-                await desarchivarFincaProductor(productorIdReal, fincaId);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', `Finca ${fincaId} desarchivada correctamente`);
+            openConfirmActionModal(
+                'Desarchivar finca',
+                `Se desarchivara la finca ID ${fincaId}.`,
+                async () => {
+                    try {
+                        await desarchivarFincaProductor(productorIdReal, fincaId);
+                        if (typeof showToastBoton === 'function') {
+                            showToastBoton('success', `Finca ${fincaId} desarchivada correctamente`);
+                        }
+                        await abrirModificarProductor(productorIdReal);
+                    } catch (e) {
+                        console.error('[Relevamiento] Error al desarchivar finca:', e);
+                        if (typeof showToastBoton === 'function') {
+                            showToastBoton('error', `Error al desarchivar finca: ${e.message}`);
+                        }
+                    }
                 }
-                await abrirModificarProductor(productorIdReal);
-            } catch (e) {
-                console.error('[Relevamiento] Error al desarchivar finca:', e);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al desarchivar finca: ${e.message}`);
-                }
-            }
+            );
         }
 
         async function confirmarArchivarCuartel(productorIdReal, cuartelId) {
-            if (!confirm(`Se va a archivar el cuartel ID ${cuartelId}. ¿Continuar?`)) {
-                return;
-            }
-            try {
-                await archivarCuartelProductor(productorIdReal, cuartelId);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', `Cuartel ${cuartelId} archivado correctamente`);
+            openConfirmActionModal(
+                'Archivar cuartel',
+                `Se archivara el cuartel ID ${cuartelId}.`,
+                async () => {
+                    try {
+                        await archivarCuartelProductor(productorIdReal, cuartelId);
+                        if (typeof showToastBoton === 'function') {
+                            showToastBoton('success', `Cuartel ${cuartelId} archivado correctamente`);
+                        }
+                        await abrirModificarProductor(productorIdReal);
+                    } catch (e) {
+                        console.error('[Relevamiento] Error al archivar cuartel:', e);
+                        if (typeof showToastBoton === 'function') {
+                            showToastBoton('error', `Error al archivar cuartel: ${e.message}`);
+                        }
+                    }
                 }
-                await abrirModificarProductor(productorIdReal);
-            } catch (e) {
-                console.error('[Relevamiento] Error al archivar cuartel:', e);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al archivar cuartel: ${e.message}`);
-                }
-            }
+            );
         }
 
         async function confirmarDesarchivarCuartel(productorIdReal, cuartelId) {
-            if (!confirm(`Se va a desarchivar el cuartel ID ${cuartelId}. ¿Continuar?`)) {
-                return;
-            }
-            try {
-                await desarchivarCuartelProductor(productorIdReal, cuartelId);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', `Cuartel ${cuartelId} desarchivado correctamente`);
+            openConfirmActionModal(
+                'Desarchivar cuartel',
+                `Se desarchivara el cuartel ID ${cuartelId}.`,
+                async () => {
+                    try {
+                        await desarchivarCuartelProductor(productorIdReal, cuartelId);
+                        if (typeof showToastBoton === 'function') {
+                            showToastBoton('success', `Cuartel ${cuartelId} desarchivado correctamente`);
+                        }
+                        await abrirModificarProductor(productorIdReal);
+                    } catch (e) {
+                        console.error('[Relevamiento] Error al desarchivar cuartel:', e);
+                        if (typeof showToastBoton === 'function') {
+                            showToastBoton('error', `Error al desarchivar cuartel: ${e.message}`);
+                        }
+                    }
                 }
-                await abrirModificarProductor(productorIdReal);
-            } catch (e) {
-                console.error('[Relevamiento] Error al desarchivar cuartel:', e);
-                if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al desarchivar cuartel: ${e.message}`);
-                }
-            }
+            );
         }
 
         async function guardarFormularioParcial(formId, controllerFile, productorIdReal, mensajeExito) {
@@ -2566,7 +2640,10 @@ $cierreInfo = $cierre_info ?? null;
         window.promptCrearFinca = promptCrearFinca;
         window.guardarNuevoProductorDesdeModal = guardarNuevoProductorDesdeModal;
         window.guardarNuevaFincaDesdeModal = guardarNuevaFincaDesdeModal;
+        window.guardarNuevoCuartelDesdeModal = guardarNuevoCuartelDesdeModal;
         window.closeSimpleModalById = closeSimpleModalById;
+        window.closeConfirmActionModal = closeConfirmActionModal;
+        window.runConfirmActionModal = runConfirmActionModal;
         window.promptCrearCuartel = promptCrearCuartel;
         window.confirmarArchivarProductor = confirmarArchivarProductor;
         window.confirmarDesarchivarProductor = confirmarDesarchivarProductor;
@@ -2672,6 +2749,45 @@ $cierreInfo = $cierre_info ?? null;
             <div class="form-buttons">
                 <button class="btn btn-aceptar" onclick="guardarNuevaFincaDesdeModal()">Crear</button>
                 <button class="btn btn-cancelar" onclick="closeSimpleModalById('modal-crear-finca')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Crear Cuartel -->
+    <div id="modal-crear-cuartel" class="modal hidden">
+        <div class="modal-content">
+            <h3>Nuevo cuartel</h3>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="nuevo-variedad-cuartel">Variedad</label>
+                    <div class="input-icon input-icon-name">
+                        <input id="nuevo-variedad-cuartel" name="nuevo_variedad_cuartel" type="text" autocomplete="off" />
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="nuevo-superficie-cuartel">Superficie (ha)</label>
+                    <div class="input-icon input-icon-name">
+                        <input id="nuevo-superficie-cuartel" name="nuevo_superficie_cuartel" type="text" inputmode="decimal" autocomplete="off" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-aceptar" onclick="guardarNuevoCuartelDesdeModal()">Crear</button>
+                <button class="btn btn-cancelar" onclick="closeSimpleModalById('modal-crear-cuartel')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmación -->
+    <div id="modal-confirm-action" class="modal hidden">
+        <div class="modal-content">
+            <h3 data-confirm-title>Confirmar acción</h3>
+            <div class="modal-body">
+                <p data-confirm-message></p>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-aceptar" onclick="runConfirmActionModal()">Confirmar</button>
+                <button class="btn btn-cancelar" onclick="closeConfirmActionModal()">Cancelar</button>
             </div>
         </div>
     </div>
