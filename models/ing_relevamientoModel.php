@@ -170,11 +170,22 @@ class ingRelevamientoModel
                 pc.nombre_finca,
                 pc.finca_id,
                 pc.variedad,
+                cvf.codigo_variedad AS codigo_variedad_ref,
+                cvf.nombre_variedad,
+                CASE
+                    WHEN cvf.nombre_variedad IS NOT NULL THEN CONCAT(pc.variedad, ' - ', cvf.nombre_variedad)
+                    ELSE pc.variedad
+                END AS variedad_display,
                 pc.superficie_ha,
                 COALESCE(pc.archivado, 0) AS archivado
             FROM prod_cuartel pc
             LEFT JOIN prod_fincas pf
               ON pf.id = pc.finca_id
+            LEFT JOIN codigo_variedades_fincas cvf
+              ON cvf.codigo_variedad = CASE
+                    WHEN TRIM(COALESCE(pc.variedad, '')) REGEXP '^[0-9]+$' THEN CAST(TRIM(pc.variedad) AS UNSIGNED)
+                    ELSE NULL
+                 END
             WHERE (pf.productor_id_real = :prod OR pc.id_responsable_real = :prod)
               AND (:inc = 1 OR COALESCE(pc.archivado, 0) = 0)
             ORDER BY pc.codigo_finca ASC, pc.codigo_cuartel ASC, pc.id ASC
@@ -248,10 +259,22 @@ class ingRelevamientoModel
 
         $paramsCuarteles = [$productorIdReal];
         $sqlCuarteles = "
-            SELECT DISTINCT pc.*
+            SELECT DISTINCT
+                pc.*,
+                cvf.codigo_variedad AS codigo_variedad_ref,
+                cvf.nombre_variedad,
+                CASE
+                    WHEN cvf.nombre_variedad IS NOT NULL THEN CONCAT(pc.variedad, ' - ', cvf.nombre_variedad)
+                    ELSE pc.variedad
+                END AS variedad_display
             FROM prod_cuartel pc
             LEFT JOIN prod_fincas pf
               ON pf.id = pc.finca_id
+            LEFT JOIN codigo_variedades_fincas cvf
+              ON cvf.codigo_variedad = CASE
+                    WHEN TRIM(COALESCE(pc.variedad, '')) REGEXP '^[0-9]+$' THEN CAST(TRIM(pc.variedad) AS UNSIGNED)
+                    ELSE NULL
+                 END
             WHERE pc.id_responsable_real = ?
         ";
 

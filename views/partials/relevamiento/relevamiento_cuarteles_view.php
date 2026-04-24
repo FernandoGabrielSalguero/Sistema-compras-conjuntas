@@ -37,6 +37,22 @@ function textarea_cuartel(int $idx, string $field, string $label, array $data): 
     <?php
 }
 
+function cuartel_variedad_display(array $cuartel): string
+{
+    $display = trim((string)($cuartel['variedad_display'] ?? ''));
+    if ($display !== '') {
+        return $display;
+    }
+
+    $codigo = trim((string)($cuartel['variedad'] ?? ''));
+    $nombre = trim((string)($cuartel['nombre_variedad'] ?? ''));
+    if ($codigo !== '' && $nombre !== '') {
+        return $codigo . ' - ' . $nombre;
+    }
+
+    return $codigo !== '' ? $codigo : 'Sin variedad';
+}
+
 $cuarteles = [];
 if (is_array($datosCuarteles) && isset($datosCuarteles['cuarteles']) && is_array($datosCuarteles['cuarteles'])) {
     $cuarteles = $datosCuarteles['cuarteles'];
@@ -67,12 +83,13 @@ if (is_array($datosCuarteles) && isset($datosCuarteles['cuarteles']) && is_array
                     Cuartel <?= h_cuartel($cuartel['codigo_cuartel'] ?? $cuartel['id'] ?? '') ?>
                 </div>
                 <div class="relevamiento-cuartel-subtitle">
-                    Finca <?= h_cuartel($cuartel['codigo_finca'] ?? 'Sin finca') ?> - <?= h_cuartel($cuartel['variedad'] ?? 'Sin variedad') ?>
+                    Finca <?= h_cuartel($cuartel['codigo_finca'] ?? 'Sin finca') ?> - <?= h_cuartel(cuartel_variedad_display($cuartel)) ?>
                 </div>
 
                 <h4 class="relevamiento-section-title">Datos basicos (prod_cuartel)</h4>
                 <?php input_cuartel($idx, 'codigo_cuartel', 'Codigo cuartel', $cuartel, true); ?>
-                <?php input_cuartel($idx, 'variedad', 'Variedad', $cuartel); ?>
+                <?php input_cuartel($idx, 'variedad', 'Codigo variedad', $cuartel); ?>
+                <?php input_cuartel($idx, 'nombre_variedad', 'Nombre variedad', $cuartel, true); ?>
                 <?php input_cuartel($idx, 'numero_inv', 'Numero INV', $cuartel); ?>
                 <?php input_cuartel($idx, 'sistema_conduccion', 'Sistema de conduccion', $cuartel); ?>
                 <?php input_cuartel($idx, 'superficie_ha', 'Superficie (ha)', $cuartel); ?>

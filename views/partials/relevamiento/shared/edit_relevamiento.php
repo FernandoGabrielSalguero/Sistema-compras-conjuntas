@@ -1283,6 +1283,17 @@ $cierreInfo = $cierre_info ?? null;
             return String(value ?? '').replaceAll('\\', '\\\\').replaceAll("'", "\\'");
         }
 
+        function getVariedadDisplay(cuartel) {
+            const display = String(cuartel?.variedad_display ?? '').trim();
+            if (display !== '') return display;
+
+            const codigo = String(cuartel?.variedad ?? '').trim();
+            const nombre = String(cuartel?.nombre_variedad ?? '').trim();
+            if (codigo !== '' && nombre !== '') return `${codigo} - ${nombre}`;
+
+            return codigo || 'Sin variedad';
+        }
+
         function getAssetSelectionTitle(type, id) {
             const root = document.getElementById('asset-nav');
             const btn = Array.from(root?.querySelectorAll('[data-asset-type]') || [])
@@ -1384,12 +1395,14 @@ $cierreInfo = $cierre_info ?? null;
                 const childrenHtml = children.map((c) => {
                     const cid = String(c.id || '');
                     const ccodeRaw = String(c.codigo_cuartel || `ID ${cid}`);
-                    const variedadRaw = String(c.variedad || 'Sin nombre');
+                    const variedadRaw = getVariedadDisplay(c);
+                    const codigoVariedadRaw = String(c.variedad || '').trim();
                     const ccode = escapeHtml(ccodeRaw);
                     const variedad = escapeHtml(variedadRaw);
+                    const codigoVariedad = escapeHtml(codigoVariedadRaw || 'Sin codigo');
                     const sup = escapeHtml(c.superficie_ha || 'Sin superficie');
                     const cArchivado = Number(c?.archivado ?? 0) === 1;
-                    const searchRaw = `${ccodeRaw} ${variedadRaw} ${sup} ${codeRaw} ${nameRaw}`;
+                    const searchRaw = `${ccodeRaw} ${variedadRaw} ${codigoVariedadRaw} ${sup} ${codeRaw} ${nameRaw}`;
                     childSearches.push(searchRaw);
                     const search = escapeHtml(searchRaw);
                     const archiveAction = cArchivado ?
@@ -1400,7 +1413,7 @@ $cierreInfo = $cierre_info ?? null;
                         <div class="asset-row" data-search-text="${search}">
                             <button type="button" class="asset-child${cArchivado ? ' is-active' : ''}" data-asset-type="cuartel" data-asset-id="${escapeHtml(cid)}" onclick="selectAssetDetail('cuartel', '${safeJsValue(cid)}')">
                                 <span class="asset-node-title">Cuartel: ${variedad}</span>
-                                <span class="asset-node-meta">Código: ${ccode} · Superficie: ${sup} ha · ${cArchivado ? 'Archivado' : 'Activo'}</span>
+                                <span class="asset-node-meta">Código: ${ccode} · Variedad: ${codigoVariedad} · Superficie: ${sup} ha · ${cArchivado ? 'Archivado' : 'Activo'}</span>
                             </button>
                             <div class="asset-actions">${archiveAction}</div>
                         </div>
@@ -1436,11 +1449,13 @@ $cierreInfo = $cierre_info ?? null;
             const sinFincaHtml = sinFinca.map((c) => {
                 const cid = String(c.id || '');
                 const ccodeRaw = String(c.codigo_cuartel || `ID ${cid}`);
-                const variedadRaw = String(c.variedad || 'Sin nombre');
+                const variedadRaw = getVariedadDisplay(c);
+                const codigoVariedadRaw = String(c.variedad || '').trim();
                 const ccode = escapeHtml(ccodeRaw);
                 const variedad = escapeHtml(variedadRaw);
+                const codigoVariedad = escapeHtml(codigoVariedadRaw || 'Sin codigo');
                 const archivado = Number(c?.archivado ?? 0) === 1;
-                const search = escapeHtml(`${ccodeRaw} ${variedadRaw}`);
+                const search = escapeHtml(`${ccodeRaw} ${variedadRaw} ${codigoVariedadRaw}`);
                 const archiveAction = archivado ?
                     actionIconBtn(`confirmarDesarchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')`, 'Desarchivar cuartel', 'unarchive') :
                     actionIconBtn(`confirmarArchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')`, 'Archivar cuartel', 'archive');
@@ -1448,7 +1463,7 @@ $cierreInfo = $cierre_info ?? null;
                     <div class="asset-row" data-search-text="${search}">
                         <button type="button" class="asset-child${archivado ? ' is-active' : ''}" data-asset-type="cuartel" data-asset-id="${escapeHtml(cid)}" onclick="selectAssetDetail('cuartel', '${safeJsValue(cid)}')">
                             <span class="asset-node-title">Cuartel: ${variedad}</span>
-                            <span class="asset-node-meta">Código: ${ccode} · Sin finca vinculada · ${archivado ? 'Archivado' : 'Activo'}</span>
+                            <span class="asset-node-meta">Código: ${ccode} · Variedad: ${codigoVariedad} · Sin finca vinculada · ${archivado ? 'Archivado' : 'Activo'}</span>
                         </button>
                         <div class="asset-actions">${archiveAction}</div>
                     </div>
@@ -2067,7 +2082,9 @@ $cierreInfo = $cierre_info ?? null;
                 codigo_finca: cuartel?.codigo_finca ?? '',
                 nombre_finca: cuartel?.nombre_finca ?? '',
                 codigo_cuartel: cuartel?.codigo_cuartel ?? '',
-                variedad: cuartel?.variedad ?? '',
+                codigo_variedad: cuartel?.variedad ?? '',
+                nombre_variedad: cuartel?.nombre_variedad ?? '',
+                variedad: getVariedadDisplay(cuartel),
                 superficie_ha: cuartel?.superficie_ha ?? '',
             }));
         }
@@ -2081,7 +2098,7 @@ $cierreInfo = $cierre_info ?? null;
 
         function getCuartelLabel(cuartel) {
             const codigo = String(cuartel?.codigo_cuartel ?? '').trim() || 'Sin codigo';
-            const variedad = String(cuartel?.variedad ?? '').trim() || 'Sin variedad';
+            const variedad = getVariedadDisplay(cuartel);
             const id = String(cuartel?.id ?? '').trim() || '-';
             return `Cuartel ${codigo} | ${variedad} | id ${id}`;
         }
@@ -2698,7 +2715,7 @@ $cierreInfo = $cierre_info ?? null;
             <h3>Nuevo cuartel</h3>
             <div class="modal-body">
                 <div class="input-group">
-                    <label for="nuevo-variedad-cuartel">Variedad</label>
+                    <label for="nuevo-variedad-cuartel">Codigo de variedad</label>
                     <div class="input-icon input-icon-name">
                         <input id="nuevo-variedad-cuartel" name="nuevo_variedad_cuartel" type="text" autocomplete="off" />
                     </div>
