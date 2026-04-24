@@ -316,6 +316,13 @@ $cierreInfo = $cierre_info ?? null;
             color: #111827;
         }
 
+        .asset-variedad-code {
+            margin-left: 0.35rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: rgba(15, 23, 42, 0.62);
+        }
+
         .asset-node-meta {
             display: block;
             margin-top: 0.18rem;
@@ -1294,6 +1301,32 @@ $cierreInfo = $cierre_info ?? null;
             return codigo || 'Sin variedad';
         }
 
+        function getVariedadDisplayParts(cuartel) {
+            const codigo = String(cuartel?.variedad ?? '').trim();
+            const nombre = String(cuartel?.nombre_variedad ?? '').trim();
+
+            if (nombre !== '') {
+                return {
+                    nombre,
+                    codigo
+                };
+            }
+
+            const display = String(cuartel?.variedad_display ?? '').trim();
+            const separatorIndex = display.indexOf(' - ');
+            if (separatorIndex > -1) {
+                return {
+                    nombre: display.slice(separatorIndex + 3).trim() || display,
+                    codigo: codigo || display.slice(0, separatorIndex).trim()
+                };
+            }
+
+            return {
+                nombre: display || codigo || 'Sin variedad',
+                codigo
+            };
+        }
+
         function getAssetSelectionTitle(type, id) {
             const root = document.getElementById('asset-nav');
             const btn = Array.from(root?.querySelectorAll('[data-asset-type]') || [])
@@ -1395,11 +1428,13 @@ $cierreInfo = $cierre_info ?? null;
                 const childrenHtml = children.map((c) => {
                     const cid = String(c.id || '');
                     const ccodeRaw = String(c.codigo_cuartel || `ID ${cid}`);
-                    const variedadRaw = getVariedadDisplay(c);
+                    const variedadParts = getVariedadDisplayParts(c);
+                    const variedadRaw = variedadParts.nombre;
                     const codigoVariedadRaw = String(c.variedad || '').trim();
                     const ccode = escapeHtml(ccodeRaw);
                     const variedad = escapeHtml(variedadRaw);
                     const codigoVariedad = escapeHtml(codigoVariedadRaw || 'Sin codigo');
+                    const codigoVariedadTitle = codigoVariedadRaw ? ` - <span class="asset-variedad-code">${codigoVariedad}</span>` : '';
                     const sup = escapeHtml(c.superficie_ha || 'Sin superficie');
                     const cArchivado = Number(c?.archivado ?? 0) === 1;
                     const searchRaw = `${ccodeRaw} ${variedadRaw} ${codigoVariedadRaw} ${sup} ${codeRaw} ${nameRaw}`;
@@ -1412,8 +1447,8 @@ $cierreInfo = $cierre_info ?? null;
                     return `
                         <div class="asset-row" data-search-text="${search}">
                             <button type="button" class="asset-child${cArchivado ? ' is-active' : ''}" data-asset-type="cuartel" data-asset-id="${escapeHtml(cid)}" onclick="selectAssetDetail('cuartel', '${safeJsValue(cid)}')">
-                                <span class="asset-node-title">Cuartel: ${variedad}</span>
-                                <span class="asset-node-meta">Código: ${ccode} · Variedad: ${codigoVariedad} · Superficie: ${sup} ha · ${cArchivado ? 'Archivado' : 'Activo'}</span>
+                                <span class="asset-node-title">Cuartel: ${variedad}${codigoVariedadTitle}</span>
+                                <span class="asset-node-meta">Código: ${ccode} · Superficie: ${sup} ha · ${cArchivado ? 'Archivado' : 'Activo'}</span>
                             </button>
                             <div class="asset-actions">${archiveAction}</div>
                         </div>
@@ -1449,11 +1484,13 @@ $cierreInfo = $cierre_info ?? null;
             const sinFincaHtml = sinFinca.map((c) => {
                 const cid = String(c.id || '');
                 const ccodeRaw = String(c.codigo_cuartel || `ID ${cid}`);
-                const variedadRaw = getVariedadDisplay(c);
+                const variedadParts = getVariedadDisplayParts(c);
+                const variedadRaw = variedadParts.nombre;
                 const codigoVariedadRaw = String(c.variedad || '').trim();
                 const ccode = escapeHtml(ccodeRaw);
                 const variedad = escapeHtml(variedadRaw);
                 const codigoVariedad = escapeHtml(codigoVariedadRaw || 'Sin codigo');
+                const codigoVariedadTitle = codigoVariedadRaw ? ` - <span class="asset-variedad-code">${codigoVariedad}</span>` : '';
                 const archivado = Number(c?.archivado ?? 0) === 1;
                 const search = escapeHtml(`${ccodeRaw} ${variedadRaw} ${codigoVariedadRaw}`);
                 const archiveAction = archivado ?
@@ -1462,8 +1499,8 @@ $cierreInfo = $cierre_info ?? null;
                 return `
                     <div class="asset-row" data-search-text="${search}">
                         <button type="button" class="asset-child${archivado ? ' is-active' : ''}" data-asset-type="cuartel" data-asset-id="${escapeHtml(cid)}" onclick="selectAssetDetail('cuartel', '${safeJsValue(cid)}')">
-                            <span class="asset-node-title">Cuartel: ${variedad}</span>
-                            <span class="asset-node-meta">Código: ${ccode} · Variedad: ${codigoVariedad} · Sin finca vinculada · ${archivado ? 'Archivado' : 'Activo'}</span>
+                            <span class="asset-node-title">Cuartel: ${variedad}${codigoVariedadTitle}</span>
+                            <span class="asset-node-meta">Código: ${ccode} · Sin finca vinculada · ${archivado ? 'Archivado' : 'Activo'}</span>
                         </button>
                         <div class="asset-actions">${archiveAction}</div>
                     </div>
