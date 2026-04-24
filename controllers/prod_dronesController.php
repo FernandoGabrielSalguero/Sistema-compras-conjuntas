@@ -282,7 +282,7 @@ try {
             ],
             // Señal para construir versión especial para cooperativa y drones
             'pago_por_coop'   => $esPagoCoop,
-            // URLs de acciÃ³n para el correo de cooperativa
+            // URLs de acción para el correo de cooperativa
             'cta_url'         => rtrim((string)APP_URL, '/') . '/index.php',
             'cta_approve_url' => $approveToken ? ($actionBase . '?t=' . urlencode($approveToken)) : null,
             'cta_decline_url' => $declineToken ? ($actionBase . '?t=' . urlencode($declineToken)) : null,
@@ -338,3 +338,4 @@ try {
     echo json_encode(['ok' => false, 'error' => 'Error interno.', 'detail' => $e->getMessage()]);
     exit;
 }
+
