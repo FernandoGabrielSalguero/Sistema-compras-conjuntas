@@ -16,161 +16,213 @@ require_once $mwPath;
 
 checkAccess('ingeniero');
 
+function asBool($value): bool
+{
+    return in_array(strtolower(trim((string)$value)), ['1', 'true', 'si', 'yes', 'on'], true);
+}
+
 try {
     $idReal = $_SESSION['id_real'] ?? null;
     if (!$idReal) {
         http_response_code(403);
         ob_clean();
-        echo json_encode(['ok' => false, 'error' => 'Sesión inválida']);
+        echo json_encode(['ok' => false, 'error' => 'Sesion invalida']);
         exit;
     }
 
-    $rolSesion = $_SESSION['rol'] ?? null;
-
-    /** @var PDO $pdo viene desde config.php */
+    /** @var PDO $pdo */
     $model = new ingRelevamientoModel($pdo);
 
-    // Solo respondemos a GET, el resto 405
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $action = $_GET['action'] ?? '';
 
         switch ($action) {
             case 'cooperativas':
-                // Cooperativas asociadas al ingeniero en sesión
-                $coops = $model->getCoopsByIngeniero($idReal);
-
+                $coops = $model->getCoopsByIngeniero((string)$idReal);
                 http_response_code(200);
                 ob_clean();
-                echo json_encode([
-                    'ok'   => true,
-                    'data' => $coops,
-                ]);
+                echo json_encode(['ok' => true, 'data' => $coops]);
                 exit;
 
             case 'productores':
-                // Productores de una coop específica, limitada al ingeniero
-                $coopIdReal = $_GET['coop_id_real'] ?? '';
+                $coopIdReal = (string)($_GET['coop_id_real'] ?? '');
+                $includeArchived = asBool($_GET['include_archived'] ?? '0');
 
                 if ($coopIdReal === '') {
                     http_response_code(400);
                     ob_clean();
-                    echo json_encode([
-                        'ok'    => false,
-                        'error' => 'Parámetro coop_id_real es requerido',
-                    ]);
+                    echo json_encode(['ok' => false, 'error' => 'Parametro coop_id_real es requerido']);
                     exit;
                 }
 
-                $productores = $model->getProductoresByCooperativa($coopIdReal, $idReal);
-
+                $productores = $model->getProductoresByCooperativa($coopIdReal, (string)$idReal, $includeArchived);
                 http_response_code(200);
                 ob_clean();
-                echo json_encode([
-                    'ok'   => true,
-                    'data' => $productores,
-                ]);
+                echo json_encode(['ok' => true, 'data' => $productores]);
                 exit;
 
             case 'resumen_activos_productor':
-                $productorIdReal = $_GET['productor_id_real'] ?? '';
+                $productorIdReal = (string)($_GET['productor_id_real'] ?? '');
+                $includeArchived = asBool($_GET['include_archived'] ?? '0');
+
                 if ($productorIdReal === '') {
                     http_response_code(400);
                     ob_clean();
-                    echo json_encode([
-                        'ok'    => false,
-                        'error' => 'Parámetro productor_id_real es requerido',
-                    ]);
+                    echo json_encode(['ok' => false, 'error' => 'Parametro productor_id_real es requerido']);
                     exit;
                 }
 
-                $resumen = $model->getResumenActivosProductor($productorIdReal, $idReal);
-
+                $resumen = $model->getResumenActivosProductor($productorIdReal, (string)$idReal, $includeArchived);
                 http_response_code(200);
                 ob_clean();
-                echo json_encode([
-                    'ok'   => true,
-                    'data' => $resumen,
-                ]);
+                echo json_encode(['ok' => true, 'data' => $resumen]);
                 exit;
 
             case 'dump_tablas_productor':
-                $productorIdReal = $_GET['productor_id_real'] ?? '';
+                $productorIdReal = (string)($_GET['productor_id_real'] ?? '');
+                $includeArchived = asBool($_GET['include_archived'] ?? '0');
+
                 if ($productorIdReal === '') {
                     http_response_code(400);
                     ob_clean();
-                    echo json_encode([
-                        'ok'    => false,
-                        'error' => 'Parámetro productor_id_real es requerido',
-                    ]);
+                    echo json_encode(['ok' => false, 'error' => 'Parametro productor_id_real es requerido']);
                     exit;
                 }
 
-                $dump = $model->getDumpTablasProductor($productorIdReal, $idReal);
-
+                $dump = $model->getDumpTablasProductor($productorIdReal, (string)$idReal, $includeArchived);
                 http_response_code(200);
                 ob_clean();
-                echo json_encode([
-                    'ok'   => true,
-                    'data' => $dump,
-                ]);
+                echo json_encode(['ok' => true, 'data' => $dump]);
                 exit;
 
             default:
                 http_response_code(400);
                 ob_clean();
-                echo json_encode([
-                    'ok'    => false,
-                    'error' => 'Acción inválida',
-                ]);
+                echo json_encode(['ok' => false, 'error' => 'Accion invalida']);
                 exit;
         }
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $action = $_POST['action'] ?? '';
+        $action = (string)($_POST['action'] ?? '');
 
         switch ($action) {
+            case 'crear_productor':
+                $coopIdReal = (string)($_POST['coop_id_real'] ?? '');
+                $usuario = trim((string)($_POST['usuario'] ?? ''));
+                $cuit = trim((string)($_POST['cuit'] ?? ''));
+
+                $nuevo = $model->crearProductorEnCooperativa($coopIdReal, (string)$idReal, $usuario, $cuit);
+                http_response_code(200);
+                ob_clean();
+                echo json_encode(['ok' => true, 'data' => $nuevo]);
+                exit;
+
+            case 'crear_finca':
+                $productorIdReal = (string)($_POST['productor_id_real'] ?? '');
+                $codigoFinca = trim((string)($_POST['codigo_finca'] ?? ''));
+                $nombreFinca = trim((string)($_POST['nombre_finca'] ?? ''));
+
+                $nueva = $model->crearFincaProductor($productorIdReal, (string)$idReal, $codigoFinca, $nombreFinca);
+                http_response_code(200);
+                ob_clean();
+                echo json_encode(['ok' => true, 'data' => $nueva]);
+                exit;
+
+            case 'crear_cuartel':
+                $productorIdReal = (string)($_POST['productor_id_real'] ?? '');
+                $fincaId = (int)($_POST['finca_id'] ?? 0);
+                $variedad = trim((string)($_POST['variedad'] ?? ''));
+                $superficieHa = trim((string)($_POST['superficie_ha'] ?? ''));
+
+                $nuevo = $model->crearCuartelEnFinca($productorIdReal, (string)$idReal, $fincaId, $variedad, $superficieHa);
+                http_response_code(200);
+                ob_clean();
+                echo json_encode(['ok' => true, 'data' => $nuevo]);
+                exit;
+
+            case 'archivar_productor':
+                $productorIdReal = (string)($_POST['productor_id_real'] ?? '');
+                $model->archivarProductor($productorIdReal, (string)$idReal);
+                http_response_code(200);
+                ob_clean();
+                echo json_encode(['ok' => true]);
+                exit;
+
+            case 'desarchivar_productor':
+                $productorIdReal = (string)($_POST['productor_id_real'] ?? '');
+                $model->desarchivarProductor($productorIdReal, (string)$idReal);
+                http_response_code(200);
+                ob_clean();
+                echo json_encode(['ok' => true]);
+                exit;
+
+            case 'archivar_finca':
+                $productorIdReal = (string)($_POST['productor_id_real'] ?? '');
+                $fincaId = (int)($_POST['finca_id'] ?? 0);
+                $model->archivarFincaProductor($fincaId, $productorIdReal, (string)$idReal);
+                http_response_code(200);
+                ob_clean();
+                echo json_encode(['ok' => true]);
+                exit;
+
+            case 'desarchivar_finca':
+                $productorIdReal = (string)($_POST['productor_id_real'] ?? '');
+                $fincaId = (int)($_POST['finca_id'] ?? 0);
+                $model->desarchivarFincaProductor($fincaId, $productorIdReal, (string)$idReal);
+                http_response_code(200);
+                ob_clean();
+                echo json_encode(['ok' => true]);
+                exit;
+
+            case 'archivar_cuartel':
+                $productorIdReal = (string)($_POST['productor_id_real'] ?? '');
+                $cuartelId = (int)($_POST['cuartel_id'] ?? 0);
+                $model->archivarCuartelProductor($cuartelId, $productorIdReal, (string)$idReal);
+                http_response_code(200);
+                ob_clean();
+                echo json_encode(['ok' => true]);
+                exit;
+
+            case 'desarchivar_cuartel':
+                $productorIdReal = (string)($_POST['productor_id_real'] ?? '');
+                $cuartelId = (int)($_POST['cuartel_id'] ?? 0);
+                $model->desarchivarCuartelProductor($cuartelId, $productorIdReal, (string)$idReal);
+                http_response_code(200);
+                ob_clean();
+                echo json_encode(['ok' => true]);
+                exit;
+
+            // Compatibilidad con acciones anteriores
             case 'eliminar_finca_productor':
                 $productorIdReal = (string)($_POST['productor_id_real'] ?? '');
                 $fincaId = (int)($_POST['finca_id'] ?? 0);
-
-                $model->eliminarFincaProductor($fincaId, $productorIdReal, $idReal);
-
+                $model->archivarFincaProductor($fincaId, $productorIdReal, (string)$idReal);
                 http_response_code(200);
                 ob_clean();
-                echo json_encode([
-                    'ok' => true,
-                ]);
+                echo json_encode(['ok' => true]);
                 exit;
 
             case 'eliminar_cuartel_productor':
                 $productorIdReal = (string)($_POST['productor_id_real'] ?? '');
                 $cuartelId = (int)($_POST['cuartel_id'] ?? 0);
-
-                $model->eliminarCuartelProductor($cuartelId, $productorIdReal, $idReal);
-
+                $model->archivarCuartelProductor($cuartelId, $productorIdReal, (string)$idReal);
                 http_response_code(200);
                 ob_clean();
-                echo json_encode([
-                    'ok' => true,
-                ]);
+                echo json_encode(['ok' => true]);
                 exit;
 
             default:
                 http_response_code(400);
                 ob_clean();
-                echo json_encode([
-                    'ok'    => false,
-                    'error' => 'Acción inválida',
-                ]);
+                echo json_encode(['ok' => false, 'error' => 'Accion invalida']);
                 exit;
         }
     }
 
-    // Si no es GET/POST, método no permitido
     http_response_code(405);
     ob_clean();
-    echo json_encode(['ok' => false, 'error' => 'Método no permitido']);
+    echo json_encode(['ok' => false, 'error' => 'Metodo no permitido']);
     exit;
 } catch (InvalidArgumentException $e) {
     http_response_code(400);
@@ -178,17 +230,15 @@ try {
     echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
     exit;
 } catch (Throwable $e) {
-    // Log para el servidor
     error_log('[ing_relevamientoController] ' . $e->getMessage());
     error_log($e->getTraceAsString());
 
-    // Devolver detalle al frontend mientras depuramos
     http_response_code(500);
     ob_clean();
     echo json_encode([
-        'ok'    => false,
+        'ok' => false,
         'error' => $e->getMessage(),
-        'trace' => $e->getTraceAsString(), // opcional, útil mientras desarrollás
+        'trace' => $e->getTraceAsString(),
     ]);
     exit;
 }

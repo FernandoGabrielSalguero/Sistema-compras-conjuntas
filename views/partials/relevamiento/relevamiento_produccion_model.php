@@ -39,7 +39,7 @@ class RelevamientoProduccionModel
      *   ]
      * ]
      */
-    public function getDatosProduccionPorProductorIdReal(string $productorIdReal): ?array
+    public function getDatosProduccionPorProductorIdReal(string $productorIdReal, bool $includeArchived = false): ?array
     {
         if ($productorIdReal === '') {
             return null;
@@ -53,11 +53,15 @@ class RelevamientoProduccionModel
                 nombre_finca
             FROM prod_fincas
             WHERE productor_id_real = :pid
+              AND (:inc = 1 OR COALESCE(archivado, 0) = 0)
             ORDER BY codigo_finca ASC, id ASC
         ";
 
         $st = $this->pdo->prepare($sqlFincas);
-        $st->execute([':pid' => $productorIdReal]);
+        $st->execute([
+            ':pid' => $productorIdReal,
+            ':inc' => $includeArchived ? 1 : 0,
+        ]);
         $fincasRows = $st->fetchAll();
 
         if (!$fincasRows) {

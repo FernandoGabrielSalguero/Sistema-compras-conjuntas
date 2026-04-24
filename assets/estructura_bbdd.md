@@ -23,6 +23,14 @@ id	int(11)	NO	PRI		auto_increment
 nombre	varchar(100)	NO			
 
 🔁 Relaciones (entrantes): publicaciones, subcategorias_publicaciones
+📄 Tabla: codigo_variedades_fincas
+Columna	Tipo	Nulo	Clave	Default	Extra
+id	int(10) unsigned	NO	PRI		auto_increment
+codigo_variedad	int(11)	NO	UNI		
+nombre_variedad	varchar(180)	NO	MUL		
+created_at	timestamp	NO		current_timestamp()	
+updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()
+
 📄 Tabla: cooperativas_rangos
 Columna	Tipo	Nulo	Clave	Default	Extra
 id	int(11)	NO	PRI		auto_increment

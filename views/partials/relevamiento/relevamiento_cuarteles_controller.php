@@ -11,6 +11,7 @@ checkAccess('ingeniero');
 /** @var PDO $pdo viene desde config.php */
 
 $model = new RelevamientoCuartelesModel($pdo);
+$includeArchived = isset($_GET['include_archived']) && in_array(strtolower(trim((string)$_GET['include_archived'])), ['1', 'true', 'si', 'yes', 'on'], true);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
@@ -35,6 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $productorIdReal = isset($_GET['productor_id_real']) ? (string)$_GET['productor_id_real'] : '';
-$datosCuarteles = $productorIdReal !== '' ? $model->getDatosCuartelesPorProductorIdReal($productorIdReal) : ['cuarteles' => []];
+$datosCuarteles = $productorIdReal !== '' ? $model->getDatosCuartelesPorProductorIdReal($productorIdReal, $includeArchived) : ['cuarteles' => []];
 
 include __DIR__ . '/relevamiento_cuarteles_view.php';

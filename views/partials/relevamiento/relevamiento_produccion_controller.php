@@ -15,6 +15,8 @@ checkAccess('ingeniero');
 
 $model = new RelevamientoProduccionModel($pdo);
 
+$includeArchived = isset($_GET['include_archived']) && in_array(strtolower(trim((string)$_GET['include_archived'])), ['1', 'true', 'si', 'yes', 'on'], true);
+
 // ========== POST: guardar datos de producción ==========
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
@@ -50,7 +52,7 @@ $errorBackend    = null;
 
 try {
     if ($productorIdReal !== '') {
-        $datosProduccion = $model->getDatosProduccionPorProductorIdReal($productorIdReal);
+        $datosProduccion = $model->getDatosProduccionPorProductorIdReal($productorIdReal, $includeArchived);
     }
 } catch (Throwable $e) {
     error_log('[relevamiento_produccion::GET] ' . $e->getMessage());

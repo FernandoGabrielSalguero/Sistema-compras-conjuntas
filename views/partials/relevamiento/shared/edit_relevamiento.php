@@ -430,6 +430,7 @@ $cierreInfo = $cierre_info ?? null;
             type: 'productor',
             id: ''
         };
+        let relevamientoShowArchived = false;
 
         console.log('[Relevamiento] Script cargado');
 
@@ -533,6 +534,10 @@ $cierreInfo = $cierre_info ?? null;
                     <div class="productor-edit-toolbar">
                         <button class="btn btn-cancelar" onclick="volverACooperativas()">Volver a cooperativas</button>
                         <h2 style="margin:0;">Productores</h2>
+                        <div class="cell-actions">
+                            <button class="btn btn-info" onclick="toggleMostrarArchivados()">${relevamientoShowArchived ? 'Ocultar archivados' : 'Mostrar archivados'}</button>
+                            <button class="btn btn-aceptar" onclick="promptCrearProductor()">Nuevo productor</button>
+                        </div>
                     </div>
                     <div class="table-tools">
                         <input type="search" id="productores-search-input" placeholder="Buscar por CUIT, ID real o nombre" autocomplete="off">
@@ -546,6 +551,7 @@ $cierreInfo = $cierre_info ?? null;
                                     <th>Nombre</th>
                                     <th>ID real</th>
                                     <th>CUIT</th>
+                                    <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -576,6 +582,8 @@ $cierreInfo = $cierre_info ?? null;
                     const nombre = escapeHtml(nombreRaw || 'Sin nombre');
                     const idReal = escapeHtml(idRealRaw || 'Sin ID');
                     const cuit = escapeHtml(cuitRaw || 'Sin CUIT');
+                    const archivado = Number(p?.archivado ?? 0) === 1;
+                    const estado = archivado ? 'Archivado' : 'Activo';
 
                     return `
                         <tr>
@@ -583,8 +591,10 @@ $cierreInfo = $cierre_info ?? null;
                             <td>${nombre}</td>
                             <td>${idReal}</td>
                             <td>${cuit}</td>
+                            <td>${estado}</td>
                             <td class="cell-actions">
                                 <button class="btn btn-info" onclick="abrirModificarProductor('${idRealJs}')">Modificar datos</button>
+                                <button class="btn ${archivado ? 'btn-aceptar' : 'btn-cancelar'}" onclick="${archivado ? `confirmarDesarchivarProductor('${idRealJs}')` : `confirmarArchivarProductor('${idRealJs}')`}">${archivado ? 'Desarchivar' : 'Archivar'}</button>
                                 <button class="icon-btn" title="Imprimir tablas del productor en consola" onclick="relevamientoLogProductorFull('${idRealJs}')">
                                     <span class="material-symbols-outlined">code</span>
                                 </button>
@@ -594,7 +604,7 @@ $cierreInfo = $cierre_info ?? null;
                 }).join('');
 
                 if (tbody) {
-                    tbody.innerHTML = rows || `<tr><td colspan="5">Sin resultados para la búsqueda.</td></tr>`;
+                    tbody.innerHTML = rows || `<tr><td colspan="6">Sin resultados para la búsqueda.</td></tr>`;
                 }
                 if (counter) {
                     counter.textContent = `${list.length} de ${PRODUCTORES_LIST.length} productores`;
@@ -621,6 +631,142 @@ $cierreInfo = $cierre_info ?? null;
                 searchInput.addEventListener('input', applyFilter);
             }
             buildRows(PRODUCTORES_LIST);
+        }
+
+        async function apiPostAction(action, payload = {}) {
+            const body = new URLSearchParams({
+                action,
+                ...payload
+            });
+            const resp = await fetch(API_RELEVAMIENTO, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: body.toString()
+            });
+            const data = await resp.json();
+            if (!resp.ok || !data.ok) {
+                throw new Error(data.error || `Error en accion ${action}`);
+            }
+            return data.data ?? null;
+        }
+
+        function toggleMostrarArchivados() {
+            relevamientoShowArchived = !relevamientoShowArchived;
+            if (currentCoop) {
+                cargarProductores(currentCoop);
+            }
+        }
+
+        async function promptCrearProductor() {
+            if (!currentCoop?.id_real) return;
+            const usuario = String(prompt('Usuario del productor (obligatorio):', '') ?? '').trim();
+            if (!usuario) return;
+            const cuit = String(prompt('CUIT del productor (obligatorio, solo numeros):', '') ?? '').trim();
+            if (!cuit) return;
+
+            try {
+                await apiPostAction('crear_productor', {
+                    coop_id_real: String(currentCoop.id_real),
+                    usuario,
+                    cuit
+                });
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('success', 'Productor creado correctamente');
+                }
+                await cargarProductores(currentCoop);
+            } catch (e) {
+                console.error('[Relevamiento] Error al crear productor:', e);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', `Error al crear productor: ${e.message}`);
+                }
+            }
+        }
+
+        async function confirmarArchivarProductor(productorIdReal) {
+            if (!confirm(`Se archivara el productor ${productorIdReal} y sus fincas/cuarteles. ¿Continuar?`)) return;
+            try {
+                await apiPostAction('archivar_productor', {
+                    productor_id_real: String(productorIdReal)
+                });
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('success', 'Productor archivado');
+                }
+                if (currentCoop) await cargarProductores(currentCoop);
+            } catch (e) {
+                console.error('[Relevamiento] Error al archivar productor:', e);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', `Error al archivar productor: ${e.message}`);
+                }
+            }
+        }
+
+        async function confirmarDesarchivarProductor(productorIdReal) {
+            if (!confirm(`Se desarchivara el productor ${productorIdReal} y sus fincas/cuarteles. ¿Continuar?`)) return;
+            try {
+                await apiPostAction('desarchivar_productor', {
+                    productor_id_real: String(productorIdReal)
+                });
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('success', 'Productor desarchivado');
+                }
+                if (currentCoop) await cargarProductores(currentCoop);
+            } catch (e) {
+                console.error('[Relevamiento] Error al desarchivar productor:', e);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', `Error al desarchivar productor: ${e.message}`);
+                }
+            }
+        }
+
+        async function promptCrearFinca(productorIdReal) {
+            const codigoFinca = String(prompt('Codigo de finca (obligatorio):', '') ?? '').trim();
+            if (!codigoFinca) return;
+            const nombreFinca = String(prompt('Nombre de finca (obligatorio):', '') ?? '').trim();
+            if (!nombreFinca) return;
+
+            try {
+                await apiPostAction('crear_finca', {
+                    productor_id_real: String(productorIdReal),
+                    codigo_finca: codigoFinca,
+                    nombre_finca: nombreFinca
+                });
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('success', 'Finca creada correctamente');
+                }
+                await abrirModificarProductor(productorIdReal);
+            } catch (e) {
+                console.error('[Relevamiento] Error al crear finca:', e);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', `Error al crear finca: ${e.message}`);
+                }
+            }
+        }
+
+        async function promptCrearCuartel(productorIdReal, fincaId) {
+            const variedad = String(prompt('Variedad (obligatorio):', '') ?? '').trim();
+            if (!variedad) return;
+            const superficieHa = String(prompt('Superficie en ha (opcional):', '') ?? '').trim();
+
+            try {
+                await apiPostAction('crear_cuartel', {
+                    productor_id_real: String(productorIdReal),
+                    finca_id: String(fincaId),
+                    variedad,
+                    superficie_ha: superficieHa
+                });
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('success', 'Cuartel creado correctamente');
+                }
+                await abrirModificarProductor(productorIdReal);
+            } catch (e) {
+                console.error('[Relevamiento] Error al crear cuartel:', e);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', `Error al crear cuartel: ${e.message}`);
+                }
+            }
         }
 
         function initAdvancedToggleInScope(scopeEl, roleName) {
@@ -927,7 +1073,8 @@ $cierreInfo = $cierre_info ?? null;
 
         async function fetchPartialHtml(controllerFile, productorIdReal) {
             const params = new URLSearchParams({
-                productor_id_real: productorIdReal
+                productor_id_real: productorIdReal,
+                include_archived: relevamientoShowArchived ? '1' : '0'
             });
             const resp = await fetch(`${RELEVAMIENTO_PARTIAL_BASE}/${controllerFile}?${params.toString()}`, {
                 credentials: 'same-origin'
@@ -941,7 +1088,8 @@ $cierreInfo = $cierre_info ?? null;
         async function fetchResumenActivosProductor(productorIdReal) {
             const params = new URLSearchParams({
                 action: 'resumen_activos_productor',
-                productor_id_real: productorIdReal
+                productor_id_real: productorIdReal,
+                include_archived: relevamientoShowArchived ? '1' : '0'
             });
 
             const resp = await fetch(`${API_RELEVAMIENTO}?${params.toString()}`, {
@@ -954,44 +1102,32 @@ $cierreInfo = $cierre_info ?? null;
             return data.data || null;
         }
 
-        async function eliminarFincaProductor(productorIdReal, fincaId) {
-            const body = new URLSearchParams({
-                action: 'eliminar_finca_productor',
-                productor_id_real: productorIdReal,
+        async function archivarFincaProductor(productorIdReal, fincaId) {
+            await apiPostAction('archivar_finca', {
+                productor_id_real: String(productorIdReal),
                 finca_id: String(fincaId)
             });
-            const resp = await fetch(API_RELEVAMIENTO, {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                },
-                body: body.toString()
-            });
-            const data = await resp.json();
-            if (!resp.ok || !data.ok) {
-                throw new Error(data.error || 'No se pudo eliminar la finca');
-            }
         }
 
-        async function eliminarCuartelProductor(productorIdReal, cuartelId) {
-            const body = new URLSearchParams({
-                action: 'eliminar_cuartel_productor',
-                productor_id_real: productorIdReal,
+        async function desarchivarFincaProductor(productorIdReal, fincaId) {
+            await apiPostAction('desarchivar_finca', {
+                productor_id_real: String(productorIdReal),
+                finca_id: String(fincaId)
+            });
+        }
+
+        async function archivarCuartelProductor(productorIdReal, cuartelId) {
+            await apiPostAction('archivar_cuartel', {
+                productor_id_real: String(productorIdReal),
                 cuartel_id: String(cuartelId)
             });
-            const resp = await fetch(API_RELEVAMIENTO, {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                },
-                body: body.toString()
+        }
+
+        async function desarchivarCuartelProductor(productorIdReal, cuartelId) {
+            await apiPostAction('desarchivar_cuartel', {
+                productor_id_real: String(productorIdReal),
+                cuartel_id: String(cuartelId)
             });
-            const data = await resp.json();
-            if (!resp.ok || !data.ok) {
-                throw new Error(data.error || 'No se pudo eliminar el cuartel');
-            }
         }
 
         function safeJsValue(value) {
@@ -1085,6 +1221,7 @@ $cierreInfo = $cierre_info ?? null;
                 const id = String(f.id || '');
                 const code = escapeHtml(f.codigo_finca || `ID ${id}`);
                 const name = escapeHtml(f.nombre_finca || 'Sin nombre');
+                const archivado = Number(f?.archivado ?? 0) === 1;
                 const children = cuartelesByFinca.get(id) || [];
                 const childSearches = [];
                 const childrenHtml = children.map((c) => {
@@ -1092,24 +1229,34 @@ $cierreInfo = $cierre_info ?? null;
                     const ccode = escapeHtml(c.codigo_cuartel || `ID ${cid}`);
                     const variedad = escapeHtml(c.variedad || 'Sin variedad');
                     const sup = escapeHtml(c.superficie_ha || 'Sin superficie');
+                    const cArchivado = Number(c?.archivado ?? 0) === 1;
                     const searchRaw = `${ccode} ${variedad} ${sup} ${code} ${name}`;
                     childSearches.push(searchRaw);
                     const search = escapeHtml(searchRaw);
                     return `
-                        <button type="button" class="asset-child" data-search-text="${search}" data-asset-type="cuartel" data-asset-id="${escapeHtml(cid)}" onclick="selectAssetDetail('cuartel', '${safeJsValue(cid)}')">
-                            <span class="asset-node-title">Cuartel ${ccode}</span>
-                            <span class="asset-node-meta">${variedad} - ${sup} ha</span>
-                        </button>
+                        <div>
+                            <button type="button" class="asset-child${cArchivado ? ' is-active' : ''}" data-search-text="${search}" data-asset-type="cuartel" data-asset-id="${escapeHtml(cid)}" onclick="selectAssetDetail('cuartel', '${safeJsValue(cid)}')">
+                                <span class="asset-node-title">Cuartel ${ccode}</span>
+                                <span class="asset-node-meta">${variedad} - ${sup} ha - ${cArchivado ? 'Archivado' : 'Activo'}</span>
+                            </button>
+                            <div class="cell-actions" style="margin:.35rem 0 .2rem .25rem;">
+                                <button type="button" class="btn ${cArchivado ? 'btn-aceptar' : 'btn-cancelar'}" onclick="${cArchivado ? `confirmarDesarchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')` : `confirmarArchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')`}">${cArchivado ? 'Desarchivar' : 'Archivar'}</button>
+                            </div>
+                        </div>
                     `;
                 }).join('');
                 const search = escapeHtml(`${code} ${name} ${childSearches.join(' ')}`);
 
                 return `
                     <div data-search-text="${search}">
-                        <button type="button" class="asset-node" data-asset-type="finca" data-asset-id="${escapeHtml(id)}" onclick="selectAssetDetail('finca', '${safeJsValue(id)}')">
+                        <button type="button" class="asset-node${archivado ? ' is-active' : ''}" data-asset-type="finca" data-asset-id="${escapeHtml(id)}" onclick="selectAssetDetail('finca', '${safeJsValue(id)}')">
                             <span class="asset-node-title">Finca ${code}</span>
-                            <span class="asset-node-meta">${name} - ${children.length} cuartel(es)</span>
+                            <span class="asset-node-meta">${name} - ${children.length} cuartel(es) - ${archivado ? 'Archivada' : 'Activa'}</span>
                         </button>
+                        <div class="cell-actions" style="margin:.45rem 0 .45rem .25rem;">
+                            <button type="button" class="btn btn-info" onclick="promptCrearCuartel('${productorIdJs}','${safeJsValue(id)}')">Nuevo cuartel</button>
+                            <button type="button" class="btn ${archivado ? 'btn-aceptar' : 'btn-cancelar'}" onclick="${archivado ? `confirmarDesarchivarFinca('${productorIdJs}','${safeJsValue(id)}')` : `confirmarArchivarFinca('${productorIdJs}','${safeJsValue(id)}')`}">${archivado ? 'Desarchivar finca' : 'Archivar finca'}</button>
+                        </div>
                         <div class="asset-children">
                             ${childrenHtml || '<span class="summary-empty">Sin cuarteles.</span>'}
                         </div>
@@ -1122,11 +1269,17 @@ $cierreInfo = $cierre_info ?? null;
                 const cid = String(c.id || '');
                 const ccode = escapeHtml(c.codigo_cuartel || `ID ${cid}`);
                 const variedad = escapeHtml(c.variedad || 'Sin variedad');
+                const archivado = Number(c?.archivado ?? 0) === 1;
                 return `
-                    <button type="button" class="asset-child" data-search-text="${ccode} ${variedad}" data-asset-type="cuartel" data-asset-id="${escapeHtml(cid)}" onclick="selectAssetDetail('cuartel', '${safeJsValue(cid)}')">
-                        <span class="asset-node-title">Cuartel ${ccode}</span>
-                        <span class="asset-node-meta">${variedad} - sin finca vinculada</span>
-                    </button>
+                    <div>
+                        <button type="button" class="asset-child${archivado ? ' is-active' : ''}" data-search-text="${ccode} ${variedad}" data-asset-type="cuartel" data-asset-id="${escapeHtml(cid)}" onclick="selectAssetDetail('cuartel', '${safeJsValue(cid)}')">
+                            <span class="asset-node-title">Cuartel ${ccode}</span>
+                            <span class="asset-node-meta">${variedad} - sin finca vinculada - ${archivado ? 'Archivado' : 'Activo'}</span>
+                        </button>
+                        <div class="cell-actions" style="margin:.35rem 0 .2rem .25rem;">
+                            <button type="button" class="btn ${archivado ? 'btn-aceptar' : 'btn-cancelar'}" onclick="${archivado ? `confirmarDesarchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')` : `confirmarArchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')`}">${archivado ? 'Desarchivar' : 'Archivar'}</button>
+                        </div>
+                    </div>
                 `;
             }).join('');
 
@@ -1135,6 +1288,9 @@ $cierreInfo = $cierre_info ?? null;
                 <div class="summary-meta">
                     <span>${fincas.length} finca(s)</span>
                     <span>${cuarteles.length} cuartel(es)</span>
+                </div>
+                <div class="cell-actions" style="margin-bottom:.65rem;">
+                    <button type="button" class="btn btn-info" onclick="promptCrearFinca('${productorIdJs}')">Nueva finca</button>
                 </div>
                 <div class="asset-tree">
                     <button type="button" class="asset-node" data-search-text="productor datos personales familia" data-asset-type="productor" data-asset-id="productor" onclick="selectAssetDetail('productor', 'productor')">
@@ -1163,38 +1319,74 @@ $cierreInfo = $cierre_info ?? null;
             }
         }
 
-        async function confirmarEliminarFinca(productorIdReal, fincaId) {
-            if (!confirm(`Se va a eliminar la finca ID ${fincaId} y sus registros asociados. ¿Continuar?`)) {
+        async function confirmarArchivarFinca(productorIdReal, fincaId) {
+            if (!confirm(`Se va a archivar la finca ID ${fincaId} y sus cuarteles. ¿Continuar?`)) {
                 return;
             }
             try {
-                await eliminarFincaProductor(productorIdReal, fincaId);
+                await archivarFincaProductor(productorIdReal, fincaId);
                 if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', `Finca ${fincaId} eliminada correctamente`);
+                    showToastBoton('success', `Finca ${fincaId} archivada correctamente`);
                 }
                 await abrirModificarProductor(productorIdReal);
             } catch (e) {
-                console.error('[Relevamiento] Error al eliminar finca:', e);
+                console.error('[Relevamiento] Error al archivar finca:', e);
                 if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al eliminar finca: ${e.message}`);
+                    showToastBoton('error', `Error al archivar finca: ${e.message}`);
                 }
             }
         }
 
-        async function confirmarEliminarCuartel(productorIdReal, cuartelId) {
-            if (!confirm(`Se va a eliminar el cuartel ID ${cuartelId}. ¿Continuar?`)) {
+        async function confirmarDesarchivarFinca(productorIdReal, fincaId) {
+            if (!confirm(`Se va a desarchivar la finca ID ${fincaId}. ¿Continuar?`)) {
                 return;
             }
             try {
-                await eliminarCuartelProductor(productorIdReal, cuartelId);
+                await desarchivarFincaProductor(productorIdReal, fincaId);
                 if (typeof showToastBoton === 'function') {
-                    showToastBoton('success', `Cuartel ${cuartelId} eliminado correctamente`);
+                    showToastBoton('success', `Finca ${fincaId} desarchivada correctamente`);
                 }
                 await abrirModificarProductor(productorIdReal);
             } catch (e) {
-                console.error('[Relevamiento] Error al eliminar cuartel:', e);
+                console.error('[Relevamiento] Error al desarchivar finca:', e);
                 if (typeof showToastBoton === 'function') {
-                    showToastBoton('error', `Error al eliminar cuartel: ${e.message}`);
+                    showToastBoton('error', `Error al desarchivar finca: ${e.message}`);
+                }
+            }
+        }
+
+        async function confirmarArchivarCuartel(productorIdReal, cuartelId) {
+            if (!confirm(`Se va a archivar el cuartel ID ${cuartelId}. ¿Continuar?`)) {
+                return;
+            }
+            try {
+                await archivarCuartelProductor(productorIdReal, cuartelId);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('success', `Cuartel ${cuartelId} archivado correctamente`);
+                }
+                await abrirModificarProductor(productorIdReal);
+            } catch (e) {
+                console.error('[Relevamiento] Error al archivar cuartel:', e);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', `Error al archivar cuartel: ${e.message}`);
+                }
+            }
+        }
+
+        async function confirmarDesarchivarCuartel(productorIdReal, cuartelId) {
+            if (!confirm(`Se va a desarchivar el cuartel ID ${cuartelId}. ¿Continuar?`)) {
+                return;
+            }
+            try {
+                await desarchivarCuartelProductor(productorIdReal, cuartelId);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('success', `Cuartel ${cuartelId} desarchivado correctamente`);
+                }
+                await abrirModificarProductor(productorIdReal);
+            } catch (e) {
+                console.error('[Relevamiento] Error al desarchivar cuartel:', e);
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', `Error al desarchivar cuartel: ${e.message}`);
                 }
             }
         }
@@ -1234,6 +1426,7 @@ $cierreInfo = $cierre_info ?? null;
             const nombre = escapeHtml(productor?.nombre ?? 'Sin nombre');
             const cuit = escapeHtml(productor?.cuit ?? 'Sin CUIT');
             const idReal = escapeHtml(productorIdReal);
+            const archivado = Number(productor?.archivado ?? 0) === 1;
 
             setCardsTitle(`Modificar productor ${idReal}`);
             currentAssetSelection = {
@@ -1248,8 +1441,10 @@ $cierreInfo = $cierre_info ?? null;
                             <strong>${nombre}</strong>
                             <span>ID: ${idReal}</span>
                             <span id="productor-summary-cuit">CUIT: ${cuit}</span>
+                            <span>Estado: ${archivado ? 'Archivado' : 'Activo'}</span>
                         </div>
                         <div class="form-buttons" style="margin-top:0;">
+                            <button class="btn ${archivado ? 'btn-aceptar' : 'btn-cancelar'}" onclick="${archivado ? `confirmarDesarchivarProductor('${idRealJs}')` : `confirmarArchivarProductor('${idRealJs}')`}">${archivado ? 'Desarchivar productor' : 'Archivar productor'}</button>
                             <button class="btn btn-aceptar" onclick="guardarTodoDesdeVista('${idRealJs}')">Guardar cambios</button>
                         </div>
                     </div>
@@ -1438,7 +1633,8 @@ $cierreInfo = $cierre_info ?? null;
 
         async function fetchFamiliaData(productorIdReal) {
             const params = new URLSearchParams({
-                productor_id_real: productorIdReal
+                productor_id_real: productorIdReal,
+                include_archived: relevamientoShowArchived ? '1' : '0'
             });
             const resp = await fetch(`${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_familia_controller.php?${params.toString()}`, {
                 credentials: 'same-origin'
@@ -1453,7 +1649,8 @@ $cierreInfo = $cierre_info ?? null;
 
         async function fetchProduccionData(productorIdReal) {
             const params = new URLSearchParams({
-                productor_id_real: productorIdReal
+                productor_id_real: productorIdReal,
+                include_archived: relevamientoShowArchived ? '1' : '0'
             });
             const resp = await fetch(`${RELEVAMIENTO_PARTIAL_BASE}/relevamiento_produccion_controller.php?${params.toString()}`, {
                 credentials: 'same-origin'
@@ -1469,7 +1666,8 @@ $cierreInfo = $cierre_info ?? null;
         async function fetchTablasDumpData(productorIdReal) {
             const params = new URLSearchParams({
                 action: 'dump_tablas_productor',
-                productor_id_real: productorIdReal
+                productor_id_real: productorIdReal,
+                include_archived: relevamientoShowArchived ? '1' : '0'
             });
 
             const resp = await fetch(`${API_RELEVAMIENTO}?${params.toString()}`, {
@@ -1883,7 +2081,8 @@ $cierreInfo = $cierre_info ?? null;
             try {
                 const params = new URLSearchParams({
                     action: 'productores',
-                    coop_id_real: coop.id_real
+                    coop_id_real: coop.id_real,
+                    include_archived: relevamientoShowArchived ? '1' : '0'
                 });
 
                 const resp = await fetch(`${API_RELEVAMIENTO}?${params.toString()}`, {
@@ -1904,6 +2103,10 @@ $cierreInfo = $cierre_info ?? null;
                             <div class="productor-edit-toolbar">
                                 <button class="btn btn-cancelar" onclick="volverACooperativas()">Volver a cooperativas</button>
                                 <h2 style="margin:0;">Productores</h2>
+                                <div class="cell-actions">
+                                    <button class="btn btn-info" onclick="toggleMostrarArchivados()">${relevamientoShowArchived ? 'Ocultar archivados' : 'Mostrar archivados'}</button>
+                                    <button class="btn btn-aceptar" onclick="promptCrearProductor()">Nuevo productor</button>
+                                </div>
                             </div>
                             <p>No se encontraron productores para esta cooperativa.</p>
                         </div>
@@ -1957,7 +2160,8 @@ $cierreInfo = $cierre_info ?? null;
 
             try {
                 const params = new URLSearchParams({
-                    productor_id_real: productorIdReal
+                    productor_id_real: productorIdReal,
+                    include_archived: relevamientoShowArchived ? '1' : '0'
                 });
 
                 const resp = await fetch(
@@ -2022,7 +2226,8 @@ $cierreInfo = $cierre_info ?? null;
 
             try {
                 const params = new URLSearchParams({
-                    productor_id_real: productorIdReal
+                    productor_id_real: productorIdReal,
+                    include_archived: relevamientoShowArchived ? '1' : '0'
                 });
 
                 const resp = await fetch(
@@ -2223,10 +2428,18 @@ $cierreInfo = $cierre_info ?? null;
         window.guardarTodoDesdeVista = guardarTodoDesdeVista;
         window.volverAProductores = volverAProductores;
         window.volverACooperativas = volverACooperativas;
+        window.toggleMostrarArchivados = toggleMostrarArchivados;
+        window.promptCrearProductor = promptCrearProductor;
+        window.promptCrearFinca = promptCrearFinca;
+        window.promptCrearCuartel = promptCrearCuartel;
+        window.confirmarArchivarProductor = confirmarArchivarProductor;
+        window.confirmarDesarchivarProductor = confirmarDesarchivarProductor;
         window.selectAssetDetail = selectAssetDetail;
         window.filterAssetTree = filterAssetTree;
-        window.confirmarEliminarFinca = confirmarEliminarFinca;
-        window.confirmarEliminarCuartel = confirmarEliminarCuartel;
+        window.confirmarArchivarFinca = confirmarArchivarFinca;
+        window.confirmarDesarchivarFinca = confirmarDesarchivarFinca;
+        window.confirmarArchivarCuartel = confirmarArchivarCuartel;
+        window.confirmarDesarchivarCuartel = confirmarDesarchivarCuartel;
 
         // Cargar cooperativas una vez que el DOM esté listo
         window.addEventListener('DOMContentLoaded', () => {

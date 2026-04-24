@@ -67,7 +67,7 @@ class RelevamientoCuartelesModel
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     }
 
-    public function getDatosCuartelesPorProductorIdReal(string $productorIdReal): array
+    public function getDatosCuartelesPorProductorIdReal(string $productorIdReal, bool $includeArchived = false): array
     {
         if ($productorIdReal === '') {
             return ['cuarteles' => []];
@@ -78,11 +78,15 @@ class RelevamientoCuartelesModel
             FROM prod_cuartel pc
             LEFT JOIN prod_fincas pf
               ON pf.id = pc.finca_id
-            WHERE pc.id_responsable_real = :prod
-               OR pf.productor_id_real = :prod
+            WHERE (pc.id_responsable_real = :prod
+               OR pf.productor_id_real = :prod)
+              AND (:inc = 1 OR COALESCE(pc.archivado, 0) = 0)
             ORDER BY pc.codigo_finca ASC, pc.codigo_cuartel ASC, pc.id ASC
         ");
-        $st->execute([':prod' => $productorIdReal]);
+        $st->execute([
+            ':prod' => $productorIdReal,
+            ':inc' => $includeArchived ? 1 : 0,
+        ]);
         $rows = $st->fetchAll() ?: [];
 
         $out = [];
