@@ -262,7 +262,33 @@ $cierreInfo = $cierre_info ?? null;
 
         .asset-tree {
             display: grid;
-            gap: 0.55rem;
+            gap: 0.7rem;
+        }
+
+        .asset-tree-item {
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .asset-tree-group {
+            border: 1px solid rgba(15, 23, 42, 0.1);
+            border-radius: 0.6rem;
+            padding: 0.55rem;
+            background: rgba(255, 255, 255, 0.75);
+        }
+
+        .asset-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 0.45rem;
+            align-items: start;
+        }
+
+        .asset-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-top: 0.1rem;
         }
 
         .asset-node,
@@ -299,10 +325,31 @@ $cierreInfo = $cierre_info ?? null;
 
         .asset-children {
             display: grid;
-            gap: 0.35rem;
-            margin: 0.4rem 0 0.15rem 0.8rem;
-            padding-left: 0.7rem;
-            border-left: 2px solid rgba(15, 23, 42, 0.1);
+            gap: 0.55rem;
+            margin: 0.35rem 0 0.05rem 0.8rem;
+            padding-left: 0.75rem;
+            border-left: 2px solid rgba(15, 23, 42, 0.14);
+        }
+
+        .asset-children .asset-row {
+            position: relative;
+        }
+
+        .asset-children .asset-row::before {
+            content: '';
+            position: absolute;
+            left: -0.75rem;
+            top: 1rem;
+            width: 0.65rem;
+            border-top: 1px dashed rgba(15, 23, 42, 0.26);
+        }
+
+        .asset-section-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            opacity: 0.7;
+            margin: 0.1rem 0 0.2rem;
         }
 
         .asset-detail-header {
@@ -1217,46 +1264,65 @@ $cierreInfo = $cierre_info ?? null;
             });
 
             const productorIdJs = safeJsValue(productorIdReal);
+            const actionIconBtn = (onclickJs, title, icon) => `
+                <button type="button" class="btn-icon" onclick="${onclickJs}" title="${title}" aria-label="${title}">
+                    <span class="material-symbols-outlined">${icon}</span>
+                </button>
+            `;
+
             const renderFinca = (f) => {
                 const id = String(f.id || '');
-                const code = escapeHtml(f.codigo_finca || `ID ${id}`);
-                const name = escapeHtml(f.nombre_finca || 'Sin nombre');
+                const codeRaw = String(f.codigo_finca || `ID ${id}`);
+                const nameRaw = String(f.nombre_finca || 'Sin nombre');
+                const code = escapeHtml(codeRaw);
+                const name = escapeHtml(nameRaw);
                 const archivado = Number(f?.archivado ?? 0) === 1;
                 const children = cuartelesByFinca.get(id) || [];
                 const childSearches = [];
                 const childrenHtml = children.map((c) => {
                     const cid = String(c.id || '');
-                    const ccode = escapeHtml(c.codigo_cuartel || `ID ${cid}`);
-                    const variedad = escapeHtml(c.variedad || 'Sin variedad');
+                    const ccodeRaw = String(c.codigo_cuartel || `ID ${cid}`);
+                    const variedadRaw = String(c.variedad || 'Sin nombre');
+                    const ccode = escapeHtml(ccodeRaw);
+                    const variedad = escapeHtml(variedadRaw);
                     const sup = escapeHtml(c.superficie_ha || 'Sin superficie');
                     const cArchivado = Number(c?.archivado ?? 0) === 1;
-                    const searchRaw = `${ccode} ${variedad} ${sup} ${code} ${name}`;
+                    const searchRaw = `${ccodeRaw} ${variedadRaw} ${sup} ${codeRaw} ${nameRaw}`;
                     childSearches.push(searchRaw);
                     const search = escapeHtml(searchRaw);
+                    const archiveAction = cArchivado ?
+                        actionIconBtn(`confirmarDesarchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')`, 'Desarchivar cuartel', 'unarchive') :
+                        actionIconBtn(`confirmarArchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')`, 'Archivar cuartel', 'archive');
+
                     return `
-                        <div>
-                            <button type="button" class="asset-child${cArchivado ? ' is-active' : ''}" data-search-text="${search}" data-asset-type="cuartel" data-asset-id="${escapeHtml(cid)}" onclick="selectAssetDetail('cuartel', '${safeJsValue(cid)}')">
-                                <span class="asset-node-title">Cuartel ${ccode}</span>
-                                <span class="asset-node-meta">${variedad} - ${sup} ha - ${cArchivado ? 'Archivado' : 'Activo'}</span>
+                        <div class="asset-row" data-search-text="${search}">
+                            <button type="button" class="asset-child${cArchivado ? ' is-active' : ''}" data-asset-type="cuartel" data-asset-id="${escapeHtml(cid)}" onclick="selectAssetDetail('cuartel', '${safeJsValue(cid)}')">
+                                <span class="asset-node-title">Cuartel: ${variedad}</span>
+                                <span class="asset-node-meta">Código: ${ccode} · Superficie: ${sup} ha · ${cArchivado ? 'Archivado' : 'Activo'}</span>
                             </button>
-                            <div class="cell-actions" style="margin:.35rem 0 .2rem .25rem;">
-                                <button type="button" class="btn-icon" onclick="${cArchivado ? `confirmarDesarchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')` : `confirmarArchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')`}" title="${cArchivado ? 'Desarchivar cuartel' : 'Archivar cuartel'}" aria-label="${cArchivado ? 'Desarchivar cuartel' : 'Archivar cuartel'}"><span class="material-symbols-outlined">${cArchivado ? 'unarchive' : 'archive'}</span></button>
-                            </div>
+                            <div class="asset-actions">${archiveAction}</div>
                         </div>
                     `;
                 }).join('');
-                const search = escapeHtml(`${code} ${name} ${childSearches.join(' ')}`);
+                const search = escapeHtml(`${codeRaw} ${nameRaw} ${childSearches.join(' ')}`);
+                const fincaArchiveAction = archivado ?
+                    actionIconBtn(`confirmarDesarchivarFinca('${productorIdJs}','${safeJsValue(id)}')`, 'Desarchivar finca', 'unarchive') :
+                    actionIconBtn(`confirmarArchivarFinca('${productorIdJs}','${safeJsValue(id)}')`, 'Archivar finca', 'archive');
+                const fincaCreateCuartelAction = actionIconBtn(`promptCrearCuartel('${productorIdJs}','${safeJsValue(id)}')`, 'Nuevo cuartel', 'add');
 
                 return `
-                    <div data-search-text="${search}">
-                        <button type="button" class="asset-node${archivado ? ' is-active' : ''}" data-asset-type="finca" data-asset-id="${escapeHtml(id)}" onclick="selectAssetDetail('finca', '${safeJsValue(id)}')">
-                            <span class="asset-node-title">Finca ${code}</span>
-                            <span class="asset-node-meta">${name} - ${children.length} cuartel(es) - ${archivado ? 'Archivada' : 'Activa'}</span>
-                        </button>
-                        <div class="cell-actions" style="margin:.45rem 0 .45rem .25rem;">
-                            <button type="button" class="btn-icon" onclick="promptCrearCuartel('${productorIdJs}','${safeJsValue(id)}')" title="Nuevo cuartel" aria-label="Nuevo cuartel"><span class="material-symbols-outlined">add</span></button>
-                            <button type="button" class="btn-icon" onclick="${archivado ? `confirmarDesarchivarFinca('${productorIdJs}','${safeJsValue(id)}')` : `confirmarArchivarFinca('${productorIdJs}','${safeJsValue(id)}')`}" title="${archivado ? 'Desarchivar finca' : 'Archivar finca'}" aria-label="${archivado ? 'Desarchivar finca' : 'Archivar finca'}"><span class="material-symbols-outlined">${archivado ? 'unarchive' : 'archive'}</span></button>
+                    <div class="asset-tree-item asset-tree-group" data-search-text="${search}">
+                        <div class="asset-row">
+                            <button type="button" class="asset-node${archivado ? ' is-active' : ''}" data-asset-type="finca" data-asset-id="${escapeHtml(id)}" onclick="selectAssetDetail('finca', '${safeJsValue(id)}')">
+                                <span class="asset-node-title">Finca: ${name}</span>
+                                <span class="asset-node-meta">Código: ${code} · ${children.length} cuartel(es) · ${archivado ? 'Archivada' : 'Activa'}</span>
+                            </button>
+                            <div class="asset-actions">
+                                ${fincaCreateCuartelAction}
+                                ${fincaArchiveAction}
+                            </div>
                         </div>
+                        <p class="asset-section-label">Cuarteles</p>
                         <div class="asset-children">
                             ${childrenHtml || '<span class="summary-empty">Sin cuarteles.</span>'}
                         </div>
@@ -1267,21 +1333,27 @@ $cierreInfo = $cierre_info ?? null;
             const sinFinca = cuartelesByFinca.get('') || [];
             const sinFincaHtml = sinFinca.map((c) => {
                 const cid = String(c.id || '');
-                const ccode = escapeHtml(c.codigo_cuartel || `ID ${cid}`);
-                const variedad = escapeHtml(c.variedad || 'Sin variedad');
+                const ccodeRaw = String(c.codigo_cuartel || `ID ${cid}`);
+                const variedadRaw = String(c.variedad || 'Sin nombre');
+                const ccode = escapeHtml(ccodeRaw);
+                const variedad = escapeHtml(variedadRaw);
                 const archivado = Number(c?.archivado ?? 0) === 1;
+                const search = escapeHtml(`${ccodeRaw} ${variedadRaw}`);
+                const archiveAction = archivado ?
+                    actionIconBtn(`confirmarDesarchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')`, 'Desarchivar cuartel', 'unarchive') :
+                    actionIconBtn(`confirmarArchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')`, 'Archivar cuartel', 'archive');
                 return `
-                    <div>
-                        <button type="button" class="asset-child${archivado ? ' is-active' : ''}" data-search-text="${ccode} ${variedad}" data-asset-type="cuartel" data-asset-id="${escapeHtml(cid)}" onclick="selectAssetDetail('cuartel', '${safeJsValue(cid)}')">
-                            <span class="asset-node-title">Cuartel ${ccode}</span>
-                            <span class="asset-node-meta">${variedad} - sin finca vinculada - ${archivado ? 'Archivado' : 'Activo'}</span>
+                    <div class="asset-row" data-search-text="${search}">
+                        <button type="button" class="asset-child${archivado ? ' is-active' : ''}" data-asset-type="cuartel" data-asset-id="${escapeHtml(cid)}" onclick="selectAssetDetail('cuartel', '${safeJsValue(cid)}')">
+                            <span class="asset-node-title">Cuartel: ${variedad}</span>
+                            <span class="asset-node-meta">Código: ${ccode} · Sin finca vinculada · ${archivado ? 'Archivado' : 'Activo'}</span>
                         </button>
-                        <div class="cell-actions" style="margin:.35rem 0 .2rem .25rem;">
-                            <button type="button" class="btn-icon" onclick="${archivado ? `confirmarDesarchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')` : `confirmarArchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')`}" title="${archivado ? 'Desarchivar cuartel' : 'Archivar cuartel'}" aria-label="${archivado ? 'Desarchivar cuartel' : 'Archivar cuartel'}"><span class="material-symbols-outlined">${archivado ? 'unarchive' : 'archive'}</span></button>
-                        </div>
+                        <div class="asset-actions">${archiveAction}</div>
                     </div>
                 `;
             }).join('');
+
+            const nuevaFincaAction = actionIconBtn(`promptCrearFinca('${productorIdJs}')`, 'Nueva finca', 'add');
 
             slot.innerHTML = `
                 <input class="asset-search" type="search" placeholder="Buscar finca o cuartel" oninput="filterAssetTree(this.value)">
@@ -1289,16 +1361,18 @@ $cierreInfo = $cierre_info ?? null;
                     <span>${fincas.length} finca(s)</span>
                     <span>${cuarteles.length} cuartel(es)</span>
                 </div>
-                <div class="cell-actions" style="margin-bottom:.65rem;">
-                    <button type="button" class="btn-icon" onclick="promptCrearFinca('${productorIdJs}')" title="Nueva finca" aria-label="Nueva finca"><span class="material-symbols-outlined">add</span></button>
+                <div class="asset-actions" style="margin-bottom:.65rem;">
+                    ${nuevaFincaAction}
                 </div>
                 <div class="asset-tree">
-                    <button type="button" class="asset-node" data-search-text="productor datos personales familia" data-asset-type="productor" data-asset-id="productor" onclick="selectAssetDetail('productor', 'productor')">
-                        <span class="asset-node-title">Datos del productor</span>
-                        <span class="asset-node-meta">Familia, contacto y razón social</span>
-                    </button>
+                    <div class="asset-tree-item" data-search-text="productor datos personales familia">
+                        <button type="button" class="asset-node" data-asset-type="productor" data-asset-id="productor" onclick="selectAssetDetail('productor', 'productor')">
+                            <span class="asset-node-title">Datos del productor</span>
+                            <span class="asset-node-meta">Familia, contacto y razón social</span>
+                        </button>
+                    </div>
                     ${fincas.length ? fincas.map(renderFinca).join('') : '<p class="summary-empty">Sin fincas asociadas.</p>'}
-                    ${sinFincaHtml ? `<div class="asset-children">${sinFincaHtml}</div>` : ''}
+                    ${sinFincaHtml ? `<div class="asset-tree-item asset-tree-group"><p class="asset-section-label">Cuarteles sin finca</p><div class="asset-children">${sinFincaHtml}</div></div>` : ''}
                 </div>
             `;
 
