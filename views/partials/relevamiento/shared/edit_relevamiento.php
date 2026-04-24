@@ -532,10 +532,10 @@ $cierreInfo = $cierre_info ?? null;
             container.innerHTML = `
                 <div class="card tabla-card">
                     <div class="productor-edit-toolbar">
-                        <button class="btn btn-cancelar" onclick="volverACooperativas()" title="Volver a cooperativas" aria-label="Volver a cooperativas"><span class="material-symbols-outlined">arrow_back</span></button>
+                        <button class="btn-icon" onclick="volverACooperativas()" title="Volver a cooperativas" aria-label="Volver a cooperativas"><span class="material-symbols-outlined">arrow_back</span></button>
                         <h2 style="margin:0;">Productores</h2>
                         <div class="cell-actions">
-                            <button class="btn btn-info" onclick="toggleMostrarArchivados()" title="${relevamientoShowArchived ? 'Ocultar archivados' : 'Mostrar archivados'}" aria-label="${relevamientoShowArchived ? 'Ocultar archivados' : 'Mostrar archivados'}"><span class="material-symbols-outlined">${relevamientoShowArchived ? 'visibility_off' : 'visibility'}</span></button>
+                            <button class="btn-icon" onclick="toggleMostrarArchivados()" title="${relevamientoShowArchived ? 'Ocultar archivados' : 'Mostrar archivados'}" aria-label="${relevamientoShowArchived ? 'Ocultar archivados' : 'Mostrar archivados'}"><span class="material-symbols-outlined">${relevamientoShowArchived ? 'visibility_off' : 'visibility'}</span></button>
                             <button class="btn btn-aceptar" onclick="promptCrearProductor()">Nuevo productor</button>
                         </div>
                     </div>
@@ -594,7 +594,7 @@ $cierreInfo = $cierre_info ?? null;
                             <td>${estado}</td>
                             <td class="cell-actions">
                                 <button class="btn btn-info" onclick="abrirModificarProductor('${idRealJs}')">Modificar datos</button>
-                                <button class="btn ${archivado ? 'btn-aceptar' : 'btn-cancelar'}" onclick="${archivado ? `confirmarDesarchivarProductor('${idRealJs}')` : `confirmarArchivarProductor('${idRealJs}')`}" title="${archivado ? 'Desarchivar' : 'Archivar'}" aria-label="${archivado ? 'Desarchivar' : 'Archivar'}"><span class="material-symbols-outlined">${archivado ? 'unarchive' : 'archive'}</span></button>
+                                <button class="btn-icon" onclick="${archivado ? `confirmarDesarchivarProductor('${idRealJs}')` : `confirmarArchivarProductor('${idRealJs}')`}" title="${archivado ? 'Desarchivar' : 'Archivar'}" aria-label="${archivado ? 'Desarchivar' : 'Archivar'}"><span class="material-symbols-outlined">${archivado ? 'unarchive' : 'archive'}</span></button>
                                 <button class="icon-btn" title="Imprimir tablas del productor en consola" onclick="relevamientoLogProductorFull('${idRealJs}')">
                                     <span class="material-symbols-outlined">code</span>
                                 </button>
@@ -1240,7 +1240,7 @@ $cierreInfo = $cierre_info ?? null;
                                 <span class="asset-node-meta">${variedad} - ${sup} ha - ${cArchivado ? 'Archivado' : 'Activo'}</span>
                             </button>
                             <div class="cell-actions" style="margin:.35rem 0 .2rem .25rem;">
-                                <button type="button" class="btn ${cArchivado ? 'btn-aceptar' : 'btn-cancelar'}" onclick="${cArchivado ? `confirmarDesarchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')` : `confirmarArchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')`}" title="${cArchivado ? 'Desarchivar cuartel' : 'Archivar cuartel'}" aria-label="${cArchivado ? 'Desarchivar cuartel' : 'Archivar cuartel'}"><span class="material-symbols-outlined">${cArchivado ? 'unarchive' : 'archive'}</span></button>
+                                <button type="button" class="btn-icon" onclick="${cArchivado ? `confirmarDesarchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')` : `confirmarArchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')`}" title="${cArchivado ? 'Desarchivar cuartel' : 'Archivar cuartel'}" aria-label="${cArchivado ? 'Desarchivar cuartel' : 'Archivar cuartel'}"><span class="material-symbols-outlined">${cArchivado ? 'unarchive' : 'archive'}</span></button>
                             </div>
                         </div>
                     `;
@@ -1254,8 +1254,8 @@ $cierreInfo = $cierre_info ?? null;
                             <span class="asset-node-meta">${name} - ${children.length} cuartel(es) - ${archivado ? 'Archivada' : 'Activa'}</span>
                         </button>
                         <div class="cell-actions" style="margin:.45rem 0 .45rem .25rem;">
-                            <button type="button" class="btn btn-info" onclick="promptCrearCuartel('${productorIdJs}','${safeJsValue(id)}')" title="Nuevo cuartel" aria-label="Nuevo cuartel"><span class="material-symbols-outlined">add</span></button>
-                            <button type="button" class="btn ${archivado ? 'btn-aceptar' : 'btn-cancelar'}" onclick="${archivado ? `confirmarDesarchivarFinca('${productorIdJs}','${safeJsValue(id)}')` : `confirmarArchivarFinca('${productorIdJs}','${safeJsValue(id)}')`}" title="${archivado ? 'Desarchivar finca' : 'Archivar finca'}" aria-label="${archivado ? 'Desarchivar finca' : 'Archivar finca'}"><span class="material-symbols-outlined">${archivado ? 'unarchive' : 'archive'}</span></button>
+                            <button type="button" class="btn-icon" onclick="promptCrearCuartel('${productorIdJs}','${safeJsValue(id)}')" title="Nuevo cuartel" aria-label="Nuevo cuartel"><span class="material-symbols-outlined">add</span></button>
+                            <button type="button" class="btn-icon" onclick="${archivado ? `confirmarDesarchivarFinca('${productorIdJs}','${safeJsValue(id)}')` : `confirmarArchivarFinca('${productorIdJs}','${safeJsValue(id)}')`}" title="${archivado ? 'Desarchivar finca' : 'Archivar finca'}" aria-label="${archivado ? 'Desarchivar finca' : 'Archivar finca'}"><span class="material-symbols-outlined">${archivado ? 'unarchive' : 'archive'}</span></button>
                         </div>
                         <div class="asset-children">
                             ${childrenHtml || '<span class="summary-empty">Sin cuarteles.</span>'}
@@ -1277,7 +1277,7 @@ $cierreInfo = $cierre_info ?? null;
                             <span class="asset-node-meta">${variedad} - sin finca vinculada - ${archivado ? 'Archivado' : 'Activo'}</span>
                         </button>
                         <div class="cell-actions" style="margin:.35rem 0 .2rem .25rem;">
-                            <button type="button" class="btn ${archivado ? 'btn-aceptar' : 'btn-cancelar'}" onclick="${archivado ? `confirmarDesarchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')` : `confirmarArchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')`}" title="${archivado ? 'Desarchivar cuartel' : 'Archivar cuartel'}" aria-label="${archivado ? 'Desarchivar cuartel' : 'Archivar cuartel'}"><span class="material-symbols-outlined">${archivado ? 'unarchive' : 'archive'}</span></button>
+                            <button type="button" class="btn-icon" onclick="${archivado ? `confirmarDesarchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')` : `confirmarArchivarCuartel('${productorIdJs}','${safeJsValue(cid)}')`}" title="${archivado ? 'Desarchivar cuartel' : 'Archivar cuartel'}" aria-label="${archivado ? 'Desarchivar cuartel' : 'Archivar cuartel'}"><span class="material-symbols-outlined">${archivado ? 'unarchive' : 'archive'}</span></button>
                         </div>
                     </div>
                 `;
@@ -1290,7 +1290,7 @@ $cierreInfo = $cierre_info ?? null;
                     <span>${cuarteles.length} cuartel(es)</span>
                 </div>
                 <div class="cell-actions" style="margin-bottom:.65rem;">
-                    <button type="button" class="btn btn-info" onclick="promptCrearFinca('${productorIdJs}')" title="Nueva finca" aria-label="Nueva finca"><span class="material-symbols-outlined">add</span></button>
+                    <button type="button" class="btn-icon" onclick="promptCrearFinca('${productorIdJs}')" title="Nueva finca" aria-label="Nueva finca"><span class="material-symbols-outlined">add</span></button>
                 </div>
                 <div class="asset-tree">
                     <button type="button" class="asset-node" data-search-text="productor datos personales familia" data-asset-type="productor" data-asset-id="productor" onclick="selectAssetDetail('productor', 'productor')">
@@ -1436,7 +1436,7 @@ $cierreInfo = $cierre_info ?? null;
             container.innerHTML = `
                 <div class="card">
                     <div class="productor-edit-toolbar">
-                        <button class="btn btn-cancelar" onclick="volverAProductores()" title="Volver a productores" aria-label="Volver a productores"><span class="material-symbols-outlined">arrow_back</span></button>
+                        <button class="btn-icon" onclick="volverAProductores()" title="Volver a productores" aria-label="Volver a productores"><span class="material-symbols-outlined">arrow_back</span></button>
                         <div class="productor-edit-summary">
                             <strong>${nombre}</strong>
                             <span>ID: ${idReal}</span>
@@ -1444,7 +1444,7 @@ $cierreInfo = $cierre_info ?? null;
                             <span>Estado: ${archivado ? 'Archivado' : 'Activo'}</span>
                         </div>
                         <div class="form-buttons" style="margin-top:0;">
-                            <button class="btn ${archivado ? 'btn-aceptar' : 'btn-cancelar'}" onclick="${archivado ? `confirmarDesarchivarProductor('${idRealJs}')` : `confirmarArchivarProductor('${idRealJs}')`}" title="${archivado ? 'Desarchivar productor' : 'Archivar productor'}" aria-label="${archivado ? 'Desarchivar productor' : 'Archivar productor'}"><span class="material-symbols-outlined">${archivado ? 'unarchive' : 'archive'}</span></button>
+                            <button class="btn-icon" onclick="${archivado ? `confirmarDesarchivarProductor('${idRealJs}')` : `confirmarArchivarProductor('${idRealJs}')`}" title="${archivado ? 'Desarchivar productor' : 'Archivar productor'}" aria-label="${archivado ? 'Desarchivar productor' : 'Archivar productor'}"><span class="material-symbols-outlined">${archivado ? 'unarchive' : 'archive'}</span></button>
                             <button class="btn btn-aceptar" onclick="guardarTodoDesdeVista('${idRealJs}')">Guardar cambios</button>
                         </div>
                     </div>
@@ -2101,10 +2101,10 @@ $cierreInfo = $cierre_info ?? null;
                     container.innerHTML = `
                         <div class="card">
                             <div class="productor-edit-toolbar">
-                                <button class="btn btn-cancelar" onclick="volverACooperativas()" title="Volver a cooperativas" aria-label="Volver a cooperativas"><span class="material-symbols-outlined">arrow_back</span></button>
+                                <button class="btn-icon" onclick="volverACooperativas()" title="Volver a cooperativas" aria-label="Volver a cooperativas"><span class="material-symbols-outlined">arrow_back</span></button>
                                 <h2 style="margin:0;">Productores</h2>
                                 <div class="cell-actions">
-                                    <button class="btn btn-info" onclick="toggleMostrarArchivados()" title="${relevamientoShowArchived ? 'Ocultar archivados' : 'Mostrar archivados'}" aria-label="${relevamientoShowArchived ? 'Ocultar archivados' : 'Mostrar archivados'}"><span class="material-symbols-outlined">${relevamientoShowArchived ? 'visibility_off' : 'visibility'}</span></button>
+                                    <button class="btn-icon" onclick="toggleMostrarArchivados()" title="${relevamientoShowArchived ? 'Ocultar archivados' : 'Mostrar archivados'}" aria-label="${relevamientoShowArchived ? 'Ocultar archivados' : 'Mostrar archivados'}"><span class="material-symbols-outlined">${relevamientoShowArchived ? 'visibility_off' : 'visibility'}</span></button>
                                     <button class="btn btn-aceptar" onclick="promptCrearProductor()">Nuevo productor</button>
                                 </div>
                             </div>
