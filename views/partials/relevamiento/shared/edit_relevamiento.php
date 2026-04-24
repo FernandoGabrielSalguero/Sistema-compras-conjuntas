@@ -707,12 +707,47 @@ $cierreInfo = $cierre_info ?? null;
             }
         }
 
+        function openSimpleModalById(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            modal.classList.remove('hidden');
+        }
+
+        function closeSimpleModalById(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            modal.classList.add('hidden');
+        }
+
         async function promptCrearProductor() {
+            if (!currentCoop?.id_real) {
+                return;
+            }
+            const modal = document.getElementById('modal-crear-productor');
+            if (!modal) return;
+
+            const usuarioInput = modal.querySelector('input[name="nuevo_usuario"]');
+            const cuitInput = modal.querySelector('input[name="nuevo_cuit"]');
+            if (usuarioInput) usuarioInput.value = '';
+            if (cuitInput) cuitInput.value = '';
+
+            openSimpleModalById('modal-crear-productor');
+            if (usuarioInput) usuarioInput.focus();
+        }
+
+        async function guardarNuevoProductorDesdeModal() {
             if (!currentCoop?.id_real) return;
-            const usuario = String(prompt('Usuario del productor (obligatorio):', '') ?? '').trim();
-            if (!usuario) return;
-            const cuit = String(prompt('CUIT del productor (obligatorio, solo numeros):', '') ?? '').trim();
-            if (!cuit) return;
+            const modal = document.getElementById('modal-crear-productor');
+            if (!modal) return;
+
+            const usuario = String(modal.querySelector('input[name="nuevo_usuario"]')?.value ?? '').trim();
+            const cuit = String(modal.querySelector('input[name="nuevo_cuit"]')?.value ?? '').trim();
+            if (!usuario || !cuit) {
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', 'Completa usuario y CUIT');
+                }
+                return;
+            }
 
             try {
                 await apiPostAction('crear_productor', {
@@ -720,6 +755,7 @@ $cierreInfo = $cierre_info ?? null;
                     usuario,
                     cuit
                 });
+                closeSimpleModalById('modal-crear-productor');
                 if (typeof showToastBoton === 'function') {
                     showToastBoton('success', 'Productor creado correctamente');
                 }
@@ -769,10 +805,32 @@ $cierreInfo = $cierre_info ?? null;
         }
 
         async function promptCrearFinca(productorIdReal) {
-            const codigoFinca = String(prompt('Codigo de finca (obligatorio):', '') ?? '').trim();
-            if (!codigoFinca) return;
-            const nombreFinca = String(prompt('Nombre de finca (obligatorio):', '') ?? '').trim();
-            if (!nombreFinca) return;
+            const modal = document.getElementById('modal-crear-finca');
+            if (!modal) return;
+
+            modal.dataset.productorIdReal = String(productorIdReal ?? '');
+            const codigoInput = modal.querySelector('input[name="nuevo_codigo_finca"]');
+            const nombreInput = modal.querySelector('input[name="nuevo_nombre_finca"]');
+            if (codigoInput) codigoInput.value = '';
+            if (nombreInput) nombreInput.value = '';
+
+            openSimpleModalById('modal-crear-finca');
+            if (codigoInput) codigoInput.focus();
+        }
+
+        async function guardarNuevaFincaDesdeModal() {
+            const modal = document.getElementById('modal-crear-finca');
+            if (!modal) return;
+
+            const productorIdReal = String(modal.dataset.productorIdReal ?? '').trim();
+            const codigoFinca = String(modal.querySelector('input[name="nuevo_codigo_finca"]')?.value ?? '').trim();
+            const nombreFinca = String(modal.querySelector('input[name="nuevo_nombre_finca"]')?.value ?? '').trim();
+            if (!productorIdReal || !codigoFinca || !nombreFinca) {
+                if (typeof showToastBoton === 'function') {
+                    showToastBoton('error', 'Completa código y nombre de finca');
+                }
+                return;
+            }
 
             try {
                 await apiPostAction('crear_finca', {
@@ -780,6 +838,7 @@ $cierreInfo = $cierre_info ?? null;
                     codigo_finca: codigoFinca,
                     nombre_finca: nombreFinca
                 });
+                closeSimpleModalById('modal-crear-finca');
                 if (typeof showToastBoton === 'function') {
                     showToastBoton('success', 'Finca creada correctamente');
                 }
@@ -2505,6 +2564,9 @@ $cierreInfo = $cierre_info ?? null;
         window.toggleMostrarArchivados = toggleMostrarArchivados;
         window.promptCrearProductor = promptCrearProductor;
         window.promptCrearFinca = promptCrearFinca;
+        window.guardarNuevoProductorDesdeModal = guardarNuevoProductorDesdeModal;
+        window.guardarNuevaFincaDesdeModal = guardarNuevaFincaDesdeModal;
+        window.closeSimpleModalById = closeSimpleModalById;
         window.promptCrearCuartel = promptCrearCuartel;
         window.confirmarArchivarProductor = confirmarArchivarProductor;
         window.confirmarDesarchivarProductor = confirmarDesarchivarProductor;
@@ -2560,6 +2622,56 @@ $cierreInfo = $cierre_info ?? null;
             <div class="form-buttons">
                 <button class="btn btn-aceptar" onclick="relevamientoCloseModal('cuarteles')">Aceptar</button>
                 <button class="btn btn-cancelar" onclick="relevamientoCloseModal('cuarteles')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Crear Productor -->
+    <div id="modal-crear-productor" class="modal hidden">
+        <div class="modal-content">
+            <h3>Nuevo productor</h3>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="nuevo-usuario">Usuario</label>
+                    <div class="input-icon input-icon-name">
+                        <input id="nuevo-usuario" name="nuevo_usuario" type="text" autocomplete="off" />
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="nuevo-cuit">CUIT</label>
+                    <div class="input-icon input-icon-name">
+                        <input id="nuevo-cuit" name="nuevo_cuit" type="text" inputmode="numeric" autocomplete="off" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-aceptar" onclick="guardarNuevoProductorDesdeModal()">Crear</button>
+                <button class="btn btn-cancelar" onclick="closeSimpleModalById('modal-crear-productor')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Crear Finca -->
+    <div id="modal-crear-finca" class="modal hidden">
+        <div class="modal-content">
+            <h3>Nueva finca</h3>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="nuevo-codigo-finca">Codigo de finca</label>
+                    <div class="input-icon input-icon-name">
+                        <input id="nuevo-codigo-finca" name="nuevo_codigo_finca" type="text" autocomplete="off" />
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="nuevo-nombre-finca">Nombre de finca</label>
+                    <div class="input-icon input-icon-name">
+                        <input id="nuevo-nombre-finca" name="nuevo_nombre_finca" type="text" autocomplete="off" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-aceptar" onclick="guardarNuevaFincaDesdeModal()">Crear</button>
+                <button class="btn btn-cancelar" onclick="closeSimpleModalById('modal-crear-finca')">Cancelar</button>
             </div>
         </div>
     </div>
