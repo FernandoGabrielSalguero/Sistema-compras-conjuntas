@@ -1,23 +1,12 @@
 <?php
-// Mostrar errores en pantalla (útil en desarrollo)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Iniciar sesión y configurar parámetros de seguridad
 require_once '../../middleware/authMiddleware.php';
 checkAccess('sve');
 
-// Datos del usuario en sesión
 $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
-$correo = $_SESSION['correo'] ?? 'Sin correo';
-$cuit = $_SESSION['cuit'] ?? 'Sin CUIT';
-$telefono = $_SESSION['telefono'] ?? 'Sin teléfono';
-$observaciones = $_SESSION['observaciones'] ?? 'Sin observaciones';
-
-//Cargamos los operativos cerrados
-$cierre_info = $_SESSION['cierre_info'] ?? null;
-unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 ?>
 
 <!DOCTYPE html>
@@ -26,23 +15,17 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SVE</title>
+    <title>SVE - Facturaci&oacute;n</title>
 
-    <!-- Íconos de Material Design -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-    <!-- Framework Success desde CDN -->
     <link rel="stylesheet" href="https://framework.impulsagroup.com/assets/css/framework.css">
     <script src="https://framework.impulsagroup.com/assets/javascript/framework.js" defer></script>
 </head>
 
 <body>
-
-    <!-- 🔲 CONTENEDOR PRINCIPAL -->
     <div class="layout">
-
-        <!-- 🧭 SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <span class="material-icons logo-icon">dashboard</span>
@@ -91,11 +74,11 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
                     </li>
                     <li onclick="location.href='sve_cosechaMecanica.php'">
                         <span class="material-icons" style="color:#5b21b6;">agriculture</span>
-                        <span class="link-text">Cosecha Mecánica</span>
+                        <span class="link-text">Cosecha Mec&aacute;nica</span>
                     </li>
                     <li onclick="location.href='sve_serviciosVendimiales.php'">
                         <span class="material-icons" style="color:#5b21b6;">wine_bar</span>
-                        <span class="link-text">Servicios Auxiliares Enológicos</span>
+                        <span class="link-text">Servicios Auxiliares Enol&oacute;gicos</span>
                     </li>
                     <li onclick="location.href='sve_facturacion.php'">
                         <span class="material-icons" style="color:#5b21b6;">receipt_long</span>
@@ -117,72 +100,42 @@ unset($_SESSION['cierre_info']); // Limpiamos para evitar residuos
             </div>
         </aside>
 
-        <!-- 🧱 MAIN -->
         <div class="main">
-
-            <!-- 🟪 NAVBAR -->
             <header class="navbar">
                 <button class="btn-icon" onclick="toggleSidebar()">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="navbar-title">Inicio</div>
+                <div class="navbar-title">Facturaci&oacute;n</div>
             </header>
 
-            <!-- 📦 CONTENIDO -->
             <section class="content">
-
-                <!-- Bienvenida -->
                 <div class="card">
-                    <h2>Hola</h2>
-                    <p>Te presentamos el tablero Power BI. Vas a poder consultar todas las metricas desde esta página</p>
+                    <h2>Facturaci&oacute;n</h2>
+                    <p>Hola <?php echo htmlspecialchars($nombre); ?>. Este modulo queda conectado para comenzar a generar la facturacion de servicios.</p>
+                    <p id="estadoModulo">Cargando modulo...</p>
                 </div>
-                <!-- Métricas principales: 3 tarjetas apiladas (una columna, tres filas) -->
-                <div class="card" style="width:100%; margin-bottom:1rem;">
-                    <h3>Compra conjunta</h3>
-                    <?php include __DIR__ . '/../partials/sve_kpi/sve_kpi_compraConjuntaView.php'; ?>
-                </div>
-                <div class="card" style="width:100%; margin-bottom:1rem;">
-                    <h3>Pulverización con drones</h3>
-                    <?php include __DIR__ . '/../partials/sve_kpi/sve_kpi_dronesView.php'; ?>
-                </div>
-                <div class="card" style="width:100%; margin-bottom:1rem;">
-                    <h3>Cosecha Mecanica</h3>
-                    <?php include __DIR__ . '/../partials/sve_kpi/sve_kpi_cosechaView.php'; ?>
-                </div>
-
-                <!-- contenedor del toastify -->
-                <div id="toast-container"></div>
-                <div id="toast-container-boton"></div>
-                <!-- Spinner Global -->
-                <script src="../../views/partials/spinner-global.js"></script>
-
             </section>
-
         </div>
     </div>
 
-    <!-- toast -->
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            console.log(<?php echo json_encode($_SESSION); ?>);
+        document.addEventListener('DOMContentLoaded', async () => {
+            const estado = document.getElementById('estadoModulo');
 
-            <?php if (!empty($cierre_info)): ?>
-                const cierreData = <?= json_encode($cierre_info, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
-                cierreData.pendientes.forEach(op => {
-                    const mensaje = `El operativo "${op.nombre}" se cierra en ${op.dias_faltantes} día(s).`;
-                    console.log(mensaje);
-                    if (typeof showToastBoton === 'function') {
-                        showToastBoton('info', mensaje);
-                    } else {
-                        console.warn('⚠️ showToastBoton no está definido aún.');
-                    }
-                });
-            <?php endif; ?>
+            try {
+                const res = await fetch('/controllers/sve_facturacionController.php');
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudo cargar el modulo.');
+                }
+
+                estado.textContent = 'Modulo listo.';
+            } catch (error) {
+                estado.textContent = error.message;
+            }
         });
     </script>
-
 </body>
 
-
 </html>
-
