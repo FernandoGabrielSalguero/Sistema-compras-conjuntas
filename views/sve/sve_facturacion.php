@@ -230,7 +230,7 @@ $nombre = $_SESSION['nombre'] ?? 'Sin nombre';
 
                 <div class="card tabla-card">
                     <div class="table-header">
-                        <h2>Fincas participantes de operativos</h2>
+                        <h2>Fincas que participan en operativos</h2>
                         <button id="btnExportFincas" type="button" class="icon-export-btn" title="Descargar Excel" aria-label="Descargar Excel">
                             <span class="material-icons">download</span>
                         </button>
