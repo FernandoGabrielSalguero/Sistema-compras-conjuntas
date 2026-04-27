@@ -567,6 +567,9 @@ estado_estructura_sistema	varchar(150)	YES
 labores_mecanizables	text	YES			
 finca_id	int(10) unsigned	YES	MUL		
 created_at	timestamp	NO		current_timestamp()	
+archivado	tinyint(1)	NO		0	
+archivado_at	datetime	YES			
+archivado_by_real	varchar(20)	YES			
 
 🔗 Relaciones (salientes):
 Columna cooperativa_id_real referencia a usuarios.id_real
@@ -753,6 +756,9 @@ productor_id_real	varchar(20)	NO	MUL
 nombre_finca	varchar(150)	YES			
 variedad	varchar(150)	YES			
 created_at	timestamp	NO		current_timestamp()	
+archivado	tinyint(1)	NO		0	
+archivado_at	datetime	YES			
+archivado_by_real	varchar(20)	YES			
 
 🔗 Relaciones (salientes):
 Columna productor_id_real referencia a usuarios.id_real
@@ -1030,6 +1036,9 @@ razon_social	varchar(150)	YES
 estado_asociacion_cooperativa	varchar(100)	YES			
 id_real	varchar(20)	NO	UNI		
 revisado	enum('Esta revisado','No esta revisado')	YES			
+archivado	tinyint(1)	NO		0	
+archivado_at	datetime	YES			
+archivado_by_real	varchar(20)	YES			
 
 🔁 Relaciones (entrantes): drones_solicitud, prod_fincas, prod_hijos, rel_coop_ingeniero, prod_cuartel, drones_calendario_notas, relevamiento_fincas, productores_contactos_alternos, rel_productor_coop, info_productor, usuarios_info, operativos_cooperativas_participacion, rel_productor_finca, prod_colaboradores
 📄 Tabla: usuarios_info
